@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+    <persistence-unit name="VDCNet-ejbPU" transaction-type="JTA">
+        <!-- provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider-->
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <jta-data-source>jdbc/VDCNetDS</jta-data-source>
+        <properties>
+            <!--property name="toplink.logging.level" value="FINE"/-->
+	    <!-- disabling weaving, as an experiment: - L.A. -->
+	    <property name="eclipselink.weaving" value="false"/>
+	    <!-- comment out the line below to make the app NOT build 
+		 persistence tables on startup; will make deployment
+		 faster. - L.A. -->
+            <property name="eclipselink.ddl-generation" value="create-tables"/>
+            <property name="eclipselink.cache.shared.default" value="false"/>
+            <!-- The following property allows primary keys of 0 -->
+            <property name="eclipselink.id-validation" value="NULL"/>
+        </properties>
+    </persistence-unit>
+    <!-- the persistence unit below is no longer necessary; needs to be removed 
+	 from gnrs/TestNRS and from here: - L.A. 
+    <persistence-unit name="VDCNet-test" transaction-type="RESOURCE_LOCAL">
+        <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
+        <properties>
+            <property name="toplink.jdbc.url" value="jdbc:postgresql://localhost:5432/VDCNet-dev"/>
+            <property name="toplink.jdbc.user" value="vdcApp"/>
+            <property name="toplink.jdbc.driver" value="org.postgresql.jdbc3.Jdbc3PoolingDataSource"/>
+            <property name="toplink.jdbc.password" value="secret"/>
+        </properties>
+    </persistence-unit -->
+</persistence>

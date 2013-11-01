@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:h="http://java.sun.com/jsf/html"  
+      xmlns:f="http://java.sun.com/jsf/core"  
+      xmlns:p="http://primefaces.org/ui">  
+
+    <h:head>  
+
+    </h:head>  
+
+    <h:body> 
+        Dataverses
+        <p:dataList value="#{dataverseServiceBean.findAll()}" var="dv">
+            <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
+                <p:outputLabel value="#{dv.name}" />
+            </h:outputLink>
+        </p:dataList>
+        
+        <p:button value="Create Dataverse"  outcome="/dataverse.xhtml"/>
+    </h:body>
+</html>
+
