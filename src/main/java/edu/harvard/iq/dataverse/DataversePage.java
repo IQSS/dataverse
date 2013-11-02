@@ -7,9 +7,9 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -22,25 +22,35 @@ public class DataversePage implements java.io.Serializable{
     DataverseServiceBean dataverseService;
      
     private Dataverse dataverse = new Dataverse();
+    private boolean editMode; 
+            
     public Dataverse getDataverse() {return dataverse;}
     public void setDataverse(Dataverse dataverse) {this.dataverse = dataverse;}
+
+    public boolean isEditMode() {return editMode;}
+    public void setEditMode(boolean editMode) {this.editMode = editMode;}
     
 
     public void init() {
         if (dataverse.getId() != null) {
             dataverse = dataverseService.find(dataverse.getId());
+            editMode = false;
+        } else {
+            editMode = true;
         }
     }
     
-     
-    public String save() {
-     dataverse.setName( dataverse.getName().trim() );   
+    public void edit(ActionEvent e) { 
+     editMode = true;
+    }  
+    
+    public void save(ActionEvent e) { 
      dataverseService.save(dataverse);
-     return "dataverses.xhtml?faces-redirect=true";
-}
-    /*
-    public void save(ActionListener e) { 
-     dataverse.setName( dataverse.getName().trim() );   
-     dataverseService.save(dataverse);
-    } */   
+     editMode = false;
+    }  
+    
+     public void cancel(ActionEvent e) { 
+     dataverse = dataverseService.find(dataverse.getId()); // reset dv values
+     editMode = false;
+    }    
 }
