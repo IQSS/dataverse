@@ -14,11 +14,17 @@
     <h:body> 
         <f:metadata>
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
+            <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
             <f:viewAction action="#{DataversePage.init}" />
         </f:metadata>        
 
         <h:form id="dataverseForm">
-            <p:panel  style="background-color: lightskyblue; height:80px;">
+            <p:panel  style="background-color: lightskyblue; height:80px;">                
+                <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.owner.id}" rendered="#{!empty DataversePage.dataverse.owner}">
+                    <h:outputText value="#{DataversePage.dataverse.owner.name}" rendered="#{!empty DataversePage.dataverse.owner}" />             
+                </h:outputLink>  
+                <h:outputText value=" > " rendered="#{!empty DataversePage.dataverse.owner}" />             
+
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
                     <p:fieldset>
@@ -66,8 +72,8 @@
                         <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all"  rendered="#{DataversePage.editMode}" />
 
                         <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
-                        <p:button value="Cancel" outcome="/dataverses.xhtml"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null}" />
-
+                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null and DataversePage.ownerId != null}" />
+                        <p:button value="Cancel" outcome="/dataverses.xhtml"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null and DataversePage.ownerId == null}" />
                     </p:panel>
                 </p:panelGrid>
             </p:panel>
@@ -97,7 +103,7 @@
                 <p:panel>
                     <h:form id="shareForm">
                         <p:splitButton  value="Upload Dataset">
-                            <p:menuitem value="Create Dataverse" url="/dataverse.xhtml"/>  
+                            <p:menuitem value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>  
                             <p:menuitem value="Link to Existing Dataset"/>
                             <p:menuitem value="Link to Existing Dataverse"/> 
                             <p:menuitem value="Create Query"/>                             
@@ -108,7 +114,12 @@
         </p:panel>            
 
         <p:panel rendered="#{!DataversePage.editMode}">
-            <h:outputText value="[CONTENT PANEL]" />
+            <p:dataList value="#{dataverseServiceBean.findByOwnerId(DataversePage.dataverse.id)}" var="dv">
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
+                    <h:outputText value="#{dv.name}"/>
+                    <h:outputText value=" (#{dv.affiliation})" rendered="#{!empty dv.affiliation}" />
+                </h:outputLink>
+            </p:dataList>
         </p:panel>
 
     </h:body> 
