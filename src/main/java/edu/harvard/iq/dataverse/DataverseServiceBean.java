@@ -13,6 +13,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -41,4 +42,10 @@ public class DataverseServiceBean {
     public List<Dataverse> findAll() {
         return em.createQuery("select object(o) from Dataverse as o order by o.name").getResultList();
     }
+    
+    public List<Dataverse> findByOwnerId(Long ownerId) {
+         Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
+         query.setParameter("ownerId", ownerId);
+         return query.getResultList();
+    }    
 }
