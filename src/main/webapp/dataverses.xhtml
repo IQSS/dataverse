@@ -13,7 +13,7 @@
 
             <p:dataList value="#{dataverseServiceBean.findAll()}" var="dv">
                 <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
-                    <p:outputLabel value="#{dv.name}" />
+                    <p:outputLabel value="#{dv.name} (#{dv.affiliation})" />
                 </h:outputLink>
             </p:dataList>
 
