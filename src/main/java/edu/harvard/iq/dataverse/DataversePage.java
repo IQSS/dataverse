@@ -23,20 +23,27 @@ public class DataversePage implements java.io.Serializable{
      
     private Dataverse dataverse = new Dataverse();
     private boolean editMode; 
+    private Long ownerId;
             
     public Dataverse getDataverse() {return dataverse;}
     public void setDataverse(Dataverse dataverse) {this.dataverse = dataverse;}
 
     public boolean isEditMode() {return editMode;}
     public void setEditMode(boolean editMode) {this.editMode = editMode;}
+
+    public Long getOwnerId() {return ownerId;}
+    public void setOwnerId(Long ownerId) {this.ownerId = ownerId;}
     
 
     public void init() {
         if (dataverse.getId() != null) {
+            editMode = false;            
             dataverse = dataverseService.find(dataverse.getId());
-            editMode = false;
         } else {
             editMode = true;
+            if (ownerId != null) {
+                dataverse.setOwner( dataverseService.find( ownerId ) );
+            }
         }
     }
     
