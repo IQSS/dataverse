@@ -5,8 +5,12 @@
       xmlns:p="http://primefaces.org/ui">  
 
     <h:head>  
-
+        <style type="text/css">
+            .column1{width: 75%;height:auto}
+            .column2{width: 25%;height:auto}
+        </style>
     </h:head>  
+    
     <h:body> 
         <f:metadata>
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
@@ -14,55 +18,76 @@
         </f:metadata>        
 
         <h:form id="dataversePage">
-            
-            <p:panelGrid columns="3">
-                <p:outputLabel value="Name" />
-                <p:inplace  widgetVar="inplaceName" effect="none">
-                    <p:inputText  id="name" value="#{DataversePage.dataverse.name}" />
-                </p:inplace> 
-                <p:message for="name" />
+            <p:panel  style="background-color: lightskyblue; height:80px;">
+                <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
+                <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
+                    <p:fieldset>
+                        <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/><h:outputText value=" Dataverse" />
+                        <p:watermark for="name" value="Enter name..." /> 
+                    </p:fieldset>
+                    <p:message for="name" /> 
+                </p:panelGrid>
+            </p:panel>
 
-                <p:outputLabel value="Alias" /> 
-                <p:inplace  widgetVar="inplaceAlias" effect="none">
-                    <p:inputText  id="alias" value="#{DataversePage.dataverse.alias}"/>
-                </p:inplace>
-                <p:message for="alias" />
-                
-                <p:outputLabel value="Affiliation" /> 
-                <p:inplace  widgetVar="inplaceAffiliation" effect="none">
-                    <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
-                </p:inplace>
-                <p:message for="affiliation" />
+            <p:panel>
+                <h:outputText value="[MESSAGE PANEL - VIEW]" rendered="#{!DataversePage.editMode}"/>
+                <h:outputText value="[MESSAGE PANEL - EDIT]" rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}"/>
+                <h:outputText value="[MESSAGE PANEL - CREATE]" rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null}"/>
+            </p:panel>            
 
-                <p:outputLabel value="Description" />
-                <p:inplace  widgetVar="inplaceDescription" effect="none" >
+            <p:panel>
+                <p:panelGrid columns="2" columnClasses="column1,column2">
+                    <p:panel>
+                        <p:panelGrid columns="3">
+                            <p:outputLabel value="Alias" />
+                            <h:outputText value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}" />
+                            <p:inputText  id="alias" value="#{DataversePage.dataverse.alias}" rendered="#{DataversePage.editMode}" />
+                            <p:message for="alias" />  
+
+                            <p:outputLabel value="Contact E-mail" />
+                            <h:outputText value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}" />
+                            <p:inputText  id="contactEmail" value="#{DataversePage.dataverse.contactEmail}" rendered="#{DataversePage.editMode}"/>
+                            <p:message for="contactEmail" />
+
+                            <p:outputLabel value="Affiliate" />
+                            <h:outputText value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}" />
+                            <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}" rendered="#{DataversePage.editMode}"/>
+                            <p:message for="affiliation" />
+
+                        </p:panelGrid> 
+                    </p:panel>
+
+                    <p:panel>
+                        <p:splitButton  value="Edit Info" actionListener="#{DataversePage.edit}" update="@form" rendered="#{!DataversePage.editMode}">
+                            <p:menuitem value="Edit Theme"/>  
+                            <p:menuitem value="Edit Permissions"/>
+                        </p:splitButton>  
+                        <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@form"  rendered="#{DataversePage.editMode}" />
+
+                        <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
+                        <p:button value="Cancel" outcome="/dataverses.xhtml"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null}" />
+
+                    </p:panel>
+                </p:panelGrid>
+            </p:panel>
+
+            <p:panel>
+                <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}" />
+                <p:panelGrid columns="3"  rendered="#{DataversePage.editMode}">
+                    <p:outputLabel value="Description" />
                     <p:inputTextarea  id="description" value="#{DataversePage.dataverse.description}"/>
-                </p:inplace>
-                <p:message for="description" />
-                
-                <p:outputLabel value="Contact Email" />
-                <p:inplace  widgetVar="inplaceContactEmail" effect="none" >
-                    <p:inputTextarea  id="contactEmail" validatorMessage="Invalid email format" value="#{DataversePage.dataverse.contactEmail}">
-                        <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
-                    </p:inputTextarea>
-                </p:inplace>
-                <p:message for="contactEmail" />
-            </p:panelGrid>
+                    <p:message for="description" />  
+                </p:panelGrid>
+            </p:panel>            
 
-            <p:commandButton id="editButton" value="Edit"
-                onclick="
-                    inplaceAffiliation.show();                    
-                    inplaceContactEmail.show();
-                    inplaceDescription.show();                 
-                    inplaceAlias.show();
-                    inplaceName.show();
-                    document.getElementById('dataversePage:editButton').style.display='none';
-                    document.getElementById('dataversePage:saveButton').style.display='';
-                "/>              
-            <p:commandButton id="saveButton" value="Save Dataverse" action="#{DataversePage.save}" ajax="false"  style="display:none"/>
-            <p:button id="cancelButton" value="Cancel" outcome="/dataverses.xhtml" /> 
-            
+            <p:panel rendered="#{!DataversePage.editMode}">
+                <h:outputText value="[SEARCH PANEL]" />
+            </p:panel>            
+
+            <p:panel rendered="#{!DataversePage.editMode}">
+                <h:outputText value="[CONTENT PANEL]" />
+            </p:panel>
+
         </h:form>   
-
     </h:body> 
 </html> 
