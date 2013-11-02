@@ -42,6 +42,12 @@ public class Dataverse implements Serializable {
 
     @Size (max=100)
     private String description;
+    
+    @NotNull (message = "Please enter your email address.") 
+    private String contactEmail;
+    
+    @NotNull (message = "The World Champion Red Sox DEMAND a value!") 
+    private String affiliation;
 
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
@@ -52,7 +58,11 @@ public class Dataverse implements Serializable {
     public String getDescription() {return description;}
     public void setDescription(String description) {this.description = description;}
     
-    
+    public String getContactEmail() {return contactEmail;}
+    public void setContactEmail(String contactEmail) {this.contactEmail = contactEmail;}
+
+    public String getAffiliation() {return affiliation;}
+    public void setAffiliation(String affiliation) {this.affiliation = affiliation;}
     
     @Override
     public int hashCode() {

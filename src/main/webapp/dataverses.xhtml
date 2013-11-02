@@ -9,14 +9,16 @@
     </h:head>  
 
     <h:body> 
-        <p:panel header="Dataverses"/>
-        <p:dataList value="#{dataverseServiceBean.findAll()}" var="dv">
-            <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
-                <p:outputLabel value="#{dv.name}" />
-            </h:outputLink>
-        </p:dataList>
-        
-        <p:button value="Create Dataverse"  outcome="/dataverse.xhtml"/>
+        <p:panel id="panel" header="Dataverses" style="margin-bottom:10px;"> 
+
+            <p:dataList value="#{dataverseServiceBean.findAll()}" var="dv">
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
+                    <p:outputLabel value="#{dv.name}" />
+                </h:outputLink>
+            </p:dataList>
+
+            <p:button value="Create Dataverse"  outcome="/dataverse.xhtml" style="color: green"/>
+        </p:panel>
     </h:body>
 </html>
 

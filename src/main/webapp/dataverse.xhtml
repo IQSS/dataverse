@@ -27,16 +27,32 @@
                     <p:inputText  id="alias" value="#{DataversePage.dataverse.alias}"/>
                 </p:inplace>
                 <p:message for="alias" />
+                
+                <p:outputLabel value="Affiliation" /> 
+                <p:inplace  widgetVar="inplaceAffiliation" effect="none">
+                    <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
+                </p:inplace>
+                <p:message for="affiliation" />
 
                 <p:outputLabel value="Description" />
                 <p:inplace  widgetVar="inplaceDescription" effect="none" >
                     <p:inputTextarea  id="description" value="#{DataversePage.dataverse.description}"/>
                 </p:inplace>
                 <p:message for="description" />
+                
+                <p:outputLabel value="Contact Email" />
+                <p:inplace  widgetVar="inplaceContactEmail" effect="none" >
+                    <p:inputTextarea  id="contactEmail" validatorMessage="Invalid email format" value="#{DataversePage.dataverse.contactEmail}">
+                        <f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+                    </p:inputTextarea>
+                </p:inplace>
+                <p:message for="contactEmail" />
             </p:panelGrid>
 
             <p:commandButton id="editButton" value="Edit"
                 onclick="
+                    inplaceAffiliation.show();                    
+                    inplaceContactEmail.show();
                     inplaceDescription.show();                 
                     inplaceAlias.show();
                     inplaceName.show();
