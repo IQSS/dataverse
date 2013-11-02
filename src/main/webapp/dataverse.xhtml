@@ -10,14 +10,14 @@
             .column2{width: 25%;height:auto}
         </style>
     </h:head>  
-    
+
     <h:body> 
         <f:metadata>
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
             <f:viewAction action="#{DataversePage.init}" />
         </f:metadata>        
 
-        <h:form id="dataversePage">
+        <h:form id="dataverseForm">
             <p:panel  style="background-color: lightskyblue; height:80px;">
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
@@ -59,13 +59,13 @@
                     </p:panel>
 
                     <p:panel>
-                        <p:splitButton  value="Edit Info" actionListener="#{DataversePage.edit}" update="@form" rendered="#{!DataversePage.editMode}">
+                        <p:splitButton  value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" rendered="#{!DataversePage.editMode}">
                             <p:menuitem value="Edit Theme"/>  
                             <p:menuitem value="Edit Permissions"/>
                         </p:splitButton>  
-                        <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@form"  rendered="#{DataversePage.editMode}" />
+                        <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all"  rendered="#{DataversePage.editMode}" />
 
-                        <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
+                        <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
                         <p:button value="Cancel" outcome="/dataverses.xhtml"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null}" />
 
                     </p:panel>
@@ -82,15 +82,34 @@
                     <h:outputText id="counter" /> 
                 </p:panelGrid>
             </p:panel>            
+        </h:form>
 
-            <p:panel rendered="#{!DataversePage.editMode}">
-                <h:outputText value="[SEARCH PANEL]" />
-            </p:panel>            
+        <p:panel rendered="#{!DataversePage.editMode}">
+            <p:panelGrid columns="2" columnClasses="column1,column2" >
+                <p:panel>
+                    <h:form id="searchForm">
+                        <p:inputText id="search" />
+                        <p:watermark for="search" value="Search this dataverse"/>
+                        <p:commandButton value="Go" />
+                    </h:form>
+                </p:panel>
 
-            <p:panel rendered="#{!DataversePage.editMode}">
-                <h:outputText value="[CONTENT PANEL]" />
-            </p:panel>
+                <p:panel>
+                    <h:form id="shareForm">
+                        <p:splitButton  value="Upload Dataset">
+                            <p:menuitem value="Create Dataverse" url="/dataverse.xhtml"/>  
+                            <p:menuitem value="Link to Existing Dataset"/>
+                            <p:menuitem value="Link to Existing Dataverse"/> 
+                            <p:menuitem value="Create Query"/>                             
+                        </p:splitButton>  
+                    </h:form>
+                </p:panel>
+            </p:panelGrid>
+        </p:panel>            
 
-        </h:form>   
+        <p:panel rendered="#{!DataversePage.editMode}">
+            <h:outputText value="[CONTENT PANEL]" />
+        </p:panel>
+
     </h:body> 
 </html> 
