@@ -12,7 +12,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -34,19 +37,21 @@ public class Dataverse implements Serializable {
         this.id = id;
     }
     
-    @NotNull (message = "The World Champion Red Sox DEMAND a value!")  
+    @NotBlank (message = "The World Champion Red Sox DEMAND a name!")  
     private String name;
     
-    @NotNull (message = "The World Champion Red Sox DEMAND a value!") 
+    @NotBlank (message = "Please enter an alias.") 
+    @Size (max=16,message = "Alias must be at most 16 characters.")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message="Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 
-    @Size (max=100)
+    @Size (max=1000, message = "Description must be at most 1000 characters.") 
     private String description;
     
-    @NotNull (message = "Please enter your email address.") 
+    @NotBlank (message = "Please enter a valid email address.") 
+    @Email(message = "Please enter a valid email address.") 
     private String contactEmail;
-    
-    @NotNull (message = "The World Champion Red Sox DEMAND a value!") 
+
     private String affiliation;
 
     public String getName() {return name;}
