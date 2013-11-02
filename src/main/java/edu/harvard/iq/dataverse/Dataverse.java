@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
@@ -53,6 +53,9 @@ public class Dataverse implements Serializable {
     private String contactEmail;
 
     private String affiliation;
+    
+    @ManyToOne  
+    private Dataverse owner;
 
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
@@ -68,6 +71,10 @@ public class Dataverse implements Serializable {
 
     public String getAffiliation() {return affiliation;}
     public void setAffiliation(String affiliation) {this.affiliation = affiliation;}
+
+    public Dataverse getOwner() {return owner;}
+    public void setOwner(Dataverse owner) {this.owner = owner;}
+    
     
     @Override
     public int hashCode() {
