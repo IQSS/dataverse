@@ -22,7 +22,8 @@
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
                     <p:fieldset>
-                        <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/><h:outputText value=" Dataverse" />
+                        <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
+                        <p:outputLabel value=" Dataverse" for="name"/>
                         <p:watermark for="name" value="Enter name..." /> 
                     </p:fieldset>
                     <p:message for="name" /> 
@@ -39,17 +40,17 @@
                 <p:panelGrid columns="2" columnClasses="column1,column2">
                     <p:panel>
                         <p:panelGrid columns="3">
-                            <p:outputLabel value="Alias" />
+                            <p:outputLabel value="Alias" for="alias" />
                             <h:outputText value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="alias" value="#{DataversePage.dataverse.alias}" rendered="#{DataversePage.editMode}" />
                             <p:message for="alias" />  
 
-                            <p:outputLabel value="Contact E-mail" />
+                            <p:outputLabel value="Contact E-mail" for="contactEmail" />
                             <h:outputText value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="contactEmail" value="#{DataversePage.dataverse.contactEmail}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="contactEmail" />
 
-                            <p:outputLabel value="Affiliate" />
+                            <p:outputLabel value="Affiliate" for="affiliation"/>
                             <h:outputText value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="affiliation" />
@@ -74,9 +75,11 @@
             <p:panel>
                 <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}" />
                 <p:panelGrid columns="3"  rendered="#{DataversePage.editMode}">
-                    <p:outputLabel value="Description" />
-                    <p:inputTextarea  id="description" value="#{DataversePage.dataverse.description}"/>
-                    <p:message for="description" />  
+                    <p:outputLabel value="Description" for="description"/>
+                    <p:inputTextarea  id="description" value="#{DataversePage.dataverse.description}"
+                                      rows="5" cols="30" counter="counter" maxlength="1000"       
+                                      counterTemplate="{0} characters remaining." autoResize="false"/>
+                    <h:outputText id="counter" /> 
                 </p:panelGrid>
             </p:panel>            
 
