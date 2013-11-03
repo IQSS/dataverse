@@ -7,9 +7,11 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.persistence.NoResultException;
 
 /**
  *
@@ -22,7 +24,7 @@ public class DataversePage implements java.io.Serializable{
     DataverseServiceBean dataverseService;
      
     private Dataverse dataverse = new Dataverse();
-    private boolean editMode; 
+    private boolean editMode = false; 
     private Long ownerId;
             
     public Dataverse getDataverse() {return dataverse;}
@@ -36,14 +38,24 @@ public class DataversePage implements java.io.Serializable{
     
 
     public void init() {
-        if (dataverse.getId() != null) {
-            editMode = false;            
+        if (dataverse.getId() != null) { //view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
-        } else {
+            
+        } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
-            if (ownerId != null) {
-                dataverse.setOwner( dataverseService.find( ownerId ) );
-            }
+            dataverse.setOwner( dataverseService.find( ownerId ) );
+            
+        } else { // view mode for root dataverse (or create root dataverse)
+            try {
+                dataverse = dataverseService.findRootDataverse();
+            } catch (EJBException e) {
+                if (e.getCause() instanceof NoResultException) {
+                    editMode = true;
+                } else {
+                    throw e;
+                }
+                
+            }  
         }
     }
     
@@ -52,7 +64,7 @@ public class DataversePage implements java.io.Serializable{
     }  
     
     public void save(ActionEvent e) { 
-     dataverseService.save(dataverse);
+     dataverse = dataverseService.save(dataverse);
      editMode = false;
     }  
     
