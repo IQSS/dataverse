@@ -30,8 +30,8 @@ public class DataverseServiceBean {
         
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void save(Dataverse dataverse) {
-         em.merge(dataverse);
+    public Dataverse save(Dataverse dataverse) {
+         return em.merge(dataverse);
     }
     
 
@@ -47,5 +47,9 @@ public class DataverseServiceBean {
          Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
          query.setParameter("ownerId", ownerId);
          return query.getResultList();
+    }  
+    
+    public Dataverse findRootDataverse() {
+        return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }    
 }
