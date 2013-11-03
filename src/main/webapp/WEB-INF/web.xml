@@ -11,7 +11,7 @@
 
     <!-- Welcome page -->
     <welcome-file-list>
-        <welcome-file>dataverses.xhtml</welcome-file>
+        <welcome-file>dataverse.xhtml</welcome-file>
     </welcome-file-list>
         
     <context-param>
