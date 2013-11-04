@@ -74,7 +74,6 @@
 
                         <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
                         <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null and DataversePage.ownerId != null}" />
-                        <p:button value="Cancel" outcome="/dataverses.xhtml"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null and DataversePage.ownerId == null}" />
                     </p:panel>
                 </p:panelGrid>
             </p:panel>
