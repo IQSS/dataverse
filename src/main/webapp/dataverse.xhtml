@@ -65,10 +65,11 @@
                     </p:panel>
 
                     <p:panel>
-                        <p:splitButton  value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" rendered="#{!DataversePage.editMode}">
-                            <p:menuitem value="Edit Theme"/>  
-                            <p:menuitem value="Edit Permissions"/>
-                        </p:splitButton>  
+                        <p:menuButton value="Edit Dataverse" rendered="#{!DataversePage.editMode}" iconPos="right"> 
+                            <p:menuitem value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" />
+                            <p:menuitem value="Edit Theme" disabled="true"/>  
+                            <p:menuitem value="Edit Permissions" disabled="true"/>
+                        </p:menuButton>  
                         <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all"  rendered="#{DataversePage.editMode}" />
 
                         <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
@@ -102,12 +103,13 @@
 
                 <p:panel>
                     <h:form id="shareForm">
-                        <p:splitButton  value="Upload Dataset">
-                            <p:menuitem value="Link to Existing Dataset"/>
+                        <p:menuButton value="Share Data" iconPos="right"> 
+                            <p:menuitem value="Upload Dataset" disabled="true"/>
+                            <p:menuitem value="Link to Existing Dataset" disabled="true"/>
                             <p:menuitem value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>  
-                            <p:menuitem value="Link to Existing Dataverse"/> 
-                            <p:menuitem value="Create Query"/>                             
-                        </p:splitButton>  
+                            <p:menuitem value="Link to Existing Dataverse" disabled="true"/> 
+                            <p:menuitem value="Create Query" disabled="true"/>                             
+                        </p:menuButton>  
                     </h:form>
                 </p:panel>
             </p:panelGrid>
