@@ -22,14 +22,12 @@ import javax.persistence.Query;
 
 @Stateless
 @Named
-@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class DataverseServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public Dataverse save(Dataverse dataverse) {
          return em.merge(dataverse);
     }
