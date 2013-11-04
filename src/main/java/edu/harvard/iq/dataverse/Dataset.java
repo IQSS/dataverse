@@ -13,7 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.format.annotation.DateTimeFormat;
+//import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -35,7 +35,7 @@ public class Dataset implements Serializable {
 
     @NotBlank(message = "Please enter a distribution date for your dataset!")
     @Temporal(javax.persistence.TemporalType.DATE)
-    @DateTimeFormat(pattern="YYYY/MM/DD")
+   // @DateTimeFormat(pattern="YYYY/MM/DD")
     private String citationDate;
 
     @NotBlank(message = "Please enter a distributor for your dataset!")
