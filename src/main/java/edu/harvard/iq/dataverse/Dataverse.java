@@ -28,14 +28,6 @@ public class Dataverse implements Serializable {
     //@GeneratedValue(strategy = GenerationType.AUTO)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
     
     @NotBlank (message = "The World Champion Red Sox DEMAND a name!")  
     private String name;
@@ -57,6 +49,14 @@ public class Dataverse implements Serializable {
     @ManyToOne  
     private Dataverse owner;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }    
+    
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
 
