@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
@@ -19,32 +18,47 @@ import javax.persistence.NoResultException;
  */
 @ViewScoped
 @Named("DataversePage")
-public class DataversePage implements java.io.Serializable{
-    @EJB 
+public class DataversePage implements java.io.Serializable {
+
+    @EJB
     DataverseServiceBean dataverseService;
-     
+
     private Dataverse dataverse = new Dataverse();
-    private boolean editMode = false; 
+    private boolean editMode = false;
     private Long ownerId;
-            
-    public Dataverse getDataverse() {return dataverse;}
-    public void setDataverse(Dataverse dataverse) {this.dataverse = dataverse;}
 
-    public boolean isEditMode() {return editMode;}
-    public void setEditMode(boolean editMode) {this.editMode = editMode;}
+    public Dataverse getDataverse() {
+        return dataverse;
+    }
 
-    public Long getOwnerId() {return ownerId;}
-    public void setOwnerId(Long ownerId) {this.ownerId = ownerId;}
-    
+    public void setDataverse(Dataverse dataverse) {
+        this.dataverse = dataverse;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
 
     public void init() {
-        if (dataverse.getId() != null) { //view mode for a dataverse           
+        if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
-            
+
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
-            dataverse.setOwner( dataverseService.find( ownerId ) );
-            
+            dataverse.setOwner(dataverseService.find(ownerId));
+
         } else { // view mode for root dataverse (or create root dataverse)
             try {
                 dataverse = dataverseService.findRootDataverse();
@@ -54,22 +68,22 @@ public class DataversePage implements java.io.Serializable{
                 } else {
                     throw e;
                 }
-                
-            }  
+
+            }
         }
     }
-    
-    public void edit(ActionEvent e) { 
-     editMode = true;
-    }  
-    
-    public void save(ActionEvent e) { 
-     dataverse = dataverseService.save(dataverse);
-     editMode = false;
-    }  
-    
-     public void cancel(ActionEvent e) { 
-     dataverse = dataverseService.find(dataverse.getId()); // reset dv values
-     editMode = false;
-    }    
+
+    public void edit(ActionEvent e) {
+        editMode = true;
+    }
+
+    public void save(ActionEvent e) {
+        dataverse = dataverseService.save(dataverse);
+        editMode = false;
+    }
+
+    public void cancel(ActionEvent e) {
+        dataverse = dataverseService.find(dataverse.getId()); // reset dv values
+        editMode = false;
+    }
 }
