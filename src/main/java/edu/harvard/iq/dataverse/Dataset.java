@@ -34,7 +34,6 @@ public class Dataset implements Serializable {
     private String author;
 
     @NotBlank(message = "Please enter a distribution date for your dataset!")
-    @Temporal(javax.persistence.TemporalType.DATE)
    // @DateTimeFormat(pattern="YYYY/MM/DD")
     private String citationDate;
 
