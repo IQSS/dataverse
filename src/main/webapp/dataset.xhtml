@@ -66,29 +66,18 @@
             </p:panel>
             
             <p:panel>
-                <p:panelGrid columns="4">
+                <p:panelGrid columns="2">
                     <p:panel>
                         <h:outputText value="Host Dataverse"/>
                     </p:panel>
                     <p:panel>
                         <h:outputText value="Harvard Dataverse"/>
                     </p:panel>
-                    <p:panel>
-                        <h:outputLink>
-                            <h:outputText value="Edit" style="color: green" />
-                        </h:outputLink>
-                    </p:panel>
-                    <p:panel>
-                        <h:outputLink>
-                            <h:outputText value="Create Dataverse" style="color: green" />
-                        </h:outputLink>
-                        <h:outputText value="image" style="color: red" />
-                    </p:panel>
                 </p:panelGrid>
             </p:panel>
 
             <p:panel>
-                <p:panelGrid columns="2" columnClasses="column1,column2">
+                <p:panelGrid columns="3" columnClasses="column1,column2">
                     <p:panel>
                         <h:outputText value="Data Citation"/>
                     </p:panel>
@@ -107,8 +96,23 @@
                             <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
                         </p:panelGrid> 
                     </p:panel>
+                    <p:panel>
+                        <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
+                        <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all" />
+                    </p:panel>
                 </p:panelGrid> 
             </p:panel>
+                
+            <p:panel>
+                <h:outputText value="#{DatasetPage.dataset.description}" />
+                <p:panelGrid columns="3">
+                    <p:outputLabel value="Description" for="description"/>
+                    <p:inputTextarea  id="description" value="#{DatasetPage.dataset.description}"
+                                      rows="5" cols="30" counter="counter" maxlength="1000"       
+                                      counterTemplate="{0} characters remaining." autoResize="false"/>
+                    <h:outputText id="counter" /> 
+                </p:panelGrid>
+            </p:panel>            
             </p:panel>
         </h:form>
     </h:body> 
