@@ -30,7 +30,7 @@ public class Dataverse implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "The World Champion Red Sox DEMAND a name!")
+    @NotBlank(message = "Please enter a name.")
     private String name;
 
     @NotBlank(message = "Please enter an alias.")
