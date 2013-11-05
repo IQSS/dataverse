@@ -28,17 +28,17 @@ public class Dataset implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "The World Champion Red Sox DEMAND a title for your dataset!")
+    @NotBlank(message = "Please enter a title for your dataset.")
     private String title;
 
-    @NotBlank(message = "Please enter an author for your dataset!")
+    @NotBlank(message = "Please enter an author for your dataset.")
     private String author;
 
-    @NotBlank(message = "Please enter a distribution date for your dataset!")
+    @NotBlank(message = "Please enter a distribution date for your dataset.")
    // @DateTimeFormat(pattern="YYYY/MM/DD")
     private String citationDate;
 
-    @NotBlank(message = "Please enter a distributor for your dataset!")
+    @NotBlank(message = "Please enter a distributor for your dataset.")
     private String distributor;
 
     // #VALIDATION: page defines maxlength in input:textarea component
