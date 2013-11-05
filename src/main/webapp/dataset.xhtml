@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:h="http://java.sun.com/jsf/html"  
+      xmlns:f="http://java.sun.com/jsf/core"  
+      xmlns:p="http://primefaces.org/ui">  
+
+    <h:head> 
+        
+    </h:head>  
+
+    <h:body> 
+        <h:form id="dataverseForm">
+            <p:panel  style="background-color: lightskyblue; height:80px;">                
+                <h:outputText value="Havard Dataverse" />    
+            </p:panel>
+            
+            <p:panel>
+                <p:panelGrid columns="2">
+                    <p:panel>
+                        <p:panel>
+                            <h:outputText value="Data Set Title" />
+                        </p:panel>
+                        <p:panel>
+                            <h:outputText value="Author Name, Author Name, 2013, Murray Archive, Version 1.0, Handle.10/1022 Brt10r" />
+                        </p:panel>
+                        <p:panel>
+                            <p:panelGrid columns="3">
+                                <p:panel>
+                                    <p:button value="Copy Citation"/>
+                                </p:panel>
+                                <p:panel>
+                                    <h:outputLink>
+                                        <h:outputText value="Why cite?" style="color: green" />
+                                    </h:outputLink>
+                                </p:panel>
+                                <p:panel>
+                                    <h:outputText value="image" style="color: red" />
+                                </p:panel>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panel>
+                    <p:panel>
+                        <p:menuButton value="Edit Set" iconPos="right"> 
+                            <p:menuitem value="Publish" disabled="true"/>
+                            <p:menuitem value="Sharing" disabled="true"/>  
+                            <p:menuitem value="Advance" disabled="true"/>
+                        </p:menuButton>  
+                    </p:panel>
+                </p:panelGrid>
+            </p:panel>
+            
+            <p:panel>
+                <h:outputText value="This is a data set description that is fake. This is a data set description that is fake."/>
+            </p:panel>
+        </h:form>
+    </h:body> 
+</html> 
