@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,7 +27,6 @@ public class Dataverse implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    //@GeneratedValue(strategy = GenerationType.AUTO)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -105,7 +106,16 @@ public class Dataverse implements Serializable {
     public void setOwner(Dataverse owner) {
         this.owner = owner;
     }
-
+    
+    public List<Dataverse> getOwners() {
+        List owners = new ArrayList();
+        if (owner != null) {
+            owners.addAll( owner.getOwners() );
+            owners.add(owner);
+        }
+        return owners;
+    }
+ 
     @Override
     public int hashCode() {
         int hash = 0;
