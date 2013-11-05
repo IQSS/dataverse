@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.event.ActionEvent;
@@ -22,6 +23,8 @@ public class DataversePage implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
@@ -71,6 +74,12 @@ public class DataversePage implements java.io.Serializable {
 
             }
         }
+    }
+
+    public List getContents() {
+        List contentsList = dataverseService.findByOwnerId(dataverse.getId());
+        contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
+        return contentsList;
     }
 
     public void edit(ActionEvent e) {
