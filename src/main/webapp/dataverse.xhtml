@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"  
       xmlns:h="http://java.sun.com/jsf/html"  
-      xmlns:f="http://java.sun.com/jsf/core"  
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">  
 
     <h:head>  
@@ -19,12 +20,16 @@
         </f:metadata>        
 
         <h:form id="dataverseForm">
-            <p:panel  style="background-color: lightskyblue; height:80px;">                
-                <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.owner.id}" rendered="#{!empty DataversePage.dataverse.owner}">
-                    <h:outputText value="#{DataversePage.dataverse.owner.name}" rendered="#{!empty DataversePage.dataverse.owner}" />             
-                </h:outputLink>  
-                <h:outputText value=" > " rendered="#{!empty DataversePage.dataverse.owner}" />             
-
+            <p:panel  style="background-color: lightskyblue; height:80px;">
+                <ui:fragment rendered="#{!DataversePage.editMode}">
+                    <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">                   
+                        <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                            <h:outputText value="#{owner.name}" />             
+                        </h:outputLink> 
+                        <h:outputText value=" > "/>
+                    </ui:repeat>
+                    <br/>
+                </ui:fragment>
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
                     <p:fieldset>
