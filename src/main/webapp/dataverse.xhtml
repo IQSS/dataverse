@@ -17,8 +17,8 @@
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
             <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
             <f:viewAction action="#{DataversePage.init}" />
-        </f:metadata>
-        
+        </f:metadata>        
+
         <h:form id="dataverseForm">
             <p:panel  style="background-color: lightskyblue; height:80px;">
                 <ui:fragment rendered="#{!DataversePage.editMode}">
@@ -120,15 +120,11 @@
         </p:panel>            
 
         <p:panel rendered="#{!DataversePage.editMode}">
-            <p:dataList value="#{DataversePage.contents}" var="item">
-                <h:outputLink value="/dataverse.xhtml?id=#{item.id}" rendered="#{item.class.simpleName eq 'Dataverse'}">
-                    <h:outputText value="#{item.name}"/>
-                    <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}" />
+            <p:dataList value="#{dataverseServiceBean.findByOwnerId(DataversePage.dataverse.id)}" var="dv">
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
+                    <h:outputText value="#{dv.name}"/>
+                    <h:outputText value=" (#{dv.affiliation})" rendered="#{!empty dv.affiliation}" />
                 </h:outputLink>
-                <h:outputLink value="/dataset.xhtml?id=#{item.id}" rendered="#{item.class.simpleName eq 'Dataset'}">
-                    <h:outputText value="#{item.title}"/>
-                    <h:outputText value=" (#{item.distributor})" rendered="#{!empty item.distributor}" />
-                </h:outputLink>                
             </p:dataList>
         </p:panel>
 
