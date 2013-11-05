@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 //import org.springframework.format.annotation.DateTimeFormat;
 
@@ -39,6 +40,11 @@ public class Dataset implements Serializable {
 
     @NotBlank(message = "Please enter a distributor for your dataset!")
     private String distributor;
+
+    // #VALIDATION: page defines maxlength in input:textarea component
+    @Size(max = 1000, message = "Description must be at most 1000 characters.")
+    private String description;
+    
 
     @ManyToOne
     private Dataverse owner;
@@ -73,6 +79,14 @@ public class Dataset implements Serializable {
 
     public void setDistributor(String distributor) {
         this.distributor = distributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Dataverse getOwner() {
