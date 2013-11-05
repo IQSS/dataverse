@@ -82,15 +82,18 @@
                         <h:outputText value="Data Citation"/>
                     </p:panel>
                     <p:panel>
-                        <p:panelGrid columns="2">
-                            <p:outputLabel value="Title" />
+                        <p:panelGrid columns="3">
+                            <p:outputLabel value="Title" for="title" />
                             <p:inputText id="title" value="#{DatasetPage.dataset.title}" />
+                            <p:message for="title" />
 
-                            <p:outputLabel value="Author" />
+                            <p:outputLabel value="Author" for="author" />
                             <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
+                            <p:message for="author" />
 
-                            <p:outputLabel value="Date" />
+                            <p:outputLabel value="Date" for="date" />
                             <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
+                            <p:message for="date" />
 
                             <p:outputLabel value="Distributor" />
                             <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
