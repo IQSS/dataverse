@@ -9,11 +9,18 @@
     </h:head>  
 
     <h:body> 
+        <f:metadata>
+            <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
+            <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+            <f:viewAction action="#{DatasetPage.init}" />
+        </f:metadata>        
+
         <h:form id="datasetForm">
             <p:panel  style="background-color: lightskyblue; height:80px;">                
                 <h:outputText value="Havard Dataverse" />    
             </p:panel>
             
+            <p:panel rendered="#{!DatasetPage.editMode}">
             <p:panel>
                 <p:panelGrid columns="2">
                     <p:panel>
@@ -40,10 +47,9 @@
                         </p:panel>
                     </p:panel>
                     <p:panel>
-                        <p:menuButton value="Edit Set" iconPos="right"> 
-                            <p:menuitem value="Publish" disabled="true"/>
-                            <p:menuitem value="Sharing" disabled="true"/>  
-                            <p:menuitem value="Advance" disabled="true"/>
+                        <p:menuButton value="Edit Data Set" iconPos="right"> 
+                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.edit}" update="@all"/>
+                            <p:menuitem value="Edit Permissions" disabled="true"/>  
                         </p:menuButton>  
                     </p:panel>
                 </p:panelGrid>
@@ -52,7 +58,9 @@
             <p:panel>
                 <h:outputText value="This is a data set description that is fake. This is a data set description that is fake."/>
             </p:panel>
+            </p:panel>
             
+            <p:panel rendered="#{DatasetPage.editMode}">
             <p:panel>
                 <h:outputText value="Upload Data Set" />
             </p:panel>
@@ -87,19 +95,20 @@
                     <p:panel>
                         <p:panelGrid columns="2">
                             <p:outputLabel value="Title" />
-                            <p:inputText value="" />
+                            <p:inputText id="title" value="#{DatasetPage.dataset.title}" />
 
                             <p:outputLabel value="Author" />
-                            <p:inputText value="" />
+                            <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
 
                             <p:outputLabel value="Date" />
-                            <p:inputText value="" />
+                            <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
 
                             <p:outputLabel value="Distributor" />
-                            <p:inputText value="" />
+                            <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
                         </p:panelGrid> 
                     </p:panel>
                 </p:panelGrid> 
+            </p:panel>
             </p:panel>
         </h:form>
     </h:body> 
