@@ -6,11 +6,9 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-import javax.persistence.NoResultException;
 
 /**
  *
