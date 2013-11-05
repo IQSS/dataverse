@@ -3,7 +3,8 @@
       xmlns:h="http://java.sun.com/jsf/html"  
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">  
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">  
 
     <h:head>  
         <style type="text/css">
@@ -120,11 +121,18 @@
         </p:panel>            
 
         <p:panel rendered="#{!DataversePage.editMode}">
-            <p:dataList value="#{dataverseServiceBean.findByOwnerId(DataversePage.dataverse.id)}" var="dv">
-                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}">
-                    <h:outputText value="#{dv.name}"/>
-                    <h:outputText value=" (#{dv.affiliation})" rendered="#{!empty dv.affiliation}" />
-                </h:outputLink>
+            <p:dataList value="#{DataversePage.contents}" var="item">
+                <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">                    
+                    <h:outputText value="§ "/>
+                    <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
+                        <h:outputText value="#{item.name}"/>
+                        <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}" />
+                    </h:outputLink>
+                </ui:fragment>                
+                <h:outputLink value="/dataset.xhtml?id=#{item.id}" rendered="#{item.class.simpleName eq 'Dataset'}">
+                    <h:outputText value="#{item.title}"/>
+                    <h:outputText value=" (#{item.distributor})" rendered="#{!empty item.distributor}" />
+                </h:outputLink>                
             </p:dataList>
         </p:panel>
 
