@@ -37,7 +37,7 @@ public class DatasetServiceBean {
     }    
     
     public List<Dataset> findByOwnerId(Long ownerId) {
-         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.name");
+         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.title");
          query.setParameter("ownerId", ownerId);
          return query.getResultList();
     }  
