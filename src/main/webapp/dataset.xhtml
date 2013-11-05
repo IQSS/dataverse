@@ -9,7 +9,7 @@
     </h:head>  
 
     <h:body> 
-        <h:form id="dataverseForm">
+        <h:form id="datasetForm">
             <p:panel  style="background-color: lightskyblue; height:80px;">                
                 <h:outputText value="Havard Dataverse" />    
             </p:panel>
@@ -51,6 +51,55 @@
             
             <p:panel>
                 <h:outputText value="This is a data set description that is fake. This is a data set description that is fake."/>
+            </p:panel>
+            
+            <p:panel>
+                <h:outputText value="Upload Data Set" />
+            </p:panel>
+            
+            <p:panel>
+                <p:panelGrid columns="4">
+                    <p:panel>
+                        <h:outputText value="Host Dataverse"/>
+                    </p:panel>
+                    <p:panel>
+                        <h:outputText value="Harvard Dataverse"/>
+                    </p:panel>
+                    <p:panel>
+                        <h:outputLink>
+                            <h:outputText value="Edit" style="color: green" />
+                        </h:outputLink>
+                    </p:panel>
+                    <p:panel>
+                        <h:outputLink>
+                            <h:outputText value="Create Dataverse" style="color: green" />
+                        </h:outputLink>
+                        <h:outputText value="image" style="color: red" />
+                    </p:panel>
+                </p:panelGrid>
+            </p:panel>
+
+            <p:panel>
+                <p:panelGrid columns="2" columnClasses="column1,column2">
+                    <p:panel>
+                        <h:outputText value="Data Citation"/>
+                    </p:panel>
+                    <p:panel>
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Title" />
+                            <h:outputText value="" />
+
+                            <p:outputLabel value="Author" />
+                            <h:outputText value="" />
+
+                            <p:outputLabel value="Date" />
+                            <h:outputText value="" />
+
+                            <p:outputLabel value="Distributor" />
+                            <h:outputText value="" />
+                        </p:panelGrid> 
+                    </p:panel>
+                </p:panelGrid> 
             </p:panel>
         </h:form>
     </h:body> 
