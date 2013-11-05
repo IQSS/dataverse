@@ -108,7 +108,7 @@
                 <p:panel>
                     <h:form id="shareForm">
                         <p:menuButton value="Share Data" iconPos="right"> 
-                            <p:menuitem value="Upload Dataset" disabled="true"/>
+                            <p:menuitem value="Upload Dataset"  url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
                             <p:menuitem value="Link to Existing Dataset" disabled="true"/>
                             <p:menuitem value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>  
                             <p:menuitem value="Link to Existing Dataverse" disabled="true"/> 
