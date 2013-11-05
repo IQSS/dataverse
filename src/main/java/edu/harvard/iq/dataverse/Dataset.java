@@ -45,10 +45,17 @@ public class Dataset implements Serializable {
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
     
-
     @ManyToOne
     private Dataverse owner;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
     public String getTitle() {
         return title;
     }
@@ -97,12 +104,8 @@ public class Dataset implements Serializable {
         this.owner = owner;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public String getCitation() {
+        return author + ", \"" + title + "\", " + citationDate + ", " + distributor + ", http://dx.doi.org/10.1234/dataverse/123456 V1 [Version]";
     }
 
     @Override
