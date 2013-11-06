@@ -39,7 +39,7 @@
 
             <p:panel  rendered="#{DatasetPage.editMode}">
                 <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.dataset.id != null}"/>
-                <h:outputText value="Upload your dataverse:" rendered="#{DatasetPage.dataset.id == null}"/>
+                <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.dataset.id == null}"/>
             </p:panel>              
 
             <p:panel>
@@ -69,12 +69,11 @@
                             <h:outputText style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}" />
                         </p:panel>
                         <p:panel>
-                            <p:panelGrid columns="3">
+                            <p:panelGrid columns="2">
                                 <p:commandButton value="Copy Citation" disabled="true"/>
                                 <h:outputLink  onclick="PF('whyCite').show();" value="javascript:void(0)">
                                     <h:outputText value="Why cite?" style="color: green" />
                                 </h:outputLink>
-                                <h:outputText value="image" style="color: red" />
                                 <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
                                     <h:outputText value="Info on why to use a data citation." />  
                                 </p:dialog>                                  
@@ -128,11 +127,19 @@
             </p:panel>
 
             <p:panel rendered="#{!DatasetPage.editMode}">
-                <h:outputText value="[One day files. metadata, and versions will show here.]"/>
+                <p:tabView>  
+                    <p:tab title="Data Files"/>
+                    <p:tab title="Metadata"/>
+                    <p:tab title="Versions"/>
+                </p:tabView>       
             </p:panel>  
 
-            <p:panel rendered="#{DatasetPage.editMode}">
-                <h:outputText value="[One day upload files will show here.]"/>
+            <p:panel rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
+                <p:panelGrid columns="2">
+                    <h:outputText value="Upload Files" /> 
+                    <p:fileUpload  dragDropSupport="true"  auto="true" update="messages"/>
+                       <p:growl id="messages" showDetail="true"/>  
+                </p:panelGrid>
             </p:panel>  
 
 
