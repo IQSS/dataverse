@@ -20,7 +20,7 @@
             <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
             <f:viewAction action="#{DatasetPage.init}" />
         </f:metadata>  
-        
+
         <!-- Header Panel -->
         <p:panel  style="background-color: lightskyblue; height:70px;">
             <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">                   
@@ -34,9 +34,9 @@
                 <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse" /> 
             </h:outputLink>
         </p:panel>
-        
+
         <h:form id="datasetForm"> 
-            
+
             <p:panel  rendered="#{DatasetPage.editMode}">
                 <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.dataset.id != null}"/>
                 <h:outputText value="Upload your dataverse:" rendered="#{DatasetPage.dataset.id == null}"/>
@@ -71,14 +71,14 @@
                         <p:panel>
                             <p:panelGrid columns="3">
                                 <p:commandButton value="Copy Citation" disabled="true"/>
-                                <h:outputLink  onclick="PF('whyCite').show();">
+                                <h:outputLink  onclick="PF('whyCite').show();" value="javascript:void(0)">
                                     <h:outputText value="Why cite?" style="color: green" />
                                 </h:outputLink>
-                                <h:outputText value="image" style="color: red" />                             
-                            </p:panelGrid>
-                            <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
-                                <h:outputText value="Info on why to use a data citation." />  
-                            </p:dialog>                                
+                                <h:outputText value="image" style="color: red" />
+                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
+                                    <h:outputText value="Info on why to use a data citation." />  
+                                </p:dialog>                                  
+                            </p:panelGrid>                               
                         </p:panel>
                     </p:panel>
                     <p:panel>
