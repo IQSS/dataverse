@@ -30,7 +30,7 @@
                 <h:outputText value=" > "/>
             </ui:repeat>
             <br/>
-            <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}">
+            <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" /> 
             </h:outputLink>
         </p:panel>   
