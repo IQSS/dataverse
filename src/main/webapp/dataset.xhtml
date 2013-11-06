@@ -22,7 +22,7 @@
         </f:metadata>        
 
         <h:form id="datasetForm">
-            <p:panel  style="background-color: lightskyblue; height:80px;">
+            <p:panel  style="background-color: lightskyblue; height:70px;">
                 <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">                   
                     <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
                         <h:outputText value="#{owner.name}" />             
@@ -46,13 +46,10 @@
                         </ui:fragment>
                         <p:message for="title" />
                     </p:panelGrid>
-
-                    <p:panel>
-                        <p:panelGrid columns="2">
-                            <h:outputText value="Host Dataverse"/>
-                            <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
-                        </p:panelGrid>
-                    </p:panel>                
+                    <p:panelGrid columns="2">
+                        <h:outputText value="Host Dataverse"/>
+                        <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
+                    </p:panelGrid>             
                 </p:panelGrid>
             </p:panel>
 
@@ -64,17 +61,11 @@
                         </p:panel>
                         <p:panel>
                             <p:panelGrid columns="3">
-                                <p:panel>
-                                    <p:commandButton value="Copy Citation"/>
-                                </p:panel>
-                                <p:panel>
-                                    <h:outputLink>
-                                        <h:outputText value="Why cite?" style="color: green" />
-                                    </h:outputLink>
-                                </p:panel>
-                                <p:panel>
-                                    <h:outputText value="image" style="color: red" />
-                                </p:panel>
+                                <p:commandButton value="Copy Citation"/>
+                                <h:outputLink>
+                                    <h:outputText value="Why cite?" style="color: green" />
+                                </h:outputLink>
+                                <h:outputText value="image" style="color: red" />
                             </p:panelGrid>
                         </p:panel>
                     </p:panel>
@@ -90,24 +81,20 @@
             <p:panel rendered="#{DatasetPage.editMode}">
                 <p:panelGrid columns="2"  columnClasses="column75,column25">
                     <p:panelGrid columns="2">
-                        <p:panel>
-                            <h:outputText value="Data Citation"/>
-                        </p:panel>
-                        <p:panel>
-                            <p:panelGrid columns="3">
-                                <p:outputLabel value="Author" for="author" />
-                                <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
-                                <p:message for="author" />
+                        <h:outputText value="Data Citation"/>
+                        <p:panelGrid columns="3">
+                            <p:outputLabel value="Author" for="author" />
+                            <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
+                            <p:message for="author" />
 
-                                <p:outputLabel value="Date" for="date" />
-                                <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
-                                <p:message for="date" />
+                            <p:outputLabel value="Date" for="date" />
+                            <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
+                            <p:message for="date" />
 
-                                <p:outputLabel value="Distributor" />
-                                <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
-                                <p:message for="distributor" />
-                            </p:panelGrid> 
-                        </p:panel>
+                            <p:outputLabel value="Distributor" />
+                            <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
+                            <p:message for="distributor" />
+                        </p:panelGrid> 
                     </p:panelGrid>                         
                     <p:panel>
                         <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
