@@ -19,21 +19,23 @@
             <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
             <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
             <f:viewAction action="#{DatasetPage.init}" />
-        </f:metadata>        
-
-        <h:form id="datasetForm">
-            <p:panel  style="background-color: lightskyblue; height:70px;">
-                <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">                   
-                    <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                        <h:outputText value="#{owner.name}" />             
-                    </h:outputLink> 
-                    <h:outputText value=" > "/>
-                </ui:repeat>
-                <br/>
-                <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
-                    <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse" /> 
-                </h:outputLink>
-            </p:panel>
+        </f:metadata>  
+        
+        <!-- Header Panel -->
+        <p:panel  style="background-color: lightskyblue; height:70px;">
+            <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">                   
+                <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                    <h:outputText value="#{owner.name}" />             
+                </h:outputLink> 
+                <h:outputText value=" > "/>
+            </ui:repeat>
+            <br/>
+            <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
+                <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse" /> 
+            </h:outputLink>
+        </p:panel>
+        
+        <h:form id="datasetForm"> 
             
             <p:panel  rendered="#{DatasetPage.editMode}">
                 <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.dataset.id != null}"/>
@@ -74,9 +76,9 @@
                                 </h:outputLink>
                                 <h:outputText value="image" style="color: red" />                             
                             </p:panelGrid>
-                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
-                                    <h:outputText value="Info on why to use a data citation." />  
-                                </p:dialog>                                
+                            <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
+                                <h:outputText value="Info on why to use a data citation." />  
+                            </p:dialog>                                
                         </p:panel>
                     </p:panel>
                     <p:panel>
@@ -132,7 +134,7 @@
             <p:panel rendered="#{DatasetPage.editMode}">
                 <h:outputText value="[One day upload files will show here.]"/>
             </p:panel>  
-            
+
 
         </h:form>
     </h:body> 
