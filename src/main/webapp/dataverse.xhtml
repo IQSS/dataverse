@@ -19,21 +19,33 @@
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
             <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
             <f:viewAction action="#{DataversePage.init}" />
-        </f:metadata>        
+        </f:metadata>   
 
-        <h:form id="dataverseForm">
-            <p:panel  style="background-color: lightskyblue; height:70px;">
-                <ui:fragment rendered="#{!DataversePage.editMode}">
-                    <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">                   
-                        <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                            <h:outputText value="#{owner.name}" />             
-                        </h:outputLink> 
-                        <h:outputText value=" > "/>
-                    </ui:repeat>
-                    <br/>
-                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
-                </ui:fragment>
-                <p:panelGrid columns="2"  columnClasses="column75,column25" rendered="#{DataversePage.editMode}" >
+        <!-- Header Panel -->
+        <p:panel  style="background-color: lightskyblue; height:70px;">
+            <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">                   
+                <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                    <h:outputText value="#{owner.name}" />             
+                </h:outputLink> 
+                <h:outputText value=" > "/>
+            </ui:repeat>
+            <br/>
+            <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}">
+                <h:outputText value="#{DataversePage.dataverse.name} Dataverse" /> 
+            </h:outputLink>
+        </p:panel>   
+
+        <h:form id="dataverseForm">            
+
+            <p:panel rendered="#{DataversePage.editMode}">
+                <h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>
+                <h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                <h:outputText value="Create the root dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
+            </p:panel> 
+            
+            <p:panel>
+                <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}"/>                
+                <p:panelGrid columns="2"  columnClasses="column60,column40" rendered="#{DataversePage.editMode}" >
                     <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
                         <ui:fragment>
                             <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
@@ -50,12 +62,6 @@
                         </p:selectOneMenu>  
                     </p:panelGrid>
                 </p:panelGrid> 
-            </p:panel>
-
-            <p:panel rendered="#{DataversePage.editMode}">
-                <h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>
-                <h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-                <h:outputText value="Create the root dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
             </p:panel>            
 
             <p:panel>
