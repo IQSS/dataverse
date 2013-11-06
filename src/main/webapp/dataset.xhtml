@@ -34,6 +34,11 @@
                     <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse" /> 
                 </h:outputLink>
             </p:panel>
+            
+            <p:panel  rendered="#{DatasetPage.editMode}">
+                <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.dataset.id != null}"/>
+                <h:outputText value="Upload your dataverse:" rendered="#{DatasetPage.dataset.id == null}"/>
+            </p:panel>              
 
             <p:panel>
                 <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{!DatasetPage.editMode}"/>
@@ -63,12 +68,15 @@
                         </p:panel>
                         <p:panel>
                             <p:panelGrid columns="3">
-                                <p:commandButton value="Copy Citation"/>
-                                <h:outputLink>
+                                <p:commandButton value="Copy Citation" disabled="true"/>
+                                <h:outputLink  onclick="PF('whyCite').show();">
                                     <h:outputText value="Why cite?" style="color: green" />
                                 </h:outputLink>
-                                <h:outputText value="image" style="color: red" />
+                                <h:outputText value="image" style="color: red" />                             
                             </p:panelGrid>
+                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">  
+                                    <h:outputText value="Info on why to use a data citation." />  
+                                </p:dialog>                                
                         </p:panel>
                     </p:panel>
                     <p:panel>
@@ -117,10 +125,14 @@
                 </p:panelGrid>
             </p:panel>
 
-            <p:panel>
-                <h:outputText value="[CONTENT PANEL]" rendered="#{!DatasetPage.editMode}"/>
+            <p:panel rendered="#{!DatasetPage.editMode}">
+                <h:outputText value="[One day files. metadata, and versions will show here.]"/>
             </p:panel>  
 
+            <p:panel rendered="#{DatasetPage.editMode}">
+                <h:outputText value="[One day upload files will show here.]"/>
+            </p:panel>  
+            
 
         </h:form>
     </h:body> 
