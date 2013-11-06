@@ -8,8 +8,10 @@
 
     <h:head>  
         <style type="text/css">
-            .column1{width: 75%;height:auto}
-            .column2{width: 25%;height:auto}
+            .column75{width: 75%;height:auto}
+            .column25{width: 25%;height:auto}
+            .column60{width: 60;height:auto}
+            .column40{width: 40%;height:auto}            
         </style>
     </h:head>  
 
@@ -21,7 +23,7 @@
         </f:metadata>        
 
         <h:form id="dataverseForm">
-            <p:panel  style="background-color: lightskyblue; height:80px;">
+            <p:panel  style="background-color: lightskyblue; height:70px;">
                 <ui:fragment rendered="#{!DataversePage.editMode}">
                     <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">                   
                         <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
@@ -33,11 +35,11 @@
                 </ui:fragment>
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
-                    <p:fieldset>
+                    <ui:fragment>
                         <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
                         <p:outputLabel value=" Dataverse" for="name"/>
                         <p:watermark for="name" value="Enter name..." /> 
-                    </p:fieldset>
+                    </ui:fragment>
                     <p:message for="name" /> 
                 </p:panelGrid>
             </p:panel>
@@ -49,7 +51,7 @@
             </p:panel>            
 
             <p:panel>
-                <p:panelGrid columns="2" columnClasses="column1,column2">
+                <p:panelGrid columns="2" columnClasses="column75,column25">
                     <p:panel>
                         <p:panelGrid columns="3">
                             <p:outputLabel value="Alias" for="alias" />
@@ -97,7 +99,7 @@
         </h:form>
 
         <p:panel rendered="#{!DataversePage.editMode}">
-            <p:panelGrid columns="2" columnClasses="column1,column2" >
+            <p:panelGrid columns="2" columnClasses="column75,column25" >
                 <p:panel>
                     <h:form id="searchForm">
                         <p:inputText id="search" />
