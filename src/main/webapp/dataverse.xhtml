@@ -10,7 +10,7 @@
         <style type="text/css">
             .column75{width: 75%;height:auto}
             .column25{width: 25%;height:auto}
-            .column60{width: 60;height:auto}
+            .column60{width: 60%;height:auto}
             .column40{width: 40%;height:auto}            
         </style>
     </h:head>  
@@ -32,16 +32,25 @@
                         <h:outputText value=" > "/>
                     </ui:repeat>
                     <br/>
+                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
                 </ui:fragment>
-                <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}" />    
-                <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
-                    <ui:fragment>
-                        <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
-                        <p:outputLabel value=" Dataverse" for="name"/>
-                        <p:watermark for="name" value="Enter name..." /> 
-                    </ui:fragment>
-                    <p:message for="name" /> 
-                </p:panelGrid>
+                <p:panelGrid columns="2"  columnClasses="column75,column25" rendered="#{DataversePage.editMode}" >
+                    <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
+                        <ui:fragment>
+                            <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
+                            <p:outputLabel value=" Dataverse" for="name"/>
+                            <p:watermark for="name" value="Enter name..." /> 
+                        </ui:fragment>
+                        <p:message for="name" /> 
+                    </p:panelGrid>
+                    <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
+                        <h:outputText value="Host Dataverse"/>
+                        <p:selectOneMenu value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">    
+                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}" 
+                                           itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>   
+                        </p:selectOneMenu>  
+                    </p:panelGrid>
+                </p:panelGrid> 
             </p:panel>
 
             <p:panel>
