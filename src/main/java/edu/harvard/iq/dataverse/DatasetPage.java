@@ -54,6 +54,7 @@ public class DatasetPage implements java.io.Serializable {
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
+            ownerId = dataset.getOwner().getId();
 
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = true;
@@ -69,12 +70,15 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void save(ActionEvent e) {
+        dataset.setOwner(dataverseService.find(ownerId));
         dataset = datasetService.save(dataset);
         editMode = false;
     }
 
     public void cancel(ActionEvent e) {
-        dataset = datasetService.find(dataset.getId()); // reset dv values
+         // reset values
+        dataset = datasetService.find(dataset.getId());
+        ownerId = dataset.getOwner().getId();
         editMode = false;
     }
 }
