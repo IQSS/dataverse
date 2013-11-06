@@ -3,8 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"  
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">  
+      xmlns:p="http://primefaces.org/ui">  
 
     <h:head>  
         <style type="text/css">
@@ -53,10 +52,10 @@
                 </p:panelGrid> 
             </p:panel>
 
-            <p:panel>
-                <h:outputText value="[MESSAGE PANEL - VIEW]" rendered="#{!DataversePage.editMode}"/>
-                <h:outputText value="[MESSAGE PANEL - EDIT]" rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}"/>
-                <h:outputText value="[MESSAGE PANEL - CREATE]" rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null}"/>
+            <p:panel rendered="#{DataversePage.editMode}">
+                <h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>
+                <h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                <h:outputText value="Create the root dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
             </p:panel>            
 
             <p:panel>
