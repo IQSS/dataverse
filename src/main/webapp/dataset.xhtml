@@ -48,7 +48,7 @@
                     </p:panelGrid>
                     <p:panelGrid columns="2">
                         <h:outputText value="Host Dataverse"/>
-                        <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith">    
+                        <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">    
                             <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>   
                         </p:selectOneMenu>  
                     </p:panelGrid>             
