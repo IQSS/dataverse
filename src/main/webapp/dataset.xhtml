@@ -5,9 +5,14 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"      
       xmlns:p="http://primefaces.org/ui">  
 
-    <h:head> 
-
-    </h:head>  
+    <h:head>  
+        <style type="text/css">
+            .column75{width: 75%;height:auto}
+            .column25{width: 25%;height:auto}
+            .column60{width: 60;height:auto}
+            .column40{width: 40%;height:auto}            
+        </style>
+    </h:head>
 
     <h:body> 
         <f:metadata>
@@ -30,12 +35,30 @@
                 </h:outputLink>
             </p:panel>
 
-            <p:panel rendered="#{!DatasetPage.editMode}">
-                <p:panelGrid columns="2">
+            <p:panel>
+                <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{!DatasetPage.editMode}"/>
+                <p:panelGrid columns="2"  columnClasses="column60,column40"  rendered="#{DatasetPage.editMode}">
+                    <p:panelGrid columns="3" rendered="#{DatasetPage.editMode}">
+                        <p:outputLabel value="Title" for="title" />
+                        <ui:fragment>
+                            <p:inputText id="title" value="#{DatasetPage.dataset.title}" />
+                            <p:watermark for="title" value="Enter title..."/>
+                        </ui:fragment>
+                        <p:message for="title" />
+                    </p:panelGrid>
+
                     <p:panel>
-                        <p:panel>
-                            <h:outputText value="#{DatasetPage.dataset.title}" />
-                        </p:panel>
+                        <p:panelGrid columns="2">
+                            <h:outputText value="Host Dataverse"/>
+                            <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
+                        </p:panelGrid>
+                    </p:panel>                
+                </p:panelGrid>
+            </p:panel>
+
+            <p:panel rendered="#{!DatasetPage.editMode}">
+                <p:panelGrid columns="2"  columnClasses="column75,column25">
+                    <p:panel>
                         <p:panel style="background-color: lightgrey;">
                             <h:outputText style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}" />
                         </p:panel>
@@ -65,32 +88,13 @@
             </p:panel>
 
             <p:panel rendered="#{DatasetPage.editMode}">
-                <p:panel>
-                    <h:outputText value="Upload Data Set" />
-                </p:panel>
-
-                <p:panel>
+                <p:panelGrid columns="2"  columnClasses="column75,column25">
                     <p:panelGrid columns="2">
-                        <p:panel>
-                            <h:outputText value="Host Dataverse"/>
-                        </p:panel>
-                        <p:panel>
-                            <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
-                        </p:panel>
-                    </p:panelGrid>
-                </p:panel>
-
-                <p:panel>
-                    <p:panelGrid columns="3" columnClasses="column1,column2">
                         <p:panel>
                             <h:outputText value="Data Citation"/>
                         </p:panel>
                         <p:panel>
                             <p:panelGrid columns="3">
-                                <p:outputLabel value="Title" for="title" />
-                                <p:inputText id="title" value="#{DatasetPage.dataset.title}" />
-                                <p:message for="title" />
-
                                 <p:outputLabel value="Author" for="author" />
                                 <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
                                 <p:message for="author" />
@@ -104,14 +108,13 @@
                                 <p:message for="distributor" />
                             </p:panelGrid> 
                         </p:panel>
-                        <p:panel>
-                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
-                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.dataset.id != null}" />
-                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.dataset.id == null}" />
-
-                        </p:panel>
-                    </p:panelGrid> 
-                </p:panel>
+                    </p:panelGrid>                         
+                    <p:panel>
+                        <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
+                        <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.dataset.id != null}" />
+                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.dataset.id == null}" />
+                    </p:panel>
+                </p:panelGrid>
             </p:panel>                
 
             <p:panel>
