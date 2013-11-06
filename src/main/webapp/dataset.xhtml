@@ -135,7 +135,7 @@
             </p:panel>  
 
             <p:panel rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
-                <p:panelGrid columns="2">
+                <p:panelGrid columns="2" columnClasses="column60,column40">
                     <h:outputText value="Upload Files" /> 
                     <p:fileUpload  dragDropSupport="true"  auto="true" update="messages"/>
                        <p:growl id="messages" showDetail="true"/>  
