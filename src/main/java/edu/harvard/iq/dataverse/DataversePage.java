@@ -57,6 +57,7 @@ public class DataversePage implements java.io.Serializable {
     public void init() {
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
+            ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
 
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
@@ -87,12 +88,15 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void save(ActionEvent e) {
+        dataverse.setOwner( ownerId != null ? dataverseService.find(ownerId) : null );
         dataverse = dataverseService.save(dataverse);
         editMode = false;
     }
 
     public void cancel(ActionEvent e) {
-        dataverse = dataverseService.find(dataverse.getId()); // reset dv values
+        // reset values
+        dataverse = dataverseService.find(dataverse.getId());
+        ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         editMode = false;
     }
 }
