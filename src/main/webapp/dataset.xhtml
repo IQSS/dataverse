@@ -36,16 +36,17 @@
         </p:panel>
 
         <h:form id="datasetForm"> 
-
+            <!-- Message Panel -->
             <p:panel  rendered="#{DatasetPage.editMode}">
                 <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.dataset.id != null}"/>
                 <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.dataset.id == null}"/>
             </p:panel>              
 
+            <!-- Title Panel -->
             <p:panel>
                 <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{!DatasetPage.editMode}"/>
                 <p:panelGrid columns="2"  columnClasses="column60,column40"  rendered="#{DatasetPage.editMode}">
-                    <p:panelGrid columns="3" rendered="#{DatasetPage.editMode}">
+                    <p:panelGrid columns="3">
                         <p:outputLabel value="Title" for="title" />
                         <ui:fragment>
                             <p:inputText id="title" value="#{DatasetPage.dataset.title}" />
@@ -62,9 +63,10 @@
                 </p:panelGrid>
             </p:panel>
 
-            <p:panel rendered="#{!DatasetPage.editMode}">
+            <!-- Citation / Buttons Panel -->
+            <p:panel>
                 <p:panelGrid columns="2"  columnClasses="column75,column25">
-                    <p:panel>
+                    <p:panel rendered="#{!DatasetPage.editMode}">
                         <p:panel style="background-color: lightgrey;">
                             <h:outputText style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}" />
                         </p:panel>
@@ -80,18 +82,7 @@
                             </p:panelGrid>                               
                         </p:panel>
                     </p:panel>
-                    <p:panel>
-                        <p:menuButton value="Edit Data Set" iconPos="right"> 
-                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.edit}" update="@all"/>
-                            <p:menuitem value="Edit Permissions" disabled="true"/>  
-                        </p:menuButton>  
-                    </p:panel>
-                </p:panelGrid>
-            </p:panel>
-
-            <p:panel rendered="#{DatasetPage.editMode}">
-                <p:panelGrid columns="2"  columnClasses="column75,column25">
-                    <p:panelGrid columns="2">
+                    <p:panelGrid columns="2" rendered="#{DatasetPage.editMode}">
                         <h:outputText value="Data Citation"/>
                         <p:panelGrid columns="3">
                             <p:outputLabel value="Author" for="author" />
@@ -106,15 +97,22 @@
                             <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
                             <p:message for="distributor" />
                         </p:panelGrid> 
-                    </p:panelGrid>                         
+                    </p:panelGrid>                            
                     <p:panel>
-                        <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
-                        <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.dataset.id != null}" />
-                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.dataset.id == null}" />
+                        <p:menuButton value="Edit Data Set" iconPos="right" rendered="#{!DatasetPage.editMode}"> 
+                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.edit}" update="@all"/>
+                            <p:menuitem value="Edit Permissions" disabled="true"/>  
+                        </p:menuButton>
+                        <ui:fragment rendered="#{DatasetPage.editMode}">
+                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
+                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.dataset.id != null}" />
+                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.dataset.id == null}" />
+                        </ui:fragment>
                     </p:panel>
                 </p:panelGrid>
-            </p:panel>                
+            </p:panel>
 
+            <!-- Description Panel -->            
             <p:panel>
                 <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{!DatasetPage.editMode}" />
                 <p:panelGrid columns="3" rendered="#{DatasetPage.editMode}">
@@ -126,6 +124,7 @@
                 </p:panelGrid>
             </p:panel>
 
+            <!-- Content Panel -->
             <p:panel rendered="#{!DatasetPage.editMode}">
                 <p:tabView>  
                     <p:tab title="Data Files"/>
@@ -134,13 +133,25 @@
                 </p:tabView>       
             </p:panel>  
 
-            <p:panel rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
+            <!-- File Upload Panel -->
+            <p:panel id ="filesPanel" rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
                 <p:panelGrid columns="2" columnClasses="column60,column40">
                     <h:outputText value="Upload Files" /> 
-                    <p:fileUpload  dragDropSupport="true"  auto="true" update="messages"/>
-                       <p:growl id="messages" showDetail="true"/>  
+                    <p:fileUpload  dragDropSupport="true"  auto="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesPanel"/>
+                    <p:growl id="messages" showDetail="true"/>  
                 </p:panelGrid>
-            </p:panel>  
+                <p:dataTable value="#{DatasetPage.files}" var="file">
+                    <p:column>
+                        <h:outputText value="#{file.fileName}" />     
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="#{file.size}" />    
+                    </p:column>
+                    <p:column>
+                        <h:outputText value="#{file.contentType}" />    
+                    </p:column>                     
+                </p:dataTable>
+            </p:panel>
 
 
         </h:form>
