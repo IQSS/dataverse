@@ -134,13 +134,9 @@
             </p:panel>  
 
             <!-- File Upload Panel -->
-            <p:panel id ="filesPanel" rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
-                <p:panelGrid columns="2" columnClasses="column60,column40">
-                    <h:outputText value="Upload Files" /> 
-                    <p:fileUpload  dragDropSupport="true"  auto="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesPanel"/>
-                    <p:growl id="messages" showDetail="true"/>  
-                </p:panelGrid>
-                <p:dataTable value="#{DatasetPage.files}" var="file">
+            <p:panel id ="filesPanel" header="Upload Files" rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
+                <p:fileUpload  dragDropSupport="true"  auto="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
+                <p:dataTable id="filesTable" value="#{DatasetPage.files}" var="file">
                     <p:column>
                         <h:outputText value="#{file.fileName}" />     
                     </p:column>
