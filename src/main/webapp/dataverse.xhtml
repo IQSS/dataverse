@@ -36,17 +36,18 @@
         </p:panel>   
 
         <h:form id="dataverseForm">            
-
+            <!-- Message Panel -->
             <p:panel rendered="#{DataversePage.editMode}">
                 <h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>
                 <h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                 <h:outputText value="Create the root dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
-            </p:panel> 
-            
+            </p:panel>
+
+            <!-- Name Panel -->
             <p:panel>
                 <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}"/>                
                 <p:panelGrid columns="2"  columnClasses="column60,column40" rendered="#{DataversePage.editMode}" >
-                    <p:panelGrid columns="2"  rendered="#{DataversePage.editMode}" >
+                    <p:panelGrid columns="2">
                         <ui:fragment>
                             <p:inputText  id="name" value="#{DataversePage.dataverse.name}"/>
                             <p:outputLabel value=" Dataverse" for="name"/>
@@ -62,8 +63,9 @@
                         </p:selectOneMenu>  
                     </p:panelGrid>
                 </p:panelGrid> 
-            </p:panel>            
+            </p:panel>
 
+            <!-- Info / Buttons Panel -->
             <p:panel>
                 <p:panelGrid columns="2" columnClasses="column75,column25">
                     <p:panel>
@@ -78,7 +80,7 @@
                             <p:inputText  id="contactEmail" value="#{DataversePage.dataverse.contactEmail}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="contactEmail" />
 
-                            <p:outputLabel value="Affiliate" for="affiliation"/>
+                            <p:outputLabel value="Affiliation" for="affiliation"/>
                             <h:outputText value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="affiliation" />
@@ -91,15 +93,17 @@
                             <p:menuitem value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" />
                             <p:menuitem value="Edit Theme" disabled="true"/>  
                             <p:menuitem value="Edit Permissions" disabled="true"/>
-                        </p:menuButton>  
-                        <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all"  rendered="#{DataversePage.editMode}" />
-
-                        <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id != null}" />
-                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}"  rendered="#{DataversePage.editMode and DataversePage.dataverse.id == null and DataversePage.ownerId != null}" />
+                        </p:menuButton>
+                        <ui:fragment rendered="#{DataversePage.editMode}">
+                            <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all" />
+                            <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.dataverse.id != null}" />
+                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}"  rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}" />
+                        </ui:fragment>
                     </p:panel>
                 </p:panelGrid>
             </p:panel>
 
+            <!-- Description Panel -->
             <p:panel>
                 <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}" />
                 <p:panelGrid columns="3"  rendered="#{DataversePage.editMode}">
@@ -112,13 +116,14 @@
             </p:panel>            
         </h:form>
 
+        <!-- Search / Share Panel -->
         <p:panel rendered="#{!DataversePage.editMode}">
             <p:panelGrid columns="2" columnClasses="column75,column25" >
                 <p:panel>
                     <h:form id="searchForm">
                         <p:inputText id="search" />
                         <p:watermark for="search" value="Search this dataverse"/>
-                        <p:commandButton value="Go" />
+                        <p:commandButton value="Go" disabled="true" />
                     </h:form>
                 </p:panel>
 
@@ -134,8 +139,9 @@
                     </h:form>
                 </p:panel>
             </p:panelGrid>
-        </p:panel>            
+        </p:panel>
 
+        <!-- Content Panel -->
         <p:panel rendered="#{!DataversePage.editMode}">
             <p:dataList value="#{DataversePage.contents}" var="item">
                 <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">                    
@@ -144,11 +150,13 @@
                         <h:outputText value="#{item.name}"/>
                         <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}" />
                     </h:outputLink>
-                </ui:fragment>                
-                <h:outputLink value="/dataset.xhtml?id=#{item.id}" rendered="#{item.class.simpleName eq 'Dataset'}">
-                    <h:outputText value="#{item.title}"/>
-                    <h:outputText value=" (#{item.distributor})" rendered="#{!empty item.distributor}" />
-                </h:outputLink>                
+                </ui:fragment>
+                <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">                
+                    <h:outputLink value="/dataset.xhtml?id=#{item.id}">
+                        <h:outputText value="#{item.title}"/>
+                    </h:outputLink>
+                    <h:outputText value=" by #{item.author}" rendered="#{!empty item.author}" />
+                </ui:fragment>
             </p:dataList>
         </p:panel>
 
