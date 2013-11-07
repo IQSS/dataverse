@@ -5,10 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.primefaces.event.FileUploadEvent;
 
 /**
  *
@@ -81,4 +84,21 @@ public class DatasetPage implements java.io.Serializable {
         ownerId = dataset.getOwner().getId();
         editMode = false;
     }
+    
+    // temporary container for files
+    private List files = new ArrayList();
+
+    public List getFiles() {
+        return files;
+    }
+
+    public void setFiles(List files) {
+        this.files = files;
+    }
+    
+    public void handleFileUpload(FileUploadEvent event) {  
+        files.add(event.getFile());  
+ 
+    }      
+
 }
