@@ -27,15 +27,17 @@ import org.primefaces.model.UploadedFile;
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
 
+    public enum EditMode {INFO, FILE};
+    
     @EJB
     DatasetServiceBean datasetService;
     @EJB
     DataverseServiceBean dataverseService;
 
     private Dataset dataset = new Dataset();
-    private boolean editMode = false;
+    private EditMode editMode;
     private Long ownerId;
-    private Map<DataFile,UploadedFile> newFiles = new HashMap();
+    private Map<UploadedFile,DataFile> newFiles = new HashMap();
 
     public Dataset getDataset() {
         return dataset;
@@ -45,11 +47,11 @@ public class DatasetPage implements java.io.Serializable {
         this.dataset = dataset;
     }
 
-    public boolean isEditMode() {
+    public EditMode getEditMode() {
         return editMode;
     }
 
-    public void setEditMode(boolean editMode) {
+    public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
     }
 
@@ -67,7 +69,7 @@ public class DatasetPage implements java.io.Serializable {
             ownerId = dataset.getOwner().getId();
 
         } else if (ownerId != null) { // create mode for a new child dataset
-            editMode = true;
+            editMode = EditMode.INFO;
             dataset.setOwner(dataverseService.find(ownerId));
 
         } else {
@@ -76,38 +78,48 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void edit(ActionEvent e) {
-        editMode = true;
+        editMode = EditMode.INFO;
     }
 
+    public void editFiles(ActionEvent e) {
+        editMode = EditMode.FILE;
+    }  
+    
     public void save(ActionEvent e) {
-        // first save any new files
-        for (DataFile file : newFiles.keySet()) {
+        dataset.setOwner(dataverseService.find(ownerId));
+        dataset = datasetService.save(dataset);
+
+        // save any new files
+        for (UploadedFile uFile : newFiles.keySet()) {
+            DataFile dFile = newFiles.get(uFile);
+            System.out.println("FILE SAVE: " + dFile.getName());
             try {
-                Files.createDirectory(Paths.get("files",dataset.getTitle()));
-                Files.copy(newFiles.get(file).getInputstream(), Paths.get("files",dataset.getTitle(), file.getName()));
-                newFiles.remove(file);
+                if (!Files.exists(Paths.get("files",dataset.getTitle()))) {
+                    Files.createDirectory(Paths.get("files",dataset.getTitle()));
+                }
+                Files.copy(uFile.getInputstream(), Paths.get("files",dataset.getTitle(), dFile.getName()));
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-
-        dataset.setOwner(dataverseService.find(ownerId));
-        dataset = datasetService.save(dataset);
-        editMode = false;
+        }        
+        newFiles.clear();
+        editMode = null;
     }
 
     public void cancel(ActionEvent e) {
         // reset values
         dataset = datasetService.find(dataset.getId());
         ownerId = dataset.getOwner().getId();
-        editMode = false;
+        newFiles.clear();
+        editMode = null;
     }
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile( uFile.getFileName(), uFile.getContentType()); 
+        dFile.setDataset(dataset);
         dataset.getFiles().add( dFile );
-        newFiles.put(dFile, uFile);
+        newFiles.put(uFile, dFile);
     }
 
 }
