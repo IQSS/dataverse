@@ -37,6 +37,7 @@ public class DatasetPage implements java.io.Serializable {
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
+    private int selectedTabIndex;
     private Map<UploadedFile,DataFile> newFiles = new HashMap();
 
     public Dataset getDataset() {
@@ -61,6 +62,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public int getSelectedTabIndex() {
+        return selectedTabIndex;
+    }
+
+    public void setSelectedTabIndex(int selectedTabIndex) {
+        this.selectedTabIndex = selectedTabIndex;
     }
     
     public void init() {
