@@ -92,7 +92,6 @@ public class DatasetPage implements java.io.Serializable {
         // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
-            System.out.println("FILE SAVE: " + dFile.getName());
             try {
                 if (!Files.exists(Paths.get("files",dataset.getTitle()))) {
                     Files.createDirectory(Paths.get("files",dataset.getTitle()));
