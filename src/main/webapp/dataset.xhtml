@@ -38,15 +38,15 @@
         <h:form id="datasetForm"> 
             <!-- Message Panel -->
             <p:panel  rendered="#{!empty DatasetPage.editMode}">
-                <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO' and DatasetPage.dataset.id != null}"/>
-                <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE' and DatasetPage.dataset.id != null}"/>
-                <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.dataset.id == null}"/>
+                <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
+                <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
+                <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
             </p:panel>              
 
             <!-- Title Panel -->
-            <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO'}">
+            <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                 <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode}"/>
-                <p:panelGrid columns="2"  columnClasses="column60,column40"  rendered="#{DatasetPage.editMode == 'INFO'}">
+                <p:panelGrid columns="2"  columnClasses="column60,column40"  rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                     <p:panelGrid columns="3">
                         <p:outputLabel value="Title" for="title" />
                         <ui:fragment>
@@ -83,7 +83,7 @@
                             </p:panelGrid>                               
                         </p:panel>
                     </p:panel>
-                    <p:panelGrid columns="2" rendered="#{DatasetPage.editMode == 'INFO'}">
+                    <p:panelGrid columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                         <h:outputText value="Data Citation"/>
                         <p:panelGrid columns="3">
                             <p:outputLabel value="Author" for="author" />
@@ -101,23 +101,23 @@
                     </p:panelGrid>                            
                     <p:panel>
                         <p:menuButton value="Edit Data Set" iconPos="right" rendered="#{empty DatasetPage.editMode}"> 
-                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.edit}" update="@all"/>
-                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.editFiles}" update="@all"/>
+                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.editInfo}" update="@all"/>
+                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.editFile}" update="@all"/>
                             <p:menuitem value="Edit Permissions" disabled="true"/>  
                         </p:menuButton>
                         <ui:fragment rendered="#{!empty DatasetPage.editMode}">
                             <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
-                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.dataset.id != null}" />
-                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.dataset.id == null}" />
+                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}" />
+                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                         </ui:fragment>
                     </p:panel>
                 </p:panelGrid>
             </p:panel>
 
             <!-- Description Panel -->            
-            <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO'}">
+            <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                 <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}" />
-                <p:panelGrid columns="3" rendered="#{DatasetPage.editMode == 'INFO'}">
+                <p:panelGrid columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                     <p:outputLabel value="Description" for="description"/>
                     <p:inputTextarea  id="description" value="#{DatasetPage.dataset.description}"
                                       rows="5" cols="30" counter="counter" maxlength="1000"       
@@ -145,7 +145,7 @@
             </p:panel>  
 
             <!-- File Upload Panel -->
-            <p:panel id ="filesPanel" header="Upload Files" rendered="#{DatasetPage.editMode == 'FILE' or (DatasetPage.editMode == 'INFO' and DatasetPage.dataset.id == null)}">
+            <p:panel id ="filesPanel" header="Upload Files" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                 <p:fileUpload  dragDropSupport="true"  auto="true" multiple="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                     <p:column>
