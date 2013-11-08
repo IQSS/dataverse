@@ -27,7 +27,7 @@ import org.primefaces.model.UploadedFile;
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
 
-    public enum EditMode {INFO, FILE};
+    public enum EditMode {CREATE, INFO, FILE};
     
     @EJB
     DatasetServiceBean datasetService;
@@ -69,7 +69,7 @@ public class DatasetPage implements java.io.Serializable {
             ownerId = dataset.getOwner().getId();
 
         } else if (ownerId != null) { // create mode for a new child dataset
-            editMode = EditMode.INFO;
+            editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
 
         } else {
@@ -77,11 +77,11 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public void edit(ActionEvent e) {
+    public void editInfo(ActionEvent e) {
         editMode = EditMode.INFO;
     }
 
-    public void editFiles(ActionEvent e) {
+    public void editFile(ActionEvent e) {
         editMode = EditMode.FILE;
     }  
     
