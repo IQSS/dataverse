@@ -48,6 +48,11 @@ public class Dataset implements Serializable {
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
     
+    // sample metadata fields
+    private String keyword;
+    private String topicClassification;
+    private String geographicCoverage;
+    
     @ManyToOne
     @JoinColumn(nullable=false)     
     private Dataverse owner;
@@ -101,6 +106,30 @@ public class Dataset implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public String getTopicClassification() {
+        return topicClassification;
+    }
+
+    public void setTopicClassification(String topicClassification) {
+        this.topicClassification = topicClassification;
+    }
+
+    public String getGeographicCoverage() {
+        return geographicCoverage;
+    }
+
+    public void setGeographicCoverage(String geographicCoverage) {
+        this.geographicCoverage = geographicCoverage;
     }
 
     public Dataverse getOwner() {
