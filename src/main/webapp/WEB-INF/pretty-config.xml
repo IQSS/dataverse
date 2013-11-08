@@ -1,0 +1,16 @@
+<pretty-config xmlns="http://ocpsoft.org/schema/rewrite-config-prettyfaces" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://ocpsoft.org/schema/rewrite-config-prettyfaces
+                      http://ocpsoft.org/xml/ns/prettyfaces/rewrite-config-prettyfaces.xsd">
+
+<!--	<url-mapping id="viewDataverse">
+		<pattern value="/view-datataverse/#{id}" />
+		<view-id value="/dataverse.xhtml" />
+	</url-mapping>
+        
+	<url-mapping id="createDataverse">
+		<pattern value="/create-dataverse/#{ownerId}" />
+		<view-id value="/dataverse.xhtml" />
+	</url-mapping>  -->      
+
+</pretty-config>
