@@ -38,9 +38,10 @@
         <h:form id="datasetForm"> 
             <!-- Message Panel -->
             <p:panel  rendered="#{!empty DatasetPage.editMode}">
+                <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
                 <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
                 <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
-                <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
+                <h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
             </p:panel>              
 
             <!-- Title Panel -->
@@ -102,19 +103,28 @@
                     <p:panel>
                         <p:menuButton value="Edit Data Set" iconPos="right" rendered="#{empty DatasetPage.editMode}"> 
                             <p:menuitem value="Edit Info" actionListener="#{DatasetPage.editInfo}" update="@all"/>
-                            <p:menuitem value="Edit Files" onclick="content.select(0)" actionListener="#{DatasetPage.editFile}" update="@all"/>
-                            <p:menuitem value="Edit Metadata" onclick="content. select(0)" actionListener="#{DatasetPage.editMetadata}" update="@all"/>
+                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.editFile}" update="@all">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                            </p:menuitem>
+                            <p:menuitem value="Edit Metadata" actionListener="#{DatasetPage.editMetadata}" update="@all">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                            </p:menuitem>
                             <p:menuitem value="Edit Permissions" disabled="true"/>  
                         </p:menuButton>
                         <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" />
-                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}" />
+                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
+                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" rendered="#{DatasetPage.editMode == 'METADATA'}">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="1"/>
+                            </p:commandButton>
+                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE' and DatasetPage.editMode != 'METADATA'}"/>
+                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE' and DatasetPage.editMode == 'METADATA'}">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}"  value="1"/>
+                            </p:commandButton>                            
                             <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                         </ui:fragment>
                     </p:panel>
                 </p:panelGrid>
             </p:panel>
-
             <!-- Description Panel -->            
             <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                 <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}" />
@@ -129,7 +139,7 @@
 
             <!-- Content Panel -->
             <p:panel id="content" rendered="#{DatasetPage.editMode != 'INFO'}">
-                <p:tabView widgetVar="content">  
+                <p:tabView widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">  
                     <p:tab title="Data Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                         <p:fileUpload  dragDropSupport="true"  auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                        fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
