@@ -11,6 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -22,6 +24,13 @@ public class DataFile implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String name;
+    private String contentType;
+    
+    @ManyToOne     
+    private Dataset dataset;
+    
 
     public Long getId() {
         return id;
@@ -46,10 +55,16 @@ public class DataFile implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
+
+    public Dataset getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
+    }
     
     
-    private String name;
-    private String contentType;
     
     public DataFile() {
     }    
