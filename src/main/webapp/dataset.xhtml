@@ -127,21 +127,27 @@
             <!-- Content Panel -->
             <p:panel rendered="#{!DatasetPage.editMode}">
                 <p:tabView>  
-                    <p:tab title="Data Files"/>
+                    <p:tab title="Data Files">
+                        <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
+                            <p:column>
+                                <h:outputText value="#{file.name}" />     
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{file.contentType}" />    
+                            </p:column>                     
+                        </p:dataTable>                      
+                    </p:tab>                       
                     <p:tab title="Metadata"/>
                     <p:tab title="Versions"/>
                 </p:tabView>       
             </p:panel>  
 
             <!-- File Upload Panel -->
-            <p:panel id ="filesPanel" header="Upload Files" rendered="#{DatasetPage.editMode and DatasetPage.dataset.id == null}">
-                <p:fileUpload  dragDropSupport="true"  auto="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
-                <p:dataTable id="filesTable" value="#{DatasetPage.files}" var="file">
+            <p:panel id ="filesPanel" header="Upload Files" rendered="#{DatasetPage.editMode}">
+                <p:fileUpload  dragDropSupport="true"  auto="true" multiple="true" fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
+                <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                     <p:column>
-                        <h:outputText value="#{file.fileName}" />     
-                    </p:column>
-                    <p:column>
-                        <h:outputText value="#{file.size}" />    
+                        <h:outputText value="#{file.name}" />     
                     </p:column>
                     <p:column>
                         <h:outputText value="#{file.contentType}" />    
