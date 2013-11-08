@@ -5,13 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -29,6 +35,7 @@ public class DatasetPage implements java.io.Serializable {
     private Dataset dataset = new Dataset();
     private boolean editMode = false;
     private Long ownerId;
+    private Map<DataFile,UploadedFile> newFiles = new HashMap();
 
     public Dataset getDataset() {
         return dataset;
@@ -53,7 +60,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
-
+    
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
@@ -73,32 +80,34 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void save(ActionEvent e) {
+        // first save any new files
+        for (DataFile file : newFiles.keySet()) {
+            try {
+                Files.createDirectory(Paths.get("files",dataset.getTitle()));
+                Files.copy(newFiles.get(file).getInputstream(), Paths.get("files",dataset.getTitle(), file.getName()));
+                newFiles.remove(file);
+            } catch (IOException ex) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         dataset.setOwner(dataverseService.find(ownerId));
         dataset = datasetService.save(dataset);
         editMode = false;
     }
 
     public void cancel(ActionEvent e) {
-         // reset values
+        // reset values
         dataset = datasetService.find(dataset.getId());
         ownerId = dataset.getOwner().getId();
         editMode = false;
     }
-    
-    // temporary container for files
-    private List files = new ArrayList();
 
-    public List getFiles() {
-        return files;
+    public void handleFileUpload(FileUploadEvent event) {
+        UploadedFile uFile = event.getFile();
+        DataFile dFile = new DataFile( uFile.getFileName(), uFile.getContentType()); 
+        dataset.getFiles().add( dFile );
+        newFiles.put(dFile, uFile);
     }
-
-    public void setFiles(List files) {
-        this.files = files;
-    }
-    
-    public void handleFileUpload(FileUploadEvent event) {  
-        files.add(event.getFile());  
- 
-    }      
 
 }
