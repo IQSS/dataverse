@@ -27,7 +27,7 @@ import org.primefaces.model.UploadedFile;
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
 
-    public enum EditMode {CREATE, INFO, FILE};
+    public enum EditMode {CREATE, INFO, FILE, METADATA};
     
     @EJB
     DatasetServiceBean datasetService;
@@ -83,7 +83,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public void editFile(ActionEvent e) {
         editMode = EditMode.FILE;
-    }  
+    }
+    
+    public void editMetadata(ActionEvent e) {
+        editMode = EditMode.METADATA;
+    }    
     
     public void save(ActionEvent e) {
         dataset.setOwner(dataverseService.find(ownerId));
