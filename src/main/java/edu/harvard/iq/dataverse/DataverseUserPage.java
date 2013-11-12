@@ -50,11 +50,11 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void save(ActionEvent e) {
         dataverseUser = dataverseUserService.save(dataverseUser);
-        //editMode = false;
+        editMode = false;
     }
 
     public void cancel(ActionEvent e) {
-        //editMode = false;
+        editMode = false;
     }
     
 }
