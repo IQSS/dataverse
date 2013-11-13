@@ -25,35 +25,37 @@
             <p:panel>
                 <p:panelGrid columns="2"  columnClasses="column75,column25" >
                     <p:panelGrid columns="3">
-                        <p:outputLabel value="User Name" for="userName" />
+                        <p:outputLabel value="Username *" for="userName" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{!DataverseUserPage.editMode}" />
                         <p:inputText id="userName" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="userName" />
                         
-                        <p:outputLabel value="Password" for="inputPassword" />
-                        <h:outputText value="#{DataverseUserPage.inputPassword}" rendered="#{!DataverseUserPage.editMode}" />                        
-                        <p:inputText id="inputPassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputLabel value="Password *" for="inputPassword" /> 
+                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
                         <p:message for="inputPassword" />
                         
-                        <p:outputLabel value="Retype Password" for="retypePassword" />
-                        <h:outputText value="#{DataverseUserPage.retypePassword}" rendered="#{!DataverseUserPage.editMode}" />                        
-                        <p:inputText id="retypePassword" value="#{DataverseUserPage.retypePassword}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputLabel value="Retype Password *" for="retypePassword" />
+                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" />
                         <p:message for="retypePassword" />
-                                                
-                        <p:outputLabel value="First Name" for="firstName" />
+                        
+                        <p:outputLabel value="First Name *" for="firstName" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{!DataverseUserPage.editMode}" />                                                
                         <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="firstName" />
 
-                        <p:outputLabel value="Last Name" for="lastName" />
+                        <p:outputLabel value="Last Name *" for="lastName" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{!DataverseUserPage.editMode}" />                                                
                         <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="lastName" />
 
-                        <p:outputLabel value="Email" for="email" />
+                        <p:outputLabel value="Email *" for="email" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{!DataverseUserPage.editMode}" />                                                
                         <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="email" />
+                        
+                        <p:outputLabel value="Institution" />
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{!DataverseUserPage.editMode}" />                                                
+                        <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode}"/>
 
                     </p:panelGrid>
                     <ui:fragment rendered="#{DataverseUserPage.editMode}">
