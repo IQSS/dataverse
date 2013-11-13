@@ -143,7 +143,9 @@
                                        fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
                         <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                             <p:column>
-                                <h:outputText value="#{file.name}" />     
+                                <h:outputText value="#{file.name}"  rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/> 
+                                <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
+                                <p:message for="fileName" />
                             </p:column>
                             <p:column>
                                 <h:outputText value="#{file.contentType}" />    
@@ -162,6 +164,11 @@
                             <p:inputText id="topicClassification" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                             <p:message for="topicClassification" />
 
+                            <p:outputLabel value="Topic Classification URL" for="topicClassificationUrl" />
+                            <h:outputText value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
+                            <p:inputText id="topicClassificationUrl" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
+                            <p:message for="topicClassificationUrl" />                            
+                            
                             <p:outputLabel value="Geographic Coverage" for="geographicCoverage" />
                             <h:outputText value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
                             <p:inputText id="geographicCoverage" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
