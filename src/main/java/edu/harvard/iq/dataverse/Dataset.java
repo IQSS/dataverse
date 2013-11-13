@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
 //import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -51,13 +53,15 @@ public class Dataset implements Serializable {
     // sample metadata fields
     private String keyword;
     private String topicClassification;
+    @URL
+    private String topicClassificationUrl;
     private String geographicCoverage;
     
     @ManyToOne
     @JoinColumn(nullable=false)     
     private Dataverse owner;
     
-    @OneToMany (mappedBy = "dataset")
+    @OneToMany (mappedBy = "dataset", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
 
     public Long getId() {
@@ -122,6 +126,14 @@ public class Dataset implements Serializable {
 
     public void setTopicClassification(String topicClassification) {
         this.topicClassification = topicClassification;
+    }
+
+    public String getTopicClassificationUrl() {
+        return topicClassificationUrl;
+    }
+
+    public void setTopicClassificationUrl(String topicClassificationUrl) {
+        this.topicClassificationUrl = topicClassificationUrl;
     }
 
     public String getGeographicCoverage() {
