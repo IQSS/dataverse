@@ -102,23 +102,21 @@
                     </p:panelGrid>                            
                     <p:panel>
                         <p:menuButton value="Edit Data Set" iconPos="right" rendered="#{empty DatasetPage.editMode}"> 
-                            <p:menuitem value="Edit Info" actionListener="#{DatasetPage.editInfo}" update="@all"/>
-                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.editFile}" update="@all">
+                            <p:menuitem value="Edit Info"  actionListener="#{DatasetPage.setEditMode('INFO')}" update="@all"/>
+                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.setEditMode('FILE')}" update="@all">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                             </p:menuitem>
-                            <p:menuitem value="Edit Metadata" actionListener="#{DatasetPage.editMetadata}" update="@all">
+                            <p:menuitem value="Edit Metadata" actionListener="#{DatasetPage.setEditMode('METADATA')}" update="@all">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                             </p:menuitem>
                             <p:menuitem value="Edit Permissions" disabled="true"/>  
                         </p:menuButton>
                         <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
-                            <p:commandButton value="Save" actionListener="#{DatasetPage.save}" update="@all" rendered="#{DatasetPage.editMode == 'METADATA'}">
-                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="1"/>
+                            <p:commandButton value="Save" action="#{DatasetPage.save}" update="@all">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                             </p:commandButton>
-                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE' and DatasetPage.editMode != 'METADATA'}"/>
-                            <p:commandButton value="Cancel" actionListener="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE' and DatasetPage.editMode == 'METADATA'}">
-                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}"  value="1"/>
+                            <p:commandButton value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
+                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                             </p:commandButton>                            
                             <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                         </ui:fragment>
