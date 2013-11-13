@@ -37,9 +37,8 @@ public class DataverseUser implements Serializable {
 
     @NotBlank(message = "Please enter your last name  for your dataverse account.")
     private String lastName;
-
-    @NotBlank(message = "Please enter a password for your account.")    
-    private String password;
+    
+    private String encryptedPassword;
 
     public Long getId() {
         return id;
@@ -81,12 +80,12 @@ public class DataverseUser implements Serializable {
         this.lastName = lastName;
     }
     
-    public String getPassword() {
-        return password;
+    public String getEncryptedPassword() {
+        return encryptedPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setEncryptedPassword(String encryptedPassword) {
+        this.encryptedPassword = encryptedPassword;
     }
 
     @Override
@@ -113,5 +112,4 @@ public class DataverseUser implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DataverseUser[ id=" + id + " ]";
     }
-
 }
