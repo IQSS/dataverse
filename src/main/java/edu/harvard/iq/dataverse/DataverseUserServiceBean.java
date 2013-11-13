@@ -25,7 +25,11 @@ public class DataverseUserServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-        
+    
+    public String encryptPassword(String plainText) {
+        return PasswordEncryption.getInstance().encrypt(plainText);
+    }
+       
     public DataverseUser save(DataverseUser dataverseUser) {
          return em.merge(dataverseUser);
     }   
