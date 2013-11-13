@@ -29,11 +29,17 @@
                         <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{!DataverseUserPage.editMode}" />
                         <p:inputText id="userName" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="userName" />
-
-                        <p:outputLabel value="Password" for="password" />
-                        <p:inputText id="password" value="#{DataverseUserPage.dataverseUser.password}" />
-                        <p:message for="password" />
                         
+                        <p:outputLabel value="Password" for="inputPassword" />
+                        <h:outputText value="#{DataverseUserPage.inputPassword}" rendered="#{!DataverseUserPage.editMode}" />                        
+                        <p:inputText id="inputPassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode}"/>
+                        <p:message for="inputPassword" />
+                        
+                        <p:outputLabel value="Retype Password" for="retypePassword" />
+                        <h:outputText value="#{DataverseUserPage.retypePassword}" rendered="#{!DataverseUserPage.editMode}" />                        
+                        <p:inputText id="retypePassword" value="#{DataverseUserPage.retypePassword}" rendered="#{DataverseUserPage.editMode}"/>
+                        <p:message for="retypePassword" />
+                                                
                         <p:outputLabel value="First Name" for="firstName" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{!DataverseUserPage.editMode}" />                                                
                         <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode}"/>
