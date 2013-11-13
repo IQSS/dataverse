@@ -29,9 +29,6 @@ public class DataverseUserPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password for your account.")    
     private String inputPassword;
     
-    @NotBlank(message = "Please enter a password for your account.")    
-    private String retypePassword;
-    
     public DataverseUser getDataverseUser() {
         return dataverseUser;
     }
@@ -63,14 +60,6 @@ public class DataverseUserPage implements java.io.Serializable {
         this.inputPassword = inputPassword;
     }
 
-    public String getRetypePassword() {
-        return retypePassword;
-    }
-
-    public void setRetypePassword(String retypePassword) {
-        this.retypePassword = retypePassword;
-    }
-
     public void save(ActionEvent e) {
         if (inputPassword!=null) {
             dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
@@ -80,6 +69,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void cancel(ActionEvent e) {
-        editMode = false;
+        init();
+        editMode = true;
     }
 }
