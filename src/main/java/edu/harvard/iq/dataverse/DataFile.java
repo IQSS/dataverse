@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -25,7 +26,10 @@ public class DataFile implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @NotBlank
     private String name;
+    
+    @NotBlank    
     private String contentType;
     
     @ManyToOne     
