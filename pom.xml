@@ -35,6 +35,7 @@
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>4.0</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -46,8 +47,13 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.0.1.Final</version>
-        </dependency>        
-                        
+        </dependency>
+         
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
     </dependencies>
 
     <build>
