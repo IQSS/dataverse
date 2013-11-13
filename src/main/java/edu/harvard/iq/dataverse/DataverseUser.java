@@ -39,6 +39,7 @@ public class DataverseUser implements Serializable {
     private String lastName;
     
     private String encryptedPassword;
+    private String institution;
 
     public Long getId() {
         return id;
@@ -86,6 +87,14 @@ public class DataverseUser implements Serializable {
 
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+    
+    public String getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(String institution) {
+        this.institution = institution;
     }
 
     @Override
