@@ -86,19 +86,8 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public void editInfo(ActionEvent e) {
-        editMode = EditMode.INFO;
-    }
-
-    public void editFile(ActionEvent e) {
-        editMode = EditMode.FILE;
-    }
-    
-    public void editMetadata(ActionEvent e) {
-        editMode = EditMode.METADATA;
-    }    
-    
-    public void save(ActionEvent e) {
+       
+    public void save() {
         dataset.setOwner(dataverseService.find(ownerId));
         dataset = datasetService.save(dataset);
 
@@ -118,7 +107,7 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
     }
 
-    public void cancel(ActionEvent e) {
+    public void cancel() {
         // reset values
         dataset = datasetService.find(dataset.getId());
         ownerId = dataset.getOwner().getId();
