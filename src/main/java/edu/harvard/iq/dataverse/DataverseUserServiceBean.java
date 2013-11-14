@@ -32,5 +32,23 @@ public class DataverseUserServiceBean {
        
     public DataverseUser save(DataverseUser dataverseUser) {
          return em.merge(dataverseUser);
-    }   
+    }
+    
+    /*
+    public List<DataverseUser> findByUserName(String userName) {
+        Query query = em.createQuery("select object(o) from DataverseUser as o where o.userName =:userName");
+        query.setParameter("userName", userName);
+        return query.getResultList();
+    }
+    */
+    
+    public DataverseUser findByUserName(String userName) {
+        String query = "SELECT u from DataverseUser u where u.userName = :userName ";
+        DataverseUser user = null;
+        try {
+            user = (DataverseUser) em.createQuery(query).setParameter("userName", userName).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+        }
+        return user;
+    }
 }
