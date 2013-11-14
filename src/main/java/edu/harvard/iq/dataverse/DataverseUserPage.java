@@ -7,6 +7,10 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -45,13 +49,6 @@ public class DataverseUserPage implements java.io.Serializable {
         this.editMode = editMode;
     }
 
-    public void init() {
-        editMode = true;;
-    }
-    public void edit(ActionEvent e) {
-        editMode = true;
-    }
-    
     public String getInputPassword() {
         return inputPassword;
     }
@@ -59,7 +56,24 @@ public class DataverseUserPage implements java.io.Serializable {
     public void setInputPassword(String inputPassword) {
         this.inputPassword = inputPassword;
     }
-
+    
+    public void init() {
+        editMode = true;;
+    }
+    public void edit(ActionEvent e) {
+        editMode = true;
+    }
+    
+    public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
+        String userName = (String) value;
+        DataverseUser user = dataverseUserService.findByUserName(userName);
+        if (user!=null) {
+            ((UIInput)toValidate).setValid(false);
+            FacesMessage message = new FacesMessage("This Username is already taken.");
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+    
     public void save(ActionEvent e) {
         if (inputPassword!=null) {
             dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
