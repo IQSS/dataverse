@@ -27,7 +27,7 @@
                     <p:panelGrid columns="3">
                         <p:outputLabel value="Username *" for="userName" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{!DataverseUserPage.editMode}" />
-                        <p:inputText id="userName" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode}"/>
+                        <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode}"/>
                         <p:message for="userName" />
                         
                         <h:outputLabel value="Password *" for="inputPassword" /> 
