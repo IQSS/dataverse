@@ -23,12 +23,14 @@ import org.hibernate.validator.constraints.NotBlank;
 @ViewScoped
 @Named("DataverseUserPage")
 public class DataverseUserPage implements java.io.Serializable {
+    
+    public enum EditMode {CREATE, INFO, EDIT};
 
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
     private DataverseUser dataverseUser = new DataverseUser();
-    private boolean editMode = false;
+    private EditMode editMode;
     
     @NotBlank(message = "Please enter a password for your account.")    
     private String inputPassword;
@@ -41,11 +43,11 @@ public class DataverseUserPage implements java.io.Serializable {
         this.dataverseUser = dataverseUser;
     }
 
-    public boolean isEditMode() {
+    public EditMode getEditMode() {
         return editMode;
     }
 
-    public void setEditMode(boolean editMode) {
+    public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
     }
 
@@ -58,12 +60,17 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public void init() {
-        editMode = true;;
-    }
-    public void edit(ActionEvent e) {
-        editMode = true;
+        editMode = EditMode.INFO;
     }
     
+    public void edit(ActionEvent e) {
+        editMode = EditMode.EDIT;
+    }
+
+    public void create(ActionEvent e) {
+        editMode = EditMode.CREATE;
+    }
+
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         DataverseUser user = dataverseUserService.findByUserName(userName);
@@ -79,11 +86,11 @@ public class DataverseUserPage implements java.io.Serializable {
             dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
         }
         dataverseUser = dataverseUserService.save(dataverseUser);
-        editMode = false;
+        //editMode = EditMode.INFO;
+        init();
     }
 
     public void cancel(ActionEvent e) {
-        init();
-        editMode = true;
+        editMode = EditMode.CREATE;
     }
 }
