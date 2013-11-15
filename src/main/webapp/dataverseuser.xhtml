@@ -15,10 +15,12 @@
         </f:metadata>  
 
         <p:panel  style="background-color: lightskyblue; height:70px;">
-            <h:outputText value="Harvard Dataverse" /> 
+            <h:outputText value="Dataverse Account" /> 
         </p:panel>
         <p:panel>
-            <h:outputText value="Create Account" /> 
+            <h:outputText value="Create Account" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+            <h:outputText value="Account Information" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+            <h:outputText value="Edit Account" rendered="#{DataverseUserPage.editMode == 'EDIT'}" /> 
         </p:panel>
         
         <h:form id="dataverseUserForm">       
@@ -26,42 +28,49 @@
                 <p:panelGrid columns="2"  columnClasses="column75,column25" >
                     <p:panelGrid columns="3">
                         <p:outputLabel value="Username *" for="userName" />
-                        <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{!DataverseUserPage.editMode}" />
-                        <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                        <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="userName" />
                         
-                        <h:outputLabel value="Password *" for="inputPassword" /> 
-                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
+                        <h:outputLabel value="Password *" for="inputPassword" />
+                        <h:outputText value="******" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="inputPassword" />
                         
                         <h:outputLabel value="Retype Password *" for="retypePassword" />
-                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" />
+                        <h:outputText value="******" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                        
+                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="retypePassword" />
                         
                         <p:outputLabel value="First Name *" for="firstName" />
-                        <h:outputText value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{!DataverseUserPage.editMode}" />                                                
-                        <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
+                        <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="firstName" />
 
                         <p:outputLabel value="Last Name *" for="lastName" />
-                        <h:outputText value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{!DataverseUserPage.editMode}" />                                                
-                        <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
+                        <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="lastName" />
 
                         <p:outputLabel value="Email *" for="email" />
-                        <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{!DataverseUserPage.editMode}" />                                                
-                        <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode}"/>
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
+                        <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                         <p:message for="email" />
                         
                         <p:outputLabel value="Institution" />
-                        <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{!DataverseUserPage.editMode}" />                                                
-                        <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode}"/>
-
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
+                        <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                     </p:panelGrid>
-                    <ui:fragment rendered="#{DataverseUserPage.editMode}">
+                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                         <p:commandButton value="Save" actionListener="#{DataverseUserPage.save}" update="@all" />                    
                         <p:commandButton value="Cancel" actionListener="#{DataverseUserPage.cancel}" process="@this" update="@all" />
                     </ui:fragment>
+                    <p:panel rendered="#{DataverseUserPage.editMode == 'INFO'}">
+                        <p:menuButton value="Edit Account" iconPos="right"> 
+                            <p:menuitem value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" disabled="true" />
+                            <p:menuitem value="Create Account" actionListener="#{DataverseUserPage.create}" update="@all" />  
+                        </p:menuButton>
+                    </p:panel>
                 </p:panelGrid>                            
             </p:panel>
         </h:form>
