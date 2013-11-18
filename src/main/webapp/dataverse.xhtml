@@ -45,7 +45,7 @@
 
             <!-- Name Panel -->
             <p:panel>
-                <h:outputText value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}"/>                
+                <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" rendered="#{!DataversePage.editMode}"/>                
                 <p:panelGrid columns="2"  columnClasses="column60,column40" rendered="#{DataversePage.editMode}" >
                     <p:panelGrid columns="2">
                         <ui:fragment>
@@ -57,7 +57,7 @@
                     </p:panelGrid>
                     <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                         <h:outputText value="Host Dataverse"/>
-                        <p:selectOneMenu value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">    
+                        <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">    
                             <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}" 
                                            itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>   
                         </p:selectOneMenu>  
@@ -71,17 +71,17 @@
                     <p:panel>
                         <p:panelGrid columns="3">
                             <p:outputLabel value="Alias" for="alias" />
-                            <h:outputText value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}" />
+                            <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="alias" value="#{DataversePage.dataverse.alias}" rendered="#{DataversePage.editMode}" />
                             <p:message for="alias" />  
 
                             <p:outputLabel value="Contact E-mail" for="contactEmail" />
-                            <h:outputText value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}" />
+                            <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="contactEmail" value="#{DataversePage.dataverse.contactEmail}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="contactEmail" />
 
                             <p:outputLabel value="Affiliation" for="affiliation"/>
-                            <h:outputText value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}" />
+                            <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}" />
                             <p:inputText  id="affiliation" value="#{DataversePage.dataverse.affiliation}" rendered="#{DataversePage.editMode}"/>
                             <p:message for="affiliation" />
 
@@ -89,14 +89,14 @@
                     </p:panel>
 
                     <p:panel>
-                        <p:menuButton value="Edit Dataverse" rendered="#{!DataversePage.editMode}" iconPos="right"> 
-                            <p:menuitem value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" />
+                        <p:menuButton id="editDataverse" value="Edit Dataverse" rendered="#{!DataversePage.editMode}" iconPos="right"> 
+                            <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DataversePage.edit}" update="@all" />
                             <p:menuitem value="Edit Theme" disabled="true"/>  
                             <p:menuitem value="Edit Permissions" disabled="true"/>
                         </p:menuButton>
                         <ui:fragment rendered="#{DataversePage.editMode}">
-                            <p:commandButton value="Save" actionListener="#{DataversePage.save}" update="@all" />
-                            <p:commandButton value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.dataverse.id != null}" />
+                            <p:commandButton id="save" value="Save" actionListener="#{DataversePage.save}" update="@all" />
+                            <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all"  rendered="#{DataversePage.dataverse.id != null}" />
                             <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}"  rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}" />
                         </ui:fragment>
                     </p:panel>
@@ -130,7 +130,7 @@
                 <p:panel>
                     <h:form id="shareForm">
                         <p:menuButton id="shareData" value="Share Data" iconPos="right"> 
-                            <p:menuitem value="Upload Dataset"  url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
+                            <p:menuitem id="UploadDataset" value="Upload Dataset"  url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
                             <p:menuitem value="Link to Existing Dataset" disabled="true"/>
                             <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>  
                             <p:menuitem value="Link to Existing Dataverse" disabled="true"/> 
