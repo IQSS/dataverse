@@ -26,8 +26,6 @@ public class DatasetServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public Dataset save(Dataset dataset) {
          return em.merge(dataset);
     }   
