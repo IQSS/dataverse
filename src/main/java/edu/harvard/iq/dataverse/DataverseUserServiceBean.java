@@ -6,14 +6,10 @@
 
 package edu.harvard.iq.dataverse;
 
-import java.util.List;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  *
@@ -42,6 +38,10 @@ public class DataverseUserServiceBean {
     }
     */
     
+    public DataverseUser find(Long pk) {
+        return (DataverseUser) em.find(DataverseUser.class, pk);
+    }    
+    
     public DataverseUser findByUserName(String userName) {
         String query = "SELECT u from DataverseUser u where u.userName = :userName ";
         DataverseUser user = null;
@@ -51,4 +51,8 @@ public class DataverseUserServiceBean {
         }
         return user;
     }
+    
+    public DataverseUser findDataverseUser() {
+        return (DataverseUser) em.createQuery("select object(o) from DataverseUser as o where o.id = 1").getSingleResult();
+    }        
 }
