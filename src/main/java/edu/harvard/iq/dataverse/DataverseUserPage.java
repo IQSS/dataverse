@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -24,7 +25,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Named("DataverseUserPage")
 public class DataverseUserPage implements java.io.Serializable {
     
-    public enum EditMode {CREATE, INFO, EDIT};
+    public enum EditMode {CREATE, INFO, EDIT, CHANGE};
 
     @EJB
     DataverseUserServiceBean dataverseUserService;
@@ -60,6 +61,15 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public void init() {
+        if (dataverseUser.getId() != null) {  
+            dataverseUser = dataverseUserService.find(dataverseUser.getId());
+
+        } else { 
+            try {
+                dataverseUser = dataverseUserService.findDataverseUser();
+            } catch (EJBException e) {
+            }
+        }
         editMode = EditMode.INFO;
     }
     
@@ -68,13 +78,28 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void create(ActionEvent e) {
+        dataverseUser.setId( Long.parseLong(String.valueOf(0)));
         editMode = EditMode.CREATE;
+    }
+
+    public void changePassword(ActionEvent e) {
+        editMode = EditMode.CHANGE;
     }
 
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
+        boolean userNameFound = false;
         DataverseUser user = dataverseUserService.findByUserName(userName);
-        if (user!=null) {
+        if (editMode == EditMode.CREATE) {
+            if (user!=null) {
+                userNameFound = true;
+            }
+        } else {
+            if (user!=null && !user.getId().equals(dataverseUser.getId())) {
+                userNameFound = true;
+            }
+        }
+        if (userNameFound) {
             ((UIInput)toValidate).setValid(false);
             FacesMessage message = new FacesMessage("This Username is already taken.");
             context.addMessage(toValidate.getClientId(context), message);
@@ -82,15 +107,16 @@ public class DataverseUserPage implements java.io.Serializable {
     }
     
     public void save(ActionEvent e) {
-        if (inputPassword!=null) {
-            dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
+        if (editMode == EditMode.CREATE) {
+            if (inputPassword!=null) {
+                dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
+            }
         }
-        dataverseUser = dataverseUserService.save(dataverseUser);
-        //editMode = EditMode.INFO;
-        init();
+        dataverseUser = dataverseUserService.save(dataverseUser); 
+        editMode = EditMode.INFO;
     }
 
     public void cancel(ActionEvent e) {
-        editMode = EditMode.CREATE;
+        editMode = EditMode.INFO;
     }
 }
