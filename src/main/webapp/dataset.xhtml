@@ -70,7 +70,7 @@
                 <p:panelGrid columns="2"  columnClasses="column75,column25">
                     <p:panel rendered="#{empty DatasetPage.editMode}">
                         <p:panel style="background-color: lightgrey;">
-                            <h:outputText style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}" />
+                            <h:outputText id="citation" style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}" />
                         </p:panel>
                         <p:panel>
                             <p:panelGrid columns="2">
@@ -101,24 +101,24 @@
                         </p:panelGrid> 
                     </p:panelGrid>                            
                     <p:panel>
-                        <p:menuButton value="Edit Data Set" iconPos="right" rendered="#{empty DatasetPage.editMode}"> 
-                            <p:menuitem value="Edit Info"  actionListener="#{DatasetPage.setEditMode('INFO')}" update="@all"/>
-                            <p:menuitem value="Edit Files" actionListener="#{DatasetPage.setEditMode('FILE')}" update="@all">
+                        <p:menuButton id="editDataSet" value="Edit Data Set" iconPos="right" rendered="#{empty DatasetPage.editMode}"> 
+                            <p:menuitem id="editInfo" value="Edit Info"  actionListener="#{DatasetPage.setEditMode('INFO')}" update="@all"/>
+                            <p:menuitem id="editFiles" value="Edit Files" actionListener="#{DatasetPage.setEditMode('FILE')}" update="@all">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                             </p:menuitem>
-                            <p:menuitem value="Edit Metadata" actionListener="#{DatasetPage.setEditMode('METADATA')}" update="@all">
+                            <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.setEditMode('METADATA')}" update="@all">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                             </p:menuitem>
                             <p:menuitem value="Edit Permissions" disabled="true"/>  
                         </p:menuButton>
                         <ui:fragment rendered="#{!empty DatasetPage.editMode}">
-                            <p:commandButton value="Save" action="#{DatasetPage.save}" update="@all">
+                            <p:commandButton id="save" value="Save" action="#{DatasetPage.save}" update="@all">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                             </p:commandButton>
-                            <p:commandButton value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
+                            <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                             </p:commandButton>                            
-                            <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
+                            <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                         </ui:fragment>
                     </p:panel>
                 </p:panelGrid>
@@ -127,7 +127,7 @@
             <p:panel rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                 <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}" />
                 <p:panelGrid columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
-                    <p:outputLabel value="Description" for="description"/>
+                    <p:outputLabel id="descriptionOutput" value="Description" for="description"/>
                     <p:inputTextarea  id="description" value="#{DatasetPage.dataset.description}"
                                       rows="5" cols="30" counter="counter" maxlength="1000"       
                                       counterTemplate="{0} characters remaining." autoResize="false"/>
@@ -137,45 +137,45 @@
 
             <!-- Content Panel -->
             <p:panel id="content" rendered="#{DatasetPage.editMode != 'INFO'}">
-                <p:tabView widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">  
-                    <p:tab title="Data Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
-                        <p:fileUpload  dragDropSupport="true"  auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">  
+                    <p:tab id="dataFilesTab" title="Data Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                        <p:fileUpload  id="fileUpload" dragDropSupport="true"  auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                        fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
                         <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                             <p:column>
-                                <h:outputText value="#{file.name}"  rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/> 
+                                <h:outputText id="fileNameOutput" value="#{file.name}"  rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/> 
                                 <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                 <p:message for="fileName" />
                             </p:column>
                             <p:column>
-                                <h:outputText value="#{file.contentType}" />    
+                                <h:outputText id="fileTypeOutput" value="#{file.contentType}" />    
                             </p:column>                     
                         </p:dataTable>                
                     </p:tab>                       
-                    <p:tab title="Metadata" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                    <p:tab id="metadataTab" title="Metadata" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                         <p:panelGrid columns="3">
                             <p:outputLabel value="Keyword" for="keyword" />
-                            <h:outputText value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
+                            <h:outputText id="keywordOutput" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
                             <p:inputText id="keyword" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                             <p:message for="keyword" />
 
                             <p:outputLabel value="Topic Classification" for="topicClassification" />
-                            <h:outputText value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
+                            <h:outputText id="topicClassificationOutput" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
                             <p:inputText id="topicClassification" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                             <p:message for="topicClassification" />
 
                             <p:outputLabel value="Topic Classification URL" for="topicClassificationUrl" />
-                            <h:outputText value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
+                            <h:outputText id="topicClassificationUrlOutput" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
                             <p:inputText id="topicClassificationUrl" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                             <p:message for="topicClassificationUrl" />                            
                             
                             <p:outputLabel value="Geographic Coverage" for="geographicCoverage" />
-                            <h:outputText value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
+                            <h:outputText id="geographicCoverageOutput" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
                             <p:inputText id="geographicCoverage" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                             <p:message for="geographicCoverage" />
                         </p:panelGrid>                    
                     </p:tab>
-                    <p:tab title="Versions" rendered="#{empty DatasetPage.editMode}"/>
+                    <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}"/>
                 </p:tabView>       
             </p:panel>  
         </h:form>
