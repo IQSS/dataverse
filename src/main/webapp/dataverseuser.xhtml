@@ -16,7 +16,7 @@
         </f:metadata>  
 
         <p:panel  style="background-color: lightskyblue; height:70px;">
-            <h:outputText value="Dataverse Account" /> 
+            <h:outputText value="Dataverse User Account" /> 
         </p:panel>
         <p:panel>
             <h:outputText value="Create Account" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
@@ -27,43 +27,46 @@
         
         <h:form id="dataverseUserForm">       
             <p:panel>
-                <p:panelGrid columns="3"  columnClasses="column75,column25" >
+                <p:panelGrid columns="3">
                     <p:panelGrid columns="3">
-                        <p:outputLabel value="Username *" for="userName" />
+                        <p:outputLabel value="Username *" for="userName" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
                         <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
-                        <p:message for="userName" />
+                        <p:message for="userName" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         
-                        <h:outputLabel value="Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode != 'EDIT'}" />
-                        <h:outputText value="******" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                        <p:message for="inputPassword" rendered="#{DataverseUserPage.editMode != 'EDIT'}" />
+                        <h:outputLabel value="Current Password *" for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="Current Password"  value="#{DataverseUserPage.currentPassword}" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:message for="currentPassword"  rendered="#{DataverseUserPage.editMode == 'CHANGE'}"/>                        
                         
-                        <h:outputLabel value="Retype Password *" for="retypePassword" rendered="#{DataverseUserPage.editMode != 'EDIT'}" />
-                        <h:outputText value="******" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                        
-                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                        <p:message for="retypePassword" rendered="#{DataverseUserPage.editMode != 'EDIT'}" />
+                        <h:outputLabel value="Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                        <h:outputLabel value="New Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:message for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
                         
-                        <p:outputLabel value="First Name *" for="firstName" />
+                        <h:outputLabel value="Retype Password *" for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:message for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                        
+                        <p:outputLabel value="First Name *" for="firstName" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
                         <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                         <p:message for="firstName" />
 
-                        <p:outputLabel value="Last Name *" for="lastName" />
+                        <p:outputLabel value="Last Name *" for="lastName" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
                         <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                         <p:message for="lastName" />
 
-                        <p:outputLabel value="Email *" for="email" />
+                        <p:outputLabel value="Email *" for="email" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
                         <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                         <p:message for="email" />
                         
-                        <p:outputLabel value="Institution" />
+                        <p:outputLabel value="Institution" rendered="#{DataverseUserPage.editMode != 'CHANGE'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
                         <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                     </p:panelGrid>
-                    <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                    <ui:fragment rendered="#{DataverseUserPage.editMode != 'INFO'}">
                         <p:commandButton value="Save" actionListener="#{DataverseUserPage.save}" update="@all" />                    
                         <p:commandButton value="Cancel" actionListener="#{DataverseUserPage.cancel}" process="@this" update="@all" >
                             <p:resetInput target="@all" />
@@ -73,7 +76,7 @@
                         <p:menuButton value="Edit Account" iconPos="right"> 
                             <p:menuitem value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" />
                             <p:menuitem value="Create Account" actionListener="#{DataverseUserPage.create}" update="@all" />
-                            <p:menuitem value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" disabled="true" />
+                            <p:menuitem value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
                         </p:menuButton>
                     </p:panel>
                 </p:panelGrid>                            
