@@ -36,6 +36,9 @@ public class DataverseUserPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password for your account.")    
     private String inputPassword;
     
+    @NotBlank(message = "Please enter a password for your account.")    
+    private String currentPassword;
+        
     public DataverseUser getDataverseUser() {
         return dataverseUser;
     }
@@ -59,11 +62,18 @@ public class DataverseUserPage implements java.io.Serializable {
     public void setInputPassword(String inputPassword) {
         this.inputPassword = inputPassword;
     }
-    
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
+    }
+
     public void init() {
         if (dataverseUser.getId() != null) {  
             dataverseUser = dataverseUserService.find(dataverseUser.getId());
-
         } else { 
             try {
                 dataverseUser = dataverseUserService.findDataverseUser();
@@ -106,8 +116,18 @@ public class DataverseUserPage implements java.io.Serializable {
         }
     }
     
+    public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
+        String password = (String) value;
+        String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
+        if (!encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
+            ((UIInput)toValidate).setValid(false);
+            FacesMessage message = new FacesMessage("Password is incorrect.");
+            context.addMessage(toValidate.getClientId(context), message);        
+        }    
+    }
+
     public void save(ActionEvent e) {
-        if (editMode == EditMode.CREATE) {
+        if (editMode == EditMode.CREATE|| editMode == EditMode.CHANGE) {
             if (inputPassword!=null) {
                 dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
             }
