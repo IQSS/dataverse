@@ -51,6 +51,16 @@ public class DataverseUserServiceBean {
         }
         return user;
     }
+
+    public DataverseUser findByEmail(String email) {
+        String query = "SELECT u from DataverseUser u where u.email = :email ";
+        DataverseUser user = null;
+        try {
+            user = (DataverseUser) em.createQuery(query).setParameter("email", email).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+        }
+        return user;
+    }
     
     public DataverseUser findDataverseUser() {
         return (DataverseUser) em.createQuery("select object(o) from DataverseUser as o where o.id = 1").getSingleResult();
