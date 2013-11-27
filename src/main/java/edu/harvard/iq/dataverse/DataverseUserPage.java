@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Named("DataverseUserPage")
 public class DataverseUserPage implements java.io.Serializable {
     
-    public enum EditMode {CREATE, INFO, EDIT, CHANGE};
+    public enum EditMode {CREATE, INFO, EDIT, CHANGE, FORGOT};
 
     @EJB
     DataverseUserServiceBean dataverseUserService;
@@ -95,7 +95,11 @@ public class DataverseUserPage implements java.io.Serializable {
     public void changePassword(ActionEvent e) {
         editMode = EditMode.CHANGE;
     }
-
+    
+    public void forgotPassword(ActionEvent e) {
+        editMode = EditMode.FORGOT;
+    }
+    
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
@@ -115,7 +119,7 @@ public class DataverseUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
-    
+
     public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
@@ -125,7 +129,14 @@ public class DataverseUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);        
         }    
     }
-
+    
+    public void updatePassword(String userName){
+        String plainTextPassword = PasswordEncryption.generateRandomPassword();
+        DataverseUser user = dataverseUserService.findByUserName(userName);
+        user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
+        dataverseUserService.save(user);
+    }
+    
     public void save(ActionEvent e) {
         if (editMode == EditMode.CREATE|| editMode == EditMode.CHANGE) {
             if (inputPassword!=null) {
@@ -137,6 +148,11 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void cancel(ActionEvent e) {
+        editMode = EditMode.INFO;
+    }
+    
+    public void submit(ActionEvent e) {
+        updatePassword(dataverseUser.getUserName());
         editMode = EditMode.INFO;
     }
 }
