@@ -22,7 +22,8 @@
             <h:outputText value="Create Account" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
             <h:outputText value="Account Information" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
             <h:outputText value="Edit Account" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-            <h:outputText value="Change Password" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" /> 
+            <h:outputText value="Change Password" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+            <h:outputText value="Forgot Password" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />             
         </p:panel>
         
         <h:form id="dataverseUserForm">       
@@ -77,6 +78,7 @@
                             <p:menuitem value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" />
                             <p:menuitem value="Create Account" actionListener="#{DataverseUserPage.create}" update="@all" />
                             <p:menuitem value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
+                            <p:menuitem value="Forgot Password" actionListener="#{DataverseUserPage.forgotPassword}" disabled="true" />                            
                         </p:menuButton>
                     </p:panel>
                 </p:panelGrid>                            
