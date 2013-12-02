@@ -38,7 +38,7 @@ public class DataverseUserPage implements java.io.Serializable {
     
     @NotBlank(message = "Please enter a password for your account.")    
     private String currentPassword;
-        
+    
     public DataverseUser getDataverseUser() {
         return dataverseUser;
     }
@@ -119,6 +119,25 @@ public class DataverseUserPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
+    
+    public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
+        String userName = (String) value;
+        boolean userNameFound = false;
+        DataverseUser user = dataverseUserService.findByUserName(userName);
+        if (user!=null) {
+                userNameFound = true;
+        } else {
+            DataverseUser user2 = dataverseUserService.findByEmail(userName);
+            if (user2!=null) {
+                userNameFound = true;
+            }
+        }
+        if (!userNameFound) {
+            ((UIInput)toValidate).setValid(false);
+            FacesMessage message = new FacesMessage("Username or Email is incorrect.");
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }    
 
     public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
@@ -133,6 +152,9 @@ public class DataverseUserPage implements java.io.Serializable {
     public void updatePassword(String userName){
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
         DataverseUser user = dataverseUserService.findByUserName(userName);
+        if (user==null) {
+            user = dataverseUserService.findByEmail(userName);
+        }
         user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
         dataverseUserService.save(user);
     }
