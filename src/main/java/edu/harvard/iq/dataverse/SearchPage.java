@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
+@ViewScoped
 @Named("SearchPage")
 public class SearchPage {
 
