@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:h="http://java.sun.com/jsf/html"  
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"      
+      xmlns:p="http://primefaces.org/ui">  
+
+    <h:head>  
+        <style type="text/css">
+            .column75{width: 75%;height:auto}
+            .column25{width: 25%;height:auto}
+            .column60{width: 60%;height:auto}
+            .column40{width: 40%;height:auto}            
+        </style>
+    </h:head>
+
+    <h:body> 
+        <f:metadata>
+            <f:viewParam name="q" value="#{SearchPage.query}"/>
+        </f:metadata>  
+
+        <!-- Header Panel -->
+        <p:panel  style="background-color: lightskyblue; height:70px;">
+            <br/>
+            <h:outputLink value="/">
+                <h:outputText value="Dataverse" /> 
+            </h:outputLink>
+        </p:panel>
+
+        <h:form id="searchPageForm"> 
+
+            <!-- Title Panel -->
+            <p:panel>
+                <h:outputText value="Dataverse"/>
+            </p:panel>
+
+            <p:panel>
+                <h:form id="searchForm">
+                    <p:inputText id="search" size="80" />
+                    <p:watermark for="search" value="#{SearchPage.query}"/>
+                    <p:commandButton id="searchbutton" value="Search" disabled="false" actionListener="#{SearchPage.search()}" />
+                </h:form>
+            </p:panel>
+
+            <!-- Content Panel -->
+            <p:panel id="content">
+                <p:tabView id="tabView" widgetVar="content">
+                    <p:tab id="dataversesTab" title="Dataverses">
+                        <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
+                            <p:column>
+                                <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
+                            </p:column>
+                            <p:column>
+                                <h:outputText id="dataverseToStringOutput" value="#{dataverse}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                    <p:tab id="dataSetsTab" title="Datasets">
+                        <p:dataTable id="datasetsTable" value="#{SearchPage.datasets}" var="dataset">
+                            <p:column>
+                                <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText id="datasetToStringOutput" value="#{dataset}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                    <p:tab id="dataFilesTab" title="Data Files">
+                        <p:dataTable id="datafilesTable" value="#{SearchPage.dataFiles}" var="datafile">
+                            <p:column>
+                                <h:outputText id="datafileNameOutput" value="#{datafile.name}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText id="datafileToStringOutput" value="#{datafile}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                    <p:tab id="usersTab" title="Users">
+                        <p:dataTable id="usersTable" value="#{SearchPage.dataverseUsers}" var="user">
+                            <p:column>
+                                <h:outputText id="userNameOutput" value="#{user.userName}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText id="userToStringOutput" value="#{user}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
+            </p:panel>  
+        </h:form>
+    </h:body> 
+</html> 
