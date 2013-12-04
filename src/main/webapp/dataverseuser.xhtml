@@ -74,18 +74,18 @@
                         <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                     </p:panelGrid>
                     <ui:fragment>
-                        <p:commandButton value="Save" actionListener="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                        <p:commandButton value="Submit" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                        <p:commandButton value="Cancel" actionListener="#{DataverseUserPage.cancel}" process="@this" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE' or DataverseUserPage.editMode == 'FORGOT'}">
+                        <p:commandButton id="save" value="Save" actionListener="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
+                        <p:commandButton id="submit" value="Submit" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
+                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataverseUserPage.cancel}" process="@this" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE' or DataverseUserPage.editMode == 'FORGOT'}">
                             <p:resetInput target="@all" />
                         </p:commandButton>
                     </ui:fragment>
                     <p:panel rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                        <p:menuButton value="Edit Account" iconPos="right"> 
-                            <p:menuitem value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" />
-                            <p:menuitem value="Create Account" actionListener="#{DataverseUserPage.create}" update="@all" />
-                            <p:menuitem value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
-                            <p:menuitem value="Forgot Password" actionListener="#{DataverseUserPage.forgotPassword}" update="@all" />                            
+                        <p:menuButton id="editAccountButton" value="Edit Account" iconPos="right"> 
+                            <p:menuitem id="editAccount" value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" />
+                            <p:menuitem id="createAccount" value="Create Account" actionListener="#{DataverseUserPage.create}" update="@all" />
+                            <p:menuitem id="changePassword" value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
+                            <p:menuitem id="forgotPassword" value="Forgot Password" actionListener="#{DataverseUserPage.forgotPassword}" update="@all" />                            
                         </p:menuButton>
                     </p:panel>
                 </p:panelGrid>                            
