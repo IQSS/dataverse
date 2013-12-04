@@ -2,11 +2,15 @@
 
 import unittest
 import access_dvn
+import test_dataverse
+import test_dataset
 
 # This is a list of testFileName.testClass
 def suite():
     return unittest.TestSuite((\
         unittest.makeSuite(access_dvn.AccessDVN),
+        unittest.makeSuite(test_dataverse.TestDataverseFunctions),
+        unittest.makeSuite(test_dataset.TestDatasetFunctions),
         ))
 
 if __name__ == "__main__":
