@@ -78,11 +78,11 @@
                         <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'INFO'}" /> 
                         <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />                        
                         <p:selectOneMenu value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE'}">  
-                            <f:selectItem itemLabel="Select One" itemValue="" />  
-                            <f:selectItem itemLabel="Student" itemValue="Student" />  
-                            <f:selectItem itemLabel="Faculty" itemValue="Faculty" />  
-                            <f:selectItem itemLabel="Staff" itemValue="Staff" />
-                            <f:selectItem itemLabel="Other" itemValue="Other" />  
+                            <f:selectItem id="selectPosition" itemLabel="Select One" itemValue="" />  
+                            <f:selectItem id="student" itemLabel="Student" itemValue="Student" />  
+                            <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />  
+                            <f:selectItem id="staff" itemLabel="Staff" itemValue="Staff" />
+                            <f:selectItem id="other" itemLabel="Other" itemValue="Other" />  
                         </p:selectOneMenu>
                         <p:message for="position" />
                         
