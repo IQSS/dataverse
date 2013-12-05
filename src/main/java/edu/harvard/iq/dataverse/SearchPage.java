@@ -3,12 +3,13 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 @ViewScoped
 @Named("SearchPage")
-public class SearchPage {
+public class SearchPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(SearchPage.class.getCanonicalName());
 
@@ -18,14 +19,45 @@ public class SearchPage {
     private List<DataverseUser> dataverseUsers = new ArrayList<>();
     private List<DataFile> dataFiles = new ArrayList<>();
 
+    @EJB
+    SearchServiceBean searchService;
+    @EJB
+    DataverseServiceBean dataverseService;
+
     public SearchPage() {
+        logger.info("SearchPage initialized. Query: " + query);
+    }
+
+    public void search() {
+        logger.info("Search button clicked. Query: " + query);
+        /**
+         * @todo remove this? What about pagination for many, many results?
+         */
+        dataverses = new ArrayList();
+
+        query = query == null ? "*" : query;
+        List<SolrSearchResult> searchResults = searchService.search(query);
+        for (SolrSearchResult searchResult : searchResults) {
+            Dataverse dataverse = new Dataverse();
+//            Dataverse dataverse = dataverseService.find(this);
+            if (searchResult.getHighlightSnippets() != null) {
+                dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
+//            } else {
+//                dataverse.setDescription("FIXME: show non-highlighted description");
+            }
+            dataverse.setAlias(searchResult.getName());
+            dataverses.add(dataverse);
+
+        }
+
+        /**
+         * @todo fill this in with real search results
+         */
+        datasets = new ArrayList();
+        dataverseUsers = new ArrayList();
+        dataFiles = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Long id = new Long(String.valueOf(i));
-
-            Dataverse dataverse = new Dataverse();
-            dataverse.setId(id);
-            dataverse.setAlias("dataverse" + i);
-            dataverses.add(dataverse);
 
             Dataset dataset = new Dataset();
             dataset.setId(id);
@@ -39,8 +71,9 @@ public class SearchPage {
 
             DataFile dataFile = new DataFile();
             dataFile.setId(id);
-            dataFile.setName("datafile" + i);
+            dataFile.setName("file" + i);
             dataFiles.add(dataFile);
+
         }
     }
 
@@ -84,7 +117,4 @@ public class SearchPage {
         this.dataFiles = dataFiles;
     }
 
-    public void search() {
-        logger.info("search...");
-    }
 }

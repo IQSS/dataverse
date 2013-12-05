@@ -17,6 +17,7 @@
     <h:body> 
         <f:metadata>
             <f:viewParam name="q" value="#{SearchPage.query}"/>
+            <f:viewAction action="#{SearchPage.search()}" />
         </f:metadata>  
 
         <!-- Header Panel -->
@@ -35,10 +36,12 @@
             </p:panel>
 
             <p:panel>
+                <p:focus/>
                 <h:form id="searchForm">
-                    <p:inputText id="search" size="80" />
-                    <p:watermark for="search" value="#{SearchPage.query}"/>
-                    <p:commandButton id="searchbutton" value="Search" disabled="false" actionListener="#{SearchPage.search()}" />
+                    <p:inputText id="search" size="80" value="#{SearchPage.query}" />
+                    <!--<p:watermark for="search" value="#{SearchPage.query}"/>-->
+                    <!-- FIXME: put search term in URL http://stackoverflow.com/questions/17276150/primefaces-how-to-change-url-address -->
+                    <p:commandButton id="searchbutton" value="Search" actionListener="#{SearchPage.search()}" update="@all"  />
                 </h:form>
             </p:panel>
 
@@ -51,7 +54,7 @@
                                 <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
                             </p:column>
                             <p:column>
-                                <h:outputText id="dataverseToStringOutput" value="#{dataverse}" />
+                                <h:outputText id="dataverseToStringOutput" value="#{dataverse.description}" escape="false" />
                             </p:column>
                         </p:dataTable>
                     </p:tab>
@@ -65,7 +68,7 @@
                             </p:column>
                         </p:dataTable>
                     </p:tab>
-                    <p:tab id="dataFilesTab" title="Data Files">
+                    <p:tab id="dataFilesTab" title="Files">
                         <p:dataTable id="datafilesTable" value="#{SearchPage.dataFiles}" var="datafile">
                             <p:column>
                                 <h:outputText id="datafileNameOutput" value="#{datafile.name}"/>

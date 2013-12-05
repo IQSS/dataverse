@@ -36,6 +36,9 @@ public class Browse {
     public String browse() throws FileNotFoundException {
         try {
             logger.info("indexing...");
+            if (dataverseService == null){
+                return "dataverseService is null\n";
+            }
             List<Dataverse> dataverses = dataverseService.findAll();
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             JsonArrayBuilder dataversesArrayBuilder = Json.createArrayBuilder();
