@@ -64,6 +64,7 @@ public class SearchServiceBean {
                 logger.info("highlight snippets: " + highlightSnippets);
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(queryFromUser, highlightSnippets, name);
+            solrSearchResult.setId(new Long(id));
             solrSearchResults.add(solrSearchResult);
             hits++;
         }

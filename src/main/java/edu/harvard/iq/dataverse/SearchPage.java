@@ -38,12 +38,11 @@ public class SearchPage implements java.io.Serializable {
         query = query == null ? "*" : query;
         List<SolrSearchResult> searchResults = searchService.search(query);
         for (SolrSearchResult searchResult : searchResults) {
-            Dataverse dataverse = new Dataverse();
-//            Dataverse dataverse = dataverseService.find(this);
+            Dataverse dataverse = dataverseService.find(searchResult.getId());
             if (searchResult.getHighlightSnippets() != null) {
                 dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
-//            } else {
-//                dataverse.setDescription("FIXME: show non-highlighted description");
+            } else {
+                dataverse.setDescription(dataverse.getDescription());
             }
             dataverse.setAlias(searchResult.getName());
             dataverses.add(dataverse);

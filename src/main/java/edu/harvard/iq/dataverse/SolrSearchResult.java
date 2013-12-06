@@ -4,9 +4,9 @@ import java.util.List;
 
 public class SolrSearchResult {
 
+    private Long id;
     private String query;
     private String name;
-    private Long hits;
     private List<String> highlightSnippets;
 
     SolrSearchResult(String queryFromUser, List<String> highlightSnippets, String name) {
@@ -17,7 +17,18 @@ public class SolrSearchResult {
 
     @Override
     public String toString() {
-        return this.name;
+        /**
+         * @todo improve string representation
+         */
+        return this.id + "|" + this.name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getQuery() {
@@ -34,14 +45,6 @@ public class SolrSearchResult {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getHits() {
-        return hits;
-    }
-
-    public void setHits(Long hits) {
-        this.hits = hits;
     }
 
     public List<String> getHighlightSnippets() {

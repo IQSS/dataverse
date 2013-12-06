@@ -51,7 +51,9 @@
                     <p:tab id="dataversesTab" title="Dataverses">
                         <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
                             <p:column>
-                                <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
+                                <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}">
+                                    <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
+                                </h:outputLink>
                             </p:column>
                             <p:column>
                                 <h:outputText id="dataverseToStringOutput" value="#{dataverse.description}" escape="false" />
