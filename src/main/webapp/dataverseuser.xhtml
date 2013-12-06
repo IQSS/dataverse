@@ -72,6 +72,23 @@
                         <p:outputLabel value="Institution" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
                         <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
                         <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
+                        <p:message for="institution" />
+                        
+                        <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'INFO'}" /> 
+                        <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />                        
+                        <p:selectOneMenu value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE'}">  
+                            <f:selectItem id="selectPosition" itemLabel="Select One" itemValue="" />  
+                            <f:selectItem id="student" itemLabel="Student" itemValue="Student" />  
+                            <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />  
+                            <f:selectItem id="staff" itemLabel="Staff" itemValue="Staff" />
+                            <f:selectItem id="other" itemLabel="Other" itemValue="Other" />  
+                        </p:selectOneMenu>
+                        <p:message for="position" />
+                        
+                        <p:outputLabel value="Phone Number" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
+                        <h:outputText value="#{DataverseUserPage.dataverseUser.phone}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />                                                
+                        <p:inputText id="phone" value="#{DataverseUserPage.dataverseUser.phone}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                     </p:panelGrid>
                     <ui:fragment>
                         <p:commandButton id="save" value="Save" actionListener="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />

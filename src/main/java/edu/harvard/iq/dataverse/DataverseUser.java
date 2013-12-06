@@ -40,7 +40,9 @@ public class DataverseUser implements Serializable {
     
     private String encryptedPassword;
     private String institution;
-
+    private String position;
+    private String phone;
+    
     public Long getId() {
         return id;
     }
@@ -97,6 +99,22 @@ public class DataverseUser implements Serializable {
         this.institution = institution;
     }
 
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;
