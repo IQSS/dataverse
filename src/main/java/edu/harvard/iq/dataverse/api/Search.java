@@ -25,7 +25,13 @@ public class Search {
         if (query != null) {
             List<SolrSearchResult> result;
             result = searchService.search(query);
-            return result + "\n";
+//            return result + "\n";
+            JsonObject value = Json.createObjectBuilder()
+                    .add("total_count", result.size())
+                    .add("items", result.toString())
+                    .build();
+            logger.info("value: " + value);
+            return Util.jsonObject2prettyString(value);
         } else {
             JsonObject value = Json.createObjectBuilder()
                     .add("message", "Validation Failed")

@@ -4,19 +4,28 @@ import java.util.List;
 
 public class SolrSearchResult {
 
-    String query;
-    String name;
-    List<String> highlightSnippets;
+    private String query;
+    private String name;
+    private Long hits;
+    private List<String> highlightSnippets;
 
     SolrSearchResult(String queryFromUser, List<String> highlightSnippets, String name) {
         this.query = queryFromUser;
         this.name = name;
         this.highlightSnippets = highlightSnippets;
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return this.name;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 
     public String getName() {
@@ -27,12 +36,12 @@ public class SolrSearchResult {
         this.name = name;
     }
 
-    public String getQuery() {
-        return query;
+    public Long getHits() {
+        return hits;
     }
 
-    public void setQuery(String query) {
-        this.query = query;
+    public void setHits(Long hits) {
+        this.hits = hits;
     }
 
     public List<String> getHighlightSnippets() {

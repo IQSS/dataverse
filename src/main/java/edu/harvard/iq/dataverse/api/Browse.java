@@ -6,19 +6,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import java.io.FileNotFoundException;
-import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
@@ -36,7 +30,7 @@ public class Browse {
     public String browse() throws FileNotFoundException {
         try {
             logger.info("indexing...");
-            if (dataverseService == null){
+            if (dataverseService == null) {
                 return "dataverseService is null\n";
             }
             List<Dataverse> dataverses = dataverseService.findAll();
@@ -71,7 +65,7 @@ public class Browse {
                     .add("files_total_count", filesArrayBuilder.build().size())
                     .add("files", filesArrayBuilder)
                     .build();
-            return jsonObject2prettyString(jsonObject);
+            return Util.jsonObject2prettyString(jsonObject);
         } catch (NullPointerException ex) {
             StackTraceElement stacktrace = ex.getStackTrace()[0];
             if (stacktrace != null) {
@@ -88,23 +82,11 @@ public class Browse {
                                         .add("code", error)))
                         .build();
                 logger.info("jsonObject: " + jsonObject);
-                return jsonObject2prettyString(jsonObject);
+                return Util.jsonObject2prettyString(jsonObject);
             } else {
                 return null;
             }
         }
-    }
-
-    private String jsonObject2prettyString(JsonObject jsonObject) {
-        Map<String, String> config = new HashMap<>();
-        config.put(JsonGenerator.PRETTY_PRINTING, "");
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
-
-        StringWriter stringWriter = new StringWriter();
-        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
-            jsonWriter.writeObject(jsonObject);
-        }
-        return stringWriter.toString();
     }
 
 }

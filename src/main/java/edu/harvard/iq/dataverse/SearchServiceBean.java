@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -49,6 +48,7 @@ public class SearchServiceBean {
         String name = null;
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
+        Long hits = 0L;
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String content = (String) solrDocument.getFieldValue("description");
@@ -65,6 +65,7 @@ public class SearchServiceBean {
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(queryFromUser, highlightSnippets, name);
             solrSearchResults.add(solrSearchResult);
+            hits++;
         }
 //        return "Number of documents found: " + docs.getNumFound() + "\n";
         return solrSearchResults;
