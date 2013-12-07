@@ -1,6 +1,9 @@
 #!/bin/sh
+# need the following in solr/collection1/conf/schema.xml
+# <field name="entityid" type="long" indexed="true" stored="true" required="true" multiValued="false" /> 
+# <field name="type" type="string" indexed="true" stored="true" required="true" multiValued="false" /> 
 curl -s http://localhost:8080/api/dataverses > data/dataverses.json
 curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/dataverses.json
 
-#curl -s http://localhost:8080/api/datasets > data/datasets.json
-#curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/datasets.json
+curl -s http://localhost:8080/api/datasets > data/datasets.json
+curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/datasets.json

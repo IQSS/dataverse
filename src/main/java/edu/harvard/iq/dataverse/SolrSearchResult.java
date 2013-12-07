@@ -1,10 +1,14 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
+import javax.json.Json;
+import javax.json.JsonObject;
 
 public class SolrSearchResult {
 
-    private Long id;
+    private String id;
+    private Long entityid;
+    private String type;
     private String query;
     private String name;
     private List<String> highlightSnippets;
@@ -17,18 +21,40 @@ public class SolrSearchResult {
 
     @Override
     public String toString() {
-        /**
-         * @todo improve string representation
-         */
-        return this.id + "|" + this.name;
+        return this.id + ":" + this.name + ":" + this.entityid;
     }
 
-    public Long getId() {
+    public JsonObject toJsonObject() {
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add("id", this.id)
+                .add("name", this.name)
+                .add("entityid", this.entityid)
+                .build();
+        return jsonObject;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public Long getEntityid() {
+        return entityid;
+    }
+
+    public void setEntityid(Long entityid) {
+        this.entityid = entityid;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getQuery() {

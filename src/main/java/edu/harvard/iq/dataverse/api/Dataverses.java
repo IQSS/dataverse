@@ -27,7 +27,9 @@ public class Dataverses {
         for (Dataverse dataverse : dataverses) {
             logger.info("dataverse: " + dataverse.getAlias());
             JsonObjectBuilder dataverseInfoBuilder = Json.createObjectBuilder()
-                    .add("id", dataverse.getId())
+                    .add("id", "dataverse_" + dataverse.getId())
+                    .add("entityid", dataverse.getId())
+                    .add("type", "dataverses")
                     .add("name", dataverse.getName())
                     .add("description", dataverse.getDescription())
                     /**
@@ -35,15 +37,8 @@ public class Dataverses {
                      */
                     .add("category", dataverse.getAffiliation());
             dataversesArrayBuilder.add(dataverseInfoBuilder);
-            Long id = dataverse.getId();
         }
-//        JsonObject jsonObject = Json.createObjectBuilder()
-//                .add("dataverses_total_count", dataversesArrayBuilder.build().size())
-//                .add("dataverses", dataversesArrayBuilder)
-//                .build();
         JsonArray jsonArray = dataversesArrayBuilder.build();
-//        return jsonObject2prettyString((JsonObject) jsonObject);
-
         return Util.jsonArray2prettyString(jsonArray);
     }
 }

@@ -48,12 +48,13 @@ public class SearchServiceBean {
         String name = null;
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
-        Long hits = 0L;
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
-            String content = (String) solrDocument.getFieldValue("description");
+            String description = (String) solrDocument.getFieldValue("description");
             String id = (String) solrDocument.getFieldValue("id");
-            logger.info(id + ": " + content);
+            Long entityid = (Long) solrDocument.getFieldValue("entityid");
+            String type = (String) solrDocument.getFieldValue("type");
+            logger.info(id + ": " + description);
             name = (String) solrDocument.getFieldValue("name");
             Collection<String> fieldNames = solrDocument.getFieldNames();
             for (String fieldName : fieldNames) {
@@ -64,11 +65,12 @@ public class SearchServiceBean {
                 logger.info("highlight snippets: " + highlightSnippets);
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(queryFromUser, highlightSnippets, name);
-            solrSearchResult.setId(new Long(id));
+            /** @todo put all this in the constructor? */
+            solrSearchResult.setId(id);
+            solrSearchResult.setEntityid(entityid);
+            solrSearchResult.setType(type);
             solrSearchResults.add(solrSearchResult);
-            hits++;
         }
-//        return "Number of documents found: " + docs.getNumFound() + "\n";
         return solrSearchResults;
     }
 

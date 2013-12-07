@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -23,12 +24,15 @@ public class Search {
 //    public JsonObject search(@QueryParam("q") String query) {
     public String search(@QueryParam("q") String query) {
         if (query != null) {
-            List<SolrSearchResult> result;
-            result = searchService.search(query);
-//            return result + "\n";
+            List<SolrSearchResult> solrSearchResults = searchService.search(query);
+            JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+            for (SolrSearchResult solrSearchResult : solrSearchResults) {
+                filesArrayBuilder.add(solrSearchResult.toJsonObject());
+            }
             JsonObject value = Json.createObjectBuilder()
-                    .add("total_count", result.size())
-                    .add("items", result.toString())
+                    .add("total_count", solrSearchResults.size())
+                    .add("items", solrSearchResults.toString())
+                    .add("itemsJson", filesArrayBuilder.build())
                     .build();
             logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);

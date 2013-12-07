@@ -63,10 +63,12 @@
                     <p:tab id="dataSetsTab" title="Datasets">
                         <p:dataTable id="datasetsTable" value="#{SearchPage.datasets}" var="dataset">
                             <p:column>
-                                <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
+                                <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
+                                    <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
+                                </h:outputLink>
                             </p:column>
                             <p:column>
-                                <h:outputText id="datasetToStringOutput" value="#{dataset}" />
+                                <h:outputText id="datasetToStringOutput" value="#{dataset.description}" />
                             </p:column>
                         </p:dataTable>
                     </p:tab>

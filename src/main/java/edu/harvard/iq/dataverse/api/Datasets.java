@@ -27,7 +27,9 @@ public class Datasets {
         for (Dataset dataset : datasets) {
             logger.info("dataset: " + dataset.getTitle());
             JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
-                    .add("id", dataset.getId())
+                    .add("id", "dataset_" + dataset.getId())
+                    .add("entityid", dataset.getId())
+                    .add("type", "datasets")
                     .add("name", dataset.getTitle())
                     .add("description", dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);

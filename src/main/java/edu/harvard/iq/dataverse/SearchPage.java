@@ -23,6 +23,8 @@ public class SearchPage implements java.io.Serializable {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     public SearchPage() {
         logger.info("SearchPage initialized. Query: " + query);
@@ -34,34 +36,40 @@ public class SearchPage implements java.io.Serializable {
          * @todo remove this? What about pagination for many, many results?
          */
         dataverses = new ArrayList();
+        datasets = new ArrayList();
 
         query = query == null ? "*" : query;
         List<SolrSearchResult> searchResults = searchService.search(query);
         for (SolrSearchResult searchResult : searchResults) {
-            Dataverse dataverse = dataverseService.find(searchResult.getId());
-            if (searchResult.getHighlightSnippets() != null) {
-                dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
-            } else {
-                dataverse.setDescription(dataverse.getDescription());
+            String type = searchResult.getType();
+            switch (type) {
+                case "dataverses":
+                    Dataverse dataverse = dataverseService.find(searchResult.getEntityid());
+                    if (searchResult.getHighlightSnippets() != null) {
+                        /** @todo when does long description truncate? */
+                        dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
+                    }
+                    dataverses.add(dataverse);
+                    break;
+                case "datasets":
+                    /**
+                     * @todo add highlighting?
+                     */
+                    Dataset dataset = datasetService.find(searchResult.getEntityid());
+                    datasets.add(dataset);
+                    break;
+                default:
+                    break;
             }
-            dataverse.setAlias(searchResult.getName());
-            dataverses.add(dataverse);
-
         }
 
         /**
          * @todo fill this in with real search results
          */
-        datasets = new ArrayList();
         dataverseUsers = new ArrayList();
         dataFiles = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             Long id = new Long(String.valueOf(i));
-
-            Dataset dataset = new Dataset();
-            dataset.setId(id);
-            dataset.setTitle("dataset" + i);
-            datasets.add(dataset);
 
             DataverseUser dvUser = new DataverseUser();
             dvUser.setId(id);
