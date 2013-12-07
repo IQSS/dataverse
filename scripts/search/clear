@@ -1,0 +1,2 @@
+#!/bin/sh
+curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type: application/json' -X POST -d '{"delete": { "query":"*:*" }}'

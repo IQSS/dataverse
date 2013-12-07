@@ -39,6 +39,9 @@ public class DatasetServiceBean {
          query.setParameter("ownerId", ownerId);
          return query.getResultList();
     }  
-    
-    
+
+    public List<Dataset> findAll() {
+        return em.createQuery("select object(o) from Dataset as o order by o.title").getResultList();
+    }
+
 }
