@@ -80,7 +80,7 @@ public class DataverseUserPage implements java.io.Serializable {
             } catch (EJBException e) {
             }
         }
-        editMode = EditMode.INFO;
+        editMode = EditMode.CREATE;
     }
     
     public void edit(ActionEvent e) {

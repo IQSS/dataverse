@@ -87,9 +87,9 @@ public class LoginPage implements java.io.Serializable {
     public void login() {
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
-        editMode = EditMode.FAILED;
+            editMode = EditMode.FAILED;
         } else {
-        editMode = EditMode.SUCCESS;
+            editMode = EditMode.SUCCESS;
         }
     }
 }
