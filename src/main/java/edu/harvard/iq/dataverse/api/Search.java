@@ -37,6 +37,9 @@ public class Search {
             logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);
         } else {
+            /**
+             * @todo use Util.message2ApiError() instead
+             */
             JsonObject value = Json.createObjectBuilder()
                     .add("message", "Validation Failed")
                     .add("documentation_url", "http://thedata.org")

@@ -37,7 +37,11 @@ public class Dataverses {
     @Path("{id}")
     public String get(@PathParam("id") Long id) {
         Dataverse dataverse = dataverseService.find(id);
-        return Util.jsonObject2prettyString(dataverse2json(dataverse));
+        if (dataverse != null) {
+            return Util.jsonObject2prettyString(dataverse2json(dataverse));
+        } else {
+            return Util.message2ApiError("Dataverse id " + id + " not found");
+        }
     }
 
     public JsonObject dataverse2json(Dataverse dataverse) {
