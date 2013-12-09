@@ -72,14 +72,14 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        if (dataverseUser.getId() != null) {  
+        /* if (dataverseUser.getId() != null) {  
             dataverseUser = dataverseUserService.find(dataverseUser.getId());
         } else { 
             try {
                 dataverseUser = dataverseUserService.findDataverseUser();
             } catch (EJBException e) {
             }
-        }
+        } */
         editMode = EditMode.CREATE;
     }
     
