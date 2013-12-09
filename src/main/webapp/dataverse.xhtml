@@ -87,10 +87,7 @@
                     <h:outputText value=" > "/>
                 </ui:repeat>
                 <!--<br/>-->
-                <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
-                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse"/>
-                </h:outputLink>
-
+                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
             </p:panel>
 
             <!-- Message Panel -->
