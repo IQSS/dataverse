@@ -14,6 +14,7 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -27,6 +28,8 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public enum EditMode {CREATE, INFO, EDIT, CHANGE, FORGOT};
 
+    @Inject DataverseSession session;     
+    
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
@@ -159,18 +162,31 @@ public class DataverseUserPage implements java.io.Serializable {
         dataverseUserService.save(user);
     }
     
-    public void save(ActionEvent e) {
+    public String save() {
         if (editMode == EditMode.CREATE|| editMode == EditMode.CHANGE) {
             if (inputPassword!=null) {
                 dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
             }
         }
         dataverseUser = dataverseUserService.save(dataverseUser); 
+        
+        if (editMode == EditMode.CREATE) {
+            session.setUser(dataverseUser);
+            return "/dataverse.xhtml?faces-redirect=true;";
+        }   
+        
         editMode = EditMode.INFO;
+        return null;
     }
 
-    public void cancel(ActionEvent e) {
+    public String cancel() {
+        if (editMode == EditMode.CREATE) {
+            return "/dataverse.xhtml?faces-redirect=true;";
+        }   
+        
+        
         editMode = EditMode.INFO;
+        return null;
     }
     
     public void submit(ActionEvent e) {
