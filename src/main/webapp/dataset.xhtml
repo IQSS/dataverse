@@ -130,7 +130,7 @@
                     </ui:fragment>
                         
                     <ui:fragment>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2"  rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
                             <p:panel styleClass="panelLayoutButtonBlock">
                                 <p:menuButton id="editDataSet" value="Edit Data Set" iconPos="right">
                                     <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DatasetPage.setEditMode('INFO')}" update="@all"/>
