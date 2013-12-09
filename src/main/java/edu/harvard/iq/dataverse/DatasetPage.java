@@ -81,14 +81,24 @@ public class DatasetPage implements java.io.Serializable {
 
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataset", " - Fill in the required fields."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataset", " - Fill in the required fields and add your data files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
             dataset.setOwner(dataverseService.find(ownerId));
 
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }
     }
-
+    
+    public void edit(EditMode editMode) {
+        this.editMode = editMode;
+        if (editMode == EditMode.INFO) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Info", " - Edit your dataset info."));
+        } else if (editMode == EditMode.FILE) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
+        } else if (editMode == EditMode.METADATA) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
+        }
+    }
        
     public void save() {
         dataset.setOwner(dataverseService.find(ownerId));

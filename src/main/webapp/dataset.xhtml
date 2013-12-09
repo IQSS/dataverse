@@ -100,17 +100,16 @@
                 <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
                 
                 <!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
-                <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
-                <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
-                <h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
+                <!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
+                <!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
+                <!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
             </p:panel>
 
             <!-- Title / Button Panel -->
-            <p:panel styleClass="panelLayoutBlock" >
-                
+            <p:panel styleClass="panelLayoutBlock">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode}" style="font-size:1.25em;font-weight:bold;"/>
+                        <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Title" for="title"/>
                             <ui:fragment>
@@ -128,34 +127,31 @@
                             </ui:fragment>
                         </p:panelGrid>
                     </ui:fragment>
-                        
+                    
                     <ui:fragment>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2"  rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
                             <p:panel styleClass="panelLayoutButtonBlock">
-                                <p:menuButton id="editDataSet" value="Edit Data Set" iconPos="right">
-                                    <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DatasetPage.setEditMode('INFO')}" update="@all"/>
-                                    <p:menuitem id="editFiles" value="Edit Files" actionListener="#{DatasetPage.setEditMode('FILE')}" update="@all">
+                                <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
+                                    <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DatasetPage.edit('INFO')}" update="@all"/>
+                                    <p:menuitem id="editFiles" value="Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                     </p:menuitem>
-                                    <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.setEditMode('METADATA')}" update="@all">
+                                    <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                     </p:menuitem>
                                     <p:menuitem value="Edit Permissions" disabled="true"/>
                                 </p:menuButton>
-                                
                             </p:panel>
                         </p:panelGrid>
                     </ui:fragment>
-                        
                 </p:panelGrid>
             </p:panel>
 
             <!-- Citation -->
-            <p:panel styleClass="panelLayoutBlock">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
-                        <p:panel style="background-color: lightgrey;">
-                            TEST
-                            <h:outputText id="citation" style="background-color: lightgrey;" value="#{DatasetPage.dataset.citation}"/>
+                        <p:panel style="background-color: #F5F5F5;">
+                            <h:outputText id="citation" value="#{DatasetPage.dataset.citation}"/>
                         </p:panel>
                         <p:panel>
                             <p:panelGrid columns="2">
@@ -188,7 +184,7 @@
                 
             </p:panel>
             <!-- Description Panel -->
-            <p:panel styleClass="panelLayoutBlock">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}"/>
@@ -254,7 +250,7 @@
             </p:panel>
             
             <!-- Create/Save Dataset Button Panel -->
-            <p:panel styleClass="panelLayoutButtonBlock" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
+            <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
                 <p:commandButton id="save" value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                 </p:commandButton>
