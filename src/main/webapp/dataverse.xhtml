@@ -23,6 +23,7 @@
             .panelLayoutButtonBlock button {margin-right:2em;}
 
             .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
+            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
             .panelLayoutTitleBlock > .ui-widget-content {border:0;}
 
             .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
@@ -66,6 +67,22 @@
         </p:panel>
 
         <h:form id="dataverseForm">
+            <!-- Breadcrumbs Panel -->
+            <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
+                
+                <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
+                    <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                        <h:outputText value="#{owner.name} Dataverse"/>
+                    </h:outputLink>
+                    <h:outputText value=" > "/>
+                </ui:repeat>
+                <!--<br/>-->
+                <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
+                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse"/>
+                </h:outputLink>
+                
+            </p:panel>
+            
             <!-- Message Panel -->
             <p:panel styleClass="panelLayoutTitleBlock" rendered="#{DataversePage.editMode}">
 
@@ -79,17 +96,6 @@
 
             <!-- Name Panel -->
             <p:panel styleClass="panelLayoutBlock">
-                
-                <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner" rendered="#{!DataversePage.editMode}">
-                    <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                        <h:outputText value="#{owner.name} Dataverse"/>
-                    </h:outputLink>
-                    <h:outputText value=" > "/>
-                </ui:repeat>
-                <!--<br/>-->
-                <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{!DataversePage.editMode and DataversePage.dataverse.id != null}">
-                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse"/>
-                </h:outputLink>
                 
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DataversePage.editMode}">
                     <p:panelGrid columns="2">
@@ -199,10 +205,10 @@
                 <ui:fragment>
                     <h:form id="shareForm" style="margin-left:auto;">
                         <p:menuButton id="shareData" value="Share Data" iconPos="right">
-                            <p:menuitem id="UploadDataset" value="Upload Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                            <p:menuitem value="Link to Existing Dataset" disabled="true"/>
                             <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
+                            <p:menuitem id="UploadDataset" value="Upload Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
                             <p:menuitem value="Link to Existing Dataverse" disabled="true"/>
+                            <p:menuitem value="Link to Existing Dataset" disabled="true"/>
                             <p:menuitem value="Create Query" disabled="true"/>
                         </p:menuButton>
                     </h:form>

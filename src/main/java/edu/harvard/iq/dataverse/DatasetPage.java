@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -79,6 +81,7 @@ public class DatasetPage implements java.io.Serializable {
 
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataset", " - Fill in the required fields."));
             dataset.setOwner(dataverseService.find(ownerId));
 
         } else {
