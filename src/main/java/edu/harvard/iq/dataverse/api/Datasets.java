@@ -27,11 +27,15 @@ public class Datasets {
         for (Dataset dataset : datasets) {
             logger.info("dataset: " + dataset.getTitle());
             JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
-                    .add("id", "dataset_" + dataset.getId())
-                    .add("entityid", dataset.getId())
-                    .add("type", "datasets")
+                    .add(SearchFields.ID, "dataset_" + dataset.getId())
+                    .add(SearchFields.ENTITY_ID, dataset.getId())
+                    .add(SearchFields.TYPE, "datasets")
+                    /**
+                     * @todo: should we assign a dataset title to name like this?
+                     */
                     .add("name", dataset.getTitle())
-                    .add("description", dataset.getDescription());
+                    .add(SearchFields.TITLE, dataset.getTitle())
+                    .add(SearchFields.DESCRIPTION, dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);
         }
         JsonArray jsonArray = datasetsArrayBuilder.build();

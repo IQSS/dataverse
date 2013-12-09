@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -7,7 +8,7 @@ import javax.json.JsonObject;
 public class SolrSearchResult {
 
     private String id;
-    private Long entityid;
+    private Long entityId;
     private String type;
     private String query;
     private String name;
@@ -21,14 +22,18 @@ public class SolrSearchResult {
 
     @Override
     public String toString() {
-        return this.id + ":" + this.name + ":" + this.entityid;
+        return this.id + ":" + this.name + ":" + this.entityId;
     }
 
     public JsonObject toJsonObject() {
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add("id", this.id)
-                .add("name", this.name)
-                .add("entityid", this.entityid)
+                .add(SearchFields.ID, this.id)
+                /**
+                 * @todo datasets have titles not names
+                 */
+                .add(SearchFields.NAME, this.name)
+                .add(SearchFields.ENTITY_ID, this.entityId)
+                .add(SearchFields.TYPE, this.type)
                 .build();
         return jsonObject;
     }
@@ -41,12 +46,12 @@ public class SolrSearchResult {
         this.id = id;
     }
 
-    public Long getEntityid() {
-        return entityid;
+    public Long getEntityId() {
+        return entityId;
     }
 
-    public void setEntityid(Long entityid) {
-        this.entityid = entityid;
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
     }
 
     public String getType() {

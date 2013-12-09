@@ -20,17 +20,17 @@
         <p:panel>
             <h:outputText value="Login" rendered="#{LoginPage.editMode == 'LOGIN'}" />
             <h:outputText value="Login is successful." rendered="#{LoginPage.editMode == 'SUCCESS'}" style="color: green" />
-            <h:outputText value="Login is failed." rendered="#{LoginPage.editMode == 'FAILED'}" style="color: red" />            
+            <h:outputText value="Login is failed. Please check your username and password and try again." rendered="#{LoginPage.editMode == 'FAILED'}" style="color: red" />            
         </p:panel>
         
         <h:form id="loginForm" >
             <p:panelGrid columns="3" rendered="#{LoginPage.editMode == 'LOGIN'}" >
-                <p:outputLabel value="Usuername  " for="userName" />
+                <p:outputLabel value="Username  " for="userName" />
                 <p:inputText id="userName" validator="#{LoginPage.validateUserName}" value="#{LoginPage.userName}" />
                 <p:message for="userName" />                        
             
                 <p:outputLabel value="Password  " for="password" />
-                <p:inputText id="password" value="#{LoginPage.password}" />
+                <p:password id="password" value="#{LoginPage.password}" />
                 <p:message for="password" />                                       
             </p:panelGrid>           
             <p:panel rendered="#{LoginPage.editMode == 'LOGIN'}" >

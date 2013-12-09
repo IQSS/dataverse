@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -35,7 +36,7 @@ public class SearchServiceBean {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryFromUser);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
-        solrQuery.setParam("hl.fl", "description");
+        solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
 
         QueryResponse queryResponse;
         try {
@@ -50,24 +51,26 @@ public class SearchServiceBean {
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
-            String description = (String) solrDocument.getFieldValue("description");
-            String id = (String) solrDocument.getFieldValue("id");
-            Long entityid = (Long) solrDocument.getFieldValue("entityid");
-            String type = (String) solrDocument.getFieldValue("type");
+            String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
+            String id = (String) solrDocument.getFieldValue(SearchFields.ID);
+            Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
+            String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             logger.info(id + ": " + description);
-            name = (String) solrDocument.getFieldValue("name");
+            name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             Collection<String> fieldNames = solrDocument.getFieldNames();
             for (String fieldName : fieldNames) {
 //                logger.info("field name: " + fieldName);
             }
             if (queryResponse.getHighlighting().get(id) != null) {
-                highlightSnippets = queryResponse.getHighlighting().get(id).get("description");
+                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
                 logger.info("highlight snippets: " + highlightSnippets);
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(queryFromUser, highlightSnippets, name);
-            /** @todo put all this in the constructor? */
+            /**
+             * @todo put all this in the constructor?
+             */
             solrSearchResult.setId(id);
-            solrSearchResult.setEntityid(entityid);
+            solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
             solrSearchResults.add(solrSearchResult);
         }

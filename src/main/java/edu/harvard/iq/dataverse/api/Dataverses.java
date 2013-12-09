@@ -27,15 +27,12 @@ public class Dataverses {
         for (Dataverse dataverse : dataverses) {
             logger.info("dataverse: " + dataverse.getAlias());
             JsonObjectBuilder dataverseInfoBuilder = Json.createObjectBuilder()
-                    .add("id", "dataverse_" + dataverse.getId())
-                    .add("entityid", dataverse.getId())
-                    .add("type", "dataverses")
-                    .add("name", dataverse.getName())
-                    .add("description", dataverse.getDescription())
-                    /**
-                     * @todo: change "category" to "affiliation"
-                     */
-                    .add("category", dataverse.getAffiliation());
+                    .add(SearchFields.ID, "dataverse_" + dataverse.getId())
+                    .add(SearchFields.ENTITY_ID, dataverse.getId())
+                    .add(SearchFields.TYPE, "dataverses")
+                    .add(SearchFields.NAME, dataverse.getName())
+                    .add(SearchFields.DESCRIPTION, dataverse.getDescription())
+                    .add(SearchFields.AFFILIATION, dataverse.getAffiliation());
             dataversesArrayBuilder.add(dataverseInfoBuilder);
         }
         JsonArray jsonArray = dataversesArrayBuilder.build();

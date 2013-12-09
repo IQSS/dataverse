@@ -44,7 +44,7 @@ public class SearchPage implements java.io.Serializable {
             String type = searchResult.getType();
             switch (type) {
                 case "dataverses":
-                    Dataverse dataverse = dataverseService.find(searchResult.getEntityid());
+                    Dataverse dataverse = dataverseService.find(searchResult.getEntityId());
                     if (searchResult.getHighlightSnippets() != null) {
                         /** @todo when does long description truncate? */
                         dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
@@ -55,7 +55,7 @@ public class SearchPage implements java.io.Serializable {
                     /**
                      * @todo add highlighting?
                      */
-                    Dataset dataset = datasetService.find(searchResult.getEntityid());
+                    Dataset dataset = datasetService.find(searchResult.getEntityId());
                     datasets.add(dataset);
                     break;
                 default:
