@@ -74,6 +74,10 @@ public class Browse {
                 int lineNumber = stacktrace.getLineNumber();
                 String error = "Indexing failed. " + ex.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
                 logger.info(error);
+                /**
+                 * @todo use Util.message2ApiError() instead
+                 */
+
                 JsonObject jsonObject = Json.createObjectBuilder()
                         .add("message", "Error")
                         .add("documentation_url", "http://thedata.org")

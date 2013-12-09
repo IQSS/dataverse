@@ -35,4 +35,12 @@ public class Util {
         return stringWriter.toString();
     }
 
+    static String message2ApiError(String message) {
+        JsonObject error = Json.createObjectBuilder()
+                .add("message", message)
+                .add("documentation_url", "http://thedata.org")
+                .build();
+        return jsonObject2prettyString(error);
+
+    }
 }

@@ -6,29 +6,55 @@
       xmlns:p="http://primefaces.org/ui">  
 
     <h:head>
+        <title>Dataverse</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Content-Language" content="en"/>
+        <style type="text/css">
+            .panelgridHeaderTable {width:100%;}
+            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
+            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
+            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
+
+            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
+            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+
+            .panelLayoutButtonBlock button {margin-right:2em;}
+
+            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
+            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
+            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
+
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
+
+            .rightClass {text-align: right;}
+        </style>
     </h:head>
 
-    <h:body>
-        <f:metadata>
-            <f:viewAction action="#{LoginPage.init}" />
-        </f:metadata>  
+    <h:body>        
+        <!-- Header Panel -->
+        <p:panel style="background-color: lightskyblue; height:70px;">
+            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
+                <ui:fragment>
+                    <h:outputText value="Login" style="font-size:1.5em;font-weight:bold;"/>
+                </ui:fragment>
+            </p:panelGrid>
+        </p:panel>        
 
-        <p:panel  style="background-color: lightskyblue; height:70px;">
-            <h:outputText value="Dataverse Account" /> 
-        </p:panel>
         <p:panel>
-            <h:outputText value="Login" rendered="#{LoginPage.editMode == 'LOGIN'}" />
-            <h:outputText value="Login is successful." rendered="#{LoginPage.editMode == 'SUCCESS'}" style="color: green" />
-            <h:outputText value="Login is failed. Please check your username and password and try again." rendered="#{LoginPage.editMode == 'FAILED'}" style="color: red" />            
+            <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
         </p:panel>
-        
-        <h:form id="loginForm" >
+
+        <h:form id="loginForm" > 
+            <p:focus context="loginForm"/> 
             <p:panelGrid columns="3">
                 <p:outputLabel value="Username  " for="userName" />
-                <p:inputText id="userName" validator="#{LoginPage.validateUserName}" value="#{LoginPage.userName}" />
-                <p:message for="userName" />                        
-            
+                <p:inputText id="userName" value="#{LoginPage.userName}" />
+                <p:message for="userName" /> 
+
                 <p:outputLabel value="Password  " for="password" />
                 <p:password id="password" value="#{LoginPage.password}" />
                 <p:message for="password" />                                       
@@ -37,7 +63,9 @@
                 <ui:fragment>
                     <p:commandButton id="login" value="Login" action="#{LoginPage.login}" update="@all"> 
                         <p:resetInput target="@all" />
-                    </p:commandButton>                        
+                    </p:commandButton>    
+                    <p:button value="Cancel" outcome="/dataverse.xhtml"/>
+
                 </ui:fragment>
             </p:panel>
         </h:form>

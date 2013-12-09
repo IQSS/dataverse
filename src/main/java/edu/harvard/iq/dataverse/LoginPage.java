@@ -31,7 +31,6 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     DataverseUserServiceBean dataverseUserService;
     
-    private EditMode editMode;
 
     @NotBlank(message = "Please enter a username.")    
     private String userName;
@@ -39,13 +38,6 @@ public class LoginPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password.")    
     private String password;
     
-    public EditMode getEditMode() {
-        return editMode;
-    }
-
-    public void setEditMode(EditMode editMode) {
-        this.editMode = editMode;
-    }
 
     public String getUserName() {
         return userName;
@@ -62,11 +54,8 @@ public class LoginPage implements java.io.Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-        
-    public void init() {
-        editMode = EditMode.LOGIN;
-    }
-    
+
+    /*
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String uName = (String) value;
         boolean userNameFound = false;
@@ -79,7 +68,8 @@ public class LoginPage implements java.io.Serializable {
             FacesMessage message = new FacesMessage("Username is incorrect.");
             context.addMessage(toValidate.getClientId(context), message);
         }
-    }    
+    }
+    */
     
     public boolean validatePassword(String username, String password) {
         DataverseUser user = dataverseUserService.findByUserName(userName);
@@ -90,11 +80,10 @@ public class LoginPage implements java.io.Serializable {
     public String login() {
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
-            editMode = EditMode.FAILED;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Login failed", " - Please check your username and password and try again."));
             return null;
         } else {
             session.setUser(user);
-            editMode = EditMode.SUCCESS;
             return "/dataverse.xhtml?faces-redirect=true";
             
         }

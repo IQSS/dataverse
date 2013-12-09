@@ -19,7 +19,7 @@ import javax.inject.Named;
 @SessionScoped
 public class DataverseSession implements Serializable{
     
-DataverseUser user;
+private DataverseUser user;
 
     public DataverseUser getUser() {
         return user;
