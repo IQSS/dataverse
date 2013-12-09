@@ -12,6 +12,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -24,6 +25,8 @@ import org.hibernate.validator.constraints.NotBlank;
 public class LoginPage implements java.io.Serializable {
     
     public enum EditMode {LOGIN, SUCCESS, FAILED};
+    
+    @Inject DataverseSession session;    
     
     @EJB
     DataverseUserServiceBean dataverseUserService;
@@ -84,12 +87,16 @@ public class LoginPage implements java.io.Serializable {
         return encryptedPassword.equals(user.getEncryptedPassword());
     }
 
-    public void login() {
+    public String login() {
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
             editMode = EditMode.FAILED;
+            return null;
         } else {
+            session.setUser(user);
             editMode = EditMode.SUCCESS;
+            return "/dataverse.xhtml?faces-redirect=true";
+            
         }
     }
 }
