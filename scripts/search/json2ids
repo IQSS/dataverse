@@ -1,0 +1,23 @@
+#!/usr/bin/python
+"""Find ids in JSON document"""
+import sys
+try:
+    import json
+except ImportError:
+    import simplejson as json
+import optparse
+parser = optparse.OptionParser(description=__doc__)
+options, args = parser.parse_args()
+
+if not args:
+    print "Please supply a filename to process"
+    sys.exit(1)
+
+json_data=open(args[0])
+data = json.load(json_data)
+ids=[]
+for i in data:
+    id = i["entityid_l"]
+    ids.append(str(id))
+print ' '.join(ids)
+json_data.close()

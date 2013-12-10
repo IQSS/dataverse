@@ -40,8 +40,30 @@ public class Dataverses {
         if (dataverse != null) {
             return Util.jsonObject2prettyString(dataverse2json(dataverse));
         } else {
+            /**
+             * @todo inconsistent with /{id}/dump which simply returns nothing
+             * and "204 No Content"
+             */
             return Util.message2ApiError("Dataverse id " + id + " not found");
         }
+    }
+
+    // used to primarily to feed data into elasticsearch
+    @GET
+    @Path("{id}/{verb}")
+    public Dataverse get(@PathParam("id") Long id, @PathParam("verb") String verb) {
+        if (verb.equals("dump")) {
+            Dataverse dataverse = dataverseService.find(id);
+            if (dataverse != null) {
+                return dataverse;
+            }
+        }
+        /**
+         * @todo return an error instead of "204 No Content"?
+         *
+         */
+        logger.info("GET attempted with dataverse id " + id + " and verb " + verb);
+        return null;
     }
 
     public JsonObject dataverse2json(Dataverse dataverse) {

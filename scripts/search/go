@@ -1,0 +1,8 @@
+#!/bin/bash -x
+./clear
+sleep .5
+./add
+# elasticsearch might need more time before query
+sleep 1
+./query
+./search

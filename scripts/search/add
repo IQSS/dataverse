@@ -3,13 +3,21 @@
 # <field name="entityid" type="long" indexed="true" stored="true" required="true" multiValued="false" /> 
 # <field name="type" type="string" indexed="true" stored="true" required="true" multiValued="false" /> 
 mkdir -p data
+echo "adding to solr..."
 curl -s http://localhost:8080/api/dataverses > data/dataverses.json
 curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/dataverses.json
 
 curl -s http://localhost:8080/api/datasets > data/datasets.json
 curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/datasets.json
 
-mkdir -p data/dataverses
-#                                   index       type     id
-curl -s http://localhost:8080/api/dataverses/1 > data/dataverses/1
-curl -XPOST 'http://localhost:9200/dataverse/dataverses/1' --data-binary @data/dataverses/1
+echo "adding to elasticsearch..."
+#curl -XPOST http://localhost:9200/dataverse/datasets/1 --data-binary @data/datasets/1.dump
+for type in dataverses datasets; do
+  mkdir -p data/$type
+  for i in `./json2ids data/$type.json`; do
+    #echo "adding $i from $type..."
+    curl -s http://localhost:8080/api/$type/$i/dump > data/$type/$i.dump
+    curl -XPOST "http://localhost:9200/dataverse/$type/$i" --data-binary @data/$type/$i.dump
+    echo
+  done;
+done
