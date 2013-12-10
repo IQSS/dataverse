@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.SolrQueryResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -24,14 +27,24 @@ public class Search {
 //    public JsonObject search(@QueryParam("q") String query) {
     public String search(@QueryParam("q") String query) {
         if (query != null) {
-            List<SolrSearchResult> solrSearchResults = searchService.search(query);
+            SolrQueryResponse solrQueryResponse = searchService.search(query);
+
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+            List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
                 filesArrayBuilder.add(solrSearchResult.toJsonObject());
+
             }
+
+            JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
+            for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
+                spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
+            }
+
             JsonObject value = Json.createObjectBuilder()
                     .add("total_count", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
+                    .add("spelling_alternatives", spelling_alternatives)
                     .add("itemsJson", filesArrayBuilder.build())
                     .build();
             logger.info("value: " + value);

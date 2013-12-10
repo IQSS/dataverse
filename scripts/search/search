@@ -1,2 +1,6 @@
 #!/bin/sh
-curl 'http://localhost:8080/api/search?q=*'
+if [ -z "$1" ]; then
+    curl 'http://localhost:8080/api/search?q=*'
+else
+    curl "http://localhost:8080/api/search?$1"
+fi

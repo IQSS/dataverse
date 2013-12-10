@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -18,6 +19,7 @@ public class SearchPage implements java.io.Serializable {
     private List<Dataset> datasets = new ArrayList<>();
     private List<DataverseUser> dataverseUsers = new ArrayList<>();
     private List<DataFile> dataFiles = new ArrayList<>();
+    private List<String> spelling_alternatives = new ArrayList<>();
 
     @EJB
     SearchServiceBean searchService;
@@ -39,14 +41,20 @@ public class SearchPage implements java.io.Serializable {
         datasets = new ArrayList();
 
         query = query == null ? "*" : query;
-        List<SolrSearchResult> searchResults = searchService.search(query);
+        SolrQueryResponse solrQueryResponse = searchService.search(query);
+        List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
+            spelling_alternatives.add(entry.getValue().toString());
+        }
         for (SolrSearchResult searchResult : searchResults) {
             String type = searchResult.getType();
             switch (type) {
                 case "dataverses":
                     Dataverse dataverse = dataverseService.find(searchResult.getEntityId());
                     if (searchResult.getHighlightSnippets() != null) {
-                        /** @todo when does long description truncate? */
+                        /**
+                         * @todo when does long description truncate?
+                         */
                         dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
                     }
                     dataverses.add(dataverse);
@@ -122,6 +130,14 @@ public class SearchPage implements java.io.Serializable {
 
     public void setDataFiles(List<DataFile> dataFiles) {
         this.dataFiles = dataFiles;
+    }
+
+    public List<String> getSpelling_alternatives() {
+        return spelling_alternatives;
+    }
+
+    public void setSpelling_alternatives(List<String> spelling_alternatives) {
+        this.spelling_alternatives = spelling_alternatives;
     }
 
 }

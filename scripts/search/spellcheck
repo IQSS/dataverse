@@ -1,0 +1,5 @@
+#!/bin/sh
+# output:
+# "hits",1,
+# "misspellingsAndCorrections",["datvrse","dataverse"]
+curl -s 'http://localhost:8983/solr/spell?spellcheck=true&wt=json&indent=true&q=datvrse'

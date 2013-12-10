@@ -47,6 +47,7 @@
 
             <!-- Content Panel -->
             <p:panel id="content">
+                <h:outputText style="color: red" value="Did you mean #{SearchPage.spelling_alternatives}?" rendered="#{SearchPage.spelling_alternatives.size() != 0}"/>
                 <p:tabView id="tabView" widgetVar="content">
                     <p:tab id="dataversesTab" title="Dataverses">
                         <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
