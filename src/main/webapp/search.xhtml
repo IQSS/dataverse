@@ -48,52 +48,60 @@
             <!-- Content Panel -->
             <p:panel id="content">
                 <h:outputText style="color: red" value="Did you mean #{SearchPage.spelling_alternatives}?" rendered="#{SearchPage.spelling_alternatives.size() != 0}"/>
-                <p:tabView id="tabView" widgetVar="content">
-                    <p:tab id="dataversesTab" title="Dataverses">
-                        <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
-                            <p:column>
-                                <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}">
-                                    <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
-                                </h:outputLink>
-                            </p:column>
-                            <p:column>
-                                <h:outputText id="dataverseToStringOutput" value="#{dataverse.description}" escape="false" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:tab>
-                    <p:tab id="dataSetsTab" title="Datasets">
-                        <p:dataTable id="datasetsTable" value="#{SearchPage.datasets}" var="dataset">
-                            <p:column>
-                                <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
-                                    <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
-                                </h:outputLink>
-                            </p:column>
-                            <p:column>
-                                <h:outputText id="datasetToStringOutput" value="#{dataset.description}" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:tab>
-                    <p:tab id="dataFilesTab" title="Files">
-                        <p:dataTable id="datafilesTable" value="#{SearchPage.dataFiles}" var="datafile">
-                            <p:column>
-                                <h:outputText id="datafileNameOutput" value="#{datafile.name}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputText id="datafileToStringOutput" value="#{datafile}" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:tab>
-                    <p:tab id="usersTab" title="Users">
-                        <p:dataTable id="usersTable" value="#{SearchPage.dataverseUsers}" var="user">
-                            <p:column>
-                                <h:outputText id="userNameOutput" value="#{user.userName}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputText id="userToStringOutput" value="#{user}" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:tab>
-                </p:tabView>
+
+                <div style="overflow:hidden;">
+                    <div style="width:20%;float:left;">
+                        FACETS...
+                    </div>
+                    <div style="width:80%;float:left;">
+                        <p:tabView id="tabView" widgetVar="content">
+                            <p:tab id="dataversesTab" title="Dataverses">
+                                <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
+                                    <p:column>
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}">
+                                            <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
+                                        </h:outputLink>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="dataverseToStringOutput" value="#{dataverse.description}" escape="false" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab id="dataSetsTab" title="Datasets">
+                                <p:dataTable id="datasetsTable" value="#{SearchPage.datasets}" var="dataset">
+                                    <p:column>
+                                        <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
+                                            <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
+                                        </h:outputLink>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="datasetToStringOutput" value="#{dataset.description}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab id="dataFilesTab" title="Files">
+                                <p:dataTable id="datafilesTable" value="#{SearchPage.dataFiles}" var="datafile">
+                                    <p:column>
+                                        <h:outputText id="datafileNameOutput" value="#{datafile.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="datafileToStringOutput" value="#{datafile}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab id="usersTab" title="Users">
+                                <p:dataTable id="usersTable" value="#{SearchPage.dataverseUsers}" var="user">
+                                    <p:column>
+                                        <h:outputText id="userNameOutput" value="#{user.userName}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="userToStringOutput" value="#{user}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                        </p:tabView>
+                    </div>
+                </div>
             </p:panel>  
         </h:form>
     </h:body> 
