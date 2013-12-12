@@ -10,6 +10,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
@@ -72,4 +73,9 @@ public class Datasets {
         return null;
     }
 
+    @POST
+    public String add(Dataset dataset){
+        datasetService.save(dataset);
+        return "dataset " + dataset.getTitle() + " created\n";
+    }
 }

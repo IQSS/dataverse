@@ -22,6 +22,9 @@ for row in rows:
     row["owner"] = {"id": owner_id}
     print json.dumps(row)
 csv_file.close()
-# sample file:
+# sample dataverse file:
 #id	name	alias	owner	contactEmail	description	affiliation
 #2	Birds	birds	1	birds@birds.com	A birds dataverse	Birds Inc.
+# sample dataset file:
+#id	title	author	owner	description	citationDate	distributor
+#1	birdstudy1	Dr. Finch	1	About birds	2013-12-11	For the Birds
