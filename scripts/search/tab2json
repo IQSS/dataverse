@@ -18,8 +18,13 @@ else:
 reader = csv.DictReader(csv_file, delimiter="\t")
 rows = [row for row in reader]
 for row in rows:
-    owner_id = row["owner"]
-    row["owner"] = {"id": owner_id}
+    if "name" in row and "alias" in  row and row["id"] == "1":
+        # root dataverse can't have an owner
+        del row["owner"]
+        pass
+    else:
+        owner_id = row["owner"]
+        row["owner"] = {"id": owner_id}
     print json.dumps(row)
 csv_file.close()
 # sample dataverse file:
