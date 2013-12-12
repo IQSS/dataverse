@@ -11,6 +11,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
@@ -64,6 +65,12 @@ public class Dataverses {
          */
         logger.info("GET attempted with dataverse id " + id + " and verb " + verb);
         return null;
+    }
+
+    @POST
+    public String add(Dataverse dataverse) {
+        dataverseService.save(dataverse);
+        return "dataverse " + dataverse.getAlias() + " created\n";
     }
 
     public JsonObject dataverse2json(Dataverse dataverse) {

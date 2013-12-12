@@ -1,0 +1,5 @@
+#!/bin/sh
+DVDIR='data/in/dataverses'
+for i in `ls data/in/dataverses`; do
+  curl http://localhost:8080/api/dataverses -H 'Content-type:application/json' --data-binary @$DVDIR/$i
+done

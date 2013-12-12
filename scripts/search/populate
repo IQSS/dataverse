@@ -1,0 +1,4 @@
+#!/bin/bash
+DVDIR='data/in/dataverses'
+mkdir -p $DVDIR
+count=1; ./dvtab2json bar.tsv | while read i; do echo $i | python -m json.tool > $DVDIR/$count; let count++; done
