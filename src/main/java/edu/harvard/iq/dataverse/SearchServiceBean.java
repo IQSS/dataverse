@@ -14,6 +14,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
@@ -41,6 +42,9 @@ public class SearchServiceBean {
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
         solrQuery.setParam("qt", "/spell");
+        solrQuery.setParam("facet", "true");
+        solrQuery.setParam("facet.query", "*");
+        solrQuery.addFacetField(SearchFields.AUTHOR);
 
         QueryResponse queryResponse;
         try {
@@ -87,8 +91,17 @@ public class SearchServiceBean {
             }
         }
 
+        List<String> facets = new ArrayList<>();
+        for (FacetField facetField : queryResponse.getFacetFields()) {
+            for (FacetField.Count facetFieldCount : facetField.getValues()) {
+                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                facets.add(facetField.getName() + ": " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+            }
+        }
+
         SolrQueryResponse solrQueryResponse = new SolrQueryResponse();
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
+        solrQueryResponse.setFacets(facets);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         return solrQueryResponse;
     }

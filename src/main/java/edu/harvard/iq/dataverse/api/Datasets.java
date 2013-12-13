@@ -37,6 +37,7 @@ public class Datasets {
                      * this?
                      */
                     .add("name", dataset.getTitle())
+                    .add(SearchFields.AUTHOR, dataset.getAuthor())
                     .add(SearchFields.TITLE, dataset.getTitle())
                     .add(SearchFields.DESCRIPTION, dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);

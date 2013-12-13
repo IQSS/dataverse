@@ -19,6 +19,7 @@ public class SearchPage implements java.io.Serializable {
     private List<Dataset> datasets = new ArrayList<>();
     private List<DataverseUser> dataverseUsers = new ArrayList<>();
     private List<DataFile> dataFiles = new ArrayList<>();
+    private List<String> facets = new ArrayList<>();
     private List<String> spelling_alternatives = new ArrayList<>();
 
     @EJB
@@ -39,12 +40,16 @@ public class SearchPage implements java.io.Serializable {
          */
         dataverses = new ArrayList();
         datasets = new ArrayList();
+        facets = new ArrayList<>();
 
         query = query == null ? "*" : query;
         SolrQueryResponse solrQueryResponse = searchService.search(query);
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
+        }
+        for (String facet : solrQueryResponse.getFacets()) {
+            facets.add(facet);
         }
         for (SolrSearchResult searchResult : searchResults) {
             String type = searchResult.getType();
@@ -130,6 +135,14 @@ public class SearchPage implements java.io.Serializable {
 
     public void setDataFiles(List<DataFile> dataFiles) {
         this.dataFiles = dataFiles;
+    }
+
+    public List<String> getFacets() {
+        return facets;
+    }
+
+    public void setFacets(List<String> facets) {
+        this.facets = facets;
     }
 
     public List<String> getSpelling_alternatives() {

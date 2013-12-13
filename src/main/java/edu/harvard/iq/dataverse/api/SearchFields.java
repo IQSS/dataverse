@@ -7,6 +7,7 @@ public class SearchFields {
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
+    public static final String AUTHOR = "author";
     // dynamic fields (for now) http://wiki.apache.org/solr/SchemaXml#Dynamic_fields
     // *_s for String
     // *_l for Long
