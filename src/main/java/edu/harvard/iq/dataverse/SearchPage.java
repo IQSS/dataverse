@@ -15,9 +15,8 @@ public class SearchPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(SearchPage.class.getCanonicalName());
 
     private String query;
-    private List<Dataverse> dataverses = new ArrayList();
-    private List<Dataset> datasets = new ArrayList<>();
-    private List<DataFile> dataFiles = new ArrayList<>();
+    private String facetQuery;
+    private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private List<String> facets = new ArrayList<>();
     private List<String> spelling_alternatives = new ArrayList<>();
 
@@ -37,56 +36,17 @@ public class SearchPage implements java.io.Serializable {
         /**
          * @todo remove this? What about pagination for many, many results?
          */
-        dataverses = new ArrayList();
-        datasets = new ArrayList();
         facets = new ArrayList<>();
 
         query = query == null ? "*" : query;
-        SolrQueryResponse solrQueryResponse = searchService.search(query);
+        SolrQueryResponse solrQueryResponse = searchService.search(query, facetQuery);
+        searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
         }
         for (String facet : solrQueryResponse.getFacets()) {
             facets.add(facet);
-        }
-        for (SolrSearchResult searchResult : searchResults) {
-            String type = searchResult.getType();
-            switch (type) {
-                case "dataverses":
-                    Dataverse dataverse = dataverseService.find(searchResult.getEntityId());
-                    if (searchResult.getHighlightSnippets() != null) {
-                        /**
-                         * @todo when does long description truncate?
-                         */
-                        dataverse.setDescription(searchResult.getHighlightSnippets().get(0));
-                    }
-                    dataverses.add(dataverse);
-                    break;
-                case "datasets":
-                    /**
-                     * @todo add highlighting?
-                     */
-                    Dataset dataset = datasetService.find(searchResult.getEntityId());
-                    datasets.add(dataset);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        /**
-         * @todo fill this in with real search results
-         */
-        dataFiles = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            Long id = new Long(String.valueOf(i));
-
-            DataFile dataFile = new DataFile();
-            dataFile.setId(id);
-            dataFile.setName("file" + i);
-            dataFiles.add(dataFile);
-
         }
     }
 
@@ -98,28 +58,20 @@ public class SearchPage implements java.io.Serializable {
         this.query = query;
     }
 
-    public List<Dataverse> getDataverses() {
-        return dataverses;
+    public String getFacetQuery() {
+        return facetQuery;
     }
 
-    public void setDataverses(List<Dataverse> dataverses) {
-        this.dataverses = dataverses;
+    public void setFacetQuery(String facetQuery) {
+        this.facetQuery = facetQuery;
     }
 
-    public List<Dataset> getDatasets() {
-        return datasets;
+    public List<SolrSearchResult> getSearchResultsList() {
+        return searchResultsList;
     }
 
-    public void setDatasets(List<Dataset> datasets) {
-        this.datasets = datasets;
-    }
-
-    public List<DataFile> getDataFiles() {
-        return dataFiles;
-    }
-
-    public void setDataFiles(List<DataFile> dataFiles) {
-        this.dataFiles = dataFiles;
+    public void setSearchResultsList(List<SolrSearchResult> searchResultsList) {
+        this.searchResultsList = searchResultsList;
     }
 
     public List<String> getFacets() {

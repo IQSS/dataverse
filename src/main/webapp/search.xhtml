@@ -17,6 +17,7 @@
     <h:body> 
         <f:metadata>
             <f:viewParam name="q" value="#{SearchPage.query}"/>
+            <f:viewParam name="fq" value="#{SearchPage.facetQuery}"/>
             <f:viewAction action="#{SearchPage.search()}" />
         </f:metadata>  
 
@@ -51,49 +52,57 @@
 
                 <div style="overflow:hidden;">
                     <div style="width:20%;float:left;">
+                        <h:outputText value="Types" style="font-weight: bold"/>
+                        <br/>
+                        <h:outputLink value="/search.xhtml">
+                            <h:outputText value="§Dataverses"/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq" value="type_s:dataverses"/>
+                        </h:outputLink>
+                        <br/>
+                        <h:outputLink value="/search.xhtml">
+                            <h:outputText value="‡Datasets"/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq" value="type_s:datasets"/>
+                        </h:outputLink>
+                        <br/>
+                        <h:outputLink value="/search.xhtml">
+                            <h:outputText value="¤Files"/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq" value="type_s:files"/>
+                        </h:outputLink>
+                        <br/>
+                        <br/>
+                        <h:outputText value="Facets" style="font-weight: bold"/>
                         <p:dataTable id="facetTable" value="#{SearchPage.facets}" var="facet">
                             <p:column>
-                                <h:outputText value="#{facet}"/>
+                                <!--<h:outputLink value="/search.xhtml?q=#{SearchPage.query}">-->
+                                <h:outputLink value="/search.xhtml">
+                                    <f:param name="q" value="#{SearchPage.query}"/>
+                                    <f:param name="fq" value="#{facet}"/>
+                                    <h:outputText value="#{facet}"/>
+                                </h:outputLink>
                             </p:column>
                         </p:dataTable>
                     </div>
                     <div style="width:80%;float:left;">
-                        <p:tabView id="tabView" widgetVar="content">
-                            <p:tab id="dataversesTab" title="Dataverses">
-                                <p:dataTable id="dataversesTable" value="#{SearchPage.dataverses}" var="dataverse">
-                                    <p:column>
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}">
-                                            <h:outputText id="dataverseAliasOutput" value="#{dataverse.alias}"/> 
-                                        </h:outputLink>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText id="dataverseToStringOutput" value="#{dataverse.description}" escape="false" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:tab>
-                            <p:tab id="dataSetsTab" title="Datasets">
-                                <p:dataTable id="datasetsTable" value="#{SearchPage.datasets}" var="dataset">
-                                    <p:column>
-                                        <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
-                                            <h:outputText id="datasetTitleOutput" value="#{dataset.title}"/>
-                                        </h:outputLink>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText id="datasetToStringOutput" value="#{dataset.description}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:tab>
-                            <p:tab id="dataFilesTab" title="Files">
-                                <p:dataTable id="datafilesTable" value="#{SearchPage.dataFiles}" var="datafile">
-                                    <p:column>
-                                        <h:outputText id="datafileNameOutput" value="#{datafile.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText id="datafileToStringOutput" value="#{datafile}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:tab>
-                        </p:tabView>
+                        <h:outputText value="Results for query [#{SearchPage.query}] and facet query [#{SearchPage.facetQuery}]" style="font-weight: bold"/>
+                        <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result">
+                            <p:column>
+                                <h:outputText value="§" rendered="#{result.type == 'dataverses'}"/>
+                                <h:outputText value="‡" rendered="#{result.type == 'datasets'}"/>
+                                <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.type == 'dataverses'}">
+                                    <h:outputText value="#{result.name}"/>
+                                </h:outputLink>
+                                <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" rendered="#{result.type == 'datasets'}">
+                                    <h:outputText value="#{result.name}"/>
+                                </h:outputLink>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                            </p:column>
+                        </p:dataTable>
                     </div>
                 </div>
             </p:panel>  

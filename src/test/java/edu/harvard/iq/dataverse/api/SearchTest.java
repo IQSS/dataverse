@@ -15,7 +15,7 @@ public class SearchTest {
     @Test
     public void testSearchNoParameters() {
         Search search = new Search();
-        String actual = search.search(null);
+        String actual = search.search(null, null);
         String expected = "{\"message\":\"Validation Failed\",\"documentation_url\":\"http://thedata.org\",\"errors\":[{\"field\":\"q\",\"code\":\"missing\"}]}";
         assertEquals(expected, actual);
     }
