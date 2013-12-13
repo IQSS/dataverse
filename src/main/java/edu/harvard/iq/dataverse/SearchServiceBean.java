@@ -44,7 +44,8 @@ public class SearchServiceBean {
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         solrQuery.setParam("facet.query", "*");
-        solrQuery.addFacetField(SearchFields.AUTHOR);
+        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
+        solrQuery.addFacetField(SearchFields.AFFILIATION);
 
         QueryResponse queryResponse;
         try {

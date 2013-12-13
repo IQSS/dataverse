@@ -53,7 +53,7 @@ public class Search {
                     .add("itemsJson", filesArrayBuilder.build())
                     .add("facets", facets)
                     .build();
-            logger.info("value: " + value);
+//            logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);
         } else {
             /**
