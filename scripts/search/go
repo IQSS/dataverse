@@ -1,6 +1,8 @@
 #!/bin/bash -x
 ./clear
 sleep .5
+./populate
+./create
 ./add
 # elasticsearch might need more time before query
 sleep 1
