@@ -17,7 +17,7 @@ public class SearchPage implements java.io.Serializable {
     private String query;
     private String facetQuery;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
-    private List<String> facets = new ArrayList<>();
+    private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
 
     @EJB
@@ -33,10 +33,6 @@ public class SearchPage implements java.io.Serializable {
 
     public void search() {
         logger.info("Search button clicked. Query: " + query);
-        /**
-         * @todo remove this? What about pagination for many, many results?
-         */
-        facets = new ArrayList<>();
 
         query = query == null ? "*" : query;
         SolrQueryResponse solrQueryResponse = searchService.search(query, facetQuery);
@@ -45,9 +41,7 @@ public class SearchPage implements java.io.Serializable {
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
         }
-        for (String facet : solrQueryResponse.getFacets()) {
-            facets.add(facet);
-        }
+        facetCategoryList = solrQueryResponse.getFacetCategoryList();
     }
 
     public String getQuery() {
@@ -74,12 +68,12 @@ public class SearchPage implements java.io.Serializable {
         this.searchResultsList = searchResultsList;
     }
 
-    public List<String> getFacets() {
-        return facets;
+    public List<FacetCategory> getFacetCategoryList() {
+        return facetCategoryList;
     }
 
-    public void setFacets(List<String> facets) {
-        this.facets = facets;
+    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
+        this.facetCategoryList = facetCategoryList;
     }
 
     public List<String> getSpelling_alternatives() {

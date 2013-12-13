@@ -74,16 +74,17 @@
                         <br/>
                         <br/>
                         <h:outputText value="Facets" style="font-weight: bold"/>
-                        <p:dataTable id="facetTable" value="#{SearchPage.facets}" var="facet">
-                            <p:column>
-                                <!--<h:outputLink value="/search.xhtml?q=#{SearchPage.query}">-->
-                                <h:outputLink value="/search.xhtml">
+                        <p:dataList id="facetCategoryList" value="#{SearchPage.facetCategoryList}" var="facetCategory">
+                            <h:outputText value="#{facetCategory.name}"/>
+                            <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel">
+                                <h:outputLink value="search.xhtml">
                                     <f:param name="q" value="#{SearchPage.query}"/>
-                                    <f:param name="fq" value="#{facet}"/>
-                                    <h:outputText value="#{facet}"/>
+                                    <f:param name="fq" value="#{facetCategory.name}:#{facetLabel.name}"/>
+                                    <h:outputText value="#{facetLabel.name}"/>
                                 </h:outputLink>
-                            </p:column>
-                        </p:dataTable>
+                                <h:outputText value=" (#{facetLabel.count})"/>
+                            </p:dataList>
+                        </p:dataList>
                     </div>
                     <div style="width:80%;float:left;">
                         <h:outputText value="Results for query [#{SearchPage.query}] and facet query [#{SearchPage.facetQuery}]" style="font-weight: bold"/>

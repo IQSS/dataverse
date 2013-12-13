@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.FacetCategory;
+import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
@@ -43,9 +45,17 @@ public class Search {
             }
 
             JsonArrayBuilder facets = Json.createArrayBuilder();
-            for (String facetString : solrQueryResponse.getFacets()) {
-                facets.add(facetString);
+            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
+                JsonArrayBuilder facetLabelBuilder = Json.createArrayBuilder();
+                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
+                    facetLabelBuilder.add(countBuilder);
+                }
+                facetCategoryBuilder.add(facetCategory.getName(), facetLabelBuilder);
             }
+            facets.add(facetCategoryBuilder);
 
             JsonObject value = Json.createObjectBuilder()
                     .add("total_count", solrSearchResults.size())

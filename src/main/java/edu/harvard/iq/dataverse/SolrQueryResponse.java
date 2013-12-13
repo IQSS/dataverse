@@ -7,15 +7,7 @@ public class SolrQueryResponse {
 
     private List<SolrSearchResult> solrSearchResults;
     private Map<String, List<String>> spellingSuggestionsByToken;
-    private List<String> facets;
-
-    public List<String> getFacets() {
-        return facets;
-    }
-
-    public void setFacets(List<String> facets) {
-        this.facets = facets;
-    }
+    private List<FacetCategory> facetCategoryList;
 
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -31,6 +23,14 @@ public class SolrQueryResponse {
 
     public void setSpellingSuggestionsByToken(Map<String, List<String>> spellingSuggestionsByToken) {
         this.spellingSuggestionsByToken = spellingSuggestionsByToken;
+    }
+
+    public List<FacetCategory> getFacetCategoryList() {
+        return facetCategoryList;
+    }
+
+    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
+        this.facetCategoryList = facetCategoryList;
     }
 
 }

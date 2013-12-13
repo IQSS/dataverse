@@ -94,22 +94,29 @@ public class SearchServiceBean {
             }
         }
 
-        List<String> facets = new ArrayList<>();
+        List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
         for (FacetField facetField : queryResponse.getFacetFields()) {
+            FacetCategory facetCategory = new FacetCategory();
+            List<FacetLabel> facetLabelList = new ArrayList<>();
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 /**
                  * @todo we do want to show the count for each facet
                  */
                 logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
-//                facets.add(facetField.getName() + ": " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
-                facets.add(facetField.getName() + ":" + facetFieldCount.getName());
+                if (facetFieldCount.getCount() > 0) {
+                    FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                    facetLabelList.add(facetLabel);
+                }
             }
+            facetCategory.setName(facetField.getName());
+            facetCategory.setFacetLabel(facetLabelList);
+            facetCategoryList.add(facetCategory);
         }
 
         SolrQueryResponse solrQueryResponse = new SolrQueryResponse();
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
-        solrQueryResponse.setFacets(facets);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
+        solrQueryResponse.setFacetCategoryList(facetCategoryList);
         return solrQueryResponse;
     }
 }
