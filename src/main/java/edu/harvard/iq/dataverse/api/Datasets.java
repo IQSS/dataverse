@@ -39,6 +39,10 @@ public class Datasets {
                     .add("name", dataset.getTitle())
                     .add(SearchFields.AUTHOR_STRING, dataset.getAuthor())
                     .add(SearchFields.TITLE, dataset.getTitle())
+                    /**
+                     * @todo: don't use distributor for category. testing facets
+                     */
+                    .add(SearchFields.CATEGORY, dataset.getDistributor())
                     .add(SearchFields.DESCRIPTION, dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);
         }
@@ -75,7 +79,7 @@ public class Datasets {
     }
 
     @POST
-    public String add(Dataset dataset){
+    public String add(Dataset dataset) {
         datasetService.save(dataset);
         return "dataset " + dataset.getTitle() + " created\n";
     }

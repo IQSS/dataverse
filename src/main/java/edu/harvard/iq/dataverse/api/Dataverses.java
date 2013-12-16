@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -80,7 +81,8 @@ public class Dataverses {
                 .add(SearchFields.TYPE, "dataverses")
                 .add(SearchFields.NAME, dataverse.getName())
                 .add(SearchFields.DESCRIPTION, dataverse.getDescription())
-                .add(SearchFields.AFFILIATION, dataverse.getAffiliation());
+                .add(SearchFields.CATEGORY,dataverse.getAffiliation());
+//                .add(SearchFields.AFFILIATION, dataverse.getAffiliation());
         return dataverseInfoBuilder.build();
     }
 }

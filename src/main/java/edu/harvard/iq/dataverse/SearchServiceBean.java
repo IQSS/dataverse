@@ -49,7 +49,8 @@ public class SearchServiceBean {
         }
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
-        solrQuery.addFacetField(SearchFields.AFFILIATION);
+//        solrQuery.addFacetField(SearchFields.AFFILIATION);
+        solrQuery.addFacetField(SearchFields.CATEGORY);
 
         QueryResponse queryResponse;
         try {
