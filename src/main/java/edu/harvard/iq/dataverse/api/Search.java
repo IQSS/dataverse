@@ -27,10 +27,9 @@ public class Search {
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("q") String query, @QueryParam("fq") String facetQuery) {
+    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries) {
         if (query != null) {
-            logger.info("query: " + query + " facetQuery: " + facetQuery);
-            SolrQueryResponse solrQueryResponse = searchService.search(query, facetQuery);
+            SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
 
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();

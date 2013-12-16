@@ -32,7 +32,7 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
-    public SolrQueryResponse search(String query, String facetQuery) {
+    public SolrQueryResponse search(String query, List<String> filterQueries) {
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -43,14 +43,18 @@ public class SearchServiceBean {
         solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
+        /**
+         * @todo: do we need facet.query?
+         */
         solrQuery.setParam("facet.query", "*");
-        if (facetQuery != null) {
-            solrQuery.setParam("fq", facetQuery);
+        for (String filterQuery : filterQueries) {
+            solrQuery.addFilterQuery(filterQuery);
         }
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
+        logger.info("Solr query:" + solrQuery);
 
         QueryResponse queryResponse;
         try {
@@ -73,13 +77,13 @@ public class SearchServiceBean {
             Collection<String> fieldNames = solrDocument.getFieldNames();
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
-                logger.info("highlight snippets: " + highlightSnippets);
+//                logger.info("highlight snippets: " + highlightSnippets);
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets, name);
             /**
              * @todo put all this in the constructor?
              */
-            logger.info(id + ": " + description);
+//            logger.info(id + ": " + description);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
@@ -103,7 +107,7 @@ public class SearchServiceBean {
                 /**
                  * @todo we do want to show the count for each facet
                  */
-                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+//                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 if (facetFieldCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
                     facetLabelList.add(facetLabel);

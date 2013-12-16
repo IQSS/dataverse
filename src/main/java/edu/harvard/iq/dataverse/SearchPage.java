@@ -15,7 +15,7 @@ public class SearchPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(SearchPage.class.getCanonicalName());
 
     private String query;
-    private String facetQuery;
+    private String filterQuery;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
@@ -35,7 +35,19 @@ public class SearchPage implements java.io.Serializable {
         logger.info("Search button clicked. Query: " + query);
 
         query = query == null ? "*" : query;
-        SolrQueryResponse solrQueryResponse = searchService.search(query, facetQuery);
+        /**
+         * @todo: Will JSF allow us to put more than one filter query (fq) in
+         * the URL?
+         *
+         * The answer (sadly) is "no" according to this:
+         *
+         * the <f:viewParam> does not support nor handle a single parameter with
+         * multiple values" --
+         * http://stackoverflow.com/questions/17275130/is-there-a-way-to-make-fviewparam-handle-lists-of-values/17276832#17276832
+         */
+        List<String> filterQueries = new ArrayList<>();
+        filterQueries.add(filterQuery);
+        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
@@ -52,12 +64,12 @@ public class SearchPage implements java.io.Serializable {
         this.query = query;
     }
 
-    public String getFacetQuery() {
-        return facetQuery;
+    public String getFilterQuery() {
+        return filterQuery;
     }
 
-    public void setFacetQuery(String facetQuery) {
-        this.facetQuery = facetQuery;
+    public void setFilterQuery(String filterQuery) {
+        this.filterQuery = filterQuery;
     }
 
     public List<SolrSearchResult> getSearchResultsList() {
