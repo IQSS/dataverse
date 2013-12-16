@@ -110,7 +110,7 @@
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Title" for="title"/>
                             <ui:fragment>
                                 <p:inputText id="title" size="40" value="#{DatasetPage.dataset.title}"/>
@@ -132,8 +132,7 @@
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
                             <p:panel styleClass="panelLayoutButtonBlock">
                                 <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
-                                    <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DatasetPage.edit('INFO')}" update="@all"/>
-                                    <p:menuitem id="editFiles" value="Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                    <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                     </p:menuitem>
                                     <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
@@ -148,7 +147,7 @@
             </p:panel>
 
             <!-- Citation -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
                         <p:panel style="background-color: #F5F5F5;">
                             <h:outputText id="citation" value="#{DatasetPage.dataset.citation}"/>
@@ -165,7 +164,7 @@
                             </p:panelGrid>
                         </p:panel>
                 </p:panelGrid>
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                     <h:outputText value="Data Citation"/>
                     <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
                         <p:outputLabel value="Author" for="author" />
@@ -184,11 +183,11 @@
                 
             </p:panel>
             <!-- Description Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}"/>
-                        <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE'}">
+                        <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Description" for="description"/>
                             <ui:fragment>
                                 <p:inputTextarea id="description" value="#{DatasetPage.dataset.description}"
@@ -208,9 +207,10 @@
             <!-- Content Panel -->
             <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                 <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                    <p:tab id="dataFilesTab" title="Data Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
-                        <p:fileUpload  id="fileUpload" dragDropSupport="true"  auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                       fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"/>
+                    <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                        <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                      fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable"
+                                      label="Select Files to Add"/>
                         <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                             <p:column>
                                 <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
