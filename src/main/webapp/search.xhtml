@@ -79,8 +79,9 @@
                             <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel">
                                 <h:outputLink value="search.xhtml">
                                     <f:param name="q" value="#{SearchPage.query}"/>
-                                    <f:param name="fq" value="#{facetCategory.name}:#{facetLabel.name}"/>
-                                    <h:outputText value="#{facetLabel.name}"/>
+                                    <f:param name="fq" value='#{facetCategory.name}:"#{facetLabel.name}"'/>
+                                    <!-- FIXME: "contains" is not very robust -->
+                                    <h:outputText value="#{facetLabel.name}" style="color: #{SearchPage.facetQuery.contains(facetLabel.name) ? 'grey' : 'black'};"/>
                                 </h:outputLink>
                                 <h:outputText value=" (#{facetLabel.count})"/>
                             </p:dataList>
