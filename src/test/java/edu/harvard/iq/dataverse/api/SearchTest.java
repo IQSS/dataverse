@@ -12,13 +12,13 @@ import org.junit.Test;
 
 public class SearchTest {
 
-    @Test
-    public void testSearchNoParameters() {
-        Search search = new Search();
-        String actual = search.search(null, null);
-        String expected = "{\"message\":\"Validation Failed\",\"documentation_url\":\"http://thedata.org\",\"errors\":[{\"field\":\"q\",\"code\":\"missing\"}]}";
-        assertEquals(expected, actual);
-    }
+//    @Test
+//    public void testSearchNoParameters() {
+//        Search search = new Search();
+//        String actual = search.search(null, null);
+//        String expected = "{\"message\":\"Validation Failed\",\"documentation_url\":\"http://thedata.org\",\"errors\":[{\"field\":\"q\",\"code\":\"missing\"}]}";
+//        assertEquals(expected, actual);
+//    }
 
     // skipping for now... this is more of an integration test... it requires a web server
 //    @Test
