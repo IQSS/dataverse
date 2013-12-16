@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.FacetCategory;
+import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
@@ -25,9 +27,10 @@ public class Search {
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("q") String query) {
+    public String search(@QueryParam("q") String query, @QueryParam("fq") String facetQuery) {
         if (query != null) {
-            SolrQueryResponse solrQueryResponse = searchService.search(query);
+            logger.info("query: " + query + " facetQuery: " + facetQuery);
+            SolrQueryResponse solrQueryResponse = searchService.search(query, facetQuery);
 
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
@@ -41,13 +44,27 @@ public class Search {
                 spelling_alternatives.add(entry.getKey(), entry.getValue().toString());
             }
 
+            JsonArrayBuilder facets = Json.createArrayBuilder();
+            JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
+            for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
+                JsonArrayBuilder facetLabelBuilder = Json.createArrayBuilder();
+                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                    JsonObjectBuilder countBuilder = Json.createObjectBuilder();
+                    countBuilder.add(facetLabel.getName(), facetLabel.getCount());
+                    facetLabelBuilder.add(countBuilder);
+                }
+                facetCategoryBuilder.add(facetCategory.getName(), facetLabelBuilder);
+            }
+            facets.add(facetCategoryBuilder);
+
             JsonObject value = Json.createObjectBuilder()
                     .add("total_count", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("itemsJson", filesArrayBuilder.build())
+                    .add("facets", facets)
                     .build();
-            logger.info("value: " + value);
+//            logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);
         } else {
             /**

@@ -1,0 +1,7 @@
+#!/bin/bash
+DVDIR='data/in/dataverses'
+DSDIR='data/in/datasets'
+mkdir -p $DVDIR
+mkdir -p $DSDIR
+count=1; ./tab2json dv.tsv | while read i; do echo $i | python -m json.tool > $DVDIR/$count; let count++; done
+count=1; ./tab2json ds.tsv | while read i; do echo $i | python -m json.tool > $DSDIR/$count; let count++; done

@@ -10,6 +10,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
@@ -36,7 +37,12 @@ public class Datasets {
                      * this?
                      */
                     .add("name", dataset.getTitle())
+                    .add(SearchFields.AUTHOR_STRING, dataset.getAuthor())
                     .add(SearchFields.TITLE, dataset.getTitle())
+                    /**
+                     * @todo: don't use distributor for category. testing facets
+                     */
+                    .add(SearchFields.CATEGORY, dataset.getDistributor())
                     .add(SearchFields.DESCRIPTION, dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);
         }
@@ -72,4 +78,9 @@ public class Datasets {
         return null;
     }
 
+    @POST
+    public String add(Dataset dataset) {
+        datasetService.save(dataset);
+        return "dataset " + dataset.getTitle() + " created\n";
+    }
 }

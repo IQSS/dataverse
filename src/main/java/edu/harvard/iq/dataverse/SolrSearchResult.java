@@ -12,6 +12,7 @@ public class SolrSearchResult {
     private String type;
     private String query;
     private String name;
+    private String descriptionNoSnippet;
     private List<String> highlightSnippets;
 
     SolrSearchResult(String queryFromUser, List<String> highlightSnippets, String name) {
@@ -76,6 +77,14 @@ public class SolrSearchResult {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescriptionNoSnippet() {
+        return descriptionNoSnippet;
+    }
+
+    public void setDescriptionNoSnippet(String descriptionNoSnippet) {
+        this.descriptionNoSnippet = descriptionNoSnippet;
     }
 
     public List<String> getHighlightSnippets() {

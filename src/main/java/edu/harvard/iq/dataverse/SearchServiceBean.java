@@ -14,6 +14,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
@@ -31,16 +32,25 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
-    public SolrQueryResponse search(String queryFromUser) {
+    public SolrQueryResponse search(String query, String facetQuery) {
         /**
          * @todo make "localhost" and port number a config option
          */
         SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(queryFromUser);
+        solrQuery.setQuery(query);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
         solrQuery.setParam("qt", "/spell");
+        solrQuery.setParam("facet", "true");
+        solrQuery.setParam("facet.query", "*");
+        if (facetQuery != null) {
+            solrQuery.setParam("fq", facetQuery);
+        }
+        solrQuery.addFacetField(SearchFields.TYPE);
+        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
+//        solrQuery.addFacetField(SearchFields.AFFILIATION);
+        solrQuery.addFacetField(SearchFields.CATEGORY);
 
         QueryResponse queryResponse;
         try {
@@ -59,20 +69,18 @@ public class SearchServiceBean {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
-            logger.info(id + ": " + description);
             name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             Collection<String> fieldNames = solrDocument.getFieldNames();
-            for (String fieldName : fieldNames) {
-//                logger.info("field name: " + fieldName);
-            }
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
                 logger.info("highlight snippets: " + highlightSnippets);
             }
-            SolrSearchResult solrSearchResult = new SolrSearchResult(queryFromUser, highlightSnippets, name);
+            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets, name);
             /**
              * @todo put all this in the constructor?
              */
+            logger.info(id + ": " + description);
+            solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
@@ -87,9 +95,29 @@ public class SearchServiceBean {
             }
         }
 
+        List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        for (FacetField facetField : queryResponse.getFacetFields()) {
+            FacetCategory facetCategory = new FacetCategory();
+            List<FacetLabel> facetLabelList = new ArrayList<>();
+            for (FacetField.Count facetFieldCount : facetField.getValues()) {
+                /**
+                 * @todo we do want to show the count for each facet
+                 */
+                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                if (facetFieldCount.getCount() > 0) {
+                    FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                    facetLabelList.add(facetLabel);
+                }
+            }
+            facetCategory.setName(facetField.getName());
+            facetCategory.setFacetLabel(facetLabelList);
+            facetCategoryList.add(facetCategory);
+        }
+
         SolrQueryResponse solrQueryResponse = new SolrQueryResponse();
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
+        solrQueryResponse.setFacetCategoryList(facetCategoryList);
         return solrQueryResponse;
     }
 }
