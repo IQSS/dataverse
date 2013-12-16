@@ -54,6 +54,10 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
+        /**
+         * @todo: implement paging instead of dumping all results
+         */
+        solrQuery.setRows(Integer.SIZE);
         logger.info("Solr query:" + solrQuery);
 
         QueryResponse queryResponse;
