@@ -41,7 +41,7 @@ class test_dataset_fileupload(unittest.TestCase):
         time.sleep(1)
         # Choose to upload dataset
         wd.find_element_by_id("shareForm:shareData_button").click()
-        wd.find_element_by_link_text("Upload Dataset").click()
+        wd.find_element_by_link_text("Add Dataset").click()
         time.sleep(1)
         # Enter dataset info
         wd.find_element_by_id("datasetForm:title").click()
