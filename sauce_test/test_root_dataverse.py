@@ -8,7 +8,7 @@ def is_alert_present(wd):
     except:
         return False
 
-class test_dataverse(unittest.TestCase):
+class test_root_dataverse(unittest.TestCase):
     def setUp(self):
         if (config.local):
             self.wd = webdriver.Firefox()
@@ -24,30 +24,19 @@ class test_dataverse(unittest.TestCase):
  
         self.wd.implicitly_wait(60)
     
-    def test_test_dataverse(self):
+    def test_test_root_dataverse(self):
         success = True
         wd = self.wd
         wd.get(config.accessURL)
-        wd.find_element_by_link_text("Log In").click()
-        time.sleep(1)
-        if not ("Login" in wd.find_element_by_tag_name("html").text):
-            success = False
-            print("verifyTextPresent failed")
-        wd.find_element_by_id("loginForm:userName").click()
-        wd.find_element_by_id("loginForm:userName").clear()
-        wd.find_element_by_id("loginForm:userName").send_keys("tester")
-        wd.find_element_by_id("loginForm:password").click()
-        wd.find_element_by_id("loginForm:password").clear()
-        wd.find_element_by_id("loginForm:password").send_keys("tester")
-        wd.find_element_by_id("loginForm:login").click()
-        wd.find_element_by_id("shareForm:shareData_button").click()
-        wd.find_element_by_link_text("Create Dataverse").click()
+        if not ("Create Root Dataverse" in wd.find_element_by_tag_name("html").text):
+            print("Root dataverse exists. Exiting.")
+            return
         wd.find_element_by_id("dataverseForm:name").click()
         wd.find_element_by_id("dataverseForm:name").clear()
-        wd.find_element_by_id("dataverseForm:name").send_keys("test dv")
+        wd.find_element_by_id("dataverseForm:name").send_keys("root dv")
         wd.find_element_by_id("dataverseForm:alias").click()
         wd.find_element_by_id("dataverseForm:alias").clear()
-        wd.find_element_by_id("dataverseForm:alias").send_keys("testdv")
+        wd.find_element_by_id("dataverseForm:alias").send_keys("rootdv")
         wd.find_element_by_id("dataverseForm:contactEmail").click()
         wd.find_element_by_id("dataverseForm:contactEmail").clear()
         wd.find_element_by_id("dataverseForm:contactEmail").send_keys("kcondon@hmdc.harvard.edu")
@@ -58,8 +47,13 @@ class test_dataverse(unittest.TestCase):
         wd.find_element_by_id("dataverseForm:description").clear()
         wd.find_element_by_id("dataverseForm:description").send_keys("This is a test")
         wd.find_element_by_id("dataverseForm:save").click()
-
-        wd.find_element_by_link_text("Log Out").click()
+        time.sleep(1)
+        if not ("root dv" in wd.find_element_by_tag_name("html").text):
+            success = False
+            print("verify root dv name failed")
+        if not ("rootdv" in wd.find_element_by_tag_name("html").text):
+            success = False
+            print("verify alias failed")
         self.assertTrue(success)
     
     def tearDown(self):
