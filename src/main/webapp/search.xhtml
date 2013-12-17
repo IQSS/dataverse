@@ -19,6 +19,9 @@
         <f:metadata>
             <f:viewParam name="q" value="#{SearchPage.query}"/>
             <f:viewParam name="fq" value="#{SearchPage.filterQuery}"/>
+            <f:viewParam name="fq0" value="#{SearchPage.fq0}"/>
+            <f:viewParam name="fq1" value="#{SearchPage.fq1}"/>
+            <f:viewParam name="fq2" value="#{SearchPage.fq2}"/>
             <f:viewAction action="#{SearchPage.search()}" />
         </f:metadata>  
 
@@ -91,11 +94,15 @@
                                     <h:outputText value="#{facetLabel.name}" style="color: #{SearchPage.filterQuery.contains(facetLabel.name) ? 'grey' : 'black'};"/>
                                 </h:outputLink>
                                 <h:outputText value=" (#{facetLabel.count}) "/>
+                                <h:outputLink rendered="false">
+                                    <f:param name="fq#{SearchPage.filterQueries.size()}" value='#{facetCategory.name}:"#{facetLabel.name}"'/>
+                                    <h:outputText value='fq#{SearchPage.filterQueries.size()}'/>
+                                </h:outputLink>
                             </p:dataList>
                         </p:dataList>
                     </div>
                     <div style="width:80%;float:left;">
-                        <h:outputText value="Results for query [#{SearchPage.query}] and facet query [#{SearchPage.filterQuery}]" style="font-weight: bold"/>
+                        <h:outputText value="Results for query [#{SearchPage.query}] and filterQuery [#{SearchPage.filterQuery}] and filterQueries [#{SearchPage.filterQueries}] " style="font-weight: bold"/>
                         <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result">
                             <p:column>
                                 <h:outputText value="§" rendered="#{result.type == 'dataverses'}"/>

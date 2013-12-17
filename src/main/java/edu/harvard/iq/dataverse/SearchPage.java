@@ -16,6 +16,13 @@ public class SearchPage implements java.io.Serializable {
 
     private String query;
     private String filterQuery;
+    private List<String> filterQueries = new ArrayList<>();
+    /**
+     * @todo: support at least 10 facet clicks
+     */
+    private String fq0;
+    private String fq1;
+    private String fq2;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
@@ -45,9 +52,12 @@ public class SearchPage implements java.io.Serializable {
          * multiple values" --
          * http://stackoverflow.com/questions/17275130/is-there-a-way-to-make-fviewparam-handle-lists-of-values/17276832#17276832
          */
-        List<String> filterQueries = new ArrayList<>();
-        filterQueries.add(filterQuery);
-        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
+        List<String> tmpFilterQueries = new ArrayList<>();
+        tmpFilterQueries.add(filterQuery); // one-click only version
+        tmpFilterQueries.add(fq0);
+        tmpFilterQueries.add(fq1);
+        tmpFilterQueries.add(fq2);
+        SolrQueryResponse solrQueryResponse = searchService.search(query, tmpFilterQueries);
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
@@ -70,6 +80,38 @@ public class SearchPage implements java.io.Serializable {
 
     public void setFilterQuery(String filterQuery) {
         this.filterQuery = filterQuery;
+    }
+
+    public List<String> getFilterQueries() {
+        return filterQueries;
+    }
+
+    public void setFilterQueries(List<String> filterQueries) {
+        this.filterQueries = filterQueries;
+    }
+
+    public String getFq0() {
+        return fq0;
+    }
+
+    public void setFq0(String fq0) {
+        this.fq0 = fq0;
+    }
+
+    public String getFq1() {
+        return fq1;
+    }
+
+    public void setFq1(String fq1) {
+        this.fq1 = fq1;
+    }
+
+    public String getFq2() {
+        return fq2;
+    }
+
+    public void setFq2(String fq2) {
+        this.fq2 = fq2;
     }
 
     public List<SolrSearchResult> getSearchResultsList() {
