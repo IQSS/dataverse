@@ -14,6 +14,7 @@ public class SolrSearchResult {
     private String name;
     private String descriptionNoSnippet;
     private List<String> highlightSnippets;
+    private String todoParentDataverse = "FIXME: show direct parent dataverse that owns dataset or dataverse";
 
     SolrSearchResult(String queryFromUser, List<String> highlightSnippets, String name) {
         this.query = queryFromUser;
