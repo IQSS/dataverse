@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -15,14 +16,17 @@ public class SearchPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(SearchPage.class.getCanonicalName());
 
     private String query;
-    private String filterQuery;
     private List<String> filterQueries = new ArrayList<>();
-    /**
-     * @todo: support at least 10 facet clicks
-     */
     private String fq0;
     private String fq1;
     private String fq2;
+    private String fq3;
+    private String fq4;
+    private String fq5;
+    private String fq6;
+    private String fq7;
+    private String fq8;
+    private String fq9;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
@@ -52,12 +56,13 @@ public class SearchPage implements java.io.Serializable {
          * multiple values" --
          * http://stackoverflow.com/questions/17275130/is-there-a-way-to-make-fviewparam-handle-lists-of-values/17276832#17276832
          */
-        List<String> tmpFilterQueries = new ArrayList<>();
-        tmpFilterQueries.add(filterQuery); // one-click only version
-        tmpFilterQueries.add(fq0);
-        tmpFilterQueries.add(fq1);
-        tmpFilterQueries.add(fq2);
-        SolrQueryResponse solrQueryResponse = searchService.search(query, tmpFilterQueries);
+        filterQueries = new ArrayList<>();
+        for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
+            if (fq != null) {
+                filterQueries.add(fq);
+            }
+        }
+        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
@@ -72,14 +77,6 @@ public class SearchPage implements java.io.Serializable {
 
     public void setQuery(String query) {
         this.query = query;
-    }
-
-    public String getFilterQuery() {
-        return filterQuery;
-    }
-
-    public void setFilterQuery(String filterQuery) {
-        this.filterQuery = filterQuery;
     }
 
     public List<String> getFilterQueries() {
@@ -112,6 +109,62 @@ public class SearchPage implements java.io.Serializable {
 
     public void setFq2(String fq2) {
         this.fq2 = fq2;
+    }
+
+    public String getFq3() {
+        return fq3;
+    }
+
+    public void setFq3(String fq3) {
+        this.fq3 = fq3;
+    }
+
+    public String getFq4() {
+        return fq4;
+    }
+
+    public void setFq4(String fq4) {
+        this.fq4 = fq4;
+    }
+
+    public String getFq5() {
+        return fq5;
+    }
+
+    public void setFq5(String fq5) {
+        this.fq5 = fq5;
+    }
+
+    public String getFq6() {
+        return fq6;
+    }
+
+    public void setFq6(String fq6) {
+        this.fq6 = fq6;
+    }
+
+    public String getFq7() {
+        return fq7;
+    }
+
+    public void setFq7(String fq7) {
+        this.fq7 = fq7;
+    }
+
+    public String getFq8() {
+        return fq8;
+    }
+
+    public void setFq8(String fq8) {
+        this.fq8 = fq8;
+    }
+
+    public String getFq9() {
+        return fq9;
+    }
+
+    public void setFq9(String fq9) {
+        this.fq9 = fq9;
     }
 
     public List<SolrSearchResult> getSearchResultsList() {
