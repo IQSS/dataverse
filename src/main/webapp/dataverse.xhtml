@@ -31,6 +31,9 @@
             .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
             .rightClass {text-align: right;}
+            
+            .dataverseChildren .ui-datalist-data {padding-left:1em;}
+            .dataverseChildren .ui-datalist-data li.ui-datalist-item {list-style-type:none; margin-left:0; margin-bottom:6px;}
         </style>
     </h:head>
 
@@ -46,7 +49,7 @@
             <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
                 <ui:fragment>
                     <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
-                        <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold;"/>
+                        <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
                     </h:outputLink>
 
                     <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
@@ -125,7 +128,7 @@
             </p:panel>
 
             <!-- Info / Buttons Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{!empty dataverseSession.user}">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{!empty dataverseSession.user or DataversePage.editMode}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <p:panelGrid columns="2" styleClass="panelgridFormTable">
@@ -224,18 +227,17 @@
         </p:panel>
 
         <!-- Content Panel -->
-        <p:panel styleClass="panelLayoutBlock" rendered="#{!DataversePage.editMode}">
+        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
             <p:dataList value="#{DataversePage.contents}" var="item">
                 <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
-                    <h:outputText value="§ "/>
                     <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
-                        <h:outputText value="#{item.name}"/>
+                        <h:outputText value="#{item.name}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50% / 30%;"/>
                         <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
                     </h:outputLink>
                 </ui:fragment>
                 <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
                     <h:outputLink value="/dataset.xhtml?id=#{item.id}">
-                        <h:outputText value="#{item.title}"/>
+                        <h:outputText value="#{item.title}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 10%;"/>
                     </h:outputLink>
                     <h:outputText value=" by #{item.author}" rendered="#{!empty item.author}"/>
                 </ui:fragment>
