@@ -51,9 +51,6 @@ class test_root_dataverse(unittest.TestCase):
         if not ("root dv" in wd.find_element_by_tag_name("html").text):
             success = False
             print("verify root dv name failed")
-        if not ("rootdv" in wd.find_element_by_tag_name("html").text):
-            success = False
-            print("verify alias failed")
         self.assertTrue(success)
     
     def tearDown(self):
