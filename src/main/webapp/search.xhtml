@@ -115,19 +115,19 @@
                     <div style="width:20%;float:left;">
                         <h:outputText value="Types" style="font-weight: bold; display:block; margin-bottom: .5em;"/>
                         
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
                             <h:outputText value="Dataverses" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:dataverses"/>
                         </h:outputLink>
                         
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
                             <h:outputText value="Datasets" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:datasets"/>
                         </h:outputLink>
                         
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
                             <h:outputText value="Files" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 6px 50% / 20px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:files"/>
