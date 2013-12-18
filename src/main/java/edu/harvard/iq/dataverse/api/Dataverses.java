@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -70,18 +70,38 @@ public class Dataverses {
 
     @POST
     public String add(Dataverse dataverse) {
-        dataverseService.save(dataverse);
-        return "dataverse " + dataverse.getAlias() + " created\n";
+        Dataverse savedDataverse = null;
+        try {
+            /**
+             * @todo Is all this necessary? It's a way of knowing if the save
+             * failed due to the database being down.
+             */
+            savedDataverse = dataverseService.save(dataverse);
+        } catch (EJBException ex) {
+            logger.info(ex.getClass().getName() + " caused by " + ex.getCausedByException().getLocalizedMessage());
+            return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
+        } catch (Exception ex) {
+            logger.info(ex.getClass().getCanonicalName() + ": " + ex.getLocalizedMessage());
+            return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
+        }
+        if (savedDataverse != null) {
+            return "dataverse " + dataverse.getAlias() + " created (and hopefully indexed)\n";
+        } else {
+            return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
+        }
     }
 
     public JsonObject dataverse2json(Dataverse dataverse) {
         JsonObjectBuilder dataverseInfoBuilder = Json.createObjectBuilder()
+                /**
+                 * @todo refactor to be same as index service bean?
+                 */
                 .add(SearchFields.ID, "dataverse_" + dataverse.getId())
                 .add(SearchFields.ENTITY_ID, dataverse.getId())
                 .add(SearchFields.TYPE, "dataverses")
                 .add(SearchFields.NAME, dataverse.getName())
                 .add(SearchFields.DESCRIPTION, dataverse.getDescription())
-                .add(SearchFields.CATEGORY,dataverse.getAffiliation());
+                .add(SearchFields.CATEGORY, dataverse.getAffiliation());
 //                .add(SearchFields.AFFILIATION, dataverse.getAffiliation());
         return dataverseInfoBuilder.build();
     }

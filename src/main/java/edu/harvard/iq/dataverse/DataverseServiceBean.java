@@ -7,9 +7,9 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -24,14 +24,19 @@ import javax.persistence.Query;
 @Named
 public class DataverseServiceBean {
 
+    private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
+    @EJB
+    IndexServiceBean indexService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-        
 
     public Dataverse save(Dataverse dataverse) {
-         return em.merge(dataverse);
+        Dataverse savedDataverse = em.merge(dataverse);
+        String indexingResult = indexService.index();
+        logger.info("during dataverse save, indexing result was: " + indexingResult);
+        return savedDataverse;
     }
-    
 
     public Dataverse find(Object pk) {
         return (Dataverse) em.find(Dataverse.class, pk);
