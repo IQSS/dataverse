@@ -5,13 +5,43 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"      
       xmlns:p="http://primefaces.org/ui">  
 
-    <h:head>  
+    <h:head>
+        <title>Dataverse</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Content-Language" content="en"/>
         <style type="text/css">
-            .column75{width: 75%;height:auto}
-            .column25{width: 25%;height:auto}
-            .column60{width: 60%;height:auto}
-            .column40{width: 40%;height:auto}            
-            em{background-color: yellow}
+            .panelgridHeaderTable {width:100%;}
+            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
+            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
+
+            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
+
+            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
+            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+
+            .panelLayoutButtonBlock button {margin-right:2em;}
+
+            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
+            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
+            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
+
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
+
+            .rightClass {text-align: right;}
+            
+            .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
+            
+            div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
+            div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
+            div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
+            div[id$='facetCategoryList'] div li div {padding:4px 0px;}
+            div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
+            .facetCategoryName {font-weight:bold;}
+            
+            em {background-color: yellow;}
         </style>
     </h:head>
 
@@ -32,60 +62,80 @@
         </f:metadata>  
 
         <!-- Header Panel -->
-        <p:panel  style="background-color: lightskyblue; height:70px;">
-            <br/>
-            <h:outputLink value="/">
-                <h:outputText value="Dataverse" /> 
-            </h:outputLink>
+        <p:panel style="background-color: lightskyblue; height:70px;">
+            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
+                <ui:fragment>
+                    <h:outputText value="Harvard Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
+                </ui:fragment>
+                <ui:fragment>
+                    <p:panelGrid columns="2">
+                        <ui:fragment>
+                            <!--<h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
+                                Create Account
+                            </h:outputLink>
+                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>-->
+                        </ui:fragment>
+                        <ui:fragment>
+                            <!--<h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
+                                Log In
+                            </h:outputLink>
+                            <h:form id="headerForm">
+                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
+                                    Log Out
+                                </h:commandLink>   
+                            </h:form>-->                       
+                        </ui:fragment>
+                    </p:panelGrid>
+                </ui:fragment>
+            </p:panelGrid>
         </p:panel>
 
-        <h:form id="searchPageForm"> 
+        <h:form id="searchPageForm">
+            <!-- Breadcrumbs Panel -->
+            <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
 
-            <!-- Title Panel -->
-            <p:panel>
-                <h:outputText value="Dataverse"/>
+                <h:outputText value="Harvard Dataverse"  style="font-weight:bold;"/>
             </p:panel>
-
-            <p:panel>
+            
+            <p:panel styleClass="panelLayoutBlock">
                 <p:focus/>
                 <h:form id="searchForm">
-                    <p:inputText id="search" size="80" value="#{SearchPage.query}" />
+                    <p:inputText id="search" size="40" value="#{SearchPage.query}" style="margin-right:1em;"/>
                     <!--<p:watermark for="search" value="#{SearchPage.query}"/>-->
                     <!-- FIXME: put search term in URL http://stackoverflow.com/questions/17276150/primefaces-how-to-change-url-address -->
-                    <p:commandButton id="searchbutton" value="Search" actionListener="#{SearchPage.search()}" update="@all"  />
+                    <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchPage.search()}" update="@all"/>
                 </h:form>
             </p:panel>
 
             <!-- Content Panel -->
-            <p:panel id="content">
+            <p:panel id="content" styleClass="panelLayoutBlock">
                 <h:outputText style="color: red" value="Did you mean #{SearchPage.spelling_alternatives}?" rendered="#{SearchPage.spelling_alternatives.size() != 0}"/>
 
                 <div style="overflow:hidden;">
                     <div style="width:20%;float:left;">
-                        <h:outputText value="Types" style="font-weight: bold"/>
-                        <br/>
-                        <h:outputLink value="/search.xhtml">
-                            <h:outputText value="§Dataverses"/>
+                        <h:outputText value="Types" style="font-weight: bold; display:block; margin-bottom: .5em;"/>
+                        
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                            <h:outputText value="Dataverses" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:dataverses"/>
                         </h:outputLink>
-                        <br/>
-                        <h:outputLink value="/search.xhtml">
-                            <h:outputText value="‡Datasets"/>
+                        
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                            <h:outputText value="Datasets" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:datasets"/>
                         </h:outputLink>
-                        <br/>
-                        <h:outputLink value="/search.xhtml">
-                            <h:outputText value="¤Files"/>
+                        
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton">
+                            <h:outputText value="Files" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 6px 50% / 20px;"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <f:param name="fq" value="type_s:files"/>
                         </h:outputLink>
-                        <br/>
-                        <br/>
-                        <h:outputText value="Facets" style="font-weight: bold"/>
+                        
+                        <h:outputText value="Facets" style="font-weight: bold; display:block; margin-bottom: .5em;"/>
                         <p:dataList id="facetCategoryList" value="#{SearchPage.facetCategoryList}" var="facetCategory">
-                            <h:outputText value="#{facetCategory.name}"/>
+                            <h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName"/>
                             <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel">
                                 <ui:param name="quotedFacet" value='#{facetCategory.name}:"#{facetLabel.name}"'/>
                                 <h:outputLink rendered="true" disabled="#{quotedFacet == SearchPage.fq0 or
@@ -121,9 +171,9 @@
                                                     quotedFacet == SearchPage.fq7 or
                                                     quotedFacet == SearchPage.fq8 or
                                                     quotedFacet == SearchPage.fq9 ?
-                                                    'grey' : 'black'}"/>
+                                                    '#C55B28' : 'black'}"/>
                                 </h:outputLink>
-                                <h:outputText value=" (#{facetLabel.count}) "/>
+                                <h:outputText value=" (#{facetLabel.count})" style="color:#AAA; margin-right:.5em;"/>
                                 <h:outputLink value="search.xhtml" rendered="#{quotedFacet == SearchPage.fq0 or
                                                                                quotedFacet == SearchPage.fq1 or
                                                                                quotedFacet == SearchPage.fq2 or
@@ -133,8 +183,8 @@
                                                                                quotedFacet == SearchPage.fq6 or
                                                                                quotedFacet == SearchPage.fq7 or
                                                                                quotedFacet == SearchPage.fq8 or
-                                                                               quotedFacet == SearchPage.fq9 ? true : false}">
-                                    <h:outputText value="X" style="color: red"/>
+                                                                               quotedFacet == SearchPage.fq9 ? true : false}" style="color:red;">
+                                    <h:outputText value="X"/>
                                     <f:param name="q" value="#{SearchPage.query}"/>
                                     <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null or quotedFacet == SearchPage.fq0}"/>
                                     <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null or quotedFacet == SearchPage.fq1}"/>
@@ -150,7 +200,7 @@
                             </p:dataList>
                         </p:dataList>
                     </div>
-                    <div style="width:80%;float:left;">
+                    <div style="width:77%;float:left;padding-left:20px;">
                         <h:outputText value="Results for query [#{SearchPage.query}] with filter queries #{SearchPage.filterQueries}." style="font-weight: bold"/>
                         <h:outputText value=" "/>
                         <h:outputLink value="/search.xhtml">
@@ -172,20 +222,18 @@
                             <f:param name="q" value="#{SearchPage.query}"/>
                             <h:outputText value="[Reset filter queries]" style="color: red"/>
                         </h:outputLink>
-                        <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result">
+                        <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result" style="margin-top:.5em;">
                             <p:column>
-                                <h:outputText value="§" rendered="#{result.type == 'dataverses'}"/>
-                                <h:outputText value="‡" rendered="#{result.type == 'datasets'}"/>
-                                <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.type == 'dataverses'}">
-                                    <h:outputText value="#{result.name}"/>
+                                <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.type == 'dataverses'}" style="display:block; font-weight:bold;">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'dataverses' ? '/resources/images/icon_dataverse.png' : ''});"/>
                                 </h:outputLink>
-                                <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" rendered="#{result.type == 'datasets'}">
-                                    <h:outputText value="#{result.name}"/>
+                                <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" rendered="#{result.type == 'datasets'}" style="display:block; font-weight:bold;">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'datasets' ? '/resources/images/icon_dataset.png' : ''});"/>
                                 </h:outputLink>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                </ui:fragment>
                             </p:column>
                         </p:dataTable>
                     </div>
