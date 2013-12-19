@@ -31,16 +31,16 @@
             .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
             .rightClass {text-align: right;}
-            
+
             .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
-            
+
             div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
             div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
             div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
             div[id$='facetCategoryList'] div li div {padding:4px 0px;}
             div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
             .facetCategoryName {font-weight:bold;}
-            
+
             em {background-color: yellow;}
         </style>
     </h:head>
@@ -96,7 +96,7 @@
 
                 <h:outputText value="Harvard Dataverse"  style="font-weight:bold;"/>
             </p:panel>
-            
+
             <p:panel styleClass="panelLayoutBlock">
                 <p:focus/>
                 <h:form id="searchForm">
@@ -113,30 +113,159 @@
 
                 <div style="overflow:hidden;">
                     <div style="width:20%;float:left;">
-                        <h:outputText value="Types" style="font-weight: bold; display:block; margin-bottom: .5em;"/>
-                        
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
-                            <h:outputText value="Dataverses" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
+                        <!--<h:outputText value="Types" style="font-weight: bold; display:block; margin-bottom: .5em;"/>-->
+
+                        <ui:param name="dataverses_type" value='type_s:"dataverses"'/>
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="false">
+                            <h:outputText value="Dataverses" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px; color: #{dataverses_type == SearchPage.fq0 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq1 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq2 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq3 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq4 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq5 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq6 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq7 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq8 or
+                                                                                                                                                                                     dataverses_type == SearchPage.fq9 ? '#C55B28' : 'black'} "/>
                             <f:param name="q" value="#{SearchPage.query}"/>
-                            <f:param name="fq" value="type_s:dataverses"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null}"/>
+                            <f:param name="fq#{SearchPage.filterQueries.size()}" value="#{dataverses_type}"/>
                         </h:outputLink>
-                        
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
-                            <h:outputText value="Datasets" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
+                        <h:outputLink>
+                            <h:outputText value="X" style="color: red" rendered="#{dataverses_type == SearchPage.fq0 or
+                                                                                   dataverses_type == SearchPage.fq1 or
+                                                                                   dataverses_type == SearchPage.fq2 or
+                                                                                   dataverses_type == SearchPage.fq3 or
+                                                                                   dataverses_type == SearchPage.fq4 or
+                                                                                   dataverses_type == SearchPage.fq5 or
+                                                                                   dataverses_type == SearchPage.fq6 or
+                                                                                   dataverses_type == SearchPage.fq7 or
+                                                                                   dataverses_type == SearchPage.fq8 or
+                                                                                   dataverses_type == SearchPage.fq9 ? true : false}"/>
                             <f:param name="q" value="#{SearchPage.query}"/>
-                            <f:param name="fq" value="type_s:datasets"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null or dataverses_type == SearchPage.fq0}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null or dataverses_type == SearchPage.fq1}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null or dataverses_type == SearchPage.fq2}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null or dataverses_type == SearchPage.fq3}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null or dataverses_type == SearchPage.fq4}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null or dataverses_type == SearchPage.fq5}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null or dataverses_type == SearchPage.fq6}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null or dataverses_type == SearchPage.fq7}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null or dataverses_type == SearchPage.fq8}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null or dataverses_type == SearchPage.fq9}"/>
                         </h:outputLink>
-                        
-                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="true">
-                            <h:outputText value="Files" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 6px 50% / 20px;"/>
+
+                        <ui:param name="datasets_type" value='type_s:"datasets"'/>
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="false">
+                            <h:outputText value="Datasets" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 22px; color: #{datasets_type == SearchPage.fq0 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq1 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq2 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq3 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq4 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq5 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq6 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq7 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq8 or
+                                                                                                                                                                                 datasets_type == SearchPage.fq9 ? '#C55B28' : 'black'} "/>
                             <f:param name="q" value="#{SearchPage.query}"/>
-                            <f:param name="fq" value="type_s:files"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null}"/>
+                            <f:param name="fq#{SearchPage.filterQueries.size()}" value="#{datasets_type}"/>
                         </h:outputLink>
-                        
-                        <h:outputText value="Facets" style="font-weight: bold; display:block; margin-bottom: .5em;"/>
+                        <h:outputLink>
+                            <h:outputText value="X" style="color: red" rendered="#{datasets_type == SearchPage.fq0 or
+                                                                                   datasets_type == SearchPage.fq1 or
+                                                                                   datasets_type == SearchPage.fq2 or
+                                                                                   datasets_type == SearchPage.fq3 or
+                                                                                   datasets_type == SearchPage.fq4 or
+                                                                                   datasets_type == SearchPage.fq5 or
+                                                                                   datasets_type == SearchPage.fq6 or
+                                                                                   datasets_type == SearchPage.fq7 or
+                                                                                   datasets_type == SearchPage.fq8 or
+                                                                                   datasets_type == SearchPage.fq9 ? true : false}"/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null or datasets_type == SearchPage.fq0}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null or datasets_type == SearchPage.fq1}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null or datasets_type == SearchPage.fq2}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null or datasets_type == SearchPage.fq3}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null or datasets_type == SearchPage.fq4}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null or datasets_type == SearchPage.fq5}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null or datasets_type == SearchPage.fq6}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null or datasets_type == SearchPage.fq7}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null or datasets_type == SearchPage.fq8}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null or datasets_type == SearchPage.fq9}"/>
+                        </h:outputLink>
+
+
+                        <ui:param name="files_type" value='type_s:"files"'/>
+                        <h:outputLink value="/search.xhtml" styleClass="searchTypeButton" disabled="false">
+                            <h:outputText value="Files" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 6px 50% / 20px;color: #{files_type == SearchPage.fq0 or
+                                                                                                                                                                          files_type == SearchPage.fq1 or
+                                                                                                                                                                          files_type == SearchPage.fq2 or
+                                                                                                                                                                          files_type == SearchPage.fq3 or
+                                                                                                                                                                          files_type == SearchPage.fq4 or
+                                                                                                                                                                          files_type == SearchPage.fq5 or
+                                                                                                                                                                          files_type == SearchPage.fq6 or
+                                                                                                                                                                          files_type == SearchPage.fq7 or
+                                                                                                                                                                          files_type == SearchPage.fq8 or
+                                                                                                                                                                          files_type == SearchPage.fq9 ? '#C55B28' : 'black'} "/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null}"/>
+                            <f:param name="fq#{SearchPage.filterQueries.size()}" value="#{files_type}"/>
+                        </h:outputLink>
+                        <h:outputLink>
+                            <h:outputText value="X" style="color: red" rendered="#{files_type == SearchPage.fq0 or
+                                                                                   files_type == SearchPage.fq1 or
+                                                                                   files_type == SearchPage.fq2 or
+                                                                                   files_type == SearchPage.fq3 or
+                                                                                   files_type == SearchPage.fq4 or
+                                                                                   files_type == SearchPage.fq5 or
+                                                                                   files_type == SearchPage.fq6 or
+                                                                                   files_type == SearchPage.fq7 or
+                                                                                   files_type == SearchPage.fq8 or
+                                                                                   files_type == SearchPage.fq9 ? true : false}"/>
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="fq0" value='#{SearchPage.fq0}' disable="#{SearchPage.fq0 == null or files_type == SearchPage.fq0}"/>
+                            <f:param name="fq1" value='#{SearchPage.fq1}' disable="#{SearchPage.fq1 == null or files_type == SearchPage.fq1}"/>
+                            <f:param name="fq2" value='#{SearchPage.fq2}' disable="#{SearchPage.fq2 == null or files_type == SearchPage.fq2}"/>
+                            <f:param name="fq3" value='#{SearchPage.fq3}' disable="#{SearchPage.fq3 == null or files_type == SearchPage.fq3}"/>
+                            <f:param name="fq4" value='#{SearchPage.fq4}' disable="#{SearchPage.fq4 == null or files_type == SearchPage.fq4}"/>
+                            <f:param name="fq5" value='#{SearchPage.fq5}' disable="#{SearchPage.fq5 == null or files_type == SearchPage.fq5}"/>
+                            <f:param name="fq6" value='#{SearchPage.fq6}' disable="#{SearchPage.fq6 == null or files_type == SearchPage.fq6}"/>
+                            <f:param name="fq7" value='#{SearchPage.fq7}' disable="#{SearchPage.fq7 == null or files_type == SearchPage.fq7}"/>
+                            <f:param name="fq8" value='#{SearchPage.fq8}' disable="#{SearchPage.fq8 == null or files_type == SearchPage.fq8}"/>
+                            <f:param name="fq9" value='#{SearchPage.fq9}' disable="#{SearchPage.fq9 == null or files_type == SearchPage.fq9}"/>
+                        </h:outputLink>
+
                         <p:dataList id="facetCategoryList" value="#{SearchPage.facetCategoryList}" var="facetCategory">
-                            <h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName"/>
-                            <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel">
+                            <h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>
+                            <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel" rendered="#{facetCategory.name != 'type_s'}">
                                 <ui:param name="quotedFacet" value='#{facetCategory.name}:"#{facetLabel.name}"'/>
                                 <h:outputLink rendered="true" disabled="#{quotedFacet == SearchPage.fq0 or
                                                                           quotedFacet == SearchPage.fq1 or
