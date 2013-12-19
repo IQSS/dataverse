@@ -41,6 +41,7 @@
         <f:metadata>
             <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
             <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
+            <f:viewParam name="q" value="#{DataversePage.q}"/>
             <f:viewAction action="#{DataversePage.init}"/>
         </f:metadata>
 
@@ -203,13 +204,14 @@
 
         <!-- Search / Share Panel -->
         <p:panel styleClass="panelLayoutBlock" rendered="#{!DataversePage.editMode}">
+            <p:focus/>
             <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                 <ui:fragment>
-                    <h:form id="searchForm">
-                        <p:inputText id="search" size="40"/>
-                        <p:watermark for="search" value="Search this dataverse..."/>
-                        <p:commandButton value="Find" disabled="true" style="margin-left:1em;"/>
-                    </h:form>
+                    <!-- why form and not h:form http://stackoverflow.com/questions/4823216/jsf-2-0-form-using-get/4823289#4823289 -->
+                    <form id="searchForm">
+                        <h:inputText id="q" size="40" value="#{DataversePage.q}"/>
+                        <input type="submit" value="Find" formaction="search.xhtml" style="margin-left:1em;"/>
+                    </form>
                 </ui:fragment>
 
                 <ui:fragment rendered="#{!empty dataverseSession.user}">
