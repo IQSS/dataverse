@@ -264,7 +264,7 @@
                         </h:outputLink>
 
                         <p:dataList id="facetCategoryList" value="#{SearchPage.facetCategoryList}" var="facetCategory">
-                            <h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>
+                            <h:outputText value="#{SearchPage.friendlyName.get(facetCategory.name)}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>
                             <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel" rendered="#{facetCategory.name != 'type_s'}">
                                 <ui:param name="quotedFacet" value='#{facetCategory.name}:"#{facetLabel.name}"'/>
                                 <h:outputLink rendered="true" disabled="#{quotedFacet == SearchPage.fq0 or
