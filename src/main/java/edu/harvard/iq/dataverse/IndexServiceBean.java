@@ -2,9 +2,14 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -16,6 +21,8 @@ import org.apache.solr.common.SolrInputDocument;
 @Stateless
 @Named
 public class IndexServiceBean {
+
+    private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -75,6 +82,16 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
 
+            SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            try {
+                Date citationDate = inputDate.parse(dataset.getCitationDate());
+                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+                String citationYear = yearOnly.format(citationDate);
+                solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
+                solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
+            } catch (ParseException ex) {
+                logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
+            }
             docs.add(solrInputDocument);
 
         }

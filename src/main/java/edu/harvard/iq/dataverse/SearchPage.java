@@ -74,6 +74,7 @@ public class SearchPage implements java.io.Serializable {
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
         friendlyName.put(SearchFields.CATEGORY, "Category");
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
+        friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
     }
 
     public String getQuery() {
