@@ -135,6 +135,8 @@ public class SearchServiceBean {
 //                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 if (facetFieldCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                    // quote field facets
+                    facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
                 }
             }
@@ -154,6 +156,8 @@ public class SearchServiceBean {
                 Integer end = start + Integer.parseInt(rangeFacet.getGap().toString());
                 if (rangeFacetCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(start + "-" + end, new Long(rangeFacetCount.getCount()));
+                    // special [12 TO 34] syntax for range facets
+                    facetLabel.setFilterQuery(rangeFacet.getName() + ":" + "[" + start + " TO " + end + "]");
                     facetLabelList.add(facetLabel);
                 }
             }

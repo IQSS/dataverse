@@ -77,6 +77,20 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
     }
 
+    public void addFacet(FacetLabel facetLabel) {
+        String filterQuery = facetLabel.getFilterQuery();
+        logger.info("facet clicked: " + filterQuery);
+        filterQueries.add(filterQuery);
+        search();
+    }
+
+    public void removeFacet(FacetLabel facetLabel) {
+        String filterQuery = facetLabel.getFilterQuery();
+        logger.info("facet removed: " + filterQuery);
+        filterQueries.remove(filterQuery);
+        search();
+    }
+
     public String getQuery() {
         return query;
     }
