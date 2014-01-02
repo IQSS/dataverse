@@ -29,6 +29,9 @@ public class Datasets {
         for (Dataset dataset : datasets) {
             logger.info("dataset: " + dataset.getTitle());
             JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
+                    /**
+                     * @todo refactor to be same as index service bean?
+                     */
                     .add(SearchFields.ID, "dataset_" + dataset.getId())
                     .add(SearchFields.ENTITY_ID, dataset.getId())
                     .add(SearchFields.TYPE, "datasets")
@@ -81,6 +84,6 @@ public class Datasets {
     @POST
     public String add(Dataset dataset) {
         datasetService.save(dataset);
-        return "dataset " + dataset.getTitle() + " created\n";
+        return "dataset " + dataset.getTitle() + " created (and hopefully indexed)\n";
     }
 }

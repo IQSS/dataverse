@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -30,6 +32,7 @@ public class SearchPage implements java.io.Serializable {
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
+    private Map<String, String> friendlyName = new HashMap<>();
 
     @EJB
     SearchServiceBean searchService;
@@ -69,6 +72,23 @@ public class SearchPage implements java.io.Serializable {
             spelling_alternatives.add(entry.getValue().toString());
         }
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
+        friendlyName.put(SearchFields.CATEGORY, "Category");
+        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
+        friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
+    }
+
+    public void addFacet(FacetLabel facetLabel) {
+        String filterQuery = facetLabel.getFilterQuery();
+        logger.info("facet clicked: " + filterQuery);
+        filterQueries.add(filterQuery);
+        search();
+    }
+
+    public void removeFacet(FacetLabel facetLabel) {
+        String filterQuery = facetLabel.getFilterQuery();
+        logger.info("facet removed: " + filterQuery);
+        filterQueries.remove(filterQuery);
+        search();
     }
 
     public String getQuery() {
@@ -189,6 +209,14 @@ public class SearchPage implements java.io.Serializable {
 
     public void setSpelling_alternatives(List<String> spelling_alternatives) {
         this.spelling_alternatives = spelling_alternatives;
+    }
+
+    public Map<String, String> getFriendlyName() {
+        return friendlyName;
+    }
+
+    public void setFriendlyName(Map<String, String> friendlyName) {
+        this.friendlyName = friendlyName;
     }
 
 }

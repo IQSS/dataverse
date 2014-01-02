@@ -31,6 +31,7 @@ public class DataversePage implements java.io.Serializable {
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
     private Long ownerId;
+    private String q;
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -54,6 +55,14 @@ public class DataversePage implements java.io.Serializable {
 
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public String getQ() {
+        return q;
+    }
+
+    public void setQ(String q) {
+        this.q = q;
     }
 
     public void init() {

@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -16,6 +18,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.RangeFacet;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -54,6 +57,24 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
+        /**
+         * @todo: decide if year CITATION_YEAR is good enough or if we should
+         * support CITATION_DATE
+         */
+//        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.UK);
+//        calendar.set(2010, 1, 1);
+//        Date start = calendar.getTime();
+//        calendar.set(2013, 1, 1);
+//        Date end = calendar.getTime();
+//        solrQuery.addDateRangeFacet(SearchFields.CITATION_DATE, start, end, "+1MONTH");
+        /**
+         * @todo make this configurable
+         */
+        int thisYear = Calendar.getInstance().get(Calendar.YEAR);
+        final int citationYearRangeStart = 2000;
+        final int citationYearRangeEnd = thisYear;
+        final int citationYearRangeSpan = 2;
+        solrQuery.addNumericRangeFacet(SearchFields.CITATION_YEAR, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         /**
          * @todo: implement paging instead of dumping all results
          */
@@ -114,11 +135,41 @@ public class SearchServiceBean {
 //                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
                 if (facetFieldCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(), facetFieldCount.getCount());
+                    // quote field facets
+                    facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
                 }
             }
             facetCategory.setName(facetField.getName());
             facetCategory.setFacetLabel(facetLabelList);
+            facetCategoryList.add(facetCategory);
+        }
+
+        // for now the only range facet is citation year
+        for (RangeFacet rangeFacet : queryResponse.getFacetRanges()) {
+            FacetCategory facetCategory = new FacetCategory();
+            List<FacetLabel> facetLabelList = new ArrayList<>();
+            for (Object rfObj : rangeFacet.getCounts()) {
+                RangeFacet.Count rangeFacetCount = (RangeFacet.Count) rfObj;
+                String valueString = rangeFacetCount.getValue();
+                Integer start = Integer.parseInt(valueString);
+                Integer end = start + Integer.parseInt(rangeFacet.getGap().toString());
+                if (rangeFacetCount.getCount() > 0) {
+                    FacetLabel facetLabel = new FacetLabel(start + "-" + end, new Long(rangeFacetCount.getCount()));
+                    // special [12 TO 34] syntax for range facets
+                    facetLabel.setFilterQuery(rangeFacet.getName() + ":" + "[" + start + " TO " + end + "]");
+                    facetLabelList.add(facetLabel);
+                }
+            }
+            facetCategory.setName(rangeFacet.getName());
+            facetCategory.setFacetLabel(facetLabelList);
+            // reverse to show the newest citation year range at the top
+            List<FacetLabel> facetLabelListReversed = new ArrayList<>();
+            ListIterator li = facetLabelList.listIterator(facetLabelList.size());
+            while (li.hasPrevious()) {
+                facetLabelListReversed.add((FacetLabel) li.previous());
+            }
+            facetCategory.setFacetLabel(facetLabelListReversed);
             facetCategoryList.add(facetCategory);
         }
 

@@ -8,6 +8,8 @@ public class SearchFields {
     public static final String DESCRIPTION = "description";
     public static final String TITLE = "title";
     public static final String CATEGORY = "cat";
+    // i.e. http://pdurbin.pagekite.me/search.xhtml?q=*&fq0=citationyear_i%3A[2001+TO+2007]
+    public static final String CITATION_YEAR = "citationyear_i";
 //    public static final String AUTHOR = "author"; // see AUTHOR_STRING not below
     // dynamic fields (for now) http://wiki.apache.org/solr/SchemaXml#Dynamic_fields
     // *_s for String
@@ -23,5 +25,7 @@ public class SearchFields {
      * http://stackoverflow.com/questions/16559911/facet-query-will-give-wrong-output-on-dynamicfield-in-solr
      */
     public static final String AUTHOR_STRING = "authorstring_s";
+    // i.e. http://localhost:8080/search.xhtml?q=*&fq0=citationdate_dt:[2008-01-01T00%3A00%3A00Z+TO+2011-01-01T00%3A00%3A00Z%2B1YEAR}
+    public static final String CITATION_DATE = "citationdate_dt";
 
 }
