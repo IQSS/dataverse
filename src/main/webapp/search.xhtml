@@ -101,9 +101,8 @@
             <p:panel styleClass="panelLayoutBlock">
                 <p:focus/>
                 <h:form id="searchForm">
-                    <p:inputText id="search" size="40" value="#{SearchPage.query}" style="margin-right:1em;"/>
+                    <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchPage.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
                     <!--<p:watermark for="search" value="#{SearchPage.query}"/>-->
-                    <!-- FIXME: put search term in URL http://stackoverflow.com/questions/17276150/primefaces-how-to-change-url-address -->
                     <!--https://blogs.oracle.com/enterprisetechtips/entry/post_redirect_get_and_jsf-->
                     <p:commandButton id="searchbutton" value="Find" action="search.xhtml?faces-redirect=true&amp;includeViewParams=true" update="@all"/>
                 </h:form>
