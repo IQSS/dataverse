@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.exception;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.Set;
@@ -13,14 +14,20 @@ import java.util.Set;
 public class PermissionException extends CommandException {
 	
 	private final Set<Permission> required;
+	private final Dataverse dataverse;
 	
-	public PermissionException(String message, Command failedCommand, Set<Permission> required ) {
+	public PermissionException(String message, Command failedCommand, Set<Permission> required, Dataverse aDataverse ) {
 		super(message, failedCommand);
 		this.required = required;
+		dataverse = aDataverse;
 	}
 
 	public Set<Permission> getRequiredPermissions() {
 		return required;
+	}
+
+	public Dataverse getDataverse() {
+		return dataverse;
 	}
 	
 }

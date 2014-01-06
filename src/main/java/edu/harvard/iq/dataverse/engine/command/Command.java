@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.Map;
 
 /**
  * Base interface for all commands running on Dataverse.
@@ -22,12 +23,13 @@ public interface Command<R> {
 	
 	
 	/**
-	 * Retrieves the dataverse this command works on. Used by the {@link DataverseEngine} 
+	 * Retrieves the dataverses this command works on. Used by the {@link DataverseEngine} 
 	 * to validate that the user
-	 * has the permissions required to execute {@code this} commnad.
+	 * has the permissions required to execute {@code this} command.
+	 * 
 	 * @return The dataverse on which the command will work
 	 */
-	public Dataverse getAffectedDataverse();
+	public Map<String,Dataverse> getAffectedDataverses();
 	
 	
 	/**

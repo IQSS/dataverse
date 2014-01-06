@@ -4,15 +4,20 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -31,6 +36,9 @@ public class EjbDataverseEngine implements DataverseEngine {
 	
 	@EJB
 	DatasetServiceBean datasetService;
+
+	@EJB
+	DataverseServiceBean dataverseService;
 	
 	@EJB
 	DataverseRoleServiceBean roleService;
@@ -40,28 +48,31 @@ public class EjbDataverseEngine implements DataverseEngine {
 	@Override
 	public <R> R submit(Command<R> aCommand) throws CommandException {
 		// Check permissions - or throw an exception
-		Set<Permission> required = permissionsRequired(aCommand);
-		if ( required == null ) {
+		Map<String,? extends Set<Permission>> requiredMap = permissionsRequired(aCommand);
+		if ( requiredMap == null ) {
 			throw new RuntimeException("Command class " + aCommand.getClass() + " does not define required permissions. "
 										+ "Please use the RequiredPermissions annotation.");
 		}
 		
-		Dataverse affected = aCommand.getAffectedDataverse();
+		Map<String,Dataverse> affected = aCommand.getAffectedDataverses();
 		DataverseUser user = aCommand.getUser();
-		Set<Permission> granted = DataverseRole.permissionSet( roleService.effectiveRoles(user, affected) );
-		if ( granted.containsAll(required) ) {
-			// Execute
-			return aCommand.execute(getContext());
-		} else { 
-			// Throw an exception
-			required.removeAll(granted);
-			throw new PermissionException("Can't execute command" + aCommand 
+		
+		for ( Map.Entry<String, Dataverse> pair : aCommand.getAffectedDataverses().entrySet() ) {
+			Set<Permission> granted = DataverseRole.permissionSet( roleService.effectiveRoles(user, pair.getValue()) );
+			Set<Permission> required = requiredMap.get( pair.getKey() );
+			if ( ! granted.containsAll(required) ) {
+				required.removeAll(granted);
+				throw new PermissionException("Can't execute command" + aCommand 
 					+ ", because user " + aCommand.getUser() 
-					+ " is missing permissions " + required,
+					+ " is missing permissions " + required 
+					+ " on Dataverse " + pair.getValue().getName(),
 					aCommand,
-					required);
+					required,
+					pair.getValue());
+			}
 		}
 		
+		return aCommand.execute(getContext());
 	}
 	
 	/**
@@ -72,13 +83,28 @@ public class EjbDataverseEngine implements DataverseEngine {
 	 * @param c The command
 	 * @return Set of permissions, or {@code null} if the command's class was not annotated.
 	 */
-	private Set<Permission> permissionsRequired( Command c ) {
+	private Map<String,? extends Set<Permission>> permissionsRequired( Command c ) {
 		RequiredPermissions requiredPerms = c.getClass().getAnnotation(RequiredPermissions.class);
-		if ( requiredPerms == null ) return null;
-		
-		Permission[] needed = requiredPerms.value();
-		if ( needed.length == 0 ) return EnumSet.noneOf( Permission.class );
-		return (needed.length==1) ? EnumSet.of(needed[0]) : EnumSet.of(needed[0], needed);
+		if ( requiredPerms == null ) {
+			// try for the permission map
+			RequiredPermissionsMap reqPermMap = c.getClass().getAnnotation( RequiredPermissionsMap.class );
+			Map<String, Set<Permission>> retVal = new TreeMap<>();
+			for ( RequiredPermissions rp : reqPermMap.value() ) {
+				retVal.put( rp.dataverseName(), asPermissionSet(rp.value()) );
+			}
+			return retVal;
+			
+		} else {
+			Permission[] required = requiredPerms.value();
+			return Collections.singletonMap(requiredPerms.dataverseName(),
+											asPermissionSet(required) );
+		}
+	}
+	
+	private Set<Permission> asPermissionSet( Permission[] permissionArray ) {
+		return (permissionArray.length==0) ? EnumSet.noneOf(Permission.class)
+									   : (permissionArray.length==1) ? EnumSet.of(permissionArray[0]) 
+															: EnumSet.of(permissionArray[0], permissionArray);
 	}
 	
 	private CommandContext getContext() {
@@ -86,6 +112,9 @@ public class EjbDataverseEngine implements DataverseEngine {
 			ctxt = new CommandContext() {
 				@Override
 				public DatasetServiceBean datasets() { return datasetService; }
+				
+				@Override
+				public DataverseServiceBean dataverses() { return dataverseService; }
 			};
 		}
 		
