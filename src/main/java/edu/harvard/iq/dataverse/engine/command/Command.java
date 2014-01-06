@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
@@ -26,4 +28,10 @@ public interface Command<R> {
 	 * @return The dataverse on which the command will work
 	 */
 	public Dataverse getAffectedDataverse();
+	
+	
+	/**
+	 * @return The user on which behalf the command is being executed.
+	 */
+	public DataverseUser getUser();
 }

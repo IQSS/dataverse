@@ -8,11 +8,15 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
@@ -21,6 +25,7 @@ import org.hibernate.validator.constraints.NotBlank;
 /**
  *
  * @author gdurand
+ * @author mbarsinai
  */
 @Entity
 public class Dataverse implements Serializable {
@@ -47,9 +52,18 @@ public class Dataverse implements Serializable {
     private String contactEmail;
 
     private String affiliation;
-
+	
+	@OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE},
+		fetch = FetchType.LAZY )
+	private Set<DataverseRole> roles;
+	
     @ManyToOne
     private Dataverse owner;
+	
+	/** 
+	 * When {@code true}, users are not granted permissions the got for parent dataverses. 
+	 */
+	private boolean permissionRoot;
 
     public Long getId() {
         return id;
@@ -106,6 +120,18 @@ public class Dataverse implements Serializable {
     public void setOwner(Dataverse owner) {
         this.owner = owner;
     }
+
+	public boolean isEffectivlyPermissionRoot() {
+		return isPermissionRoot() || (getOwner()==null);
+	}
+	
+	public boolean isPermissionRoot() {
+		return permissionRoot;
+	}
+
+	public void setPermissionRoot(boolean permissionRoot) {
+		this.permissionRoot = permissionRoot;
+	}
     
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();

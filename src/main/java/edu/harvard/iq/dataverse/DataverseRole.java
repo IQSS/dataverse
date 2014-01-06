@@ -4,15 +4,24 @@ import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.io.Serializable;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -25,8 +34,22 @@ import org.hibernate.validator.constraints.NotBlank;
  * 
  * @author michael
  */
+@NamedQueries({
+	@NamedQuery(name = "DataverseRole.findByOwnerId",
+			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
+	@NamedQuery(name = "DataverseRole.deleteById",
+			    query= "DELETE FROM DataverseRole r WHERE r.id=:id")
+})
 @Entity
-public class DataverseUserRole implements Serializable  {
+public class DataverseRole implements Serializable  {
+	
+	public static Set<Permission> permissionSet( Iterable<DataverseRole> roles ) {
+		long miniset = 0l;
+		for ( DataverseRole role : roles ) {
+			miniset |= role.permissionBits;
+		}
+		return new BitSet(miniset).asSetOf(Permission.class);
+	}
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,26 +66,30 @@ public class DataverseUserRole implements Serializable  {
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 	
-	/** Stores the permissions in a bit set.  */
-	long permissionBits;
+	@OneToMany( cascade={CascadeType.MERGE, CascadeType.REMOVE},
+			fetch = FetchType.LAZY	)
+	private Set<UserDataverseAssignedRole> assignedRoles;
 	
-	@Transient
-	private EnumSet<Permission> granted;
+	/** Stores the permissions in a bit set.  */
+	private long permissionBits;
 	
 	@ManyToOne
     @JoinColumn(nullable=false)     
     private Dataverse owner;
 	
-	@PrePersist
-	protected void prePersist() {
-		permissionBits = BitSet.from(granted).getBits();
+	public void registerAssignedRole( UserDataverseAssignedRole udr ) {
+		if ( assignedRoles == null ) {
+			assignedRoles = new HashSet<>();
+		}
+		assignedRoles.add(udr);
 	}
 	
-	@PostLoad
-	protected void postLoad() {
-		granted = new BitSet(permissionBits).asSetOf(Permission.class);
+	public void deregisterAssignedRole( UserDataverseAssignedRole udr ) {
+		if ( assignedRoles != null ) {
+			assignedRoles.remove(udr);
+		}
 	}
-
+    
 	public Long getId() {
 		return id;
 	}
@@ -103,8 +130,16 @@ public class DataverseUserRole implements Serializable  {
 		this.owner = owner;
 	}
 	
+	public void addPermission( Permission p ) {
+		permissionBits = new BitSet(permissionBits).set(p.ordinal()).getBits();
+	}
+	
+	public void clearPermissions() {
+		permissionBits = 0l;
+	}
+	
 	public Set<Permission> permissions() {
-		return granted;
+		return new BitSet(permissionBits).asSetOf(Permission.class);
 	}
 	
 }

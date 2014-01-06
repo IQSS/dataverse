@@ -5,10 +5,19 @@ package edu.harvard.iq.dataverse.engine;
  * class. 
  * @author michael
  */
-public enum Permission {
-	DatasetCreate,
-	DatasetList,
-	DatasetView,
-	DatasetEdit,
-	DatasetDelete
+public enum Permission implements java.io.Serializable {
+	DatasetCreate( "Create Dataset" ),
+	DatasetList( "List all Datasets in a Dataverse" ),
+	DatasetView( "View Datasets" ),
+	DatasetEdit( "Edit a Dataset" ),
+	DatasetDelete( "Delete a Dataset" );
+	
+	private final String humanName;
+	Permission( String aHumanName ) {
+		humanName = aHumanName;
+	}
+	
+	public String getHumanName() {
+		return humanName;
+	}
 }

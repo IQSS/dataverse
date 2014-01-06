@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Objects;
@@ -14,8 +15,8 @@ public class DatasetCreate extends AbstractCommand<Dataset> {
 	
 	private final Dataset theDataset;
 
-	public DatasetCreate(Dataset theDataset) {
-		super( theDataset.getOwner() );
+	public DatasetCreate(DataverseUser user, Dataset theDataset) {
+		super( user, theDataset.getOwner() );
 		this.theDataset = theDataset;
 	}
 	

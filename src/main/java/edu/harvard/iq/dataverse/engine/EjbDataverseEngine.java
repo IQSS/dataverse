@@ -2,11 +2,15 @@ package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -28,6 +32,9 @@ public class EjbDataverseEngine implements DataverseEngine {
 	@EJB
 	DatasetServiceBean datasetService;
 	
+	@EJB
+	DataverseRoleServiceBean roleService;
+	
 	private CommandContext ctxt;
 	
 	@Override
@@ -40,11 +47,21 @@ public class EjbDataverseEngine implements DataverseEngine {
 		}
 		
 		Dataverse affected = aCommand.getAffectedDataverse();
-		CHECK PERMISSIONS
-				
+		DataverseUser user = aCommand.getUser();
+		Set<Permission> granted = DataverseRole.permissionSet( roleService.effectiveRoles(user, affected) );
+		if ( granted.containsAll(required) ) {
+			// Execute
+			return aCommand.execute(getContext());
+		} else { 
+			// Throw an exception
+			required.removeAll(granted);
+			throw new PermissionException("Can't execute command" + aCommand 
+					+ ", because user " + aCommand.getUser() 
+					+ " is missing permissions " + required,
+					aCommand,
+					required);
+		}
 		
-		// Execute
-		return aCommand.execute(getContext());
 	}
 	
 	/**
