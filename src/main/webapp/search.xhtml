@@ -165,6 +165,9 @@
                                 <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" rendered="#{result.type == 'datasets'}" style="display:block; font-weight:bold;">
                                     <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'datasets' ? '/resources/images/icon_dataset.png' : ''});"/>
                                 </h:outputLink>
+                                <h:outputLink value="/files.xhtml?id=#{result.entityId}" rendered="#{result.type == 'files'}" style="display:block; font-weight:bold;" disabled="true">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'files' ? '/resources/images/icon_file.png' : ''});"/>
+                                </h:outputLink>
                                 <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
                                     <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
                                     <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>

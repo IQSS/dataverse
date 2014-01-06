@@ -22,6 +22,10 @@ for row in rows:
         # root dataverse can't have an owner
         del row["owner"]
         pass
+    elif "contentType" in row:
+        #print "must be a file..."
+        dataset_id = row["dataset"]
+        row["dataset"] = {"id": dataset_id}
     else:
         owner_id = row["owner"]
         row["owner"] = {"id": owner_id}

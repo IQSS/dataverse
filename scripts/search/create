@@ -1,6 +1,7 @@
 #!/bin/sh
 DVDIR='data/in/dataverses'
 DSDIR='data/in/datasets'
+FILESDIR='data/in/files'
 
 for i in `ls $DVDIR`; do
   curl http://localhost:8080/api/dataverses -H 'Content-type:application/json' --data-binary @$DVDIR/$i
@@ -8,4 +9,8 @@ done
 
 for i in `ls $DSDIR`; do
   curl http://localhost:8080/api/datasets -H 'Content-type:application/json' --data-binary @$DSDIR/$i
+done
+
+for i in `ls $FILESDIR`; do
+  curl http://localhost:8080/api/files -H 'Content-type:application/json' --data-binary @$FILESDIR/$i
 done

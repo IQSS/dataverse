@@ -94,6 +94,15 @@ public class IndexServiceBean {
             }
             docs.add(solrInputDocument);
 
+            List<DataFile> files = dataset.getFiles();
+            for (DataFile dataFile : files) {
+                SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
+                datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + dataFile.getId());
+                datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
+                datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
+                datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
+                docs.add(datafileSolrInputDocument);
+            }
         }
         try {
             server.add(docs);
