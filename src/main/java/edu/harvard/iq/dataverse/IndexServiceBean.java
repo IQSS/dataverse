@@ -101,6 +101,7 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
                 datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                 datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
+                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
                 docs.add(datafileSolrInputDocument);
             }
         }
