@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
 /**
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
@@ -14,7 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 	@RequiredPermissions( dataverseName = "source",      value = Permission.DataverseDelete ),
 	@RequiredPermissions( dataverseName = "destination", value = Permission.DataverseCreate )
 })
-public class MoveDataverseCommand extends AbstractVoidCommand{
+public class MoveDataverseCommand extends AbstractVoidCommand {
 	
 	final Dataverse moved;
 	final Dataverse destination;
@@ -29,6 +30,12 @@ public class MoveDataverseCommand extends AbstractVoidCommand{
 	
 	@Override
 	public void executeImpl(CommandContext ctxt) throws CommandException {
+		// validate the move makes sense
+		if ( destination.getOwners().contains(moved) ) {
+			throw new IllegalCommandException("Can't move a dataverse to its descendant", this);
+		}
+		
+		// OK, move
 		moved.setOwner(destination);
 		ctxt.dataverses().save(moved);
 	}

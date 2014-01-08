@@ -93,107 +93,112 @@
 			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
 		</p:panel>
 		
-		<p:panel styleClass="panelLayoutBlock">
-			<!-- LIST -->
-			<ui:fragment rendered="#{manageRolesPage.mode eq 'LIST'}">
-				<p:panel>
-					<p:commandButton id="newRole" value="Create New Role" actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
-				</p:panel>
-				<p:panel>
-					<p:dataList value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles()}">
-						<h:link outcome="manage-roles" value="edit" styleClass="pull-right">
-							<f:param name="id" value="#{role.id}"/>
-							<f:param name="intent" value="edit"/>
-						</h:link>
-						<h:link outcome="manage-roles" value="#{role.name}">
-							<f:param name="id" value="#{role.id}"/>
-						</h:link>
-					</p:dataList>
-					<p:panel rendered="#{! manageRolesPage.hasRoles()}">
-						No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
-						<h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
-							Any roles applied to users at parent dataverses, are valid in this
-							dataverse as well.
-						</h:outputText>
-						<p:commandLink value="Create a new role"  actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
+		<p:tabView dynamic="true" cache="false" activeIndex="1">
+			<p:tab id="userTab" title="Users">
+				Assign roles to users here!
+			</p:tab>
+			<p:tab id="roleTab" title="Roles">
+				<!-- LIST -->
+				<ui:fragment rendered="#{manageRolesPage.mode eq 'LIST'}">
+					<p:panel>
+						<p:commandButton id="newRole" value="Create New Role" actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
 					</p:panel>
-				</p:panel>
-			</ui:fragment>
-			
-			<!-- EDIT -->
-			<ui:fragment rendered="#{manageRolesPage.mode eq 'EDIT'}">
-				<h:form id="roleForm">
+					<p:panel>
+						<p:dataList value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles()}">
+							<h:link outcome="manage-roles" value="edit" styleClass="pull-right">
+								<f:param name="id" value="#{role.id}"/>
+								<f:param name="intent" value="edit"/>
+							</h:link>
+							<h:link outcome="manage-roles" value="#{role.name}">
+								<f:param name="id" value="#{role.id}"/>
+							</h:link>
+						</p:dataList>
+						<p:panel rendered="#{! manageRolesPage.hasRoles()}">
+							No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
+							<h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
+								Any roles applied to users at parent dataverses, are valid in this
+								dataverse as well.
+							</h:outputText>
+							<p:commandLink value="Create a new role"  actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
+						</p:panel>
+					</p:panel>
+				</ui:fragment>
+
+				<!-- EDIT -->
+				<ui:fragment rendered="#{manageRolesPage.mode eq 'EDIT'}">
+					<h:form id="roleForm">
+						<p:panel styleClass="panelLayoutBlock" header="Role Properties">
+							<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+								<p:panelGrid columns="2" styleClass="panelgridFormTable">
+									<p:outputLabel value="Name" for="name"/>
+									<p:inputText id="name" value="#{manageRolesPage.role.name}"/>
+									<p:watermark for="name" value="Enter a name for the role..."/>
+									<p:message for="name"/>
+
+									<p:outputLabel value="Alias" for="alias"/>
+									<p:inputText id="alias" value="#{manageRolesPage.role.alias}"/>
+									<p:watermark for="alias" value="Enter alias for the role..."/>
+									<p:message for="alias"/>
+
+									<p:outputLabel value="Description" for="description"/>
+									<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"/>
+									<p:watermark for="description" value="Describe the role (1000 characters max)"/>
+									<p:message for="description"/>
+								</p:panelGrid>
+							</p:panelGrid>
+						</p:panel>
+						<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
+							<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
+								layout="pageDirection"> 
+								<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
+											   itemLabel="#{pmsn.humanName}"
+											   itemValue="#{pmsn}"
+											   />
+							</h:selectManyCheckbox>  
+						</p:panel>
+						<p:panel styleClass="panelLayoutButtonBlock">
+							<p:commandButton id="save" value="#{manageRolesPage.role.id == null ? 'Create Role' : 'Save Changes'}" 
+											 actionListener="#{manageRolesPage.save}" update="@all"/>
+							<p:commandButton id="cancel" value="Cancel" 
+											 actionListener="#{manageRolesPage.cancelEdit}" process="@this" update="@all" />
+
+						</p:panel>
+					</h:form>
+				</ui:fragment>
+
+				<!-- VIEW -->
+				<ui:fragment rendered="#{manageRolesPage.mode eq 'VIEW'}">
 					<p:panel styleClass="panelLayoutBlock" header="Role Properties">
 						<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
 							<p:panelGrid columns="2" styleClass="panelgridFormTable">
 								<p:outputLabel value="Name" for="name"/>
-								<p:inputText id="name" value="#{manageRolesPage.role.name}"/>
-								<p:watermark for="name" value="Enter a name for the role..."/>
-								<p:message for="name"/>
-								
+								<h:outputText id="name" value="#{manageRolesPage.role.name}"/>
+
 								<p:outputLabel value="Alias" for="alias"/>
-								<p:inputText id="alias" value="#{manageRolesPage.role.alias}"/>
-								<p:watermark for="alias" value="Enter alias for the role..."/>
-								<p:message for="alias"/>
-								
+								<h:outputText id="alias" value="#{manageRolesPage.role.alias}"/>
+
 								<p:outputLabel value="Description" for="description"/>
-								<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"/>
-								<p:watermark for="description" value="Describe the role (1000 characters max)"/>
-								<p:message for="description"/>
+								<h:outputText id="description" value="#{manageRolesPage.role.description}"/>
+
 							</p:panelGrid>
 						</p:panelGrid>
 					</p:panel>
 					<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
-						<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
-							layout="pageDirection"> 
-							<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
-										   itemLabel="#{pmsn.humanName}"
-										   itemValue="#{pmsn}"
-										   />
-						</h:selectManyCheckbox>  
+						<p:dataList value="#{manageRolesPage.rolePermissions}" var="pmsn" emptyMessage="This role has no permissions.">
+							#{pmsn.humanName}
+						</p:dataList>
 					</p:panel>
 					<p:panel styleClass="panelLayoutButtonBlock">
-						<p:commandButton id="save" value="#{manageRolesPage.role.id == null ? 'Create Role' : 'Save Changes'}" 
-										 actionListener="#{manageRolesPage.save}" update="@all"/>
-						<p:commandButton id="cancel" value="Cancel" 
+						<h:link outcome="manage-roles" value="Edit this role">
+							<f:param name="id" value="#{manageRolesPage.role.id}" />
+							<f:param name="intent" value="edit" />
+						</h:link>
+						<p:commandButton id="cancel" value="Back to Role List" 
 										 actionListener="#{manageRolesPage.cancelEdit}" process="@this" update="@all" />
-						
+
 					</p:panel>
-				</h:form>
-			</ui:fragment>
-			
-			<!-- VIEW -->
-			<ui:fragment rendered="#{manageRolesPage.mode eq 'VIEW'}">
-				<p:panel styleClass="panelLayoutBlock" header="Role Properties">
-					<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-						<p:panelGrid columns="2" styleClass="panelgridFormTable">
-							<p:outputLabel value="Name" for="name"/>
-							<h:outputText id="name" value="#{manageRolesPage.role.name}"/>
-
-							<p:outputLabel value="Alias" for="alias"/>
-							<h:outputText id="alias" value="#{manageRolesPage.role.alias}"/>
-
-							<p:outputLabel value="Description" for="description"/>
-							<h:outputText id="description" value="#{manageRolesPage.role.description}"/>
-							
-						</p:panelGrid>
-					</p:panelGrid>
-				</p:panel>
-				<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
-					<p:dataList value="#{manageRolesPage.rolePermissions}" var="pmsn" emptyMessage="This role has no permissions.">
-						#{pmsn.humanName}
-					</p:dataList>
-				</p:panel>
-				<p:panel styleClass="panelLayoutButtonBlock">
-					<h:link outcome="manage-roles" value="Edit this role">
-						<f:param name="id" value="#{manageRolesPage.role.id}" />
-						<f:param name="intent" value="edit" />
-					</h:link>
-					<p:commandButton id="cancel" value="Back to Role List" 
-									 actionListener="#{manageRolesPage.cancelEdit}" process="@this" update="@all" />
-
-				</p:panel>
-			</ui:fragment>
-		</p:panel>
+				</ui:fragment>
+			</p:tab>
+		</p:tabView>
     </h:body>
 </html>
