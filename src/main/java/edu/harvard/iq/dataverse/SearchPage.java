@@ -72,6 +72,8 @@ public class SearchPage implements java.io.Serializable {
             spelling_alternatives.add(entry.getValue().toString());
         }
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
+        friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
+        friendlyName.put(SearchFields.DATAVERSE_HIERARCHY_TAG, "Dataverse Hierarchy Tag");
         friendlyName.put(SearchFields.CATEGORY, "Category");
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
