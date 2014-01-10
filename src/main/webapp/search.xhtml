@@ -128,7 +128,8 @@
                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                     </c:forEach>
                                     <f:param name="fq#{SearchPage.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
-                                    <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name}" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}"/>
+                                    <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name} Dataverse" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}" rendered="#{SearchPage.friendlyName.get(facetCategory.name) == 'Original Dataverse' or SearchPage.friendlyName.get(facetCategory.name) == 'Dataverse Hierarchy Tag'}"/>
+                                    <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name}" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}" rendered="#{SearchPage.friendlyName.get(facetCategory.name) != 'Original Dataverse' and SearchPage.friendlyName.get(facetCategory.name) != 'Dataverse Hierarchy Tag'}"/>
                                 </h:outputLink>
                                 <h:outputText value=" (#{facetLabel.count})" style="color:#AAA; margin-right:.5em;"/>
                                 <h:outputLink rendered="#{SearchPage.filterQueries.contains(facetLabel.filterQuery)}" style="color:#C55B28">
@@ -160,7 +161,7 @@
                         <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result" style="margin-top:.5em;">
                             <p:column>
                                 <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.type == 'dataverses'}" style="display:block; font-weight:bold;">
-                                    <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'dataverses' ? '/resources/images/icon_dataverse.png' : ''});"/>
+                                    <h:outputText value="#{result.name} Dataverse" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'dataverses' ? '/resources/images/icon_dataverse.png' : ''});"/>
                                 </h:outputLink>
                                 <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" rendered="#{result.type == 'datasets'}" style="display:block; font-weight:bold;">
                                     <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url(#{result.type == 'datasets' ? '/resources/images/icon_dataset.png' : ''});"/>
