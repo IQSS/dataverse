@@ -59,6 +59,13 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
             solrInputDocument.addField(SearchFields.TYPE, "dataverses");
             solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
+            solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
+            solrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataverse.getName());
+            for (Dataverse dataverseOwner : dataverse.getOwners()) {
+                if (!dataverseService.findRootDataverse().equals(dataverseOwner)) {
+                    solrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataverseOwner.getName());
+                }
+            }
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
             solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
             docs.add(solrInputDocument);
@@ -81,6 +88,13 @@ public class IndexServiceBean {
              */
             solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
+            solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
+            solrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataset.getOwner().getName());
+            for (Dataverse dataverseOwner : dataset.getOwner().getOwners()) {
+                if (!dataverseService.findRootDataverse().equals(dataverseOwner)) {
+                    solrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataverseOwner.getName());
+                }
+            }
 
             SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
             try {
@@ -94,6 +108,23 @@ public class IndexServiceBean {
             }
             docs.add(solrInputDocument);
 
+            List<DataFile> files = dataset.getFiles();
+            for (DataFile dataFile : files) {
+                SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
+                datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + dataFile.getId());
+                datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
+                datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
+                datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
+                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
+                datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getDataset().getOwner().getName());
+                datafileSolrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataFile.getDataset().getOwner().getName());
+                for (Dataverse dataverseOwner : dataFile.getDataset().getOwner().getOwners()) {
+                    if (!dataverseService.findRootDataverse().equals(dataverseOwner)) {
+                        datafileSolrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataverseOwner.getName());
+                    }
+                }
+                docs.add(datafileSolrInputDocument);
+            }
         }
         try {
             server.add(docs);

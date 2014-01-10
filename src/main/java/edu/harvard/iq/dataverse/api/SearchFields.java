@@ -25,6 +25,10 @@ public class SearchFields {
      * http://stackoverflow.com/questions/16559911/facet-query-will-give-wrong-output-on-dynamicfield-in-solr
      */
     public static final String AUTHOR_STRING = "authorstring_s";
+    public static final String FILE_TYPE = "filetype_s";
+    public static final String ORIGINAL_DATAVERSE = "originaldataverse_s";
+    // ss = multivalued string
+    public static final String DATAVERSE_HIERARCHY_TAG = "dataversehierarchytag_ss";
     // i.e. http://localhost:8080/search.xhtml?q=*&fq0=citationdate_dt:[2008-01-01T00%3A00%3A00Z+TO+2011-01-01T00%3A00%3A00Z%2B1YEAR}
     public static final String CITATION_DATE = "citationdate_dt";
 

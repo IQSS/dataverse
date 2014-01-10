@@ -54,9 +54,12 @@ public class SearchServiceBean {
             solrQuery.addFilterQuery(filterQuery);
         }
         solrQuery.addFacetField(SearchFields.TYPE);
+        solrQuery.addFacetField(SearchFields.ORIGINAL_DATAVERSE);
+        solrQuery.addFacetField(SearchFields.DATAVERSE_HIERARCHY_TAG);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
+        solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: decide if year CITATION_YEAR is good enough or if we should
          * support CITATION_DATE
@@ -154,6 +157,8 @@ public class SearchServiceBean {
                 String valueString = rangeFacetCount.getValue();
                 Integer start = Integer.parseInt(valueString);
                 Integer end = start + Integer.parseInt(rangeFacet.getGap().toString());
+                // to avoid overlapping dates
+                end = end - 1;
                 if (rangeFacetCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(start + "-" + end, new Long(rangeFacetCount.getCount()));
                     // special [12 TO 34] syntax for range facets
