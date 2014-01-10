@@ -38,6 +38,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 		// OK, move
 		moved.setOwner(destination);
 		ctxt.dataverses().save(moved);
+		
 	}
 	
 }

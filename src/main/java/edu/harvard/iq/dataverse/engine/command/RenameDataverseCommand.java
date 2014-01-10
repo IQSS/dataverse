@@ -1,0 +1,35 @@
+package edu.harvard.iq.dataverse.engine.command;
+
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
+/**
+ *
+ * @author michael
+ */
+@RequiredPermissions( Permission.DatasetEdit )
+public class RenameDataverseCommand extends AbstractCommand<Dataverse>{
+	
+	private final String newName;
+	private final Dataverse renamed;
+	
+	public RenameDataverseCommand( DataverseUser aUser, Dataverse aDataverse, String aNewName ) {
+		super( aUser, aDataverse );
+		newName = aNewName;
+		renamed = aDataverse;
+	}
+	
+	@Override
+	public Dataverse execute(CommandContext ctxt) throws CommandException {
+		if ( newName.trim().isEmpty() ) {
+			throw new IllegalCommandException("Dataverse name cannot be empty", this);
+		}
+		
+		renamed.setName(newName);
+		return ctxt.dataverses().save(renamed);
+	}
+	
+}

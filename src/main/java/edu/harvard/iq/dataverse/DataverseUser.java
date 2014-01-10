@@ -14,6 +14,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
@@ -22,6 +24,10 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author xyang
  */
+@NamedQueries(
+		@NamedQuery( name="DataverseUser.findAll",
+				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName")
+)
 @Entity
 public class DataverseUser implements Serializable {
 

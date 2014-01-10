@@ -7,6 +7,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -80,9 +81,16 @@ public class DataverseRoleServiceBean {
 	 * @see #effectiveRoles(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
 	public Set<DataverseRole> definedRoles( DataverseUser user, Dataverse dv ) {
-		return new HashSet<>(em.createNamedQuery("UserDataverseAssignedRole.findRoleByUserIdDataverseId", DataverseRole.class)
-				.setParameter("userId", user.getId())
-				.setParameter("dataverseId", dv.getId())
-				.getResultList());
+		TypedQuery<UserDataverseAssignedRole> query = em.createQuery(
+				"SELECT r FROM UserDataverseAssignedRole r WHERE r.user.id=:userId AND r.role.owner.id=:dataverseId",
+				UserDataverseAssignedRole.class);
+		query.setParameter("userId", user.getId());
+		query.setParameter("dataverseId", dv.getId());
+		HashSet<DataverseRole> retVal = new HashSet<>();
+		for ( UserDataverseAssignedRole ar : query.getResultList() ) {
+			retVal.add( ar.getRole() );
+		}
+		
+		return retVal;
 	}
 }

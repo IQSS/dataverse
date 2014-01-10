@@ -86,7 +86,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		mode = PageMode.LIST;
 	}
 	
-	public void save( ActionEvent e ) {
+	public void saveRole( ActionEvent e ) {
 		role.setOwner(dataversePage.getDataverse());
 		role.permissions().clear();
 		for ( String pmsnStr : getSelectedPermissions() ) {
