@@ -6,10 +6,17 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -17,6 +24,10 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author xyang
  */
+@NamedQueries(
+		@NamedQuery( name="DataverseUser.findAll",
+				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName")
+)
 @Entity
 public class DataverseUser implements Serializable {
 
@@ -38,6 +49,10 @@ public class DataverseUser implements Serializable {
     @NotBlank(message = "Please enter your last name  for your dataverse account.")
     private String lastName;
     
+	@OneToMany( cascade={CascadeType.MERGE, CascadeType.REMOVE},
+			fetch=FetchType.LAZY)
+	private Set<UserDataverseAssignedRole> assignedRoles;
+	
     private String encryptedPassword;
     private String institution;
     private String position;
@@ -114,6 +129,19 @@ public class DataverseUser implements Serializable {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+	
+	public void registerAssignedRole( UserDataverseAssignedRole udr ) {
+		if ( assignedRoles == null ) {
+			assignedRoles = new HashSet<>();
+		}
+		assignedRoles.add(udr);
+	}
+    
+	public void deregisterAssignedRole( UserDataverseAssignedRole udr ) {
+		if ( assignedRoles != null ) {
+			assignedRoles.remove(udr);
+		}
+	}
     
     @Override
     public int hashCode() {

@@ -1,0 +1,16 @@
+/* 
+    Created on : Jan 5, 2014, 2:00:06 PM
+    Author     : michael
+	To be merged to some bigger style management.
+*/
+
+.pull-right {
+	float: right;
+}
+
+.button-box {
+	background-color: lightskyblue;
+	border: 1px solid blue;
+	box-shadow: 0 2px 4px rgba(0,0,0,.5);
+	padding: 4px;
+}
