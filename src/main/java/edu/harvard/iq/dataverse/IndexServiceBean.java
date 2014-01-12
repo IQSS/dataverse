@@ -7,8 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -53,6 +55,7 @@ public class IndexServiceBean {
         Collection<SolrInputDocument> docs = new ArrayList<>();
 
         List<Dataverse> dataverses = dataverseService.findAll();
+        Map allDataversePaths = new HashMap();
         for (Dataverse dataverse : dataverses) {
             SolrInputDocument solrInputDocument = new SolrInputDocument();
             solrInputDocument.addField(SearchFields.ID, "dataverse_" + dataverse.getId());
@@ -69,6 +72,11 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
             solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
             docs.add(solrInputDocument);
+            List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
+            List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
+            List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+            solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+            allDataversePaths.put(dataverse.getId(), dataversePaths);
         }
 
         List<Dataset> datasets = datasetService.findAll();
@@ -88,6 +96,7 @@ public class IndexServiceBean {
              */
             solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
+            solrInputDocument.addField(SearchFields.SUBTREE, allDataversePaths.get(dataset.getOwner().getId()));
             solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
             solrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataset.getOwner().getName());
             for (Dataverse dataverseOwner : dataset.getOwner().getOwners()) {
@@ -116,6 +125,7 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                 datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
                 datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
+                datafileSolrInputDocument.addField(SearchFields.SUBTREE, allDataversePaths.get(dataFile.getDataset().getOwner().getId()));
                 datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getDataset().getOwner().getName());
                 datafileSolrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataFile.getDataset().getOwner().getName());
                 for (Dataverse dataverseOwner : dataFile.getDataset().getOwner().getOwners()) {
@@ -140,4 +150,29 @@ public class IndexServiceBean {
         return "reached end of index method (no exceptions)" + "\n";
     }
 
+    List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
+        if (!dataverseService.findRootDataverse().equals(dataverse)) {
+            findPathSegments(dataverse.getOwner(), segments);
+            segments.add(dataverse.getAlias());
+            return segments;
+        } else {
+            // base case
+            return segments;
+        }
+    }
+
+    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
+        List<String> subtrees = new ArrayList<>();
+        for (int i = 0; i < dataversePathSegments.size(); i++) {
+            StringBuilder pathBuilder = new StringBuilder();
+            int numSegments = dataversePathSegments.size();
+            for (int j = 0; j < numSegments; j++) {
+                if (j <= i) {
+                    pathBuilder.append("/" + dataversePathSegments.get(j));
+                }
+            }
+            subtrees.add(pathBuilder.toString());
+        }
+        return subtrees;
+    }
 }
