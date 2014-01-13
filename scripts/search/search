@@ -1,7 +1,8 @@
 #!/bin/sh
 if [ -z "$1" ]; then
-    curl 'http://localhost:8080/api/search?q=*'
+    curl -s 'http://localhost:8080/api/search?q=*'
 else
     # i.e. ./search 'q=*&fq=cat:Birds+Inc.&fq=type_s:datasets'
-    curl "http://localhost:8080/api/search?$1"
+    # i.e. ./search 'q=*&start=10'
+    curl -s "http://localhost:8080/api/search?$1"
 fi

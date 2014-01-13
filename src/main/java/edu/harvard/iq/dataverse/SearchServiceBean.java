@@ -35,7 +35,7 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
-    public SolrQueryResponse search(String query, List<String> filterQueries) {
+    public SolrQueryResponse search(String query, List<String> filterQueries, int paginationStart) {
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -63,6 +63,10 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
         /**
+         * @todo: do sanity checking... throw error if negative
+         */
+        solrQuery.setStart(paginationStart);
+        /**
          * @todo: decide if year CITATION_YEAR is good enough or if we should
          * support CITATION_DATE
          */
@@ -81,9 +85,10 @@ public class SearchServiceBean {
         final int citationYearRangeSpan = 2;
         solrQuery.addNumericRangeFacet(SearchFields.CITATION_YEAR, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         /**
-         * @todo: implement paging instead of dumping all results
+         * @todo: make the number of results per page configurable?
          */
-        solrQuery.setRows(Integer.SIZE);
+        int numResultsPerPage = 10;
+        solrQuery.setRows(numResultsPerPage);
         logger.info("Solr query:" + solrQuery);
 
         QueryResponse queryResponse;
@@ -184,6 +189,8 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
+        solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
+        solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         return solrQueryResponse;
     }
 }

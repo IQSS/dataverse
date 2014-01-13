@@ -27,9 +27,9 @@ public class Search {
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries) {
+    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("start") final int paginationStart) {
         if (query != null) {
-            SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
+            SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
 
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
@@ -57,7 +57,9 @@ public class Search {
             facets.add(facetCategoryBuilder);
 
             JsonObject value = Json.createObjectBuilder()
-                    .add("total_count", solrSearchResults.size())
+                    .add("total_count", solrQueryResponse.getNumResultsFound())
+                    .add("start", solrQueryResponse.getResultsStart())
+                    .add("count_in_response", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("itemsJson", filesArrayBuilder.build())
