@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -55,4 +56,14 @@ public class DataverseServiceBean {
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }    
+
+    public String determineDataversePath(Dataverse dataverse) {
+        List<String> dataversePathSegments = new ArrayList();
+        indexService.findPathSegments(dataverse, dataversePathSegments);
+        StringBuilder dataversePath = new StringBuilder();
+        for (String segment : dataversePathSegments) {
+            dataversePath.append("/" + segment);
+        }
+        return dataversePath.toString();
+    }
 }

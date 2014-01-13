@@ -214,6 +214,7 @@
                     <form id="searchForm">
                         <h:inputText id="q" size="40" value="#{DataversePage.q}"/>
                         <input type="submit" value="Find" formaction="search.xhtml" style="margin-left:1em;"/>
+                        <h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="#{!DataversePage.isRootDataverse()}"/>
                     </form>
                 </ui:fragment>
 
