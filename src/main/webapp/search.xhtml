@@ -162,46 +162,55 @@
                         <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result" style="margin-top:.5em;">
                             <p:column>
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
-                                    <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold;">
-                                        <h:outputText value="#{result.name} Dataverse (Affiliate)" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url('/resources/images/icon_dataverse.png');"/>
+                                    <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left;">
+                                        <h:outputText value="#{result.name} Dataverse (Affiliate)" style="padding:4px 0;"/>
                                     </h:outputLink>
+                                    <div style="width:80px; border:1px solid gold; float:left; margin:0 12px 12px 0;">
+                                        <img src="/resources/images/icon_dataverse.png" style="width:80px;" border="0" alt="Dataverse"/>
+                                    </div>
                                     <h:outputText value="[Month, Day, Year]"/><br/>
                                     <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
                                         <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
                                         <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
                                     </ui:fragment>
-                                    <br/>
-                                    <h:outputText value="Content Title ##Dataverses, ##Datasets"/><br/>
-                                    <h:outputText value="- dataset1 [preview?] [##files?] [mm, dd, yyyy?]"/><br/>
-                                    <h:outputText value="- dataset2 [preview?] [##files?] [mm, dd, yyyy?]"/><br/>
-                                    <h:outputText value="&#160;&#160;&#160;> View More"/><br/>
+                                    <div style="clear:left; border:1px solid gold;"> <!--this needs to be a datatable-->
+                                        <h:outputText value="Content Title ##Dataverses, ##Datasets"/><br/>
+                                        <h:outputText value="- dataset1 [preview?] [##files?] [mm, dd, yyyy?]"/><br/>
+                                        <h:outputText value="- dataset2 [preview?] [##files?] [mm, dd, yyyy?]"/><br/>
+                                        <h:outputText value="&#160;&#160;&#160;> View More"/>
+                                    </div>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
-                                    <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold;">
-                                        <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url('/resources/images/icon_dataset.png');"/>
+                                    <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left;">
+                                        <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                     </h:outputLink>
+                                    <div style="width:80px; border:1px solid gold; float:left; margin:0 12px 12px 0;">
+                                        <img src="/resources/images/icon_dataset.png" style="width:80px;" border="0" alt="Dataset"/>
+                                        <h:outputText value="### downloads + analysis"/>
+                                    </div>
                                     <h:outputText value="Author, Name (Affiliation)"/><br/>
                                     <h:outputText value="Version #, [Month, Day, Year], hdl:1902.1/UNIQID#"/><br/>
                                     <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
                                         <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
                                         <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
                                     </ui:fragment>
-                                    <br/>
-                                    <h:outputText value="### downloads"/><br/>
-                                    <h:outputText value="+ analysis"/><br/>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{result.type == 'files'}">
                                     <h:outputLink value="/files.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold;" disabled="true">
-                                        <h:outputText value="#{result.name}" style="padding:4px 0 4px 30px; background: no-repeat 4px 50% / 22px; background-image: url('/resources/images/icon_file.png');"/>
+                                        <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                     </h:outputLink>
+                                    <div style="width:80px; border:1px solid gold; float:left; margin:0 12px 12px 0;">
+                                        <img src="/resources/images/icon_file.png" style="width:80px;" border="0" alt="Data File"/>
+                                        <h:outputText value="### downloads + analysis"/>
+                                    </div>
                                     <h:outputText value="Parent Dataset Title > Parent Dataverse"/><br/>
                                     <h:outputText value="Description of file here"/><br/>
-                                    <h:outputText value="### downloads"/><br/>
-                                    <h:outputText value="+ analysis"/><br/>
-                                    <h:outputText value="Variable Lable Title | Variable Value Title"/><br/>
-                                    <h:outputText value="Label | Value"/><br/>
-                                    <h:outputText value="Label | Value"/><br/>
-                                    <h:outputText value="&#160;&#160;&#160;> View More"/><br/>
+                                    <div style="clear:left; border:1px solid gold;"> <!--this needs to be a datatable-->
+                                        <h:outputText value="Variable Lable Title | Variable Value Title"/><br/>
+                                        <h:outputText value="Label | Value"/><br/>
+                                        <h:outputText value="Label | Value"/><br/> 
+                                        <h:outputText value="&#160;&#160;&#160;> View More"/>
+                                    </div>
                                     <h:outputText value="* ## other data files from this dataset also match this keyword"/><br/>
                                 </ui:fragment>
                             </p:column>
