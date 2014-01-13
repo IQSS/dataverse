@@ -61,6 +61,7 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
         /**
          * @todo: decide if year CITATION_YEAR is good enough or if we should
          * support CITATION_DATE

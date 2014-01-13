@@ -79,6 +79,7 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
         friendlyName.put(SearchFields.FILE_TYPE, "File Type");
+        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
     }
 
     public void addFacet(FacetLabel facetLabel) {

@@ -125,6 +125,7 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                 datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
                 datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
+                datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_GROUP, dataFile.getContentType().split("/")[0]);
                 datafileSolrInputDocument.addField(SearchFields.SUBTREE, allDataversePaths.get(dataFile.getDataset().getOwner().getId()));
                 datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getDataset().getOwner().getName());
                 datafileSolrInputDocument.addField(SearchFields.DATAVERSE_HIERARCHY_TAG, dataFile.getDataset().getOwner().getName());

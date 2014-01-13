@@ -26,6 +26,7 @@ public class SearchFields {
      */
     public static final String AUTHOR_STRING = "authorstring_s";
     public static final String FILE_TYPE = "filetype_s";
+    public static final String FILE_TYPE_GROUP = "filetypegroup_s";
     public static final String ORIGINAL_DATAVERSE = "originaldataverse_s";
     // ss = multivalued string
     public static final String DATAVERSE_HIERARCHY_TAG = "dataversehierarchytag_ss";
