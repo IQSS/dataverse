@@ -56,7 +56,6 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.SUBTREE);
         solrQuery.addFacetField(SearchFields.ORIGINAL_DATAVERSE);
-        solrQuery.addFacetField(SearchFields.DATAVERSE_HIERARCHY_TAG);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
 //        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
