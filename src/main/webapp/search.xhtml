@@ -49,6 +49,7 @@
     <h:body> 
         <f:metadata>
             <f:viewParam name="q" value="#{SearchPage.query}"/>
+            <f:viewParam name="start" value="#{SearchPage.paginationStart}"/>
             <f:viewParam name="fq0" value="#{SearchPage.fq0}"/>
             <f:viewParam name="fq1" value="#{SearchPage.fq1}"/>
             <f:viewParam name="fq2" value="#{SearchPage.fq2}"/>
@@ -143,7 +144,7 @@
                         </p:dataList>
                     </div>
                     <div style="width:77%;float:left;padding-left:20px;">
-                        <h:outputText value="Results for query [#{SearchPage.query}] " style="font-weight: bold"/>
+                        <h:outputText value="#{SearchPage.searchResultsCount} results for query [#{SearchPage.query}] " style="font-weight: bold"/>
                         <h:outputLink value="/search.xhtml" rendered="#{SearchPage.query != '*'}" style="color: #C55B28">
                             <f:param name="q" value="*"/>
                             <c:forEach items="#{SearchPage.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -175,6 +176,25 @@
                                 </ui:fragment>
                             </p:column>
                         </p:dataTable>
+                    </div>
+                    <div>
+                        <h:outputLink value="/search.xhtml" disabled="#{SearchPage.paginationStart == 0}">
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="start" value="#{SearchPage.paginationStart - 10}"/>
+                            <c:forEach items="#{SearchPage.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
+                            </c:forEach>
+                            <h:outputText value="Previous"/>
+                        </h:outputLink>
+                        <h:outputText value=" | "/>
+                        <h:outputLink value="/search.xhtml" disabled="#{SearchPage.paginationStart + 10 > SearchPage.searchResultsCount}">
+                            <f:param name="q" value="#{SearchPage.query}"/>
+                            <f:param name="start" value="#{SearchPage.paginationStart + 10}"/>
+                            <c:forEach items="#{SearchPage.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
+                            </c:forEach>
+                            <h:outputText value="Next"/>
+                        </h:outputLink>
                     </div>
                 </div>
             </p:panel>  

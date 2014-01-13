@@ -30,6 +30,16 @@ public class SearchPage implements java.io.Serializable {
     private String fq8;
     private String fq9;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
+    private Long searchResultsCount;
+
+    public Long getSearchResultsCount() {
+        return searchResultsCount;
+    }
+
+    public void setSearchResultsCount(Long searchResultsCount) {
+        this.searchResultsCount = searchResultsCount;
+    }
+    private int paginationStart;
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
     private Map<String, String> friendlyName = new HashMap<>();
@@ -65,9 +75,10 @@ public class SearchPage implements java.io.Serializable {
                 filterQueries.add(fq);
             }
         }
-        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries);
+        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        searchResultsCount = solrQueryResponse.getNumResultsFound();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
         }
@@ -80,6 +91,14 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
         friendlyName.put(SearchFields.FILE_TYPE, "File Type");
         friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
+    }
+
+    public int getPaginationStart() {
+        return paginationStart;
+    }
+
+    public void setPaginationStart(int paginationStart) {
+        this.paginationStart = paginationStart;
     }
 
     public void addFacet(FacetLabel facetLabel) {
