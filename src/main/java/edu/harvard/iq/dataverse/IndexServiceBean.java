@@ -150,7 +150,7 @@ public class IndexServiceBean {
         return "reached end of index method (no exceptions)" + "\n";
     }
 
-    List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
+    public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
         if (!dataverseService.findRootDataverse().equals(dataverse)) {
             findPathSegments(dataverse.getOwner(), segments);
             segments.add(dataverse.getAlias());

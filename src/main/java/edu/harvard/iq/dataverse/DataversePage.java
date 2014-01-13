@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -32,6 +33,7 @@ public class DataversePage implements java.io.Serializable {
     private boolean editMode = false;
     private Long ownerId;
     private String q;
+    private String dataversePath;
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -63,6 +65,15 @@ public class DataversePage implements java.io.Serializable {
 
     public void setQ(String q) {
         this.q = q;
+    }
+
+    public String getDataversePath() {
+        String dataversePath = dataverseService.determineDataversePath(this.dataverse);
+        return SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+    }
+
+    public void setDataversePath(String dataversePath) {
+        this.dataversePath = dataversePath;
     }
 
     public void init() {
@@ -113,5 +124,13 @@ public class DataversePage implements java.io.Serializable {
         dataverse = dataverseService.find(dataverse.getId());
         ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         editMode = false;
+    }
+
+    public boolean isRootDataverse() {
+        if (this.dataverse.equals(dataverseService.findRootDataverse())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
