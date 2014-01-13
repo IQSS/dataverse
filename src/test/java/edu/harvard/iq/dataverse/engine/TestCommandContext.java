@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 
 /**
@@ -19,6 +18,26 @@ public class TestCommandContext implements CommandContext {
 
 	@Override
 	public DataverseServiceBean dataverses() {
+		return null;
+	}
+
+	@Override
+	public DataverseRoleServiceBean roles() {
+		return null;
+	}
+
+	@Override
+	public DataverseUserServiceBean users() {
+		return null;
+	}
+
+	@Override
+	public IndexServiceBean indexing() {
+		return null;
+	}
+
+	@Override
+	public SearchServiceBean search() {
 		return null;
 	}
 	

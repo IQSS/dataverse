@@ -34,6 +34,18 @@ public class EjbDataverseEngine {
 	@EJB
 	DataverseRoleServiceBean roleService;
 	
+	@EJB
+	DataverseRoleServiceBean rolesService;
+	
+	@EJB
+	DataverseUserServiceBean usersService;
+	
+	@EJB
+	IndexServiceBean indexService;
+	
+	@EJB
+	SearchServiceBean searchService;
+	
 	private CommandContext ctxt;
 	
 	
@@ -108,6 +120,26 @@ public class EjbDataverseEngine {
 				
 				@Override
 				public DataverseServiceBean dataverses() { return dataverseService; }
+
+				@Override
+				public DataverseRoleServiceBean roles() {
+					return rolesService;
+				}
+
+				@Override
+				public DataverseUserServiceBean users() {
+					return usersService;
+				}
+
+				@Override
+				public IndexServiceBean indexing() {
+					return indexService;
+				}
+
+				@Override
+				public SearchServiceBean search() {
+					return searchService;
+				}
 			};
 		}
 		
