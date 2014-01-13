@@ -1,8 +1,12 @@
-package edu.harvard.iq.dataverse.engine.command;
+package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
@@ -21,9 +25,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 	final Dataverse destination;
 
 	public MoveDataverseCommand( DataverseUser aUser, Dataverse moved, Dataverse destination ) {
-		super(aUser, p("moved", moved),
-					 p("source",moved.getOwner()),
-					 p("destination",destination) );
+		super(aUser, dv("moved", moved),
+					 dv("source",moved.getOwner()),
+					 dv("destination",destination) );
 		this.moved = moved;
 		this.destination = destination;
 	}

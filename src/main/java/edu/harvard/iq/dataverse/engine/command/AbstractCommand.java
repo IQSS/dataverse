@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,12 +31,12 @@ public abstract class AbstractCommand<R> implements Command<R> {
 	 * @param d the dataverse
 	 * @return the named pair
 	 */
-	protected static DvNamePair p( String s, Dataverse d ) {
+	protected static DvNamePair dv( String s, Dataverse d ) {
 		return new DvNamePair(s,d);
 	}
 	
 	public AbstractCommand(DataverseUser aUser, Dataverse anAffectedDataverse) {
-		this( aUser, p("",anAffectedDataverse));
+		this( aUser, dv("",anAffectedDataverse));
 	}
 	
 	public AbstractCommand(DataverseUser aUser, DvNamePair dvp, DvNamePair... more ) {

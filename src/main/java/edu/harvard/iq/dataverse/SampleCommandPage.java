@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import com.sun.org.apache.bcel.internal.Constants;
-import edu.harvard.iq.dataverse.engine.command.RenameDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RenameDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.ArrayList;
 import java.util.LinkedList;

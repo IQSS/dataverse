@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
