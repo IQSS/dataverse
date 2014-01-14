@@ -98,16 +98,17 @@ public class SearchServiceBean {
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        String name = null;
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
+            String affiliation = (String) solrDocument.getFieldValue(SearchFields.AFFILIATION);
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
-            name = (String) solrDocument.getFieldValue(SearchFields.NAME);
+            String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
+            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             Collection<String> fieldNames = solrDocument.getFieldNames();
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
@@ -122,6 +123,23 @@ public class SearchServiceBean {
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
+            solrSearchResult.setAffiliation(affiliation);
+            Map<String, String> parent = new HashMap<>();
+            if (type.equals("dataverses")) {
+                solrSearchResult.setName(name);
+                parent.put("type", "dataverses");
+            } else if (type.equals("datasets")) {
+                if (titles != null) {
+                    solrSearchResult.setTitle((String) titles.get(0));
+                }
+                parent.put("type", "datasets");
+            } else if (type.equals("files")) {
+                solrSearchResult.setName(name);
+                parent.put("type", "files");
+            }
+            parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
+            parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
+            solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }
         Map<String, List<String>> spellingSuggestionsByToken = new HashMap<>();

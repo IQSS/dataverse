@@ -54,6 +54,7 @@ public class IndexServiceBean {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
 
+        Dataverse rootDataverse = dataverseService.findRootDataverse();
         List<Dataverse> dataverses = dataverseService.findAll();
         Map allDataversePaths = new HashMap();
         for (Dataverse dataverse : dataverses) {
@@ -64,13 +65,22 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
             solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
+            /**
+             * @todo: stop using affiliation as category
+             */
             solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
-            docs.add(solrInputDocument);
+            solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
+            if (!dataverse.equals(rootDataverse)) {
+                solrInputDocument.addField(SearchFields.PARENT_TYPE, "dataverses");
+                solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
+                solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+            }
             List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
             List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
             List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
             solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
             allDataversePaths.put(dataverse.getId(), dataversePaths);
+            docs.add(solrInputDocument);
         }
 
         List<Dataset> datasets = datasetService.findAll();
@@ -103,6 +113,10 @@ public class IndexServiceBean {
             } catch (ParseException ex) {
                 logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
             }
+            solrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
+            solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
+            solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
+
             docs.add(solrInputDocument);
 
             List<DataFile> files = dataset.getFiles();
@@ -116,6 +130,9 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_GROUP, dataFile.getContentType().split("/")[0]);
                 datafileSolrInputDocument.addField(SearchFields.SUBTREE, allDataversePaths.get(dataFile.getDataset().getOwner().getId()));
                 datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getDataset().getOwner().getName());
+                datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "files");
+                datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getDataset().getId());
+                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
                 docs.add(datafileSolrInputDocument);
             }
         }
