@@ -21,4 +21,5 @@ http://pythonhosted.org/an_example_pypi_project/sphinx.html
 As always, Google is your friend. 
 
 For a super useful quick start doc on how to format your source
-documents in sphinx, remember to consult Eleni's "cheat sheet" https://docs.google.com/document/d/105H3iwPwgnPqwuMJI7q-h6FLtXV_EUCiwq2P13lADgA/edit?usp=sharing.
+documents in sphinx, remember to consult Eleni's ".rst cheat sheet":
+http://bit.ly/1eGnxxI (Google Doc)
