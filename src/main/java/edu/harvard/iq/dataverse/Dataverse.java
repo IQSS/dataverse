@@ -39,7 +39,7 @@ public class Dataverse implements Serializable {
     private String name;
 
     @NotBlank(message = "Please enter an alias.")
-    @Size(max = 16, message = "Alias must be at most 16 characters.")
+    @Size(max = 32, message = "Alias must be at most 32 characters.")
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 
