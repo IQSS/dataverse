@@ -1,0 +1,25 @@
+This is how to install sphinx: 
+
+On a Mac: 
+
+Download the sphinx zip file; I got mine from here: 
+http://sphinx-doc.org/install.html
+
+Unzip it somewhere. In the unzipped directory, do the following as
+root, (sudo -i):
+
+python setup.py build
+python setup.py install
+
+This is all you need. You should now be able to build HTML/pdf documentation from git sources locally. 
+
+If you need more information on sphinx (probably not), for ex., on how to start a new
+documentation project of your own, etc., here's a good link:
+
+http://pythonhosted.org/an_example_pypi_project/sphinx.html
+
+As always, Google is your friend. 
+
+For a super useful quick start doc on how to format your source
+documents in sphinx, remember to consult Eleni's "cheat sheet" in
+this directory, under HOWTO-FORMATTING (it's an HTML doc).
