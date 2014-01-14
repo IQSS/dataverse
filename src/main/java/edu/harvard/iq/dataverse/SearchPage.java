@@ -31,14 +31,6 @@ public class SearchPage implements java.io.Serializable {
     private String fq9;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private Long searchResultsCount;
-
-    public Long getSearchResultsCount() {
-        return searchResultsCount;
-    }
-
-    public void setSearchResultsCount(Long searchResultsCount) {
-        this.searchResultsCount = searchResultsCount;
-    }
     private int paginationStart;
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
@@ -78,6 +70,12 @@ public class SearchPage implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        for (SolrSearchResult solrSearchResult : searchResults) {
+            if (solrSearchResult.getType().equals("dataverses")) {
+                List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
+                solrSearchResult.setDatasets(datasets);
+            }
+        }
         searchResultsCount = solrQueryResponse.getNumResultsFound();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
@@ -91,28 +89,6 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
         friendlyName.put(SearchFields.FILE_TYPE, "File Type");
         friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
-    }
-
-    public int getPaginationStart() {
-        return paginationStart;
-    }
-
-    public void setPaginationStart(int paginationStart) {
-        this.paginationStart = paginationStart;
-    }
-
-    public void addFacet(FacetLabel facetLabel) {
-        String filterQuery = facetLabel.getFilterQuery();
-        logger.info("facet clicked: " + filterQuery);
-        filterQueries.add(filterQuery);
-        search();
-    }
-
-    public void removeFacet(FacetLabel facetLabel) {
-        String filterQuery = facetLabel.getFilterQuery();
-        logger.info("facet removed: " + filterQuery);
-        filterQueries.remove(filterQuery);
-        search();
     }
 
     public String getQuery() {
@@ -217,6 +193,22 @@ public class SearchPage implements java.io.Serializable {
 
     public void setSearchResultsList(List<SolrSearchResult> searchResultsList) {
         this.searchResultsList = searchResultsList;
+    }
+
+    public Long getSearchResultsCount() {
+        return searchResultsCount;
+    }
+
+    public void setSearchResultsCount(Long searchResultsCount) {
+        this.searchResultsCount = searchResultsCount;
+    }
+
+    public int getPaginationStart() {
+        return paginationStart;
+    }
+
+    public void setPaginationStart(int paginationStart) {
+        this.paginationStart = paginationStart;
     }
 
     public List<FacetCategory> getFacetCategoryList() {

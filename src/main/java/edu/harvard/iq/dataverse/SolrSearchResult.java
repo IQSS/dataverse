@@ -22,14 +22,8 @@ public class SolrSearchResult {
     private List<String> highlightSnippets;
     // parent can be dataverse or dataset, store the name and id
     private Map<String, String> parent;
-
-    public Map<String, String> getParent() {
-        return parent;
-    }
-
-    public void setParent(Map<String, String> parent) {
-        this.parent = parent;
-    }
+    // used on the SearchPage but not the search API
+    private List<Dataset> datasets;
     private String affiliation;
 
     /**
@@ -140,6 +134,22 @@ public class SolrSearchResult {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
+    }
+
+    public Map<String, String> getParent() {
+        return parent;
+    }
+
+    public void setParent(Map<String, String> parent) {
+        this.parent = parent;
+    }
+
+    public List<Dataset> getDatasets() {
+        return datasets;
+    }
+
+    public void setDatasets(List<Dataset> datasets) {
+        this.datasets = datasets;
     }
 
 }
