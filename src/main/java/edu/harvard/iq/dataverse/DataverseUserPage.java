@@ -7,7 +7,6 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -33,7 +32,7 @@ public class DataverseUserPage implements java.io.Serializable {
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
-    private DataverseUser dataverseUser = new DataverseUser();
+    private DataverseUser dataverseUser;
     private EditMode editMode;
     
     @NotBlank(message = "Please enter a password for your account.")    
@@ -43,6 +42,9 @@ public class DataverseUserPage implements java.io.Serializable {
     private String currentPassword;
     
     public DataverseUser getDataverseUser() {
+        if (dataverseUser == null) {
+            dataverseUser = new DataverseUser();
+        }
         return dataverseUser;
     }
 
@@ -75,15 +77,9 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        /* if (dataverseUser.getId() != null) {  
-            dataverseUser = dataverseUserService.find(dataverseUser.getId());
-        } else { 
-            try {
-                dataverseUser = dataverseUserService.findDataverseUser();
-            } catch (EJBException e) {
-            }
-        } */
-        editMode = EditMode.CREATE;
+        if (dataverseUser == null) {  
+            dataverseUser = session.getUser();
+        }
     }
     
     public void edit(ActionEvent e) {
@@ -91,7 +87,6 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void create(ActionEvent e) {
-        dataverseUser.setId( Long.parseLong(String.valueOf(0)));
         editMode = EditMode.CREATE;
     }
 
