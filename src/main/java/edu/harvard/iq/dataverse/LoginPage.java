@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -14,6 +15,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.NoResultException;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -38,6 +40,11 @@ public class LoginPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password.")    
     private String password;
     
+    public void init() {
+        
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Log In", " - Log in to continue."));  
+        
+    }
 
     public String getUserName() {
         return userName;
