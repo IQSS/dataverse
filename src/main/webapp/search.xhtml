@@ -166,8 +166,9 @@
                                         <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
                                     </h:outputLink>
                                     <h:outputText value=" (#{result.affiliation})" style="padding:4px 0"/><br/>
-                                    <div style="width:80px; float:left; margin:0 12px 12px 0;">
+                                    <div style="width:80px; float:left; margin:4px 12px 12px 0;">
                                         <img src="/resources/images/icon_dataverse.png" style="width:80px;" border="0" alt="Dataverse"/>
+                                        <h:outputText value="### downloads + analysis"/>
                                     </div>
                                     <h:outputText value="[Month, Day, Year]"/><br/>
                                     <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
@@ -193,13 +194,12 @@
                                             <h:outputText value="&#160;&#160;&#160;> View #{result.datasets.size() - 3} more"/>
                                         </h:outputLink>
                                     </div>
-                                    <h:outputText value="### downloads + analysis"/>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{result.type == 'datasets'}">
                                     <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left;">
                                         <h:outputText value="#{result.title}" style="padding:4px 0;"/>
                                     </h:outputLink>
-                                    <div style="width:80px; border:1px solid gold; float:left; margin:0 12px 12px 0;">
+                                    <div style="width:80px; float:left; margin:4px 12px 12px 0;">
                                         <img src="/resources/images/icon_dataset.png" style="width:80px;" border="0" alt="Dataset"/>
                                         <h:outputText value="### downloads + analysis"/>
                                     </div>
@@ -219,7 +219,7 @@
                                     <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold;">
                                         <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                     </h:outputLink>
-                                    <div style="width:80px; border:1px solid gold; float:left; margin:0 12px 12px 0;">
+                                    <div style="width:80px; float:left; margin:4px 12px 12px 0;">
                                         <img src="/resources/images/icon_file.png" style="width:80px;" border="0" alt="Data File"/>
                                         <h:outputText value="### downloads + analysis"/>
                                     </div>
@@ -228,7 +228,7 @@
                                     </h:outputLink>
                                     <h:outputText value=" > Parent Dataverse"/><br/>
                                     <h:outputText value="Description of file here"/><br/>
-                                    <div style="clear:left; border:1px solid gold;"> <!--this needs to be a datatable-->
+                                    <div style="clear:left;"> <!--this needs to be a datatable-->
                                         <h:outputText value="Variable Label Title | Variable Value Title"/><br/>
                                         <h:outputText value="Label | Value"/><br/>
                                         <h:outputText value="Label | Value"/><br/> 
