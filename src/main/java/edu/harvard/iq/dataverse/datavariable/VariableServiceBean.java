@@ -40,7 +40,8 @@ public class VariableServiceBean {
     }    
     
     public List<DataVariable> findByDataFileId(Long fileId) {
-         Query query = em.createQuery("select object(o) from DataVariable as o where o.datatable.datafile.id =:fileId order by o.fileOrder");
+         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataF"
+                 + "ile.id =:fileId order by o.fileOrder");
          query.setParameter("fileId", fileId);
          return query.getResultList();
     }

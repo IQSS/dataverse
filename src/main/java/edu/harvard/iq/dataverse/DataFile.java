@@ -7,12 +7,16 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.CascadeType;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -35,7 +39,47 @@ public class DataFile implements Serializable {
     @ManyToOne     
     private Dataset dataset;
     
+    /*
+        Tabular (formerly "subsettable") data files have DataTable objects
+        associated with them:
+    */
+    
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataTable> dataTables;
 
+    public List<DataTable> getDataTables() {
+        return dataTables;
+    }
+
+    public void setDataTables(List<DataTable> dataTables) {
+        this.dataTables = dataTables;
+    }
+    
+    public DataTable getDataTable() {
+        if ( getDataTables() != null && getDataTables().size() > 0 ) {
+            return getDataTables().get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void setDataTable(DataTable dt) {
+        if (this.getDataTables() == null) {
+            this.setDataTables( new ArrayList() );
+        } else {
+            this.getDataTables().clear();
+        }
+
+        this.getDataTables().add(dt);
+    }
+    
+    public boolean isTabularData() {
+        if ( getDataTables() != null && getDataTables().size() > 0 ) {
+            return true; 
+        }
+        return false; 
+    }
+            
     public Long getId() {
         return id;
     }

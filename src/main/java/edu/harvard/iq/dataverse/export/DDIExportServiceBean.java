@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.Dataset;
@@ -36,43 +35,41 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLOutputFactory;
 
-
-
 /**
  *
  * @author Leonid Andreev
- * 
+ *
  * Draft/prototype DDI export service for DVN 4.0
- * 
+ *
  * Note that this is definitely a "prototype". One of the stated dev. goals of
- * 4.0 is to have export/import services that utilize application-defined 
+ * 4.0 is to have export/import services that utilize application-defined
  * metadata schemas and cross-schema mappings. But since this new architecture
  * hasn't been finalized yet, this version follows the v2-3 scheme of using
- * programmed/hard-coded metadata fields and formatting. 
+ * programmed/hard-coded metadata fields and formatting.
  */
-
 @Stateless
 @Named
 public class DDIExportServiceBean {
+
     private static final Logger logger = Logger.getLogger(DDIExportServiceBean.class.getCanonicalName());
     @EJB
     DatasetServiceBean datasetService;
-    
-    @EJB 
+
+    @EJB
     DataFileServiceBean fileService;
-    
+
     @EJB
     VariableServiceBean variableService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
+
     /*
      * Constants used by the worker methods:
      */
-     private static final String OBJECT_TAG_VARIABLE = "variable";
-     private static final String OBJECT_TAG_DATAFILE = "datafile";
-     private static final String OBJECT_TAG_DATASET  = "dataset";
+    private static final String OBJECT_TAG_VARIABLE = "variable";
+    private static final String OBJECT_TAG_DATAFILE = "datafile";
+    private static final String OBJECT_TAG_DATASET = "dataset";
     /*
      * Database and schema-specific constants:
      * Needless to say, we should *not* be defining these here - it should
@@ -88,41 +85,40 @@ public class DDIExportServiceBean {
     public static final String LEVEL_FILE = "file";
     public static final String NOTE_TYPE_UNF = "VDC:UNF";
     public static final String NOTE_SUBJECT_UNF = "Universal Numeric Fingerprint";
-    
+
     /*
      * Internal service objects:
      */
     private XMLOutputFactory xmlOutputFactory = null;
-    
+
     public void ejbCreate() {
         // initialize lists/service classes:
 
         xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataVariable(Long varId, OutputStream os, String partialExclude, String partialInclude) {
-        
-        export (OBJECT_TAG_VARIABLE, varId, os, partialExclude, partialInclude); 
+
+        export(OBJECT_TAG_VARIABLE, varId, os, partialExclude, partialInclude);
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataset(Dataset s, OutputStream os) {
-        
+
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataFile(Long varId, OutputStream os, String partialExclude, String partialInclude) {
-        export (OBJECT_TAG_DATAFILE, varId, os, partialExclude, partialInclude);
-        
+        export(OBJECT_TAG_DATAFILE, varId, os, partialExclude, partialInclude);
+
     }
-    
+
     /*
      * Workhorse methods, that do all the work: 
      */
-    
     private void export(String objectTag, Long objectId, OutputStream os, String partialExclude, String partialInclude) {
-        
+
         /*
          * Some checks will need to be here, to see if the corresponding dataset
          * is released, if all the permissions are satisfied, etc., with 
@@ -130,72 +126,66 @@ public class DDIExportServiceBean {
          *
          *      something like
         
-            throw new IllegalArgumentException("ExportStudy called with a null study.");
-            throw new IllegalArgumentException("Study does not have released version, study.id = " + s.getId());
-        */
-        
-        
-        Set<String> includedFieldSet = null; 
-        Set<String> excludedFieldSet = null; 
-        
+         throw new IllegalArgumentException("ExportStudy called with a null study.");
+         throw new IllegalArgumentException("Study does not have released version, study.id = " + s.getId());
+         */
+        Set<String> includedFieldSet = null;
+        Set<String> excludedFieldSet = null;
+
         if (partialExclude != null && !"".equals(partialExclude)) {
             excludedFieldSet = new HashSet<String>();
-            
+
             String splitTokens[] = partialExclude.split(",");
-            
+
             for (int i = 0; i < splitTokens.length; i++) {
                 if (splitTokens[i] != null && !splitTokens[i].equals("")) {
                     excludedFieldSet.add(splitTokens[i]);
                 }
             }
         }
-        
+
         if (partialInclude != null && !"".equals(partialInclude)) {
             includedFieldSet = new HashSet<String>();
-            
+
             String splitTokens[] = partialInclude.split(",");
-            
+
             for (int i = 0; i < splitTokens.length; i++) {
                 if (splitTokens[i] != null && !splitTokens[i].equals("")) {
                     includedFieldSet.add(splitTokens[i]);
                 }
             }
-        } 
-        
+        }
+
         // Create XML Stream Writer, using the supplied OutputStream:
-        
-        XMLStreamWriter xmlw = null; 
-        
-        
-        
+        XMLStreamWriter xmlw = null;
+
         // Try to resolve the supplied object id: 
-        
-        Object dataObject = null; 
-        
+        Object dataObject = null;
+
         if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
             dataObject = variableService.find(objectId);
             if (dataObject == null) {
                 throw new IllegalArgumentException("Metadata Export: Invalid variable id supplied.");
             }
         } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
-            dataObject = fileService.find(objectId); 
+            dataObject = fileService.find(objectId);
             if (dataObject == null) {
                 throw new IllegalArgumentException("Metadata Export: Invalid datafile id supplied.");
             }
         } else {
             throw new IllegalArgumentException("Metadata Export: Unsupported export requested.");
         }
-        
+
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
             xmlw.writeStartDocument();
-            
+
             if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
-                createVar(xmlw, excludedFieldSet, includedFieldSet, (DataVariable)dataObject);
+                createVar(xmlw, excludedFieldSet, includedFieldSet, (DataVariable) dataObject);
             } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
-                createDataFile(xmlw, excludedFieldSet, includedFieldSet, (DataFile)dataObject);
+                createDataFile(xmlw, excludedFieldSet, includedFieldSet, (DataFile) dataObject);
             }
-            
+
             xmlw.writeEndDocument();
         } catch (XMLStreamException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
@@ -207,34 +197,38 @@ public class DDIExportServiceBean {
                 }
             } catch (XMLStreamException ex) {
             }
-        }    
+        }
     }
-    
+
     private void createVar(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataVariable dv) throws XMLStreamException {
         xmlw.writeStartElement("var");
-        writeAttribute( xmlw, "ID", "v" + dv.getId().toString() );
-        writeAttribute( xmlw, "name", dv.getName() );
+        writeAttribute(xmlw, "ID", "v" + dv.getId().toString());
+        writeAttribute(xmlw, "name", dv.getName());
 
         if (dv.getNumberOfDecimalPoints() != null) {
-            writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString() );
+            writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString());
         }
 
         if (dv.getVariableIntervalType() != null) {
             String interval = dv.getVariableIntervalType().getName();
             interval = DB_VAR_INTERVAL_TYPE_CONTINUOUS.equals(interval) ? VAR_INTERVAL_CONTIN : interval;
-            writeAttribute( xmlw, "intrvl", interval );
+            writeAttribute(xmlw, "intrvl", interval);
         }
 
-        
         // location
-        
         if (checkField("location", excludedFieldSet, includedFieldSet)) {
-                xmlw.writeEmptyElement("location");
-                if (dv.getFileStartPosition() != null) writeAttribute( xmlw, "StartPos", dv.getFileStartPosition().toString() );
-                if (dv.getFileEndPosition() != null) writeAttribute( xmlw, "EndPos", dv.getFileEndPosition().toString() );
-                if (dv.getRecordSegmentNumber() != null) writeAttribute( xmlw, "RecSegNo", dv.getRecordSegmentNumber().toString());
-        
-                writeAttribute( xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString() );
+            xmlw.writeEmptyElement("location");
+            if (dv.getFileStartPosition() != null) {
+                writeAttribute(xmlw, "StartPos", dv.getFileStartPosition().toString());
+            }
+            if (dv.getFileEndPosition() != null) {
+                writeAttribute(xmlw, "EndPos", dv.getFileEndPosition().toString());
+            }
+            if (dv.getRecordSegmentNumber() != null) {
+                writeAttribute(xmlw, "RecSegNo", dv.getRecordSegmentNumber().toString());
+            }
+
+            writeAttribute(xmlw, "fileid", "f" + dv.getDataTable().getDataFile().getId().toString());
         }
 
         // labl
@@ -356,11 +350,11 @@ public class DDIExportServiceBean {
             xmlw.writeCharacters(dv.getUnf());
             xmlw.writeEndElement(); //notes
         }
-        
+
         xmlw.writeEndElement(); //var
 
     }
-    
+
     private void createDataFile(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df) throws XMLStreamException {
         /* This method will create both the <fileDscr> and <dataDscr><var> 
          * portions of the DDI that describe the tabular data contained in 
@@ -418,10 +412,10 @@ public class DDIExportServiceBean {
             }
 
             /*
-            xmlw.writeStartElement("fileCont");
-            xmlw.writeCharacters( df.getContentType() );
-            xmlw.writeEndElement(); // fileCont
-            */
+             xmlw.writeStartElement("fileCont");
+             xmlw.writeCharacters( df.getContentType() );
+             xmlw.writeEndElement(); // fileCont
+             */
             // dimensions
             if (checkField("dimensns", excludedFieldSet, includedFieldSet)) {
                 if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
@@ -434,7 +428,7 @@ public class DDIExportServiceBean {
                             xmlw.writeEndElement(); // caseQnty
                         }
                     }
-                    
+
                     if (checkField("varQnty", excludedFieldSet, includedFieldSet)) {
                         if (dt.getVarQuantity() != null) {
                             xmlw.writeStartElement("varQnty");
@@ -442,7 +436,7 @@ public class DDIExportServiceBean {
                             xmlw.writeEndElement(); // varQnty
                         }
                     }
-                    
+
                     if (checkField("recPrCas", excludedFieldSet, includedFieldSet)) {
                         if (dt.getRecordsPerCase() != null) {
                             xmlw.writeStartElement("recPrCas");
@@ -465,10 +459,8 @@ public class DDIExportServiceBean {
         }
 
         // various notes:
-        
         // "unf" is not a valid DDI field. but we are using it as a reserved
         // tag to specify a specially formatted <note> used to store the UNF:
-        
         if (checkField("unf", excludedFieldSet, includedFieldSet)) {
             xmlw.writeStartElement("notes");
             writeAttribute(xmlw, "level", LEVEL_FILE);
@@ -484,7 +476,7 @@ public class DDIExportServiceBean {
          xmlw.writeCharacters( fm.getCategory() );
          xmlw.writeEndElement(); // notes
          */
-            // A special note for LOCKSS crawlers indicating the restricted
+        // A special note for LOCKSS crawlers indicating the restricted
         // status of the file:
 
         /*
@@ -504,13 +496,12 @@ public class DDIExportServiceBean {
     /*
      * Helper/utility methods:
      */
-    
     private void writeAttribute(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
-        if ( !StringUtilisEmpty(value) ) {
+        if (!StringUtilisEmpty(value)) {
             xmlw.writeAttribute(name, value);
         }
     }
-    
+
     private boolean checkParentElement(XMLStreamWriter xmlw, String elementName, boolean elementAdded) throws XMLStreamException {
         if (!elementAdded) {
             xmlw.writeStartElement(elementName);
@@ -518,44 +509,41 @@ public class DDIExportServiceBean {
 
         return true;
     }
-    
-    private boolean checkField (String fieldName, Set<String> excludedFieldSet, Set<String> includedFieldSet) {
+
+    private boolean checkField(String fieldName, Set<String> excludedFieldSet, Set<String> includedFieldSet) {
         // the field is explicitly included on the list of allowed fields: 
-        
+
         if (includedFieldSet != null && includedFieldSet.contains(fieldName)) {
-            return true; 
+            return true;
         }
-        
+
         // if not, and we are instructed to ignore all the fields that are not
         // explicitly allowed: 
-        
         if (excludedFieldSet != null && excludedFieldSet.contains("*") && excludedFieldSet.size() == 1) {
             return false;
         }
-        
+
         // if we've made it this far, and there is no explicitly defined list of allowed fields: 
-        
         if (includedFieldSet == null || includedFieldSet.size() == 0) {
 
             // AND the field is not specifically included on the list of unwanted fields:
-            
             if (excludedFieldSet == null || !excludedFieldSet.contains(fieldName)) {
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /*
      * locally-defined "isEmpty" utility (was part of the "StringUtil" class
      * back in DVN v2-3).
      */
     private boolean StringUtilisEmpty(String str) {
-        if (str==null || str.trim().equals("")) {
+        if (str == null || str.trim().equals("")) {
             return true;
-        } 
+        }
         return false;
     }
-    
+
 }
