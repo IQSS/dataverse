@@ -13,7 +13,7 @@ import java.util.Objects;
  * Creates a {@link Dataset} in the passed {@link CommandContext}.
  * @author michael
  */
-@RequiredPermissions(Permission.DatasetCreate)
+@RequiredPermissions(Permission.UndoableEdit)
 public class DatasetCreate extends AbstractCommand<Dataset> {
 	
 	private final Dataset theDataset;

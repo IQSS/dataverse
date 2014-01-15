@@ -15,9 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  * @author michael
  */
 @RequiredPermissionsMap({
-	@RequiredPermissions( dataverseName = "moved",       value = Permission.DataverseEdit ),
-	@RequiredPermissions( dataverseName = "source",      value = Permission.DataverseDelete ),
-	@RequiredPermissions( dataverseName = "destination", value = Permission.DataverseCreate )
+	@RequiredPermissions( dataverseName = "moved",       value = Permission.UndoableEdit ),
+	@RequiredPermissions( dataverseName = "source",      value = Permission.UndoableEdit ),
+	@RequiredPermissions( dataverseName = "destination", value = Permission.DestructiveEdit )
 })
 public class MoveDataverseCommand extends AbstractVoidCommand {
 	

@@ -3,8 +3,9 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Base interface for all commands running on Dataverse.
@@ -36,4 +37,5 @@ public interface Command<R> {
 	 * @return The user on which behalf the command is being executed.
 	 */
 	public DataverseUser getUser();
+	
 }
