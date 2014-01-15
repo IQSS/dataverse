@@ -9,10 +9,13 @@ import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
@@ -29,10 +32,6 @@ public class Browse {
     @GET
     public String browse() throws FileNotFoundException {
         try {
-            logger.info("indexing...");
-            if (dataverseService == null) {
-                return "dataverseService is null\n";
-            }
             List<Dataverse> dataverses = dataverseService.findAll();
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             JsonArrayBuilder dataversesArrayBuilder = Json.createArrayBuilder();
@@ -66,13 +65,28 @@ public class Browse {
                     .add("files", filesArrayBuilder)
                     .build();
             return Util.jsonObject2prettyString(jsonObject);
-        } catch (NullPointerException ex) {
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append(violation.toString() + " ");
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>>)");
+                    }
+                }
+            }
+            return Util.message2ApiError(sb.toString());
+        } catch (Exception ex) {
             StackTraceElement stacktrace = ex.getStackTrace()[0];
             if (stacktrace != null) {
                 String javaFile = stacktrace.getFileName();
                 String methodName = stacktrace.getMethodName();
                 int lineNumber = stacktrace.getLineNumber();
-                String error = "Indexing failed. " + ex.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
+                String error = "Browsing failed. " + ex.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
                 logger.info(error);
                 /**
                  * @todo use Util.message2ApiError() instead
