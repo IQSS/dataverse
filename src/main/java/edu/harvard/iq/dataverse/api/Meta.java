@@ -8,11 +8,14 @@ package edu.harvard.iq.dataverse.api;
 
 
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -45,14 +48,33 @@ public class Meta {
 
     @EJB
     SearchServiceBean searchService;
+    
+    @EJB
+    DDIExportServiceBean ddiExportService;
 
     @Path("variable/{varId}")
     @GET
     @Produces({ "application/xml" })
 
-    public String variable(@PathParam("varId") Long varId, @QueryParam("partialExclude") String partialExclude, @QueryParam("partialInclude") String partialInclude) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
+        ByteArrayOutputStream outStream = null;
+        try {
+            outStream = new ByteArrayOutputStream();
+
+            ddiExportService.exportDataVariable(
+                    varId,
+                    outStream,
+                    exclude,
+                    include);
+        } catch (Exception e) {
+            // For whatever reason we've failed to generate a partial 
+            // metadata record requested. We simply return an empty string.
+            return retValue;
+        }
+
+        retValue = outStream.toString();
         
         return retValue; 
     }
@@ -60,9 +82,25 @@ public class Meta {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("partialExclude") String partialExclude, @QueryParam("partialInclude") String partialInclude) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
+        ByteArrayOutputStream outStream = null;
+        try {
+            outStream = new ByteArrayOutputStream();
+
+            ddiExportService.exportDataFile(
+                    fileId,
+                    outStream,
+                    exclude,
+                    include);
+        } catch (Exception e) {
+            // For whatever reason we've failed to generate a partial 
+            // metadata record requested. We simply return an empty string.
+            return retValue;
+        }
+
+        retValue = outStream.toString();
         
         return retValue; 
     }
