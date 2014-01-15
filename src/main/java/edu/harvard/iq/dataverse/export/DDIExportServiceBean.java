@@ -192,6 +192,8 @@ public class DDIExportServiceBean {
             
             if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
                 createVar(xmlw, excludedFieldSet, includedFieldSet, (DataVariable)dataObject);
+            } else if (OBJECT_TAG_DATAFILE.equals(objectTag)) {
+                createDataFile(xmlw, excludedFieldSet, includedFieldSet, (DataFile)dataObject);
             }
             
             xmlw.writeEndDocument();
@@ -353,9 +355,10 @@ public class DDIExportServiceBean {
             writeAttribute(xmlw, "type", "VDC:UNF");
             xmlw.writeCharacters(dv.getUnf());
             xmlw.writeEndElement(); //notes
-
-            xmlw.writeEndElement(); //var
         }
+        
+        xmlw.writeEndElement(); //var
+
     }
     
     private void createDataFile(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df) throws XMLStreamException {
@@ -365,100 +368,139 @@ public class DDIExportServiceBean {
          * a subset of the above, as defined by the "include" and "exclude" 
          * parameters. 
          */
-        
-         DataTable dt = fileService.findDataTableByFileId(df.getId());
-         createFileDscr(xmlw, excludedFieldSet, includedFieldSet, df, dt);
-         
-         List<DataVariable> vars = variableService.findByDataFileId(df.getId());
-         
-         for (DataVariable var : vars) {
-             createVar(xmlw, excludedFieldSet, includedFieldSet, var);
-         }
-        
+
+        /* 
+         * This method is only called when an /api/meta/file request comes 
+         * in; i.e., for a study export, createFileDscr and createData/createVar 
+         * methods will be called separately. So we need to create the top-level 
+         * ddi (<codeBook>) tag header:
+         */
+        xmlw.writeStartElement("codeBook");
+        xmlw.writeDefaultNamespace("http://www.icpsr.umich.edu/DDI");
+        writeAttribute(xmlw, "version", "2.0");
+
+        DataTable dt = fileService.findDataTableByFileId(df.getId());
+
+        if (checkField("fileDscr", excludedFieldSet, includedFieldSet)) {
+            createFileDscr(xmlw, excludedFieldSet, null, df, dt);
+        }
+
+        // And now, the variables:
+        xmlw.writeStartElement("dataDscr");
+
+        if (checkField("var", excludedFieldSet, includedFieldSet)) {
+            List<DataVariable> vars = variableService.findByDataTableId(dt.getId());
+
+            for (DataVariable var : vars) {
+                createVar(xmlw, excludedFieldSet, null, var);
+            }
+        }
+
+        xmlw.writeEndElement(); // dataDscr
+        xmlw.writeEndElement(); // codeBook
+
     }
-    
+
     private void createFileDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DataFile df, DataTable dt) throws XMLStreamException {
-              
 
-            xmlw.writeStartElement("fileDscr");
-            writeAttribute( xmlw, "ID", "f" + df.getId().toString() );
-            //writeAttribute( xmlw, "URI", determineFileURI(fm) );
+        xmlw.writeStartElement("fileDscr");
+        writeAttribute(xmlw, "ID", "f" + df.getId().toString());
+        //writeAttribute( xmlw, "URI", determineFileURI(fm) );
 
-            // fileTxt
+        // fileTxt
+        if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
             xmlw.writeStartElement("fileTxt");
 
-            xmlw.writeStartElement("fileName");
-            xmlw.writeCharacters( df.getName() );
-            xmlw.writeEndElement(); // fileName
-
-            /*
-                xmlw.writeStartElement("fileCont");
-                xmlw.writeCharacters( df.getContentType() );
-                xmlw.writeEndElement(); // fileCont
-            */
-
-            // dimensions
-            if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
-                xmlw.writeStartElement("dimensns");
-
-                if (dt.getCaseQuantity() != null) {
-                    xmlw.writeStartElement("caseQnty");
-                    xmlw.writeCharacters( dt.getCaseQuantity().toString() );
-                    xmlw.writeEndElement(); // caseQnty
-                }
-                if (dt.getVarQuantity() != null) {
-                    xmlw.writeStartElement("varQnty");
-                    xmlw.writeCharacters( dt.getVarQuantity().toString() );
-                    xmlw.writeEndElement(); // varQnty
-                }
-                if (dt.getRecordsPerCase() != null) {
-                    xmlw.writeStartElement("recPrCas");
-                    xmlw.writeCharacters( dt.getRecordsPerCase().toString() );
-                    xmlw.writeEndElement(); // recPrCas
-                }
-
-                xmlw.writeEndElement(); // dimensns
+            if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
+                xmlw.writeStartElement("fileName");
+                xmlw.writeCharacters(df.getName());
+                xmlw.writeEndElement(); // fileName
             }
 
-            xmlw.writeStartElement("fileType");
+            /*
+            xmlw.writeStartElement("fileCont");
             xmlw.writeCharacters( df.getContentType() );
-            xmlw.writeEndElement(); // fileType
+            xmlw.writeEndElement(); // fileCont
+            */
+            // dimensions
+            if (checkField("dimensns", excludedFieldSet, includedFieldSet)) {
+                if (dt.getCaseQuantity() != null || dt.getVarQuantity() != null || dt.getRecordsPerCase() != null) {
+                    xmlw.writeStartElement("dimensns");
+
+                    if (checkField("caseQnty", excludedFieldSet, includedFieldSet)) {
+                        if (dt.getCaseQuantity() != null) {
+                            xmlw.writeStartElement("caseQnty");
+                            xmlw.writeCharacters(dt.getCaseQuantity().toString());
+                            xmlw.writeEndElement(); // caseQnty
+                        }
+                    }
+                    
+                    if (checkField("varQnty", excludedFieldSet, includedFieldSet)) {
+                        if (dt.getVarQuantity() != null) {
+                            xmlw.writeStartElement("varQnty");
+                            xmlw.writeCharacters(dt.getVarQuantity().toString());
+                            xmlw.writeEndElement(); // varQnty
+                        }
+                    }
+                    
+                    if (checkField("recPrCas", excludedFieldSet, includedFieldSet)) {
+                        if (dt.getRecordsPerCase() != null) {
+                            xmlw.writeStartElement("recPrCas");
+                            xmlw.writeCharacters(dt.getRecordsPerCase().toString());
+                            xmlw.writeEndElement(); // recPrCas
+                        }
+                    }
+
+                    xmlw.writeEndElement(); // dimensns
+                }
+            }
+
+            if (checkField("fileType", excludedFieldSet, includedFieldSet)) {
+                xmlw.writeStartElement("fileType");
+                xmlw.writeCharacters(df.getContentType());
+                xmlw.writeEndElement(); // fileType
+            }
 
             xmlw.writeEndElement(); // fileTxt
+        }
 
-            // notes
+        // various notes:
+        
+        // "unf" is not a valid DDI field. but we are using it as a reserved
+        // tag to specify a specially formatted <note> used to store the UNF:
+        
+        if (checkField("unf", excludedFieldSet, includedFieldSet)) {
             xmlw.writeStartElement("notes");
-            writeAttribute( xmlw, "level", LEVEL_FILE );
-            writeAttribute( xmlw, "type", NOTE_TYPE_UNF );
-            writeAttribute( xmlw, "subject", NOTE_SUBJECT_UNF );
-            xmlw.writeCharacters( dt.getUnf() );
+            writeAttribute(xmlw, "level", LEVEL_FILE);
+            writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
+            writeAttribute(xmlw, "subject", NOTE_SUBJECT_UNF);
+            xmlw.writeCharacters(dt.getUnf());
             xmlw.writeEndElement(); // notes
+        }
 
-            /*
-                xmlw.writeStartElement("notes");
-                writeAttribute( xmlw, "type", "vdc:category" );
-                xmlw.writeCharacters( fm.getCategory() );
-                xmlw.writeEndElement(); // notes
-            */
-
+        /*
+         xmlw.writeStartElement("notes");
+         writeAttribute( xmlw, "type", "vdc:category" );
+         xmlw.writeCharacters( fm.getCategory() );
+         xmlw.writeEndElement(); // notes
+         */
             // A special note for LOCKSS crawlers indicating the restricted
-            // status of the file:
+        // status of the file:
 
-            /*
-                if (tdf != null && isRestrictedFile(tdf)) {
-                    xmlw.writeStartElement("notes");
-                    writeAttribute( xmlw, "type", NOTE_TYPE_LOCKSS_CRAWL );
-                    writeAttribute( xmlw, "level", LEVEL_FILE );
-                    writeAttribute( xmlw, "subject", NOTE_SUBJECT_LOCKSS_PERM );
-                    xmlw.writeCharacters( "restricted" );
-                    xmlw.writeEndElement(); // notes
+        /*
+         if (tdf != null && isRestrictedFile(tdf)) {
+         xmlw.writeStartElement("notes");
+         writeAttribute( xmlw, "type", NOTE_TYPE_LOCKSS_CRAWL );
+         writeAttribute( xmlw, "level", LEVEL_FILE );
+         writeAttribute( xmlw, "subject", NOTE_SUBJECT_LOCKSS_PERM );
+         xmlw.writeCharacters( "restricted" );
+         xmlw.writeEndElement(); // notes
 
-            }
-            */
-
-            xmlw.writeEndElement(); // fileDscr   
+         }
+         */
+        xmlw.writeEndElement(); // fileDscr   
     }
-    
+
     /*
      * Helper/utility methods:
      */
@@ -478,12 +520,30 @@ public class DDIExportServiceBean {
     }
     
     private boolean checkField (String fieldName, Set<String> excludedFieldSet, Set<String> includedFieldSet) {
+        // the field is explicitly included on the list of allowed fields: 
         
-        if (includedFieldSet == null || includedFieldSet.contains(fieldName)) {
+        if (includedFieldSet != null && includedFieldSet.contains(fieldName)) {
+            return true; 
+        }
+        
+        // if not, and we are instructed to ignore all the fields that are not
+        // explicitly allowed: 
+        
+        if (excludedFieldSet != null && excludedFieldSet.contains("*") && excludedFieldSet.size() == 1) {
+            return false;
+        }
+        
+        // if we've made it this far, and there is no explicitly defined list of allowed fields: 
+        
+        if (includedFieldSet == null || includedFieldSet.size() == 0) {
+
+            // AND the field is not specifically included on the list of unwanted fields:
+            
             if (excludedFieldSet == null || !excludedFieldSet.contains(fieldName)) {
                 return true;
             }
         }
+        
         return false;
     }
     
