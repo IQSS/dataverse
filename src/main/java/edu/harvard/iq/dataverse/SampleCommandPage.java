@@ -1,18 +1,19 @@
 package edu.harvard.iq.dataverse;
 
-import com.sun.org.apache.bcel.internal.Constants;
 import edu.harvard.iq.dataverse.engine.command.impl.RenameDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverse;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * A page that shows how to use to command engine in Dataverse.
@@ -21,7 +22,10 @@ import javax.inject.Named;
 @ViewScoped
 @Named
 public class SampleCommandPage {
+	private static final Logger logger = Logger.getLogger(SampleCommandPage.class.getName());
+	
 	@Inject DataverseSession session;     
+	@Inject DataversePage dataversePage;     
 	
 	@EJB
 	DataverseRoleServiceBean rolesService;
@@ -35,10 +39,13 @@ public class SampleCommandPage {
 	@EJB
 	DataverseServiceBean dataverseService;
 	
+	@EJB
+	PermissionServiceBean permissionsService;
+	
 	private Long selectedDataverseId;
 	private Long selectedUserId;
 	private String newName;
-
+	private String destinationUserName;
 	
 	public void init() {
 	}
@@ -48,9 +55,12 @@ public class SampleCommandPage {
 		try {
 			engineService.submit( new RenameDataverseCommand(session.getUser(), affected, getNewName()) );
 		} catch (CommandException ex) {
-			FacesContext.getCurrentInstance().addMessage(null,
-					new FacesMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage(), ""));
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
 		}
+	}
+	
+	public boolean isCanRelease() {
+		return permissionsService.on(dataversePage.getDataverse()).canIssue( ReleaseDataverse.class );
 	}
 	
 	public List<Dataverse> getDataverseList() {
@@ -84,5 +94,45 @@ public class SampleCommandPage {
 	public void setSelectedUserId(Long selectedUserId) {
 		this.selectedUserId = selectedUserId;
 	}
+	
+	public boolean isSetupNeeded() {
+		DataverseUser user = userService.findByUserName("PriviledgedPete");
+		return  ( user == null );
+	}
+	
+	public void changeUser() {
+		session.setUser(null);
+		session.setUser( userService.findByUserName(getDestinationUserName()) );
+	}
+	
+	public void setupUsers() {
+		logger.info("Setting up users" );
+		for ( String s : Arrays.asList("Priviledged Pete","Unpriviledged Uma", "Gabbi Guest") ) {
+			DataverseUser dvu = new DataverseUser();
+			String[] names = s.split(" ");
+			dvu.setUserName(names[0]+names[1]);
+			dvu.setFirstName(names[0]);
+			dvu.setLastName(names[1]);
+			dvu.setEmail(names[0] + "." + names[1] + "@malinator.com");
+			dvu.setEncryptedPassword( userService.encryptPassword(names[0]) );
+			dvu.setInstitution("Sample");
+			dvu.setPhone("(888) 888-8888");
+			dvu.setPosition( "Other" );
+			
+			dvu = userService.save(dvu);
+			logger.info( "setup " + dvu.getUserName() + " with id " + dvu.getId() );
+		}
+		
+		JH.addMessage(FacesMessage.SEVERITY_INFO, "Users added.");
+	}
+
+	public String getDestinationUserName() {
+		return destinationUserName;
+	}
+
+	public void setDestinationUserName(String destinationUserName) {
+		this.destinationUserName = destinationUserName;
+	}
+	
 	
 }
