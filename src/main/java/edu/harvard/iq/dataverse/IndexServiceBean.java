@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrServer;
@@ -36,7 +37,7 @@ public class IndexServiceBean {
      * inefficient (deletes index and indexes EVERYTHING on each run) but at
      * least it populates Solr with data when dataverses and datasets are saved.
      */
-    public String index() {
+    public String index() throws EJBException {
         /**
          * @todo allow for configuration of hostname and port
          */
