@@ -49,7 +49,7 @@ public class DataFileServiceBean {
     }  
 
     public DataTable findDataTableByFileId(Long fileId) {
-        Query query = em.createQuery("select object(o) from DataTable as o where o.datafile.id =:fileId order by o.id");
+        Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
         query.setParameter("fileId", fileId);
         return (DataTable)query.getSingleResult();
     }

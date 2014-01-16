@@ -218,7 +218,8 @@
                                 <p:message for="fileName"/>
                             </p:column>
                             <p:column>
-                                <h:outputText id="fileTypeOutput" value="#{file.contentType}" />
+                                <h:outputText id="fileTypeOutputTabular" value="Tabular Data" rendered="#{file.tabularData}"/>
+                                <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                             </p:column>
                         </p:dataTable>
                     </p:tab>

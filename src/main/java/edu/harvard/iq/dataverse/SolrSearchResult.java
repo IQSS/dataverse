@@ -25,6 +25,7 @@ public class SolrSearchResult {
     // used on the SearchPage but not the search API
     private List<Dataset> datasets;
     private String affiliation;
+    private String citation;
 
     /**
      * @todo: remove name?
@@ -128,14 +129,6 @@ public class SolrSearchResult {
         this.highlightSnippets = highlightSnippets;
     }
 
-    public String getAffiliation() {
-        return affiliation;
-    }
-
-    public void setAffiliation(String affiliation) {
-        this.affiliation = affiliation;
-    }
-
     public Map<String, String> getParent() {
         return parent;
     }
@@ -150,6 +143,22 @@ public class SolrSearchResult {
 
     public void setDatasets(List<Dataset> datasets) {
         this.datasets = datasets;
+    }
+
+    public String getAffiliation() {
+        return affiliation;
+    }
+
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
+    }
+
+    public String getCitation() {
+        return citation;
+    }
+
+    public void setCitation(String citation) {
+        this.citation = citation;
     }
 
 }
