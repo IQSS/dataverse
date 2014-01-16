@@ -1,0 +1,46 @@
+@startuml
+
+
+class DataverseObject {
+	id: Long
+	name: String
+	owner: DataverseObjectContainer
+	metadata: Metadata
+}
+
+class DataverseObjectContainer {
+	content: Set<DataverseObject>
+}
+
+class Dataverse {
+	alias: String
+	description: String
+	contactEmail: String
+	affiliation: String
+	roles: Set<DataverseRole>
+	permissionRoot:Boolean
+}
+
+class DataSet {
+	citationDate: Date
+	distributor: String
+	description: String
+}
+
+class DataFile {
+	contentType: String
+}
+
+DataverseObjectContainer --|> DataverseObject
+Dataverse --|> DataverseObjectContainer
+DataSet --|> DataverseObjectContainer
+DataFile --|> DataverseObject
+DataverseObject --> "0..1" DataverseObjectContainer : < Belongs to
+DataverseObjectContainer *--> "0..*" DataverseObject : Has >
+
+legend center
+	Very consolidated object model. Differentiating between subtypes of
+	content can be done at the method level.
+endlegend
+
+@enduml
