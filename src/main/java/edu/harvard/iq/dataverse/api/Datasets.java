@@ -84,6 +84,6 @@ public class Datasets {
     @POST
     public String add(Dataset dataset) {
         datasetService.save(dataset);
-        return "dataset " + dataset.getTitle() + " created (and hopefully indexed)\n";
+        return "dataset " + dataset.getTitle() + " created/updated (and probably indexed, check server.log)\n";
     }
 }
