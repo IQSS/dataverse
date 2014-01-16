@@ -1,0 +1,52 @@
+@startuml
+
+
+class DataverseObject {
+	id: Long
+	name: String
+	owner: DataverseObjectContainer
+	metadata: Metadata
+}
+
+class DataverseObjectContainer {
+	content: Set<DataverseObject>
+}
+
+class Dataverse {
+	alias: String 
+	owner: Dataverse
+	description: String
+	contactEmail: String
+	affiliation: String
+	roles: Set<DataverseRole>
+	permissionRoot:Boolean
+}
+
+class DataSet {
+	owner: Dataverse
+	versions: List<DataSetVersion>
+	currentVersion():DatasetVersion
+	content(): List<DataFile>
+}
+
+class DataFile {
+	owner: DataSet
+	contentType: String
+}
+
+class DataSetVersion {
+	citationDate: Date
+	distributor: String
+	description: String
+}
+
+DataverseObjectContainer -up-|> DataverseObject
+Dataverse -up-|> DataverseObjectContainer
+DataSet   -up-|> DataverseObjectContainer
+DataFile  -up-|> DataverseObject
+DataverseObject --> "0..1" DataverseObjectContainer : < Belongs to
+DataverseObjectContainer *--> "0..*" DataverseObject : Has >
+
+DataSet "1" *-- "1..*" DataSetVersion
+
+@enduml
