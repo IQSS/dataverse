@@ -22,6 +22,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.servlet.http.HttpServletResponse;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -56,7 +59,7 @@ public class Meta {
     @GET
     @Produces({ "application/xml" })
 
-    public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
         ByteArrayOutputStream outStream = null;
@@ -75,6 +78,8 @@ public class Meta {
         }
 
         retValue = outStream.toString();
+        
+        response.setHeader("Access-Control-Allow-Origin", "*");
         
         return retValue; 
     }
