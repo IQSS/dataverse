@@ -87,7 +87,7 @@ public class Meta {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
         
         ByteArrayOutputStream outStream = null;
@@ -107,6 +107,8 @@ public class Meta {
 
         retValue = outStream.toString();
         
+        response.setHeader("Access-Control-Allow-Origin", "*");
+                
         return retValue; 
     }
     
