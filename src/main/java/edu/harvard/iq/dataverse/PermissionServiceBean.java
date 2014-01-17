@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -60,7 +61,7 @@ public class PermissionServiceBean {
 			return isUserAllowedOn(user, cmd, subject);
 		}
 		
-		public boolean canIssue( String commandName ) throws ClassNotFoundException {
+		public boolean canIssueCommand( String commandName ) throws ClassNotFoundException {
 			return isUserAllowedOn(user, 
 					(Class<? extends Command>)Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
 		}
@@ -78,9 +79,16 @@ public class PermissionServiceBean {
 	}
 	
     public Set<Permission> permissionsFor( DataverseUser u, Dataverse d ) {
-		return samplePermissions.containsKey(u.getUserName()) 
+		if ( perObjectPermissions.containsKey(u.getUserName()) ) {
+			Map<Long,Set<Permission>> permissions = perObjectPermissions.get(u.getUserName());
+			return permissions.containsKey(d.getId()) ? permissions.get(d.getId())
+													  : EnumSet.noneOf(Permission.class);
+			
+		} else {
+			return samplePermissions.containsKey(u.getUserName()) 
 				? samplePermissions.get(u.getUserName())
 				: EnumSet.noneOf(Permission.class);
+		}
 	}
 	
 	/**
@@ -116,7 +124,10 @@ public class PermissionServiceBean {
 	}
 	
 	public void setPermissionOn( DataverseUser u, DvObject o, Set<Permission> ps ) {
-//		Map<Long, Set<Permission>> userPerms = perObjectPermissions.
+		perObjectPermissions.putIfAbsent(u.getUserName(),new ConcurrentHashMap<Long, Set<Permission>>() );
+		Map<Long, Set<Permission>> userPerms = perObjectPermissions.get(u.getUserName());
+		
+		userPerms.put(o.getId(), ps);
 	}
 	
 }

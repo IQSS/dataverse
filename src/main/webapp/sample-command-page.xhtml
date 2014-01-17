@@ -126,7 +126,9 @@
 				<h:panelGroup layout="block" rendered="#{not sampleCommandPage.canRelease}">
 					User is not permitted to release a dataverse<br />
 				</h:panelGroup>
-				
+				<h:panelGroup layout="block" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverse')}">
+					User can release a dataverse (command issue version)<br />
+				</h:panelGroup>
 			</p:panel>
 			
 			<p:panel header="Rename Dataverse">

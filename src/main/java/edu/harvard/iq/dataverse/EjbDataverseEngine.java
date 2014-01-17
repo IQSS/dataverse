@@ -43,6 +43,9 @@ public class EjbDataverseEngine {
 	@EJB
 	SearchServiceBean searchService;
 	
+	@EJB
+	PermissionServiceBean permissionService;
+	
 	private CommandContext ctxt;
 	
 	
@@ -97,6 +100,9 @@ public class EjbDataverseEngine {
 
 				@Override
 				public SearchServiceBean search() { return searchService; }
+
+				@Override
+				public PermissionServiceBean permissions() { return permissionService; }
 			};
 		}
 		

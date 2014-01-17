@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -13,8 +15,11 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -28,6 +33,10 @@ public class DataversePage implements java.io.Serializable {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+	@Inject
+	DataverseSession session;
+	@EJB
+	EjbDataverseEngine commandEngine;
 
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
@@ -115,8 +124,16 @@ public class DataversePage implements java.io.Serializable {
 
     public void save(ActionEvent e) {
         dataverse.setOwner( ownerId != null ? dataverseService.find(ownerId) : null );
-        dataverse = dataverseService.save(dataverse);
-        editMode = false;
+		
+		CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
+		
+		try {
+			dataverse = commandEngine.submit(cmd);
+			editMode = false;
+		} catch (CommandException ex) {
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+		}
+	
     }
 
     public void cancel(ActionEvent e) {
