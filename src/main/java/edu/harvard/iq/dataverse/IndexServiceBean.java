@@ -122,26 +122,28 @@ public class IndexServiceBean {
         /**
          * @todo: should we assign a dataset title to name like this?
          */
-        solrInputDocument.addField("name", dataset.getTitle());
-        solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getAuthor());
-        solrInputDocument.addField(SearchFields.TITLE, dataset.getTitle());
+       // solrInputDocument.addField("name", dataset.getTitle());
+       // solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getAuthor());
+       // solrInputDocument.addField(SearchFields.TITLE, dataset.getTitle());
         /**
          * @todo: don't use distributor for category. testing facets
          */
-        solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
+       // solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
 
         SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         try {
-            Date citationDate = inputDate.parse(dataset.getCitationDate());
-            SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+           /* Date citationDate = inputDate.parse(dataset.getCitationDate());
+           
             String citationYear = yearOnly.format(citationDate);
             solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
             solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
-        } catch (ParseException ex) {
-            logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
+            */
+             SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+        } catch (Exception ex) {
+            //logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
         }
         solrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
@@ -162,7 +164,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getDataset().getOwner().getName());
             datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getDataset().getId());
-            datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
+           // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             docs.add(datafileSolrInputDocument);
         }
 
@@ -182,7 +184,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed dataset " + dataset.getId() + ":" + dataset.getTitle();
+        return "indexed dataset " + dataset.getId(); // + ":" + dataset.getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {

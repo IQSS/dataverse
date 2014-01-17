@@ -33,7 +33,7 @@ public class Files {
         dataset.setFiles(newListOfFiles);
         try {
             datasetService.save(dataset);
-            return "file " + dataFile.getName() + " created/updated with dataset " + dataset.getTitle() + " (and probably indexed, check server.log)\n";
+            return "file " + dataFile.getName() + " created/updated with dataset " + dataset.getId() + " (and probably indexed, check server.log)\n";
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

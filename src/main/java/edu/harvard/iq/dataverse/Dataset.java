@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
@@ -32,30 +33,10 @@ public class Dataset implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank(message = "Please enter a title for your dataset.")
-    private String title;
-
-    @NotBlank(message = "Please enter an author for your dataset.")
-    private String author;
-
-    @NotBlank(message = "Please enter a distribution date for your dataset.")
-   // @DateTimeFormat(pattern="YYYY/MM/DD")
-    private String citationDate;
-
-    @NotBlank(message = "Please enter a distributor for your dataset.")
-    private String distributor;
-
+    
     // #VALIDATION: page defines maxlength in input:textarea component
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
-    
-    // sample metadata fields
-    private String keyword;
-    private String topicClassification;
-    @URL
-    private String topicClassificationUrl;
-    private String geographicCoverage;
     
     @ManyToOne
     @JoinColumn(nullable=false)     
@@ -72,97 +53,129 @@ public class Dataset implements Serializable {
         this.id = id;
     }
     
-    public String getTitle() {
-        return title;
+    private String protocol;
+    private String authority;
+    @NotBlank(message = "Please enter an identifier for your dataset.")
+    private String identifier;
+    
+    public String getProtocol() {
+        return protocol;
+    }
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public String getAuthority() {
+        return authority;
+    }
+    public void setAuthority(String authority) {
+        this.authority = authority;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getIdentifier() {
+        return identifier;
     }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getCitationDate() {
-        return citationDate;
-    }
-
-    public void setCitationDate(String citationDate) {
-        this.citationDate = citationDate;
-    }
-
-    public String getDistributor() {
-        return distributor;
-    }
-
-    public void setDistributor(String distributor) {
-        this.distributor = distributor;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public String getKeyword() {
-        return keyword;
-    }
-
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
-    }
-
-    public String getTopicClassification() {
-        return topicClassification;
-    }
-
-    public void setTopicClassification(String topicClassification) {
-        this.topicClassification = topicClassification;
-    }
-
-    public String getTopicClassificationUrl() {
-        return topicClassificationUrl;
-    }
-
-    public void setTopicClassificationUrl(String topicClassificationUrl) {
-        this.topicClassificationUrl = topicClassificationUrl;
-    }
-
-    public String getGeographicCoverage() {
-        return geographicCoverage;
-    }
-
-    public void setGeographicCoverage(String geographicCoverage) {
-        this.geographicCoverage = geographicCoverage;
-    }
-
+ 
     public Dataverse getOwner() {
         return owner;
     }
-
     public void setOwner(Dataverse owner) {
         this.owner = owner;
+    }
+    
+    public String getCitation() { 
+        return "Todo - get a real Citation";
     }
 
     public List<DataFile> getFiles() {
         return files;
     }
-
     public void setFiles(List<DataFile> files) {
         this.files = files;
     }
 
+    @ManyToOne
+    @JoinColumn(nullable=false)
+    private Template template;
     
-    public String getCitation() {
-        return author + ", \"" + title + "\", " + citationDate + ", " + distributor + ", http://dx.doi.org/10.1234/dataverse/123456 V1 [Version]";
+    public Template getTemplate() {
+        return this.template;
+    }
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    @OneToMany (mappedBy = "dataset")
+    @OrderBy("versionNumber DESC")
+    private List<DatasetVersion> versions = new ArrayList();
+    
+    public DatasetVersion getLatestVersion(){
+        if (versions.isEmpty()){
+            DatasetVersion datasetVersion = new DatasetVersion();
+            datasetVersion.setMetadata(new Metadata());
+            datasetVersion.setDataset(this);
+            datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+            datasetVersion.setVersionNumber(new Long (1));
+            this.versions.add(datasetVersion);
+            return datasetVersion;
+        } else {
+            return versions.get(0);
+        }
+    }
+    
+    public List<DatasetVersion> getVersions() {
+        return versions;
+    }
+    public void setVersions(List<DatasetVersion> versions) {
+        this.versions = versions;
+    }
+
+    private DatasetVersion createNewDatasetVersion() {
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+        DatasetVersion latestVersion = getLatestVersion();
+        dsv.setMetadata(new Metadata());
+        dsv.setFileMetadatas(new ArrayList());
+        dsv.getMetadata().setDatasetVersion(dsv);
+
+       for(FileMetadata fm : latestVersion.getFileMetadatas()) {
+           FileMetadata newFm = new FileMetadata();
+           newFm.setCategory(fm.getCategory());
+           newFm.setDescription(fm.getDescription());
+           newFm.setLabel(fm.getLabel());
+           newFm.setDataFile(fm.getDataFile());
+           newFm.setDatasetVersion(dsv);
+           dsv.getFileMetadatas().add(newFm);
+       }
+
+        dsv.setVersionNumber(latestVersion.getVersionNumber()+1);
+        // I'm adding the version to the list so it will be persisted when
+        // the study object is persisted.
+        getVersions().add(0, dsv);
+        dsv.setDataset(this);
+        return dsv;
+    }
+
+    public DatasetVersion getEditVersion() {
+        DatasetVersion latestVersion = this.getLatestVersion();
+        if (!latestVersion.isWorkingCopy()) {
+            // if the latest version is released or archived, create a new version for editing
+            return createNewDatasetVersion();
+        } else {
+            // else, edit existing working copy
+            return latestVersion;
+        } 
     }
 
     @Override

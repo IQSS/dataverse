@@ -49,6 +49,6 @@ public class DatasetCreate extends AbstractCommand<Dataset> {
 	
 	@Override
 	public String toString() {
-		return "[DatasetCreate dataset:" + theDataset.getTitle() + "]";
+		return "[DatasetCreate dataset:" + theDataset.getId() + "]";
 	}
 }

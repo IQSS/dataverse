@@ -52,12 +52,10 @@
                 <ui:fragment>
                     <p:panelGrid columns="2">
                         <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{empty dataverseSession.user}">
+                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
                                 Create Account
                             </h:outputLink>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!empty dataverseSession.user}">
-                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
-                            </h:outputLink>   
+                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
                         </ui:fragment>
                         <ui:fragment>
                             <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
@@ -89,9 +87,9 @@
                     <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/> 
                 </h:outputLink>
                 
-                <ui:fragment rendered="#{!empty DatasetPage.dataset.title}">
+                <ui:fragment rendered="#{!empty DatasetPage.dataset.latestVersion.metadata.title}">
                     <h:outputText value=" > "/>
-                    <h:outputText value="#{DatasetPage.dataset.title}" style="font-weight:bold;"/>
+                    <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" style="font-weight:bold;"/>
                 </ui:fragment>
                 
             </p:panel>
@@ -111,11 +109,11 @@
             <p:panel styleClass="panelLayoutBlock">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
+                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Title" for="title"/>
                             <ui:fragment>
-                                <p:inputText id="title" size="40" value="#{DatasetPage.dataset.title}"/>
+                                <p:inputText id="title" size="40" value="#{DatasetPage.dataset.latestVersion.metadata.title}"/>
                                 <p:watermark for="title" value="Enter title..."/>
                             </ui:fragment>
                             <p:message for="title"/>
@@ -168,18 +166,36 @@
                 </p:panelGrid>
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                     <h:outputText value="Data Citation"/>
-                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                        <p:outputLabel value="Author" for="author" />
-                        <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
-                        <p:message for="author" />
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable binding="#{DatasetPage.dataTableAuthors}"  value="#{DatasetPage.editVersion.metadata.datasetAuthors}" var="currentAuthor">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Author*:"/>
+                                <p:inputText id="input_authorName"
+                                               styleClass="input_authorName"
+                                               value="#{currentAuthor.name}"
+                                               size="45"
+                                               maxlength="255"
+                                               requiredMessage="This field is required." />                                
+                                <h:outputText styleClass="vdcEditStudyFormatExample" value="(LastName, FirstName)"/>
 
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Author Affiliation:"/>
+                                <p:inputText id="input_authorAffiliation" size="45" maxlength="255"
+                                               value="#{currentAuthor.affiliation}">                                  
+                                </p:inputText>
+
+                              </div>
+                            </div>
+                                </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
                         <p:outputLabel value="Date" for="date" />
-                        <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
+                        <p:inputText id="date" value="#{DatasetPage.dataset.editVersion.metadata.productionDate}" />
                         <p:message for="date" />
 
-                        <p:outputLabel value="Distributor" for="distributor" />
-                        <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
-                        <p:message for="distributor" />
                     </p:panelGrid>
                 </p:panelGrid>
                 

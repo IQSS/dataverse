@@ -245,9 +245,9 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
                     <h:outputLink value="/dataset.xhtml?id=#{item.id}">
-                        <h:outputText value="#{item.title}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
+                        <h:outputText value="#{item.id}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
                     </h:outputLink>
-                    <h:outputText value=" by #{item.author}" rendered="#{!empty item.author}"/>
+                    
                 </ui:fragment>
             </p:dataList>
         </p:panel>
