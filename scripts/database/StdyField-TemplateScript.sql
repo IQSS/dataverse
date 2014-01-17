@@ -1,5 +1,5 @@
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (1, 'Title', 'Title', 'title', TRUE, TRUE, TRUE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (2, âDataset ID', âDataset ID', âdatasetId', TRUE, TRUE, TRUE, FALSE, TRUE );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (2, 'Dataset ID', 'Dataset ID', 'datasetId', TRUE, TRUE, TRUE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (3, 'Author', 'Author', 'author', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (4, 'Author Affiliation', 'Author Affiliation', 'authorAffiliation', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (5, 'Producer', 'Producer', 'producer', FALSE, FALSE, FALSE, FALSE, TRUE );
@@ -23,7 +23,7 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (23, '', '', 'dateOfDeposit', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (24, '', '', 'series', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (25, '', '', 'seriesInformation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (26, '', '', âdatasetVersion', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (26, '', '', 'datasetVersion', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (27, '', '', 'keyword', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (28, '', '', 'keywordVocab', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (29, '', '', 'keywordVocabURI', FALSE, FALSE, FALSE, FALSE, TRUE );
@@ -58,7 +58,7 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (58, '', '', 'controlOperations', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (59, '', '', 'weighting', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (60, '', '', 'cleaningOperations', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (61, '', '', âdatasetLevelErrorNotes', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (61, '', '', 'datasetLevelErrorNotes', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (62, '', '', 'responseRate', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (63, '', '', 'samplingErrorEstimates', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (64, '', '', 'otherDataAppraisal', FALSE, FALSE, FALSE, FALSE, TRUE );
@@ -66,7 +66,7 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (66, '', '', 'originalArchive', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (67, '', '', 'availabilityStatus', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (68, '', '', 'collectionSize', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (69, '', '', âdatasetCompletion', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (69, '', '', 'datasetCompletion', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (70, '', '', 'confidentialityDeclaration', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (71, '', '', 'specialPermissions', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (72, '', '', 'restrictions', FALSE, FALSE, FALSE, FALSE, TRUE );
@@ -107,7 +107,7 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (107, '', '', 'softwareName', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (108, '', '', 'grantNumberValue', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (109, '', '', 'seriesName', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (110, '', '', âdatasetVersionValue', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (110, '', '', 'datasetVersionValue', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (111, '', '', 'westLongitude', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (112, '', '', 'noteInformationType', FALSE, FALSE, FALSE, FALSE, TRUE );
 
@@ -198,7 +198,7 @@ update datasetfield set displayorder = 2 where name = 'distributorContactAffilia
 update datasetfield set displayorder = 3 where name = 'distributorContactEmail';
 update datasetfield set displayorder = 2 where name = 'seriesInformation';
 update datasetfield set displayorder = 1 where name = 'seriesName';
-update datasetfield set displayorder = 1 where name = âdatasetVersionValue';
+update datasetfield set displayorder = 1 where name = 'datasetVersionValue';
 update datasetfield set displayorder = 2 where name = 'versionDate';
 update datasetfield set displayorder = 1 where name = 'keywordValue';
 update datasetfield set displayorder = 3 where name = 'keywordVocabURI';
