@@ -116,6 +116,8 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (115, '', '', 'publicationIDNumber', FALSE, FALSE, FALSE, FALSE, TRUE );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (116, '', '', 'publicationURL', FALSE, FALSE, FALSE, FALSE, TRUE );
 
+ALTER SEQUENCE datasetfield_id_seq RESTART WITH 116;
+
 --set the parent child relationship
 update datasetfield set parentdatasetfield_id = 3 where id = 99;
 update datasetfield set parentdatasetfield_id = 3 where id = 4;
@@ -329,7 +331,7 @@ ALTER TABLE "metadata" DISABLE TRIGGER ALL;
 
 INSERT INTO metadata( id, version ) VALUES ( 1, 1);
 
-
+ALTER SEQUENCE metadata_id_seq RESTART WITH 2;
 
 ALTER TABLE "metadata" ENABLE TRIGGER ALL;
 
@@ -342,6 +344,7 @@ ALTER TABLE "template" DISABLE TRIGGER ALL;
 
 
 INSERT INTO template( id, version, dataverse_id, name,metadata_id,enabled) VALUES (1, 1, 0, 'DVN Default Template',1,true);
+ALTER SEQUENCE template_id_seq RESTART WITH 2;
 
 
 
@@ -597,10 +600,6 @@ INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputl
 INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(116,1,1,116,'optional',-1);
 
 SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('templatefield', 'id'), 150, false);
-
-
-
-
 
 ALTER TABLE templatefield ENABLE TRIGGER ALL;
 
