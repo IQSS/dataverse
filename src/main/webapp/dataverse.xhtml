@@ -131,7 +131,7 @@
             </p:panel>
 
             <!-- Info / Buttons Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{!empty dataverseSession.user or DataversePage.editMode}">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssue('RenameDataverseCommand')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <p:panelGrid columns="2" styleClass="panelgridFormTable">
@@ -220,7 +220,7 @@
                     </form>
                 </ui:fragment>
 
-                <ui:fragment rendered="#{!empty dataverseSession.user}">
+                <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssue('DatasetCreate')}">
                     <h:form id="shareForm" style="margin-left:auto;">
                         <p:menuButton id="shareData" value="Add Data" iconPos="right">
                             <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
