@@ -1,34 +1,33 @@
-
 Dataverse Administration
 ++++++++++++++++++++++++++++
 
-Once a user creates a dataverse becomes its owner and therefore is the
+A dataverse is a container for Datasets and is the home for an individual
+scholar's, project's, journal's or organization's data.
+[insert diagram]
+
+Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
 to manage the settings described in this guide.
 
-Create a Dataverse
-=====================
+Create a Dataverse (within the "root" Dataverse)
+===================================================
 
-A dataverse is a container for studies and is the home for an individual
-scholar's or organization's data.
-
-Creating a dataverse is easy but first you must be a registered user.
+Creating a dataverse is easy but first you must be a registered user (see Create Account).
 Depending on site policy, there may be a "Create a Dataverse" link on
-the Network home page. This first walks you through creating an account,
-then a dataverse. 
+the "root" Dataverse home page [is this the case with the new Dataverse?]. 
 
-1. Fill in the required information:
-
- * **Type of Dataverse**: Choose Scholar if it represents an individual's work otherwise choose Basic.
- * **Dataverse Name**: This will be displayed on the network and dataverse home pages. If this is a Scholar dataverse it will     automatically be filled in with the scholar's first and last name.
- * **Dataverse Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse.
-
-  The required fields to create a dataverse are configurable in the Network Options, so fields that are required may also include
-  Affiliation, Network Home Page Description, and Classification.
+#. Once you are logged in click on the "Add Data" button and in the dropdown menu select "Create Dataverse".
+#. Once on the "New Dataverse" page fill in the following fields:
+    * Enter the name of your Dataverse.
+    * **Host Dataverse**: select which dataverse you would like this new dataverse to belong to. By default it will be a child dataverse of the parent you clicked from.
+    * **Dataverse Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse.
+    * **Contact E-mail**: This is the email address you will receive notifications for this particular Dataverse... [wouldn't it be your account email address by default?]
+    * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc).
+    * **Description**: Provide a description of this dataverse (max. 1000 characters). This will display on the main page of your dataverse and in the...
  
-2. Click "Save" and you're done! An email will be sent to you with more information, including the URL to access you new dataverse.
+3. Click "Save" and you're done! An email will be sent to you with more information, including the URL to access your new dataverse.
 
-\*Required information can vary depending on site policy. Required fields are noted with a **red asterisk**.
+\*Required information can vary depending on site policy and are configurable in the Super User Options [add link]. Required fields are noted with a [?].
 
 Edit General Settings
 =====================
