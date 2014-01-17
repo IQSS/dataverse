@@ -48,13 +48,13 @@ public class IndexServiceBean {
         }
 
         List<Dataverse> dataverses = dataverseService.findAll();
-        int dataverseIndexCount = 1;
+        int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
             logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + ": " + indexDataverse(dataverse));
             dataverseIndexCount++;
         }
 
-        int datasetIndexCount = 1;
+        int datasetIndexCount = 0;
         List<Dataset> datasets = datasetService.findAll();
         for (Dataset dataset : datasets) {
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
