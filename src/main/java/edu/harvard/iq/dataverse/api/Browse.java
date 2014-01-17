@@ -74,8 +74,7 @@ public class Browse {
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(violation.toString() + " ");
-                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>>)");
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
                     }
                 }
             }

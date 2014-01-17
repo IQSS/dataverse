@@ -34,7 +34,7 @@ public class DataverseServiceBean {
 
     public Dataverse save(Dataverse dataverse) {
         Dataverse savedDataverse = em.merge(dataverse);
-        String indexingResult = indexService.index();
+        String indexingResult = indexService.indexDataverse(dataverse);
         logger.info("during dataverse save, indexing result was: " + indexingResult);
         return savedDataverse;
     }

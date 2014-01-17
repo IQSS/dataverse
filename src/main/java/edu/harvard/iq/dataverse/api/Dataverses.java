@@ -11,6 +11,8 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -79,13 +81,26 @@ public class Dataverses {
             savedDataverse = dataverseService.save(dataverse);
         } catch (EJBException ex) {
             logger.info(ex.getClass().getName() + " caused by " + ex.getCausedByException().getLocalizedMessage());
-            return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex);
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                    }
+                }
+            }
+            return Util.message2ApiError("POST failed: " + sb.toString());
         } catch (Exception ex) {
             logger.info(ex.getClass().getCanonicalName() + ": " + ex.getLocalizedMessage());
             return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
         }
         if (savedDataverse != null) {
-            return "dataverse " + dataverse.getAlias() + " created (and hopefully indexed)\n";
+            return "dataverse " + dataverse.getAlias() + " created/updated (and probably indexed, check server.log)\n";
         } else {
             return "problem saving (and probably indexing) dataverse " + dataverse.getAlias() + "\n";
         }

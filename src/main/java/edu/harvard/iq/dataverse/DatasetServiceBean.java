@@ -32,7 +32,7 @@ public class DatasetServiceBean {
 
     public Dataset save(Dataset dataset) {
         Dataset savedDataset = em.merge(dataset);
-        String indexingResult = indexService.index();
+        String indexingResult = indexService.indexDataset(savedDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }

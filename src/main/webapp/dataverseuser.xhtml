@@ -89,8 +89,8 @@
                                 <h:outputLabel value="Current Password *" for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
                                     <p:panelGrid columns="2">
-                                        <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="Current Password" value="#{DataverseUserPage.currentPassword}" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <p:message for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}"/>
+                                        <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="Current Password" value="#{DataverseUserPage.currentPassword}" />
+                                        <p:message for="currentPassword" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
@@ -98,27 +98,27 @@
                                 <h:outputLabel value="New Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
                                     <p:panelGrid columns="2">
-                                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <p:message for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
+                                        <p:message for="inputPassword" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
                                 <h:outputLabel value="Retype Password *" for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
                                     <p:panelGrid columns="2">
-                                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <p:message for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" />
+                                        <p:message for="retypePassword" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
                                 <p:outputLabel value="First Name *" for="firstName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                                 <p:outputLabel value="First Name" for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
                                 <p:outputLabel value="Name" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE' or DataverseUserPage.editMode != 'FORGOT'}">
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'INFO' or DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                    <p:panelGrid columns="2">
-                                        <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
-                                        <p:message for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CREATE'}" />
+                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                        <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" />
+                                        <p:message for="firstName" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
@@ -126,32 +126,32 @@
                                 <p:outputLabel value="Last Name" for="lastName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
+                                        <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" />
                                         <p:message for="lastName" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
                                 <p:outputLabel value="Email *" for="email" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                                 <p:outputLabel value="Email" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE' or DataverseUserPage.editMode != 'FORGOT'}">
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
                                     <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                    <p:panelGrid columns="2">
-                                        <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
+                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                        <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" />
                                         <p:message for="email" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
                                 <p:outputLabel value="Institution" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
                                     <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
-                                        <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
+                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                        <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" />
                                         <p:message for="institution" />
                                     </p:panelGrid>
                                 </ui:fragment>
 
                                 <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
                                     <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
                                     <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
                                         <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
@@ -166,10 +166,11 @@
                                 </ui:fragment>
 
                                 <p:outputLabel value="Phone Number" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
-                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
-                                        <h:outputText value="#{DataverseUserPage.dataverseUser.phone}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                        <p:inputText id="phone" value="#{DataverseUserPage.dataverseUser.phone}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
+                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
+                                    <h:outputText value="#{DataverseUserPage.dataverseUser.phone}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                                    <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                        <p:inputText id="phone" value="#{DataverseUserPage.dataverseUser.phone}" />
+                                        <p:message for="phone" />
                                     </p:panelGrid>
                                 </ui:fragment>
                             </p:panelGrid>
@@ -203,7 +204,7 @@
                     </p:panel>
                 </p:tab>
             </p:tabView>
-            
+
             <p:tabView id="tabView2" rendered="#{DataverseUserPage.editMode == 'INFO'}">
                 <p:tab id="somedata" title="Datasets Related To Me">
                     <p:panel>
