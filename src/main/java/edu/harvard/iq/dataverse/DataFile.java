@@ -1,20 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
 import org.hibernate.validator.constraints.NotBlank;
@@ -24,20 +13,14 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @Entity
-public class DataFile implements Serializable {
+public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     
     @NotBlank
     private String name;
     
     @NotBlank    
     private String contentType;
-    
-    @ManyToOne     
-    private Dataset dataset;
     
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
@@ -46,6 +29,14 @@ public class DataFile implements Serializable {
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataTable> dataTables;
+	
+	public DataFile() {
+    }    
+
+    public DataFile(String name, String contentType) {
+        this.name = name;
+        this.contentType = contentType;
+    }    
 
     public List<DataTable> getDataTables() {
         return dataTables;
@@ -79,14 +70,7 @@ public class DataFile implements Serializable {
         }
         return false; 
     }
-            
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    
 
     public String getName() {
         return name;
@@ -104,31 +88,15 @@ public class DataFile implements Serializable {
         this.contentType = contentType;
     }
 
-    public Dataset getDataset() {
-        return dataset;
+	@Override
+    public Dataset getOwner() {
+        return (Dataset) super.getOwner();
     }
 
-    public void setDataset(Dataset dataset) {
-        this.dataset = dataset;
+    public void setOwner(Dataset dataset) {
+        super.setOwner(dataset);
     }
     
-    
-    
-    public DataFile() {
-    }    
-
-    public DataFile(String name, String contentType) {
-        this.name = name;
-        this.contentType = contentType;
-    }    
-
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -136,15 +104,12 @@ public class DataFile implements Serializable {
             return false;
         }
         DataFile other = (DataFile) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(getId(), other.getId());
     }
 
     @Override
-    public String toString() {
-        return "edu.harvard.iq.dataverse.File[ id=" + id + " ]";
+    protected String toStringExtras() {
+        return "name:" + getName();
     }
     
 }

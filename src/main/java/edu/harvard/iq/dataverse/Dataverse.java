@@ -5,17 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -28,12 +24,9 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author mbarsinai
  */
 @Entity
-public class Dataverse implements Serializable {
+public class Dataverse extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @NotBlank(message = "Please enter a name.")
     private String name;
@@ -57,21 +50,10 @@ public class Dataverse implements Serializable {
 		fetch = FetchType.LAZY )
 	private Set<DataverseRole> roles;
 	
-    @ManyToOne
-    private Dataverse owner;
-	
 	/** 
 	 * When {@code true}, users are not granted permissions the got for parent dataverses. 
 	 */
 	private boolean permissionRoot;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -113,14 +95,6 @@ public class Dataverse implements Serializable {
         this.affiliation = affiliation;
     }
 
-    public Dataverse getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Dataverse owner) {
-        this.owner = owner;
-    }
-
 	public boolean isEffectivlyPermissionRoot() {
 		return isPermissionRoot() || (getOwner()==null);
 	}
@@ -133,20 +107,14 @@ public class Dataverse implements Serializable {
 		this.permissionRoot = permissionRoot;
 	}
     
+	
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
-        if (owner != null) {
-            owners.addAll( owner.getOwners() );
-            owners.add(owner);
+        if (getOwner() != null) {
+            owners.addAll( getOwner().getOwners() );
+            owners.add(getOwner());
         }
         return owners;
-    }
- 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
     }
 
     @Override
@@ -156,14 +124,13 @@ public class Dataverse implements Serializable {
             return false;
         }
         Dataverse other = (Dataverse) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(getId(), other.getId());
+    }
+	
+    @Override
+    protected String toStringExtras() {
+        return "name:" + getName();
     }
 
-    @Override
-    public String toString() {
-        return "edu.harvard.iq.dataverse.Dataverse[ id=" + id + " ]";
-    }
+
 }

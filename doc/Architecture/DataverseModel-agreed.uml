@@ -24,19 +24,19 @@ package model {
 		getContent() Set<DvObject>
 	}
 
-	class DataSet {
+	class Dataset {
 		owner: Dataverse
 		hasReleasedVersion: boolean
-		versions: List<DataSetVersion>
+		versions: List<DatasetVersion>
 		currentVersion():DatasetVersion
-		archivedVersions():List<DataSetVersion>
-		releasedVersion:DataSetVersion
+		archivedVersions():List<DatasetVersion>
+		releasedVersion:DatasetVersion
 		content(): List<FileMetadata>
 	}
 
 	class FileMetadata {
 		name: String
-		owner: DataSet
+		owner: Dataset
 		versions: List<DataFileVersion>
 		getCurrentVestion(): DataFileVersion
 	}
@@ -65,13 +65,13 @@ package model {
 
 	}
 
-	class DataSetVersion {
+	class DatasetVersion {
 		isReleased: boolean
 		getContent() Set<FileMetadata>
 	}
  
 	Metadata "0..*" -> "1" MetadataSchema
-	DataSetVersion -> Metadata
+	DatasetVersion -> Metadata
 	Dataverse o-> Template
 	Template -> Metadata : default
 }
@@ -92,13 +92,13 @@ package permissions {
 Group -|> User
 DvObjectContainer -up-|> DvObject
 Dataverse -up-|> DvObjectContainer
-DataSet   -up-|> DvObjectContainer
+Dataset   -up-|> DvObjectContainer
 DataFile  -up-|> DvObject 
 
 DvObject --> "0..1" DvObjectContainer : < Belongs to
 
-DataSet "1" *-- "1..*" DataSetVersion
-DataSetVersion "1" *-- "1..*" FileMetadata
+Dataset "1" *-- "1..*" DatasetVersion
+DatasetVersion "1" *-- "1..*" FileMetadata
 
 User .> DvObject : Has Permissions for >
 User o-- Role : For a given DV

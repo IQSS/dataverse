@@ -133,7 +133,7 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile( uFile.getFileName(), uFile.getContentType()); 
-        dFile.setDataset(dataset);
+        dFile.setOwner(dataset);
         dataset.getFiles().add( dFile );
         newFiles.put(uFile, dFile);
     }

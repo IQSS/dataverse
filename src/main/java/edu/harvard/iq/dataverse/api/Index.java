@@ -61,7 +61,7 @@ public class Index {
                 return indexService.indexDataset(dataset) + "\n";
             } else if (type.equals("files")) {
                 DataFile dataFile = dataFileService.find(id);
-                Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getDataset().getId());
+                Dataset datasetThatOwnsTheFile = datasetService.find(dataFile.getOwner().getId());
                 String output = indexService.indexDataset(datasetThatOwnsTheFile);
                 return "indexed " + type + "/" + id + " " + output + "\n";
             } else {

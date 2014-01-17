@@ -24,7 +24,7 @@ public class Files {
     public String add(DataFile dataFile) {
         Dataset dataset;
         try {
-            dataset = datasetService.find(dataFile.getDataset().getId());
+            dataset = datasetService.find(dataFile.getOwner().getId());
         } catch (EJBException ex) {
             return Util.message2ApiError("Couldn't find dataset to save file to. File was " + dataFile);
         }

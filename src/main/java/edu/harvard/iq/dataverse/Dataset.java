@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,13 +27,10 @@ import org.hibernate.validator.constraints.URL;
  * @author skraffmiller
  */
 @Entity
-public class Dataset implements Serializable {
+public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    
     @NotBlank(message = "Please enter a title for your dataset.")
     private String title;
 
@@ -56,21 +54,9 @@ public class Dataset implements Serializable {
     @URL
     private String topicClassificationUrl;
     private String geographicCoverage;
-    
-    @ManyToOne
-    @JoinColumn(nullable=false)     
-    private Dataverse owner;
-    
-    @OneToMany (mappedBy = "dataset", cascade = CascadeType.MERGE)
+   
+    @OneToMany (mappedBy = "owner", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
     
     public String getTitle() {
         return title;
@@ -144,14 +130,6 @@ public class Dataset implements Serializable {
         this.geographicCoverage = geographicCoverage;
     }
 
-    public Dataverse getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Dataverse owner) {
-        this.owner = owner;
-    }
-
     public List<DataFile> getFiles() {
         return files;
     }
@@ -166,28 +144,13 @@ public class Dataset implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Dataset)) {
             return false;
         }
         Dataset other = (Dataset) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "edu.harvard.iq.dataverse.Dataset[ id=" + id + " ]";
+        return Objects.equals( getId(), other.getId() );
     }
 
 }
