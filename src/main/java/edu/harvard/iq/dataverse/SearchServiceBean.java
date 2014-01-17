@@ -59,7 +59,7 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.CATEGORY);
-        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+//        solrQuery.addFacetField(SearchFields.FILE_TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
         /**
          * @todo: do sanity checking... throw error if negative
@@ -109,7 +109,7 @@ public class SearchServiceBean {
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
-            Collection<String> fieldNames = solrDocument.getFieldNames();
+            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
 //                logger.info("highlight snippets: " + highlightSnippets);
@@ -135,6 +135,7 @@ public class SearchServiceBean {
                 parent.put("type", "datasets");
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
+                solrSearchResult.setFiletype(filetype);
                 parent.put("type", "files");
             }
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));

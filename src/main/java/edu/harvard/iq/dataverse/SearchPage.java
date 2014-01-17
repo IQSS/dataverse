@@ -94,8 +94,8 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
-        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
-        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
+//        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
+        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
     }
 
     public String getQuery() {
