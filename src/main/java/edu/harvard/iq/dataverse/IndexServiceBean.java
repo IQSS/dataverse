@@ -2,16 +2,13 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrServer;
@@ -48,13 +45,13 @@ public class IndexServiceBean {
         }
 
         List<Dataverse> dataverses = dataverseService.findAll();
-        int dataverseIndexCount = 1;
+        int dataverseIndexCount = 0;
         for (Dataverse dataverse : dataverses) {
             logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + ": " + indexDataverse(dataverse));
             dataverseIndexCount++;
         }
 
-        int datasetIndexCount = 1;
+        int datasetIndexCount = 0;
         List<Dataset> datasets = datasetService.findAll();
         for (Dataset dataset : datasets) {
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
@@ -79,10 +76,14 @@ public class IndexServiceBean {
          */
         solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
         solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
-        if (!dataverse.equals(rootDataverse)) {
+        // checking for NPE is important so we can create the root dataverse
+        if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
             solrInputDocument.addField(SearchFields.PARENT_TYPE, "dataverses");
-            solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
-            solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+            // important when creating root dataverse
+            if (dataverse.getOwner() != null) {
+                solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
+                solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+            }
         }
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
@@ -122,26 +123,28 @@ public class IndexServiceBean {
         /**
          * @todo: should we assign a dataset title to name like this?
          */
-        solrInputDocument.addField("name", dataset.getTitle());
-        solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getAuthor());
-        solrInputDocument.addField(SearchFields.TITLE, dataset.getTitle());
+       // solrInputDocument.addField("name", dataset.getTitle());
+       // solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getAuthor());
+       // solrInputDocument.addField(SearchFields.TITLE, dataset.getTitle());
         /**
          * @todo: don't use distributor for category. testing facets
          */
-        solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
+       // solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
 
         SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         try {
-            Date citationDate = inputDate.parse(dataset.getCitationDate());
-            SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+           /* Date citationDate = inputDate.parse(dataset.getCitationDate());
+           
             String citationYear = yearOnly.format(citationDate);
             solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
             solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
-        } catch (ParseException ex) {
-            logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
+            */
+             SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+        } catch (Exception ex) {
+            //logger.info("Can't convert " + dataset.getCitationDate() + " to a date from dataset " + dataset.getId() + ": " + dataset.getTitle());
         }
         solrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
@@ -161,8 +164,9 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
             datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getOwner().getOwner().getName());
             datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "files");
+           // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
-            datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getTitle());
+            datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getLatestVersion().getMetadata().getTitle());
             docs.add(datafileSolrInputDocument);
         }
 
@@ -182,12 +186,15 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed dataset " + dataset.getId() + ":" + dataset.getTitle();
+        return "indexed dataset " + dataset.getId(); // + ":" + dataset.getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
         if (!dataverseService.findRootDataverse().equals(dataverse)) {
-            findPathSegments(dataverse.getOwner(), segments);
+            // important when creating root dataverse
+            if (dataverse.getOwner() != null) {
+                findPathSegments(dataverse.getOwner(), segments);
+            }
             segments.add(dataverse.getAlias());
             return segments;
         } else {

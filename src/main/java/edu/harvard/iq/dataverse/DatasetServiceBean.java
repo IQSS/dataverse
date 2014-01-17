@@ -42,13 +42,13 @@ public class DatasetServiceBean {
     }    
     
     public List<Dataset> findByOwnerId(Long ownerId) {
-         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.title");
+         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
          query.setParameter("ownerId", ownerId);
          return query.getResultList();
     }  
 
     public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.title").getResultList();
+        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
     }
 
 }

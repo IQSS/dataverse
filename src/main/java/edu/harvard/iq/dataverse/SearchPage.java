@@ -76,7 +76,7 @@ public class SearchPage implements java.io.Serializable {
                 solrSearchResult.setDatasets(datasets);
             } else if (solrSearchResult.getType().equals("datasets")) {
                 Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
-                solrSearchResult.setCitation(dataset.getCitation());
+//                solrSearchResult.setCitation(dataset.getCitation());
             } else if (solrSearchResult.getType().equals("files")) {
                 /**
                  * @todo: show DataTable variables
@@ -94,8 +94,8 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
-        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
-        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
+//        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
+        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
     }
 
     public String getQuery() {

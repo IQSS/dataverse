@@ -43,14 +43,14 @@ public class Browse {
                 Long ownerId = dataverse.getId();
                 List<Dataset> datasets = datasetService.findByOwnerId(ownerId);
                 for (Dataset dataset : datasets) {
-                    logger.info("dataset: " + dataset.getTitle());
-                    String datasetInfo = dataverse.getAlias() + "|" + dataset.getTitle();
+                    //logger.info("dataset: " + dataset.getTitle());
+                    String datasetInfo = dataverse.getAlias();// + "|" + dataset.getTitle();
                     JsonObjectBuilder datasetObjectBuilder = Json.createObjectBuilder().add("datasetInfo", datasetInfo);
                     datasetsArrayBuilder.add(datasetObjectBuilder);
                     List<DataFile> files = dataset.getFiles();
                     for (DataFile file : files) {
                         logger.info("file: " + file.getName());
-                        String fileInfo = dataverse.getAlias() + "|" + dataset.getTitle() + "|" + file.getName();
+                        String fileInfo = dataverse.getAlias();// + "|" + dataset.getTitle() + "|" + file.getName();
                         JsonObjectBuilder fileInfoBuilder = Json.createObjectBuilder().add("fileInfo", fileInfo);
                         filesArrayBuilder.add(fileInfoBuilder);
                     }

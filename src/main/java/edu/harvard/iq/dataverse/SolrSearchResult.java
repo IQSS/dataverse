@@ -26,6 +26,7 @@ public class SolrSearchResult {
     private List<Dataset> datasets;
     private String affiliation;
     private String citation;
+    private String filetype;
 
     /**
      * @todo: remove name?
@@ -54,6 +55,7 @@ public class SolrSearchResult {
             typeSpecificFields.add(SearchFields.TITLE, this.title);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
+            typeSpecificFields.add(SearchFields.FILE_TYPE, this.filetype);
         }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add(SearchFields.ID, this.id)
@@ -159,6 +161,14 @@ public class SolrSearchResult {
 
     public void setCitation(String citation) {
         this.citation = citation;
+    }
+
+    public String getFiletype() {
+        return filetype;
+    }
+
+    public void setFiletype(String filetype) {
+        this.filetype = filetype;
     }
 
 }

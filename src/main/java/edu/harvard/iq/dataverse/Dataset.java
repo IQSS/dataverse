@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
@@ -58,42 +59,35 @@ public class Dataset extends DvObjectContainer {
     @OneToMany (mappedBy = "owner", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
     
-    public String getTitle() {
-        return title;
+    private String protocol;
+    private String authority;
+    @NotBlank(message = "Please enter an identifier for your dataset.")
+    private String identifier;
+    
+    public String getProtocol() {
+        return protocol;
+    }
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public String getAuthority() {
+        return authority;
+    }
+    public void setAuthority(String authority) {
+        this.authority = authority;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getIdentifier() {
+        return identifier;
     }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getCitationDate() {
-        return citationDate;
-    }
-
-    public void setCitationDate(String citationDate) {
-        this.citationDate = citationDate;
-    }
-
-    public String getDistributor() {
-        return distributor;
-    }
-
-    public void setDistributor(String distributor) {
-        this.distributor = distributor;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
@@ -133,14 +127,82 @@ public class Dataset extends DvObjectContainer {
     public List<DataFile> getFiles() {
         return files;
     }
-
     public void setFiles(List<DataFile> files) {
         this.files = files;
     }
 
+    @ManyToOne
+    @JoinColumn(nullable=false)
+    private Template template;
     
-    public String getCitation() {
-        return author + ", \"" + title + "\", " + citationDate + ", " + distributor + ", http://dx.doi.org/10.1234/dataverse/123456 V1 [Version]";
+    public Template getTemplate() {
+        return this.template;
+    }
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    @OneToMany (mappedBy = "dataset")
+    @OrderBy("versionNumber DESC")
+    private List<DatasetVersion> versions = new ArrayList();
+    
+    public DatasetVersion getLatestVersion(){
+        if (versions.isEmpty()){
+            DatasetVersion datasetVersion = new DatasetVersion();
+            datasetVersion.setMetadata(new Metadata());
+            datasetVersion.setDataset(this);
+            datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+            datasetVersion.setVersionNumber(new Long (1));
+            this.versions.add(datasetVersion);
+            return datasetVersion;
+        } else {
+            return versions.get(0);
+        }
+    }
+    
+    public List<DatasetVersion> getVersions() {
+        return versions;
+    }
+    public void setVersions(List<DatasetVersion> versions) {
+        this.versions = versions;
+    }
+
+    private DatasetVersion createNewDatasetVersion() {
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+        DatasetVersion latestVersion = getLatestVersion();
+        dsv.setMetadata(new Metadata());
+        dsv.setFileMetadatas(new ArrayList());
+        dsv.getMetadata().setDatasetVersion(dsv);
+
+       for(FileMetadata fm : latestVersion.getFileMetadatas()) {
+           FileMetadata newFm = new FileMetadata();
+           newFm.setCategory(fm.getCategory());
+           newFm.setDescription(fm.getDescription());
+           newFm.setLabel(fm.getLabel());
+           newFm.setDataFile(fm.getDataFile());
+           newFm.setDatasetVersion(dsv);
+           dsv.getFileMetadatas().add(newFm);
+       }
+
+        dsv.setVersionNumber(latestVersion.getVersionNumber()+1);
+        // I'm adding the version to the list so it will be persisted when
+        // the study object is persisted.
+        getVersions().add(0, dsv);
+        dsv.setDataset(this);
+        return dsv;
+    }
+
+    public DatasetVersion getEditVersion() {
+        DatasetVersion latestVersion = this.getLatestVersion();
+        if (!latestVersion.isWorkingCopy()) {
+            // if the latest version is released or archived, create a new version for editing
+            return createNewDatasetVersion();
+        } else {
+            // else, edit existing working copy
+            return latestVersion;
+        } 
     }
 
     @Override
