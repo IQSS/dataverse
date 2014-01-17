@@ -5,22 +5,17 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
 //import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -32,32 +27,13 @@ public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
     
-    @NotBlank(message = "Please enter a title for your dataset.")
-    private String title;
-
-    @NotBlank(message = "Please enter an author for your dataset.")
-    private String author;
-
-    @NotBlank(message = "Please enter a distribution date for your dataset.")
-   // @DateTimeFormat(pattern="YYYY/MM/DD")
-    private String citationDate;
-
-    @NotBlank(message = "Please enter a distributor for your dataset.")
-    private String distributor;
-
     // #VALIDATION: page defines maxlength in input:textarea component
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
     
-    // sample metadata fields
-    private String keyword;
-    private String topicClassification;
-    @URL
-    private String topicClassificationUrl;
-    private String geographicCoverage;
-   
     @OneToMany (mappedBy = "owner", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
+
     
     private String protocol;
     private String authority;
@@ -91,37 +67,9 @@ public class Dataset extends DvObjectContainer {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public String getKeyword() {
-        return keyword;
-    }
-
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
-    }
-
-    public String getTopicClassification() {
-        return topicClassification;
-    }
-
-    public void setTopicClassification(String topicClassification) {
-        this.topicClassification = topicClassification;
-    }
-
-    public String getTopicClassificationUrl() {
-        return topicClassificationUrl;
-    }
-
-    public void setTopicClassificationUrl(String topicClassificationUrl) {
-        this.topicClassificationUrl = topicClassificationUrl;
-    }
-
-    public String getGeographicCoverage() {
-        return geographicCoverage;
-    }
-
-    public void setGeographicCoverage(String geographicCoverage) {
-        this.geographicCoverage = geographicCoverage;
+ 
+    public String getCitation() { 
+        return "Todo - get a real Citation";
     }
 
     public List<DataFile> getFiles() {
@@ -132,7 +80,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+//    @JoinColumn(nullable=false)
     private Template template;
     
     public Template getTemplate() {
@@ -212,7 +160,8 @@ public class Dataset extends DvObjectContainer {
             return false;
         }
         Dataset other = (Dataset) object;
-        return Objects.equals( getId(), other.getId() );
+        return Objects.equals(getId(), other.getId());
     }
 
+    
 }

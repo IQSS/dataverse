@@ -6,7 +6,8 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,13 +26,15 @@ import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 @Named
 public class PermissionServiceBean {
 	private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
-	private static final Map<String, Set<Permission>> permissions;
-	
+	private static final Map<String, Set<Permission>> samplePermissions;
+	private static final ConcurrentMap<String, Map<Long,Set<Permission>>> perObjectPermissions;
 	static {
-		permissions = new TreeMap<>();
-		permissions.put("PriviledgedPete", EnumSet.allOf(Permission.class));
-		permissions.put("UnpriviledgedUma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.UndoableEdit));
-		permissions.put("GabbiGuest", EnumSet.noneOf(Permission.class) );
+		samplePermissions = new TreeMap<>();
+		samplePermissions.put("PriviledgedPete", EnumSet.allOf(Permission.class));
+		samplePermissions.put("UnpriviledgedUma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.UndoableEdit));
+		samplePermissions.put("GabbiGuest", EnumSet.noneOf(Permission.class) );
+		
+		perObjectPermissions = new ConcurrentHashMap<>();
 	}
 	
 	@EJB
@@ -75,8 +78,8 @@ public class PermissionServiceBean {
 	}
 	
     public Set<Permission> permissionsFor( DataverseUser u, Dataverse d ) {
-		return permissions.containsKey(u.getUserName()) 
-				? permissions.get(u.getUserName())
+		return samplePermissions.containsKey(u.getUserName()) 
+				? samplePermissions.get(u.getUserName())
 				: EnumSet.noneOf(Permission.class);
 	}
 	
@@ -110,6 +113,10 @@ public class PermissionServiceBean {
 
 	public PermissionQuery on(  Dataverse d ) {
 		return userOn( session.getUser(), d );
+	}
+	
+	public void setPermissionOn( DataverseUser u, DvObject o, Set<Permission> ps ) {
+//		Map<Long, Set<Permission>> userPerms = perObjectPermissions.
 	}
 	
 }

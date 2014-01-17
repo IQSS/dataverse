@@ -42,3 +42,5 @@ drop table variableintervaltype CASCADE;
 drop table variablerange CASCADE;
 drop table variablerangeitem CASCADE;
 drop table variablerangetype CASCADE;
+DROP TABLE dvobject CASCADE;
+drop TABLE dvobject_dataverserole CASCADE;
