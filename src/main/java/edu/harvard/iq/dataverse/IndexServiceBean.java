@@ -79,10 +79,14 @@ public class IndexServiceBean {
          */
         solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
         solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
-        if (!dataverse.equals(rootDataverse)) {
+        // checking for NPE is important so we can create the root dataverse
+        if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
             solrInputDocument.addField(SearchFields.PARENT_TYPE, "dataverses");
-            solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
-            solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+            // important when creating root dataverse
+            if (dataverse.getOwner() != null) {
+                solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
+                solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
+            }
         }
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
@@ -189,7 +193,10 @@ public class IndexServiceBean {
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
         if (!dataverseService.findRootDataverse().equals(dataverse)) {
-            findPathSegments(dataverse.getOwner(), segments);
+            // important when creating root dataverse
+            if (dataverse.getOwner() != null) {
+                findPathSegments(dataverse.getOwner(), segments);
+            }
             segments.add(dataverse.getAlias());
             return segments;
         } else {
