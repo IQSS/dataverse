@@ -243,25 +243,7 @@
                     </p:tab>
                     <p:tab id="metadataTab" title="Metadata" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                         <p:panelGrid columns="3">
-                            <p:outputLabel value="Keyword" for="keyword" />
-                            <h:outputText id="keywordOutput" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
-                            <p:inputText id="keyword" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="keyword" />
 
-                            <p:outputLabel value="Topic Classification" for="topicClassification" />
-                            <h:outputText id="topicClassificationOutput" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="topicClassification" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="topicClassification" />
-
-                            <p:outputLabel value="Topic Classification URL" for="topicClassificationUrl" />
-                            <h:outputText id="topicClassificationUrlOutput" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="topicClassificationUrl" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="topicClassificationUrl" />
-
-                            <p:outputLabel value="Geographic Coverage" for="geographicCoverage" />
-                            <h:outputText id="geographicCoverageOutput" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="geographicCoverage" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="geographicCoverage" />
                         </p:panelGrid>
                     </p:tab>
                     <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}"/>
