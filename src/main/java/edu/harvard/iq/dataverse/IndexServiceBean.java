@@ -71,11 +71,14 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
-        /**
-         * @todo: stop using affiliation as category
-         */
-        solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
-        solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
+        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
+        if (!dataverse.getAffiliation().isEmpty()) {
+            /**
+             * @todo: stop using affiliation as category
+             */
+            solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
+            solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
+        }
         // checking for NPE is important so we can create the root dataverse
         if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
             solrInputDocument.addField(SearchFields.PARENT_TYPE, "dataverses");
@@ -97,7 +100,11 @@ public class IndexServiceBean {
         SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
 
         try {
-            server.add(docs);
+            if (dataverse.getId() != null) {
+                server.add(docs);
+            } else {
+                logger.info("WARNING: indexing of a dataverse with no id attempted");
+            }
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
@@ -124,13 +131,19 @@ public class IndexServiceBean {
          * @todo: should we assign a dataset title to name like this?
          */
        // solrInputDocument.addField("name", dataset.getTitle());
-       // solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getAuthor());
-       // solrInputDocument.addField(SearchFields.TITLE, dataset.getTitle());
+        if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
+            solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
+        }
+        if (!dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
+            solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getMetadata().getTitle());
+        }
         /**
          * @todo: don't use distributor for category. testing facets
          */
        // solrInputDocument.addField(SearchFields.CATEGORY, dataset.getDistributor());
-        solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
+        if (!dataset.getDescription().isEmpty()) {
+            solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
+        }
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
 

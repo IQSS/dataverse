@@ -50,9 +50,9 @@ public class SolrSearchResult {
         JsonObjectBuilder typeSpecificFields = Json.createObjectBuilder();
         if (this.type.equals("dataverses")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
-            typeSpecificFields.add(SearchFields.AFFILIATION, affiliation);
+//            typeSpecificFields.add(SearchFields.AFFILIATION, affiliation);
         } else if (this.type.equals("datasets")) {
-            typeSpecificFields.add(SearchFields.TITLE, this.title);
+//            typeSpecificFields.add(SearchFields.TITLE, this.title);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE, this.filetype);

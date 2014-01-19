@@ -214,7 +214,7 @@
                 <ui:fragment>
                     <!-- why form and not h:form http://stackoverflow.com/questions/4823216/jsf-2-0-form-using-get/4823289#4823289 -->
                     <form id="searchForm">
-                        <h:inputText id="q" size="40" value="#{DataversePage.q}"/>
+                        <h:inputText id="q" size="40" value="#{DataversePage.q == null ? '*' : DataversePage.q}"/>
                         <input type="submit" value="Find" formaction="search.xhtml" style="margin-left:1em;"/>
                         <h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="#{!DataversePage.isRootDataverse()}"/>
                     </form>

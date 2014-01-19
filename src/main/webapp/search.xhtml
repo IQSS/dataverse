@@ -74,20 +74,20 @@
                 <ui:fragment>
                     <p:panelGrid columns="2">
                         <ui:fragment>
-                            <!--<h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
+                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
                                 Create Account
                             </h:outputLink>
-                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>-->
+                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
                         </ui:fragment>
                         <ui:fragment>
-                            <!--<h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
+                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
                                 Log In
                             </h:outputLink>
                             <h:form id="headerForm">
                                 <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
                                     Log Out
                                 </h:commandLink>   
-                            </h:form>-->                       
+                            </h:form>
                         </ui:fragment>
                     </p:panelGrid>
                 </ui:fragment>
@@ -167,7 +167,7 @@
                                     <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="font-weight:bold;">
                                         <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
                                     </h:outputLink>
-                                    <h:outputText value=" (#{result.affiliation})" style="padding:4px 0"/><br/>
+                                    <h:outputText value=" (#{result.affiliation})" style="padding:4px 0" rendered="#{result.affiliation != null}"/><br/>
                                     <div style="width:36px; float:left; margin:4px 12px 12px 0;">
                                         <img src="/resources/images/icon_dataverse.png" style="width:36px;" border="0" alt="Dataverse"/>
                                     </div>
@@ -179,18 +179,18 @@
                                     </ui:fragment>
                                     <div style="clear:left"> <!--this needs to be a datatable-->
                                         <p:dataTable id="datasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true" rendered="#{result.datasets.size() > 0}">  
-                                            <p:column headerText="Title" style="font-size: smaller; width: 70%">
+                                            <p:column headerText="Title" style="font-size: smaller; width: 90%">
                                                 <img src="/resources/images/icon_dataset.png" style="width:12px;margin:0 2px 0px 0;" border="0" alt="Dataset"  />
                                                 <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
-                                                    <h:outputText value="#{dataset.title}" />  
+                                                    <h:outputText value="#{dataset.getLatestVersion().getMetadata().getTitle()}" />
                                                 </h:outputLink>
                                             </p:column>  
                                             <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">  
-                                                <h:outputText value="#{dataset.files.size()}" />  
+                                                <h:outputText value="#{dataset.getFiles().size()}" />
                                             </p:column>  
-                                            <p:column headerText="Citation Date" style="font-size: smaller; width:20%; text-align: right">  
-                                                <h:outputText value="#{dataset.citationDate}" />  
-                                            </p:column>  
+                                            <!--<p:column headerText="Citation Date" style="font-size: smaller; width:20%; text-align: right">-->  
+                                                <!--<h:outputText value="FIXME" />-->
+                                            <!--</p:column>-->
                                         </p:dataTable>
                                         <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.datasets.size() > 3}">
                                             <h:outputText value="&#160;&#160;&#160;> View #{result.datasets.size() - 3} more"/>
