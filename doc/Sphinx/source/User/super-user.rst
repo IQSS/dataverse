@@ -13,11 +13,11 @@ page from the "Options" gear icon, in the menu bar. Click on the icon to
 view all the options available for customizing and configuring the
 applications, as well as some network adminstrator utilities.
 
-The following tasks can be performed from the Options page:
+The following tasks can be performed from the Edit Button:
 
 -  Manage dataverses, harvesting, exporting, and OAI sets - Create,
    edit, and manage standard and harvesting dataverses, manage
-   harvesting schedules, set study export schedules, and manage OAI
+   harvesting schedules, set dataset export schedules, and manage OAI
    harvesting sets.
 -  Customize the Network pages and description - Brand your Network and
    set up your Network e-mail contact.
@@ -35,7 +35,7 @@ Dataverses Section
 Create a New Dataverse
 -------------------------
 
-A dataverse is a container for studies and is the home for an individual
+A dataverse is a container for datasets and is the home for an individual
 scholar's or organization's data.
 
 Creating a dataverse is easy but first you must be a registered user.
@@ -45,16 +45,9 @@ account, then a dataverse. If this is not the case on your site, log in,
 then navigate to the Create a New Dataverse page and complete the
 required information. That's it!
 
-#. Navigate to the Create a New Dataverse page: 
+#. Navigate to the Add Data button then the "Create Dataverse" option: 
     Network home page > Options page >Dataverses tab > Dataverse subtab > "Create Dataverse" link.
 #. Fill in the required information:
-
-
-    **Type of Dataverse**
-
-
-    Choose Scholar if it represents an individual's work otherwise choose Basic.
-
 
     **Dataverse Name**
 
@@ -125,43 +118,14 @@ From here you can view the current classification hierarchy, create a
 classification, edit an existing classification including changing its
 place in the hierarchy, and delete a classification.
 
-Manage Study Comments Notifications
----------------------------------------
-
-Dataverse admins can enable or disable a User Comment feature within
-their dataverses. If this feature is enabled, users are able to add
-comments to studies within that dataverse. Part of the User Comment
-feature is the ability for users to report comments as abuse if they
-deem that comment to be inappropriate in some way.
-
-Note that it is a best practice to explicitly define terms of use
-regarding comments when the User Comments feature is enabled. If you
-define those terms at the Network level, then any study to which
-comments are added include those terms.
-
-When a user reports another's comment as abuse, that comment is listed
-on the Manage Study Comment Notifications table on the Options page. For
-each comment reported as abuse, you see the study's Global ID, the
-comment reported, the user who posted the comment, and the user who
-reported the comment as abuse.
-
-There are two ways to manage abuse reports: In the Manage Study Comment
-Notifications table on the Options page, and on the study page User
-Comments tab. In both cases, you have the options to remove the comment
-or to ignore the abuse report.
-
-The Manage Study Comments Notifications table can be found here:
-
-Network home page > Options page > Dataverses tab > Study Comments
-subtab > Manage Study Comment Notifications table
 
 Manage Controlled Vocabulary
 ----------------------------------
 
 You can set up controlled vocabulary for a dataverse network to give the
-end user a set list of choices to select from for most fields in a study
+end user a set list of choices to select from for most fields in a dataset
 template. Study fields which do not allow controlled vocabulary include
-the study title and subtitle, certain date fields and geographic
+the dataset title and subtitle, certain date fields and geographic
 boundaries.
 
 To **manage controlled vocabulary**, navigate to the Manage Controlled
@@ -196,11 +160,11 @@ To edit an existing controlled vocabulary:
 #. Edit the controlled vocabulary items that you choose to change, add,
    or remove.
 
-Manage Network Study Templates
+Manage Network Dataset Templates
 -------------------------------------
 
-You can set up study templates for a dataverse network to prepopulate
-any of the Cataloging Information fields of a new study with default
+You can set up dataset templates for a dataverse network to prepopulate
+any of the Metadata fields of a new dataset with default
 values. Dataverse administrators may clone a Network template and modify
 it for users of that dataverse. You may also change the input level of
 any field to make a certain field required, recommended, optional,
@@ -208,22 +172,22 @@ hidden or disabled. Hidden fields will not be available to the user, but
 will be available to the dataverse administrator for update in cloned
 templates. Disabled field will not be available to the dataverse
 administrator for update. You may also add your own custom fields. When
-a user adds a new study, that user can select a template to fill in the
+a user adds a new dataset, that user can select a template to fill in the
 defaults.
 
-To manage study templates, navigate to the Manage Study Templates table:
+To manage dataset templates, navigate to the Manage Study Templates table:
 
 ``Network home page > Options page > Templates tab > Manage Study Templates table``
 
 
 **Create Template**
 
-Study templates help to reduce the work needed to add a study, and to
-apply consistency to studies across a dataverse network. For example,
+Dataset templates help to reduce the work needed to add a dataset, and to
+apply consistency to datasets across a dataverse network. For example,
 you can create a template to include the Distributor and Contact details
-so that every study has the same values for that metadata.
+so that every dataset has the same values for that metadata.
 
-To create a new study template:
+To create a new dataset template:
 
 #. Click Create New Network Template.
 #. You see the Study Template page.
