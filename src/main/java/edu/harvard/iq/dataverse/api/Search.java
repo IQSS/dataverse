@@ -63,7 +63,7 @@ public class Search {
                     .add("items", solrSearchResults.toString())
                     .add("spelling_alternatives", spelling_alternatives)
                     .add("itemsJson", filesArrayBuilder.build())
-//                    .add("facets", facets)
+                    .add("facets", facets)
                     .build();
 //            logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);

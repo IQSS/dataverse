@@ -171,7 +171,9 @@ public class SearchServiceBean {
             }
             facetCategory.setName(facetField.getName());
             facetCategory.setFacetLabel(facetLabelList);
-            facetCategoryList.add(facetCategory);
+            if (!facetLabelList.isEmpty()) {
+                facetCategoryList.add(facetCategory);
+            }
         }
 
         // for now the only range facet is citation year
@@ -201,7 +203,9 @@ public class SearchServiceBean {
                 facetLabelListReversed.add((FacetLabel) li.previous());
             }
             facetCategory.setFacetLabel(facetLabelListReversed);
-            facetCategoryList.add(facetCategory);
+            if (!facetLabelList.isEmpty()) {
+                facetCategoryList.add(facetCategory);
+            }
         }
 
         SolrQueryResponse solrQueryResponse = new SolrQueryResponse();
