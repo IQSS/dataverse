@@ -1,67 +1,44 @@
 Finding and Using Data
 ++++++++++++++++++
 
-Ends users, without need to login to the Dataverse Network, can browse
-dataverses, search studies, view study description and data files for
-public studies, and subset, analyze and visualize data for public data
-files. If entire studies or individual data files are restricted, end
-users need to be given permission from the dataverse administrator to
-access the data.
+Without logging in to the Dataverse Network, users can browse
+dataverses, search datasets, view dataset description and files for
+public datasets, and subset, analyze and visualize data for public data
+files. To view a restricted dataverse, dataset, or file, a user will need to be given permission from the dataverse adminstrator to access it. 
 
+**Ways to Search**
 
-Search
-=======
+Basic search block:
 
-To find a study or data set, you can search or browse studies offered
-in any released dataverse on the Network homepage. Each dataverse offers
-a hierarchical organization comprising one or more collections of data
-sets with a particular theme. Most dataverses allow you to search for
-data within their files, or you can start browsing through the dataverse
-classifications that are closest to your substantive interests.
+- Wildcard
+- Facets - list of facets, clicking a facet, removing a facet, viewing more or less options within a facet, chosen facets appear above results table
+- Result cards - search terms/query highlighting within it
+- Autocomplete for titles of dataverses, names of datasets, and authors
+- Exact phrase search when a search term/query has quotes around it
 
-**Browse Collections**
+Other search features: 
 
-You can browse all public dataverses from the Network homepage. Click
-the title of a dataverse to browse that dataverse's collections and
-studies. Click the title of a collection to view a list of studies and
-subcollections for that selection. Click the title of a study to view
-the Cataloging Information and study files for that selection.
+- Bookmarkable URLs
+- Spellcheck
+- Searching within a specific dataverse
 
-When you select a dataverse to view its contents, the homepage opens to
-the \ *root collection*, and the dataverse's studies are displayed
-directly under the root collection name. If the root collection contains
-other collections, then those collections are listed and not the studies
-within them. You must select a collection title to view the studies
-contained within it.
-
-Note: If a dataverse includes links to collections from another
-dataverse and the root collection does not contain other collections,
-the homepage opens to a list of the root and linked collections.
 
 **Search - Basic**
 
-You can search for studies across the entire Dataverse Network from the
+You can search for datasets across the entire Dataverse Network from the
 Network homepage, or search within a dataverse from the dataverse
-homepage. When you search across the Network, studies from restricted
-dataverses are not included in the search. Restricted studies are
-included in search results, and a lock icon appears beside those studies
+homepage. When you search across the Network, datasets in restricted
+dataverses are not included in the search. Restricted datasets are
+included in search results, and a lock icon appears beside those datasets
 in the results list. After your search is complete, you can further
-narrow your list of data by searching again in the results. See Search
-Tips for search examples and guidelines.
+narrow your list of data by searching again in the results. 
 
-When you enter more than one term in the search text field, the results
-list contains studies that have these terms near each other within the
-study fields searched. For example, if you enter ``United Nations``,
-the results include studies where the words *United* and *Nations* are
-separated by no more than four words in the same study field, such as
-abstract or title.
 
-It supports a search in any field of the studies' Cataloging
-Information, which includes citation information, abstract and other
+It supports a search in any field of the dataset's Metadata, which includes citation information, abstract and other
 scope-related information, methodology, and Terms of Use. In addition,
 file descriptions also are searched.
 
-**Search - Advanced**
+**Search - Advanced** (Needs to be edited/updated once advanced search is developed)
 
 In an advanced search, you can refine your criteria by choosing which
 Cataloging Information fields to search. You also can apply logic to the
@@ -130,110 +107,55 @@ of downloads (that is, the number of times users downloaded any file
 belonging to that study). Click the Sort By drop-down list to choose
 your sort order.
 
-**Search Tips**
-
-Use the following guidelines to search effectively within a Network or a
-dataverse:
-
--  The default search syntax uses ``AND`` logic within individual
-   fields. That is, if you enter more than one term, the search engine
-   looks for all terms within a single field, such as title or abstract.
-   For example, if you enter ``United Nations report``, the results
-   list any studies that include the terms *United*, *Nations*,
-   and *report* within a single metadata field.
--  The search logic looks for multiple terms within a specific proximity
-   to one another, and in the same field. The current proximity criteria
-   is four words. That is, if you enter two search terms, both terms
-   must be within four words of each other in the same field to be
-   returned as a result.
-   For example, you might enter ``10 year`` in a basic search. If a
-   study includes the string *10 millions deaths per year* within a
-   metadata field, such as abstract, that study is not included in the
-   search results. A study that contains the string *10 per year* within the abstract field is included in the search results.
--  During the index process that supports searches, periods are removed
-   in strings and each term between periods is indexed individually. If
-   you perform a basic search for a term that contains one or more
-   periods, the search works because the analyzer applies
-   the *AND* logic. If you search on a specific field, though, note
-   that you should specify individually each component of the string
-   between periods to return your results.
--  You can enter one term in the search field, and then search within
-   those results for another term to narrow the results further. This
-   might be more effective than searching for both terms at one time, if
-   those terms do not meet the proximity and field limits specified
-   previously.
-   You could search first for an author's name, and then search those
-   results for a specific term in the title. If you try searching for
-   both terms in the author and title fields together, you might not
-   find the study for which you are looking.
-   For example, you can search the Harvard Dataverse Network for the
-   following study:
-
-       *Gary King; Will Lowe, 2003, "10 Million International Dyadic
-       Events", hdl:1902.1/FYXLAWZRIA UNF:3:um06qkr/1tAwpS4roUqAiw==
-       Murray Research Archive [Distributor]*
-
-   If you type ``King, 10 Million`` in the Search field and click
-   Search, you see ``0 matches were found`` in the Results field. If
-   you type ``10`` in the Search field and click Search, you see
-   something like ``1621 matches were found`` in the Results field.
-   But if you first type ``King`` in the Search field and click
-   Search, then type ``10 Million`` in the Search field and click
-   Search again, you see something like ``4 matches were found`` in the
-   Results field.
 
 
-View Studies / Download Data
+View Datasets / Download Data
 ========================
 
-**Cataloging Information**
+**Metadata**
 
-When a study is created, a set of *metadata* is associated with that
-study. This metadata is called the *Cataloging Information* for the
-study. When you select a study to view it, you first see the Cataloging
-Information tab listing the metadata associated with that study. This is
-the default view of a study.
+When a dataset is created, a set of *metadata* is associated with it. To view the metadata associated with a dataset, go to the dataset's page and click on the metadata tab.
 
-Cataloging Information contains numerous fields that help to describe
-the study. The amount of information you find for each study varies,
+Metadata contains numerous fields that help to describe
+the dataset. The amount of information you find for each dataset varies,
 based on what was entered by the author (Contributor) or Curator of that
-study. For example, one study might display the distributor, related
-material, and geographic coverage. Another study might display only the
-authors and the abstract. Every study includes the *Citation Information* fields in the Cataloging Information.
+dataset. For example, one dataset might display the distributor, related
+material, and geographic coverage. Another dataset might display only the
+authors and the abstract. Every dataset includes the *Citation Information* fields in the Cataloging Information.
 
-Note: A comprehensive list of all Cataloging Information fields is
+Note: A comprehensive list of all metadata fields is
 provided in the :ref:`List of Metadata References <metadata-references>`
 
-Cataloging Information is divided into four sections. These sections and
+Metadata is divided into four sections. These sections and
 their details are displayed only when the author (Contributor) or
-Curator provides the information when creating the study. Sections
+Curator provides the information when creating the dataset. Sections
 consist of the following:
 
 -  Citation Information - These fields comprise
-   the `citation <http://thedata.org/citation>`__ for the study,
-   consisting of a global identifier for all studies and a UNF, or
-   Universal Numerical Fingerprint, for studies that contain subsettable
+   the `citation <http://thedata.org/citation>`__ for the dataset,
+   consisting of a global identifier for all datasets and a UNF, or
+   Universal Numerical Fingerprint, for datasets that contain subsettable
    data files. It also can include information about authors, producers
-   and distributors, and references to related studies or papers.
--  Abstract and Scope - This section describes the research study, lists
+   and distributors, and references to related datasets or papers.
+-  Abstract and Scope - This section describes the research dataset, lists
    the study's data sets, and defines the study's geographical scope.
 -  Data Collection/Methodology - This section includes the technical
    details of how the author obtained the data.
--  Terms of Use - This information explains that the study requires
+-  Terms of Use - This information explains that the dataset
    users to accept a set of conditions or agreements before downloading
    or analyzing the data. If any *Terms of Use* text is displayed in
-   the Cataloging Information section, you are prompted to accept the
+   the Metadata section, you are prompted to accept the
    conditions when you click the download or analyze icons in the Files
    page.
-   Note: A study might not contain Terms of Use, but in some cases the
-   original parent dataverse might have set conditions for all studies
+   Note: A dataset might not contain Terms of Use, but in some cases the
+   original parent dataverse might have set conditions for all datasets
    owned by that dataverse. In that case, the conditions are inherited
-   by the study and you must accept these conditions before downloading
+   by the dataset and you must accept these conditions before downloading
    files or analyzing the data.
 
-**List of Study Files**
+**List of Dataset Files**
 
-When you view a study, click the Documentation, Data and Analysis tab to
+When you view a dataset, click the Documentation, Data and Analysis tab to
 view a list of all electronic files associated with the study that were
 provided by the author or Curator.
 
@@ -293,24 +215,6 @@ Note: Studies and data files often have user restrictions applied. If
 prompted to accept Terms of Use for a study or file, check the *I Accept* box and then click the Continue button to view or download the
 file.
 
-**User Comments**
-
-If the User Comment feature is enabled within a dataverse, users are
-able to add comments about a study within that dataverse.
-
-When you view a study, click the User Comments tab to view all comments
-associated with the study. Comments can be monitored and abuse reported
-to the Network admin, who has permission to remove any comments deemed
-inappropriate. Note that the dataverse admin does not have permission to
-remove comments, to prevent bias.
-
-If you choose, you also can add your own comments to a study from the
-User Comments tab. See :ref:`Comment on Studies or Data <edit-study-comments-settings>` for
-detailed information.
-
-Note: To add a comment to a study, you must register and create an
-account in the dataverse that owns the study about which you choose to
-comment. This helps to prevent abuse and SPAM issues.
 
 **Versions**
 
