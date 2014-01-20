@@ -127,18 +127,19 @@ public class SearchServiceBean {
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
-                parent.put("type", "dataverses");
             } else if (type.equals("datasets")) {
                 if (titles != null) {
                     solrSearchResult.setTitle((String) titles.get(0));
                 }
-                parent.put("type", "datasets");
+                else {
+                    solrSearchResult.setTitle("EMPTY STRING: dataset.getLatestVersion().getMetadata().getTitle().isEmpty()");
+                }
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
-                parent.put("type", "files");
             }
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
+            parent.put("type", (String) solrDocument.getFieldValue(SearchFields.PARENT_TYPE));
             parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);

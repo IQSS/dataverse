@@ -45,14 +45,14 @@ public class SolrSearchResult {
     public JsonObject toJsonObject() {
         JsonObjectBuilder parentBuilder = Json.createObjectBuilder();
         for (String key : parent.keySet()) {
-            parentBuilder.add(key, parent.get(key) != null ? parent.get(key) : "NONE-ROOT-DATAVERSE");
+            parentBuilder.add(key, parent.get(key) != null ? parent.get(key) : "NONE-ROOT-DATAVERSE-OR-EMPTY-STRING-DATASET-TITLE");
         }
         JsonObjectBuilder typeSpecificFields = Json.createObjectBuilder();
         if (this.type.equals("dataverses")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
 //            typeSpecificFields.add(SearchFields.AFFILIATION, affiliation);
         } else if (this.type.equals("datasets")) {
-//            typeSpecificFields.add(SearchFields.TITLE, this.title);
+            typeSpecificFields.add(SearchFields.TITLE, this.title);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE, this.filetype);
