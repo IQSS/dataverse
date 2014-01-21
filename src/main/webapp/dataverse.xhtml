@@ -131,7 +131,7 @@
             </p:panel>
 
             <!-- Info / Buttons Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('RenameDataverseCommand')}">
+            <p:panel styleClass="panelLayoutBlock" rendered="#{not empty DataversePage.owner and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
                         <p:panelGrid columns="2" styleClass="panelgridFormTable">
