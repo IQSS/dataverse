@@ -6,257 +6,192 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
-        <title>Dataverse</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <meta http-equiv="Content-Language" content="en"/>
-        <style type="text/css">
-            .panelgridHeaderTable {width:100%;}
-            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
-            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
-
-            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
-
-            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
-            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
-
-            .panelLayoutButtonBlock button {margin-right:2em;}
-
-            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
-            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
-            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
-
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
-
-            .rightClass {text-align: right;}
-            
-            .dataverseChildren .ui-datalist-data {padding-left:1em;}
-            .dataverseChildren .ui-datalist-data li.ui-datalist-item {list-style-type:none; margin-left:0; margin-bottom:6px;}
-        </style>
     </h:head>
 
     <h:body>
-        <f:metadata>
-            <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-            <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-            <f:viewParam name="q" value="#{DataversePage.q}"/>
-            <f:viewAction action="#{DataversePage.init}"/>
-        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Dataverse"/>
+            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+            <ui:param name="ownerId" value="#{DataversePage.ownerId}"/> 
+            <ui:define name="body">        
 
-        <!-- Header Panel -->
-        <p:panel style="background-color: lightskyblue; height:70px;">
-            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
-                <ui:fragment>
-                    <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
-                        <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
-                    </h:outputLink>
+                <f:metadata>
+                    <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
+                    <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
+                    <f:viewParam name="q" value="#{DataversePage.q}"/>
+                    <f:viewAction action="#{DataversePage.init}"/>
+                </f:metadata>
 
-                    <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                <h:form id="dataverseForm">
+                    <!-- Breadcrumbs Panel -->
+                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
 
-                    <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
-                </ui:fragment>
-                <ui:fragment>
-                    <p:panelGrid columns="2">
-                        <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{empty dataverseSession.user}">
-                                Create Account
+                        <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
+                            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                                <h:outputText value="#{owner.name} Dataverse"/>
                             </h:outputLink>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!empty dataverseSession.user}">
-                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
-                            </h:outputLink>   
-                        </ui:fragment>
-                        <ui:fragment>
-                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
-                                Log In
-                            </h:outputLink>
-                            <h:form id="headerForm">
-                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
-                                    Log Out
-                                </h:commandLink>   
-                            </h:form>                            
-                        </ui:fragment>
-                    </p:panelGrid>
-                </ui:fragment>
-            </p:panelGrid>
-        </p:panel>
+                            <h:outputText value=" > "/>
+                        </ui:repeat>
+                        <!--<br/>-->
+                        <h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
+                    </p:panel>
 
-        <h:form id="dataverseForm">
-            <!-- Breadcrumbs Panel -->
-            <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
+                    <!-- Message Panel -->
+                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{DataversePage.editMode}">
 
-                <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
-                    <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                        <h:outputText value="#{owner.name} Dataverse"/>
-                    </h:outputLink>
-                    <h:outputText value=" > "/>
-                </ui:repeat>
-                <!--<br/>-->
-                    <h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
-            </p:panel>
-
-            <!-- Message Panel -->
-            <p:panel styleClass="panelLayoutTitleBlock" rendered="#{DataversePage.editMode}">
-
-                <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
+                        <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
 
                 <!--<h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>-->
                 <!--<h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>-->
                 <!--<h:outputText value="Create Root Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>-->
 
-            </p:panel>
+                    </p:panel>
 
-            <!-- Name Panel -->
-            <p:panel styleClass="panelLayoutBlock">
+                    <!-- Name Panel -->
+                    <p:panel styleClass="panelLayoutBlock">
 
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DataversePage.editMode}">
-                    <p:panelGrid columns="2">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DataversePage.editMode}">
+                            <p:panelGrid columns="2">
+                                <ui:fragment>
+                                    <p:inputText id="name" value="#{DataversePage.dataverse.name}"/>
+                                    <p:outputLabel value=" Dataverse" for="name"/>
+                                    <p:watermark for="name" value="Enter name..."/>
+                                </ui:fragment>
+                                <p:message for="name"/>
+                            </p:panelGrid>
+                            <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
+                                <h:outputText value="Host Dataverse"/>
+                                <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                    <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
+                                                   itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
+                                </p:selectOneMenu>
+                            </p:panelGrid>
+                        </p:panelGrid>
+
+                    </p:panel>
+
+                    <!-- Info / Buttons Panel -->
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{not empty DataversePage.owner and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand')}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+                            <ui:fragment>
+                                <p:panelGrid columns="2" styleClass="panelgridFormTable">
+                                    <p:outputLabel value="Alias" for="alias"/>
+                                    <ui:fragment>
+                                        <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                            <p:inputText id="alias" value="#{DataversePage.dataverse.alias}"/>
+                                            <p:message for="alias"/>
+                                        </p:panelGrid>
+                                    </ui:fragment>
+
+                                    <p:outputLabel value="Contact E-mail" for="contactEmail"/>
+                                    <ui:fragment>
+                                        <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                            <p:inputText id="contactEmail" value="#{DataversePage.dataverse.contactEmail}"/>
+                                            <p:message for="contactEmail"/>
+                                        </p:panelGrid>
+                                    </ui:fragment>
+
+                                    <p:outputLabel value="Affiliation" for="affiliation"/>
+                                    <ui:fragment>
+                                        <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                            <p:inputText id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
+                                            <p:message for="affiliation"/>
+                                        </p:panelGrid>
+                                    </ui:fragment>
+                                </p:panelGrid>
+                            </ui:fragment>
+
+                            <ui:fragment rendered="#{!empty dataverseSession.user and !DataversePage.editMode}">
+                                <p:menuButton id="editDataverse" value="Edit Dataverse" iconPos="right">
+                                    <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DataversePage.edit}" update="@all"/>
+                                    <p:menuitem id="manageRoles" value="Manage Roles" outcome="manage-roles">
+                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                    </p:menuitem>
+                                    <p:menuitem value="Edit Theme" disabled="true"/>
+                                    <p:menuitem value="Edit Permissions" disabled="true"/>
+                                </p:menuButton>
+                            </ui:fragment>
+                        </p:panelGrid>
+                    </p:panel>
+
+                    <!-- Description Panel -->
+                    <p:panel styleClass="panelLayoutBlock">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+                            <ui:fragment>
+                                <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}"/>
+                                <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DataversePage.editMode}">
+                                    <p:outputLabel value="Description" for="description"/>
+                                    <ui:fragment>
+                                        <p:inputTextarea id="description" value="#{DataversePage.dataverse.description}"
+                                                         rows="5" cols="50" counter="counter" maxlength="1000"
+                                                         counterTemplate="{0} characters remaining" autoResize="false"/>
+                                        <h:outputText id="counter" style="display:block;"/>
+                                    </ui:fragment>
+                                    <p:message for="description"/>
+                                </p:panelGrid>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!DataversePage.editMode}">
+                                &#160;
+                            </ui:fragment>
+                        </p:panelGrid>
+                    </p:panel>
+
+                    <!-- Create Dataverse Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{DataversePage.editMode}">
+                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" actionListener="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all" rendered="#{DataversePage.dataverse.id != null}"/>
+                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                    </p:panel>
+                </h:form>
+
+                <!-- Search / Share Panel -->
+                <p:panel styleClass="panelLayoutBlock" rendered="#{!DataversePage.editMode}">
+                    <p:focus/>
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                         <ui:fragment>
-                            <p:inputText id="name" value="#{DataversePage.dataverse.name}"/>
-                            <p:outputLabel value=" Dataverse" for="name"/>
-                            <p:watermark for="name" value="Enter name..."/>
+                            <!-- why form and not h:form http://stackoverflow.com/questions/4823216/jsf-2-0-form-using-get/4823289#4823289 -->
+                            <form id="searchForm">
+                                <h:inputText id="q" size="40" value="#{DataversePage.q == null ? '*' : DataversePage.q}"/>
+                                <input type="submit" value="Find" formaction="search.xhtml" style="margin-left:1em;"/>
+                                <!--<h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="#{!DataversePage.isRootDataverse()}"/>-->
+                            </form>
                         </ui:fragment>
-                        <p:message for="name"/>
+
+                        <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}">
+                            <h:form id="shareForm" style="margin-left:auto;">
+                                <p:menuButton id="shareData" value="Add Data" iconPos="right">
+                                    <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
+                                    <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
+                                    <p:menuitem value="Link to Existing Dataverse" disabled="true"/>
+                                    <p:menuitem value="Link to Existing Dataset" disabled="true"/>
+                                    <p:menuitem value="Create Query" disabled="true"/>
+                                </p:menuButton>
+                            </h:form>
+                        </ui:fragment>
                     </p:panelGrid>
-                    <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
-                        <h:outputText value="Host Dataverse"/>
-                        <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                           itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
-                        </p:selectOneMenu>
-                    </p:panelGrid>
-                </p:panelGrid>
+                </p:panel>
 
-            </p:panel>
+                <!-- Content Panel -->
+                <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
+                    <p:dataList value="#{DataversePage.contents}" var="item">
+                        <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
+                            <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
+                                <h:outputText value="#{item.name}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
+                                <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
+                            </h:outputLink>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
+                            <h:outputLink value="/dataset.xhtml?id=#{item.id}">
+                                <h:outputText value="#{item.id}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
+                            </h:outputLink>
 
-            <!-- Info / Buttons Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{not empty DataversePage.owner and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand')}">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                    <ui:fragment>
-                        <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                            <p:outputLabel value="Alias" for="alias"/>
-                            <ui:fragment>
-                                <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}"/>
-                                <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
-                                    <p:inputText id="alias" value="#{DataversePage.dataverse.alias}"/>
-                                    <p:message for="alias"/>
-                                </p:panelGrid>
-                            </ui:fragment>
-
-                            <p:outputLabel value="Contact E-mail" for="contactEmail"/>
-                            <ui:fragment>
-                                <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}"/>
-                                <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
-                                    <p:inputText id="contactEmail" value="#{DataversePage.dataverse.contactEmail}"/>
-                                    <p:message for="contactEmail"/>
-                                </p:panelGrid>
-                            </ui:fragment>
-
-                            <p:outputLabel value="Affiliation" for="affiliation"/>
-                            <ui:fragment>
-                                <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}"/>
-                                <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
-                                    <p:inputText id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
-                                    <p:message for="affiliation"/>
-                                </p:panelGrid>
-                            </ui:fragment>
-                        </p:panelGrid>
-                    </ui:fragment>
-
-                    <ui:fragment rendered="#{!empty dataverseSession.user and !DataversePage.editMode}">
-                        <p:menuButton id="editDataverse" value="Edit Dataverse" iconPos="right">
-                            <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DataversePage.edit}" update="@all"/>
-							<p:menuitem id="manageRoles" value="Manage Roles" outcome="manage-roles">
-								<f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-							</p:menuitem>
-                            <p:menuitem value="Edit Theme" disabled="true"/>
-                            <p:menuitem value="Edit Permissions" disabled="true"/>
-                        </p:menuButton>
-                    </ui:fragment>
-                </p:panelGrid>
-            </p:panel>
-
-            <!-- Description Panel -->
-            <p:panel styleClass="panelLayoutBlock">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                    <ui:fragment>
-                        <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}"/>
-                        <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DataversePage.editMode}">
-                            <p:outputLabel value="Description" for="description"/>
-                            <ui:fragment>
-                                <p:inputTextarea id="description" value="#{DataversePage.dataverse.description}"
-                                                 rows="5" cols="50" counter="counter" maxlength="1000"
-                                                 counterTemplate="{0} characters remaining" autoResize="false"/>
-                                <h:outputText id="counter" style="display:block;"/>
-                            </ui:fragment>
-                            <p:message for="description"/>
-                        </p:panelGrid>
-                    </ui:fragment>
-                    <ui:fragment rendered="#{!DataversePage.editMode}">
-                        &#160;
-                    </ui:fragment>
-                </p:panelGrid>
-            </p:panel>
-
-            <!-- Create Dataverse Button Panel -->
-            <p:panel styleClass="panelLayoutButtonBlock" rendered="#{DataversePage.editMode}">
-                <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" actionListener="#{DataversePage.save}" update="@all"/>
-                <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all" rendered="#{DataversePage.dataverse.id != null}"/>
-                <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-            </p:panel>
-        </h:form>
-
-        <!-- Search / Share Panel -->
-        <p:panel styleClass="panelLayoutBlock" rendered="#{!DataversePage.editMode}">
-            <p:focus/>
-            <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                <ui:fragment>
-                    <!-- why form and not h:form http://stackoverflow.com/questions/4823216/jsf-2-0-form-using-get/4823289#4823289 -->
-                    <form id="searchForm">
-                        <h:inputText id="q" size="40" value="#{DataversePage.q == null ? '*' : DataversePage.q}"/>
-                        <input type="submit" value="Find" formaction="search.xhtml" style="margin-left:1em;"/>
-                        <!--<h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="#{!DataversePage.isRootDataverse()}"/>-->
-                    </form>
-                </ui:fragment>
-
-                <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}">
-                    <h:form id="shareForm" style="margin-left:auto;">
-                        <p:menuButton id="shareData" value="Add Data" iconPos="right">
-                            <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                            <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                            <p:menuitem value="Link to Existing Dataverse" disabled="true"/>
-                            <p:menuitem value="Link to Existing Dataset" disabled="true"/>
-                            <p:menuitem value="Create Query" disabled="true"/>
-                        </p:menuButton>
-                    </h:form>
-                </ui:fragment>
-            </p:panelGrid>
-        </p:panel>
-
-        <!-- Content Panel -->
-        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
-            <p:dataList value="#{DataversePage.contents}" var="item">
-                <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
-                    <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
-                        <h:outputText value="#{item.name}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
-                        <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
-                    </h:outputLink>
-                </ui:fragment>
-                <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
-                    <h:outputLink value="/dataset.xhtml?id=#{item.id}">
-                        <h:outputText value="#{item.id}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
-                    </h:outputLink>
-                    
-                </ui:fragment>
-            </p:dataList>
-        </p:panel>
-        <!-- Crazy Egg Tracking -->
-        <script type="text/javascript">
-            setTimeout(function(){var a=document.createElement("script");
-            var b=document.getElementsByTagName("script")[0];
-            a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0020/3547.js?"+Math.floor(new Date().getTime()/3600000);
-            a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
-        </script>
+                        </ui:fragment>
+                    </p:dataList>
+                </p:panel>
+            </ui:define>
+        </ui:composition>        
     </h:body>
 </html>
