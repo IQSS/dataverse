@@ -92,10 +92,10 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.PARENT_NAME, dataverse.getOwner().getName());
             }
         }
-        List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
-        solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+//        List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
+//        List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
+//        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+//        solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
         /**
@@ -126,13 +126,13 @@ public class IndexServiceBean {
         logger.info("indexing dataset " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> dataverseSegments = null;
-        try {
-            dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
-        } catch (Exception ex) {
-            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
-        }
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+//        List<String> dataverseSegments = null;
+//        try {
+//            dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
+//        } catch (Exception ex) {
+//            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
+//        }
+//        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
@@ -179,7 +179,7 @@ public class IndexServiceBean {
         if (!dataset.getDescription().isEmpty()) {
             solrInputDocument.addField(SearchFields.DESCRIPTION, dataset.getDescription());
         }
-        solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+//        solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
 
         SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
