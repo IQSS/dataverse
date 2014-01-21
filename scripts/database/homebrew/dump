@@ -1,0 +1,2 @@
+#!/bin/sh
+~/.homebrew/bin/pg_dump dataverseDb -f /tmp/dataverseDb.sql
