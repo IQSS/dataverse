@@ -150,4 +150,8 @@ public class DataversePage implements java.io.Serializable {
             return false;
         }
     }
+	
+	public Dataverse getOwner() {
+		return (ownerId!=null) ? dataverseService.find(ownerId) : null;
+	}
 }
