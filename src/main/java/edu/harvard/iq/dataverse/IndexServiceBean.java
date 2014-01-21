@@ -54,7 +54,11 @@ public class IndexServiceBean {
         int datasetIndexCount = 0;
         List<Dataset> datasets = datasetService.findAll();
         for (Dataset dataset : datasets) {
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
+            try {
+                logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
+            } catch (Exception ex) {
+                logger.info("WARNING: failed to index dataset " + dataset.getId() + ": " + ex);
+            }
             datasetIndexCount++;
         }
 
@@ -133,7 +137,9 @@ public class IndexServiceBean {
          */
        // solrInputDocument.addField("name", dataset.getTitle());
         if (dataset.getLatestVersion() != null) {
+            logger.info("latest version as string: " + dataset.getLatestVersion().toString());
             if (dataset.getLatestVersion().getMetadata() != null) {
+                logger.info("metadata as string: " + dataset.getLatestVersion().getMetadata().toString());
                 if (dataset.getLatestVersion().getMetadata().getAuthorsStr() != null) {
                     if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
                         solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
