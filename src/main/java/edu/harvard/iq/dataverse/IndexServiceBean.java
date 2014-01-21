@@ -72,7 +72,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
         logger.info("dataverse affiliation: " + dataverse.getAffiliation());
-        if (!dataverse.getAffiliation().isEmpty()) {
+        if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
             /**
              * @todo: stop using affiliation as category
              */
@@ -119,6 +119,7 @@ public class IndexServiceBean {
     }
 
     public String indexDataset(Dataset dataset) {
+        logger.info("indexing dataset " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
@@ -131,11 +132,34 @@ public class IndexServiceBean {
          * @todo: should we assign a dataset title to name like this?
          */
        // solrInputDocument.addField("name", dataset.getTitle());
-        if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
-            solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
-        }
-        if (!dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
-            solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getMetadata().getTitle());
+        if (dataset.getLatestVersion() != null) {
+            if (dataset.getLatestVersion().getMetadata() != null) {
+                if (dataset.getLatestVersion().getMetadata().getAuthorsStr() != null) {
+                    if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
+                        solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
+                    } else {
+                        logger.info("author string was empty");
+                    }
+                } else {
+                    logger.info("dataset.getLatestVersion().getMetadata().getAuthorsStr() was null");
+                }
+                if (dataset.getLatestVersion().getMetadata().getTitle() != null) {
+                    if (!dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
+                        solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getMetadata().getTitle());
+                    }
+                    else {
+                        logger.info("title was empty");
+                    }
+                }
+                else {
+                    logger.info("dataset.getLatestVersion().getMetadata().getTitle() was null");
+                }
+            } else {
+                logger.info("dataset.getLatestVersion().getMetadata() was null");
+            }
+
+        } else {
+            logger.info("dataset.getLatestVersion() was null");
         }
         /**
          * @todo: don't use distributor for category. testing facets
