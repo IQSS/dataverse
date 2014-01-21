@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title><h:outputText value="#{pageTitle}"/></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Content-Language" content="en"/>
+        <style type="text/css">
+            .panelgridHeaderTable {width:100%;}
+            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
+            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
+
+            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
+
+            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
+            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+
+            .panelLayoutButtonBlock button {margin-right:2em;}
+
+            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
+            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
+            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
+
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
+            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
+
+            .rightClass {text-align: right;}
+
+            .dataverseChildren .ui-datalist-data {padding-left:1em;}
+            .dataverseChildren .ui-datalist-data li.ui-datalist-item {list-style-type:none; margin-left:0; margin-bottom:6px;}
+        </style>
+    </h:head>
+    
+    <h:body>
+        <!-- Header Panel -->
+        <p:panel style="background-color: lightskyblue; height:70px;">
+            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
+                <ui:fragment>
+                    <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}" rendered="#{dataverse.id != null}">
+                        <h:outputText id="nameOutput" value="#{dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
+                    </h:outputLink>
+
+                    <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId != null}"/>
+
+                    <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId == null}"/>
+                </ui:fragment>
+                <ui:fragment>
+                    <p:panelGrid columns="2">
+                        <ui:fragment>
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{empty dataverseSession.user}">
+                                Create Account
+                            </h:outputLink>
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!empty dataverseSession.user}">
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
+                            </h:outputLink>   
+                        </ui:fragment>
+                        <ui:fragment>
+                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
+                                Log In
+                            </h:outputLink>
+                            <h:form id="headerForm">
+                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
+                                    Log Out
+                                </h:commandLink>   
+                            </h:form>                            
+                        </ui:fragment>
+                    </p:panelGrid>
+                </ui:fragment>
+            </p:panelGrid>
+        </p:panel>
+
+        <ui:insert name="body">Default Body</ui:insert>        
+    </h:body>
+</html>
