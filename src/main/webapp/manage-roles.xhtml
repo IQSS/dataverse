@@ -87,13 +87,40 @@
 				</h:outputLink>
 				<h:outputText value=" > "/>
 			</ui:repeat>
-			<h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
+			<h:outputText value="#{DataversePage.dataverse.name}"  style="font-weight:bold;"/>
 		</p:panel>
+		<h:outputText value="Manage Permissions and Roles"  style="font-style:italic;"/>
 		<p:panel styleClass="panelLayoutTitleBlock">
 			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
 		</p:panel>
 		
-		<p:tabView dynamic="true" cache="false" activeIndex="1">
+		<p:tabView dynamic="true" cache="false" activeIndex="2">
+			<p:tab id="dataverseTab" title="Dataverse">
+				<h:form id="dvForm">
+					<p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
+						<p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
+							<h:outputText value="Permission Inheritance" />
+							<h:panelGroup>
+								<h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.permissionRoot}" />
+								<h:outputLabel for="permissionRootCb" value="Permission Root" />
+							</h:panelGroup>
+							<h:panelGroup>
+								When a dataverse is defined as a <em>permission root</em>,
+								it does not honor roles granted to users on its parets dataverses.
+								Unless this dataverse holds data which is significantly more restricted
+								than the data in the parent dataverse, you probably want to keep this
+								box unchecked.
+							</h:panelGroup>
+							<h:outputText value="Guest User" />
+							<div class="placeholder">We'll have a list of applicable roles here.</div>
+							<h:panelGroup>
+								Define what guest users can and cannot do on this dataverse.
+							</h:panelGroup>
+						</p:panelGrid>
+					</p:panelGrid>
+					<p:commandButton value="Save" actionListener="#{manageRolesPage.saveDataverse()}" />
+				</h:form>
+			</p:tab>
 			<p:tab id="userTab" title="Users">
 				Assign roles to users here!
 			</p:tab>
@@ -141,7 +168,12 @@
 									<p:message for="alias"/>
 
 									<p:outputLabel value="Description" for="description"/>
-									<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"/>
+									<h:panelGroup>
+										<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"
+														 rows="5" cols="50" counter="counter" maxlength="1000"
+														 counterTemplate="{0} characters remaining" autoResize="false"/>
+										<h:outputText id="counter" style="display:block;"/>
+									</h:panelGroup>
 									<p:watermark for="description" value="Describe the role (1000 characters max)"/>
 									<p:message for="description"/>
 								</p:panelGrid>
@@ -151,7 +183,7 @@
 							<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
 								layout="pageDirection"> 
 								<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
-											   itemLabel="#{pmsn.humanName}"
+											   itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
 											   itemValue="#{pmsn}"
 											   />
 							</h:selectManyCheckbox>  

@@ -14,3 +14,11 @@
 	box-shadow: 0 2px 4px rgba(0,0,0,.5);
 	padding: 4px;
 }
+
+.placeholder {
+	border-radius: 5px;
+	background-color: #AAA;
+	color: #EEE;
+	padding: 4px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.75) inset;
+}

@@ -22,9 +22,9 @@ import javax.persistence.UniqueConstraint;
 @Table(
 	uniqueConstraints = @UniqueConstraint(columnNames={"user_id","role_id"}) )
 @NamedQueries({
-	@NamedQuery( name  = "UserDataverseAssignedRole.findByUserIdDataverseId",
+	@NamedQuery( name  = "UserDataverseAssignedRole.listByUserIdDataverseId",
 				 query = "SELECT r FROM UserDataverseAssignedRole r WHERE r.user.id=:userId AND r.role.owner.id=:dataverseId" ),
-	@NamedQuery( name  = "UserDataverseAssignedRole.findRoleByUserIdDataverseId",
+	@NamedQuery( name  = "UserDataverseAssignedRole.listRoleByUserIdDataverseId",
 				 query = "SELECT r.role FROM UserDataverseAssignedRole r WHERE r.user.id=:userId AND r.role.owner.id=:dataverseId" ),
 	@NamedQuery( name  = "UserDataverseAssignedRole.deleteByUserIdRoleId",
 				 query = "DELETE FROM UserDataverseAssignedRole r WHERE r.user.id=:userId AND r.role.id=:roleId"),

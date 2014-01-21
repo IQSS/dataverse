@@ -41,6 +41,8 @@ public class ManageRolesPage implements java.io.Serializable {
 	private String intent;
 	private Long viewRoleId;
 	private DataverseRole role;
+	private DataverseRole defaultUserRole;
+	private boolean permissionRoot;
 	
 	public void init() {
 		if ( mode != null ) return;
@@ -84,6 +86,10 @@ public class ManageRolesPage implements java.io.Serializable {
 	
 	public void cancelEdit( ActionEvent e ) {
 		mode = PageMode.LIST;
+	}
+	
+	public void saveDataverse( ActionEvent e ) {
+		
 	}
 	
 	public void saveRole( ActionEvent e ) {
@@ -147,6 +153,22 @@ public class ManageRolesPage implements java.io.Serializable {
 
 	public void setIntent(String intent) {
 		this.intent = intent;
+	}
+
+	public DataverseRole getDefaultUserRole() {
+		return defaultUserRole;
+	}
+
+	public void setDefaultUserRole(DataverseRole defaultUserRole) {
+		this.defaultUserRole = defaultUserRole;
+	}
+
+	public boolean isPermissionRoot() {
+		return permissionRoot;
+ 	}
+
+	public void setPermissionRoot(boolean permissionRoot) {
+		this.permissionRoot = permissionRoot;
 	}
 	
 }

@@ -25,7 +25,6 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		this.created = created;
 	}
 	
-	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
 		Dataverse managedDv = ctxt.dataverses().save(created);

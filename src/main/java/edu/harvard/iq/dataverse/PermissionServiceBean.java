@@ -79,16 +79,23 @@ public class PermissionServiceBean {
 	}
 	
     public Set<Permission> permissionsFor( DataverseUser u, Dataverse d ) {
+		Set<Permission> retVal;
 		if ( perObjectPermissions.containsKey(u.getUserName()) ) {
 			Map<Long,Set<Permission>> permissions = perObjectPermissions.get(u.getUserName());
-			return permissions.containsKey(d.getId()) ? permissions.get(d.getId())
+			retVal = permissions.containsKey(d.getId()) ? permissions.get(d.getId())
 													  : EnumSet.noneOf(Permission.class);
 			
 		} else {
-			return samplePermissions.containsKey(u.getUserName()) 
+			retVal = samplePermissions.containsKey(u.getUserName()) 
 				? samplePermissions.get(u.getUserName())
 				: EnumSet.noneOf(Permission.class);
 		}
+		
+		if ( d.getOwner() == null && !(u.getUserName().equals("GabbiGuest")) ) {
+			retVal.add( Permission.UndoableEdit );
+		}
+		
+		return retVal;
 	}
 	
 	/**
