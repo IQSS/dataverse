@@ -24,6 +24,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 /**
@@ -656,6 +657,7 @@ public class Metadata implements Serializable {
     }
     
     @Column(columnDefinition="TEXT")
+    @NotBlank(message = "Please enter a title for your dataset.")
     private String title;
     
     public String getTitle() {
@@ -680,7 +682,7 @@ public class Metadata implements Serializable {
     
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
-    private java.util.List<DatasetAuthor> datasetAuthors;
+    private java.util.List<DatasetAuthor> datasetAuthors = new ArrayList();
     public java.util.List<DatasetAuthor> getDatasetAuthors() {
         return datasetAuthors;
     }    
@@ -918,6 +920,15 @@ public class Metadata implements Serializable {
     }
     
     @Column(columnDefinition="TEXT")
+    private String description;
+    public String getDescription() {
+        return this.description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    @Column(columnDefinition="TEXT")
     private String disclaimer;
     public String getDisclaimer() {
         return this.disclaimer;
@@ -1150,7 +1161,7 @@ public class Metadata implements Serializable {
         this.harvestDVNTermsOfUse = harvestDVNTermsOfUse;
     }
 
-    private String getCitation() {
+    public String getCitation() {
         return getCitation(true);
     }
 
@@ -1167,7 +1178,7 @@ public class Metadata implements Serializable {
         Dataset dataset = getDataset();
 
         String str = "";
-        /*
+
         boolean includeAffiliation = false;
         String authors = getAuthorsStr(includeAffiliation);
         if (!StringUtil.isEmpty(authors)) {
@@ -1193,14 +1204,14 @@ public class Metadata implements Serializable {
             }
             str += "\"" + getTitle() + "\"";
         }
-        if (!StringUtil.isEmpty(study.getStudyId())) {
+        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
             if (isOnlineVersion) {
-                str += "<a href=\"" + study.getPersistentURL() + "\">" + study.getGlobalId() + "</a>";
+                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getId() + "</a>";
             } else {
-                str += study.getPersistentURL();
+                str += dataset.getPersistentURL();
             }
 
 
@@ -1218,11 +1229,11 @@ public class Metadata implements Serializable {
             str += " [Distributor]";
         }
 
-        if (getStudyVersion().getVersionNumber() != null) {
-            str += " V" + getStudyVersion().getVersionNumber();
+        if (getDatasetVersion().getVersionNumber() != null) {
+            str += " V" + getDatasetVersion().getVersionNumber();
             str += " [Version]";
         }
-*/
+
         return str;
     }
 
@@ -1519,7 +1530,8 @@ public class Metadata implements Serializable {
     public List<DatasetField> getDatasetFields() {
         if (datasetFields == null || datasetFields.size() == 0) {
             datasetFields = new ArrayList();
-            Template templateIn = this.getTemplate(); // != null ? this.getTemplate() : this.getDatasetVersion().getDataset().getTemplate();
+            Template templateIn = this.getTemplate() != null ? this.getTemplate() : this.getDatasetVersion().getDataset().getTemplate();
+           // Template  templateIn = this.getTemplate();// this.getDatasetVersion().getDataset().getTemplate();
             
             for (TemplateField tf : templateIn.getTemplateFields()) {
                 DatasetField sf = tf.getDatasetField();

@@ -107,17 +107,37 @@
 
             <!-- Title / Button Panel -->
             <p:panel styleClass="panelLayoutBlock">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
+                    <h:outputText value="Data Citation: "/>
+                        <p:panel style="background-color: #F5F5F5;">                                                   
+                            <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.metadata.citation}"/>
+                        </p:panel>
+                        <p:panel>
+                            <p:panelGrid columns="2">
+                                <p:commandButton value="Copy Citation" disabled="true"/>
+                                <h:outputLink onclick="PF('whyCite').show();" value="javascript:void(0)">
+                                    <h:outputText value="Why cite?" style="color: green"/>
+                                </h:outputLink>
+                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">
+                                    <h:outputText value="Info on why to use a data citation."/>
+                                </p:dialog>
+                            </p:panelGrid>
+                        </p:panel>
+                </p:panelGrid>
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
+                    <ui:fragment>
+                                &#160;
+                     </ui:fragment>
+                    <h:outputText value="Author: #{DatasetPage.dataset.latestVersion.metadata.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" />
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Title" for="title"/>
                             <ui:fragment>
-                                <p:inputText id="title" size="40" value="#{DatasetPage.dataset.latestVersion.metadata.title}"/>
+                                <p:inputText id="title" size="40" value="#{DatasetPage.dataset.editVersion.metadata.title}"/>
                                 <p:watermark for="title" value="Enter title..."/>
                             </ui:fragment>
                             <p:message for="title"/>
-
                             <h:outputText value="Host Dataverse"/>
                             <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                 <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
@@ -129,7 +149,7 @@
                     </ui:fragment>
                     
                     <ui:fragment>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}">
                             <p:panel styleClass="panelLayoutButtonBlock">
                                 <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
                                     <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
@@ -148,24 +168,7 @@
 
             <!-- Citation -->
             <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
-                        <p:panel style="background-color: #F5F5F5;">
-                            <h:outputText id="citation" value="#{DatasetPage.dataset.citation}"/>
-                        </p:panel>
-                        <p:panel>
-                            <p:panelGrid columns="2">
-                                <p:commandButton value="Copy Citation" disabled="true"/>
-                                <h:outputLink onclick="PF('whyCite').show();" value="javascript:void(0)">
-                                    <h:outputText value="Why cite?" style="color: green"/>
-                                </h:outputLink>
-                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">
-                                    <h:outputText value="Info on why to use a data citation."/>
-                                </p:dialog>
-                            </p:panelGrid>
-                        </p:panel>
-                </p:panelGrid>
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                    <h:outputText value="Data Citation"/>
                     <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
                      <p:column>
                         <p:dataTable binding="#{DatasetPage.dataTableAuthors}"  value="#{DatasetPage.editVersion.metadata.datasetAuthors}" var="currentAuthor">
@@ -177,38 +180,34 @@
                                                value="#{currentAuthor.name}"
                                                size="45"
                                                maxlength="255"
-                                               requiredMessage="This field is required." />                                
-                                <h:outputText styleClass="vdcEditStudyFormatExample" value="(LastName, FirstName)"/>
-
+                                               requiredMessage="This field is required." />                                                                
+                                <p:watermark for="input_authorName" value="(LastName, FirstName)."/>
                               </div>
                               <div  styleClass="vdcEditStudyFieldFloat2" >
                                 <h:outputText value="Author Affiliation:"/>
                                 <p:inputText id="input_authorAffiliation" size="45" maxlength="255"
                                                value="#{currentAuthor.affiliation}">                                  
                                 </p:inputText>
-
                               </div>
                             </div>
-                                </p:column> 
+                         </p:column> 
                         </p:dataTable>
                       </p:column>                       
                         <p:outputLabel value="Date" for="date" />
                         <p:inputText id="date" value="#{DatasetPage.dataset.editVersion.metadata.productionDate}" />
                         <p:message for="date" />
-
                     </p:panelGrid>
-                </p:panelGrid>
-                
+                </p:panelGrid>               
             </p:panel>
             <!-- Description Panel -->
             <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                     <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}"/>
+                        <h:outputText value="Description*:  #{DatasetPage.dataset.latestVersion.metadata.description}" rendered="#{empty DatasetPage.editMode}"/>
                         <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <p:outputLabel value="Description" for="description"/>
                             <ui:fragment>
-                                <p:inputTextarea id="description" value="#{DatasetPage.dataset.description}"
+                                <p:inputTextarea id="description" value="#{DatasetPage.dataset.editVersion.metadata.description}"
                                                  rows="5" cols="50" counter="counter" maxlength="1000"
                                                  counterTemplate="{0} characters remaining" autoResize="false"/>
                                 <h:outputText id="counter" style="display:block;"/>
@@ -221,7 +220,124 @@
                     </ui:fragment>
                 </p:panelGrid>
             </p:panel>
+         <!-- Keyword -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetKeywords}" var="keyword">
+                            <p:column>              
+                              <div  >
+                                <h:outputText value="Keyword: "/>
+                                <p:inputText id="input_Keyword"
+                                               styleClass="input_keyword"
+                                               value="#{keyword.value}"
+                                               size="45"
+                                               maxlength="255"
+                                               />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Keyword Controlled Vocabulary: "/>
+                                <p:inputText id="input_keywordVocab" size="45" maxlength="255"
+                                             value="#{keyword.vocab}">                                  
+                                </p:inputText>
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Keyword Controlled Vocabulary URL: "/>
+                                <p:inputText id="input_KeywordVocabURL" size="45" maxlength="255"
+                                             value="#{keyword.vocabURI}">                                  
+                                </p:inputText>
+                              </div>                           
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetKeywords}" var="keyword">
+                            <p:column>              
+                              <div  >
+                                <h:outputText value="Keyword: "/>
+                                <h:outputText   value="#{keyword.value}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Keyword Controlled Vocabulary: "/>
+                                <h:outputText value="#{keyword.vocab}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Keyword Controlled Vocabulary URL: "/>
+                                <h:outputText value="#{keyword.vocabURI}"/>                                  
+                              </div>
+                            
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
 
+            
+            <!-- Topic Classification -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetTopicClasses}" var="topicClass">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Topic Classification: "/>
+                                <p:inputText id="input_topicClass"
+                                               styleClass="input_topicClass"
+                                               value="#{topicClass.value}"
+                                               size="45"
+                                               maxlength="255"
+                                               />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Topic Controlled Vocabulary: "/>
+                                <p:inputText id="input_topicClassVocab" size="45" maxlength="255"
+                                             value="#{topicClass.vocab}">                                  
+                                </p:inputText>
+
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Controlled Vocabulary URL: "/>
+                                <p:inputText id="input_topicClassVocabURL" size="45" maxlength="255"
+                                             value="#{topicClass.vocabURI}">                                  
+                                </p:inputText>
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}" var="topicClass">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Topic Classification: "/>
+                                <h:outputText   value="#{topicClass.value}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Topic Controlled Vocabulary: "/>
+                                <h:outputText value="#{topicClass.vocab}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Controlled Vocabulary URL: "/>
+                                <h:outputText value="#{topicClass.vocabURI}"/>                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>           
             <!-- Content Panel -->
             <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                 <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
@@ -242,11 +358,472 @@
                         </p:dataTable>
                     </p:tab>
                     <p:tab id="metadataTab" title="Metadata" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                        <p:panelGrid columns="3">
+                        <p:accordionPanel>  
+                            <p:tab title="General Metadata">  
+                                
+                                            <!-- Distributor -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetDistributors}" var="distributor">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Distributor: "/>
+                                <p:inputText id="input_distributor"
+                                               styleClass="input_Distributor"
+                                               value="#{distributor.name}"
+                                               size="45"
+                                               maxlength="255"
+                                               />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Affiliation: "/>
+                                <p:inputText id="input_distributorAffiliation" size="45" maxlength="255"
+                                             value="#{distributor.affiliation}">                                  
+                                </p:inputText>
 
-                        </p:panelGrid>
-                    </p:tab>
-                    <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}"/>
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Abbreviation: "/>
+                                <p:inputText id="input_distributorAbbreviation" size="45" maxlength="255"
+                                             value="#{distributor.abbreviation}">                                  
+                                </p:inputText>
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor URL: "/>
+                                <p:inputText id="input_distributorUrl" size="45" maxlength="255"
+                                             value="#{distributor.url}">                                  
+                                </p:inputText>
+                              </div>
+                               <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Logo: "/>
+                                <p:inputText id="input_distributorLogo" size="45" maxlength="255"
+                                             value="#{distributor.logo}">                                  
+                                </p:inputText>
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetDistributors}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetDistributors}" var="distributor">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Distributor: "/>
+                                <h:outputText   value="#{distributor.name}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Affiliation: "/>
+                                <h:outputText value="#{distributor.affiliation}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Abbreviation: "/>
+                                <h:outputText value="#{distributor.abbreviation}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor URL: "/>
+                                <h:outputText value="#{distributor.url}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Distributor Logo: "/>
+                                <h:outputText value="#{distributor.logo}"/>                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+
+
+<!-- Producer -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetProducers}" var="producer">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Producer: "/>
+                                <p:inputText id="input_producer"
+                                               styleClass="input_producer"
+                                               value="#{producer.name}"
+                                               size="45"
+                                               maxlength="255"
+                                               />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Affiliation: "/>
+                                <p:inputText id="input_producerAffiliation" size="45" maxlength="255"
+                                             value="#{producer.affiliation}">                                  
+                                </p:inputText>
+
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Abbreviation: "/>
+                                <p:inputText id="input_producerAbbreviation" size="45" maxlength="255"
+                                             value="#{producer.abbreviation}">                                  
+                                </p:inputText>
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer URL: "/>
+                                <p:inputText id="input_producerUrl" size="45" maxlength="255"
+                                             value="#{producer.url}">                                  
+                                </p:inputText>
+                              </div>
+                               <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Logo: "/>
+                                <p:inputText id="input_producerLogo" size="45" maxlength="255"
+                                             value="#{producer.logo}">                                  
+                                </p:inputText>
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetProducers}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetProducers}" var="producer">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Producer: "/>
+                                <h:outputText   value="#{producer.name}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Affiliation: "/>
+                                <h:outputText value="#{producer.affiliation}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Abbreviation: "/>
+                                <h:outputText value="#{producer.abbreviation}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer URL: "/>
+                                <h:outputText value="#{producer.url}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Producer Logo: "/>
+                                <h:outputText value="#{producer.logo}"/>                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+<!-- Production -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+
+                            <p:column>
+                                <div >               
+                              <div  >
+                                <h:outputText value="Production Date: "/>
+                                <p:inputText id="input_proddate"
+                                             value="#{DatasetPage.dataset.editVersion.metadata.productionDate}"
+                                               size="45"
+                                               maxlength="255"
+                                               />  
+                               <h:outputText value="Production Place: "/>
+                                <p:inputText id="input_prodplace"
+                                             value="#{DatasetPage.dataset.editVersion.metadata.productionPlace}"
+                                               size="45"
+                                               maxlength="255"
+                                               /> 
+                              </div>
+
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Production Date: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.productionDate}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Production Place: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.productionPlace}" />                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+<!-- Depositor -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+
+                            <p:column>
+                                <div >               
+                              <div  >
+                                <h:outputText value="Depositor: "/>
+                                <p:inputText id="input_depositor"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.depositor}"
+                                               size="45"
+                                               maxlength="255"
+                                               />  
+                               <h:outputText value="Date of Deposit: "/>
+                                <p:inputText id="input_depositorDate"
+                                               styleClass="input_DepositDate"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.dateOfDeposit}"
+                                               size="45"
+                                               maxlength="255"
+                                               /> 
+                              </div>
+
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Depositor: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.depositor}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Date of Deposit: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.dateOfDeposit}" />                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+
+<!-- Funding Agency -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column>
+                                <div >               
+                              <div>
+                                <h:outputText value="Funding Agency: "/>
+                                <p:inputText id="input_fundingAgency"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.fundingAgency}"
+                                               size="45"
+                                               maxlength="255"
+                                               />  
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Funding Agency: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.fundingAgency}" />                                                                                                
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+          </p:tab>  
+          <p:tab title="Domain Specific Metadata">  
+                   <p:dataGrid value="#{DatasetPage.customFieldsDataModel}" var="customFieldsDataModel">
+                      <p:dataTable  styleClass="vdcEditStudyTable" 
+                                     value="#{customFieldsDataModel[1]}" var="customValuesDataModel">
+                        <p:column>
+                          <div class="vdcEditStudyField">
+                            <h:outputText  value="#{customFieldsDataModel[0].datasetField.title}" title="#{customFieldsDataModel[0].datasetField.title} - #{customFieldsDataModel[0].datasetField.description}"/>
+                          </div>
+                        </p:column>
+                        <p:column>
+                          <div>
+                            <p:column> 
+                              <p:inputText id="input_TextDefault" size="90" rendered="#{(DatasetPage.editMode == 'METADATA')}"
+                                             value="#{customValuesDataModel[0].strValue}">
+                              </p:inputText> 
+                              <p:message  for="input_TextDefault"/>  
+                              <h:outputText   rendered="#{(empty DatasetPage.editMode)}"
+                                             value="#{customValuesDataModel[0].strValue}">
+                              </h:outputText> 
+                            </p:column>
+                          </div>
+                        </p:column>   
+                     </p:dataTable>
+                  </p:dataGrid>
+   
+                            </p:tab>  
+                            <p:tab title="Data Availability">  <!-- Funding Agency -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column>
+                                <div >               
+                              <div>
+                                <h:outputText value="Data Access Place: "/>
+                                <p:inputText id="input_DataAccess"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.placeOfAccess}"
+                                               size="45"
+                                               maxlength="255"
+                                               />  
+                                <h:outputText value="Original Archive: "/>
+                                <p:inputText id="input_OriginalArchive"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.originalArchive}"
+                                               size="45"
+                                               maxlength="255"
+                                               /> 
+                                <h:outputText value="Availability Status: "/>
+                                <p:inputText id="input_Availability"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.availabilityStatus}"
+                                               size="45"
+                                               maxlength="255"
+                                               /> 
+                               <h:outputText value="Size of Collection: "/>
+                                <p:inputText id="input_Collsize"
+                                               styleClass="input_Depositor"
+                                               value="#{DatasetPage.dataset.editVersion.metadata.collectionSize}"
+                                               size="45"
+                                               maxlength="255"
+                                               /> 
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Data Access Place: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.placeOfAccess}" />                                                                                                
+                              </div>
+                              <div >
+                                <h:outputText value="Original Archive: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.originalArchive}" />                                                                                                
+                              </div>
+                              <div >
+                                <h:outputText value="Availability Status: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.availabilityStatus}" />                                                                                                
+                              </div>
+                              <div >
+                                <h:outputText value="Size of Collection: "/>
+                                <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.collectionSize}" />                                                                                                
+                              </div>
+                            </div>
+                         </p:column> 
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>
+                                
+                            </p:tab> 
+                            <p:tab title="Other Information">   
+            <!-- Other Info - Notes -->
+            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetNotes}" var="note">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Note: "/>
+                                <p:inputText id="input_Note"
+                                               styleClass="input_topicClass"
+                                               value="#{note.text}"
+                                               size="45"
+                                               maxlength="255"
+                                               />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Type: "/>
+                                <p:inputText id="input_NoteType" size="45" maxlength="255"
+                                             value="#{note.type}">                                  
+                                </p:inputText>
+
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Subject: "/>
+                                <p:inputText id="input_topicClassVocabURL" size="45" maxlength="255"
+                                             value="#{note.subject}">                                  
+                                </p:inputText>
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid>   
+               <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetNotes}">
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                     <p:column>
+                        <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetNotes}" var="note">
+                            <p:column><div >               
+                              <div  >
+                                <h:outputText value="Note: "/>
+                                <h:outputText   value="#{note.text}" />                                                                                                
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Type: "/>
+                                <h:outputText value="#{note.type}"/>                                  
+                              </div>
+                              <div  styleClass="vdcEditStudyFieldFloat2" >
+                                <h:outputText value="Subject: "/>
+                                <h:outputText value="#{note.subject}"/>                                  
+                              </div>
+                            </div>
+                         </p:column> 
+                        </p:dataTable>
+                      </p:column>                       
+                    </p:panelGrid>
+                </p:panelGrid> 
+            </p:panel>                                 
+                            </p:tab> 
+                        </p:accordionPanel> 
+                    </p:tab>                    
+                    <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
+                         <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
+                            <p:column>
+                                <h:outputText id="versionTitleOutput" value="#{version.metadata.title}" />                                                               
+                            </p:column>
+                              <p:column>                                
+                                  <h:outputText id="versionDateOutput" value="#{version.lastUpdateTime}" />
+                            </p:column>
+                             <p:column>                               
+                                <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>    
                 </p:tabView>
             </p:panel>
             

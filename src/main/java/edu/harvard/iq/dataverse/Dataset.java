@@ -68,8 +68,23 @@ public class Dataset extends DvObjectContainer {
         this.description = description;
     }
  
-    public String getCitation() { 
-        return "Todo - get a real Citation";
+    
+   public String getPersistentURL() {       
+        if (this.getProtocol().equals("hdl")){
+            return getHandleURL();
+        } else if (this.getProtocol().equals("doi")){
+            return getEZIdURL();
+        } else {
+            return "";
+        }
+    }
+    
+    private String getHandleURL() {
+         return "http://hdl.handle.net/"+authority+"/"+getId();
+    }
+    
+    private String getEZIdURL() {        
+        return "http://dx.doi.org/"+authority+"/"+getId();
     }
 
     public List<DataFile> getFiles() {

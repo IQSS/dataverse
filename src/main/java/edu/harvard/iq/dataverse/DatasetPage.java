@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +22,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlDataTable;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
@@ -142,10 +146,8 @@ public class DatasetPage implements java.io.Serializable {
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
-        dataset.setIdentifier("1234");
-        if (!(EditMode.CREATE == editMode)) {
-            dataset.getVersions().set(0, editVersion);
-        }
+        dataset.setIdentifier("5555");
+        
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -157,6 +159,7 @@ public class DatasetPage implements java.io.Serializable {
                 fmdIndex++;
             }
         }
+        
         dataset = datasetService.save(dataset);
 
         // save any new files
@@ -203,8 +206,6 @@ public class DatasetPage implements java.io.Serializable {
     public void addRow(ActionEvent ae) {       
         //      UIComponent dataTable = ae.getComponent().getParent().getParent().getParent();
         HtmlDataTable dataTable = (HtmlDataTable)ae.getComponent().getParent().getParent();
-        
-
             DatasetAuthor newElem = new DatasetAuthor();
             newElem.setMetadata(editVersion.getMetadata());
             editVersion.getMetadata().getDatasetAuthors().add(dataTable.getRowIndex()+1,newElem);
@@ -218,6 +219,52 @@ public class DatasetPage implements java.io.Serializable {
     }
     public void setDataTableAuthors(UIComponent dataTableAuthors) {
         this.dataTableAuthors = dataTableAuthors;
+    }
+    
+    public DataModel getCustomFieldsDataModel() {
+        List values = new ArrayList();        
+        for (int i = 0; i < dataset.getTemplate().getTemplateFields().size(); i++) {
+            TemplateField templateField = dataset.getTemplate().getTemplateFields().get(i);
+            DatasetField datasetField = null;
+            if (templateField.getDatasetField().isCustomField()) {
+                for (DatasetField dsf : dataset.getEditVersion().getMetadata().getDatasetFields()) {
+                    if (dsf.getName().equals(templateField.getDatasetField().getName())) { 
+                        datasetField = dsf;
+                        break;
+                    }                
+                }                       
+                Object[] row = new Object[4];
+                row[0] = templateField;
+                row[1] = getCustomValuesDataModel(datasetField);
+                row[2] = new Integer(i);
+                row[3] = datasetField;                
+                values.add(row);
+            }            
+        }               
+        return new ListDataModel(values);
+    }
+    
+    private DataModel getCustomValuesDataModel(DatasetField datasetField) {
+        List values = new ArrayList();
+        if (!datasetField.getDatasetFieldValues().isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetField.getDatasetFieldValues()) {
+                Object[] row = new Object[2];
+                row[0] = dsfv;
+                row[1] = datasetField.getDatasetFieldValues(); // used by the remove method
+                values.add(row);
+            }
+        } else {
+            // Add a dummy row to the values table
+            Object[] row = new Object[2];
+            DatasetFieldValue dsfv = new DatasetFieldValue();
+            dsfv.setDatasetField(datasetField);
+            dsfv.setMetadata(editMetadata);
+            dsfv.setStrValue("");
+            row[0] = dsfv;
+            row[1] = datasetField.getDatasetFieldValues(); // used by the remove method
+            values.add(row);
+        }
+        return new ListDataModel(values);
     }
 
 }

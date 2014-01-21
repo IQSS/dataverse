@@ -76,8 +76,8 @@ public class SearchPage implements java.io.Serializable {
                 solrSearchResult.setDatasets(datasets);
             } else if (solrSearchResult.getType().equals("datasets")) {
                 Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
-                if (dataset.getCitation() != null) {
-                    solrSearchResult.setCitation(dataset.getCitation());
+                if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
+                    solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
                 }
             } else if (solrSearchResult.getType().equals("files")) {
                 /**

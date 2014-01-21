@@ -605,3 +605,384 @@ ALTER TABLE templatefield ENABLE TRIGGER ALL;
 
 update datasetfield set customfield = true
 where id in (select datasetfields_id from metadatadomain_datasetfield);
+
+update metadata set title = 'Enter a Title for your dataset...' where id = 1;
+
+INSERT INTO metadatadomain(
+            id, "name")
+    VALUES (1, 'Social Science');
+
+INSERT INTO metadatadomain(
+            id, "name")
+    VALUES (2, 'Astronomy');
+
+INSERT INTO metadatadomain(
+            id, "name")
+    VALUES (3, 'Biology');
+
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (35, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (36, 1);   
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (37, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (38, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (39, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (40, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (41, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (92, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (111, 1);
+
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (93, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (94, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (95, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (42, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (43, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (44, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (45, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (46, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (47, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (48, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (49, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (50, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (51, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (52, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (53, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (54, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (55, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (56, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (57, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (58, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (59, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (60, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (61, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (62, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (63, 1);
+INSERT INTO metadatadomain_datasetfield(
+            datasetfields_id, metadatadomains_id)
+    VALUES (64, 1);
+
+
+
+update datasetfield set customfield = true
+where id in (select datasetfields_id from metadatadomain_datasetfield);
+
+
+
+UPDATE datasetfield
+   SET  title='Time Period Covered Start'
+ WHERE id=35;
+
+ UPDATE datasetfield
+   SET  title='Time Period Covered End'
+ WHERE id=36;
+
+UPDATE datasetfield
+   SET  title='Date Of Collection Start'
+ WHERE id=37;
+
+UPDATE datasetfield
+   SET  title='Date Of Collection End'
+ WHERE id=38;
+
+ UPDATE datasetfield
+   SET  title='Country'
+ WHERE id=39;
+
+  UPDATE datasetfield
+   SET  title='Geographic Coverage'
+ WHERE id=40;
+
+   UPDATE datasetfield
+   SET  title='Geographic Unit'
+ WHERE id=41;
+
+UPDATE datasetfield
+   SET  title='Unit of Analysis'
+ WHERE id=42;
+
+ UPDATE datasetfield
+   SET  title='Universe'
+ WHERE id=43;
+
+  UPDATE datasetfield
+   SET  title='Kind of Data'
+ WHERE id=44;
+
+   UPDATE datasetfield
+   SET  title='Time Method'
+ WHERE id=45;
+
+ 
+   UPDATE datasetfield
+   SET  title='Data Collector'
+ WHERE id=46;
+
+    UPDATE datasetfield
+   SET  title='Frequency of Data Collection'
+ WHERE id=47;
+
+     UPDATE datasetfield
+   SET  title='Sampling Procedure'
+ WHERE id=48;
+
+      UPDATE datasetfield
+   SET  title='Deviations from Sample Design'
+ WHERE id=49;
+
+ 
+      UPDATE datasetfield
+   SET  title='Collection Mode'
+ WHERE id=50;
+
+       UPDATE datasetfield
+   SET  title='Research Instument'
+ WHERE id=51;
+
+        UPDATE datasetfield
+   SET  title='Data Sources'
+ WHERE id=52;
+
+         UPDATE datasetfield
+   SET  title='Origin of Sources'
+ WHERE id=53;
+
+ 
+         UPDATE datasetfield
+   SET  title='Chrarcteristics of Sources'
+ WHERE id=54;
+
+ 
+         UPDATE datasetfield
+   SET  title='Access to Sources'
+ WHERE id=55;
+
+ 
+UPDATE datasetfield
+   SET  title='Data Collection Situation'
+ WHERE id=56;
+
+ 
+UPDATE datasetfield
+   SET  title='Actions to Minimize Loss'
+ WHERE id=57;
+
+UPDATE datasetfield
+   SET  title='Control Operations'
+ WHERE id=58;
+
+UPDATE datasetfield
+   SET  title='Weighting'
+ WHERE id=59;
+
+ UPDATE datasetfield
+   SET  title='Cleaning Operations'
+ WHERE id=60;
+
+  UPDATE datasetfield
+   SET  title='Error Notes'
+ WHERE id=61;
+
+  UPDATE datasetfield
+   SET  title='Response Rate'
+ WHERE id=62;
+
+   UPDATE datasetfield
+   SET  title='Sampling Error Estimates'
+ WHERE id=63;
+
+    UPDATE datasetfield
+   SET  title='Other Data Appraisal'
+ WHERE id=64;
+
+ 
+    UPDATE datasetfield
+   SET  title='Geographic Bounding Box'
+ WHERE id=92;
+
+     UPDATE datasetfield
+   SET  title='East Longitude'
+ WHERE id=93;
+
+      UPDATE datasetfield
+   SET  title='North Latitude'
+ WHERE id=94;
+
+       UPDATE datasetfield
+   SET  title='South Latitude'
+ WHERE id=95;
+
+      UPDATE datasetfield
+   SET  title='West Longitude'
+ WHERE id=111;
+
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 35, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 36, 1);   
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 37, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 38, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 39, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 40, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 41, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 92, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 111, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 93, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 94, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 95, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 42, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 43, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 44, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 45, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 46, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 47, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 48, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 49, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 50, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 51, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 52, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 53, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 54, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 55, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 56, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 57, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 58, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 59, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 60, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 61, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 62, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 63, 1);
+INSERT INTO datasetfieldvalue(
+            strvalue, datasetfield_id, metadata_id)
+    VALUES ( '', 64, 1);
