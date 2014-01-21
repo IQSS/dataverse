@@ -72,7 +72,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
         logger.info("dataverse affiliation: " + dataverse.getAffiliation());
-        if (!dataverse.getAffiliation().isEmpty()) {
+        if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
             /**
              * @todo: stop using affiliation as category
              */
