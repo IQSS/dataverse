@@ -131,10 +131,10 @@ public class IndexServiceBean {
          * @todo: should we assign a dataset title to name like this?
          */
        // solrInputDocument.addField("name", dataset.getTitle());
-        if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
+        if (dataset.getLatestVersion().getMetadata().getAuthorsStr() != null && !dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
             solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
         }
-        if (!dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
+        if (dataset.getLatestVersion().getMetadata().getTitle() != null && !dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
             solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getMetadata().getTitle());
         }
         /**
