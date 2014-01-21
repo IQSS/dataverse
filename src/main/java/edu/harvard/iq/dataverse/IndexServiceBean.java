@@ -56,10 +56,10 @@ public class IndexServiceBean {
         for (Dataset dataset : datasets) {
             try {
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
+                datasetIndexCount++;
             } catch (Exception ex) {
                 logger.info("WARNING: failed to index dataset " + dataset.getId() + ": " + ex);
             }
-            datasetIndexCount++;
         }
 
         return dataverseIndexCount + " dataverses" + " and " + datasetIndexCount + " datasets indexed\n";
@@ -126,7 +126,12 @@ public class IndexServiceBean {
         logger.info("indexing dataset " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
+        List<String> dataverseSegments = null;
+        try {
+            dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
+        } catch (Exception ex) {
+            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
+        }
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
