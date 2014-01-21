@@ -127,6 +127,12 @@ public class PermissionServiceBean {
 	}
 
 	public PermissionQuery on(  Dataverse d ) {
+		if ( d == null ) {
+			throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
+		}
+		if ( d.getId() == null ) {
+			throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
+		}
 		return userOn( session.getUser(), d );
 	}
 	
