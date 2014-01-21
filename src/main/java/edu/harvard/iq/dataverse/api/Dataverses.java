@@ -115,8 +115,8 @@ public class Dataverses {
                 .add(SearchFields.ENTITY_ID, dataverse.getId())
                 .add(SearchFields.TYPE, "dataverses")
                 .add(SearchFields.NAME, dataverse.getName())
-                .add(SearchFields.DESCRIPTION, dataverse.getDescription())
-                .add(SearchFields.CATEGORY, dataverse.getAffiliation());
+                .add(SearchFields.DESCRIPTION, dataverse.getDescription());
+//                .add(SearchFields.CATEGORY, dataverse.getAffiliation());
 //                .add(SearchFields.AFFILIATION, dataverse.getAffiliation());
         return dataverseInfoBuilder.build();
     }

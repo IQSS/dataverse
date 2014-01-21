@@ -10,7 +10,7 @@ public class SearchFields {
      * @todo: standard Solr "title" field is multivalued. Do we want ours to be?
      */
     public static final String TITLE = "title";
-    public static final String CATEGORY = "cat";
+//    public static final String CATEGORY = "cat";
     // i.e. http://pdurbin.pagekite.me/search.xhtml?q=*&fq0=citationyear_i%3A[2001+TO+2007]
     public static final String CITATION_YEAR = "citationyear_i";
 //    public static final String AUTHOR = "author"; // see AUTHOR_STRING not below

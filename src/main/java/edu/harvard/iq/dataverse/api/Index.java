@@ -45,7 +45,11 @@ public class Index {
                     }
                 }
             }
-            return Util.message2ApiError(sb.toString());
+            if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
+                return "indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway\n";
+            } else {
+                return Util.message2ApiError(sb.toString());
+            }
         }
     }
 
