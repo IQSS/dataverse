@@ -209,7 +209,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_GROUP, dataFile.getContentType().split("/")[0]);
-            datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+//            datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
             datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getOwner().getOwner().getName());
             datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
