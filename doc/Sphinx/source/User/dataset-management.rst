@@ -1,88 +1,74 @@
 Dataset & File Management
 +++++++++++++++++++++++++++++
 
-Study Options are available for Contributors, Curators, and
+Dataset options are available for Contributors, Curators, and
 Administrators of a Dataverse.
 
-Create New Study
+Add Dataset
 ====================
 
-Brief instructions for creating a study:
+Navigate to the dataverse in which you want to add a Dataset, then
+click on the "Add Data" button and select "Add Dataset" on the dropdown menu.
 
-Navigate to the dataverse in which you want to create a study, then
-click Options->Create New Study.
-
-Enter at minimum a study title and click Save. Your draft study is now
+Enter at minimum all the fields with an asterisk (ex. the Dataset Title, Author, Description  and click the "Create Dataset" button. Your draft study is now
 created. Add additional cataloging information and upload files as
-needed. Release the study when ready to make it viewable by others.
+needed. 
+
+Release the Dataset when ready to make it viewable by others.
 
 See the information below for more details and recommendations for
-creating a study.
+creating a Dataset.
 
-The steps to creating a study are:
+The steps to adding a Dataset are:
 
-#. Enter Cataloging Information, including an abstract of the study.
-   Set Terms of Use for the study in the Cataloging fields, if you choose.
+#. Enter Metadata, including a descriprion of the Dataset.
+   [Set Terms of Use for the Dataset in the Cataloging fields, if you choose. ?]
 #. Upload files associated with the study.
 #. Set permissions to access the study, all of the study files, or some
    of the study files.
-#. Delete your study if you choose, before you submit it for review.
-#. Submit your study for review, to make it available to the public.
+#. Delete your Dataset if you choose, before you submit it for review.
+#. Submit your Dataset for review, to make it available to the public.
 
-There are several guidelines to creating a study:
+**Enter Metadata Information**
 
--  You must create a study by performing steps in the specified order.
--  If multiple users edit a study at one time, the first user to click
-   Save assumes control of the file. Only that user's changes are
-   effective.
--  When you save the study, any changes that you make after that do not
-   effect the study's citation.
-
-**Enter Cataloging Information**
-
-To enter the Cataloging Information for a new study:
+To enter the Metadata for a new study:
 
 #. Prepopulate Cataloging Information fields based on a study template
    (if a template is available), use the Select Study Template pull-down
    list to select the appropriate template.
 
    A template provides default values for basic fields in the
-   Cataloging Information fields. The default template prepopulates the
+   Metadata fields. The default template prepopulates the
    Deposit Date field only.
 #. Enter a title in the Title field.
-#. Enter data in the remaining Cataloging Information fields.
+#. Enter the remaining Metadata fields.
    To list all fields, including the Terms of Use fields, click the Show
    All Fields button after you enter a title. Use the following
-   guidelines to complete these fields:
+   guidelines to complete these fields [is this still supported?]:
 
    -  A light blue background in any form field indicates that HTML,
       JavaScript, and style tags are permitted. You cannot use the
-      ``html`` and ``body`` element types.
+      ``html`` and ``body`` element types [Are we going to still support this?].
    -  To use the inline help and view information about a field, roll
-      your cursor over the field title.
-   -  Be sure to complete the Abstract field.
-   -  To set Terms of Use for your study, scroll to the bottom of the Cataloging Information tab.
-      Eight fields appear under the Terms of Use label. You must
-      complete at least one of these fields to enable Terms for this
-      study.
-#. Click the *Save* button and then add comments or a brief description
-   in the Study Version Notes popup. Then click the *Continue* button
-   and your study draft version is saved.
+      your cursor over the field title.[Are we going to still support this?]
+   -  Be sure to complete the Description field.
+   -  To set Terms of Use for your Dataset, [????].
+#. Click the *Create Dataset* button and then add comments or a brief description
+   in the Dataset Version Notes popup [we will still have this?]. Then click the *Continue* button
+   and your Dataset draft version is saved.
 
-**Upload Study Files**
+**Upload Files**
 
-To upload files associated with a new study:
+To upload files associated with a new Dataset:
 
-#. For each file that you choose to upload to your study, first select
-   the Data Type from the drop-down list. Then click the Browse button
-   to select the file, and then click Upload to add each file at a time.
+#. For each file that you choose to upload to your Dataset, first click on the "Select Files to Add" button.
    
    When selecting a CSV (character-separated values) data type, an SPSS Control Card file is first required.
 
-   When selecting a TAB (tab-delimited) data type, a DDI Control Card file is first required. There is no restriction to the number or types of files that you can upload to the Dataverse Network. 
-   
+   When selecting a TAB (tab-delimited) data type, a DDI Control Card file is first required. 
+   There is no restriction to the number or types of files that you can upload. 
 
-   There is a maximum file size of 2 gigabytes for each file that you upload.
+   There is a maximum file size of 2 gigabytes [???] for each file that you upload.
 
 #. After you upload one file, enter the type of file in the *Category*
    field and then click Save.
@@ -102,7 +88,7 @@ To upload files associated with a new study:
    moments to complete. During the upload, the study is not available for editing. When you receive e-mail notification that the
    subsettable file upload is complete, click *Refresh* to continue editing the study.
    
-   You see the Documentation, Data and Analysis tab of the study page
+   You see the [Documentation, Data and Analysis tab ???] of the Dataset page
    with a list of the uploaded files. For each *subsettable tabular*
    data set file that you upload, the number of cases and variables and
    a link to the Data Citation information for that data set are
@@ -112,13 +98,12 @@ To upload files associated with a new study:
    
    For each *subsettable network* data set file that you upload, the number of edges and verticies and a link to the Data Citation
    information for that data set are displayed.
-#. Continue to the next step and set file permissions for the study or
+#. Continue to the next step and set file permissions for the Dataset or
    its files.
 
-**Study File Tips**
+**File Tips**
 
-
-Keep in mind these tips when uploading study files to your dataverse:
+Keep in mind these tips when uploading study files to your Dataset:
 
 -  The following subsettable file types are supported:
 
@@ -141,18 +126,18 @@ Keep in mind these tips when uploading study files to your dataverse:
 -  If you upload a STATA (``.dta``), SPSS (``.sav`` or ``.por``), or
    network (``.xml``) file, the file automatically becomes subsettable
    (that is, subset and analysis tools are available for that file in
-   the Network). In this case, processing the file might take some time
+   the Dataset). In this case, processing the file might take some time
    and you will not see the file listed immediately after you click
    Save.
--  When you upload a *subsettable* data file, you are prompted to
+-  When you upload a *subsettable* file, you are prompted to
    provide or confirm your e-mail address for notifications. One e-mail
    lets you know that the file upload is in progress; a second e-mail
-   notifies you when the file upload is complete.
+   notifies you when the file upload is complete. [is this still valid?]
 -  While the upload of the files takes place, your study is not
    available for editing. When you receive e-mail notification that the
-   upload is completed, click *Refresh* to continue editing the study.
+   upload is completed, click *Refresh* to continue editing the Dataset.
 
-**Set Study and File Permissions**
+**Set Dataset and File Permissions** [Link to Permissions section of User Guide]
 
 You can restrict access to a study, all of its files, or some of its
 files. This restriction extends to the search and browse functions.
