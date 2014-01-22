@@ -43,6 +43,7 @@ public class DataversePage implements java.io.Serializable {
     private Long ownerId;
     private String q;
     private String dataversePath;
+    private String fq0;
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -77,12 +78,29 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String getDataversePath() {
-        String dataversePath = dataverseService.determineDataversePath(this.dataverse);
-        return SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+        if (isRootDataverse()) {
+            // null? it's because we don't want fq0
+            // to return anything about subtrees for searches
+            // from the root dataverse
+            return null;
+        } else {
+            // for non-root dataverses, we do want fq0 to have a subtree in it.
+            // i.e. "/mra" as a quoted dataverse path
+            String dataversePath = dataverseService.determineDataversePath(this.dataverse);
+            return SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+        }
     }
 
     public void setDataversePath(String dataversePath) {
         this.dataversePath = dataversePath;
+    }
+
+    public String getFq0() {
+        return fq0;
+    }
+
+    public void setFq0(String fq0) {
+        this.fq0 = fq0;
     }
 
     public void init() {
