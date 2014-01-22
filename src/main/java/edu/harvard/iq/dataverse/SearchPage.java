@@ -52,7 +52,7 @@ public class SearchPage implements java.io.Serializable {
         logger.info("Search button clicked. Query: " + query);
 
 //        query = query.trim(); // buggy, threw an NPE
-        query = query.isEmpty() ? "*" : query;
+//        query = query.isEmpty() ? "*" : query; // also buggy
         query = query == null ? "*" : query;
         /**
          * @todo: Will JSF allow us to put more than one filter query (fq) in
