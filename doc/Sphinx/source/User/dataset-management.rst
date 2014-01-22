@@ -23,21 +23,21 @@ The steps to adding a Dataset are:
 
 #. Enter Metadata, including a descriprion of the Dataset.
    [Set Terms of Use for the Dataset in the Cataloging fields, if you choose. ?]
-#. Upload files associated with the study.
-#. Set permissions to access the study, all of the study files, or some
-   of the study files.
+#. Upload files associated with Dataset.
+#. Set permissions to access the Dataset, all of its files, or some
+   of the its files.
 #. Delete your Dataset if you choose, before you submit it for review.
 #. Submit your Dataset for review, to make it available to the public.
 
 **Enter Metadata Information**
 
-To enter the Metadata for a new study:
+To enter the Metadata for a new Dataset:
 
-#. Prepopulate Cataloging Information fields based on a study template
-   (if a template is available), use the Select Study Template pull-down
-   list to select the appropriate template.
+#. Prepopulate Metadata fields based on a Dataset template
+   (if a template is available), use the Select Dataset Template pull-down
+   list to select the appropriate template [still this way?].
 
-   A template provides default values for basic fields in the
+   A template provides default values for basic
    Metadata fields. The default template prepopulates the
    Deposit Date field only.
 #. Enter a title in the Title field.
@@ -133,57 +133,14 @@ Keep in mind these tips when uploading study files to your Dataset:
    provide or confirm your e-mail address for notifications. One e-mail
    lets you know that the file upload is in progress; a second e-mail
    notifies you when the file upload is complete. [is this still valid?]
--  While the upload of the files takes place, your study is not
+-  While the upload of the files takes place, your Dataset is not
    available for editing. When you receive e-mail notification that the
    upload is completed, click *Refresh* to continue editing the Dataset.
 
-**Set Dataset and File Permissions** [Link to Permissions section of User Guide]
+**Delete Dataset**
 
-You can restrict access to a study, all of its files, or some of its
-files. This restriction extends to the search and browse functions.
-
-To permit or restrict access:
-
-#. On the study page, click the Permissions link.
-#. To set permissions for the study:
-
-   A. Scroll to the Entire Study Permission Settings panel, and click
-      the drop-down list to change the study to Restricted or Public.
-   #. In the *User Restricted Study Settings* field, enter a user or
-      group to whom you choose to grant access to the study, then click
-      Add.
-
-   To enable a request for access to restricted files in the study,
-   scroll to the File Permission Settings panel, and click the
-   Restricted File Settings check box. This supplies a request link on
-   the Data, Documentation and Analysis tab for users to request access
-   to restricted files by creating an account.
-
-
-   To set permission for individual files in the study:
-
-   A. Scroll to the Individual File Permission Settings panel, and enter
-      a user or group in the Restricted File User Access *Username*
-      field to grant permissions to one or more individual files.
-   #. Use the File Permission pull-down list and select the permission
-      level that you choose to apply to selected files: Restricted or
-      Public.
-   #. In the list of files, click the check box for each file to which
-      you choose to apply permissions. 
-      To select all files, click the check box at the top of the list.
-   #. Click Update. 
-      The users or groups to which you granted access privileges appear
-      in the File Permissions list after the selected files.
-
-Note: You can edit or delete your study if you choose, but only until
-you submit the study for reveiw. After you submit your study for review,
-you cannot edit or delete it from the dataverse.
-
-
-**Delete Studies**
-
-You can delete a study that you contribute, but only until you submit
-that study for review. After you submit your study for review, you
+You can delete a Dataset that you contribute, but only until you submit
+that Dataset for review. After you submit your study for review, you
 cannot delete it from the dataverse.
 
 If a study is no longer valid, it can now be deaccessioned so it's
@@ -197,11 +154,11 @@ To delete a draft version:
 #. Click the Delete Draft Version link in the top-right area of the
    study page.
 
-   You see the Delete Draft Study Version popup.
+   You see the Delete Draft Dataset Version popup.
 #. Click the Delete button to remove the draft study version from the
    dataverse.
 
-To deaccession a study:
+To deaccession a Dataset:
 
 #. Click the Deaccession link in the top-right area of the study page.
     You see the Deaccession Study page.
@@ -211,7 +168,7 @@ To deaccession a study:
 #. Click the Deaccession button to remove your study from the
    dataverse.
 
-**Submit Study for Review**
+**Submit Dataset for Review** [will this change?]
 
 When you finish setting options for your study, click *Submit For
 Review* in the top-right corner of the study page. The page study
@@ -248,10 +205,10 @@ recalculated for all subsettable files and for the study using version 5
 of that standard. This prevents incompatibility of UNF version numbers
 within a study.
 
-Manage Studies
+Manage Dataset
 ==================
 
-You can find all studies that you uploaded to the dataverse, or that
+You can find all Datasets that you uploaded to the dataverse, or that
 were submitted by a Contributor for review. Giving you access to view,
 edit, release, or delete studies.
 
