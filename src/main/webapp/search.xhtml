@@ -74,10 +74,12 @@
                 <ui:fragment>
                     <p:panelGrid columns="2">
                         <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{empty dataverseSession.user}">
                                 Create Account
                             </h:outputLink>
-                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!empty dataverseSession.user}">
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
+                            </h:outputLink>   
                         </ui:fragment>
                         <ui:fragment>
                             <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
@@ -87,7 +89,7 @@
                                 <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
                                     Log Out
                                 </h:commandLink>   
-                            </h:form>
+                            </h:form>                            
                         </ui:fragment>
                     </p:panelGrid>
                 </ui:fragment>
