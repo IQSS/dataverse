@@ -186,7 +186,7 @@
                     <p:dataList value="#{DataversePage.contents}" var="item">
                         <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
                             <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
-                                <h:outputText value="#{item.name}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
+                                <h:outputText value="#{item.name} Dataverse" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
                                 <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
                             </h:outputLink>
                         </ui:fragment>
