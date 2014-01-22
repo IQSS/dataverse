@@ -110,14 +110,14 @@
 				<h:commandButton value="Change User"
 								 actionListener="#{sampleCommandPage.changeUser()}" />
 			</h:form>
-			<p:panel header="Permission-dependent display">
-				<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('UndoableEdit')}">
+			<p:panel header="Permission-dependent display" rendered="false">
+                            <h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('UndoableEdit')}">
 					Has permission UndoableEdit <br />
 				</h:panelGroup>
 				<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('Release')}">
 					Has permission Release<br />
 				</h:panelGroup>
-				<h:panelGroup layout="block" rendered="#{empty permissionServiceBean.on(DataversePage.dataverse).permissions}">
+                                <h:panelGroup layout="block" rendered="#{empty permissionServiceBean.on(DataversePage.dataverse).permissions}">
 					Has no permissions at all<br />
 				</h:panelGroup>
 				<h:panelGroup layout="block" rendered="#{sampleCommandPage.canRelease}">
