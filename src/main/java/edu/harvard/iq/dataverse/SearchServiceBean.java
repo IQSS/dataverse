@@ -79,7 +79,11 @@ public class SearchServiceBean {
          * @todo make this configurable
          */
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-        final int citationYearRangeStart = 2000;
+        /**
+         * @todo: odd or even makes a difference. Couldn't find value of 2014
+         * when this was set to 2000
+         */
+        final int citationYearRangeStart = 1901;
         final int citationYearRangeEnd = thisYear;
         final int citationYearRangeSpan = 2;
         solrQuery.addNumericRangeFacet(SearchFields.CITATION_YEAR, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);

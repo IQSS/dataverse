@@ -158,28 +158,29 @@ public class IndexServiceBean {
                     }
                 }
                 if (dataset.getLatestVersion().getMetadata().getProductionDate() != null) {
-                    /**
-                     * @todo: clean this up, DRY
-                     */
                     SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
                     try {
+                        logger.info("Trying to convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
                         Date citationDate = inputDateyyyy.parse(dataset.getLatestVersion().getMetadata().getProductionDate());
-                        solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
                         SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                         String citationYear = yearOnly.format(citationDate);
+                        logger.info("YYYY only: " + citationYear);
                         solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
-                    } catch (Exception ex) {
-                        logger.info("Can't convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
-                    }
-                    SimpleDateFormat inputDateyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-                    try {
-                        Date citationDate = inputDateyyyyMMdd.parse(dataset.getLatestVersion().getMetadata().getProductionDate());
                         solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
-                        SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-                        String citationYear = yearOnly.format(citationDate);
-                        solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
-                    } catch (Exception ex) {
-                        logger.info("Can't convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY-MM-DD date from dataset " + dataset.getId());
+                    } catch (Exception ex1) {
+                        logger.info(ex1.getClass().getCanonicalName() + ": can't convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
+//                        SimpleDateFormat inputDateyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+//                        try {
+//                            logger.info("Trying to convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY-MM-DD date from dataset " + dataset.getId());
+//                            Date citationDate = inputDateyyyyMMdd.parse(dataset.getLatestVersion().getMetadata().getProductionDate());
+//                            solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
+//                            SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+//                            String citationYear = yearOnly.format(citationDate);
+//                            logger.info("YYYY-MM-DD: " + citationYear);
+//                            solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
+//                        } catch (Exception ex2) {
+//                            logger.info("Can't convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY-MM-DD date from dataset " + dataset.getId());
+//                        }
                     }
                 }
                 else {
