@@ -2,8 +2,8 @@ Permissions and Terms of Use
 ++++++++++++++++++++++++++++++
 
 
-Edit Terms for Study Creation
-=============================
+Set Dataverse Terms of Use
+===============================
 
 You can set up Terms of Use for the dataverse that require users to
 acknowledge your terms and click "Accept" before they can contribute to
@@ -21,6 +21,45 @@ To set Terms of Use for creating or uploading to the dataverse:
    Note: A light blue background in any form field indicates HTML,
    JavaScript, and style tags are permitted. The ``html`` and ``body``
    element types are not allowed.
+   
+Set Dataset and File Permissions
+=================================
+
+You can restrict access to a Dataset, all of its files, or some of its
+files. This restriction extends to the search and browse functions.
+
+To permit or restrict access:
+
+#. On the study page, click the Permissions link.
+#. To set permissions for the study:
+
+   A. Scroll to the Entire Study Permission Settings panel, and click
+      the drop-down list to change the study to Restricted or Public.
+   #. In the *User Restricted Study Settings* field, enter a user or
+      group to whom you choose to grant access to the study, then click
+      Add.
+
+   To enable a request for access to restricted files in the study,
+   scroll to the File Permission Settings panel, and click the
+   Restricted File Settings check box. This supplies a request link on
+   the Data, Documentation and Analysis tab for users to request access
+   to restricted files by creating an account.
+
+
+   To set permission for individual files in the study:
+
+   A. Scroll to the Individual File Permission Settings panel, and enter
+      a user or group in the Restricted File User Access *Username*
+      field to grant permissions to one or more individual files.
+   #. Use the File Permission pull-down list and select the permission
+      level that you choose to apply to selected files: Restricted or
+      Public.
+   #. In the list of files, click the check box for each file to which
+      you choose to apply permissions. 
+      To select all files, click the check box at the top of the list.
+   #. Click Update. 
+      The users or groups to which you granted access privileges appear
+      in the File Permissions list after the selected files.
 
 Edit Terms for File Download
 ============================
