@@ -50,6 +50,8 @@ public class SearchPage implements java.io.Serializable {
     public void search() {
         logger.info("Search button clicked. Query: " + query);
 
+        query = query.trim();
+        query = query.isEmpty() ? "*" : query;
         query = query == null ? "*" : query;
         /**
          * @todo: Will JSF allow us to put more than one filter query (fq) in
