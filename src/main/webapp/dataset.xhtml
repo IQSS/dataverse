@@ -98,7 +98,7 @@
                             </ui:fragment>
 
                             <ui:fragment>
-                                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate')}">
+                                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
                                     <p:panel styleClass="panelLayoutButtonBlock">
                                         <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
                                             <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
