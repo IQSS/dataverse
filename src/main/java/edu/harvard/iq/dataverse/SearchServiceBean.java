@@ -58,7 +58,7 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.ORIGINAL_DATAVERSE);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
-        solrQuery.addFacetField(SearchFields.CATEGORY);
+//        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
         /**

@@ -76,8 +76,12 @@ public class SearchPage implements java.io.Serializable {
                 solrSearchResult.setDatasets(datasets);
             } else if (solrSearchResult.getType().equals("datasets")) {
                 Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
-                if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
-                    solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+                try {
+                    if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
+                        solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+                    }
+                } catch (NullPointerException npe) {
+                    logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
                 }
             } else if (solrSearchResult.getType().equals("files")) {
                 /**
@@ -92,7 +96,7 @@ public class SearchPage implements java.io.Serializable {
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
         friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
         friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
-        friendlyName.put(SearchFields.CATEGORY, "Category");
+//        friendlyName.put(SearchFields.CATEGORY, "Category");
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
