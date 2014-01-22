@@ -8,13 +8,18 @@ files. To view a restricted dataverse, dataset, or file, a user will need to be 
 
 **Ways to Search**
 
-Basic search block:
+From the Dataverse homepage, you can begin searching with a wildcard search, an exact phrase search, or entering a search term or query in the search box that says, "Search the dataverse" 
 
-- Wildcard
+Basic search block features:
+
+- Wildcard: by entering an asterisk (*), into the search bar, you can perform a search for all public dataverses, datasets, and files within the Dataverse Network.
+- Autocomplete for titles of dataverses and file names
+- Exact phrase search when a search term/query has quotes around it
+
+Search results features: 
+
 - Facets - list of facets, clicking a facet, removing a facet, viewing more or less options within a facet, chosen facets appear above results table
 - Result cards - search terms/query highlighting within it
-- Autocomplete for titles of dataverses, names of datasets, and authors
-- Exact phrase search when a search term/query has quotes around it
 
 Other search features: 
 
