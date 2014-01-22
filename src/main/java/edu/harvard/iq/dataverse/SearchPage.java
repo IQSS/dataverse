@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -50,7 +51,7 @@ public class SearchPage implements java.io.Serializable {
     public void search() {
         logger.info("Search button clicked. Query: " + query);
 
-        query = query.trim();
+//        query = query.trim(); // buggy, threw an NPE
         query = query.isEmpty() ? "*" : query;
         query = query == null ? "*" : query;
         /**
@@ -69,7 +70,22 @@ public class SearchPage implements java.io.Serializable {
                 filterQueries.add(fq);
             }
         }
-        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+        SolrQueryResponse solrQueryResponse = null;
+        try {
+            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(cause + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause + " ");
+            }
+            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
+            logger.info(message);
+            return;
+        }
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
         for (SolrSearchResult solrSearchResult : searchResults) {
