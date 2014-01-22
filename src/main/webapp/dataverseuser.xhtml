@@ -121,12 +121,12 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Institution" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
+                                        <p:outputLabel value="Affiliation" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.institution}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.affiliation}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                <p:inputText id="institution" value="#{DataverseUserPage.dataverseUser.institution}" />
-                                                <p:message for="institution" />
+                                                <p:inputText id="affiliation" value="#{DataverseUserPage.dataverseUser.affiliation}" />
+                                                <p:message for="affiliation" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
@@ -174,22 +174,14 @@
                             </p:panel>
                         </p:tab>
                     </p:tabView>
-
-                    <p:tabView id="tabView2" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                        <p:tab id="somedata" title="Datasets Related To Me">
-                            <p:panel>
-                                <h:form id="shareForm" style="margin-left:auto;">
-                                    <p:menuButton id="shareData" value="Add Data" iconPos="right">
-                                        <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                                        <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}" disabled="true"/>
-                                        <p:menuitem value="Link to Existing Dataverse" disabled="true"/>
-                                        <p:menuitem value="Link to Existing Dataset" disabled="true"/>
-                                        <p:menuitem value="Create Query" disabled="true"/>
-                                    </p:menuButton>
-                                </h:form>
-                            </p:panel>
-                        </p:tab>
-                    </p:tabView>
+                        <p:panel>
+                            <h:form id="shareForm" style="margin-left:auto;">
+                                <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode != 'CREATE'}">
+                                    <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                    <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}" disabled="true"/>
+                                </p:menuButton>
+                            </h:form>
+                        </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>        
