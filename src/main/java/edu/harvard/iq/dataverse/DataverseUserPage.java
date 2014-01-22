@@ -27,7 +27,9 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public enum EditMode {CREATE, INFO, EDIT, CHANGE, FORGOT};
 
-    @Inject DataverseSession session;     
+    @Inject DataverseSession session; 
+    
+    @Inject DataverseServiceBean dataverseService;     
     
     @EJB
     DataverseUserServiceBean dataverseUserService;
@@ -41,6 +43,8 @@ public class DataverseUserPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password for your account.")    
     private String currentPassword;
     
+    private Long dataverseId;
+           
     public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
             dataverseUser = new DataverseUser();
@@ -76,6 +80,18 @@ public class DataverseUserPage implements java.io.Serializable {
         this.currentPassword = currentPassword;
     }
 
+    public Long getDataverseId() {
+        
+        if (dataverseId == null) {
+            dataverseId = dataverseService.findRootDataverse().getId();
+        }
+        return dataverseId;
+    }
+    
+    public void setDataverseId(Long dataverseId) {
+        this.dataverseId = dataverseId;
+    }
+    
     public void init() {
         if (dataverseUser == null) {  
             dataverseUser = session.getUser();

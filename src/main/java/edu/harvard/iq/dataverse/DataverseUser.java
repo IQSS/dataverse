@@ -54,7 +54,7 @@ public class DataverseUser implements Serializable {
 	private Set<UserDataverseAssignedRole> assignedRoles;
 	
     private String encryptedPassword;
-    private String institution;
+    private String affiliation;
     private String position;
     private String phone;
     
@@ -106,12 +106,12 @@ public class DataverseUser implements Serializable {
         this.encryptedPassword = encryptedPassword;
     }
     
-    public String getInstitution() {
-        return institution;
+    public String getAffiliation() {
+        return affiliation;
     }
 
-    public void setInstitution(String institution) {
-        this.institution = institution;
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
     }
 
     public String getPosition() {
