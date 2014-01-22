@@ -58,7 +58,7 @@
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
                             <h:outputText value="Data Citation: "/>
                             <p:panel style="background-color: #F5F5F5;">                                                   
-                                <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.metadata.citation}"/>
+                                <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.metadata.citation}" escape="false"/>
                             </p:panel>
                             <p:panel>
                                 <p:panelGrid columns="2">
@@ -81,6 +81,7 @@
                                 <h:outputText value="Author: #{DatasetPage.dataset.latestVersion.metadata.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" />
                                 <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                                     <p:outputLabel value="Title" for="title"/>
+                                    <h:outputText value="*" style="color: #B94A48;"/>
                                     <ui:fragment>
                                         <p:inputText id="title" size="40" value="#{DatasetPage.dataset.editVersion.metadata.title}"/>
                                         <p:watermark for="title" value="Enter title..."/>
@@ -122,7 +123,8 @@
                                     <p:dataTable binding="#{DatasetPage.dataTableAuthors}"  value="#{DatasetPage.editVersion.metadata.datasetAuthors}" var="currentAuthor">
                                         <p:column><div >               
                                                 <div  >
-                                                    <h:outputText value="Author*:"/>
+                                                    <h:outputText value="Author:"/>
+                                                    <h:outputText value="*" style="color: #B94A48;"/>
                                                     <p:inputText id="input_authorName"
                                                                  styleClass="input_authorName"
                                                                  value="#{currentAuthor.name}"
@@ -149,24 +151,39 @@
                     </p:panel>
                     <!-- Description Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                            <ui:fragment>
-                                <h:outputText value="Description*:  #{DatasetPage.dataset.latestVersion.metadata.description}" rendered="#{empty DatasetPage.editMode}"/>
-                                <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                                    <p:outputLabel value="Description" for="description"/>
-                                    <ui:fragment>
-                                        <p:inputTextarea id="description" value="#{DatasetPage.dataset.editVersion.metadata.description}"
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                            <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                                <p:column>
+                                    <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetAbstracts}" var="abstract">
+                                        <p:column>              
+                                            <div  >
+                                                <h:outputText value="Description "/>
+  
+                                        <p:inputTextarea id="description" value="#{abstract.text}"
                                                          rows="5" cols="50" counter="counter" maxlength="1000"
                                                          counterTemplate="{0} characters remaining" autoResize="false"/>
                                         <h:outputText id="counter" style="display:block;"/>
-                                    </ui:fragment>
-                                    <p:message for="description"/>
-                                </p:panelGrid>
-                            </ui:fragment>
-                            <ui:fragment>
-                                &#160;
-                            </ui:fragment>
-                        </p:panelGrid>
+                                            </div>                          
+                                        </p:column> 
+                                    </p:dataTable>
+                                </p:column>                       
+                            </p:panelGrid>
+                        </p:panelGrid>   
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetAbstracts}">
+                            <p:panelGrid styleClass="panelgridLayoutTable" columns="3">                       
+                                <p:column>
+                                    <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetAbstracts}" var="abstract">
+                                        <p:column>              
+                                            <div  >
+                                                <h:outputText value="Description "/>
+                                                <h:outputText   value="#{abstract.text}" />                                                                                                
+                                            </div>
+
+                                        </p:column> 
+                                    </p:dataTable>
+                                </p:column>                       
+                            </p:panelGrid>
+                        </p:panelGrid> 
                     </p:panel>
                     <!-- Keyword -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
