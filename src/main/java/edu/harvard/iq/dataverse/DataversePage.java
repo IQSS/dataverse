@@ -113,14 +113,14 @@ public class DataversePage implements java.io.Serializable {
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
             dataverse.setOwner(dataverseService.find(ownerId));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)
             try {
                 dataverse = dataverseService.findRootDataverse();
             } catch (EJBException e) {
                 if (e.getCause() instanceof NoResultException) {
                     editMode = true;
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse. Asterisks indicate required fields."));
                 } else {
                     throw e;
                 }
@@ -137,7 +137,7 @@ public class DataversePage implements java.io.Serializable {
 
     public void edit(ActionEvent e) {
         editMode = true;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataverse", " - Edit your dataverse and click Save."));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
     }
 
     public void save(ActionEvent e) {

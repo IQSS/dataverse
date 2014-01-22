@@ -19,7 +19,6 @@
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="q" value="#{DataversePage.q}"/>
-                    <f:viewParam name="fq0" value="#{DataversePage.dataversePath}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                 </f:metadata>
 
@@ -34,7 +33,7 @@
                             <h:outputText value=" > "/>
                         </ui:repeat>
                         <!--<br/>-->
-                        <h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
+                        <h:outputText value="#{DataversePage.dataverse.name} Dataverse" style="font-weight:bold;"/>
                     </p:panel>
 
                     <!-- Message Panel -->
@@ -56,6 +55,7 @@
                                 <ui:fragment>
                                     <p:inputText id="name" value="#{DataversePage.dataverse.name}"/>
                                     <p:outputLabel value=" Dataverse" for="name"/>
+                                    <h:outputText value="*" style="color: #B94A48;"/>
                                     <p:watermark for="name" value="Enter name..."/>
                                 </ui:fragment>
                                 <p:message for="name"/>
@@ -76,7 +76,9 @@
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                             <ui:fragment>
                                 <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                    <p:outputLabel value="Alias" for="alias"/>
+                                    <ui:fragment>
+                                        <p:outputLabel value="Alias" for="alias"/> <h:outputText value="*" rendered="#{DataversePage.editMode}" style="color: #B94A48;"/>
+                                    </ui:fragment>
                                     <ui:fragment>
                                         <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}"/>
                                         <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
@@ -85,7 +87,9 @@
                                         </p:panelGrid>
                                     </ui:fragment>
 
-                                    <p:outputLabel value="Contact E-mail" for="contactEmail"/>
+                                    <ui:fragment>
+                                        <p:outputLabel value="Contact E-mail" for="contactEmail"/> <h:outputText value="*" rendered="#{DataversePage.editMode}" style="color: #B94A48;"/>
+                                    </ui:fragment>
                                     <ui:fragment>
                                         <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}"/>
                                         <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
@@ -155,7 +159,7 @@
                         <ui:fragment>
                             <h:form id="searchForm">
                                 <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchPage.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
-                                <p:watermark for="autoCompleteSearch" value="*"/>
+                                <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
                                 <!--this commented out version used to work when it was in a plain form tag, see e6db352-->
                                 <!--<h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="true"/>-->
                                 <!--https://blogs.oracle.com/enterprisetechtips/entry/post_redirect_get_and_jsf-->
