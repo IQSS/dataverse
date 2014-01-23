@@ -36,6 +36,9 @@ public class SearchPage implements java.io.Serializable {
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
     private Map<String, String> friendlyName = new HashMap<>();
+    private Map<String,Integer> numberOfFacets = new HashMap<>();
+
+    
 
     @EJB
     SearchServiceBean searchService;
@@ -266,4 +269,21 @@ public class SearchPage implements java.io.Serializable {
         this.friendlyName = friendlyName;
     }
 
+    public  int getNumberOfFacets(String name, int defaultValue) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numberOfFacets.put(name,defaultValue);
+            numFacets = defaultValue;
+        }
+        return numFacets;
+    }
+    
+    public void incrementFacets(String name, int incrementNum) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numFacets = incrementNum;
+        }
+        numberOfFacets.put(name, numFacets + incrementNum);   
+    }    
+    
 }
