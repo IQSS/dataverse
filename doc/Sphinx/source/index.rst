@@ -23,8 +23,8 @@ How the Guides Are Organized
 
 The user guides are reference documents that explain how to use
 the Dataverse Network: Installers Guide, Developers Guide, API Guide, and Users
-Guide. The Users Guide is further divided into primary activities: using
-data, creating studies, administering dataverses or the network. Details
+Guide. The Users Guide is further divided into primary activities: find & using
+data, adding Datasets, administering dataverses or Datasets. Details
 on all of the above tasks can be found in the Users Guide. The
 Installers Guide is for people or organizations who want to host their
 own Dataverse Network. The Developers Guide contains instructions for
