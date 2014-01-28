@@ -20,6 +20,7 @@ import javax.inject.Named;
 import javax.persistence.NoResultException;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
@@ -40,6 +41,8 @@ public class DataversePage implements java.io.Serializable {
 	DataverseSession session;
 	@EJB
 	EjbDataverseEngine commandEngine;
+    @EJB
+    SearchServiceBean searchService;
 
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
@@ -47,6 +50,8 @@ public class DataversePage implements java.io.Serializable {
     private String q;
     private String dataversePath;
     private String fq0;
+    private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+    List filterQueries = new ArrayList();
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -127,6 +132,22 @@ public class DataversePage implements java.io.Serializable {
         this.fq0 = fq0;
     }
 
+    public List<FacetCategory> getFacetCategoryList() {
+        return facetCategoryList;
+    }
+
+    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
+        this.facetCategoryList = facetCategoryList;
+    }
+
+    public List getFilterQueries() {
+        return filterQueries;
+    }
+
+    public void setFilterQueries(List filterQueries) {
+        this.filterQueries = filterQueries;
+    }
+
     public void init() {
         
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
@@ -134,6 +155,7 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
+            filterQueries.add(getDataversePath());
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
             dataverse.setOwner(dataverseService.find(ownerId));
@@ -153,6 +175,26 @@ public class DataversePage implements java.io.Serializable {
 
             }
         }
+        SolrQueryResponse solrQueryResponse = null;
+        String query = "*";
+        int paginationStart = 0;
+        try {
+            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(cause + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause + " ");
+            }
+            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
+            logger.info(message);
+            return;
+        }
+        facetCategoryList = solrQueryResponse.getFacetCategoryList();
+
     }
 
     public List getContents() {

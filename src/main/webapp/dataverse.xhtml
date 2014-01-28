@@ -183,21 +183,35 @@
                 </p:panel>
 
                 <!-- Content Panel -->
-                <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
-                    <p:dataList value="#{DataversePage.contents}" var="item">
-                        <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
-                            <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
-                                <h:outputText value="#{item.name} Dataverse" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
-                                <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
-                            </h:outputLink>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
-                            <h:outputLink value="/dataset.xhtml?id=#{item.id}">
-                                <h:outputText value="#{item.latestVersion.metadata.title}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
-                            </h:outputLink>
-
-                        </ui:fragment>
-                    </p:dataList>
+                <p:panel>
+                    <div style="width:20%;float:left;">
+                        <p:dataList id="facetCategoryList" value="#{DataversePage.facetCategoryList}" var="facetCategory">
+                            <h:outputText value="#{facetCategory.name}"/>
+                            <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel"  rows="5">
+                                <h:outputText value="#{facetLabel.name}"/>
+                                <h:outputText value=" (#{facetLabel.count})"/>
+                            </p:dataList>
+                        </p:dataList>
+                    </div>
+                    <div style="width:80%;float:left;">
+                        <h:outputText value="#{DataversePage.filterQueries}"/>
+                        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
+                            <p:dataList value="#{DataversePage.contents}" var="item">
+                                <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
+                                    <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
+                                        <h:outputText value="#{item.name} Dataverse" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
+                                        <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
+                                    </h:outputLink>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
+                                    <h:outputLink value="/dataset.xhtml?id=#{item.id}">
+                                        <h:outputText value="#{item.latestVersion.metadata.title}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
+                                    </h:outputLink>
+                                </ui:fragment>
+                            </p:dataList>
+                        </p:panel>
+                    </div>
+                    <div style="clear: left"/>
                 </p:panel>
             </ui:define>
         </ui:composition>        
