@@ -23,7 +23,6 @@
                 <h:form id="datasetForm">
                     <!-- Breadcrumbs Panel -->
                     <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{empty DatasetPage.editMode}">
-
                         <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">
                             <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
                                 <h:outputText value="#{owner.name} Dataverse"/>
@@ -39,18 +38,15 @@
                             <h:outputText value=" > "/>
                             <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" style="font-weight:bold;"/>
                         </ui:fragment>
-
                     </p:panel>
 
                     <!-- Message Panel -->
                     <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
-
                         <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-
-<!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
-<!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
-<!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
-<!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
+                        <!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
                     </p:panel>
 
                     <style type="text/css">
@@ -63,9 +59,9 @@
                             <ui:fragment>
                                 <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
 
-                                <h:outputText value="Author: #{DatasetPage.dataset.latestVersion.metadata.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;" />
+                                <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
 
-                                <h:outputText value="Data Citation: " style="display:block; margin-top:.5em;"/>
+                                <!--<h:outputText value="Data Citation: " style="display:block; margin-top:.5em;"/>-->
                                 <p:panel style="background-color: #F5F5F5;">
                                     <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.metadata.citation}" escape="false"/>
                                 </p:panel>
@@ -99,7 +95,6 @@
                             </ui:fragment>
                         </p:panelGrid>
                         
-                        
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetAbstracts}">
                             <p:dataTable value="#{DatasetPage.dataset.latestVersion.metadata.datasetAbstracts}" var="abstract">
                                 <p:column>
@@ -125,16 +120,19 @@
                                         <ui:fragment>
                                             <h:outputText value="#{keyword.value}"/>
                                         </ui:fragment>
+                                        <ui:fragment>
+                                            <h:outputText value="Keyword Controlled Vocabulary"/>
+                                        </ui:fragment>
+                                        <ui:fragment>
+                                            <h:outputText value="#{keyword.vocab}"/>
+                                        </ui:fragment>
+                                        <ui:fragment>
+                                            <h:outputText value="Keyword Controlled Vocabulary URL"/>
+                                        </ui:fragment>
+                                        <ui:fragment>
+                                            <h:outputText value="#{keyword.vocabURI}"/>
+                                        </ui:fragment>
                                     </p:panelGrid>
-
-                                    <!--<div  styleClass="vdcEditStudyFieldFloat2" >
-                                        <h:outputText value="Keyword Controlled Vocabulary: "/>
-                                        <h:outputText value="#{keyword.vocab}"/>
-                                    </div>
-                                    <div  styleClass="vdcEditStudyFieldFloat2" >
-                                        <h:outputText value="Keyword Controlled Vocabulary URL: "/>
-                                        <h:outputText value="#{keyword.vocabURI}"/>
-                                    </div>-->
                                 </p:column>
                             </p:dataTable>
                         </p:panelGrid>
@@ -212,7 +210,6 @@
                     <!-- Description Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{ (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                            
                                 <p:column>
                                     <p:dataTable value="#{DatasetPage.editVersion.metadata.datasetAbstracts}" var="abstract">
                                         <p:column>
@@ -230,13 +227,11 @@
                                         </p:column>
                                     </p:dataTable>
                                 </p:column>
-                            
                         </p:panelGrid>
                     </p:panel>
                     
                     <!-- Keyword -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{ (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                        
                             <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                                 <p:column>
                                     <p:dataTable value="#{DatasetPage.editVersion.metadata.datasetKeywords}" var="keyword">
@@ -246,93 +241,94 @@
                                                     <h:outputText value="Keyword"/>
                                                 </ui:fragment>
                                                 <ui:fragment>
-                                                    <p:inputText id="input_Keyword"
+                                                    <p:inputText id="input_Keyword" size="45" maxlength="255"
                                                                  styleClass="input_keyword"
-                                                                 value="#{keyword.value}"
-                                                                 size="45"
-                                                                 maxlength="255" />
+                                                                 value="#{keyword.value}"/>
+                                                </ui:fragment>
+                                                <ui:fragment>
+                                                    <h:outputText value="Keyword Controlled Vocabulary"/>
+                                                </ui:fragment>
+                                                <ui:fragment>
+                                                    <p:inputText id="input_keywordVocab" size="45" maxlength="255"
+                                                                 value="#{keyword.vocab}"/>
+                                                </ui:fragment>
+                                                <ui:fragment>
+                                                    <h:outputText value="Keyword Controlled Vocabulary URL"/>
+                                                </ui:fragment>
+                                                <ui:fragment>
+                                                    <p:inputText id="input_KeywordVocabURL" size="45" maxlength="255"
+                                                                 value="#{keyword.vocabURI}"/>
                                                 </ui:fragment>
                                             </p:panelGrid>
-                                            
-                                            <!-- <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                <h:outputText value="Keyword Controlled Vocabulary: "/>
-                                                <p:inputText id="input_keywordVocab" size="45" maxlength="255"
-                                                             value="#{keyword.vocab}">
-                                                </p:inputText>
-                                            </div>
-                                            <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                <h:outputText value="Keyword Controlled Vocabulary URL: "/>
-                                                <p:inputText id="input_KeywordVocabURL" size="45" maxlength="255"
-                                                             value="#{keyword.vocabURI}">
-                                                </p:inputText>
-                                            </div>-->
                                         </p:column>
                                     </p:dataTable>
                                 </p:column>
                             </p:panelGrid>
-                        
-                        
                     </p:panel>
 
                     <!-- Topic Classification -->
-                    <!--<p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                            <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                                <p:column>
-                                    <p:dataTable   value="#{DatasetPage.editVersion.metadata.datasetTopicClasses}" var="topicClass">
-                                        <p:column><div >
-                                                <div  >
-                                                    <h:outputText value="Topic Classification: "/>
-                                                    <p:inputText id="input_topicClass"
-                                                                 styleClass="input_topicClass"
-                                                                 value="#{topicClass.value}"
-                                                                 size="45"
-                                                                 maxlength="255"
-                                                                 />
-                                                </div>
-                                                <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                    <h:outputText value="Topic Controlled Vocabulary: "/>
-                                                    <p:inputText id="input_topicClassVocab" size="45" maxlength="255"
-                                                                 value="#{topicClass.vocab}">
-                                                    </p:inputText>
-
-                                                </div>
-                                                <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                    <h:outputText value="Controlled Vocabulary URL: "/>
-                                                    <p:inputText id="input_topicClassVocabURL" size="45" maxlength="255"
-                                                                 value="#{topicClass.vocabURI}">
-                                                    </p:inputText>
-                                                </div>
-                                            </div>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:column>
-                            </p:panelGrid>
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                            <p:column>
+                                <p:dataTable value="#{DatasetPage.editVersion.metadata.datasetTopicClasses}" var="topicClass">
+                                    <p:column>
+                                        <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                            <ui:fragment>
+                                                <h:outputText value="Topic Classification"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <p:inputText id="input_topicClass" size="45" maxlength="255"
+                                                             styleClass="input_topicClass"
+                                                             value="#{topicClass.value}"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="Topic Controlled Vocabulary"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <p:inputText id="input_topicClassVocab" size="45" maxlength="255"
+                                                             value="#{topicClass.vocab}"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="Controlled Vocabulary URL"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <p:inputText id="input_topicClassVocabURL" size="45" maxlength="255"
+                                                             value="#{topicClass.vocabURI}"/>
+                                            </ui:fragment>
+                                        </p:panelGrid>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:column>
                         </p:panelGrid>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}">
-                            <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                                <p:column>
-                                    <p:dataTable   value="#{DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}" var="topicClass">
-                                        <p:column><div >
-                                                <div  >
-                                                    <h:outputText value="Topic Classification: "/>
-                                                    <h:outputText   value="#{topicClass.value}" />
-                                                </div>
-                                                <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                    <h:outputText value="Topic Controlled Vocabulary: "/>
-                                                    <h:outputText value="#{topicClass.vocab}"/>
-                                                </div>
-                                                <div  styleClass="vdcEditStudyFieldFloat2" >
-                                                    <h:outputText value="Controlled Vocabulary URL: "/>
-                                                    <h:outputText value="#{topicClass.vocabURI}"/>
-                                                </div>
-                                            </div>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:column>
-                            </p:panelGrid>
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode and !empty DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}">
+                            <p:column>
+                                <p:dataTable value="#{DatasetPage.dataset.latestVersion.metadata.datasetTopicClasses}" var="topicClass">
+                                    <p:column>
+                                        <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                            <ui:fragment>
+                                                <h:outputText value="Topic Classification"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="#{topicClass.value}"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="Topic Controlled Vocabulary"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="#{topicClass.vocab}"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="Controlled Vocabulary URL"/>
+                                            </ui:fragment>
+                                            <ui:fragment>
+                                                <h:outputText value="#{topicClass.vocabURI}"/>
+                                            </ui:fragment>
+                                        </p:panelGrid>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:column>
                         </p:panelGrid>
-                    </p:panel>-->
+                    </p:panel>
 
                     <!-- Content Panel -->
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
@@ -466,14 +462,12 @@
                                                             <p:column>
                                                                 <p:panelGrid styleClass="panelgridFormTable" columns="2">
                                                                     <ui:fragment>
-                                                                        <h:outputText value="Producer: "/>
+                                                                        <h:outputText value="Producer"/>
                                                                     </ui:fragment>
                                                                     <ui:fragment>
-                                                                        <p:inputText id="input_producer"
+                                                                        <p:inputText id="input_producer" size="45" maxlength="255"
                                                                                      styleClass="input_producer"
-                                                                                     value="#{producer.name}"
-                                                                                     size="45"
-                                                                                     maxlength="255" />
+                                                                                     value="#{producer.name}" />
                                                                     </ui:fragment>
                                                                     
                                                                     <ui:fragment>
@@ -567,22 +561,17 @@
                                                                 <h:outputText value="Production Date"/>
                                                             </ui:fragment>
                                                             <ui:fragment>
-                                                                <p:inputText id="input_proddate"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.productionDate}"
-                                                                                 size="45"
-                                                                                 maxlength="255" />
+                                                                <p:inputText id="input_proddate" size="45" maxlength="255"
+                                                                             value="#{DatasetPage.dataset.editVersion.metadata.productionDate}" />
                                                             </ui:fragment>
                                                             
                                                             <ui:fragment>
                                                                 <h:outputText value="Production Place"/>
                                                             </ui:fragment>
                                                             <ui:fragment>
-                                                                <p:inputText id="input_prodplace"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.productionPlace}"
-                                                                                 size="45"
-                                                                                 maxlength="255" />
+                                                                <p:inputText id="input_prodplace" size="45" maxlength="255"
+                                                                             value="#{DatasetPage.dataset.editVersion.metadata.productionPlace}" />
                                                             </ui:fragment>
-                                                            
                                                         </p:panelGrid>
                                             </p:panelGrid>
                                             <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
@@ -600,7 +589,6 @@
                                                             <ui:fragment>
                                                                 <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.productionPlace}" />
                                                             </ui:fragment>
-                                                            
                                                         </p:panelGrid>
                                             </p:panelGrid>
                                         </p:panel>
@@ -613,22 +601,16 @@
                                                             <h:outputText value="Depositor"/>
                                                         </ui:fragment>
                                                         <ui:fragment>
-                                                            <p:inputText id="input_depositor"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.depositor}"
-                                                                                 size="45"
-                                                                                 maxlength="255" />
+                                                            <p:inputText id="input_depositor" size="45" maxlength="255"
+                                                                         value="#{DatasetPage.dataset.editVersion.metadata.depositor}" />
                                                         </ui:fragment>
                                                         
                                                         <ui:fragment>
                                                             <h:outputText value="Date of Deposit"/>
                                                         </ui:fragment>
                                                         <ui:fragment>
-                                                            <p:inputText id="input_depositorDate"
-                                                                                 styleClass="input_DepositDate"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.dateOfDeposit}"
-                                                                                 size="45"
-                                                                                 maxlength="255" />
+                                                            <p:inputText id="input_depositorDate" size="45" maxlength="255"
+                                                                         value="#{DatasetPage.dataset.editVersion.metadata.dateOfDeposit}" />
                                                         </ui:fragment>
                                                     </p:panelGrid>
                                             </p:panelGrid>
@@ -659,11 +641,8 @@
                                                             <h:outputText value="Funding Agency"/>
                                                         </ui:fragment>
                                                         <ui:fragment>
-                                                            <p:inputText id="input_fundingAgency"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.fundingAgency}"
-                                                                                 size="45"
-                                                                                 maxlength="255" />
+                                                            <p:inputText id="input_fundingAgency" size="45" maxlength="255"
+                                                                         value="#{DatasetPage.dataset.editVersion.metadata.fundingAgency}" />
                                                         </ui:fragment>
                                                     </p:panelGrid>
                                             </p:panelGrid>
@@ -680,100 +659,106 @@
                                         </p:panel>
                                     </p:tab>
                                     
-                                    <!--<p:tab title="Domain Specific Metadata">
-                                        <p:dataGrid value="#{DatasetPage.customFieldsDataModel}" var="customFieldsDataModel">
-                                            <p:dataTable  styleClass="vdcEditStudyTable"
-                                                          value="#{customFieldsDataModel[1]}" var="customValuesDataModel">
+                                    <!-- NEEDS MORE WORK ON LAYOUT -->
+                                    <p:tab title="Domain Specific Metadata">
+                                        <p:dataGrid columns="1" value="#{DatasetPage.customFieldsDataModel}" var="customFieldsDataModel">
+                                            <p:dataTable value="#{customFieldsDataModel[1]}" var="customValuesDataModel">
                                                 <p:column>
-                                                    <div class="vdcEditStudyField">
-                                                        <h:outputText  value="#{customFieldsDataModel[0].datasetField.title}" title="#{customFieldsDataModel[0].datasetField.title} - #{customFieldsDataModel[0].datasetField.description}"/>
-                                                    </div>
-                                                </p:column>
-                                                <p:column>
-                                                    <div>
-                                                        <p:column>
-                                                            <p:inputText id="input_TextDefault" size="90" rendered="#{(DatasetPage.editMode == 'METADATA')}"
-                                                                         value="#{customValuesDataModel[0].strValue}">
-                                                            </p:inputText>
-                                                            <p:message  for="input_TextDefault"/>
-                                                            <h:outputText   rendered="#{(empty DatasetPage.editMode)}"
-                                                                            value="#{customValuesDataModel[0].strValue}">
+                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                                        <ui:fragment>
+                                                            <h:outputText value="#{customFieldsDataModel[0].datasetField.title}" title="#{customFieldsDataModel[0].datasetField.title} - #{customFieldsDataModel[0].datasetField.description}"/>
+                                                        </ui:fragment>
+                                                        <ui:fragment>
+                                                            <h:outputText rendered="#{(empty DatasetPage.editMode)}"
+                                                                          value="#{customValuesDataModel[0].strValue}">
                                                             </h:outputText>
-                                                        </p:column>
-                                                    </div>
+                                                            
+                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'METADATA')}">
+                                                                <p:inputText id="input_TextDefault" size="90"
+                                                                             value="#{customValuesDataModel[0].strValue}">
+                                                                </p:inputText>
+                                                                <p:message for="input_TextDefault"/>
+                                                            </p:panelGrid>
+                                                        </ui:fragment>
+                                                    </p:panelGrid>
                                                 </p:column>
                                             </p:dataTable>
                                         </p:dataGrid>
-                                    </p:tab>-->
-                                    <!--<p:tab title="Data Availability">
+                                    </p:tab>
+                                    
+                                    <p:tab title="Data Availability">
                                         <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                                            <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                                                <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                                                    <p:column>
-                                                        <p:column>
-                                                            <div >
-                                                                <div>
-                                                                    <h:outputText value="Data Access Place: "/>
-                                                                    <p:inputText id="input_DataAccess"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.placeOfAccess}"
-                                                                                 size="45"
-                                                                                 maxlength="255"
-                                                                                 />
-                                                                    <h:outputText value="Original Archive: "/>
-                                                                    <p:inputText id="input_OriginalArchive"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.originalArchive}"
-                                                                                 size="45"
-                                                                                 maxlength="255"
-                                                                                 />
-                                                                    <h:outputText value="Availability Status: "/>
-                                                                    <p:inputText id="input_Availability"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.availabilityStatus}"
-                                                                                 size="45"
-                                                                                 maxlength="255"
-                                                                                 />
-                                                                    <h:outputText value="Size of Collection: "/>
-                                                                    <p:inputText id="input_Collsize"
-                                                                                 styleClass="input_Depositor"
-                                                                                 value="#{DatasetPage.dataset.editVersion.metadata.collectionSize}"
-                                                                                 size="45"
-                                                                                 maxlength="255"
-                                                                                 />
-                                                                </div>
-                                                            </div>
-                                                        </p:column>
-                                                    </p:column>
+                                            <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                                                
+                                                <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                                    <ui:fragment>
+                                                        <h:outputText value="Data Access Place"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <p:inputText id="input_DataAccess" size="45" maxlength="255"
+                                                                     value="#{DatasetPage.dataset.editVersion.metadata.placeOfAccess}"/>
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Original Archive"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <p:inputText id="input_OriginalArchive" size="45" maxlength="255"
+                                                                     value="#{DatasetPage.dataset.editVersion.metadata.originalArchive}"/>
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Availability Status"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <p:inputText id="input_Availability" size="45" maxlength="255"
+                                                                     value="#{DatasetPage.dataset.editVersion.metadata.availabilityStatus}"/>
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Size of Collection"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <p:inputText id="input_Collsize" size="45" maxlength="255"
+                                                                     value="#{DatasetPage.dataset.editVersion.metadata.collectionSize}"/>
+                                                    </ui:fragment>
                                                 </p:panelGrid>
+                                                
                                             </p:panelGrid>
-                                            <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{empty DatasetPage.editMode}">
-                                                <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                                                    <p:column>
-                                                        <p:column><div >
-                                                                <div  >
-                                                                    <h:outputText value="Data Access Place: "/>
-                                                                    <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.placeOfAccess}" />
-                                                                </div>
-                                                                <div >
-                                                                    <h:outputText value="Original Archive: "/>
-                                                                    <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.originalArchive}" />
-                                                                </div>
-                                                                <div >
-                                                                    <h:outputText value="Availability Status: "/>
-                                                                    <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.availabilityStatus}" />
-                                                                </div>
-                                                                <div >
-                                                                    <h:outputText value="Size of Collection: "/>
-                                                                    <h:outputText   value="#{DatasetPage.dataset.latestVersion.metadata.collectionSize}" />
-                                                                </div>
-                                                            </div>
-                                                        </p:column>
-                                                    </p:column>
+                                            
+                                            <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
+                                                <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                                    <ui:fragment>
+                                                        <h:outputText value="Data Access Place"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.placeOfAccess}" />
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Original Archive"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.originalArchive}" />
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Availability Status"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.availabilityStatus}" />
+                                                    </ui:fragment>
+                                                    
+                                                    <ui:fragment>
+                                                        <h:outputText value="Size of Collection"/>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <h:outputText value="#{DatasetPage.dataset.latestVersion.metadata.collectionSize}" />
+                                                    </ui:fragment>  
                                                 </p:panelGrid>
                                             </p:panelGrid>
                                         </p:panel>
-                                    </p:tab>-->
+                                    </p:tab>
                                     
                                     <p:tab title="Other Information">
                                         <!-- Other Info - Notes -->
@@ -841,7 +826,7 @@
                                     </p:tab>
                                 </p:accordionPanel>
                             </p:tab>
-                            <!--<p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
+                            <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                 <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
                                     <p:column>
                                         <h:outputText id="versionTitleOutput" value="#{version.metadata.title}" />
@@ -853,7 +838,7 @@
                                         <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
                                     </p:column>
                                 </p:dataTable>
-                            </p:tab>-->
+                            </p:tab>
                         </p:tabView>
                     </p:panel>
 
