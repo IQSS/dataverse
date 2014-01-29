@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,8 +30,8 @@ public class PermissionServiceBean {
 	private static final ConcurrentMap<String, Map<Long,Set<Permission>>> perObjectPermissions;
 	static {
 		samplePermissions = new TreeMap<>();
-		samplePermissions.put("PriviledgedPete", EnumSet.allOf(Permission.class));
-		samplePermissions.put("UnpriviledgedUma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.UndoableEdit));
+		samplePermissions.put("PrivilegedPete", EnumSet.allOf(Permission.class));
+		samplePermissions.put("UnprivilegedUma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.Tracking));
 		samplePermissions.put("GabbiGuest", EnumSet.noneOf(Permission.class) );
 		
 		perObjectPermissions = new ConcurrentHashMap<>();
@@ -78,20 +77,25 @@ public class PermissionServiceBean {
 		}
 	}
 	
-    public Set<Permission> permissionsFor( DataverseUser u, Dataverse d ) {
+    public Set<Permission> permissionsFor( DataverseUser u, DvObject d ) {
 		Set<Permission> retVal;
+		logger.info( "u=" + u.getUserName() + " d=" + d );
 		if ( perObjectPermissions.containsKey(u.getUserName()) ) {
+			logger.info( "Per object permissions" );
 			Map<Long,Set<Permission>> permissions = perObjectPermissions.get(u.getUserName());
 			retVal = permissions.containsKey(d.getId()) ? permissions.get(d.getId())
 													  : EnumSet.noneOf(Permission.class);
 			
 		} else {
+			logger.info( "Sample" );
 			retVal = samplePermissions.containsKey(u.getUserName()) 
 				? samplePermissions.get(u.getUserName())
 				: EnumSet.noneOf(Permission.class);
 		}
 		
+		// Special case for root
 		if ( d.getOwner() == null && !(u.getUserName().equals("GabbiGuest")) ) {
+			logger.info( "Root special case" );
 			retVal.add( Permission.UndoableEdit );
 		}
 		

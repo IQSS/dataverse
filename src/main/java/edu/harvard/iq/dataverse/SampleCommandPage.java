@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverse;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -16,6 +15,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.UUID;
+import javax.ejb.EJBException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  * A page that shows how to use to command engine in Dataverse.
@@ -44,12 +49,33 @@ public class SampleCommandPage {
 	@EJB
 	PermissionServiceBean permissionsService;
 	
+	@PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
+	
 	private Long selectedDataverseId;
-	private Long selectedUserId;
+	private String selectedUserUserName;
 	private String newName;
-	private String destinationUserName;
+	private Long selectedDvObjectId;
+	private DataverseUser selectedUser;
+	
 	
 	public void init() {
+		if ( selectedUserUserName == null ) {
+			List<DataverseUser> users = userService.findAll();
+			if ( ! users.isEmpty() ) {
+				selectedUser = users.get(0);
+				selectedUserUserName = selectedUser.getUserName();
+			}
+		} else {
+			selectedUser = userService.findByUserName(selectedUserUserName);
+		}
+		
+		if ( selectedDvObjectId == null ) {
+			List<DvObject> objects = getDvObjects();
+			if ( ! objects.isEmpty() ) {
+				selectedDvObjectId = objects.get(0).getId();
+			}
+		}
 	}
 	
 	public void actionSave( ActionEvent e ) {
@@ -89,12 +115,12 @@ public class SampleCommandPage {
 		this.newName = newName;
 	}
 
-	public Long getSelectedUserId() {
-		return selectedUserId;
+	public String getSelectedUserUserName() {
+		return selectedUserUserName;
 	}
 
-	public void setSelectedUserId(Long selectedUserId) {
-		this.selectedUserId = selectedUserId;
+	public void setSelectedUserUserName(String selectedUserUserName) {
+		this.selectedUserUserName = selectedUserUserName;
 	}
 	
 	public boolean isSetupNeeded() {
@@ -102,14 +128,56 @@ public class SampleCommandPage {
 		return  ( user == null );
 	}
 	
+	public void updateUserDvOPermissions( ActionEvent e ) {
+		
+	}
+	
+	public String randomStr() {
+		return UUID.randomUUID().toString();
+	}
+	
+	public List<Permission> userPermissionsOnDvObject() {
+		if ( getSelectedDvObjectId() != null 
+				&& getSelectedUserUserName() != null ) {
+			DvObject obj = em.find(DvObject.class, getSelectedDvObjectId());
+			DataverseUser user = userService.findByUserName(getSelectedUserUserName());
+			ArrayList<Permission> permissions = new ArrayList<>(permissionsService.permissionsFor(user, obj));
+			
+			logger.info( "permissions: " + permissions );
+			
+			return permissions;
+			
+		} else {
+			return null;
+		}
+	}
+	
+	public List<DvObject> getDvObjects() {
+		return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
+	}
+	
 	public void changeUser() {
 		session.setUser(null);
-		session.setUser( userService.findByUserName(getDestinationUserName()) );
+		session.setUser( userService.findByUserName(getSelectedUserUserName()) );
 	}
 	
 	public void setupUsers() {
+		try {
+			dataverseService.findRootDataverse();
+		} catch ( EJBException nre ) {
+			logger.info( "Setting up a root dataverse");
+			Dataverse root = new Dataverse();
+			root.setName("Root dataverse");
+			root.setAlias("root-dv");
+			root.setContactEmail("root@mailinator.com");
+			root.setAffiliation("Affiliation value");
+			root.setDescription("Auto-generated dataverse, by SampleCommandPage");
+			dataverseService.save(root);
+			JH.addMessage(FacesMessage.SEVERITY_INFO, "Root dataverse created.");
+		}
+		
 		logger.info("Setting up users" );
-		for ( String s : Arrays.asList("Priviledged Pete","Unpriviledged Uma", "Gabbi Guest") ) {
+		for ( String s : Arrays.asList("Privileged Pete","Unprivileged Uma", "Gabbi Guest") ) {
 			DataverseUser dvu = new DataverseUser();
 			String[] names = s.split(" ");
 			dvu.setUserName(names[0]+names[1]);
@@ -128,12 +196,16 @@ public class SampleCommandPage {
 		JH.addMessage(FacesMessage.SEVERITY_INFO, "Users added.");
 	}
 
-	public String getDestinationUserName() {
-		return destinationUserName;
+	public DataverseUser getSelectedUser() {
+		return selectedUser;
 	}
 
-	public void setDestinationUserName(String destinationUserName) {
-		this.destinationUserName = destinationUserName;
+	public Long getSelectedDvObjectId() {
+		return selectedDvObjectId;
+	}
+
+	public void setSelectedDvObjectId(Long selectedDvObjectId) {
+		this.selectedDvObjectId = selectedDvObjectId;
 	}
 	
 	

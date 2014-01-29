@@ -22,3 +22,17 @@
 	padding: 4px;
 	box-shadow: 0 2px 4px rgba(0,0,0,0.75) inset;
 }
+
+.helpText {
+	background-color: #CCF;
+	font-size: smaller;
+}
+
+.helpText:before {
+	content:"?";
+	display: inline-block;
+	background-color: blue;
+	color: white;
+	margin-right: 4px;
+	padding: 4px;
+}
