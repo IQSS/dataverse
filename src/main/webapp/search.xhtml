@@ -57,6 +57,8 @@
                         table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
                         table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
                         div[id$="resultsTable"] .ui-datatable-tablewrapper table > thead {display:none;}
+                        
+                        div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
                     </style>
                     
                     <!-- Content Panel -->
@@ -109,6 +111,8 @@
                                 </p:dataList>
                             </div>
                             <div style="width:77%;float:left;padding-left:20px;">
+                                
+                                
                                 <h:outputText value="#{SearchPage.searchResultsCount} results for " style="font-weight: bold"/>
                                 <h:outputLink value="/search.xhtml" rendered="#{SearchPage.query != '*'}" style="color: #C55B28">
                                     <f:param name="q" value="*"/>
@@ -118,13 +122,13 @@
                                     <h:outputText value="&#34;#{SearchPage.query}&#34; X" style="color: #C55B28"/>
                                 </h:outputLink>
                                 <h:outputText value="&#34;*&#34;" rendered="#{SearchPage.query == '*'}" style="color: #C55B28"/>
+                                
                                 <h:outputText value=" refined with " rendered="#{SearchPage.filterQueries.size() > 0}" style="font-weight: bold"/>
-                                <!--<h:outputText value=" "/>-->
                                 <h:outputLink value="/search.xhtml" rendered="#{SearchPage.filterQueries.size() > 0}" style="color: #C55B28">
                                     <f:param name="q" value="#{SearchPage.query}"/>
                                     <h:outputText value="#{SearchPage.filterQueries} X" style="color: #C55B28"/>
                                 </h:outputLink>
-                                <!--<h:outputText value=" :"/>-->
+                                
                                 <div style="float: right">
                                     <h:outputText value="Page " rendered="#{SearchPage.searchResultsCount > 11}"/>
                                     <h:outputText value="#{(SearchPage.paginationStart + 10) / 10}" rendered="#{SearchPage.searchResultsCount > 11}"><f:convertNumber pattern="#0" /></h:outputText>
@@ -147,24 +151,32 @@
                                         <h:outputText value="Next"/>
                                     </h:outputLink>
                                 </div>
-                                <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result" style="margin-top:.5em;">
+                                <p:dataTable id="resultsTable" value="#{SearchPage.searchResultsList}" var="result">
                                     <p:column>
                                         <ui:fragment rendered="#{result.type == 'dataverses'}">
-                                            <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left;">
+                                            <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                                 <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
-                                            <h:outputText value=" (#{result.affiliation})" rendered="#{result.affiliation != null}"/>
                                             </h:outputLink>
                                             <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                                 <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                             </div>
                                             
-                                            <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                                <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}" style="display:block;"/>
-                                            </ui:fragment>
+                                            <h:outputText value="#{result.affiliation}" rendered="#{result.affiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
                                             
-                                            <div style="clear:left"> <!--this needs to be a datatable-->
-                                                <p:dataTable id="datasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true" rendered="#{result.datasets.size() > 0}">  
+                                            <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
+                                                <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                            </p:outputPanel>
+                                            
+                                            <h:outputLink id="lnk" value="javascript:void(0)">  
+                                                <h:outputText value="Show the child items..." />  
+                                                <p:effect type="slide" event="click" for="childDatasetTable">  
+                                                    <f:param name="mode" value="'show'" />  
+                                                </p:effect>  
+                                            </h:outputLink>
+                                            
+                                            <div style="clear:left;"> <!--this needs to be a datatable-->
+                                                <p:dataTable style="display:none;" id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true" rendered="#{result.datasets.size() > 0}">  
                                                     <p:column headerText="Title" style="font-size: smaller; width: 90%">
                                                         <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset"  />
                                                         <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
@@ -187,14 +199,16 @@
                                             </div>-->
                                         </ui:fragment>
                                         <ui:fragment rendered="#{result.type == 'datasets'}">
-                                            <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left;">
+                                            <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                                 <h:outputText value="#{result.title}" style="padding:4px 0;"/>
                                             </h:outputLink>
                                             <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                                 <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
                                             </div>
                                             
-                                            <h:outputText value="#{result.citation}" escape="false"/>
+                                            <h:outputText value="LastName, FirstName" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                            
+                                            <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#E6F1F6;padding:4px;"/>
                                             
                                             <h:outputLink value="/dataverse.xhtml?id=#{result.parent.get('id')}" style="display:block;">
                                                     <h:outputText value="Original Dataverse: #{result.parent.get('name')} Dataverse"/>
@@ -211,14 +225,14 @@
                                         </ui:fragment>
                                         <ui:fragment rendered="#{result.type == 'files'}">
                                             <!--FIXME: have a landing page for each file?-->
-                                            <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold;">
+                                            <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                                 <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                             </h:outputLink>
                                             <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                                 <img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/>
                                             </div>
                                             
-                                            <h:outputText value="#{result.filetype}"/>
+                                            <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
                                             
                                             <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block;">
                                                 <h:outputText value="Dataset: #{result.parent.get('name')}"/>
