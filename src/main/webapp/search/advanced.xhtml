@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="thisPageTitle" value="Advanced Search"/>
+            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
+            <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
+            <ui:param name="ownerId" value="#{DataversePage.ownerId}"/> 
+            <ui:define name="body">        
+
+                <f:metadata>
+                    <f:viewAction action="#{AdvancedSearchPage.init}"/>
+                    <f:viewParam name="q" value="#{AdvancedSearchPage.query}"/>
+                    <f:viewParam name="title" value="#{AdvancedSearchPage.title}"/>
+                    <f:viewParam name="author" value="#{AdvancedSearchPage.author}"/>
+                </f:metadata>
+
+                <!-- Breadcrumbs Panel -->
+                <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
+                    <h:outputText value="#{thisPageTitle}" style="font-weight:bold;"/>
+                </p:panel>
+
+                <!-- Message Panel -->
+                <p:panel styleClass="panelLayoutTitleBlock">
+                    <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
+                </p:panel>
+
+                <!-- Search Panel -->
+                <p:panel styleClass="panelLayoutBlock">
+                    <h:form>
+                        <p:focus/>
+
+                        <ui:fragment>
+                            <p:outputLabel value="Title " for="title"/>
+                            <h:inputText id="title" value="#{AdvancedSearchPage.title}"/>
+                            <br/>
+                        </ui:fragment>
+                        <ui:fragment>
+                            <h:outputLabel value="Author " for="author"/>
+                            <h:inputText id="author" value="#{AdvancedSearchPage.author}"/>
+                            <br/>
+                        </ui:fragment>
+                        <br/>
+                        <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                    </h:form>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>
