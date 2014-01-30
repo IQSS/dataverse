@@ -1,14 +1,14 @@
 Finding and Using Data
 ++++++++++++++++++
 
-Without logging in to the Dataverse Network, users can browse
+Without logging in to Dataverse, users can browse
 dataverses, search datasets, view dataset description and files for
 public datasets, and subset, analyze and visualize data for public data
 files. To view a restricted dataverse, dataset, or file, a user will need to be given permission from the dataverse adminstrator to access it. 
 
 **Ways to Search**
 
-From the Dataverse homepage, you can begin searching with a wildcard search, an exact phrase search, or entering a search term or query in the search box that says, "Search the dataverse" 
+From the Dataverse homepage, you can begin searching with a wildcard search, an exact phrase search, or entering a search term or query in the search box that says, "Search this dataverse" 
 
 Basic search block features:
 
@@ -30,29 +30,15 @@ Other search features:
 
 **Search - Basic**
 
-You can search for datasets across the entire Dataverse Network from the
-Network homepage, or search within a dataverse from the dataverse
-homepage. When you search across the Network, datasets in restricted
-dataverses are not included in the search. Restricted datasets are
-included in search results, and a lock icon appears beside those datasets
-in the results list. After your search is complete, you can further
-narrow your list of data by searching again in the results. 
-
-
-It supports a search in any field of the dataset's Metadata, which includes citation information, abstract and other
-scope-related information, methodology, and Terms of Use. In addition,
-file descriptions also are searched.
+You can search for datasets across the entire Dataverse from the
+Network homepage, or search within a dataverse from a specific dataverse's
+homepage. When you search across Dataverse, datasets in restricted
+dataverses are not included in the search. 
 
 **Search - Advanced** (Needs to be edited/updated once advanced search is developed)
 
 In an advanced search, you can refine your criteria by choosing which
-Cataloging Information fields to search. You also can apply logic to the
-field search. For text fields, you can specify that the field searched
-either *contains* or *does not contain\ the text that you enter. For
-date fields, you can specify that the field searched is either *later
-than* nor *earlier than* the date that you enter. Refer to
-the `Documentation <http://lucene.apache.org/java/docs/>`__  page for
-the latest version at the Lucene website and look for *Query Syntax* for full details.
+Metadata fields to search.
 
 To perform an advanced search, click the Advanced Search link at the
 top-right of the Search panel. You can search the following study
