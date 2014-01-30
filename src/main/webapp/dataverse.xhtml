@@ -187,7 +187,7 @@
                     <f:param name="q" value="*"/>
                     <f:param name="fq0" value="#{DataversePage.dataversePath}"/>
                     <f:param name="fromDataverseId" value="#{DataversePage.dataverse.id}"/>
-                    <h:outputText value="DEBUG: Make facets clickable" style="color: blue"/>
+                    <h:outputText value="DEBUG: Show cards and make facets clickable" style="color: blue"/>
                 </h:outputLink>
                 <p:panel>
                     <div style="width:20%;float:left;">
@@ -200,7 +200,16 @@
                         </p:dataList>
                     </div>
                     <div style="width:80%;float:left;">
-                        <h:outputText value="#{DataversePage.filterQueries}"/>
+                        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}" style="fon">
+                            <p:tree value="#{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >
+                                <p:treeNode id="treeNode">
+                                    <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
+                                    <h:outputText value="#{node.name} Dataverse" style="font-weight: #{DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                                    </h:outputLink>
+                                </p:treeNode>
+                            </p:tree>
+                        </p:panel>
+                        <!--<h:outputText value="#{DataversePage.filterQueries}"/>-->
                         <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
                             <p:dataList value="#{DataversePage.contents}" var="item">
                                 <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">

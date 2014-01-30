@@ -22,6 +22,8 @@ import javax.persistence.NoResultException;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -52,6 +54,7 @@ public class DataversePage implements java.io.Serializable {
     private String fq0;
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     List filterQueries = new ArrayList();
+    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -148,6 +151,14 @@ public class DataversePage implements java.io.Serializable {
         this.filterQueries = filterQueries;
     }
 
+    public TreeNode getTreeWidgetRootNode() {
+        return treeWidgetRootNode;
+    }
+
+    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
+        this.treeWidgetRootNode = treeWidgetRootNode;
+    }
+
     public void init() {
         
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
@@ -195,6 +206,7 @@ public class DataversePage implements java.io.Serializable {
         }
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
 
+        populateTreeWidget(treeWidgetRootNode);
     }
 
     public List getContents() {
@@ -240,4 +252,39 @@ public class DataversePage implements java.io.Serializable {
 	public Dataverse getOwner() {
 		return (ownerId!=null) ? dataverseService.find(ownerId) : null;
 	}
+
+        public TreeNode populateTreeWidget(TreeNode root) {
+        TreeNode firstNode = new DefaultTreeNode();
+        if (dataverse.getOwner() != null) {
+            TreeNode parentDataverseNode = new DefaultTreeNode(dataverse.getOwner(), root);
+            firstNode = parentDataverseNode;
+        } else {
+            firstNode = root;
+        }
+        firstNode.setExpanded(true);
+        TreeNode currentDataverseNode = new DefaultTreeNode(dataverse, firstNode);
+        currentDataverseNode.setExpanded(true);
+        currentDataverseNode.setSelectable(false);
+        List<Dataverse> childDataversesOfCurrentDataverse = dataverseService.findByOwnerId(dataverse.getId());
+        /**
+         * @todo: support arbitrary depth of dataverse heirarchy
+         */
+        for (Dataverse child1 : childDataversesOfCurrentDataverse) {
+            TreeNode treeNode1 = new DefaultTreeNode(child1, currentDataverseNode);
+            List<Dataverse> childDataversesOfLevel1Dataverse = dataverseService.findByOwnerId(child1.getId());
+            for (Dataverse child2 : childDataversesOfLevel1Dataverse) {
+                TreeNode treeNode2 = new DefaultTreeNode(child2, treeNode1);
+                List<Dataverse> childDataversesOfLevel2Dataverse = dataverseService.findByOwnerId(child2.getId());
+                for (Dataverse child3 : childDataversesOfLevel2Dataverse) {
+                    TreeNode treeNode3 = new DefaultTreeNode(child3, treeNode2);
+                    List<Dataverse> childDataversesOfLevel3Dataverse = dataverseService.findByOwnerId(child3.getId());
+                    for (Dataverse child4 : childDataversesOfLevel3Dataverse) {
+                        TreeNode treeNode4 = new DefaultTreeNode(child4, treeNode3);
+                    }
+                }
+            }
+        }
+        return root;
+    }
+
 }
