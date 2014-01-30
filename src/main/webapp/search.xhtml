@@ -33,9 +33,14 @@
 
                 <h:form id="searchPageForm">
                     <!-- Breadcrumbs Panel -->
-                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
-
-                        <h:outputText value="Harvard Dataverse"  style="font-weight:bold;"/>
+                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
+                        <ui:repeat value="#{SearchPage.fromDataverse.owners}" var="owner">
+                            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                                <h:outputText value="#{owner.name} Dataverse"/>
+                            </h:outputLink>
+                            <h:outputText value=" > "/>
+                        </ui:repeat>
+                        <h:outputText value="#{DataversePage.dataverse.name} Dataverse" style="font-weight:bold;"/>
                     </p:panel>
 
                     <p:panel styleClass="panelLayoutBlock">
