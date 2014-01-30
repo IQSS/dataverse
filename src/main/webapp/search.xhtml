@@ -27,6 +27,7 @@
                     <f:viewParam name="fq7" value="#{SearchPage.fq7}"/>
                     <f:viewParam name="fq8" value="#{SearchPage.fq8}"/>
                     <f:viewParam name="fq9" value="#{SearchPage.fq9}"/>
+                    <f:viewParam name="fromDataverseId" value="#{SearchPage.fromDataverseId}"/>
                     <f:viewAction action="#{SearchPage.search()}" />
                 </f:metadata>  
 
@@ -54,6 +55,13 @@
                     </style>
                     
                     <!-- Content Panel -->
+                    <ui:fragment rendered="#{SearchPage.fromDataverseId != null}">
+                    <h:outputText value="DEBUG: Cards for the #{SearchPage.fromDataverse.name} Dataverse and its children. "/>
+                    <h:outputLink value="/dataverse.xhtml">
+                        <f:param name="id" value="#{SearchPage.fromDataverseId}"/>
+                        <h:outputText value="Click here to return to the dataverse page for the #{SearchPage.fromDataverse.name} Dataverse." style="color: blue"/>
+                    </h:outputLink>
+                    </ui:fragment>
                     <p:panel id="content" styleClass="panelLayoutBlock">
                         <h:outputText style="color: red" value="Did you mean #{SearchPage.spelling_alternatives}?" rendered="#{SearchPage.spelling_alternatives.size() != 0}"/>
 

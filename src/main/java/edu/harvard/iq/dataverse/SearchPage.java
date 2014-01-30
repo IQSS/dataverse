@@ -37,6 +37,8 @@ public class SearchPage implements java.io.Serializable {
     private List<String> spelling_alternatives = new ArrayList<>();
     private Map<String, String> friendlyName = new HashMap<>();
     private Map<String,Integer> numberOfFacets = new HashMap<>();
+    private Long fromDataverseId;
+    private Dataverse fromDataverse;
 
     
 
@@ -123,6 +125,9 @@ public class SearchPage implements java.io.Serializable {
         friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
         friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
+        if (fromDataverseId != null) {
+            fromDataverse = dataverseService.find(fromDataverseId);
+        }
     }
 
     public String getQuery() {
@@ -285,5 +290,21 @@ public class SearchPage implements java.io.Serializable {
         }
         numberOfFacets.put(name, numFacets + incrementNum);   
     }    
-    
+
+    public Long getFromDataverseId() {
+        return fromDataverseId;
+    }
+
+    public void setFromDataverseId(Long fromDataverseId) {
+        this.fromDataverseId = fromDataverseId;
+    }
+
+    public Dataverse getFromDataverse() {
+        return fromDataverse;
+    }
+
+    public void setFromDataverse(Dataverse fromDataverse) {
+        this.fromDataverse = fromDataverse;
+    }
+
 }
