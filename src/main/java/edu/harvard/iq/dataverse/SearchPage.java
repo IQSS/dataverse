@@ -37,6 +37,7 @@ public class SearchPage implements java.io.Serializable {
     private List<String> spelling_alternatives = new ArrayList<>();
     private Map<String, String> friendlyName = new HashMap<>();
     private Map<String,Integer> numberOfFacets = new HashMap<>();
+    private Map<String,Integer> numberOfChildDatasets = new HashMap<>();
     private Long fromDataverseId;
     private Dataverse fromDataverse;
 
@@ -289,7 +290,26 @@ public class SearchPage implements java.io.Serializable {
             numFacets = incrementNum;
         }
         numberOfFacets.put(name, numFacets + incrementNum);   
-    }    
+    }
+    
+    
+    public  int getNumberOfChildDatasets(String name, int defaultValue) {
+        Integer numChildDatasets = numberOfChildDatasets.get(name);
+        if (numChildDatasets == null) {
+            numberOfChildDatasets.put(name,defaultValue);
+            numChildDatasets = defaultValue;
+        }
+        return numChildDatasets;
+    }
+    
+    public void incrementChildDatasets(String name, int incrementNum) {
+        Integer numChildDatasets = numberOfChildDatasets.get(name);
+        if (numChildDatasets == null) {
+            numChildDatasets = incrementNum;
+        }
+        numberOfChildDatasets.put(name, numChildDatasets + incrementNum);   
+    }
+    
 
     public Long getFromDataverseId() {
         return fromDataverseId;

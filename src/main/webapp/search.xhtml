@@ -168,17 +168,43 @@
                                                 <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
                                             </p:outputPanel>
                                             
-                                            <h:outputLink id="lnk" value="javascript:void(0)">  
-                                                <h:outputText value="Show the child items..." />  
-                                                <p:effect type="slide" event="click" for="childDatasetTable">  
-                                                    <f:param name="mode" value="'show'" />  
-                                                </p:effect>  
-                                            </h:outputLink>
-                                            
-                                            <div style="clear:left;"> <!--this needs to be a datatable-->
-                                                <p:dataTable style="display:none;" id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true" rendered="#{result.datasets.size() > 0}">  
+                                            <div style="clear:left;">
+                                                
+                                                <h:outputLink id="effectLnkShow" value="javascript:void(0)">  
+                                                    <h:outputText id="effectLnkShowTxt" value="Show the child items..." />  
+                                                    <p:effect type="slideToggle" event="click" for="childDatasetTable">  
+                                                        <f:param name="mode" value="'show'" />
+                                                    </p:effect>
+                                                    <p:effect type="slideToggle" event="click" for="childDatasetTableControls">  
+                                                        <f:param name="mode" value="'show'" />
+                                                    </p:effect>
+                                                    <p:effect type="hide" event="click" for="effectLnkShow">  
+                                                        <f:param name="mode" value="'hide'" />
+                                                    </p:effect>
+                                                    <p:effect type="show" event="click" for="effectLnkHide">  
+                                                        <f:param name="mode" value="'show'" />
+                                                    </p:effect>
+                                                </h:outputLink>
+                                                
+                                                <h:outputLink id="effectLnkHide" value="javascript:void(0)" style="display:none;">  
+                                                    <h:outputText id="effectLnkHideTxt" value="Hide the child items..." />
+                                                    <p:effect type="slideToggle" event="click" for="childDatasetTable">  
+                                                        <f:param name="mode" value="'hide'" />
+                                                    </p:effect>
+                                                    <p:effect type="slideToggle" event="click" for="childDatasetTableControls">  
+                                                        <f:param name="mode" value="'hide'" />
+                                                    </p:effect>
+                                                    <p:effect type="hide" event="click" for="effectLnkHide">  
+                                                        <f:param name="mode" value="'hide'" />
+                                                    </p:effect>
+                                                    <p:effect type="show" event="click" for="effectLnkShow">  
+                                                        <f:param name="mode" value="'show'" />
+                                                    </p:effect>
+                                                </h:outputLink>
+                                                
+                                                <p:dataTable style="display:none;" id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="#{SearchPage.getNumberOfChildDatasets(result.datasets,5)}" scrollable="true" rendered="#{result.datasets.size() > 0}">  
                                                     <p:column headerText="Title" style="font-size: smaller; width: 90%">
-                                                        <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset"  />
+                                                        <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
                                                         <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
                                                             <h:outputText value="#{dataset.getLatestVersion().getMetadata().getTitle()}" />
                                                         </h:outputLink>
@@ -190,6 +216,18 @@
                                                     <!--<h:outputText value="FIXME" />-->
                                                     <!--</p:column>-->
                                                 </p:dataTable>
+                                                
+                                                
+                                                <p:panelGrid styleClass="childResultsMoreLess" id="childDatasetTableControls" columns="2" style="display:none;">
+                                                    <ui:fragment>
+                                                        <p:commandLink actionListener="#{SearchPage.incrementChildDatasets(result.datasets.name,-5)}" update="childDatasetTable">Less...</p:commandLink>
+                                                    </ui:fragment>
+                                                    <ui:fragment>
+                                                        <p:commandLink actionListener="#{SearchPage.incrementChildDatasets(result.datasets.name,5)}" update="childDatasetTable">More...</p:commandLink>
+                                                    </ui:fragment>
+                                                </p:panelGrid>
+                                                
+                                                
                                                 <!--<h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" rendered="#{result.datasets.size() > 3}">
                                                     <h:outputText value="&#160;&#160;&#160;> View #{result.datasets.size() - 3} more"/>
                                                 </h:outputLink>-->
