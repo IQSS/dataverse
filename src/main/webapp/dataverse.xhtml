@@ -10,7 +10,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Dataverse"/>
+            <ui:param name="pageTitle" value="#{DataversePage.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/> 
             <ui:define name="body">        
