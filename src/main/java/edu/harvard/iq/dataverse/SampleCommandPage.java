@@ -124,7 +124,7 @@ public class SampleCommandPage {
 	}
 	
 	public boolean isSetupNeeded() {
-		DataverseUser user = userService.findByUserName("PriviledgedPete");
+		DataverseUser user = userService.findByUserName("PrivilegedPete");
 		return  ( user == null );
 	}
 	
