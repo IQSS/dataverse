@@ -60,6 +60,14 @@ public class PermissionServiceBean {
 			return isUserAllowedOn(user, cmd, subject);
 		}
 		
+        /**
+         * "Fast and loose" query mechanism, allowing to pass the command class name.
+         * Command is assumed to live in {@code edu.harvard.iq.dataverse.engine.command.impl.}
+         * @param commandName
+         * @return {@code true} iff the user has the permissions required by the command on the
+         *                      object.
+         * @throws ClassNotFoundException 
+         */
 		public boolean canIssueCommand( String commandName ) throws ClassNotFoundException {
 			return isUserAllowedOn(user, 
 					(Class<? extends Command>)Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
@@ -79,7 +87,6 @@ public class PermissionServiceBean {
 	
     public Set<Permission> permissionsFor( DataverseUser u, DvObject d ) {
 		Set<Permission> retVal;
-		logger.info( "u=" + u.getUserName() + " d=" + d );
 		if ( perObjectPermissions.containsKey(u.getUserName()) ) {
 			logger.info( "Per object permissions" );
 			Map<Long,Set<Permission>> permissions = perObjectPermissions.get(u.getUserName());
@@ -87,7 +94,6 @@ public class PermissionServiceBean {
 													  : EnumSet.noneOf(Permission.class);
 			
 		} else {
-			logger.info( "Sample" );
 			retVal = samplePermissions.containsKey(u.getUserName()) 
 				? samplePermissions.get(u.getUserName())
 				: EnumSet.noneOf(Permission.class);
@@ -95,10 +101,8 @@ public class PermissionServiceBean {
 		
 		// Special case for root
 		if ( d.getOwner() == null && !(u.getUserName().equals("GabbiGuest")) ) {
-			logger.info( "Root special case" );
 			retVal.add( Permission.UndoableEdit );
 		}
-		
 		return retVal;
 	}
 	
@@ -113,12 +117,12 @@ public class PermissionServiceBean {
 	public boolean isUserAllowedOn( DataverseUser u, Class<? extends Command> commandClass, Dataverse d ) {
 		Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
 		if ( required.isEmpty() || required.get("")==null ) {
+            logger.info("IsUserAllowedOn: empty-true");
 			return true;
 		} else {
 			Set<Permission> grantedUserPermissions = permissionsFor(u, d);
-			Set<Permission> neededPermissions = required.get("");
-			
-			return grantedUserPermissions.containsAll(neededPermissions);
+			Set<Permission> requiredPermissionSet = required.get("");
+			return grantedUserPermissions.containsAll(requiredPermissionSet);
 		}
 	}
 	

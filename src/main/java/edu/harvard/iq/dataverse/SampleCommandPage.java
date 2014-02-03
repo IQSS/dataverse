@@ -16,7 +16,6 @@ import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.UUID;
 import javax.ejb.EJBException;
 import javax.persistence.EntityManager;

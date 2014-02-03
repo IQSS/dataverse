@@ -42,195 +42,185 @@
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{DataversePage.dataverse.id}"/>
             <f:viewParam name="id" value="#{manageRolesPage.viewRoleId}"/>
-            <f:viewParam name="intent" value="#{manageRolesPage.intent}"/>
+            <f:viewParam name="intent" value="#{manageRolesPage.intentParam}"/>
+			<f:viewParam name="objectType" value="#{manageRolesPage.objectTypeParam}"/>
             <f:viewAction action="#{manageRolesPage.init}"/>
         </f:metadata>
-
-        <!-- Header Panel -->
-        <p:panel style="background-color: lightskyblue; height:70px;">
-            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
-                <ui:fragment>
-                    <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
-                        <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
-                    </h:outputLink>
-
-                    <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-
-                    <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
-                </ui:fragment>
-                <ui:fragment>
-                    <p:panelGrid columns="2">
-                        <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
-                                Create Account
-                            </h:outputLink>
-                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
-                        </ui:fragment>
-                        <ui:fragment>
-                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
-                                Log In
-                            </h:outputLink>
-                            <h:form id="headerForm">
-                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
-                                    Log Out
-                                </h:commandLink>   
-                            </h:form>                            
-                        </ui:fragment>
-                    </p:panelGrid>
-                </ui:fragment>
-            </p:panelGrid>
-        </p:panel>
-		<p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
-			<ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
-				<h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-					<h:outputText value="#{owner.name} Dataverse"/>
-				</h:outputLink>
-				<h:outputText value=" > "/>
-			</ui:repeat>
-			<h:outputText value="#{DataversePage.dataverse.name}"  style="font-weight:bold;"/>
-		</p:panel>
-		<h:outputText value="Manage Permissions and Roles"  style="font-style:italic;"/>
-		<p:panel styleClass="panelLayoutTitleBlock">
-			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-		</p:panel>
-		
-		<p:tabView dynamic="true" cache="false" activeIndex="2">
-			<p:tab id="dataverseTab" title="Dataverse">
-				<h:form id="dvForm">
-					<p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
-						<p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
-							<h:outputText value="Permission Inheritance" />
-							<h:panelGroup>
-								<h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.permissionRoot}" />
-								<h:outputLabel for="permissionRootCb" value="Permission Root" />
-							</h:panelGroup>
-							<h:panelGroup>
-								When a dataverse is defined as a <em>permission root</em>,
-								it does not honor roles granted to users on its parents dataverses.
-								Unless this dataverse holds data which is significantly more restricted
-								than the data in the parent dataverse, you probably want to keep this
-								box unchecked.
-							</h:panelGroup>
-							<h:outputText value="Guest User" />
-							<div class="placeholder">We'll have a list of applicable roles here.</div>
-							<h:panelGroup>
-								Define what guest users can and cannot do on this dataverse.
-							</h:panelGroup>
-						</p:panelGrid>
-					</p:panelGrid>
-					<p:commandButton value="Save" actionListener="#{manageRolesPage.saveDataverse()}" />
-				</h:form>
-			</p:tab>
-			<p:tab id="userTab" title="Users">
-				Assign roles to users here!
-			</p:tab>
-			<p:tab id="roleTab" title="Roles">
-				<!-- LIST -->
-				<ui:fragment rendered="#{manageRolesPage.mode eq 'LIST'}">
-					<p:panel>
-						<p:commandButton id="newRole" value="Create New Role" actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
-					</p:panel>
-					<p:panel>
-						<p:dataList value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles()}">
-							<h:link outcome="manage-roles" value="edit" styleClass="pull-right">
-								<f:param name="id" value="#{role.id}"/>
-								<f:param name="intent" value="edit"/>
-							</h:link>
-							<h:link outcome="manage-roles" value="#{role.name}">
-								<f:param name="id" value="#{role.id}"/>
-							</h:link>
-						</p:dataList>
-						<p:panel rendered="#{! manageRolesPage.hasRoles()}">
-							No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
-							<h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
-								Any roles applied to users at parent dataverses, are valid in this
-								dataverse as well.
-							</h:outputText>
-							<p:commandLink value="Create a new role"  actionListener="#{manageRolesPage.createNewRole}" update="@all"/>
-						</p:panel>
-					</p:panel>
-				</ui:fragment>
-
-				<!-- EDIT -->
-				<ui:fragment rendered="#{manageRolesPage.mode eq 'EDIT'}">
-					<h:form id="roleForm">
-						<p:panel styleClass="panelLayoutBlock" header="Role Properties">
-							<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-								<p:panelGrid columns="2" styleClass="panelgridFormTable">
-									<p:outputLabel value="Name" for="name"/>
-									<p:inputText id="name" value="#{manageRolesPage.role.name}"/>
-									<p:watermark for="name" value="Enter a name for the role..."/>
-									<p:message for="name"/>
-
-									<p:outputLabel value="Alias" for="alias"/>
-									<p:inputText id="alias" value="#{manageRolesPage.role.alias}"/>
-									<p:watermark for="alias" value="Enter alias for the role..."/>
-									<p:message for="alias"/>
-
-									<p:outputLabel value="Description" for="description"/>
+		<ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Manage Roles and Permissions"/>
+            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/> 
+            <ui:define name="body">
+				
+				<!-- Tabs -->
+				<p:tabView dynamic="true" cache="false" activeIndex="#{manageRolesPage.activeTabIndex}">
+					<p:tab id="dataverseTab" title="Dataverse">
+						<h:form id="dvForm">
+							<p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
+								<p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
+									<h:outputText value="Permission Inheritance" />
 									<h:panelGroup>
-										<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"
-														 rows="5" cols="50" counter="counter" maxlength="1000"
-														 counterTemplate="{0} characters remaining" autoResize="false"/>
-										<h:outputText id="counter" style="display:block;"/>
+										<h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.permissionRoot}" />
+										<h:outputLabel for="permissionRootCb" value="Permission Root" />
 									</h:panelGroup>
-									<p:watermark for="description" value="Describe the role (1000 characters max)"/>
-									<p:message for="description"/>
+									<h:panelGroup>
+										When a dataverse is defined as a permission root,
+										it does not honor roles granted to users on its parents dataverses.
+										Unless this dataverse holds data which is significantly more restricted
+										than the data in the parent dataverse, you probably want to keep this
+										box unchecked.
+									</h:panelGroup>
+									<h:outputText value="Guest User" />
+									<div class="placeholder">We'll have a list of applicable roles here.</div>
+									<h:panelGroup>
+										Define what guest users can and cannot do on this dataverse.
+									</h:panelGroup>
 								</p:panelGrid>
 							</p:panelGrid>
-						</p:panel>
-						<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
-							<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
-								layout="pageDirection"> 
-								<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
-											   itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
-											   itemValue="#{pmsn}"
-											   />
-							</h:selectManyCheckbox>  
-						</p:panel>
-						<p:panel styleClass="panelLayoutButtonBlock">
-							<p:commandButton id="save" value="#{manageRolesPage.role.id == null ? 'Create Role' : 'Save Changes'}" 
-											 actionListener="#{manageRolesPage.saveRole}" update="@all"/>
-							<p:commandButton id="cancel" value="Cancel" 
-											 actionListener="#{manageRolesPage.cancelEdit}" process="@this" update="@all" />
+							<p:commandButton value="Save" actionListener="#{manageRolesPage.saveDataverse()}" />
+						</h:form>
+					</p:tab>
 
-						</p:panel>
-					</h:form>
-				</ui:fragment>
+					<p:tab id="roleTab" title="Roles">
+						<!-- LIST -->
+						<ui:fragment rendered="#{manageRolesPage.intent eq 'LIST'}">
+							<p:panel>
+								<h:form>
+									<p:commandButton id="newRole" value="Create New Role" 
+													 actionListener="#{manageRolesPage.createNewRole}" 
+													 update="@all"/>
+								</h:form>
+							</p:panel>
+							<p:panel>
+								<p:dataList value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles}">
+									<h:link outcome="manage-roles" value="edit" styleClass="pull-right">
+										<f:param name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+										<f:param name="id" value="#{role.id}"/>
+										<f:param name="objectType" value="ROLES" />
+										<f:param name="intent" value="EDIT"/>
+									</h:link>
+									<h:link outcome="manage-roles" value="#{role.name}">
+										<f:param name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+										<f:param name="id" value="#{role.id}"/>
+										<f:param name="objectType" value="ROLES" />
+										<f:param name="intent" value="VIEW"/>
+									</h:link>
+								</p:dataList>
+								<p:panel rendered="#{! manageRolesPage.hasRoles}">
+									No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
+									<h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
+										Any roles applied to users at parent dataverses, are valid in this
+										dataverse as well.
+									</h:outputText>
+									<h:form>
+										<p:commandLink value="Create a new role"  actionListener="#{manageRolesPage.createNewRole()}" update="@all"/>
+									</h:form>
+								</p:panel>
+							</p:panel>
+						</ui:fragment>
 
-				<!-- VIEW -->
-				<ui:fragment rendered="#{manageRolesPage.mode eq 'VIEW'}">
-					<p:panel styleClass="panelLayoutBlock" header="Role Properties">
-						<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-							<p:panelGrid columns="2" styleClass="panelgridFormTable">
-								<p:outputLabel value="Name" for="name"/>
-								<h:outputText id="name" value="#{manageRolesPage.role.name}"/>
+						<!-- EDIT -->
+						<ui:fragment rendered="#{manageRolesPage.intent eq 'EDIT'}">
+							<h:form id="roleForm">
+								<p:panel styleClass="panelLayoutBlock" header="Role Properties">
+									<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,leftClass">
+										<p:outputLabel value="Name" for="roleName"/>
+										<p:inputText id="roleName" value="#{manageRolesPage.role.name}"/>
+										<p:watermark for="roleName" value="Enter a name for the role..."/>
+										<p:message for="roleName"/>
 
-								<p:outputLabel value="Alias" for="alias"/>
-								<h:outputText id="alias" value="#{manageRolesPage.role.alias}"/>
+										<p:outputLabel value="Alias" for="roleAlias"/>
+										<p:inputText id="roleAlias" value="#{manageRolesPage.role.alias}"/>
+										<p:watermark for="roleAlias" value="Enter alias for the role..."/>
+										<p:message for="roleAlias"/>
 
-								<p:outputLabel value="Description" for="description"/>
-								<h:outputText id="description" value="#{manageRolesPage.role.description}"/>
+										<p:outputLabel value="Description" for="description"/>
+										<h:panelGroup>
+											<p:inputTextarea id="description" value="#{manageRolesPage.role.description}"
+															 rows="5" cols="50" counter="counter" maxlength="1000"
+															 counterTemplate="{0} characters remaining" autoResize="false"/>
+											<h:outputText id="counter" style="display:block;"/>
+										</h:panelGroup>
+										<p:watermark for="description" value="Describe the role (1000 characters max)"/>
+										<p:message for="description"/>
+									</p:panelGrid>
+								</p:panel>
+								<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
+									<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
+										layout="pageDirection"> 
+										<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
+													   itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
+													   itemValue="#{pmsn}"
+													   />
+									</h:selectManyCheckbox>  
+								</p:panel>
+								<p:panel styleClass="panelLayoutButtonBlock">
+									<ul class="navigationLinks">
+										<li>
+											<p:commandButton id="save" value="#{manageRolesPage.role.id == null ? 'Create Role' : 'Save Changes'}" 
+															 actionListener="#{manageRolesPage.saveRole}" update="@all"/>
+										</li>
+										<li>
+											<h:link outcome="manage-roles" value="Back to roles list">
+												<f:param name="intent" value="LIST" />
+												<f:param name="objectType" value="ROLES" />
+												<f:param name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+											</h:link>
+										</li>
+									</ul>
+								</p:panel>
+							</h:form>
+						</ui:fragment>
 
-							</p:panelGrid>
-						</p:panelGrid>
-					</p:panel>
-					<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
-						<p:dataList id="dvList" value="#{manageRolesPage.rolePermissions}" var="pmsn" emptyMessage="This role has no permissions.">
-							#{pmsn.humanName}
-						</p:dataList>
-					</p:panel>
-					<p:panel styleClass="panelLayoutButtonBlock">
-						<h:link outcome="manage-roles" value="Edit this role">
-							<f:param name="id" value="#{manageRolesPage.role.id}" />
-							<f:param name="intent" value="edit" />
-						</h:link>
-						<p:commandButton id="cancel" value="Back to Role List" 
-										 actionListener="#{manageRolesPage.cancelEdit}" update="dvList"/>
+						<!-- VIEW -->
+						<ui:fragment rendered="#{manageRolesPage.intent eq 'VIEW'}">
+							<p:panel styleClass="panelLayoutBlock" header="Role Properties">
+								<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+									<p:panelGrid columns="2" styleClass="panelgridFormTable">
+										<h:outputText value="Name"/>
+										<h:outputText id="name" value="#{manageRolesPage.role.name}"/>
 
-					</p:panel>
-				</ui:fragment>
-			</p:tab>
-		</p:tabView>
+										<h:outputText value="Alias"/>
+										<h:outputText id="alias" value="#{manageRolesPage.role.alias}"/>
+
+										<h:outputText value="Description"/>
+										<h:outputText id="description" value="#{manageRolesPage.role.description}"/>
+
+									</p:panelGrid>
+								</p:panelGrid>
+							</p:panel>
+							<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
+								<p:dataList id="dvList" value="#{manageRolesPage.rolePermissions}" var="pmsn" emptyMessage="This role has no permissions.">
+									#{pmsn.humanName}
+								</p:dataList>
+							</p:panel>
+							<p:panel styleClass="panelLayoutButtonBlock">
+								<ul class="navigationLinks">
+									<li>
+										<h:link outcome="manage-roles" value="Back to roles list">
+											<f:param name="intent" value="LIST" />
+											<f:param name="objectType" value="ROLES" />
+											<f:param name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+										</h:link>
+									</li>
+									<li>
+										<h:link outcome="manage-roles" value="Edit this role">
+											<f:param name="id" value="#{manageRolesPage.role.id}" />
+											<f:param name="intent" value="EDIT" />
+											<f:param name="objectType" value="ROLES" />
+											<f:param name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+										</h:link>
+									</li>
+								</ul>
+							</p:panel>
+						</ui:fragment>
+					</p:tab>
+
+					<p:tab id="userTab" title="Users">
+						Assign roles to users here!
+					</p:tab>
+
+				</p:tabView>
+			</ui:define>
+		</ui:composition>
     </h:body>
 </html>

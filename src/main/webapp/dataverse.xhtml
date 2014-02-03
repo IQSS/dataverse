@@ -113,8 +113,9 @@
                             <ui:fragment rendered="#{!empty dataverseSession.user and !DataversePage.editMode}">
                                 <p:menuButton id="editDataverse" value="Edit Dataverse" iconPos="right">
                                     <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DataversePage.edit}" update="@all"/>
-                                    <p:menuitem id="manageRoles" value="Manage Roles" outcome="manage-roles">
+									<p:menuitem id="manageRoles" value="Roles and Permissions" outcome="manage-roles">
                                         <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                        <f:param name="objectType" value="DATAVERSE" />
                                     </p:menuitem>
                                     <p:menuitem value="Edit Theme" disabled="true"/>
                                     <p:menuitem value="Edit Permissions" disabled="true"/>

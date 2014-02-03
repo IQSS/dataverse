@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.Permission;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import sun.security.x509.EDIPartyName;
 
 /**
  * 
@@ -24,8 +26,11 @@ import javax.inject.Named;
 @Named
 public class ManageRolesPage implements java.io.Serializable {
     
-	public enum PageMode {LIST, VIEW, EDIT };
-
+	private static final Logger logger = Logger.getLogger(ManageRolesPage.class.getName());
+	
+	public enum Intent { LIST, VIEW, EDIT };
+	public enum ObjectType { DATAVERSE, ROLES, USERS };
+	
     @Inject DataverseSession session;     
 	
 	@EJB
@@ -36,31 +41,32 @@ public class ManageRolesPage implements java.io.Serializable {
 	
 	private List<String> selectedPermissions;
 	
-	private PageMode mode = null;
+	private Intent intent = null;
 	
-	private String intent;
+	private String intentParam;
 	private Long viewRoleId;
+	private int activeTabIndex;
 	private DataverseRole role;
 	private DataverseRole defaultUserRole;
 	private boolean permissionRoot;
+	private String objectTypeParam;
+	private ObjectType objectType;
 	
 	public void init() {
-		if ( mode != null ) return;
+		
+		// decide object type
+		objectType = JH.enumValue(getObjectTypeParam(), ObjectType.class, ObjectType.DATAVERSE);
+		setActiveTab(objectType);
+		setIntent( JH.enumValue(getIntentParam(), Intent.class, Intent.LIST));
+		
 		if ( viewRoleId != null ) {
 			// enter view mode
 			setRole( rolesService.find(viewRoleId) );
-			if ( role == null ) {
-				FacesContext.getCurrentInstance().addMessage(null, 
-						new FacesMessage(FacesMessage.SEVERITY_WARN,
-								"Can't find role with id '" + viewRoleId + "'",
-								"The role might have existed once, but was deleted"));
-				mode = PageMode.LIST;
-			} else {
-				mode = "edit".equals(getIntent()) ? PageMode.EDIT : PageMode.VIEW;
-				dataversePage.setDataverse( role.getOwner() );
-			}
-		} else {
-			mode = PageMode.LIST;
+			if ( getRole() == null ) {
+				JH.addMessage(FacesMessage.SEVERITY_WARN, "Can't find role with id '" + viewRoleId + "'",
+								"The role might have existed once, but was deleted");
+				setIntent( Intent.LIST );
+			} 
 		}
 	}
 	
@@ -72,24 +78,24 @@ public class ManageRolesPage implements java.io.Serializable {
 		return Arrays.asList(Permission.values());
 	}
 	
-	public boolean hasRoles() {
+	public boolean isHasRoles() {
 		return ! getRoles().isEmpty();
 	}
 	
 	public void createNewRole( ActionEvent e ) {
-		mode = PageMode.EDIT;
+		setIntent(Intent.EDIT);
 		DataverseRole aRole = new DataverseRole();
-		aRole.setName("Untitled Role");
-		aRole.setAlias("untitled-role");
 		setRole( aRole );
+		setActiveTab(ObjectType.ROLES);
+		logger.info("Create new role");
 	}
 	
 	public void cancelEdit( ActionEvent e ) {
-		mode = PageMode.LIST;
+		intent = Intent.LIST;
 	}
 	
 	public void saveDataverse( ActionEvent e ) {
-		
+		// TODO do
 	}
 	
 	public void saveRole( ActionEvent e ) {
@@ -102,7 +108,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		
 		FacesContext.getCurrentInstance().addMessage(null,
 				new FacesMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", ""));
-		mode = PageMode.LIST;
+		intent = Intent.LIST;
 	}
 
 	public List<Permission> getRolePermissions() {
@@ -117,12 +123,12 @@ public class ManageRolesPage implements java.io.Serializable {
 		this.selectedPermissions = selectedPermissions;
 	}
 	
-	public PageMode getMode() {
-		return mode;
+	public Intent getIntent() {
+		return intent;
 	}
 
-	public void setMode(PageMode mode) {
-		this.mode = mode;
+	public void setIntent(Intent anIntent) {
+		this.intent = anIntent;
 	}
 
 	public DataverseRole getRole() {
@@ -138,7 +144,7 @@ public class ManageRolesPage implements java.io.Serializable {
 			}
 		}
 	}
-
+	
 	public Long getViewRoleId() {
 		return viewRoleId;
 	}
@@ -147,12 +153,12 @@ public class ManageRolesPage implements java.io.Serializable {
 		this.viewRoleId = viewRoleId;
 	}
 
-	public String getIntent() {
-		return intent;
+	public String getIntentParam() {
+		return intentParam;
 	}
 
-	public void setIntent(String intent) {
-		this.intent = intent;
+	public void setIntentParam(String intentParam) {
+		this.intentParam = intentParam;
 	}
 
 	public DataverseRole getDefaultUserRole() {
@@ -170,5 +176,24 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void setPermissionRoot(boolean permissionRoot) {
 		this.permissionRoot = permissionRoot;
 	}
-	
+
+	public int getActiveTabIndex() {
+		return activeTabIndex;
+	}
+
+	public void setActiveTabIndex(int activeTabIndex) {
+		this.activeTabIndex = activeTabIndex;
+	}
+
+	public String getObjectTypeParam() {
+		return objectTypeParam;
+	}
+
+	public void setObjectTypeParam(String objectTypeParam) {
+		this.objectTypeParam = objectTypeParam;
+	}
+
+	public void setActiveTab( ObjectType t ) {
+		setActiveTabIndex( (t!=null) ? t.ordinal() : 0 );
+	}
 }

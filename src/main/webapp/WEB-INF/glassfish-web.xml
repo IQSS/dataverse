@@ -8,5 +8,5 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
-  <property name="alternatedocroot_1" value="from=/dataexplore/* dir=/usr/local/glassfish4/glassfish/domains/domain1/docroot"/>
+  <property name="alternatedocroot_1" value="from=/dataexplore/* dir=/Applications/NetBeans/glassfish4/glassfish/domains/domain1/docroot"/>
 </glassfish-web-app>
