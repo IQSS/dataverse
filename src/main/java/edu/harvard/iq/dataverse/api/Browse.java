@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -18,6 +20,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 @Path("browse")
 public class Browse {
@@ -28,6 +31,29 @@ public class Browse {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseUserServiceBean dataverseUserService;
+
+    @GET
+    @Path("{user}")
+    public String browseByUser(@PathParam("user") String username) {
+        DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
+        if (dataverseUser != null) {
+            /**
+             * @todo: get list of datasets the user has write access to
+             */
+            List<Dataset> allDatasets = datasetService.findAll();
+            for (Dataset dataset : allDatasets) {
+                /**
+                 * @todo: probably this permission should be checked:
+                 * Access("See and search content")
+                 */
+            }
+            return username + " has write access to these datasets: FIXME\n";
+        } else {
+            return "User " + username + " could not be found!\n";
+        }
+    }
 
     @GET
     public String browse() throws FileNotFoundException {
