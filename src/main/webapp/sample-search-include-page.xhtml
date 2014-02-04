@@ -30,7 +30,9 @@
                     <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
                 </p:panel>
 
-                <ui:include src="search-include-fragment.xhtml"/>
+                <ui:include src="search-include-fragment.xhtml">
+                    <ui:param name="showTreeWidget" value="true"/>
+                </ui:include>
 
             </ui:define>
         </ui:composition>
