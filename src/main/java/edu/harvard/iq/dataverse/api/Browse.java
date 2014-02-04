@@ -7,7 +7,10 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.engine.Permission;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -33,23 +36,24 @@ public class Browse {
     DatasetServiceBean datasetService;
     @EJB
     DataverseUserServiceBean dataverseUserService;
+    @EJB
+    PermissionServiceBean permissionService;
 
+    // this is highly experimental
     @GET
     @Path("{user}")
     public String browseByUser(@PathParam("user") String username) {
         DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
         if (dataverseUser != null) {
-            /**
-             * @todo: get list of datasets the user has write access to
-             */
+            List<Dataset> datasetsByUser = new ArrayList<>();
             List<Dataset> allDatasets = datasetService.findAll();
+            Permission permission = Permission.Access;
             for (Dataset dataset : allDatasets) {
-                /**
-                 * @todo: probably this permission should be checked:
-                 * Access("See and search content")
-                 */
+                if (permissionService.permissionsFor(dataverseUser, dataset).contains(permission)) {
+                    datasetsByUser.add(dataset);
+                }
             }
-            return username + " has write access to these datasets: FIXME\n";
+            return username + " has permission \"" + permission + "\" (" + permission.getHumanName() + ") to these datasets: " + datasetsByUser + "\n";
         } else {
             return "User " + username + " could not be found!\n";
         }
