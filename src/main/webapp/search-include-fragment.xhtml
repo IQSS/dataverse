@@ -2,6 +2,7 @@
      xmlns:h="http://java.sun.com/jsf/html"
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui">
 
     <!-- Search Form -->
@@ -21,11 +22,27 @@
             <p:dataList id="facetsTable" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                 <h:outputText value="#{facetCategory.name}"/>
                 <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel">
-                    <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
+                    <h:outputLink>
+                        <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
+                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                        <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
+                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                        </c:forEach>
+                    </h:outputLink>
+                    <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" style="color:#C55B28">
+                        <h:outputText value="X" style="color: #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ?  '#C55B28' : 'black'}"/>
+                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
+                        </c:forEach>
+                    </h:outputLink>
                 </p:dataList>
             </p:dataList>
         </div>
         <div style="width:80%;float:left;">
+            <h:outputText value="#{SearchIncludeFragment.searchResultsCount} results. "/>
+            <h:outputText value="filter queries: #{SearchIncludeFragment.filterQueries}"/>
             <p:dataTable id="resultsTable" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                 <p:column>
                     <h:outputText value="#{result}"/>
