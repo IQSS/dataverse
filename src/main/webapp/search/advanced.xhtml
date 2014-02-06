@@ -38,15 +38,189 @@
                 <p:panel styleClass="panelLayoutBlock">
                     <h:form>
                         <p:focus/>
-
+                        <p:accordionPanel>
+                            <p:tab title="General Metadata">
+                                <h:outputText value="Citation" style="font-weight: bolder"/>
+                                <br/>
+                                <ui:fragment>
+                                    <h:outputLabel value="Author " for="author"/>
+                                    <h:inputText id="author" value="#{AdvancedSearchPage.author}"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Dataset Release Date "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <p:outputLabel value="Title " for="title"/>
+                                    <h:inputText id="title" value="#{AdvancedSearchPage.title}"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Dataset Global ID "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Publisher "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Version "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <br/>
+                                <h:outputText value="General" style="font-weight: bolder"/>
+                                <br/>
+                                <ui:fragment>
+                                    <h:outputLabel value="Description/Abstract "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Keyword "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Topic Classification Controlled Vocabulary "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Topic Classification Controlled Vocabulary URL "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Original or Related Publications "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Other ID "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Distributor "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Contact "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Producer "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Production Date "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Production Place "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Depositor "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Deposit Date (set) "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Funding Agency "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Funding Grant Number "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Related Material "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Related Datasets "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Other References "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Data Sources "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Social Science Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="Country/Nation "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Biomedical Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Astrophysics Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Dataset Terms of Use">
+                                <ui:fragment>
+                                    <h:outputLabel value="License "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Files">
+                                <ui:fragment>
+                                    <h:outputLabel value="Name "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Filetype "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                        </p:accordionPanel>
                         <ui:fragment>
-                            <p:outputLabel value="Title " for="title"/>
-                            <h:inputText id="title" value="#{AdvancedSearchPage.title}"/>
-                            <br/>
-                        </ui:fragment>
-                        <ui:fragment>
-                            <h:outputLabel value="Author " for="author"/>
-                            <h:inputText id="author" value="#{AdvancedSearchPage.author}"/>
+                            <h:outputLabel value="All Fields? "/>
+                            <h:inputText disabled="true"/>
+                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>
                             <br/>
                         </ui:fragment>
                         <br/>
