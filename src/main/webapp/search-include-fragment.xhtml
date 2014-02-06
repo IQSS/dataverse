@@ -45,8 +45,138 @@
             <h:outputText value="filter queries: #{SearchIncludeFragment.filterQueries}"/>
             <p:dataTable id="resultsTable" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                 <p:column>
-                    <h:outputText value="#{result}"/>
+                    <ui:fragment rendered="#{result.type == 'dataverses'}">
+                        <h:outputLink value="/dataverse.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
+                            <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
+                        </h:outputLink>
+                        <div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                            <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                        </div>
+
+                        <h:outputText value="#{result.affiliation}" rendered="#{result.affiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+
+                        <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
+                            <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                            <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                        </p:outputPanel>
+
+                        <div style="clear:left;">
+
+                            <h:outputLink id="effectLnkShow" value="javascript:void(0)">  
+                                <h:outputText id="effectLnkShowTxt" value="Show the child items..." />  
+                                <p:effect type="slideToggle" event="click" for="childDatasetTable">  
+                                    <f:param name="mode" value="'show'" />
+                                </p:effect>
+                                <p:effect type="slideToggle" event="click" for="childDatasetTableControls">  
+                                    <f:param name="mode" value="'show'" />
+                                </p:effect>
+                                <p:effect type="hide" event="click" for="effectLnkShow">  
+                                    <f:param name="mode" value="'hide'" />
+                                </p:effect>
+                                <p:effect type="show" event="click" for="effectLnkHide">  
+                                    <f:param name="mode" value="'show'" />
+                                </p:effect>
+                            </h:outputLink>
+
+                            <h:outputLink id="effectLnkHide" value="javascript:void(0)" style="display:none;">  
+                                <h:outputText id="effectLnkHideTxt" value="Hide the child items..." />
+                                <p:effect type="slideToggle" event="click" for="childDatasetTable">  
+                                    <f:param name="mode" value="'hide'" />
+                                </p:effect>
+                                <p:effect type="slideToggle" event="click" for="childDatasetTableControls">  
+                                    <f:param name="mode" value="'hide'" />
+                                </p:effect>
+                                <p:effect type="hide" event="click" for="effectLnkHide">  
+                                    <f:param name="mode" value="'hide'" />
+                                </p:effect>
+                                <p:effect type="show" event="click" for="effectLnkShow">  
+                                    <f:param name="mode" value="'show'" />
+                                </p:effect>
+                            </h:outputLink>
+
+                            <p:dataTable style="display:none;" id="childDatasetTable" value="#{result.datasets}" var="dataset" rows="3" scrollable="true" rendered="#{result.datasets.size() > 0}">  
+                                <p:column headerText="Title" style="font-size: smaller; width: 90%">
+                                    <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
+                                    <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
+                                        <h:outputText value="#{dataset.getLatestVersion().getMetadata().getTitle()}" />
+                                    </h:outputLink>
+                                </p:column>  
+                                <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">  
+                                    <h:outputText value="#{dataset.getFiles().size()} #{dataset.getFiles().size() == 0 or dataset.getFiles().size() > 1 ? 'Files' : 'File'}" />
+                                </p:column>  
+                                <!--<p:column headerText="Citation Date" style="font-size: smaller; width:20%; text-align: right">-->  
+                                <!--<h:outputText value="FIXME" />-->
+                                <!--</p:column>-->
+                            </p:dataTable>
+
+
+                            <p:panelGrid styleClass="childResultsMoreLess" id="childDatasetTableControls" columns="2" style="display:none;">
+                                <ui:fragment>
+                                    <p:commandLink disabled="true">Less...</p:commandLink>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <p:commandLink disabled="true">More...</p:commandLink>
+                                </ui:fragment>
+                            </p:panelGrid>
+                        </div>
+                        <!--<div style="clear: left">
+                            <h:outputText value="### downloads + analysis"/>
+                        </div>-->
+                    </ui:fragment>
+                    <ui:fragment rendered="#{result.type == 'datasets'}">
+                        <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
+                            <h:outputText value="#{result.title}" style="padding:4px 0;"/>
+                        </h:outputLink>
+                        <div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                            <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
+                        </div>
+
+                        <h:outputText value="LastName, FirstName" style="display:block; margin-bottom: .5em; color:#999999;"/>
+
+                        <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#E6F1F6;padding:4px;"/>
+
+                        <h:outputLink value="/dataverse.xhtml?id=#{result.parent.get('id')}" style="display:block;">
+                            <h:outputText value="Original Dataverse: #{result.parent.get('name')} Dataverse"/>
+                        </h:outputLink>
+
+                        <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
+                            <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                            <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                        </ui:fragment>
+
+                        <!--<div style="clear: left">
+                            <h:outputText value="### downloads + analysis"/>
+                        </div>-->
+                    </ui:fragment>
+                    <ui:fragment rendered="#{result.type == 'files'}">
+                        <!--FIXME: have a landing page for each file?-->
+                        <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
+                            <h:outputText value="#{result.name}" style="padding:4px 0;"/>
+                        </h:outputLink>
+                        <div style="width:48px; float:left; margin:4px 12px 6px 0">
+                            <img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/>
+                        </div>
+
+                        <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+
+                        <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block;">
+                            <h:outputText value="Dataset: #{result.parent.get('name')}"/>
+                        </h:outputLink>
+
+                        <!--<h:outputText value="Description of file here"/><br/>-->
+                        <!--<div style="clear:left;"> this needs to be a datatable-->
+                        <!--<h:outputText value="Variable Label Title | Variable Value Title"/><br/>-->
+                        <!--<h:outputText value="Label | Value"/><br/>-->
+                        <!--<h:outputText value="Label | Value"/><br/>--> 
+                        <!--<h:outputText value="&#160;&#160;&#160;> View More"/>-->
+                        <!--</div>-->
+                        <!--<h:outputText value="* ## other data files from this dataset also match this keyword"/><br/>-->
+                        <!--<div style="clear: left">
+                            <h:outputText value="### downloads + analysis"/>
+                        </div>-->
+                    </ui:fragment>
                 </p:column>
+
             </p:dataTable>
         </div>
         <div style="clear: left"/>

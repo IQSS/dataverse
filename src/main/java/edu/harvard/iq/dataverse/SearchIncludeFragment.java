@@ -17,6 +17,10 @@ public class SearchIncludeFragment {
 
     @EJB
     SearchServiceBean searchService;
+    @EJB
+    DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
 
     private String query;
     private List<String> filterQueries = new ArrayList<>();
@@ -34,6 +38,18 @@ public class SearchIncludeFragment {
     private String fq8;
     private String fq9;
 
+    /**
+     * @todo:
+     *
+     * style and icons for facets
+     *
+     * more/less on facets
+     *
+     * pagination (previous/next links)
+     *
+     * scope (which dataverse are we in?)
+     *
+     */
     public void search() {
         logger.info("search called");
 
@@ -70,6 +86,27 @@ public class SearchIncludeFragment {
         this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
         this.searchResultsList = solrQueryResponse.getSolrSearchResults();
         this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+        List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+
+        for (SolrSearchResult solrSearchResult : searchResults) {
+            if (solrSearchResult.getType().equals("dataverses")) {
+                List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
+                solrSearchResult.setDatasets(datasets);
+            } else if (solrSearchResult.getType().equals("datasets")) {
+                Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
+                try {
+                    if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
+                        solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+                    }
+                } catch (NullPointerException npe) {
+                    logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
+                }
+            } else if (solrSearchResult.getType().equals("files")) {
+                /**
+                 * @todo: show DataTable variables
+                 */
+            }
+        }
 
     }
 
