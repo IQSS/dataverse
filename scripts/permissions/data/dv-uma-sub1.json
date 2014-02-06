@@ -1,0 +1,8 @@
+ {
+    "alias":"umaSub1",
+    "name":"A dataverse of Uma",
+    "affiliation":"Affiliation value",
+    "contactEmail":"Uma@mailinator.com",
+    "permissionRoot":false,
+    "description":"Some data of Uma"
+}

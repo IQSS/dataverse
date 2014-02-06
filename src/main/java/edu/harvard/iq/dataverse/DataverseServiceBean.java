@@ -65,7 +65,13 @@ public class DataverseServiceBean {
     
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
-    }    
+    }
+	
+	public Dataverse findByAlias( String anAlias ) {
+		return em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
+				.setParameter("alias", anAlias)
+				.getSingleResult();
+	}
 
     public String determineDataversePath(Dataverse dataverse) {
         List<String> dataversePathSegments = new ArrayList();

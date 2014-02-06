@@ -49,10 +49,6 @@ public class DataverseUser implements Serializable {
     @NotBlank(message = "Please enter your last name  for your dataverse account.")
     private String lastName;
     
-	@OneToMany( cascade={CascadeType.MERGE, CascadeType.REMOVE},
-			fetch=FetchType.LAZY)
-	private Set<UserDataverseAssignedRole> assignedRoles;
-	
     private String encryptedPassword;
     private String affiliation;
     private String position;
@@ -130,19 +126,6 @@ public class DataverseUser implements Serializable {
         this.phone = phone;
     }
 	
-	public void registerAssignedRole( UserDataverseAssignedRole udr ) {
-		if ( assignedRoles == null ) {
-			assignedRoles = new HashSet<>();
-		}
-		assignedRoles.add(udr);
-	}
-    
-	public void deregisterAssignedRole( UserDataverseAssignedRole udr ) {
-		if ( assignedRoles != null ) {
-			assignedRoles.remove(udr);
-		}
-	}
-    
     @Override
     public int hashCode() {
         int hash = 0;

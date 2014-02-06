@@ -1,0 +1,8 @@
+ {
+    "alias":"root",
+    "name":"Root dataverse",
+    "affiliation":"Affiliation value",
+    "contactEmail":"root@mailinator.com",
+    "permissionRoot":false,
+    "description":"Auto-generated dataverse, by SampleCommandPage"
+}

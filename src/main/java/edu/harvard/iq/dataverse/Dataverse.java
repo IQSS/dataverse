@@ -107,6 +107,14 @@ public class Dataverse extends DvObjectContainer {
 		this.permissionRoot = permissionRoot;
 	}
     
+	public void addRole( DataverseRole role ) {
+		role.setOwner(this);
+		roles.add( role );
+	}
+	
+	public Set<DataverseRole> getRoles() {
+		return roles;
+	}
 	
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();

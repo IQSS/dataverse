@@ -3,11 +3,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,7 +13,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
@@ -30,6 +27,8 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 	@NamedQuery(name = "DataverseRole.findByOwnerId",
 			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
+	@NamedQuery(name = "DataverseRole.listAll",
+			    query= "SELECT r FROM DataverseRole r"),
 	@NamedQuery(name = "DataverseRole.deleteById",
 			    query= "DELETE FROM DataverseRole r WHERE r.id=:id")
 })
@@ -59,10 +58,6 @@ public class DataverseRole implements Serializable  {
     @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 	
-	@OneToMany( cascade={CascadeType.MERGE, CascadeType.REMOVE},
-			fetch = FetchType.LAZY	)
-	private Set<UserDataverseAssignedRole> assignedRoles;
-	
 	/** Stores the permissions in a bit set.  */
 	private long permissionBits;
 	
@@ -70,19 +65,6 @@ public class DataverseRole implements Serializable  {
     @JoinColumn(nullable=false)     
     private Dataverse owner;
 	
-	public void registerAssignedRole( UserDataverseAssignedRole udr ) {
-		if ( assignedRoles == null ) {
-			assignedRoles = new HashSet<>();
-		}
-		assignedRoles.add(udr);
-	}
-	
-	public void deregisterAssignedRole( UserDataverseAssignedRole udr ) {
-		if ( assignedRoles != null ) {
-			assignedRoles.remove(udr);
-		}
-	}
-    
 	public Long getId() {
 		return id;
 	}
@@ -123,6 +105,10 @@ public class DataverseRole implements Serializable  {
 		this.owner = owner;
 	}
 	
+	public void addPermissions( Collection<Permission> ps ) {
+		for ( Permission p : ps ) addPermission(p);
+	}
+	
 	public void addPermission( Permission p ) {
 		permissionBits = new BitSet(permissionBits).set(p.ordinal()).getBits();
 	}
@@ -135,4 +121,7 @@ public class DataverseRole implements Serializable  {
 		return new BitSet(permissionBits).asSetOf(Permission.class);
 	}
 	
+	public long getPermissionsBits() {
+		return permissionBits;
+	}
 }

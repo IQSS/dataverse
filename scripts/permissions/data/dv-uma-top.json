@@ -1,0 +1,8 @@
+ {
+    "alias":"umaTop",
+    "name":"Top dataverse of Uma",
+    "affiliation":"Affiliation value",
+    "contactEmail":"Uma@mailinator.com",
+    "permissionRoot":false,
+    "description":"Uma's top level dataverse"
+}

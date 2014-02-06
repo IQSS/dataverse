@@ -63,7 +63,7 @@ public class EjbDataverseEngine {
 			DataverseUser user = aCommand.getUser();
 
 			for ( Map.Entry<String, Dataverse> pair : aCommand.getAffectedDataverses().entrySet() ) {
-				Set<Permission> granted = DataverseRole.permissionSet( roleService.effectiveRoles(user, pair.getValue()) );
+				Set<Permission> granted = roleService.roleAssignments(user, pair.getValue()).getPermissions();
 				Set<Permission> required = requiredMap.get( pair.getKey() );
 				if ( ! granted.containsAll(required) ) {
 					required.removeAll(granted);

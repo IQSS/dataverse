@@ -1,0 +1,8 @@
+ {
+    "alias":"peteSubRestricted",
+    "name":"Pete's restricted data",
+    "affiliation":"Affiliation value",
+    "contactEmail":"pete@mailinator.com",
+    "permissionRoot":true,
+    "description":"Where Pete stores restricted data, to be shared in moderation"
+}
