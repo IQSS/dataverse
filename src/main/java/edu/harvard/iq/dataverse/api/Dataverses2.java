@@ -1,19 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.api.Util.error;
-import static edu.harvard.iq.dataverse.api.Util.isNumeric;
-import static edu.harvard.iq.dataverse.api.Util.ok;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
@@ -28,16 +21,8 @@ import javax.ws.rs.QueryParam;
  * @author michael
  */
 @Path("dvs")
-public class Dataverses2 {
+public class Dataverses2 extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses2.class.getName());
-	@EJB
-	DataverseServiceBean dataverseSvc;
-	
-	@EJB
-	DataverseUserServiceBean usersSvc;
-	
-	@EJB
-	EjbDataverseEngine engineSvc;
 	
 	@GET
 	public String list() {
@@ -53,10 +38,18 @@ public class Dataverses2 {
 		return addDataverse(d, "", apiKey);
 	}
 	
+	@GET
+	@Path("{identifier}")
+	public String viewDataverse( @PathParam("identifier") String idtf ) {
+		Dataverse d = findDataverse(idtf);
+		return ( d==null) ? error("Can't find dataverse with identifier '" + idtf + "'")
+						  : ok( json(d) );
+	}
+	
 	@POST
 	@Path("{identifier}")
 	public String addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-		DataverseUser u = usersSvc.findByUserName(apiKey);
+		DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
 		
 		if ( ! parentIdtf.isEmpty() ) {
@@ -66,9 +59,7 @@ public class Dataverses2 {
 				return error( "Can't find dataverse with identifier='" + parentIdtf + "'");
 			}
 			d.setOwner(owner);
-			
 		}
-		
 		
 		try {
 			d = engineSvc.submit( new CreateDataverseCommand(d, u) );
@@ -78,4 +69,29 @@ public class Dataverses2 {
 			return error("Error creating dataverse: " + ex.getMessage() );
 		}
 	}
+	
+	@GET
+	@Path(":gv")
+	public String toGraphviz() {
+		StringBuilder sb = new StringBuilder();
+		StringBuilder edges = new StringBuilder();
+		
+		sb.append( "digraph dataverses {");
+		for ( Dataverse dv : dataverseSvc.findAll() ) {
+			sb.append("dv").append(dv.getId()).append(" [label=\"").append(dv.getAlias()).append( "\"]\n");
+			if ( dv.getOwner() != null ) {
+				edges.append("dv").append(dv.getOwner().getId())
+						.append("->")
+					.append("dv").append(dv.getId())
+					.append("\n");
+			}
+		}
+		
+		sb.append("\n");
+		sb.append( edges );
+		
+		sb.append( "}" );
+		return sb.toString();
+	}
+	
 }

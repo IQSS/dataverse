@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.EnumSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -50,6 +48,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		ctxt.roles().save(new RoleAssignment(manager, getUser(), managedDv));
 		
 		ctxt.indexing().indexDataverse(managedDv);
+		
 		return managedDv;
 	}
 	

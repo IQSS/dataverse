@@ -3,6 +3,6 @@
     "name":"Pete's restricted data",
     "affiliation":"Affiliation value",
     "contactEmail":"pete@mailinator.com",
-    "permissionRoot":true,
+    "permissionRoot":false,
     "description":"Where Pete stores restricted data, to be shared in moderation"
 }

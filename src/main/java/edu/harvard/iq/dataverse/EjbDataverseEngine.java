@@ -80,7 +80,7 @@ public class EjbDataverseEngine {
 		return aCommand.execute(getContext());
 	}
 	
-	private CommandContext getContext() {
+	public CommandContext getContext() {
 		if ( ctxt == null ) { 
 			ctxt = new CommandContext() {
 				@Override

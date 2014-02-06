@@ -33,13 +33,15 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( DataverseRole role ) {
-		return Json.createObjectBuilder()
-						.add("id", role.getId() )
-						.add("alias", nullFill(role.getAlias()) )
-						.add("name", nullFill(role.getName()))
-						.add("ownerId", role.getOwner().getId())
-						.add("permissions", json(role.permissions()))
-						.add("description", nullFill(role.getDescription()));
+		JsonObjectBuilder bld = Json.createObjectBuilder()
+				.add("alias", nullFill(role.getAlias()) )
+				.add("name", nullFill(role.getName()))
+				.add("permissions", json(role.permissions()))
+				.add("description", nullFill(role.getDescription()));
+		if ( role.getId() != null ) bld.add("id", role.getId() );
+		if ( role.getOwner()!=null && role.getOwner().getId()!=null ) bld.add("ownerId", role.getOwner().getId());
+		
+		return bld;
 	}
 	
 	public static JsonObjectBuilder json( Dataverse dv ) {

@@ -8,8 +8,6 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.api.Util.error;
-import static edu.harvard.iq.dataverse.api.Util.ok;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -26,6 +24,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import static edu.harvard.iq.dataverse.api.JsonPrinter.*;
+import java.util.EnumSet;
 import javax.ws.rs.QueryParam;
 
 /**
@@ -33,7 +32,7 @@ import javax.ws.rs.QueryParam;
  * @author michael
  */
 @Path("roles")
-public class Roles {
+public class Roles extends AbstractApiBean {
 	
 	private static final Logger logger = Logger.getLogger(Roles.class.getName());
 	
@@ -46,20 +45,11 @@ public class Roles {
 	@EJB
 	DataverseServiceBean dvSvc;
 	
-	@EJB
-	EjbDataverseEngine engineSvc;
-	
 	@GET
 	public String list() {
 		JsonArrayBuilder rolesArrayBuilder = Json.createArrayBuilder();
 		for ( DataverseRole role : rolesSvc.findAll() ) {
-            JsonObjectBuilder roleJson = Json.createObjectBuilder();
-			roleJson.add("id", role.getId() );
-			roleJson.add("alias", role.getAlias() );
-			roleJson.add("name", role.getName());
-			roleJson.add("ownerId", role.getOwner().getId());
-			roleJson.add("permissions", json(role.permissions()));
-			rolesArrayBuilder.add(roleJson);
+			rolesArrayBuilder.add(json(role));
 		}
         
         return Util.jsonArray2prettyString(rolesArrayBuilder.build());
@@ -101,39 +91,83 @@ public class Roles {
 		}
 	}
 	
+	// TODO move top JSON
 	@POST
-	public String createNewRole( @FormParam("alias")   String alias,
-								 @FormParam("permissions") String permissionNames,
-								 @FormParam("dataverseId") long dataverseId,
-								 @FormParam("key") String key ) {
+	public String createNewRole( RoleDTO roleDto,
+								 @QueryParam("dvo") String dvoIdtf,
+								 @QueryParam("key") String key ) {
 		DataverseUser u = usersSvc.findByUserName(key);
 		if ( u == null ) return error("bad api key " + key );
-		Dataverse d = dvSvc.find( dataverseId );
-		if ( d == null ) return error("no dataverse with id " + dataverseId );
+		Dataverse d = findDataverse(dvoIdtf);
+		if ( d == null ) return error("no dataverse with id " + dvoIdtf );
 		
-		DataverseRole role = new DataverseRole();
-		if ( permissionNames.toUpperCase().equals("ALL") ) {
-			for ( Permission p : Permission.values() ) {
-				role.addPermission(p);
-			}
-		} else {
-			for ( String prm : permissionNames.split(",") ) {
-				try {
-					role.addPermission(Permission.valueOf(prm.trim()));
-				} catch ( IllegalArgumentException iae ) {
-					return error("Unknown permission '" + prm.trim() + "'");
-				}
-			}
-		}
+		DataverseRole role = roleDto.asRole();
 		
-		role.setName(alias);
-		role.setAlias(alias);
 		role.setOwner(d);
 		
-		rolesSvc.save( role );
+		role = rolesSvc.save( role );
 		
 		return ok( json(role).build() );
-		
 	}
 	
+	
+	public static class RoleDTO {
+		String alias;
+		String name;
+		String description;
+		String ownerId;
+		String[] permissions;
+
+		public String getAlias() {
+			return alias;
+		}
+
+		public void setAlias(String alias) {
+			this.alias = alias;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getDescription() {
+			return description;
+		}
+
+		public void setDescription(String description) {
+			this.description = description;
+		}
+
+		public String[] getPermissions() {
+			return permissions;
+		}
+
+		public void setPermissions(String[] permissions) {
+			this.permissions = permissions;
+		}
+		
+		public DataverseRole asRole() {
+			DataverseRole r = new DataverseRole();
+			r.setAlias(alias);
+			r.setDescription(description);
+			r.setName(name);
+			if ( permissions != null ) {
+				if ( permissions.length > 0 ) {
+					if ( permissions[0].trim().toLowerCase().equals("all") ) {
+						r.addPermissions(EnumSet.allOf(Permission.class));
+					} else {
+						for ( String ps : permissions ) {
+							r.addPermission( Permission.valueOf(ps) );
+						}
+					}
+				}
+			}
+			return r;
+		}
+		
+	}
 }

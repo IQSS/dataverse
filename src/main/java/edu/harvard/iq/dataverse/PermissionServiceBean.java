@@ -30,15 +30,18 @@ public class PermissionServiceBean {
 	private static final ConcurrentMap<String, Map<Long,Set<Permission>>> perObjectPermissions;
 	static {
 		samplePermissions = new TreeMap<>();
-		samplePermissions.put("PrivilegedPete", EnumSet.allOf(Permission.class));
-		samplePermissions.put("UnprivilegedUma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.Tracking));
-		samplePermissions.put("GabbiGuest", EnumSet.noneOf(Permission.class) );
+		samplePermissions.put("pete", EnumSet.allOf(Permission.class));
+		samplePermissions.put("uma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.Tracking));
+		samplePermissions.put("gabbi", EnumSet.noneOf(Permission.class) );
 		
 		perObjectPermissions = new ConcurrentHashMap<>();
 	}
 	
 	@EJB
 	DataverseUserServiceBean userService;
+	
+	@EJB
+	DataverseRoleServiceBean roleService;
 	
 	@Inject
 	DataverseSession session;
@@ -73,35 +76,30 @@ public class PermissionServiceBean {
 					(Class<? extends Command>)Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
 		}
 		
-		public Set<Permission> getPermissions() {
+		public Set<Permission> get() {
 			return permissionsFor(user, subject);
 		}
 		
 		public boolean has( Permission p ) {
-			return getPermissions().contains(p);
+			return get().contains(p);
 		}
 		public boolean has( String pName ) {
-			return getPermissions().contains( Permission.valueOf(pName) );
+			return get().contains( Permission.valueOf(pName) );
 		}
+		
 	}
 	
     public Set<Permission> permissionsFor( DataverseUser u, DvObject d ) {
-		Set<Permission> retVal;
-		if ( perObjectPermissions.containsKey(u.getUserName()) ) {
-			logger.info( "Per object permissions" );
-			Map<Long,Set<Permission>> permissions = perObjectPermissions.get(u.getUserName());
-			retVal = permissions.containsKey(d.getId()) ? permissions.get(d.getId())
-													  : EnumSet.noneOf(Permission.class);
-			
-		} else {
-			retVal = samplePermissions.containsKey(u.getUserName()) 
-				? samplePermissions.get(u.getUserName())
-				: EnumSet.noneOf(Permission.class);
-		}
-		
-		// Special case for root
-		if ( d.getOwner() == null && !(u.getUserName().equals("GabbiGuest")) ) {
-			retVal.add( Permission.UndoableEdit );
+		Set<Permission> retVal = EnumSet.noneOf(Permission.class);
+		while ( d != null ) {
+			for ( RoleAssignment r : roleService.directRoleAssignments(u, d) ) {
+				retVal.addAll( r.getRole().permissions()) ;
+			}
+			if ( d instanceof Dataverse ) {
+				d = ((Dataverse)d).isEffectivlyPermissionRoot() ? null : d.getOwner();
+			} else {
+				d = d.getOwner();
+			}
 		}
 		return retVal;
 	}

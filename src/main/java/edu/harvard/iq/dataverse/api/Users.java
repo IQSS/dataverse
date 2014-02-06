@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.api.Util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -20,7 +19,7 @@ import javax.ws.rs.QueryParam;
  * @author michael
  */
 @Path("users")
-public class Users {
+public class Users extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Users.class.getName());
 	
 	@EJB
@@ -41,9 +40,7 @@ public class Users {
 	@GET
 	@Path("{identifier}")
 	public String view( @PathParam("identifier") String identifier ) {
-		DataverseUser u = isNumeric(identifier) 
-				? usersSvc.find(Long.parseLong(identifier)) 
-				: usersSvc.findByUserName(identifier);
+		DataverseUser u = findUser(identifier);
 		
 		return ( u!=null ) 
 				? ok( json(u).build() ) 

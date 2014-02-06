@@ -7,8 +7,12 @@ import javax.persistence.*;
  * Base of the object hierarchy for "anything that can be inside a dataverse".
  * @author michael
  */
-@NamedQuery(name = "DvObject.findAll",
-			query = "SELECT o FROM DvObject o ORDER BY o.id")
+@NamedQueries({
+	@NamedQuery(name = "DvObject.findAll",
+				query = "SELECT o FROM DvObject o ORDER BY o.id"),
+	@NamedQuery(name = "DvObject.findById",
+				query = "SELECT o FROM DvObject o WHERE o.id=:id")
+})
 @Entity
 public abstract class DvObject implements java.io.Serializable {
 	

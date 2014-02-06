@@ -78,16 +78,16 @@ public class DataverseRoleServiceBean {
 	 * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
 	 * No traversal on the containment hierarchy is done.
 	 * @param user the user whose roles are given
-	 * @param dv the dataverse defining the roles
+	 * @param dvo the object where the roles are defined.
 	 * @return Set of roles defined for the user in the given dataverse.
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
-	public List<RoleAssignment> directRoleAssignments( DataverseUser user, Dataverse dv ) {
+	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
 		TypedQuery<RoleAssignment> query = em.createQuery(
-				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.owner.id=:dataverseId",
+				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.owner.id=:dvoId",
 				RoleAssignment.class);
 		query.setParameter("userId", user.getId());
-		query.setParameter("dataverseId", dv.getId());
+		query.setParameter("dvoId", dvo.getId());
 		return query.getResultList();
 	}
 }
