@@ -64,13 +64,13 @@ public class JsonPrinter {
 	public static JsonObjectBuilder json( DataverseUser user ) {
 		return Json.createObjectBuilder()
 				.add( "id", user.getId() )
-				.add( "firstName", user.getFirstName())
-				.add( "lastName", user.getLastName())
-				.add( "userName", user.getUserName())
-				.add( "affiliation", user.getAffiliation())
-				.add( "position", user.getPosition())
-				.add( "email", user.getEmail())
-				.add( "phone", user.getPhone());
+				.add( "firstName", nullFill(user.getFirstName()))
+				.add( "lastName",  nullFill(user.getLastName()))
+				.add( "userName",  nullFill(user.getUserName()))
+				.add( "affiliation", nullFill(user.getAffiliation()))
+				.add( "position",  nullFill(user.getPosition()))
+				.add( "email",     nullFill(user.getEmail()))
+				.add( "phone",     nullFill(user.getPhone()));
 	}
 	
 	public static String nullFill( String s ) {

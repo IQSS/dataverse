@@ -83,6 +83,7 @@ public class DataverseRoleServiceBean {
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
 	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
+		if ( user==null ) throw new IllegalArgumentException("User cannot be null");
 		TypedQuery<RoleAssignment> query = em.createQuery(
 				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.owner.id=:dvoId",
 				RoleAssignment.class);

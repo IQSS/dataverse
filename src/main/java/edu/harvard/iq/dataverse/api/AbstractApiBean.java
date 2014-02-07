@@ -30,8 +30,9 @@ public abstract class AbstractApiBean {
 	@EJB 
 	protected DataverseServiceBean dataverseSvc;
 	
-	@PersistenceContext
+	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	EntityManager em;
+	
 	@EJB
 	DataverseRoleServiceBean rolesSvc;
 	

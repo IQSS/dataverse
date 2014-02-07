@@ -22,15 +22,11 @@ import javax.ws.rs.QueryParam;
 public class Users extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Users.class.getName());
 	
-	@EJB
-	DataverseUserServiceBean usersSvc;
-	
-	
 	@GET
 	public String list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		
-		for ( DataverseUser u : usersSvc.findAll() ) {
+		for ( DataverseUser u : userSvc.findAll() ) {
 			bld.add( json(u) );
 		}
 		
@@ -51,13 +47,23 @@ public class Users extends AbstractApiBean {
 	public String save( DataverseUser user, @QueryParam("password") String password ) {
 		try { 
 			if ( password != null ) {
-				user.setEncryptedPassword(usersSvc.encryptPassword(password));
+				user.setEncryptedPassword(userSvc.encryptPassword(password));
 			}
-			user = usersSvc.save(user);
+			user = userSvc.save(user);
 			return ok ( json(user).build() );
 		} catch ( Exception e ) {
 			logger.log( Level.WARNING, "Error saving user", e );
 			return error( "Can't save user: " + e.getMessage() );
 		}
+	}
+	
+	@GET
+	@Path(":guest")
+	public String genarateGuest() {
+		DataverseUser guest = userSvc.findGuestUser();
+		return ok( json(
+					 (guest!=null) ? guest : userSvc.createGuestUser() 
+				));
+		
 	}
 }

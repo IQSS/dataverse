@@ -5,3 +5,4 @@ curl -H "Content-type:application/json" -X POST -d @data/userUma.json "http://lo
 echo
 curl -H "Content-type:application/json" -X POST -d @data/userGabbi.json "http://localhost:8080/api/users?password=gabbi"
 echo
+curl http://localhost:8080/api/users/:guest

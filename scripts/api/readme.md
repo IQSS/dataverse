@@ -72,6 +72,10 @@ Generates a new user. Note that the password is passed as a parameter in the que
 
 Shows data about the user whose `uid` is passed. The `uid` can either be a number (id in the db) or the username.
 
+	GET http://{{SERVERS}}/api/users/:guest
+
+Gets the guest user. Generating one if needed.
+
 ### roles
 
 	GET http://{{SERVER}}/api/roles

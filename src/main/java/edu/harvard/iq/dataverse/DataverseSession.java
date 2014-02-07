@@ -25,9 +25,12 @@ public class DataverseSession implements Serializable{
 	
 	@EJB
 	PermissionServiceBean permissionsService;
-
+	
+	@EJB
+	DataverseUserServiceBean usersSvc;
+	
     public DataverseUser getUser() {
-        return user;
+        return ( user==null ) ? usersSvc.findGuestUser() : user;
     }
 
     public void setUser(DataverseUser user) {
