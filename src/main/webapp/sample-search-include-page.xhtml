@@ -11,12 +11,11 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="thisPageTitle" value="Sample Search Include Page"/>
-            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
             <ui:define name="body">
 
                 <f:metadata>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
+                    <f:viewParam name="dataverseId" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
                     <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
@@ -31,8 +30,17 @@
                 </f:metadata>
 
                 <!-- Breadcrumbs Panel -->
+                <!--FIXME: remove this when breadcrumbs are available in the template: https://redmine.hmdc.harvard.edu/issues/3537 -->
                 <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
-                    <h:outputText value="#{thisPageTitle}" style="font-weight:bold;"/>
+                    <br/>
+                    <ui:repeat value="#{SearchIncludeFragment.dataverse.owners}" var="owner">
+                        <h:outputLink value="?dataverseId=#{owner.id}">
+                            <h:outputText value="#{owner.name} Dataverse"/>
+                        </h:outputLink>
+                        <h:outputText value=" > "/>
+                    </ui:repeat>
+                    <!--<br/>-->
+                    <h:outputText value="#{SearchIncludeFragment.dataverse.name} Dataverse" style="font-weight:bold;"/>
                 </p:panel>
 
                 <!-- Message Panel -->

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,10 @@ public class SearchIncludeFragment {
     private String fq7;
     private String fq8;
     private String fq9;
+    private Long dataverseId;
+    private Dataverse dataverse;
+    private boolean solrIsDown = false;
+    private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
 
     /**
      * @todo:
@@ -47,8 +52,20 @@ public class SearchIncludeFragment {
      *
      * pagination (previous/next links)
      *
-     * scope (which dataverse are we in?)
+     * test dataset cards
      *
+     * test files cards
+     *
+     * test dataset cards when Solr is down
+     *
+     * make results sortable: https://redmine.hmdc.harvard.edu/issues/3482
+     *
+     * always show all types, even if zero count:
+     * https://redmine.hmdc.harvard.edu/issues/3488
+     *
+     * make subtree facet look like amazon widget (i.e. a tree)
+     *
+     * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
     public void search() {
         logger.info("search called");
@@ -68,6 +85,18 @@ public class SearchIncludeFragment {
 
         SolrQueryResponse solrQueryResponse = null;
         int paginationStart = 0;
+
+        if (dataverseId != null) {
+            this.dataverse = dataverseService.find(dataverseId);
+            String dataversePath = dataverseService.determineDataversePath(this.dataverse);
+            String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
+            if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
+                filterQueries.add(filterDownToSubtree);
+            }
+        } else {
+            this.dataverse = dataverseService.findRootDataverse();
+        }
+
         try {
             solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
         } catch (EJBException ex) {
@@ -81,31 +110,37 @@ public class SearchIncludeFragment {
             }
             String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
             logger.info(message);
-            return;
+            this.solrIsDown = true;
         }
-        this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
-        this.searchResultsList = solrQueryResponse.getSolrSearchResults();
-        this.searchResultsCount = solrQueryResponse.getNumResultsFound();
-        List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        if (!solrIsDown) {
+            this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
+            this.searchResultsList = solrQueryResponse.getSolrSearchResults();
+            this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+            List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
-        for (SolrSearchResult solrSearchResult : searchResults) {
-            if (solrSearchResult.getType().equals("dataverses")) {
-                List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
-                solrSearchResult.setDatasets(datasets);
-            } else if (solrSearchResult.getType().equals("datasets")) {
-                Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
-                try {
-                    if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
-                        solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+            for (SolrSearchResult solrSearchResult : searchResults) {
+                if (solrSearchResult.getType().equals("dataverses")) {
+                    List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
+                    solrSearchResult.setDatasets(datasets);
+                } else if (solrSearchResult.getType().equals("datasets")) {
+                    Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
+                    try {
+                        if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
+                            solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+                        }
+                    } catch (NullPointerException npe) {
+                        logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
                     }
-                } catch (NullPointerException npe) {
-                    logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
+                } else if (solrSearchResult.getType().equals("files")) {
+                    /**
+                     * @todo: show DataTable variables
+                     */
                 }
-            } else if (solrSearchResult.getType().equals("files")) {
-                /**
-                 * @todo: show DataTable variables
-                 */
             }
+        } else {
+            List contentsList = dataverseService.findByOwnerId(dataverse.getId());
+            contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
+            directChildDvObjectContainerList.addAll(contentsList);
         }
 
     }
@@ -228,6 +263,38 @@ public class SearchIncludeFragment {
 
     public void setFq9(String fq9) {
         this.fq9 = fq9;
+    }
+
+    public Long getDataverseId() {
+        return dataverseId;
+    }
+
+    public void setDataverseId(Long dataverseId) {
+        this.dataverseId = dataverseId;
+    }
+
+    public Dataverse getDataverse() {
+        return dataverse;
+    }
+
+    public void setDataverse(Dataverse dataverse) {
+        this.dataverse = dataverse;
+    }
+
+    public boolean isSolrIsDown() {
+        return solrIsDown;
+    }
+
+    public void setSolrIsDown(boolean solrIsDown) {
+        this.solrIsDown = solrIsDown;
+    }
+
+    public List<DvObjectContainer> getDirectChildDvObjectContainerList() {
+        return directChildDvObjectContainerList;
+    }
+
+    public void setDirectChildDvObjectContainerList(List<DvObjectContainer> directChildDvObjectContainerList) {
+        this.directChildDvObjectContainerList = directChildDvObjectContainerList;
     }
 
 }
