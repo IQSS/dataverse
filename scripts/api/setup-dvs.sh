@@ -13,10 +13,10 @@ echo
 curl -H "Content-type:application/json" -X POST -d @data/dv-pete-sub-secret.json "http://localhost:8080/api/dvs/peteTop?key=pete"
 echo
 
-echo Uma
-curl -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "http://localhost:8080/api/dvs/root?key=uma"
-echo
-curl -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "http://localhost:8080/api/dvs/umaTop?key=uma"
-echo
-curl -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "http://localhost:8080/api/dvs/umaTop?key=uma"
-echo
+# echo Uma
+# curl -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "http://localhost:8080/api/dvs/root?key=uma"
+# echo
+# curl -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "http://localhost:8080/api/dvs/umaTop?key=uma"
+# echo
+# curl -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "http://localhost:8080/api/dvs/umaTop?key=uma"
+# echo

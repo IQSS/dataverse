@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.EnumSet;
+import javax.persistence.NoResultException;
 
 /**
  *
@@ -29,7 +30,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
 		
 		if ( created.getOwner()==null ) {
-			if ( ctxt.dataverses().findRootDataverse() != null ) {
+			if ( ctxt.dataverses().isRootDataverseExists() ) {
 				throw new CommandException("Root Dataverse already exists. Cannot create another one", this);
 			}
 		}

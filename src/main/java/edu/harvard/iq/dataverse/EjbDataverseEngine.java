@@ -12,6 +12,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import java.util.EnumSet;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -62,17 +63,17 @@ public class EjbDataverseEngine {
 		DataverseUser user = aCommand.getUser();
 
 		for ( Map.Entry<String, Dataverse> pair : aCommand.getAffectedDataverses().entrySet() ) {
-			Set<Permission> granted = roleService.roleAssignments(user, pair.getValue()).getPermissions();
+			Dataverse dvo = pair.getValue();
+			Set<Permission> granted = (dvo!=null) ? roleService.roleAssignments(user, dvo).getPermissions() : EnumSet.allOf(Permission.class);
 			Set<Permission> required = requiredMap.get( pair.getKey() );
 			if ( ! granted.containsAll(required) ) {
 				required.removeAll(granted);
 				throw new PermissionException("Can't execute command " + aCommand 
 					+ ", because user " + aCommand.getUser() 
 					+ " is missing permissions " + required 
-					+ " on Dataverse " + pair.getValue().getName(),
+					+ " on Object " + dvo.getName(),
 					aCommand,
-					required,
-					pair.getValue());
+					required, dvo);
 			}
 		}
 		

@@ -67,7 +67,12 @@ public class DataverseServiceBean {
 				.setParameter("alias", anAlias)
 				.getSingleResult();
 	}
-
+	
+	public boolean isRootDataverseExists() {
+		long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
+		return (count==1);
+	}
+	
     public String determineDataversePath(Dataverse dataverse) {
         List<String> dataversePathSegments = new ArrayList();
         indexService.findPathSegments(dataverse, dataversePathSegments);
