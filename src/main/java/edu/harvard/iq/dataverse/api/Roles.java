@@ -100,7 +100,6 @@ public class Roles extends AbstractApiBean {
 		}
 	}
 	
-	// TODO move top JSON
 	@POST
 	public String createNewRole( RoleDTO roleDto,
 								 @QueryParam("dvo") String dvoIdtf,

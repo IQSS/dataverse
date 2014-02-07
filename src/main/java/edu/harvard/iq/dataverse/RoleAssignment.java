@@ -24,7 +24,7 @@ import javax.persistence.UniqueConstraint;
 @NamedQueries({
 	@NamedQuery( name  = "RoleAssignment.listByUserIdDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.definitionPoint.id=:definitionPointId" ),
-	@NamedQuery( name  = "RoleAssignment.listByDefinitionPoint",
+	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByUserRoleDefinitionPoint",
 				 query = "DELETE FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId")

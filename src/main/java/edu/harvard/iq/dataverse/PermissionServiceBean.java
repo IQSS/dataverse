@@ -5,9 +5,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -15,6 +12,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import java.util.HashSet;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which objects (TM).
@@ -26,22 +27,15 @@ import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 @Named
 public class PermissionServiceBean {
 	private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
-	private static final Map<String, Set<Permission>> samplePermissions;
-	private static final ConcurrentMap<String, Map<Long,Set<Permission>>> perObjectPermissions;
-	static {
-		samplePermissions = new TreeMap<>();
-		samplePermissions.put("pete", EnumSet.allOf(Permission.class));
-		samplePermissions.put("uma", EnumSet.of(Permission.Access, Permission.EditMetadata, Permission.Tracking));
-		samplePermissions.put("gabbi", EnumSet.noneOf(Permission.class) );
-		
-		perObjectPermissions = new ConcurrentHashMap<>();
-	}
 	
 	@EJB
 	DataverseUserServiceBean userService;
 	
 	@EJB
 	DataverseRoleServiceBean roleService;
+	
+	@PersistenceContext
+	EntityManager em;
 	
 	@Inject
 	DataverseSession session;
@@ -89,19 +83,31 @@ public class PermissionServiceBean {
 		
 	}
 	
+	public List<RoleAssignment> assignmentsOn( DvObject d ) {
+		return em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+				.setParameter("definitionPointId", d.getId()).getResultList();
+	}
+	
     public Set<Permission> permissionsFor( DataverseUser u, DvObject d ) {
 		Set<Permission> retVal = EnumSet.noneOf(Permission.class);
+		for ( RoleAssignment asmnt : assignmentsFor(u, d) ) {
+			retVal.addAll( asmnt.getRole().permissions() );
+		}
+		return retVal;
+	}
+	
+	public Set<RoleAssignment> assignmentsFor( DataverseUser u, DvObject d ) {
+		Set<RoleAssignment> assignments = new HashSet<>();
 		while ( d != null ) {
-			for ( RoleAssignment r : roleService.directRoleAssignments(u, d) ) {
-				retVal.addAll( r.getRole().permissions()) ;
-			}
+			assignments.addAll( roleService.directRoleAssignments(u, d) );
 			if ( d instanceof Dataverse ) {
 				d = ((Dataverse)d).isEffectivlyPermissionRoot() ? null : d.getOwner();
 			} else {
 				d = d.getOwner();
 			}
 		}
-		return retVal;
+		
+		return assignments;
 	}
 	
 	/**
@@ -140,13 +146,6 @@ public class PermissionServiceBean {
 			throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
 		}
 		return userOn( session.getUser(), d );
-	}
-	
-	public void setPermissionOn( DataverseUser u, DvObject o, Set<Permission> ps ) {
-		perObjectPermissions.putIfAbsent(u.getUserName(),new ConcurrentHashMap<Long, Set<Permission>>() );
-		Map<Long, Set<Permission>> userPerms = perObjectPermissions.get(u.getUserName());
-		
-		userPerms.put(o.getId(), ps);
 	}
 	
 }

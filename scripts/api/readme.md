@@ -43,6 +43,14 @@ All the roles defined directly in the dataverse identified by `id`.
 
 Creates a new role under dataverse `id`. Needs a `.json` file with the role description.
 
+	GET http://{{SERVER}}/api/dvs/{{id}}/assignments?key={{username}}
+
+List all the role assignments at the given dataverse.
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/assignments?key={{username}}
+
+Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"username\": \"uma\",\"roleId\": 11}"`).
+
 
 ### permissions
 

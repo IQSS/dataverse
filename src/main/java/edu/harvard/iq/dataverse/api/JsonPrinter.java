@@ -20,7 +20,9 @@ public class JsonPrinter {
 		return Json.createObjectBuilder()
 				.add("id", ra.getId())
 				.add("userId", ra.getUser().getId() )
+				.add("_username", ra.getUser().getUserName())
 				.add("roleId", ra.getRole().getId() )
+				.add("_roleAlias", ra.getRole().getAlias())
 				.add("definitionPointId", ra.getDefinitionPoint().getId() );
 	}
 	
