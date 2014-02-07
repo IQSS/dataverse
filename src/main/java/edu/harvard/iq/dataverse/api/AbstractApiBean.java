@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
@@ -31,6 +32,8 @@ public abstract class AbstractApiBean {
 	
 	@PersistenceContext
 	EntityManager em;
+	@EJB
+	DataverseRoleServiceBean rolesSvc;
 	
 	
 	protected DataverseUser findUser( String userIdtf ) {

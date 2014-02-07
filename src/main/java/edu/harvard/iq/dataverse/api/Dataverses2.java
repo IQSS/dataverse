@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
+import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
@@ -67,6 +70,41 @@ public class Dataverses2 extends AbstractApiBean {
 		} catch (CommandException ex) {
 			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
+		}
+	}
+	
+	@GET
+	@Path("{identifier}/roles")
+	public String listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) {
+			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+		
+		JsonArrayBuilder jab = Json.createArrayBuilder();
+		for ( DataverseRole r : dataverse.getRoles() ){
+			jab.add( json(r) );
+		}
+		return ok(jab);
+	}
+	
+	@POST
+	@Path("{identifier}/roles")
+	public String createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) {
+			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+		try {
+			return ok(json(engineSvc.submit( new CreateRoleCommand(roleDto.asRole(), u, dataverse) )));
+		} catch ( CommandException ce ) {
+			return error( ce.getMessage() );
 		}
 	}
 	

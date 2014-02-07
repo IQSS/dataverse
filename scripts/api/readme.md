@@ -35,6 +35,15 @@ Dump the structure of the dataverse to a graphviz file. Sample usage:
 `curl http://localhost:8080/api/dvs/:gv | circo -Tpdf > dataverses.pdf`
 Creates a pdf with all dataverses, and their hierarchy.
 
+	GET http://{{SERVER}}/api/dvs/{{id}}/roles?key={{username}}
+
+All the roles defined directly in the dataverse identified by `id`.
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/roles?key={{username}}
+
+Creates a new role under dataverse `id`. Needs a `.json` file with the role description.
+
+
 ### permissions
 
 	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}
@@ -54,3 +63,23 @@ Generates a new user. Note that the password is passed as a parameter in the que
 	GET http://{{SERVER}}/api/users/{{uid}}
 
 Shows data about the user whose `uid` is passed. The `uid` can either be a number (id in the db) or the username.
+
+### roles
+
+	GET http://{{SERVER}}/api/roles
+
+List all roles.
+
+	POST http://{{SERVER}}/api/roles?dvo={{dataverseIdtf}}&key={{username}}
+
+Creates a new role in dataverse object whose Id is `dataverseIdtf` (that's an id/alias).
+
+List all roles.
+
+	GET http://{{SERVER}}/api/roles/{{id}}
+
+Shows the role with `id`.
+
+	DELETE http://{{SERVER}}/api/roles/{{id}}
+
+Deletes the role with `id`.

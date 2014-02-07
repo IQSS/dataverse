@@ -47,7 +47,8 @@ public class Dataverse extends DvObjectContainer {
     private String affiliation;
 	
 	@OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE},
-		fetch = FetchType.LAZY )
+		fetch = FetchType.LAZY,
+		mappedBy = "owner")
 	private Set<DataverseRole> roles;
 	
 	/** 

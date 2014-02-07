@@ -28,6 +28,12 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
 		
+		if ( created.getOwner()==null ) {
+			if ( ctxt.dataverses().findRootDataverse() != null ) {
+				throw new CommandException("Root Dataverse already exists. Cannot create another one", this);
+			}
+		}
+		
 		// Save the dataverse
 		Dataverse managedDv = ctxt.dataverses().save(created);
 		
