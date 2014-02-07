@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.UserRoleAssignments;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -16,6 +17,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DataverseRoleServiceBean {
+	private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getName());
 	
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -30,8 +32,18 @@ public class DataverseRoleServiceBean {
 	}
 	
 	public RoleAssignment save( RoleAssignment assignment ) {
-		return em.merge( assignment );
+		logger.info("Saving: " + assignment );
+		if ( assignment.getId() == null ) {
+			logger.info("persisting" );
+			em.persist(assignment);
+			em.flush();
+			return assignment;
+		} else {
+			logger.info("merging" );
+			return em.merge( assignment );
+		}
 	}
+	
 	public DataverseRole find( Long id ) {
 		return em.find( DataverseRole.class, id );
 	}

@@ -146,8 +146,9 @@ public class DataverseUser implements Serializable {
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "edu.harvard.iq.dataverse.DataverseUser[ id=" + id + " ]";
-    }
+	@Override
+	public String toString() {
+		return "DataverseUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
+	}
+   
 }

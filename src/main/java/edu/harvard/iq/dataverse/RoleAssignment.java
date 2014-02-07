@@ -26,7 +26,7 @@ import javax.persistence.UniqueConstraint;
 				 query = "SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
-	@NamedQuery( name  = "RoleAssignment.deleteByUserRoleDefinitionPoint",
+	@NamedQuery( name  = "RoleAssignment.deleteByUserRoleIdDefinitionPointId",
 				 query = "DELETE FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId")
 })
 public class RoleAssignment implements java.io.Serializable {
@@ -106,4 +106,10 @@ public class RoleAssignment implements java.io.Serializable {
 					&& Objects.equals(definitionPoint, other.definitionPoint));
 		
 	}
+
+	@Override
+	public String toString() {
+		return "RoleAssignment{" + "id=" + id + ", user=" + user + ", role=" + role + ", definitionPoint=" + definitionPoint + '}';
+	}
+	
 }

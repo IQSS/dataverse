@@ -3,6 +3,8 @@
 This is a quick and dirty guide to the API. Use it for quick setup of complex scenarios. Please add and revise as needed. This assumes unix shell (of cygwin if you run windows).
 The API uses `json`, and sometimes query parameters as well. Also, sometimes there is a `key`, which is currently the username of the user executing the command (safe choice for standard setup is `pete`).
 
+To have a fresh start in the database, you can execute the script `drop-create.sh` in the `../database` folder.
+
 ## Pre-made scripts
 
 	setup-users.sh
@@ -49,7 +51,7 @@ List all the role assignments at the given dataverse.
 
 	POST http://{{SERVER}}/api/dvs/{{id}}/assignments?key={{username}}
 
-Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"username\": \"uma\",\"roleId\": 11}"`).
+Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
 
 ### permissions

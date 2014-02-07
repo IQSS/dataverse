@@ -148,11 +148,38 @@ public class Dataverses2 extends AbstractApiBean {
 		if ( dataverse == null ) {
 			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		}
-		DataverseUser grantedUser = (ra.getUsername()!=null) ? findUser(ra.getUsername()) : userSvc.find(ra.getUserId());
-		DataverseRole theRole = rolesSvc.find( ra.getRoleId() );
+		DataverseUser grantedUser = (ra.getUserName()!=null) ? findUser(ra.getUserName()) : userSvc.find(ra.getUserId());
+		if ( grantedUser==null ) {
+			return error("Can't find user using " + ra.getUserName() + "/" + ra.getUserId() );
+		}
+		
+		DataverseRole theRole;
+		if ( ra.getRoleId() != 0 ) {
+			theRole = rolesSvc.find(ra.getRoleId());
+			if ( theRole == null ) {
+				return error("Can't find role with id " + ra.getRoleId() );
+			}
+			
+		} else {
+			Dataverse dv = dataverse;
+			theRole = null;
+			while ( (theRole==null) && (dv!=null) ) {
+				for ( DataverseRole aRole : dv.getRoles() ) {
+					if ( aRole.getAlias().equals(ra.getRoleAlias()) ) {
+						theRole = aRole;
+						break;
+					}
+				}
+				dv = dv.getOwner();
+			}
+			if ( theRole == null ) {
+				return error("Can't find role named '" + ra.getRoleAlias() + "' in dataverse " + dataverse);
+			}
+		}
 		
 		try {
-			return ok(json( engineSvc.submit( new AssignRoleCommand(grantedUser, theRole, dataverse, actingUser)) ));
+			RoleAssignment roleAssignment = engineSvc.submit( new AssignRoleCommand(grantedUser, theRole, dataverse, actingUser));
+			return ok(json(roleAssignment));
 			
 		} catch (CommandException ex) {
 			logger.log(Level.WARNING, "Can't create assignment: " + ex.getMessage(), ex );

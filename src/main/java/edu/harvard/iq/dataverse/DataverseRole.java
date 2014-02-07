@@ -124,4 +124,10 @@ public class DataverseRole implements Serializable  {
 	public long getPermissionsBits() {
 		return permissionBits;
 	}
+
+	@Override
+	public String toString() {
+		return "DataverseRole{" + "id=" + id + ", alias=" + alias + '}';
+	}
+	
 }
