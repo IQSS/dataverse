@@ -49,9 +49,7 @@ public class SearchIncludeFragment {
     /**
      * @todo:
      *
-     * style and icons for facets
-     *
-     * more/less on facets
+     * better style and icons for facets
      *
      * pagination (previous/next links)
      *
