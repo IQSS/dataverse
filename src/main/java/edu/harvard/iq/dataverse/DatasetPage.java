@@ -166,10 +166,20 @@ public class DatasetPage implements java.io.Serializable {
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
             try {
-                if (!Files.exists(Paths.get("files",dataset.getLatestVersion().getMetadata().getTitle()))) {
-                    Files.createDirectory(Paths.get("files",dataset.getLatestVersion().getMetadata().getTitle()));
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: "+dataset.getFileSystemDirectory().toString());
+                /* Make sure the dataset directory exists: */
+                if (!Files.exists(dataset.getFileSystemDirectory())) {
+                    /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                     */
+                    Files.createDirectories(dataset.getFileSystemDirectory());
                 }
-                Files.copy(uFile.getInputstream(), Paths.get("files",dataset.getLatestVersion().getMetadata().getTitle(), dFile.getName()));
+                
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: "+dFile.getFileSystemLocation().toString());
+                
+                Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());
+                
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }

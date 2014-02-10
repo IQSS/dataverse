@@ -52,4 +52,35 @@ public class VariableServiceBean {
          return query.getResultList();
     }
     
+    /* 
+     * This is awful!
+     * TODO: stop keeping format types in the database!
+     * Re-work VariableFormatType to just define constants for "numeric" and "character";
+     * better yet, re-work the entire scheme of how variable types are stored and 
+     * defined.
+     * -- L.A. 4.0
+     */
+    public VariableFormatType findVariableFormatTypeByName(String name) {
+        String query="SELECT t from VariableFormatType t where t.name = '"+name+"'";
+        VariableFormatType type = null;
+        try {
+            type=(VariableFormatType)em.createQuery(query).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return type;
+    }
+    
+    public VariableIntervalType findVariableIntervalTypeByName(String name) {
+        String query="SELECT t from VariableIntervalType t where t.name = '"+name+"'";
+        VariableIntervalType type = null;
+        try {
+            type=(VariableIntervalType)em.createQuery(query).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return type;
+    }
+    
+    
 }

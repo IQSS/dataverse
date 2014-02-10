@@ -340,12 +340,18 @@
                                         <p:message for="fileName"/>
                                     </p:column>
                                     <p:column>
+                                        <h:outputLink value="/api/access/datafile/#{file.id}">
+                            			<h:outputText value="Download"/>
+                        		</h:outputLink>
+                                    </p:column>
+                                    <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
 					<h:outputLink value="/dataexplore/gui.html?dfId=#{file.id}" target="_new" rendered="#{file.tabularData}">
                             			<h:outputText value="(Explore Data)"/>
                         		</h:outputLink>
 
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
+                                        
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>

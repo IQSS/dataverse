@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -168,6 +170,19 @@ public class Dataset extends DvObjectContainer {
         } 
     }
 
+    public Path getFileSystemDirectory() {
+        Path studyDir = null;
+                
+        
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+        
+        studyDir = Paths.get(filesRootDirectory, this.getId().toString());        
+        return studyDir; 
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

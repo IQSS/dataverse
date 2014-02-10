@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
@@ -22,6 +24,8 @@ public class DataFile extends DvObject {
     @NotBlank    
     private String contentType;
     
+    private String fileSystemName;
+
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -95,6 +99,19 @@ public class DataFile extends DvObject {
 
     public void setOwner(Dataset dataset) {
         super.setOwner(dataset);
+    }
+    
+    public String getFileSystemName() {
+        return this.fileSystemName;
+    }
+
+    public void setFileSystemName(String fileSystemName) {
+        this.fileSystemName = fileSystemName;
+    }
+    
+    public Path getFileSystemLocation() {
+        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
+        return Paths.get(studyDirectory, this.name);
     }
     
     @Override
