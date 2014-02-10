@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -41,6 +43,7 @@ public class SearchIncludeFragment {
     private Long dataverseId;
     private Dataverse dataverse;
     private boolean solrIsDown = false;
+    private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
 
     /**
@@ -143,6 +146,23 @@ public class SearchIncludeFragment {
             directChildDvObjectContainerList.addAll(contentsList);
         }
 
+    }
+
+    public int getNumberOfFacets(String name, int defaultValue) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numberOfFacets.put(name, defaultValue);
+            numFacets = defaultValue;
+        }
+        return numFacets;
+    }
+
+    public void incrementFacets(String name, int incrementNum) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numFacets = incrementNum;
+        }
+        numberOfFacets.put(name, numFacets + incrementNum);
     }
 
     public String getQuery() {

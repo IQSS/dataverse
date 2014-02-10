@@ -23,7 +23,7 @@
             <div style="width:20%;float:left;">
                 <p:dataList id="facetsTable" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.name}"/>
-                    <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel">
+                    <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink>
                             <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -40,6 +40,14 @@
                             </c:forEach>
                         </h:outputLink>
                     </p:dataList>
+                    <p:panelGrid styleClass="facetsMoreLess" columns="2" rendered="#{(SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()) or (SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5)}">
+                        <ui:fragment>
+                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,-5)}" update="facetsTable" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}">Less...</p:commandLink>
+                        </ui:fragment>
+                        <ui:fragment>
+                            <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,5)}" update="facetsTable" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}">More...</p:commandLink>
+                        </ui:fragment>
+                    </p:panelGrid>
                 </p:dataList>
             </div>
             <div style="width:80%;float:left;">
