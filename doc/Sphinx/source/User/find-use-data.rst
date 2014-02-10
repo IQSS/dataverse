@@ -2,9 +2,11 @@ Finding and Using Data
 ++++++++++++++++++
 
 Without logging in to Dataverse, users can browse
-dataverses, search datasets, view dataset description and files for
+Dataverse, search for dataverses, datasets, and files, view dataset descriptions and files for
 public datasets, and subset, analyze and visualize data for public data
-files. To view a restricted dataverse, dataset, or file, a user will need to be given permission from the dataverse adminstrator to access it. 
+files. To view a restricted dataverse, dataset, or file, a user will need to be given permission from that dataverse's adminstrator to access it. 
+
+A user can search the dataverses, datasets, and files within a particular dataverse by using the search bar found on a dataverse page. For example, if you are on the Murray Research Archive Dataverse page, you can search that specific dataverse's contents by using the search bar and/or facets displayed on the page.
 
 **Ways to Search**
 
@@ -12,37 +14,33 @@ From the Dataverse homepage, you can begin searching with a wildcard search, an 
 
 Basic search block features:
 
-- Wildcard: by entering an asterisk (*), into the search bar, you can perform a search for all public dataverses, datasets, and files within the Dataverse Network.
-- Autocomplete for titles of dataverses and file names
+- Wildcard: by entering an asterisk (*), into the search bar, you can perform a search for all public dataverses, datasets, and files within Dataverse.
+- Autocomplete for names of dataverses and file names
 - Exact phrase search when a search term/query has quotes around it
 
 Search results features: 
 
-- Facets - list of facets, clicking a facet, removing a facet, viewing more or less options within a facet, chosen facets appear above results table
+- Facets: to the left of the search results, there are several facets a user can click on to narrow the number of results displayed. 
+    - Choosing a facet: to choose a facet, click on the facet to choose it
+    - Removing a facet: to remove a facet, click on the X next to a chosen facet in search string above the results OR a chosen facet can be removed by clicking on the X next to it in the facets pane to the left of the results
+    - Viewing more or less: the top five results show in each facet, to view more, click on "More..." in the bottom right of a facet. Once you've chosen to see more, an option to view less will appear in the bottom left of the facet.
+   
 - Result cards - search terms/query highlighting within it
 
 Other search features: 
 
-- Bookmarkable URLs
-- Spellcheck
-- Searching within a specific dataverse
+- Bookmarkable URLs: search URLS can be copied and sent to a fellow researcher or can be bookmarked for you to be able to return to at a later time.
+- Spellcheck: in red text beneath the search bar, spelling suggestions for a potential misspelling in the search query appears
 
-
-**Search - Basic**
-
-You can search for datasets across the entire Dataverse from the
-Network homepage, or search within a dataverse from a specific dataverse's
-homepage. When you search across Dataverse, datasets in restricted
-dataverses are not included in the search. 
 
 **Search - Advanced** (Needs to be edited/updated once advanced search is developed)
 
 In an advanced search, you can refine your criteria by choosing which
-Metadata fields to search.
+Metadata fields to search. You can perform an advanced search on all general metadata fields as well as domain specific metadata fields. Additionally, you can perform an advanced search on files.
 
-To perform an advanced search, click the Advanced Search link at the
-top-right of the Search panel. You can search the following study
-metadata fields by using the Search Scope drop-down list:
+To perform an advanced search, click the Advanced Search link next to the search bar. 
+
+Advanced Search fields: (update based off metadata tables)
 
 -  Title - Title field of studies' Cataloging Information.
 -  Author - Author fields of studies' Cataloging Information.
@@ -97,6 +95,8 @@ You can sort search results by title, study ID, last updated, or number
 of downloads (that is, the number of times users downloaded any file
 belonging to that study). Click the Sort By drop-down list to choose
 your sort order.
+
+**Browse Dataverse**
 
 
 
