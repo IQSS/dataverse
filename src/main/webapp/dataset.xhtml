@@ -338,11 +338,13 @@
                                         <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
                                         <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileName"/>
+                                        <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
                                     </p:column>
                                     <p:column>
-                                        <h:outputLink value="/api/access/datafile/#{file.id}">
+                                        <h:outputLink value="/api/access/datafile/#{file.id}"  rendered="#{!empty file.id}">
                             			<h:outputText value="Download"/>
                         		</h:outputLink>
+                                        <h:outputText value="[UNSAVED FILE]" rendered="#{empty file.id}"/>
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>

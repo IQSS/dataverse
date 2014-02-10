@@ -114,6 +114,10 @@ public class DataFile extends DvObject {
         return Paths.get(studyDirectory, this.name);
     }
     
+    public boolean isImage() {
+        return (contentType != null && contentType.startsWith("image/"));
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

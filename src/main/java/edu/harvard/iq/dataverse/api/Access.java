@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
@@ -69,9 +71,7 @@ public class Access {
     @Path("datafile/{fileId}")
     @GET
     @Produces({ "application/xml" })
-    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        String retValue = "";
-        
+    public DownloadInstance datafile(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         ByteArrayOutputStream outStream = null;
         
 
@@ -80,13 +80,37 @@ public class Access {
          * Throw a meaningful exception if file not found!
          * -- L.A. 4.0alpha1
          */
+        
         DownloadInfo dInfo = new DownloadInfo(df);
+
+        /*
+         * The only "optional access service" supported as of now (4.0alpha1)
+         * is image thumbnail generation: 
+         * (and yes, this is a hack)
+         */
+        if (df.getContentType() != null && df.getContentType().startsWith("image/")) {
+            dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
+        }
+
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         
-        
+        for (String key : uriInfo.getQueryParameters().keySet()) {
+            String value = uriInfo.getQueryParameters().getFirst(key);
+            
+            if (downloadInstance.isDownloadServiceSupported(key, value)) {
+                // this automatically sets the conversion parameters in 
+                // the download instance to key and value;
+                // TODO: I should probably set these explicitly instead. 
+                break;
+            } else {
+                // Service unknown/not supported/bad arguments, etc.:
+                // TODO: throw new ServiceUnavailableException(); 
+            }
+            
+        }
         /* 
          * Provide content type header:
-         * (this should be done by the InstanceWriter class - ?)
+         * (this will be done by the InstanceWriter class - ?)
          */
          
         /* Provide "Access-Control-Allow-Origin" header:
@@ -103,47 +127,4 @@ public class Access {
         //return retValue; 
         return downloadInstance;
     }
-    /*
-    public class DownloadInstance {
-        private ByteArrayOutputStream outStream = null;
-        
-        public ByteArrayOutputStream getOutStream() {
-            return outStream;
-        } 
-        
-        public void setOutStream(ByteArrayOutputStream outStream) {
-            this.outStream=outStream;
-        }
-    }
-    */
-    
-    /*
-    @Singleton
-    @Provider
-    public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
-
-        public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
-            return clazz == DownloadInstance.class;
-        }
-
-        public long getSize(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
-            return -1;
-        }
-
-        public void writeTo(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
-
-            ByteArrayOutputStream generatedStream = di.getOutStream();
-            byte[] generatedBytes = generatedStream.toByteArray();
-
-            outstream.write(generatedBytes, 0, generatedBytes.length);
-            // in prod. we'll want to use the 
-            // outstream.write(byte[], offset, lenght) version
-            //
-            // do i need to close outstream?
-        }
-    
-    }
-    */
-    
-
 }
