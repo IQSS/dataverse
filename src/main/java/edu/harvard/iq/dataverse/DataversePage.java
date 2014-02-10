@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import java.util.List;
@@ -18,9 +17,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
-
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -49,11 +46,6 @@ public class DataversePage implements java.io.Serializable {
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
     private Long ownerId;
-    private String q;
-    private String dataversePath;
-    private String fq0;
-    private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
-    List filterQueries = new ArrayList();
     private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
@@ -80,77 +72,6 @@ public class DataversePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
-    public String getQ() {
-        return q;
-    }
-
-    public void setQ(String q) {
-        this.q = q;
-    }
-
-    public String getDataversePath() {
-        boolean isRootDataverse;
-        try {
-            isRootDataverse = isRootDataverse();
-        } catch (EJBException ex) {
-            // this is expected if no dataverses have been created yet
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append(cause + " ");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause + " ");
-            }
-            // we expect something like this when the root dataverse hasn't been created yet:
-            // javax.ejb.EJBException javax.persistence.NoResultException javax.persistence.NoResultException: getSingleResult() did not retrieve any entities
-            logger.info(sb.toString() + " ... but don't worry about it, this is normal when we are about to create the root dataverse");
-            // we'll just set this to null. the root dataverse is being
-            // created so searching the subtree means only searching
-            // the root dataverse anyway
-            return null;
-        }
-        if (isRootDataverse) {
-            // null? it's because we don't want fq0
-            // to return anything about subtrees for searches
-            // from the root dataverse
-            return null;
-        } else {
-            // for non-root dataverses, we do want fq0 to have a subtree in it.
-            // i.e. "/mra" as a quoted dataverse path
-            String dataversePath = dataverseService.determineDataversePath(this.dataverse);
-            return SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-        }
-    }
-
-    public void setDataversePath(String dataversePath) {
-        this.dataversePath = dataversePath;
-    }
-
-    public String getFq0() {
-        return fq0;
-    }
-
-    public void setFq0(String fq0) {
-        this.fq0 = fq0;
-    }
-
-    public List<FacetCategory> getFacetCategoryList() {
-        return facetCategoryList;
-    }
-
-    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
-        this.facetCategoryList = facetCategoryList;
-    }
-
-    public List getFilterQueries() {
-        return filterQueries;
-    }
-
-    public void setFilterQueries(List filterQueries) {
-        this.filterQueries = filterQueries;
-    }
-
     public TreeNode getTreeWidgetRootNode() {
         return treeWidgetRootNode;
     }
@@ -166,7 +87,6 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
-            filterQueries.add(getDataversePath());
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = true;
             dataverse.setOwner(dataverseService.find(ownerId));
@@ -186,25 +106,6 @@ public class DataversePage implements java.io.Serializable {
 
             }
         }
-        SolrQueryResponse solrQueryResponse = null;
-        String query = "*";
-        int paginationStart = 0;
-        try {
-            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
-        } catch (EJBException ex) {
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append(cause + " ");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause + " ");
-            }
-            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
-            logger.info(message);
-            return;
-        }
-        facetCategoryList = solrQueryResponse.getFacetCategoryList();
 
         populateTreeWidget(treeWidgetRootNode);
     }

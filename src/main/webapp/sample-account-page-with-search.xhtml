@@ -11,9 +11,14 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="thisPageTitle" value="Sample Account Page with Search"/>
+            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
+
             <ui:define name="body">
 
                 <f:metadata>
+                    <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
+                    <f:viewAction action="#{SampleAccountPageWithSearch.init}" />
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                     <f:viewParam name="dataverseId" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
@@ -30,17 +35,8 @@
                 </f:metadata>
 
                 <!-- Breadcrumbs Panel -->
-                <!--FIXME: remove this when breadcrumbs are available in the template: https://redmine.hmdc.harvard.edu/issues/3537 -->
                 <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
-                    <br/>
-                    <ui:repeat value="#{SearchIncludeFragment.dataverse.owners}" var="owner">
-                        <h:outputLink value="?dataverseId=#{owner.id}">
-                            <h:outputText value="#{owner.name} Dataverse"/>
-                        </h:outputLink>
-                        <h:outputText value=" > "/>
-                    </ui:repeat>
-                    <!--<br/>-->
-                    <h:outputText value="#{SearchIncludeFragment.dataverse.name} Dataverse" style="font-weight:bold;"/>
+                    <h:outputText value="#{thisPageTitle}" style="font-weight:bold;"/>
                 </p:panel>
 
                 <!-- Message Panel -->
@@ -48,8 +44,14 @@
                     <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
                 </p:panel>
 
+                <h2>
+                    <h:outputText value="#{SampleAccountPageWithSearch.dataverseUser.firstName} #{SampleAccountPageWithSearch.dataverseUser.lastName}'s Account with Search" />
+                    <br/>
+                    <h:outputText value="Data Related To Me (#{SampleAccountPageWithSearch.dataverseUser.firstName} #{SampleAccountPageWithSearch.dataverseUser.lastName})" />
+                </h2>
+
                 <ui:include src="search-include-fragment.xhtml">
-                    <ui:param name="showAdvancedSearchLink" value="true"/>
+                    <ui:param name="showAdvancedSearchLink" value="false"/>
                     <ui:param name="dataverseLinksStayOnPage" value="false"/>
                 </ui:include>
 

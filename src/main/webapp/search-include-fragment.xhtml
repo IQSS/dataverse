@@ -50,6 +50,7 @@
                     </p:panelGrid>
                 </p:dataList>
             </div>
+            <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
             <div style="width:80%;float:left;">
                 <ui:fragment>
                     <h:outputText value="#{SearchIncludeFragment.searchResultsCount} results. "/>
@@ -57,7 +58,7 @@
                     <p:dataTable id="resultsTable" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                         <p:column>
                             <ui:fragment rendered="#{result.type == 'dataverses'}">
-                                <h:outputLink value="?dataverseId=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
+                                <h:outputLink value="#{dataversePage}?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                     <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0;">
@@ -146,7 +147,7 @@
 
                                 <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#E6F1F6;padding:4px;"/>
 
-                                <h:outputLink value="?dataverseId=#{result.parent.get('id')}" style="display:block;">
+                                <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Original Dataverse: #{result.parent.get('name')} Dataverse"/>
                                 </h:outputLink>
 
@@ -197,7 +198,7 @@
             <p:dataTable value="#{SearchIncludeFragment.directChildDvObjectContainerList}" var="directChild">
                 <p:column>
                     <ui:fragment rendered="#{directChild.class.simpleName == 'Dataverse'}">
-                        <h:outputLink value="?dataverseId=#{directChild.id}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
+                        <h:outputLink value="#{dataversePage}?id=#{directChild.id}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                             <h:outputText value="#{directChild.name} Dataverse" style="padding:4px 0;"/>
                         </h:outputLink>
                         <div style="width:48px; float:left; margin:4px 12px 6px 0;">

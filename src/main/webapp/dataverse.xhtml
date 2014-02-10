@@ -18,9 +18,20 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                    <f:viewParam name="q" value="#{DataversePage.q}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
-                    <f:viewParam name="fq0" value="#{DataversePage.dataversePath}"/>
+                    <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
+                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
+                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
+                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
+                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
+                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
+                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
+                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
+                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
+                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
+                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
+                    <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
 
                 <h:form id="dataverseForm">
@@ -160,21 +171,6 @@
                 <p:panel styleClass="panelLayoutBlock" rendered="#{!DataversePage.editMode}">
                     <p:focus/>
                     <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                        <ui:fragment>
-                            <h:form id="searchForm">
-                                <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchPage.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
-                                <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
-                                <!--this commented out version used to work when it was in a plain form tag, see e6db352-->
-                                <!--<h:inputHidden id="fq0" value="#{DataversePage.dataversePath}" rendered="true"/>-->
-                                <!--https://blogs.oracle.com/enterprisetechtips/entry/post_redirect_get_and_jsf-->
-                                <p:commandButton id="searchbutton" value="Find" action="search.xhtml?faces-redirect=true&amp;includeViewParams=true" update="@all"/>
-                                
-                                <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;">
-                                    <h:outputText value="Advanced Search"/>
-                                </h:outputLink>
-                            </h:form>
-                        </ui:fragment>
-
                         <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}">
                             <h:form id="shareForm" style="margin-left:auto;">
                                 <p:menuButton id="shareData" value="Add Data" iconPos="right">
@@ -190,50 +186,20 @@
                 </p:panel>
 
                 <!-- Content Panel -->
-                <h:outputLink value="/search.xhtml" rendered="#{SearchPage.query != '*'}">
-                    <f:param name="q" value="*"/>
-                    <f:param name="fq0" value="#{DataversePage.dataversePath}"/>
-                    <f:param name="fromDataverseId" value="#{DataversePage.dataverse.id}"/>
-                    <h:outputText value="DEBUG: Show cards and make facets clickable" style="color: blue"/>
-                </h:outputLink>
-                <p:panel>
-                    <div style="width:20%;float:left;">
-                        <p:dataList id="facetCategoryList" value="#{DataversePage.facetCategoryList}" var="facetCategory">
-                            <h:outputText value="#{facetCategory.name}"/>
-                            <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel"  rows="5">
-                                <h:outputText value="#{facetLabel.name}"/>
-                                <h:outputText value=" (#{facetLabel.count})"/>
-                            </p:dataList>
-                        </p:dataList>
-                    </div>
-                    <div style="width:80%;float:left;">
-                        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}" style="fon">
-                            <p:tree value="#{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >
-                                <p:treeNode id="treeNode">
-                                    <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
-                                    <h:outputText value="#{node.name} Dataverse" style="font-weight: #{DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>
-                                    </h:outputLink>
-                                </p:treeNode>
-                            </p:tree>
-                        </p:panel>
-                        <!--<h:outputText value="#{DataversePage.filterQueries}"/>-->
-                        <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}">
-                            <p:dataList value="#{DataversePage.contents}" var="item">
-                                <ui:fragment rendered="#{item.class.simpleName eq 'Dataverse'}">
-                                    <h:outputLink value="/dataverse.xhtml?id=#{item.id}">
-                                        <h:outputText value="#{item.name} Dataverse" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 22px;"/>
-                                        <h:outputText value=" (#{item.affiliation})" rendered="#{!empty item.affiliation}"/>
-                                    </h:outputLink>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{item.class.simpleName eq 'Dataset'}">
-                                    <h:outputLink value="/dataset.xhtml?id=#{item.id}">
-                                        <h:outputText value="#{item.latestVersion.metadata.title}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
-                                    </h:outputLink>
-                                </ui:fragment>
-                            </p:dataList>
-                        </p:panel>
-                    </div>
-                    <div style="clear: left"/>
+                <ui:fragment  rendered="#{!DataversePage.editMode}">
+                    <ui:include src="search-include-fragment.xhtml">
+                        <ui:param name="showAdvancedSearchLink" value="true"/>
+                        <ui:param name="dataverseLinksStayOnPage" value="true"/>
+                    </ui:include>
+                </ui:fragment>
+                <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}" style="fon">
+                    <p:tree value="#{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >
+                        <p:treeNode id="treeNode">
+                            <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
+                                <h:outputText value="#{node.name} Dataverse" style="font-weight: #{DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                            </h:outputLink>
+                        </p:treeNode>
+                    </p:tree>
                 </p:panel>
             </ui:define>
         </ui:composition>        
