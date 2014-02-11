@@ -139,36 +139,36 @@ public class IndexServiceBean {
          * @todo: should we assign a dataset title to name like this?
          */
         if (dataset.getLatestVersion() != null) {
-            if (dataset.getLatestVersion().getMetadata() != null) {
-                if (dataset.getLatestVersion().getMetadata().getAuthorsStr() != null) {
-                    if (!dataset.getLatestVersion().getMetadata().getAuthorsStr().isEmpty()) {
-                        solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getMetadata().getAuthorsStr());
+            if (dataset.getLatestVersion() != null) {
+                if (dataset.getLatestVersion().getAuthorsStr() != null) {
+                    if (!dataset.getLatestVersion().getAuthorsStr().isEmpty()) {
+                        solrInputDocument.addField(SearchFields.AUTHOR_STRING, dataset.getLatestVersion().getAuthorsStr());
                     } else {
                         logger.info("author string was empty");
                     }
                 } else {
                     logger.info("dataset.getLatestVersion().getMetadata().getAuthorsStr() was null");
                 }
-                if (dataset.getLatestVersion().getMetadata().getTitle() != null) {
-                    if (!dataset.getLatestVersion().getMetadata().getTitle().isEmpty()) {
-                        solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getMetadata().getTitle());
+                if (dataset.getLatestVersion().getTitle() != null) {
+                    if (!dataset.getLatestVersion().getTitle().isEmpty()) {
+                        solrInputDocument.addField(SearchFields.TITLE, dataset.getLatestVersion().getTitle());
                     }
                     else {
                         logger.info("title was empty");
                     }
                 }
-                if (dataset.getLatestVersion().getMetadata().getProductionDate() != null) {
+                if (dataset.getLatestVersion().getProductionDate() != null) {
                     SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
                     try {
-                        logger.info("Trying to convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
-                        Date citationDate = inputDateyyyy.parse(dataset.getLatestVersion().getMetadata().getProductionDate());
+                        logger.info("Trying to convert " + dataset.getLatestVersion().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
+                        Date citationDate = inputDateyyyy.parse(dataset.getLatestVersion().getProductionDate());
                         SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                         String citationYear = yearOnly.format(citationDate);
                         logger.info("YYYY only: " + citationYear);
                         solrInputDocument.addField(SearchFields.CITATION_YEAR, Integer.parseInt(citationYear));
                         solrInputDocument.addField(SearchFields.CITATION_DATE, citationDate);
                     } catch (Exception ex1) {
-                        logger.info(ex1.getClass().getCanonicalName() + ": can't convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
+                        logger.info(ex1.getClass().getCanonicalName() + ": can't convert " + dataset.getLatestVersion().getProductionDate() + " to a YYYY date from dataset " + dataset.getId());
 //                        SimpleDateFormat inputDateyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 //                        try {
 //                            logger.info("Trying to convert " + dataset.getLatestVersion().getMetadata().getProductionDate() + " to a YYYY-MM-DD date from dataset " + dataset.getId());
@@ -222,8 +222,8 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
-            if (!dataFile.getOwner().getLatestVersion().getMetadata().getTitle().isEmpty()) {
-                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getLatestVersion().getMetadata().getTitle());
+            if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {
+                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getLatestVersion().getTitle());
             }
             docs.add(datafileSolrInputDocument);
         }

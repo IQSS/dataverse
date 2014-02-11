@@ -56,6 +56,18 @@ public class Dataverse extends DvObjectContainer {
 	 */
 	private boolean permissionRoot;
 
+        
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<MetadataBlock> metadataBlocks;
+
+    public List<MetadataBlock> getMetadataBlocks() {
+        return metadataBlocks;
+    }
+
+    public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
+        this.metadataBlocks = metadataBlocks;
+    }
+
     public String getName() {
         return name;
     }

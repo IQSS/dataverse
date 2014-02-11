@@ -101,8 +101,8 @@ public class SearchPage implements java.io.Serializable {
             } else if (solrSearchResult.getType().equals("datasets")) {
                 Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                 try {
-                    if (dataset.getLatestVersion().getMetadata().getCitation() != null) {
-                        solrSearchResult.setCitation(dataset.getLatestVersion().getMetadata().getCitation());
+                    if (dataset.getLatestVersion().getCitation() != null) {
+                        solrSearchResult.setCitation(dataset.getLatestVersion().getCitation());
                     }
                 } catch (NullPointerException npe) {
                     logger.info("caught NullPointerException trying to get citation for " + dataset.getId());

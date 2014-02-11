@@ -1,120 +1,147 @@
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (1, 'Title', 'Title', 'title', TRUE, TRUE, TRUE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (2, 'Dataset ID', 'Dataset ID', 'datasetId', TRUE, TRUE, TRUE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (3, 'Author', 'Author', 'author', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (4, 'Author Affiliation', 'Author Affiliation', 'authorAffiliation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (5, 'Producer', 'Producer', 'producer', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (6, 'Producer URL', 'Producer URL', 'producerURL', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (7, 'URL to Producer Logo', 'URL to Producer Logo', 'producerLogo', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (8, 'Producer Name Abbreviation', 'Producer Name Abbreviation', 'producerAbbreviation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (9, 'Production Date', 'Production Date', 'productionDate', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (10, 'Software', 'Software', 'software', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (11, 'Software Version', 'Software Version', 'softwareVersion', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (12, 'Funding Agency', 'Funding Agency', 'fundingAgency', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (13, 'Grant Number', 'Grant Number', 'grantNumber', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (14, 'Grant Number Agency', 'Grant Number Agency', 'grantNumberAgency', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (15, '', '', 'distributor', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (16, '', '', 'distributorURL', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (17, '', '', 'distributorLogo', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (18, '', '', 'distributionDate', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (19, '', '', 'distributorContact', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (20, '', '', 'distributorContactAffiliation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (21, '', '', 'distributorContactEmail', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (22, '', '', 'depositor', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (23, '', '', 'dateOfDeposit', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (24, '', '', 'series', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (25, '', '', 'seriesInformation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (26, '', '', 'datasetVersion', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (27, '', '', 'keyword', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (28, '', '', 'keywordVocab', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (29, '', '', 'keywordVocabURI', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (30, '', '', 'topicClassification', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (31, '', '', 'topicClassVocab', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (32, '', '', 'topicClassVocabURI', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (33, '', '', 'description', FALSE, TRUE, TRUE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (34, '', '', 'descriptionDate', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (35, '', '', 'timePeriodCoveredStart', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (36, '', '', 'timePeriodCoveredEnd', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (37, '', '', 'dateOfCollectionStart', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (38, '', '', 'dateOfCollectionEnd', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (39, '', '', 'country', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (40, '', '', 'geographicCoverage', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (41, '', '', 'geographicUnit', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (42, '', '', 'unitOfAnalysis', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (43, '', '', 'universe', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (44, '', '', 'kindOfData', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (45, '', '', 'timeMethod', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (46, '', '', 'dataCollector', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (47, '', '', 'frequencyOfDataCollection', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (48, '', '', 'samplingProcedure', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (49, '', '', 'deviationsFromSampleDesign', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (50, '', '', 'collectionMode', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (51, '', '', 'researchInstrument', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (52, '', '', 'dataSources', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (53, '', '', 'originOfSources', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (54, '', '', 'characteristicOfSources', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (55, '', '', 'accessToSources', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (56, '', '', 'dataCollectionSituation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (57, '', '', 'actionsToMinimizeLoss', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (58, '', '', 'controlOperations', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (59, '', '', 'weighting', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (60, '', '', 'cleaningOperations', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (61, '', '', 'datasetLevelErrorNotes', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (62, '', '', 'responseRate', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (63, '', '', 'samplingErrorEstimates', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (64, '', '', 'otherDataAppraisal', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (65, '', '', 'placeOfAccess', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (66, '', '', 'originalArchive', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (67, '', '', 'availabilityStatus', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (68, '', '', 'collectionSize', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (69, '', '', 'datasetCompletion', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (70, '', '', 'confidentialityDeclaration', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (71, '', '', 'specialPermissions', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (72, '', '', 'restrictions', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (73, '', '', 'contact', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (74, '', '', 'citationRequirements', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (75, '', '', 'depositorRequirements', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (76, '', '', 'conditions', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (77, '', '', 'disclaimer', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (78, '', '', 'relatedMaterial', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (79, '', '', 'publication', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (80, '', '', 'relatedDatasets', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (81, '', '', 'otherReferences', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (82, '', '', 'notesText', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (83, '', '', 'note', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (84, '', '', 'notesInformationSubject', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (85, '', '', 'otherId', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (86, '', '', 'otherIdAgency', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (87, '', '', 'productionPlace', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (88, '', '', 'numberOfFiles', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (89, '', '', 'publicationReplicationData', FALSE, TRUE, FALSE, FALSE, FALSE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (90, '', '', 'subTitle', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (91, '', '', 'versionDate', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (92, '', '', 'geographicBoundingBox', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (93, '', '', 'eastLongitude', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (94, '', '', 'northLatitude', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (95, '', '', 'southLatitude', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (96, '', '', 'producerAffiliation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (97, '', '', 'distributorAffiliation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (98, '', '', 'distributorAbbreviation', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (99, 'Author', 'Author', 'authorName', TRUE, TRUE, TRUE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (100, '', '', 'producerName', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (101, '', '', 'distributorName', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (102, '', '', 'distributorContactName', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (103, '', '', 'descriptionText', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (104, '', '', 'keywordValue', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (105, '', '', 'topicClassValue', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (106, '', '', 'otherIdValue', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (107, '', '', 'softwareName', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (108, '', '', 'grantNumberValue', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (109, '', '', 'seriesName', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (110, '', '', 'datasetVersionValue', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (111, '', '', 'westLongitude', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (112, '', '', 'noteInformationType', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (1, 'citation', 'Citation', true);
 
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (113, '', '', 'publicationCitation', FALSE, TRUE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (114, '', '', 'publicationIDType', FALSE, FALSE, FALSE, FALSE, FALSE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (115, '', '', 'publicationIDNumber', FALSE, FALSE, FALSE, FALSE, TRUE );
-INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField, customField, allowControlledVocabulary) VALUES (116, '', '', 'publicationURL', FALSE, FALSE, FALSE, FALSE, TRUE );
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (2, 'discoverability', 'Discoverability', false);
+
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (3, 'datasetavailabilty', 'Dataset Availabilty', false);
+
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (4, 'termsofuse', 'Terms of Use', false);
+
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (5, 'socialscience', 'Domain Metadata', false);
+
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (6, 'astrophysics', 'Domain Metadata', false);
+
+INSERT INTO metadatablock(
+            id, "name", displayname, showoncreate)
+    VALUES (7, 'biomedical', 'Domain Metadata', false);
+
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (1, 'Title', 'Title', 'title', TRUE, TRUE, TRUE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (2, 'Dataset ID', 'Dataset ID', 'datasetId', TRUE, TRUE, TRUE,  TRUE, 1  );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (3, 'Author', 'Author', 'author', FALSE, FALSE, FALSE, TRUE, 1  );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (4, 'Author Affiliation', 'Author Affiliation', 'authorAffiliation', FALSE, FALSE, FALSE,  TRUE,1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (5, 'Producer', 'Producer', 'producer', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (6, 'Producer URL', 'Producer URL', 'producerURL', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (7, 'URL to Producer Logo', 'URL to Producer Logo', 'producerLogo', FALSE, FALSE, FALSE, TRUE, 2  );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (8, 'Producer Name Abbreviation', 'Producer Name Abbreviation', 'producerAbbreviation', FALSE, FALSE, FALSE, TRUE, 2  );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (9, 'Production Date', 'Production Date', 'productionDate', FALSE, TRUE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (10, 'Software', 'Software', 'software', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (11, 'Software Version', 'Software Version', 'softwareVersion', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (12, 'Funding Agency', 'Funding Agency', 'fundingAgency', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (13, 'Grant Number', 'Grant Number', 'grantNumber', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (14, 'Grant Number Agency', 'Grant Number Agency', 'grantNumberAgency', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (15, 'Distributor', 'Distributor', 'distributor', FALSE, FALSE, FALSE,  TRUE,1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (16, 'Distributor URL', 'Distributor URL', 'distributorURL', FALSE, FALSE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (17, 'Distributor Logo', 'Distributor Logo', 'distributorLogo', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (18, 'Distribution Date', 'Distribution Date', 'distributionDate', FALSE, TRUE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (19, 'Distributor Contact', 'Distributor Contact', 'distributorContact', FALSE, FALSE, FALSE,  TRUE ,1);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (20, 'Distributor Contact Affiliation', 'Distributor Contact Affiliation', 'distributorContactAffiliation', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (21, 'Distributor Contact Email', 'Distributor Contact Email', 'distributorContactEmail', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (22, 'Depositor', 'Depositor', 'depositor', FALSE, FALSE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (23, 'Date of Deposit', 'Date of Deposit', 'dateOfDeposit', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (24, 'Series', 'Series', 'series', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (25, 'Series Information', 'Series Information', 'seriesInformation', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (26, 'Dataset Version', 'Dataset Version', 'datasetVersion', FALSE, FALSE, FALSE, TRUE , 1);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (27, 'Keyword', 'Keyword', 'keyword', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (28, 'Keyword Vocabulary', 'Keyword Vocabulary', 'keywordVocab', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (29, 'Keyword Vocabulary URL', 'Keyword Vocabulary URL', 'keywordVocabURI', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (30, 'Topic Classification', 'Topic Classification', 'topicClassification', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (31, 'Topic Classification Vocabulary', 'Topic Classification Vocabulary', 'topicClassVocab', FALSE, FALSE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (32, 'Topic Classification Vocabulary URL', 'Topic Classification Vocabulary URL', 'topicClassVocabURI', FALSE, FALSE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (33, 'Description', 'Description', 'description', FALSE, TRUE, TRUE, TRUE ,1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (34, 'Description Date', 'Description Date', 'descriptionDate', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (35, 'Time Period Covered Start', 'Time Period Covered Start', 'timePeriodCoveredStart', FALSE, TRUE, FALSE,  TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (36, 'Time Period Covered End', 'Time Period Covered End', 'timePeriodCoveredEnd', FALSE, TRUE, FALSE,  TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (37, 'Date of Collection Start', 'Date of Collection Start', 'dateOfCollectionStart', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (38, 'Date of Collection End', 'Date of Collection End', 'dateOfCollectionEnd', FALSE, FALSE, FALSE, TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (39, 'Country', 'Country', 'country', FALSE, TRUE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (40, 'Geographic Coverage', 'Geographic Coverage', 'geographicCoverage', FALSE, TRUE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (41, 'Geographic Unit', 'Geographic Unit', 'geographicUnit', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (42, 'Unit of Analysis', 'Unit of Analysis', 'unitOfAnalysis', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (43, 'Universe', 'Universe', 'universe', FALSE, TRUE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (44, 'Kind of Data', 'Kind of Data', 'kindOfData', FALSE, TRUE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (45, 'Time Method', 'Time Method', 'timeMethod', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (46, 'Data Collector', 'Data Collector', 'dataCollector', FALSE, FALSE, FALSE,  TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (47, 'Frequency of Data Collection', 'Frequency of Data Collection', 'frequencyOfDataCollection', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (48, 'Sampling Procedure', 'Sampling Procedure', 'samplingProcedure', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (49, 'Deviations from Sample Design', 'Deviations from Sample Design', 'deviationsFromSampleDesign', FALSE, FALSE, FALSE,  TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (50, 'Collection Mode', 'Collection Mode', 'collectionMode', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (51, 'Reasearch Instrument', 'Reasearch Instrument', 'researchInstrument', FALSE, FALSE, FALSE,TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (52, 'Data Sources', 'Data Sources', 'dataSources', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (53, 'Origin of Sources', 'Origin of Sources', 'originOfSources', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (54, 'Characteristics of Sources', 'Characteristics of Sources', 'characteristicOfSources', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (55, 'Access to Sources', 'Access to Sources', 'accessToSources', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (56, 'Data Collection Situation', 'Data Collection Situation', 'dataCollectionSituation', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (57, 'Actions to Minimize Loss', 'Actions to Minimize Loss', 'actionsToMinimizeLoss', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (58, 'Control Operations', 'Control Operations', 'controlOperations', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (59, 'Weighting', 'Weighting', 'weighting', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (60, 'Cleaning Operations', 'Cleaning Operations', 'cleaningOperations', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (61, 'Dataset Level Error Notes', 'Dataset Level Error Notes', 'datasetLevelErrorNotes', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (62, 'Response Rate', 'Response Rate', 'responseRate', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (63, 'Sampling Error Estimates', 'Sampling Error Estimates', 'samplingErrorEstimates', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (64, 'Other Data Appraisal', 'Other Data Appraisal', 'otherDataAppraisal', FALSE, FALSE, FALSE, TRUE,5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (65, 'Place of Access', 'Place of Access', 'placeOfAccess', FALSE, FALSE, FALSE, TRUE, 3 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (66, 'Original Archive', 'Original Archive', 'originalArchive', FALSE, FALSE, FALSE, TRUE, 3);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (67, 'Availability Status', 'Availability Status', 'availabilityStatus', FALSE, FALSE, FALSE, TRUE, 3 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (68, 'Collection Size', 'Collection Size', 'collectionSize', FALSE, FALSE, FALSE, TRUE, 3 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (69, 'Dataset Completion', 'Dataset Completion', 'datasetCompletion', FALSE, FALSE, FALSE,  TRUE, 3 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (70, 'Confidentiality Declaration', 'Confidentiality Declaration', 'confidentialityDeclaration', FALSE, FALSE, FALSE, TRUE, 3 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (71, 'Special Permissions', 'Special Permissions', 'specialPermissions', FALSE, FALSE, FALSE, TRUE, 4 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (72, 'Restrictions', 'Restrictions', 'restrictions', FALSE, FALSE, FALSE, TRUE, 4 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (73, 'Contact', 'Contact', 'contact', FALSE, FALSE, FALSE,  TRUE,2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (74, 'Citation Requirements', 'Citation Requirements', 'citationRequirements', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (75, 'Depositor Requirements', 'Depositor Requirements', 'depositorRequirements', FALSE, FALSE, FALSE,  TRUE, 2);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (76, 'Conditions', 'Conditions', 'conditions', FALSE, FALSE, FALSE, TRUE,4 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (77, 'Disclaimer', 'Disclaimer', 'disclaimer', FALSE, FALSE, FALSE,  TRUE, 4 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (78, 'Related Material', 'Related Material', 'relatedMaterial', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (79, 'Publication', 'Publication', 'publication', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (80, 'Related Datasets', 'Related Datasets', 'relatedDatasets', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (81, 'Other References', 'Other References', 'otherReferences', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (82, 'Note Text', 'Note Text', 'notesText', FALSE, FALSE, FALSE, TRUE, 2);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (83, 'Note', 'Note', 'note', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (84, 'Note Subject', 'Note Subject', 'notesInformationSubject', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (85, 'Other Id', 'Other Id', 'otherId', FALSE, TRUE, FALSE, TRUE, 2);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (86, 'Other Id Agency', 'Other Id Agency', 'otherIdAgency', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (87, 'Production Place', 'Production Place', 'productionPlace', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (88, 'Number of Files', 'Number of Files', 'numberOfFiles', FALSE, FALSE, FALSE, TRUE,2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (89, 'Publication Replication of Data', 'Publication Replication of Data', 'publicationReplicationData', FALSE, TRUE, FALSE, FALSE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (90, 'Subtitle', 'Subtitle', 'subTitle', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (91, 'Version Date', 'Version Date', 'versionDate', FALSE, FALSE, FALSE,  TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (92, 'Geographic Bounding Box', 'Geographic Bounding Box', 'geographicBoundingBox', FALSE, FALSE, FALSE,  TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (93, 'East Longitude', 'East Longitude', 'eastLongitude', FALSE, FALSE, FALSE,  TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (94, 'North Latitude', 'North Latitude', 'northLatitude', FALSE, FALSE, FALSE, TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (95, 'South Latitude', 'South Latitude', 'southLatitude', FALSE, FALSE, FALSE,  TRUE , 5);
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (96, 'Producer Affiliation', 'Producer Affiliation', 'producerAffiliation', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (97, 'Distributor Affiliation', 'Distributor Affiliation', 'distributorAffiliation', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (98, 'Distributor Abbreviation', 'Distributor Abbreviation', 'distributorAbbreviation', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (99, 'Author', 'Author', 'authorName', TRUE, TRUE, TRUE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (100, 'Producer Name', 'Producer Name', 'producerName', FALSE, TRUE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (101, 'Distributor Name', 'Distributor Name', 'distributorName', FALSE, TRUE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (102, 'Distributor Contact Name', 'Distributor Contact Name', 'distributorContactName', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (103, 'Description Text', 'Description Text', 'descriptionText', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (104, 'Keyword', 'Keyword', 'keywordValue', FALSE, TRUE, FALSE, TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (105, 'Topic Classification', 'Topic Classification', 'topicClassValue', FALSE, TRUE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (106, 'Other Id', 'Other Id', 'otherIdValue', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (107, 'Software', 'Software', 'softwareName', FALSE, FALSE, FALSE,TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (108, 'Grant Number', 'Grant Number', 'grantNumberValue', FALSE, FALSE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (109, 'Series Name', 'Series Name', 'seriesName', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (110, 'Dataset Version', 'Dataset Version', 'datasetVersionValue', FALSE, FALSE, FALSE,  TRUE, 1 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (111, 'West Longitude', 'West Longitude', 'westLongitude', FALSE, FALSE, FALSE,  TRUE, 5 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (112, 'Note Type', 'Note Type', 'noteInformationType', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (113, 'Publication Citation', 'Publication Citation', 'publicationCitation', FALSE, TRUE, FALSE, TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (114, 'Publication Id Type', 'Publication Id Type', 'publicationIDType', FALSE, FALSE, FALSE, FALSE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (115, 'Publication Id', 'Publication Id', 'publicationIDNumber', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (116, 'Publication URL', 'Publication URL', 'publicationURL', FALSE, FALSE, FALSE,  TRUE, 2 );
 
 ALTER SEQUENCE datasetfield_id_seq RESTART WITH 116;
 
@@ -325,664 +352,62 @@ update datasetfield set fieldtype = 'url' where id = 29;
 update datasetfield set fieldtype = 'url' where id = 32;
 update datasetfield set fieldtype = 'url' where id = 116;
 
-ALTER TABLE "metadata" DISABLE TRIGGER ALL;
 
--- Default metadata - contains no metadata values
 
-INSERT INTO metadata( id, version ) VALUES ( 1, 1);
-
-ALTER SEQUENCE metadata_id_seq RESTART WITH 2;
-
-ALTER TABLE "metadata" ENABLE TRIGGER ALL;
-
-
-
-
-
-ALTER TABLE "template" DISABLE TRIGGER ALL;
-
-
-
-INSERT INTO template( id, version, dataverse_id, name,metadata_id,enabled) VALUES (1, 1, 0, 'DVN Default Template',1,true);
-ALTER SEQUENCE template_id_seq RESTART WITH 2;
-
-
-
-ALTER TABLE "template" ENABLE TRIGGER ALL;
-ALTER TABLE templatefield DISABLE TRIGGER ALL;
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(1,1,1,1,'required',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(2,1,1,2,'required',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(3,1,1,3,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(4,1,1,4,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(5,1,1,5,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(6,1,1,6,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(7,1,1,7,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(8,1,1,8,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(9,1,1,9,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(10,1,1,10,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(11,1,1,11,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(12,1,1,12,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(13,1,1,13,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(14,1,1,14,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(15,1,1,15,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(16,1,1,16,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(17,1,1,17,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(18,1,1,18,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(19,1,1,19,'recommended',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(20,1,1,20,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(21,1,1,21,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(22,1,1,22,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(23,1,1,23,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(24,1,1,24,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(25,1,1,25,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(26,1,1,26,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(27,1,1,27,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(28,1,1,28,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(29,1,1,29,'optional',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(30,1,1,30,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(31,1,1,31,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(32,1,1,32,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(33,1,1,33,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(34,1,1,34,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(35,1,1,35,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(36,1,1,36,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(37,1,1,37,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(38,1,1,38,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(39,1,1,39,'recommended',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(40,1,1,40,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(41,1,1,41,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(42,1,1,42,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(43,1,1,43,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(44,1,1,44,'recommended',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(45,1,1,45,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(46,1,1,46,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(47,1,1,47,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(48,1,1,48,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(49,1,1,49,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(50,1,1,50,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(51,1,1,51,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(52,1,1,52,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(53,1,1,53,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(54,1,1,54,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(55,1,1,55,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(56,1,1,56,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(57,1,1,57,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(58,1,1,58,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(59,1,1,59,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(60,1,1,60,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(61,1,1,61,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(62,1,1,62,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(63,1,1,63,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(64,1,1,64,'optional',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(65,1,1,65,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(66,1,1,66,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(67,1,1,67,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(68,1,1,68,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(69,1,1,69,'optional',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(70,1,1,70,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(71,1,1,71,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(72,1,1,72,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(73,1,1,73,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(74,1,1,74,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(75,1,1,75,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(76,1,1,76,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(77,1,1,77,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(78,1,1,78,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(79,1,1,79,'recommended',-1);
-
-
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(80,1,1,80,'recommended',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(81,1,1,81,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(82,1,1,82,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(83,1,1,83,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(84,1,1,84,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(85,1,1,85,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(86,1,1,86,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(87,1,1,87,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(88,1,1,88,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(89,1,1,89,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(90,1,1,90,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(91,1,1,91,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(92,1,1,92,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(93,1,1,93,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(94,1,1,94,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(95,1,1,95,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(96,1,1,96,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(97,1,1,97,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(98,1,1,98,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(99,1,1,99,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(100,1,1,100,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(101,1,1,101,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(102,1,1,102,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(103,1,1,103,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(104,1,1,104,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(105,1,1,105,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(106,1,1,106,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(107,1,1,107,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(108,1,1,108,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(109,1,1,109,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(110,1,1,110,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(111,1,1,111,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(112,1,1,112,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(113,1,1,113,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(114,1,1,114,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(115,1,1,115,'optional',-1);
-
-INSERT INTO templatefield(id, version, template_id, datasetfield_id, fieldinputlevelstring, displayorder) VALUES(116,1,1,116,'optional',-1);
-
-SELECT pg_catalog.setval(pg_catalog.pg_get_serial_sequence('templatefield', 'id'), 150, false);
-
-ALTER TABLE templatefield ENABLE TRIGGER ALL;
-
-update datasetfield set customfield = true
-where id in (select datasetfields_id from metadatadomain_datasetfield);
-
-update metadata set title = 'Enter a Title for your dataset...' where id = 1;
-
-INSERT INTO metadatadomain(
-            id, "name")
-    VALUES (1, 'Social Science');
-
-INSERT INTO metadatadomain(
-            id, "name")
-    VALUES (2, 'Astronomy');
-
-INSERT INTO metadatadomain(
-            id, "name")
-    VALUES (3, 'Biology');
-
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (35, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (36, 1);   
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (37, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (38, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (39, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (40, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (41, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (92, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (111, 1);
-
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (93, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (94, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (95, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (42, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (43, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (44, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (45, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (46, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (47, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (48, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (49, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (50, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (51, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (52, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (53, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (54, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (55, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (56, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (57, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (58, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (59, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (60, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (61, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (62, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (63, 1);
-INSERT INTO metadatadomain_datasetfield(
-            datasetfields_id, metadatadomains_id)
-    VALUES (64, 1);
-
-
-
-update datasetfield set customfield = true
-where id in (select datasetfields_id from metadatadomain_datasetfield);
-
-
-
-UPDATE datasetfield
-   SET  title='Time Period Covered Start'
- WHERE id=35;
-
- UPDATE datasetfield
-   SET  title='Time Period Covered End'
- WHERE id=36;
-
-UPDATE datasetfield
-   SET  title='Date Of Collection Start'
- WHERE id=37;
-
-UPDATE datasetfield
-   SET  title='Date Of Collection End'
- WHERE id=38;
-
- UPDATE datasetfield
-   SET  title='Country'
- WHERE id=39;
-
-  UPDATE datasetfield
-   SET  title='Geographic Coverage'
- WHERE id=40;
-
-   UPDATE datasetfield
-   SET  title='Geographic Unit'
- WHERE id=41;
-
-UPDATE datasetfield
-   SET  title='Unit of Analysis'
- WHERE id=42;
-
- UPDATE datasetfield
-   SET  title='Universe'
- WHERE id=43;
-
-  UPDATE datasetfield
-   SET  title='Kind of Data'
- WHERE id=44;
-
-   UPDATE datasetfield
-   SET  title='Time Method'
- WHERE id=45;
-
- 
-   UPDATE datasetfield
-   SET  title='Data Collector'
- WHERE id=46;
-
-    UPDATE datasetfield
-   SET  title='Frequency of Data Collection'
- WHERE id=47;
-
-     UPDATE datasetfield
-   SET  title='Sampling Procedure'
- WHERE id=48;
-
-      UPDATE datasetfield
-   SET  title='Deviations from Sample Design'
- WHERE id=49;
-
- 
-      UPDATE datasetfield
-   SET  title='Collection Mode'
- WHERE id=50;
-
-       UPDATE datasetfield
-   SET  title='Research Instument'
- WHERE id=51;
-
-        UPDATE datasetfield
-   SET  title='Data Sources'
- WHERE id=52;
-
-         UPDATE datasetfield
-   SET  title='Origin of Sources'
- WHERE id=53;
-
- 
-         UPDATE datasetfield
-   SET  title='Chrarcteristics of Sources'
- WHERE id=54;
-
- 
-         UPDATE datasetfield
-   SET  title='Access to Sources'
- WHERE id=55;
-
- 
-UPDATE datasetfield
-   SET  title='Data Collection Situation'
- WHERE id=56;
-
- 
-UPDATE datasetfield
-   SET  title='Actions to Minimize Loss'
- WHERE id=57;
-
-UPDATE datasetfield
-   SET  title='Control Operations'
- WHERE id=58;
-
-UPDATE datasetfield
-   SET  title='Weighting'
- WHERE id=59;
-
- UPDATE datasetfield
-   SET  title='Cleaning Operations'
- WHERE id=60;
-
-  UPDATE datasetfield
-   SET  title='Error Notes'
- WHERE id=61;
-
-  UPDATE datasetfield
-   SET  title='Response Rate'
- WHERE id=62;
-
-   UPDATE datasetfield
-   SET  title='Sampling Error Estimates'
- WHERE id=63;
-
-    UPDATE datasetfield
-   SET  title='Other Data Appraisal'
- WHERE id=64;
-
- 
-    UPDATE datasetfield
-   SET  title='Geographic Bounding Box'
- WHERE id=92;
-
-     UPDATE datasetfield
-   SET  title='East Longitude'
- WHERE id=93;
-
-      UPDATE datasetfield
-   SET  title='North Latitude'
- WHERE id=94;
-
-       UPDATE datasetfield
-   SET  title='South Latitude'
- WHERE id=95;
-
-      UPDATE datasetfield
-   SET  title='West Longitude'
- WHERE id=111;
-
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 35, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 36, 1);   
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 37, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 38, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 39, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 40, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 41, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 92, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 111, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 93, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 94, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 95, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 42, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 43, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 44, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 45, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 46, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 47, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 48, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 49, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 50, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 51, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 52, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 53, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 54, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 55, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 56, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 57, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 58, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 59, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 60, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 61, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 62, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 63, 1);
-INSERT INTO datasetfieldvalue(
-            strvalue, datasetfield_id, metadata_id)
-    VALUES ( '', 64, 1);
+update datasetfield set metadatablock_id = 1 where id = 3; --author
+update datasetfield set metadatablock_id = 1 where id = 4; 
+update datasetfield set metadatablock_id = 1 where id = 99;
+update datasetfield set metadatablock_id = 1 where id = 1; --title
+
+update datasetfield set metadatablock_id = 1 where id = 15; --Distributor
+update datasetfield set metadatablock_id = 1 where id = 16;
+update datasetfield set metadatablock_id = 1 where id = 17;
+update datasetfield set metadatablock_id = 1 where id = 19;
+update datasetfield set metadatablock_id = 1 where id = 20;
+update datasetfield set metadatablock_id = 1 where id = 21;
+
+update datasetfield set metadatablock_id = 5 where id = 35;
+update datasetfield set metadatablock_id = 5 where id = 36; 
+update datasetfield set metadatablock_id = 5 where id = 37;  
+update datasetfield set metadatablock_id = 5 where id = 38; 
+update datasetfield set metadatablock_id = 5 where id = 39; 
+update datasetfield set metadatablock_id = 5 where id = 40; 
+update datasetfield set metadatablock_id = 5 where id = 41; 
+update datasetfield set metadatablock_id = 5 where id = 92; 
+update datasetfield set metadatablock_id = 5 where id = 111; 
+update datasetfield set metadatablock_id = 5 where id = 93; 
+update datasetfield set metadatablock_id = 5 where id = 94; 
+update datasetfield set metadatablock_id = 5 where id = 95; 
+update datasetfield set metadatablock_id = 5 where id = 42; 
+update datasetfield set metadatablock_id = 5 where id = 43; 
+update datasetfield set metadatablock_id = 5 where id = 44; 
+update datasetfield set metadatablock_id = 5 where id = 45; 
+update datasetfield set metadatablock_id = 5 where id = 46; 
+update datasetfield set metadatablock_id = 5 where id = 47; 
+update datasetfield set metadatablock_id = 5 where id = 48; 
+update datasetfield set metadatablock_id = 5 where id = 49; 
+update datasetfield set metadatablock_id = 5 where id = 50; 
+update datasetfield set metadatablock_id = 5 where id = 51; 
+update datasetfield set metadatablock_id = 5 where id = 52; 
+update datasetfield set metadatablock_id = 5 where id = 53; 
+update datasetfield set metadatablock_id = 5 where id = 54; 
+update datasetfield set metadatablock_id = 5 where id = 55; 
+update datasetfield set metadatablock_id = 5 where id = 56; 
+update datasetfield set metadatablock_id = 5 where id = 57; 
+update datasetfield set metadatablock_id = 5 where id = 58; 
+update datasetfield set metadatablock_id = 5 where id = 59; 
+update datasetfield set metadatablock_id = 5 where id = 60; 
+update datasetfield set metadatablock_id = 5 where id = 61; 
+update datasetfield set metadatablock_id = 5 where id = 62; 
+update datasetfield set metadatablock_id = 5 where id = 63; 
+update datasetfield set metadatablock_id = 5 where id = 64; 
+
+INSERT INTO dvobject_metadatablock(
+            dataverse_id, metadatablocks_id)
+    VALUES (1, 1);
+    INSERT INTO dvobject_metadatablock(
+            dataverse_id, metadatablocks_id)
+    VALUES (1, 2);
+        INSERT INTO dvobject_metadatablock(
+            dataverse_id, metadatablocks_id)
+    VALUES (1, 5);

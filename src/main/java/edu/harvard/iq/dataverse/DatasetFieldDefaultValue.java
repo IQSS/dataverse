@@ -6,10 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-/**
- *
- * @author skraffmiller
- */
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.CascadeType;
@@ -23,19 +19,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-
+/**
+ *
+ * @author skraffmiller
+ */
 @Entity
-public class DatasetFieldValue implements Serializable {
-
-    public DatasetFieldValue () {
-    }
-    
-    public DatasetFieldValue(DatasetField sf, DatasetVersion dsv, String val) {
-        setDatasetField(sf);
-        setDatasetVersion(dsv);
-        setStrValue(val);    
-    }    
-    
+public class DatasetFieldDefaultValue implements Serializable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +35,16 @@ public class DatasetFieldValue implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public DatasetFieldDefaultValue() {
+   
+    }
+    
+    public DatasetFieldDefaultValue(DatasetField sf, DefaultValueSet dvs, String val) {
+        setDatasetField(sf);
+        setDefaultValueSet(dvs);
+        setStrValue(val);    
+    } 
     
     @ManyToOne
     @JoinColumn(nullable=false)
@@ -59,35 +58,34 @@ public class DatasetFieldValue implements Serializable {
     
     @ManyToOne
     @JoinColumn(nullable=false)
-    private DatasetVersion datasetVersion;
-    public DatasetVersion getDatasetVersion() {
-        return datasetVersion;
+    private DefaultValueSet defaultValueSet;
+    public DefaultValueSet getDefaultValueSet() {
+        return defaultValueSet;
     }
-    public void setDatasetVersion(DatasetVersion datasetVersion) {
-        this.datasetVersion = datasetVersion;
+    public void setDefaultValueSet(DefaultValueSet defaultValueSet) {
+        this.defaultValueSet = defaultValueSet;
     }
     
-
-    @OneToMany(mappedBy = "parentDatasetFieldValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetFieldDefaultValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private Collection<DatasetFieldValue> childDatasetFieldValues;
+    private Collection<DatasetFieldDefaultValue> childDatasetFieldDefaultValues;
 
-    public Collection<DatasetFieldValue> getChildDatasetFieldValues() {
-        return this.childDatasetFieldValues;
+    public Collection<DatasetFieldDefaultValue> getChildDatasetFieldDefaultValues() {
+        return this.childDatasetFieldDefaultValues;
     }
-    public void setChildDatasetFieldValues(Collection<DatasetFieldValue> childDatasetFieldValues) {
-        this.childDatasetFieldValues = childDatasetFieldValues;
+    public void setChildDatasetFieldDefaultValues(Collection<DatasetFieldDefaultValue> childDatasetFieldDefaultValues) {
+        this.childDatasetFieldDefaultValues = childDatasetFieldDefaultValues;
     }
     
     @ManyToOne(cascade = CascadeType.MERGE)
-    private DatasetFieldValue parentDatasetFieldValue;
-    public DatasetFieldValue getParentDatasetFieldValue() {
-        return parentDatasetFieldValue;
+    private DatasetFieldDefaultValue parentDatasetFieldDefaultValue;
+    public DatasetFieldDefaultValue getParentDatasetFieldDefaultValue() {
+        return parentDatasetFieldDefaultValue;
     }
-    public void setParentDatasetFieldValue(DatasetFieldValue parentDatasetFieldValue) {
-        this.parentDatasetFieldValue = parentDatasetFieldValue;
+    public void setParentDatasetFieldValue(DatasetFieldDefaultValue parentDatasetFieldDefaultValue) {
+        this.parentDatasetFieldDefaultValue = parentDatasetFieldDefaultValue;
     }
-    
+        
     @Column(columnDefinition="TEXT") 
     private String strValue;
 
@@ -113,7 +111,7 @@ public class DatasetFieldValue implements Serializable {
         if (!(object instanceof DatasetFieldValue)) {
             return false;
         }
-        DatasetFieldValue other = (DatasetFieldValue) object;
+        DatasetFieldDefaultValue other = (DatasetFieldDefaultValue) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -122,7 +120,7 @@ public class DatasetFieldValue implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.DatasetFieldValue[ id=" + id + " ]";
+        return "edu.harvard.iq.dataverse.DatasetFieldDefaultValue[ id=" + id + " ]";
     }
     
      public boolean isEmpty() {

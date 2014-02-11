@@ -9,7 +9,6 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -43,16 +42,7 @@ public class Metadata implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    @OneToOne(mappedBy="metadata")
-    private DatasetVersion datasetVersion;
-    public DatasetVersion getDatasetVersion() {
-        return datasetVersion;
-    }
-    public void setDatasetVersion(DatasetVersion datasetVersion) {
-        this.datasetVersion = datasetVersion;
-    }
-    
+
     @OneToOne(mappedBy="metadata")
     private Template template;
     public Template getTemplate() {
@@ -75,7 +65,6 @@ public class Metadata implements Serializable {
     public  Metadata(Metadata source, boolean copyHidden, boolean copyDisabled ) {
      
         this.setUNF(source.UNF);
-        this.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
         
         Template sourceTemplate = source.getTemplate(); // != null ? source.getTemplate() : source.getDatasetVersion().getDataset().getTemplate();
         
@@ -399,19 +388,8 @@ public class Metadata implements Serializable {
 
 
         */
-        // custom values
-        for (DatasetField dsf : source.getDatasetFields()) {                     
-            if( copyField(tfMap.get(dsf.getName()), copyHidden, copyDisabled) ) {
-                for (DatasetFieldValue dsfv: dsf.getDatasetFieldValues()){
-                    DatasetFieldValue cloneSfv = new DatasetFieldValue();
-                    cloneSfv.setDisplayOrder(dsfv.getDisplayOrder());
-                    cloneSfv.setDatasetField(dsfv.getDatasetField());
-                    cloneSfv.setStrValue(dsfv.getStrValue());
-                    cloneSfv.setMetadata(this);
-                    this.getDatasetFieldValues().add(cloneSfv);    
-                }
-            }            
-        }                
+        // values
+               
     }
     
     // This constructor is for an exact clone, regarldes of field input levels
@@ -599,18 +577,7 @@ public class Metadata implements Serializable {
             cloneTopic.setVocabURI(topic.getVocabURI());
             this.getDatasetTopicClasses().add(cloneTopic);
         }
-        
 
-        this.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
-        for (DatasetFieldValue dsfv: source.getDatasetFieldValues()){
-            DatasetFieldValue cloneDsfv = new DatasetFieldValue();
-            cloneDsfv.setDisplayOrder(dsfv.getDisplayOrder());
-            cloneDsfv.setDatasetField(dsfv.getDatasetField());
-            
-            cloneDsfv.setStrValue(dsfv.getStrValue());
-            cloneDsfv.setMetadata(this);
-            this.getDatasetFieldValues().add(cloneDsfv);
-        }
        
     } 
        
@@ -670,15 +637,7 @@ public class Metadata implements Serializable {
     
     /* DatasetFieldValues - Holds list of values for domain specific metadata
     */
-    @OneToMany (mappedBy="metadata", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
-    @OrderBy ("displayOrder")
-    private List<DatasetFieldValue> datasetFieldValues;
-    public List<DatasetFieldValue> getDatasetFieldValues() {
-        return datasetFieldValues;
-    }
-    public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
-        this.datasetFieldValues = datasetFieldValues;
-    }
+
     
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
@@ -1175,7 +1134,7 @@ public class Metadata implements Serializable {
     
     public String getCitation(boolean isOnlineVersion) {
 
-        Dataset dataset = getDataset();
+
 
         String str = "";
 
@@ -1204,18 +1163,7 @@ public class Metadata implements Serializable {
             }
             str += "\"" + getTitle() + "\"";
         }
-        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getId() + "</a>";
-            } else {
-                str += dataset.getPersistentURL();
-            }
 
-
-        }
 
         if (!StringUtil.isEmpty(getUNF())) {
             if (!StringUtil.isEmpty(str)) {
@@ -1229,10 +1177,6 @@ public class Metadata implements Serializable {
             str += " [Distributor]";
         }
 
-        if (getDatasetVersion().getVersionNumber() != null) {
-            str += " V" + getDatasetVersion().getVersionNumber();
-            str += " [Version]";
-        }
 
         return str;
     }
@@ -1290,9 +1234,6 @@ public class Metadata implements Serializable {
         return !StringUtil.isEmpty(touString) ? touString : null; 
     }
 
-    public Dataset getDataset() {
-        return getDatasetVersion().getDataset();
-    }
 
     /**
      *  This method populates the dependent collections with at least one element.
@@ -1425,7 +1366,7 @@ public class Metadata implements Serializable {
                 List list = new ArrayList();
                 DatasetFieldValue elem = new DatasetFieldValue();
                 elem.setDatasetField(sf);
-                elem.setMetadata(this);
+               // elem.setMetadata(this);
                 list.add(elem);
                 sf.setDatasetFieldValues(list);
             }            
@@ -1530,9 +1471,9 @@ public class Metadata implements Serializable {
     public List<DatasetField> getDatasetFields() {
         if (datasetFields == null || datasetFields.size() == 0) {
             datasetFields = new ArrayList();
-            Template templateIn = this.getTemplate() != null ? this.getTemplate() : this.getDatasetVersion().getDataset().getTemplate();
-           // Template  templateIn = this.getTemplate();// this.getDatasetVersion().getDataset().getTemplate();
             
+           // Template  templateIn = this.getTemplate();// this.getDatasetVersion().getDataset().getTemplate();
+           /* 
             for (TemplateField tf : templateIn.getTemplateFields()) {
                 DatasetField sf = tf.getDatasetField();
                 if (sf.isCustomField()) {
@@ -1548,7 +1489,7 @@ public class Metadata implements Serializable {
                     sf.setDatasetFieldValues(sfvList);
                     datasetFields.add(sf);
                 }
-            }           
+            }  */         
         }                
         return datasetFields;
     }

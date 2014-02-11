@@ -32,11 +32,12 @@ public class DatasetServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public Dataset save(Dataset dataset) {   
-        em.merge(dataset.getVersions().get(0).getMetadata()); 
+    public Dataset save(Dataset dataset) { 
+
+        //em.merge(dataset.getVersions().get(0));           
         Dataset savedDataset = em.merge(dataset);
-       String indexingResult = indexService.indexDataset(savedDataset);
-       logger.info("during dataset save, indexing result was: " + indexingResult);
+       //String indexingResult = indexService.indexDataset(savedDataset);
+       //logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 
@@ -66,6 +67,14 @@ public class DatasetServiceBean {
     public void removeCollectionElement(Iterator iter, Object elem) {
         iter.remove();
         em.remove(elem);
+    }
+    
+    public String getDatasetVersionTitle(DatasetVersion version){
+        Long id = version.getId();
+        Query query = em.createQuery("select v.strValue from DatasetFieldValue as v, DatasetVersion as dv, DatasetField as dsf where dsf.name ='title'"
+                 + " and dsf.id = v.datasetField.id and dv.id =:id ");
+        query.setParameter("id", id);         
+        return (String) query.getSingleResult();
     }
 
 }

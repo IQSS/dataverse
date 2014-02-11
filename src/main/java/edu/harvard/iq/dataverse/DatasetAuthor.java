@@ -34,7 +34,7 @@ public class DatasetAuthor implements java.io.Serializable {
         this.id = id;
     }
 
-    @NotBlank(message = "Please enter an Author Name for your dataset.")
+    //@NotBlank(message = "Please enter an Author Name for your dataset.")
     private String name;
 
     public String getName() {

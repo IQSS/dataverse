@@ -5,11 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -96,16 +96,6 @@ public class Dataset extends DvObjectContainer {
         this.files = files;
     }
 
-    @ManyToOne
-//    @JoinColumn(nullable=false)
-    private Template template;
-    
-    public Template getTemplate() {
-        return this.template;
-    }
-    public void setTemplate(Template template) {
-        this.template = template;
-    }
 
     @OneToMany (mappedBy = "dataset")
     @OrderBy("versionNumber DESC")
@@ -114,7 +104,7 @@ public class Dataset extends DvObjectContainer {
     public DatasetVersion getLatestVersion(){
         if (versions.isEmpty()){
             DatasetVersion datasetVersion = new DatasetVersion();
-            datasetVersion.setMetadata(new Metadata());
+            //datasetVersion.setMetadata(new Metadata());
             datasetVersion.setDataset(this);
             datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
             datasetVersion.setVersionNumber(new Long (1));
@@ -137,9 +127,9 @@ public class Dataset extends DvObjectContainer {
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
         DatasetVersion latestVersion = getLatestVersion();
-        dsv.setMetadata(new Metadata());
+        //dsv.setMetadata(new Metadata());
         dsv.setFileMetadatas(new ArrayList());
-        dsv.getMetadata().setDatasetVersion(dsv);
+        //dsv.getMetadata().setDatasetVersion(dsv);
 
        for(FileMetadata fm : latestVersion.getFileMetadatas()) {
            FileMetadata newFm = new FileMetadata();
@@ -158,7 +148,7 @@ public class Dataset extends DvObjectContainer {
         dsv.setDataset(this);
         return dsv;
     }
-
+    
     public DatasetVersion getEditVersion() {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy()) {
@@ -182,7 +172,7 @@ public class Dataset extends DvObjectContainer {
         studyDir = Paths.get(filesRootDirectory, this.getId().toString());        
         return studyDir; 
     }
-    
+
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

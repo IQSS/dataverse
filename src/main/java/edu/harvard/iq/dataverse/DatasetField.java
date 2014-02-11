@@ -15,10 +15,21 @@ import javax.persistence.*;
 
 /**
  *
- * @author Ellen Kraffmiller
+ * @author Stephen Kraffmiller
  */
 @Entity
 public class DatasetField implements Serializable {
+        
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    public Long getId() {
+        return this.id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
     @Column(name="name", columnDefinition="TEXT")
     private String name;    // This is the internal, DDI-like name, no spaces, etc.
     @Column(name="title", columnDefinition="TEXT")
@@ -26,32 +37,16 @@ public class DatasetField implements Serializable {
     @Column(name="description", columnDefinition="TEXT")
     private String description; // A user-friendly Description; will be used for 
                                 // mouse-overs, etc. 
-    private boolean customField;
     private String fieldType;
     private boolean allowControlledVocabulary;
     
-   
-    /** Creates a new instance of DatasetField */
     public DatasetField() {
     }
 
-    /**
-     * Holds value of property displayOrder.
-     */
     private int displayOrder;
-
-    /**
-     * Getter for property order.
-     * @return Value of property order.
-     */
     public int getDisplayOrder() {
         return this.displayOrder;
     }
-
-    /**
-     * Setter for property order.
-     * @param order New value of property order.
-     */
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
@@ -59,15 +54,13 @@ public class DatasetField implements Serializable {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getTitle() {
         return title;
     }
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -75,19 +68,10 @@ public class DatasetField implements Serializable {
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    public boolean isCustomField() {
-        return customField;
-    }
 
-    public void setCustomField(boolean customField) {
-        this.customField = customField;
-    }
-    
     public boolean isAllowControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -96,23 +80,10 @@ public class DatasetField implements Serializable {
         this.allowControlledVocabulary = allowControlledVocabulary;
     }
         
-    /**
-     * Holds value of property allow multiples.
-     */
     private boolean allowMultiples; 
-
-    /**
-     * Getter for property allow multiples.
-     * @return Value of property allow multiples.
-     */
     public boolean isAllowMultiples() {
         return this.allowMultiples;
     }
-
-    /**
-     * Setter for property allow multiples.
-     * @param version New value of property allow multiples.
-     */
     public void setAllowMultiples(boolean allowMultiples) {
         this.allowMultiples = allowMultiples;
     }
@@ -125,64 +96,31 @@ public class DatasetField implements Serializable {
         this.fieldType = fieldType;
     }
 
-    /**
-     * Holds value of property id.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    /**
-     * Getter for property id.
-     * @return Value of property id.
-     */
-    public Long getId() {
-        return this.id;
+    @ManyToOne(cascade = CascadeType.MERGE) 
+    private MetadataBlock metadataBlock;   
+    public MetadataBlock getMetadataBlock() {
+        return metadataBlock;
     }
-    
-    
-
-    /**
-     * Setter for property id.
-     * @param id New value of property id.
-     */
-    public void setId(Long id) {
-        this.id = id;
+    public void setMetadataBlock(MetadataBlock metadataBlock) {
+        this.metadataBlock = metadataBlock;
     }
-
-     /**
-     * Holds value of metadata domain
-     */
-    @ManyToMany (mappedBy="datasetFields",cascade={CascadeType.PERSIST } )
-    private Collection<MetadataDomain> metadataDomains;
-    
-    public Collection<MetadataDomain> getMetadataDomains() {
-        return metadataDomains;
-    }
-
-    public void setMetadataDomains(Collection<MetadataDomain> metadataDomains) {
-        this.metadataDomains = metadataDomains;
-    }
-
     
     @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private Collection<DatasetField> childDatasetFields;
-
     public Collection<DatasetField> getChildDatasetFields() {
         return this.childDatasetFields;
     }
-
     public void setChildDatasetFields(Collection<DatasetField> childDatasetFields) {
         this.childDatasetFields = childDatasetFields;
     }
+    
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetField parentDatasetField;
-
     public DatasetField getParentDatasetField() {
         return parentDatasetField;
     }
-
     public void setParentDatasetField(DatasetField parentDatasetField) {
         this.parentDatasetField = parentDatasetField;
     }
@@ -207,69 +145,35 @@ public class DatasetField implements Serializable {
    @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> summaryFieldVDCs;
 */
+   
+    private boolean required;
+    public boolean isRequired() {
+        return this.required;
+    }
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
 
-    @OneToMany(mappedBy="datasetField")
-    private Collection <TemplateField> templateFields;
-
-    /**
-     * Holds value of property basicSearchField.
-     */
     private boolean basicSearchField;
-
-    /**
-     * Getter for property basicSearchField.
-     * @return Value of property basicSearchField.
-     */
     public boolean isBasicSearchField() {
         return this.basicSearchField;
     }
-
-    /**
-     * Setter for property basicSearchField.
-     * @param basicSearchField New value of property basicSearchField.
-     */
     public void setBasicSearchField(boolean basicSearchField) {
         this.basicSearchField = basicSearchField;
     }
 
-    /**
-     * Holds value of property advancedSearchField.
-     */
     private boolean advancedSearchField;
-
-    /**
-     * Getter for property advancedSearchField.
-     * @return Value of property advancedSearchField.
-     */
     public boolean isAdvancedSearchField() {
         return this.advancedSearchField;
     }
-
-    /**
-     * Setter for property advancedSearchField.
-     * @param advancedSearchField New value of property advancedSearchField.
-     */
     public void setAdvancedSearchField(boolean advancedSearchField) {
         this.advancedSearchField = advancedSearchField;
     }
 
-    /**
-     * Holds value of property searchResultField.
-     */
     private boolean searchResultField;
-
-    /**
-     * Getter for property searchResultField.
-     * @return Value of property searchResultField.
-     */
     public boolean isSearchResultField() {
         return this.searchResultField;
     }
-
-    /**
-     * Setter for property searchResultField.
-     * @param searchResultField New value of property searchResultField.
-     */
     public void setSearchResultField(boolean searchResultField) {
         this.searchResultField = searchResultField;
     }
@@ -300,7 +204,18 @@ public class DatasetField implements Serializable {
        
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
-    }      
+    } 
+    
+    @OneToMany (mappedBy="datasetField",  cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    private List<DatasetFieldDefaultValue> datasetFieldDefaultValues;
+
+    public List<DatasetFieldDefaultValue> getDatasetFieldDefaultValues() {
+        return datasetFieldDefaultValues;
+    }  
+       
+    public void setDatasetFieldDefaultValues(List<DatasetFieldDefaultValue> datasetFieldDefaultValues) {
+        this.datasetFieldDefaultValues = datasetFieldDefaultValues;
+    } 
     
     // helper methods for getting the internal string values
     public List<String> getDatasetFieldValueStrings() {
@@ -321,6 +236,5 @@ public class DatasetField implements Serializable {
     public void setDatasetFieldValueStrings(List<String> newValList) {}
 
     public void setDatasetFieldValueSingleString(String newVal) {}
-    
-      
+        
 }
