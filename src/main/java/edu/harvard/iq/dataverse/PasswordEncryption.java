@@ -14,7 +14,7 @@ import org.primefaces.util.Base64;
 
 /**
  *
- * @author xyang
+ * original author: Ellen Kraffmiller
  */
 public final class PasswordEncryption  implements java.io.Serializable {
     private static PasswordEncryption instance;
