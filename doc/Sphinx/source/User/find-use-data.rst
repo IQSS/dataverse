@@ -45,13 +45,8 @@ Advanced Search fields: (update based off metadata tables)
 -  Title - Title field of studies' Cataloging Information.
 -  Author - Author fields of studies' Cataloging Information.
 -  (Study) Global ID - ID assigned to studies.
--  Other ID - A different ID previously given to the study by another
-   archive.
--  Abstract - Any words in the abstract of the study.
 -  Keyword - A term that defines the nature or scope of a study. For
    example, ``elections``.
--  Keyword Vocabulary - Reference to the standard used to define the
-   keywords.
 -  Topic Classification - One or more words that help to categorize the
    study.
 -  Topic Classification Vocabulary - Reference used to define the Topic
@@ -78,10 +73,13 @@ Advanced Search fields: (update based off metadata tables)
 -  Kind of Data - The type of data included in the file, such
    as ``survey data``, ``census/enumeration data``,
    or ``aggregate data``.
+-  Description
 -  Variable Information - The variable name and description in the
    studies' data files, given that the data file is subsettable and
    contains tabular data. It returns the studies that contain the file
    and the variable name where the search term was found.
+-  Variable Name
+-  Variable Label
 
 **Sort Results**
 
