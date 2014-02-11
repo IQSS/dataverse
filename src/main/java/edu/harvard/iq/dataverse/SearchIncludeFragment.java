@@ -42,7 +42,9 @@ public class SearchIncludeFragment {
     private String fq9;
     private Long dataverseId;
     private Dataverse dataverse;
-    private String[] selectedTypes = {"dataverses", "datasets", "files"};
+    private String dataverseSubtreeContext;
+    private String[] selectedTypesArray = {"dataverses", "datasets", "files"};
+    private String selectedTypesHumanReadable;
     private String typeSearchField = SearchFields.TYPE;
     private String typeFilterQuery;
     private Long facetCountDataverses = 0L;
@@ -100,24 +102,29 @@ public class SearchIncludeFragment {
         SolrQueryResponse solrQueryResponse = null;
         int paginationStart = 0;
 
+        List<String> filterQueriesFinal = new ArrayList<>();
         if (dataverseId != null) {
             this.dataverse = dataverseService.find(dataverseId);
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
-                filterQueries.add(filterDownToSubtree);
+                filterQueriesFinal.add(filterDownToSubtree);
+                this.dataverseSubtreeContext = dataversePath;
+            } else {
+                this.dataverseSubtreeContext = "all";
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
+            this.dataverseSubtreeContext = "all";
         }
 
-        List<String> filterQueriesWithTypes = new ArrayList<>();
-        typeFilterQuery = SearchFields.TYPE + ":(" + combine(selectedTypes, " OR ") + ")";
-        filterQueriesWithTypes.addAll(filterQueries);
-        filterQueriesWithTypes.add(typeFilterQuery);
+        selectedTypesHumanReadable = combine(selectedTypesArray, " OR ");
+        typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
+        filterQueriesFinal.addAll(filterQueries);
+        filterQueriesFinal.add(typeFilterQuery);
 
         try {
-            solrQueryResponse = searchService.search(query, filterQueriesWithTypes, paginationStart);
+            solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -345,12 +352,28 @@ public class SearchIncludeFragment {
         this.dataverse = dataverse;
     }
 
-    public String[] getSelectedTypes() {
-        return selectedTypes;
+    public String getDataverseSubtreeContext() {
+        return dataverseSubtreeContext;
     }
 
-    public void setSelectedTypes(String[] selectedTypes) {
-        this.selectedTypes = selectedTypes;
+    public void setDataverseSubtreeContext(String dataverseSubtreeContext) {
+        this.dataverseSubtreeContext = dataverseSubtreeContext;
+    }
+
+    public String[] getSelectedTypes() {
+        return selectedTypesArray;
+    }
+
+    public void setSelectedTypes(String[] selectedTypesArray) {
+        this.selectedTypesArray = selectedTypesArray;
+    }
+
+    public String getSelectedTypesHumanReadable() {
+        return selectedTypesHumanReadable;
+    }
+
+    public void setSelectedTypesHumanReadable(String selectedTypesHumanReadable) {
+        this.selectedTypesHumanReadable = selectedTypesHumanReadable;
     }
 
     public String getTypeSearchField() {
