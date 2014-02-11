@@ -42,6 +42,12 @@ public class SearchIncludeFragment {
     private String fq9;
     private Long dataverseId;
     private Dataverse dataverse;
+    private String[] selectedTypes = {"dataverses", "datasets", "files"};
+    private String typeSearchField = SearchFields.TYPE;
+    private String typeFilterQuery;
+    private Long facetCountDataverses = 0L;
+    private Long facetCountDatasets = 0L;
+    private Long facetCountFiles = 0L;
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
@@ -49,7 +55,14 @@ public class SearchIncludeFragment {
     /**
      * @todo:
      *
+     * facets with checkboxes: make bookmarkable? don't require select button
+     * (just check box to call search method)?
+     *
      * better style and icons for facets
+     *
+     * replace * with watermark saying "Search this Dataverse"
+     *
+     * get rid of "_s" et al. (human eyeball friendly)
      *
      * pagination (previous/next links)
      *
@@ -98,8 +111,13 @@ public class SearchIncludeFragment {
             this.dataverse = dataverseService.findRootDataverse();
         }
 
+        List<String> filterQueriesWithTypes = new ArrayList<>();
+        typeFilterQuery = SearchFields.TYPE + ":(" + combine(selectedTypes, " OR ") + ")";
+        filterQueriesWithTypes.addAll(filterQueries);
+        filterQueriesWithTypes.add(typeFilterQuery);
+
         try {
-            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+            solrQueryResponse = searchService.search(query, filterQueriesWithTypes, paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -161,6 +179,34 @@ public class SearchIncludeFragment {
             numFacets = incrementNum;
         }
         numberOfFacets.put(name, numFacets + incrementNum);
+    }
+
+    // http://stackoverflow.com/questions/1515437/java-function-for-arrays-like-phps-join/1515548#1515548
+    String combine(String[] s, String glue) {
+        int k = s.length;
+        if (k == 0) {
+            return null;
+        }
+        StringBuilder out = new StringBuilder();
+        out.append(s[0]);
+        for (int x = 1; x < k; ++x) {
+            out.append(glue).append(s[x]);
+        }
+        return out.toString();
+    }
+
+    private Long findFacetCountByType(String type) {
+        for (FacetCategory facetCategory : facetCategoryList) {
+            if (facetCategory.getName().equals(SearchFields.TYPE)) {
+                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                    String facetLabelName = facetLabel.getName();
+                    if (facetLabelName.equals(type)) {
+                        return facetLabel.getCount();
+                    }
+                }
+            }
+        }
+        return 0L;
     }
 
     public String getQuery() {
@@ -297,6 +343,42 @@ public class SearchIncludeFragment {
 
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
+    }
+
+    public String[] getSelectedTypes() {
+        return selectedTypes;
+    }
+
+    public void setSelectedTypes(String[] selectedTypes) {
+        this.selectedTypes = selectedTypes;
+    }
+
+    public String getTypeSearchField() {
+        return typeSearchField;
+    }
+
+    public void setTypeSearchField(String typeSearchField) {
+        this.typeSearchField = typeSearchField;
+    }
+
+    public String getTypeFilterQuery() {
+        return typeFilterQuery;
+    }
+
+    public void setTypeFilterQuery(String typeFilterQuery) {
+        this.typeFilterQuery = typeFilterQuery;
+    }
+
+    public Long getFacetCountDatasets() {
+        return findFacetCountByType("datasets");
+    }
+
+    public Long getFacetCountDataverses() {
+        return findFacetCountByType("dataverses");
+    }
+
+    public Long getFacetCountFiles() {
+        return findFacetCountByType("files");
     }
 
     public boolean isSolrIsDown() {
