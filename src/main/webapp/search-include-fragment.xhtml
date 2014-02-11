@@ -26,8 +26,8 @@
                         <f:selectItem itemLabel="Dataverses (#{SearchIncludeFragment.facetCountDataverses})" itemValue="dataverses"/>
                         <f:selectItem itemLabel="Datasets (#{SearchIncludeFragment.facetCountDatasets})" itemValue="datasets"/>
                         <f:selectItem itemLabel="Files (#{SearchIncludeFragment.facetCountFiles})" itemValue="files" />
+                        <p:ajax listener="#{SearchIncludeFragment.search()}" update="@all"/>
                     </p:selectManyCheckbox>
-                    <p:commandButton value="Select" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
                 </h:form>
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.name}" rendered="#{facetCategory.name != SearchIncludeFragment.typeSearchField}"/>
