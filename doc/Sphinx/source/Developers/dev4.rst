@@ -31,8 +31,8 @@ If you have an old copy of the database and want to start fresh, here are the re
 - drop your old database
 - create a new database
 - deploy the app
-- run the reference data script: scripts/database/StdyField-TemplateScript.sql 
 - ``cd scripts/api``
 - ``./setup-users.sh``  
 - ``./setup-dvs.sh`` 
-- log in at http://localhost:8080/loginpage.xhtml
+- run the reference data script: scripts/database/StdyField-TemplateScript.sql 
+- confirm http://localhost:8080 is up
