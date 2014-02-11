@@ -101,6 +101,13 @@ fi
 # Set up the data source for the timers
 ./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
 
+###
+# Add the necessary JVM options: 
+# 
+# location of the datafiles directory: 
+# (defaults to dataverse/files in the users home directory)
+asadmin create-jvm-options -Ddataverse.files.directory=~/dataverse/files
+
 
 ###
 # Restart
