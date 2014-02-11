@@ -121,7 +121,7 @@
                                         <p:column headerText="Title" style="font-size: smaller; width: 90%">
                                             <img src="/resources/images/icon_dataset.png" style="width:18px;margin:0 4px 0 0;vertical-align:bottom;" border="0" alt="Dataset" />
                                             <h:outputLink value="/dataset.xhtml?id=#{dataset.id}">
-                                                <h:outputText value="#{dataset.getLatestVersion().getMetadata().getTitle()}" />
+                                                <h:outputText value="#{dataset}" />
                                             </h:outputLink>
                                         </p:column>
                                         <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">

@@ -28,6 +28,9 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
 
+    List<String> advancedSearchFields = new ArrayList<>();
+    List<String> notAdvancedSearchFields = new ArrayList<>();
+
     public String indexAll() {
         /**
          * @todo allow for configuration of hostname and port
@@ -58,6 +61,8 @@ public class IndexServiceBean {
             datasetIndexCount++;
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
         }
+        logger.info("advanced search fields: " + advancedSearchFields);
+        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
         return dataverseIndexCount + " dataverses" + " and " + datasetIndexCount + " datasets indexed\n";
@@ -192,6 +197,24 @@ public class IndexServiceBean {
 
         } else {
             logger.info("dataset.getLatestVersion() was null");
+        }
+        if (dataset.getEditVersion() != null) {
+            for (DatasetFieldValue datasetFieldValue : dataset.getEditVersion().getDatasetFieldValues()) {
+                DatasetField datasetField = datasetFieldValue.getDatasetField();
+                String title = datasetField.getTitle();
+                String name = datasetField.getName();
+                Long id = datasetField.getId();
+                String idDashTitle = id + "-" + title;
+                String idDashName = id + "-" + name;
+                logger.info(idDashTitle);
+                if (datasetField.isAdvancedSearchField()) {
+                    advancedSearchFields.add(idDashName);
+                    logger.info(idDashName + " is an advanced search field (" + title + ")");
+                } else {
+                    notAdvancedSearchFields.add(idDashName);
+                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
+                }
+            }
         }
         /**
          * @todo: don't use distributor for category. testing facets
