@@ -19,28 +19,10 @@
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                 </f:metadata>
-
-                <!-- Header Panel ->
-                <p:panel style="background-color: lightskyblue; height:70px;">
-                    <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
-                        <ui:fragment>
-                            <h:outputText value="#{DataverseUserPage.editMode == 'CREATE'?'New Account':'Dataverse'}" style="font-size:1.5em;font-weight:bold;"/>
-                        </ui:fragment>
-                    </p:panelGrid>
-                </p:panel>
-                -->
                 
                 <!-- Message Panel -->
                 <p:panel styleClass="panelLayoutTitleBlock">
-                    <!--
-                    <h:outputText value="Create Account" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                    -->
                     <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}'s Account" rendered="#{DataverseUserPage.editMode == 'INFO' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                    <!--
-                    <h:outputText value="Edit Account" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                    <h:outputText value="Change Password" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
-                    <h:outputText value="Forgot Password" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                    -->
                     <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
                 </p:panel>
 
@@ -174,14 +156,40 @@
                             </p:panel>
                         </p:tab>
                     </p:tabView>
-                        <p:panel>
-                            <h:form id="shareForm" style="margin-left:auto;">
-                                <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                                    <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                    <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}" disabled="true"/>
-                                </p:menuButton>
-                            </h:form>
-                        </p:panel>
+                    <p:tabView id="tabView2" rendered="#{DataverseUserPage.editMode == 'INFO'}">
+                        <p:tab id="somedata" title="Data Related To Me">
+                            <p:panel>
+                                <p:panelGrid columns="4">
+                                    <ui:fragment>
+                                    <p:selectOneMenu value="#{DataverseUserPage.permissionType}">
+                                        <f:selectItem id="writeAccess" itemLabel="Data I have write access to..." itemValue="writeAccess" />
+                                        <f:selectItem id="readAccess" itemLabel="Data I have read access to..." itemValue="readAccess" />
+                                    </p:selectOneMenu>
+                                    </ui:fragment>
+                                    <ui:fragment>
+                                        <ui:include src="search-include-fragment.xhtml">
+                                            <ui:param name="showTreeWidget" value="false"/>
+                                            <ui:param name="userId" value="#{DataverseUserPage.dataverseUser.id}"/>
+                                            <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
+                                        </ui:include>
+                                    </ui:fragment>
+                                    <ui:fragment>    
+                                        <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
+                                            <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                            <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                        </p:menuButton>
+                                    </ui:fragment> 
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:tab>
+                        <p:tab id="notifications" title="Notifications">
+                            <p:panel>
+                                <p:dataList value="#{DataverseUserPage.notifications}" var="item">  
+                                    <h:outputText value="#{item.notification}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
+                                </p:dataList> 
+                            </p:panel>
+                        </p:tab>
+                    </p:tabView>
                 </h:form>
             </ui:define>
         </ui:composition>        
