@@ -58,5 +58,9 @@ public class DataFileServiceBean {
         return em.createQuery("select object(o) from DataFile as o order by o.id").getResultList();
     }
     
+    public DataFile save(DataFile dataFile) {   
+        DataFile savedDataFile = em.merge(dataFile);
+        return savedDataFile;
+    }
     
 }

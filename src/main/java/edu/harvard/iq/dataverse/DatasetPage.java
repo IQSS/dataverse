@@ -42,8 +42,10 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DataFileServiceBean datafileService;
+    @EJB
     DataverseServiceBean dataverseService;    
-   @EJB
+    @EJB
     TemplateServiceBean templateService;
 
     private Dataset dataset = new Dataset();
@@ -176,6 +178,7 @@ public class DatasetPage implements java.io.Serializable {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
                 
+                dFile = datafileService.save(dFile);
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: "+dFile.getFileSystemLocation().toString());
                 
                 Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());
