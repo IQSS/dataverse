@@ -178,7 +178,11 @@ public class DatasetPage implements java.io.Serializable {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
                 
-                dFile = datafileService.save(dFile);
+                // Re-set the owner of the datafile - last time the owner was 
+                // set was before the owner dataset was saved/synced with the db;
+                // this way the datafile will know the id of its .getOwner() - 
+                // even if this is a brand new dataset here. -- L.A.
+                dFile.setOwner(dataset);
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: "+dFile.getFileSystemLocation().toString());
                 
                 Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());
