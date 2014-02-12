@@ -39,7 +39,39 @@
                     <h:form>
                         <p:focus/>
                         <p:accordionPanel>
-                            <p:tab title="General Metadata">
+                            
+                            <p:tab title="Citation" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(0)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(0)}" var="item" >
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>
+                            <p:tab title="Discoverability" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(1)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(1)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                            <p:tab title="Dataset Availability" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(2)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(2)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                            <p:tab title="Term of Use" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(3)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(3)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>
+                            <p:tab title="Domain Metadata" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(4)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(4)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                               
+                          <!--  <p:tab title="General Metadata">
                                 <h:outputText value="Citation" style="font-weight: bolder"/>
                                 <br/>
                                 <ui:fragment>
@@ -215,7 +247,7 @@
                                     <h:inputText disabled="true"/>
                                     <br/>
                                 </ui:fragment>
-                            </p:tab>
+                            </p:tab> -->
                         </p:accordionPanel>
                         <ui:fragment>
                             <h:outputLabel value="All Fields? "/>
