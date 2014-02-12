@@ -178,8 +178,9 @@ public class SearchIncludeFragment {
         friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
         friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
-        friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
         friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
+        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
+        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
     public int getNumberOfFacets(String name, int defaultValue) {
