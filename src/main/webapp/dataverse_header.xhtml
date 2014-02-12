@@ -24,11 +24,11 @@
                         </h:outputLink>
                         <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!dataverseSession.user.guest}">
                             <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
-							<span style="margin-left: 5px; font-size:10pt">
-								<h:outputLink value="loginpage.xhtml">
-									(not you?)
-								</h:outputLink>
-							</span>
+                            <span style="margin-left: 5px; font-size:10pt">
+                                <h:outputLink value="loginpage.xhtml">
+                                    (not you?)
+                                </h:outputLink>
+                            </span>
                         </h:outputLink>
                     </ui:fragment>
                     <ui:fragment>
@@ -48,69 +48,62 @@
 
     <style type="text/css">
         div[id$='breadcrumbNavBlock'] > .ui-panel-content {overflow:hidden;}
-        
+
         button[id$='breadcrumbBtn'] span.ui-button-text, 
         button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
-        
+
         button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
         button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
-        
+
         button[id$='breadcrumbBtn'] .ui-button-icon-left, 
         button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
-        
+
         div[id$='breadcrumbNavBlock'] .breadcrumbCarrot {float:left; margin:0 .2em; color:#B3B3B3;}
-        
+
         div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
         div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
-        
+
         div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
-        
+
         div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn'], 
         div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
         div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn'] span.ui-icon, 
         div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
-        
+
         div[id$='breadcrumbNavBlock'] .ui-tree.ui-widget-content {border:0;}
-        
-        
-        
+
+
+
     </style>
 
     <!-- Breadcrumbs Panel -->
     <p:panel id="breadcrumbNavBlock" styleClass="panelLayoutBlock" rendered="#{showBreadcrumbs}">
+        <!-- Dataverses -->
+        <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
+            <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/> 
 
-        <ui:repeat value="#{dataverse.owners}" var="owner">
-            <p:commandButton id="breadcrumbBtn" value="#{owner.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>
+            <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                <p:commandButton id="breadcrumbBtn" value="#{dv.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>
+                <p:overlayPanel id="breadcrumbPanel" for="breadcrumbBtn" hideEffect="fade">  
+                    <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
+                        <p:treeNode>
+                            <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == node.id and dataset == null }"/>
+                            <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
+                                <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                            </h:outputLink>
+                        </p:treeNode>
+                    </p:tree>
+                </p:overlayPanel>
+            </ui:fragment>
             
-            <p:overlayPanel id="breadcrumbPanel" for="breadcrumbBtn" hideEffect="fade">  
-                <p:tree value="#{dataverseHeaderFragment.getDataverseTree(owner)}" var="node" dynamic="true" cache="true" id="tree">
-                  <p:treeNode>
-                      <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
-                          <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
-                      </h:outputLink>
-                  </p:treeNode>
-                </p:tree>
-            </p:overlayPanel>
-                
-            <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-        </ui:repeat>
-        
-        <p:commandButton id="breadcrumbBtn2" value="#{dataverse.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>
-            
-        <p:overlayPanel id="breadcrumbPanel2" for="breadcrumbBtn2" hideEffect="fade">  
-            <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dataverse)}" var="node" dynamic="true" cache="true" id="tree2">
-                <p:treeNode>
-                  <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataset == null and dataverse.id == node.id}"/>
-
-                  <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataset != null or dataverse.id != node.id}">
-                        <h:outputText value="#{node.name} Dataverse"/>
-                  </h:outputLink>
-                </p:treeNode>
-            </p:tree>
-        </p:overlayPanel>
-
-            
-
+            <ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null }"/>
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" rendered="#{dataverse.id != dv.id or dataset != null}">
+                    <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"/>
+                </h:outputLink>
+            </ui:fragment>
+        </ui:repeat>            
+        <!-- Dataset, if available -->
         <ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}">
             <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
             <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
