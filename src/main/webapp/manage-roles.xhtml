@@ -40,7 +40,7 @@
 
     <h:body>
         <f:metadata>
-            <f:viewParam name="dataverseId" value="#{DataversePage.dataverse.id}"/>
+            <f:viewParam name="dataverseId" value="#{manageRolesPage.dataverseIdParam}"/>
             <f:viewParam name="id" value="#{manageRolesPage.viewRoleId}"/>
             <f:viewParam name="intent" value="#{manageRolesPage.intentParam}"/>
 			<f:viewParam name="objectType" value="#{manageRolesPage.objectTypeParam}"/>
@@ -48,9 +48,9 @@
         </f:metadata>
 		<ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="Manage Roles and Permissions"/>
-            <ui:param name="dataverse" value="#{DataversePage.dataverse}"/> 
+            <ui:param name="dataverse" value="#{manageRolesPage.dataverse}"/> 
+            <ui:param name="showMessagePanel" value="#{true}"/> 
             <ui:define name="body">
-				
 				<!-- Tabs -->
 				<p:tabView dynamic="true" cache="false" activeIndex="#{manageRolesPage.activeTabIndex}">
 					<p:tab id="dataverseTab" title="Dataverse">
@@ -216,7 +216,60 @@
 					</p:tab>
 
 					<p:tab id="userTab" title="Users">
-						Assign roles to users here!
+						<div>
+							<h:form id="userForm">
+								<p:panel header="Assign Roles" toggleable="true" styleClass="space-bottom">
+									<p:outputLabel for="usernameField" value="User / Group Name" styleClass="space-right"/>
+									
+									<p:autoComplete id="usernameField" 
+													value="#{manageRolesPage.assignRoleUsername}"
+													completeMethod="#{manageRolesPage.acUsername}"
+													queryDelay="1000"
+													var="u"
+													itemLabel="#{u.userName}"
+													itemValue="#{u.userName}">
+										<f:facet name="itemtip">
+											<div>
+												<strong>#{u.firstName} #{u.lastName}</strong><br/>
+												<em>#{u.affiliation}</em>
+												#{u.email}
+											</div>
+											
+										</f:facet>
+									</p:autoComplete> 
+									<h:selectOneMenu id="userRole" value="#{manageRolesPage.assignRoleRoleId}">
+										<f:selectItems value="#{manageRolesPage.availableRoles()}"
+													   var="role"
+													   itemLabel="#{role.name} (defined in #{role.owner.name})"
+													   itemValue="#{role.id}"
+													   />
+									</h:selectOneMenu>
+									<p:commandButton value="Assign Role" actionListener="#{manageRolesPage.assignRole}"
+													 update="assignedRoles"/>
+								</p:panel>
+								<p:panel header="Assigned Roles">
+									<p:dataTable id="assignedRoles" var="ar" value="#{manageRolesPage.roleAssignments}">
+										<p:column sortBy="roleName" headerText="Role">
+											<h:outputText value="#{ar.roleName}" />
+										</p:column>
+										<p:column sortBy="name" headerText="Name">
+											<h:outputText value="#{ar.name}" />
+										</p:column>
+										<p:column sortBy="email" headerText="Email">
+											<h:outputText value="#{ar.email}" />
+										</p:column>
+										<p:column sortBy="assignedDvName" headerText="Assigned at">
+											<h:outputText value="#{ar.assignedDvName}" rendered="#{ar.assignDv ne manageRolesPage.dataverse}"/>
+											<h:panelGroup rendered="#{ar.assignDv eq manageRolesPage.dataverse}">
+												This Dataverse
+												<p:commandButton value="Revoke" actionListener="#{manageRolesPage.revokeRole(ar.id)}"
+																 update="assignedRoles" />
+											</h:panelGroup>
+										</p:column>
+									</p:dataTable>
+								</p:panel>
+							</h:form>
+						</div>
 					</p:tab>
 
 				</p:tabView>

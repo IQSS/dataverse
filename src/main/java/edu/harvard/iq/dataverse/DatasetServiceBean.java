@@ -34,10 +34,10 @@ public class DatasetServiceBean {
 
     public Dataset save(Dataset dataset) { 
 
-        //em.merge(dataset.getVersions().get(0));           
+        em.merge(dataset.getVersions().get(0));           
         Dataset savedDataset = em.merge(dataset);
-       //String indexingResult = indexService.indexDataset(savedDataset);
-       //logger.info("during dataset save, indexing result was: " + indexingResult);
+       String indexingResult = indexService.indexDataset(savedDataset);
+       logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 

@@ -13,6 +13,7 @@ import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -98,10 +99,10 @@ public class PermissionServiceBean {
 	
 	public Set<RoleAssignment> assignmentsFor( DataverseUser u, DvObject d ) {
 		Set<RoleAssignment> assignments = new HashSet<>();
-		while ( d != null ) {
+		while ( d!=null ) {
 			assignments.addAll( roleService.directRoleAssignments(u, d) );
 			if ( d instanceof Dataverse ) {
-				d = ((Dataverse)d).isEffectivlyPermissionRoot() ? null : d.getOwner();
+				if ( ((Dataverse)d).isEffectivlyPermissionRoot() ) return assignments;
 			} else {
 				d = d.getOwner();
 			}

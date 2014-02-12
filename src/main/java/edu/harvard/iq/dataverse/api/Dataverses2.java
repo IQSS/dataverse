@@ -182,7 +182,7 @@ public class Dataverses2 extends AbstractApiBean {
 			return ok(json(roleAssignment));
 			
 		} catch (CommandException ex) {
-			logger.log(Level.WARNING, "Can't create assignment: " + ex.getMessage(), ex );
+			logger.log(Level.WARNING, "Can't create assignment: " + ex.getMessage() );
 			return error(ex.getMessage());
 		}
 	}

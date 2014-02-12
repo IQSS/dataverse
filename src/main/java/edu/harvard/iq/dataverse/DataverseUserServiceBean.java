@@ -34,7 +34,9 @@ public class DataverseUserServiceBean {
     }
     
 	public DataverseUser findGuestUser() {
-		return findByUserName(GUEST_USERNAME);
+		DataverseUser theGuest = findByUserName(GUEST_USERNAME);
+		theGuest.setGuest(true);
+		return theGuest;
 	}
 	
 	public DataverseUser createGuestUser() {
@@ -59,7 +61,13 @@ public class DataverseUserServiceBean {
         }
         return user;
     }
-
+	
+	public List<DataverseUser> listByUsernamePart ( String part ) {
+		return em.createNamedQuery("DataverseUser.listByUserNameLike", DataverseUser.class)
+				.setParameter("userNameLike", "%" + part + "%")
+				.getResultList();
+	}
+	
     public DataverseUser findByEmail(String email) {
         String query = "SELECT u from DataverseUser u where u.email = :email ";
         DataverseUser user = null;

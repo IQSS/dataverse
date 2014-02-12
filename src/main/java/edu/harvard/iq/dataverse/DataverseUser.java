@@ -1,22 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -24,10 +15,12 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author xyang
  */
-@NamedQueries(
+@NamedQueries({
 		@NamedQuery( name="DataverseUser.findAll",
-				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName")
-)
+				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName"),
+		@NamedQuery( name="DataverseUser.listByUserNameLike",
+				query = "SELECT u FROM DataverseUser u WHERE u.userName LIKE :userNameLike")
+})
 @Entity
 public class DataverseUser implements Serializable {
 
@@ -53,7 +46,10 @@ public class DataverseUser implements Serializable {
     private String affiliation;
     private String position;
     private String phone;
-    
+	
+	@Transient
+	private boolean guest;
+
     public Long getId() {
         return id;
     }
@@ -125,6 +121,14 @@ public class DataverseUser implements Serializable {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+	public boolean isGuest() {
+		return guest;
+	}
+
+	public void setGuest(boolean guest) {
+		this.guest = guest;
+	}
 	
     @Override
     public int hashCode() {

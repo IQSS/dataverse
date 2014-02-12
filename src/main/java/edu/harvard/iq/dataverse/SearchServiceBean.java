@@ -86,7 +86,8 @@ public class SearchServiceBean {
         final int citationYearRangeStart = 1901;
         final int citationYearRangeEnd = thisYear;
         final int citationYearRangeSpan = 2;
-        solrQuery.addNumericRangeFacet(SearchFields.CITATION_YEAR, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
+        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
+        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         /**
          * @todo: make the number of results per page configurable?
          */

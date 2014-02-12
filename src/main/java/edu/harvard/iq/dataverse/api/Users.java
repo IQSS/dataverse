@@ -60,10 +60,7 @@ public class Users extends AbstractApiBean {
 	@GET
 	@Path(":guest")
 	public String genarateGuest() {
-		DataverseUser guest = userSvc.findGuestUser();
-		return ok( json(
-					 (guest!=null) ? guest : userSvc.createGuestUser() 
-				));
+		return ok( json(userSvc.createGuestUser()) );
 		
 	}
 }
