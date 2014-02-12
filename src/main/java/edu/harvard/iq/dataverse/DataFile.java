@@ -33,13 +33,18 @@ public class DataFile extends DvObject {
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataTable> dataTables;
-	
-	public DataFile() {
+    
+    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<FileMetadata> fileMetadatas;
+
+    public DataFile() {
+        this.fileMetadatas = new ArrayList<FileMetadata>();
     }    
 
     public DataFile(String name, String contentType) {
         this.name = name;
         this.contentType = contentType;
+        this.fileMetadatas = new ArrayList<FileMetadata>();
     }    
 
     public List<DataTable> getDataTables() {
@@ -48,6 +53,14 @@ public class DataFile extends DvObject {
 
     public void setDataTables(List<DataTable> dataTables) {
         this.dataTables = dataTables;
+    }
+    
+    public List<FileMetadata> getFileMetadatas() {
+        return fileMetadatas;
+    }
+
+    public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
+        this.fileMetadatas = fileMetadatas;
     }
     
     public DataTable getDataTable() {
@@ -92,7 +105,7 @@ public class DataFile extends DvObject {
         this.contentType = contentType;
     }
 
-	@Override
+    @Override
     public Dataset getOwner() {
         return (Dataset) super.getOwner();
     }
@@ -107,6 +120,38 @@ public class DataFile extends DvObject {
 
     public void setFileSystemName(String fileSystemName) {
         this.fileSystemName = fileSystemName;
+    }
+    
+    public String getDescription() {
+        FileMetadata fmd = getLatestFileMetadata();
+        
+        if (fmd == null) {
+            return null;
+        }
+        return fmd.getDescription();
+    }
+
+    public void setDescription(String description) {
+        FileMetadata fmd = getLatestFileMetadata();
+        
+        if (fmd != null) {
+            fmd.setDescription(description);
+        }
+    }
+    
+    public FileMetadata getFileMetadata() {
+        return getLatestFileMetadata();
+    }
+    
+    private FileMetadata getLatestFileMetadata() {
+        FileMetadata fmd = null;
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+                fmd = fileMetadata;
+            }                       
+        }
+        return fmd;
     }
     
     public Path getFileSystemLocation() {

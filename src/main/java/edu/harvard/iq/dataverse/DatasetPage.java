@@ -234,8 +234,10 @@ public class DatasetPage implements java.io.Serializable {
         FileMetadata fmd = new FileMetadata();       
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
+        dFile.getFileMetadatas().add(fmd);
         fmd.setLabel(dFile.getName());
         fmd.setCategory(dFile.getContentType());
+        fmd.setDescription("add description");
         if (editVersion.getFileMetadatas() == null){
             editVersion.setFileMetadatas(new ArrayList() );
         }
