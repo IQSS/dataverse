@@ -15,7 +15,6 @@ Contents:
 
   User/index
   Developers/index
-  Installers/index
   API/index
 
 How the Guides Are Organized
