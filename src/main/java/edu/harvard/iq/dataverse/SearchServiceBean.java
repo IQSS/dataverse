@@ -53,14 +53,14 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
-        solrQuery.addFacetField(SearchFields.TYPE);
-        solrQuery.addFacetField(SearchFields.SUBTREE);
         solrQuery.addFacetField(SearchFields.ORIGINAL_DATAVERSE);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
+        solrQuery.addFacetField(SearchFields.TYPE);
+        solrQuery.addFacetField(SearchFields.SUBTREE);
         /**
          * @todo: do sanity checking... throw error if negative
          */

@@ -45,7 +45,8 @@ public class SearchIncludeFragment {
     private String dataverseSubtreeContext;
     private String[] selectedTypesArray = {"dataverses", "datasets", "files"};
     private String selectedTypesHumanReadable;
-    private String typeSearchField = SearchFields.TYPE;
+    private String searchFieldType = SearchFields.TYPE;
+    private String searchFieldSubtree = SearchFields.SUBTREE;
     private String typeFilterQuery;
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
@@ -53,6 +54,7 @@ public class SearchIncludeFragment {
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
+    private Map<String, String> friendlyName = new HashMap<>();
 
     /**
      * @todo:
@@ -168,7 +170,16 @@ public class SearchIncludeFragment {
             contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
             directChildDvObjectContainerList.addAll(contentsList);
         }
-
+        /**
+         * @todo: pull values from datasetField.getTitle() rather than hard
+         * coding them here
+         */
+        friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
+        friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
+        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
+        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
+        friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
+        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
     }
 
     public int getNumberOfFacets(String name, int defaultValue) {
@@ -376,12 +387,20 @@ public class SearchIncludeFragment {
         this.selectedTypesHumanReadable = selectedTypesHumanReadable;
     }
 
-    public String getTypeSearchField() {
-        return typeSearchField;
+    public String getSearchFieldType() {
+        return searchFieldType;
     }
 
-    public void setTypeSearchField(String typeSearchField) {
-        this.typeSearchField = typeSearchField;
+    public void setSearchFieldType(String searchFieldType) {
+        this.searchFieldType = searchFieldType;
+    }
+
+    public String getSearchFieldSubtree() {
+        return searchFieldSubtree;
+    }
+
+    public void setSearchFieldSubtree(String searchFieldSubtree) {
+        this.searchFieldSubtree = searchFieldSubtree;
     }
 
     public String getTypeFilterQuery() {
@@ -418,6 +437,14 @@ public class SearchIncludeFragment {
 
     public void setDirectChildDvObjectContainerList(List<DvObjectContainer> directChildDvObjectContainerList) {
         this.directChildDvObjectContainerList = directChildDvObjectContainerList;
+    }
+
+    public Map<String, String> getFriendlyName() {
+        return friendlyName;
+    }
+
+    public void setFriendlyName(Map<String, String> friendlyName) {
+        this.friendlyName = friendlyName;
     }
 
 }

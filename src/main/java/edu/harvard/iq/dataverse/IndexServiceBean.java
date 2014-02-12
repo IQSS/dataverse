@@ -28,8 +28,8 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
 
-    List<String> advancedSearchFields = new ArrayList<>();
-    List<String> notAdvancedSearchFields = new ArrayList<>();
+//    List<String> advancedSearchFields = new ArrayList<>();
+//    List<String> notAdvancedSearchFields = new ArrayList<>();
 
     public String indexAll() {
         /**
@@ -61,8 +61,8 @@ public class IndexServiceBean {
             datasetIndexCount++;
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
         }
-        logger.info("advanced search fields: " + advancedSearchFields);
-        logger.info("not advanced search fields: " + notAdvancedSearchFields);
+//        logger.info("advanced search fields: " + advancedSearchFields);
+//        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
         return dataverseIndexCount + " dataverses" + " and " + datasetIndexCount + " datasets indexed\n";
@@ -206,13 +206,20 @@ public class IndexServiceBean {
                 Long id = datasetField.getId();
                 String idDashTitle = id + "-" + title;
                 String idDashName = id + "-" + name;
-                logger.info(idDashTitle);
+//                logger.info(idDashTitle);
                 if (datasetField.isAdvancedSearchField()) {
-                    advancedSearchFields.add(idDashName);
-                    logger.info(idDashName + " is an advanced search field (" + title + ")");
+//                    advancedSearchFields.add(idDashName);
+//                    logger.info(idDashName + " is an advanced search field (" + title + ")");
+                    if (name.equals(DatasetFieldConstant.authorName)) {
+                        String toIndexAuthor = datasetFieldValue.getStrValue();
+                        if (toIndexAuthor != null && !toIndexAuthor.isEmpty()) {
+                            logger.info("index this author: " + toIndexAuthor);
+                            solrInputDocument.addField(SearchFields.AUTHOR_STRING, toIndexAuthor);
+                        }
+                    }
                 } else {
-                    notAdvancedSearchFields.add(idDashName);
-                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
+//                    notAdvancedSearchFields.add(idDashName);
+//                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
                 }
             }
         }

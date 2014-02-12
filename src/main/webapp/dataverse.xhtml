@@ -35,30 +35,6 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
-                    <!-- Breadcrumbs Panel -->
-                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
-
-                        <ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
-                            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                                <h:outputText value="#{owner.name} Dataverse"/>
-                            </h:outputLink>
-                            <h:outputText value=" > "/>
-                        </ui:repeat>
-                        <!--<br/>-->
-                        <h:outputText value="#{DataversePage.dataverse.name} Dataverse" style="font-weight:bold;"/>
-                    </p:panel>
-
-                    <!-- Message Panel -->
-                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{DataversePage.editMode}">
-
-                        <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-
-                <!--<h:outputText value="Edit your dataverse's information:" rendered="#{DataversePage.dataverse.id != null}"/>-->
-                <!--<h:outputText value="Create a child dataverse:" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>-->
-                <!--<h:outputText value="Create Root Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>-->
-
-                    </p:panel>
-
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock">
 

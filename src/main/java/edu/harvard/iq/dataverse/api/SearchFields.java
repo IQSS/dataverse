@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+
 public class SearchFields {
 
     // standard fields from example/solr/collection1/conf/schema.xml
@@ -28,7 +30,8 @@ public class SearchFields {
      * which is not what we want):
      * http://stackoverflow.com/questions/16559911/facet-query-will-give-wrong-output-on-dynamicfield-in-solr
      */
-    public static final String AUTHOR_STRING = "authorstring_s";
+//    public static final String AUTHOR_STRING = "authorstring_s";
+    public static final String AUTHOR_STRING = DatasetFieldConstant.author +  "string_s";
     public static final String FILE_TYPE = "filetype_s";
     public static final String FILE_TYPE_GROUP = "filetypegroup_s";
     public static final String ORIGINAL_DATAVERSE = "originaldataverse_s";
