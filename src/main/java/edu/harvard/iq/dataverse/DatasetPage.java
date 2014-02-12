@@ -125,6 +125,9 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             editVersion = dataset.getLatestVersion();
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
             ownerId = dataset.getOwner().getId();
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
