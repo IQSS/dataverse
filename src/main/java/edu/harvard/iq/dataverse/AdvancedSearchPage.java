@@ -19,35 +19,51 @@ public class AdvancedSearchPage {
     @EJB
     DataverseServiceBean dataverseServiceBean;
 
+    @EJB
+    DatasetFieldServiceBean datasetFieldService;
+
     private Dataverse dataverse;
     private String query;
     private String title;
     private String author;
+    private List<DatasetField> metadataFieldList;
 
-    @PostConstruct
+
     public void init() {
         /**
          * @todo: support advanced search at any depth in the dataverse
          * hierarchy
          */
         this.dataverse = dataverseServiceBean.findRootDataverse();
+        this.metadataFieldList = datasetFieldService.findAll();          
     }
 
     public String find() throws IOException {
-        logger.info("clicked find. author: " + author + ". title: " + title);
-        List<String> queryStrings = new ArrayList();
-        if (title != null && !title.isEmpty()) {
-            queryStrings.add(SearchFields.TITLE + ":" + title);
-        }
+        /*
+         logger.info("clicked find. author: " + author + ". title: " + title);
+         List<String> queryStrings = new ArrayList();
+         if (title != null && !title.isEmpty()) {
+         queryStrings.add(SearchFields.TITLE + ":" + title);
+         }
 
-        if (author != null && !author.isEmpty()) {
-            queryStrings.add(SearchFields.AUTHOR_STRING + ":" + author);
+         if (author != null && !author.isEmpty()) {
+         queryStrings.add(SearchFields.AUTHOR_STRING + ":" + author);
+         }
+         query = new String();
+         for (String string : queryStrings) {
+         query += string + " ";
+         }
+         logger.info("query: " + query); */
+        List<String> queryStrings = new ArrayList();
+        for (DatasetField datasetField : metadataFieldList) {
+            if (!"".equals(datasetField.getSearchValue())) {
+                queryStrings.add(datasetField.getName() + ":" + datasetField.getSearchValue());
+            }
         }
         query = new String();
         for (String string : queryStrings) {
             query += string + " ";
         }
-        logger.info("query: " + query);
         return "/search.xhtml?q=" + query + "faces-redirect=true";
     }
 
@@ -84,4 +100,17 @@ public class AdvancedSearchPage {
         this.author = author;
     }
 
+    public List getMetadataFieldList() {
+        List metadataBlock = new ArrayList();
+        for (int i = 1; i < 6; i++) {
+            List metadata = new ArrayList();
+            for (DatasetField datasetField : metadataFieldList) {
+                if (datasetField.getMetadataBlock().getId() == i) {
+                    metadata.add(datasetField);
+                }
+            }
+            metadataBlock.add(metadata);
+        }
+        return metadataBlock;
+    }
 }

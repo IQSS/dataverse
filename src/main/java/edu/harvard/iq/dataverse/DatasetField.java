@@ -40,6 +40,9 @@ public class DatasetField implements Serializable {
     private String fieldType;
     private boolean allowControlledVocabulary;
     
+    @Transient
+    private String searchValue;
+    
     public DatasetField() {
     }
 
@@ -124,28 +127,30 @@ public class DatasetField implements Serializable {
     public void setParentDatasetField(DatasetField parentDatasetField) {
         this.parentDatasetField = parentDatasetField;
     }
-    
-    
+
     /**
      * Holds value of property studies. 
      */
     /*
     @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
     private Collection<Study> studies;
-
     @ManyToMany(mappedBy="advSearchFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> advSearchFieldVDCs;
-
-   @ManyToMany(mappedBy="searchResultFields",cascade={CascadeType.REMOVE })
+    @ManyToMany(mappedBy="searchResultFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> searchResultFieldVDCs;
-   
-   @ManyToMany(mappedBy="anySearchFields",cascade={CascadeType.REMOVE })
+    @ManyToMany(mappedBy="anySearchFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> anySearchFieldVDCs;
-    
-   @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
+    @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> summaryFieldVDCs;
-*/
-   
+     */
+    public String getSearchValue() {
+        return searchValue;
+    }
+
+    public void setSearchValue(String searchValue) {
+        this.searchValue = searchValue;
+    }
+
     private boolean required;
     public boolean isRequired() {
         return this.required;
