@@ -124,7 +124,7 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public void init() {
         if (dataverseUser == null) {  
-            dataverseUser = session.getUser();
+            dataverseUser = (session.getUser().isGuest() ? new DataverseUser() : session.getUser());
         }
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
