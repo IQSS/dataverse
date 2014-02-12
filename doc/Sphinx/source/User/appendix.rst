@@ -1,11 +1,10 @@
-
 Appendix
 ++++++++
 
 Additional documentation complementary to Users Guides.
 
 Control Card-Based Data Ingest
-=====================
+===============================
 
 As of version 2.2 the DVN supports ingesting plain text data files, in
 addition to SPSS and STATA formats. This allows users and institutions
@@ -26,7 +25,7 @@ be supplied.
 The specifics of the formats are documented in the 2 sections below.
 
 CSV Data, SPSS-style Control Card
-------------------------------
+----------------------------------
 
 Unlike other supported “subsettable” formats, this ingest mechanism
 requires 2 files: the CSV raw data file proper and an SPSS Setup file
@@ -261,7 +260,7 @@ Is there any reason we may want to support ``RECODE`` command also?
 
 
 Tab Data, with DDI Metadata
-------------------------
+----------------------------
 
 As of version 2.2, another method of ingesting raw TAB-delimited data
 files has been added to the Dataverse Network. Similarly to the SPSS control
@@ -352,26 +351,13 @@ provided, for automated validation of machine-generated XML.
 
 --- comments, suggestions are welcome! ---
 
-Data Sharing API
-===========
-
-As of version 3.0, a new API for programmatic access to the DVN data and
-metadata has been added. The API allows a remote, non-DVN
-archive/application to search the holdings and download files from a
-Dataverse Network.
-
-The API documentation is available here:
-
-`https://sourceforge.net/projects/dvn/files/dvn/3.0/dvnapi\_v1\_0.pdf <https://sourceforge.net/projects/dvn/files/dvn/3.0/dvnapi_v1_0.pdf>`__
-
 .. _metadata-references:
 
 Metadata References
-==============
+====================
 
 The Dataverse Network metadata is compliant with the `DDI schema
-version 2 <http://www.icpsr.umich.edu/DDI/>`__. The Cataloging
-Information fields associated with each study contain most of the fields
+version 2 <http://www.icpsr.umich.edu/DDI/>`__. The Metadata fields associated with each Dataset contain most of the fields
 in the study description section of the DDI. That way the Dataverse
 Network metadata can be mapped easily to a DDI, and be exported into XML
 format for preservation and interoperability.
@@ -381,7 +367,7 @@ Core <http://www.dublincore.org/>`__ (DC) requirements. For imports
 only, Dataverse Network data is compliant with the `Content Standard
 for Digital Geospatial Metadata (CSDGM), Vers. 2 (FGDC-STD-001-1998) <http://www.fgdc.gov/metadata>`__ (FGDC).
 
-Attached is a PDF file that defines and maps all Dataverse Network
+Attached is a [need to include this] that defines and maps all Dataverse Network
 Cataloging Information fields. Information provided in the file includes
 the following:
 
@@ -421,14 +407,13 @@ Also attached is an example of a DDI for a simple study containing
 title, author, description, keyword, and topic classification cataloging
 information fields suitable for use with batch import.
 
-|image9|
-`catalogingfields11apr08.pdf <http://guides.thedata.org/files/thedatanew_guides/files/catalogingfields11apr08.pdf>`__
+[add link to metadata table for 4.0]
 
 |image10|
 `simple\_study.xml <http://guides.thedata.org/files/thedatanew_guides/files/simple_study_1.xml>`__
 
 Zelig Interface
-==========
+===============
 
 Zelig is statistical software for everyone: researchers, instructors,
 and students. It is a front-end and back-end for R (Zelig is written in
