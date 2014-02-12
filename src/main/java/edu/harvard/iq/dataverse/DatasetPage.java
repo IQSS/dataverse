@@ -56,9 +56,33 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetVersion editVersion = new DatasetVersion();   
     private List<DatasetField> citationFields = new ArrayList();
     private List<DatasetField> otherMetadataFields = new ArrayList();
+    private List<DatasetFieldValue> citationValues = new ArrayList();
+
+    public List<DatasetFieldValue> getCitationValues() {
+        return citationValues;
+    }
+
+    public void setCitationValues(List<DatasetFieldValue> citationValues) {
+        this.citationValues = citationValues;
+    }
+    private List<DatasetFieldValue> otherMetadataValues = new ArrayList();    
+    private List<DatasetFieldValue> editValues = new ArrayList();
+    
+    
+    public List<DatasetFieldValue> getOtherMetadataValues() {
+        return otherMetadataValues;
+    }
+
+    public void setOtherMetadataValues(List<DatasetFieldValue> otherMetadataValues) {
+        this.otherMetadataValues = otherMetadataValues;
+    }
     
     public Dataset getDataset() {
         return dataset;
+    }
+    
+    public List<DatasetFieldValue> getEditValues() {
+        return editValues;
     }
 
     public void setDataset(Dataset dataset) {
@@ -106,13 +130,16 @@ public class DatasetPage implements java.io.Serializable {
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setVersions(new ArrayList());
-            dataset.getVersions().add(editVersion);
             editVersion.setDataset(dataset);           
             editVersion.setFileMetadatas(new ArrayList());
             editVersion.setDatasetFieldValues(null);            
             editVersion.setVersionState(VersionState.DRAFT);
             editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
-            editVersion.setVersionNumber(new Long(1));            
+            editVersion.setVersionNumber(new Long(1));  
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
+            dataset.getVersions().add(editVersion);
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }        
@@ -130,6 +157,11 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             editVersion = dataset.getEditVersion();
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
+            editVersion.setVersionNumber(new Long(1));  
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
     }
@@ -141,13 +173,7 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
-        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues() ){
-             System.out.print("Value in edit version " + dsfv.getDatasetField().getTitle() + " " + dsfv.getStrValue());
-        }
-        
-        dataset.getVersions().get(0).getDatasetFieldValues().get(1).setStrValue("Update in code");
 
-        dataset.getVersions().set(0, editVersion);
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -230,11 +256,11 @@ public class DatasetPage implements java.io.Serializable {
     public DataModel getDatasetFieldsDataModel() {
         List values = new ArrayList();  
         int i = 0;
-        for (DatasetFieldValue dsfv : dataset.getEditVersion().getDatasetFieldValues()){
+        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
             DatasetField datasetField = dsfv.getDatasetField();                      
                 Object[] row = new Object[4];
                 row[0] = datasetField;
-                row[1] = getValuesDataModel(datasetField);
+                row[1] = getValuesDataModel(dsfv);
                 row[2] = new Integer(i);
                 row[3] = datasetField;                
                 values.add(row);
@@ -243,16 +269,12 @@ public class DatasetPage implements java.io.Serializable {
         return new ListDataModel(values);
     }
     
-    private DataModel getValuesDataModel(DatasetField datasetField) {
+    private DataModel getValuesDataModel(DatasetFieldValue datasetFieldValue) {
         List values = new ArrayList();
-        for (DatasetFieldValue dsfv : datasetField.getDatasetFieldValues()) {
-            if (dsfv.getDatasetVersion().equals(this.editVersion)) {
                 Object[] row = new Object[2];
-                row[0] = dsfv;
-                row[1] = datasetField.getDatasetFieldValues(); // used by the remove method
+                row[0] = datasetFieldValue;
+                row[1] = datasetFieldValue.getDatasetField().getDatasetFieldValues(); // used by the remove method
                 values.add(row);
-            }
-        }
         return new ListDataModel(values);
     }
     
@@ -276,6 +298,16 @@ public class DatasetPage implements java.io.Serializable {
         this.otherMetadataFields = otherMetadataFields;
     }
     
-       
+    private List<DatasetFieldValue> extractValues(List<DatasetFieldValue> inList, boolean citation){
+        List retList = new ArrayList();
+        for (DatasetFieldValue dsfv : inList){
+            if (citation && dsfv.getDatasetField().getMetadataBlock().isShowOnCreate()) { 
+                  retList.add(dsfv);                
+            } else if (!citation && !dsfv.getDatasetField().getMetadataBlock().isShowOnCreate()) {
+                  retList.add(dsfv);
+            }
+        }
+        return retList;
+    }   
 
 }

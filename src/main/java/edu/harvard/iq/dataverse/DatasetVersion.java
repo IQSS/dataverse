@@ -436,7 +436,7 @@ public class DatasetVersion implements Serializable {
                     DatasetFieldValue addDsfv = new DatasetFieldValue();
                     addDsfv.setDatasetField(dsf);
                     addDsfv.setDatasetVersion(this);
-                    addDsfv.setStrValue("init");
+                    //addDsfv.setStrValue("init");
                     dsf.getDatasetFieldValues().add(addDsfv);
                     retList.add(addDsfv);
                 }

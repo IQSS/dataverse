@@ -94,23 +94,15 @@
                                 </p:panelGrid>
                             </ui:fragment>
                         </p:panelGrid>
-                        
-
-                        
-
-                        
 
 
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
                             <ui:fragment>
                                 <p:panelGrid styleClass="panelgridFormTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                                     <ui:fragment>
-                                        <p:outputLabel value="Title" for="title"/> <h:outputText value="*" style="color: #B94A48;"/>
+                                        <p:outputLabel value="Title" /> <h:outputText value="*" style="color: #B94A48;"/>
                                     </ui:fragment>
                                     <ui:fragment>
-                                        <p:inputText id="title" size="40" value="#{DatasetPage.dataset.editVersion.datasetFieldValues.get(0)}"/>
-                                        <p:watermark for="title" value="Enter title..."/>
-                                        <p:message for="title"/>
                                     </ui:fragment>
                                     <ui:fragment>
                                         <h:outputText value="Host Dataverse"/>
@@ -122,8 +114,8 @@
                                     </ui:fragment>
                                 </p:panelGrid>
 
-                                <p:dataGrid columns="1" value="#{DatasetPage.editVersion.datasetFieldValues}" var="datasetFieldVal">
-                                                <p:column>
+                                <p:dataGrid columns="1" value="#{DatasetPage.citationValues}" var="datasetFieldVal">
+                                    <p:column rendered="#{datasetFieldVal.datasetField.name != 'datasetId'}">
                                                     <p:panelGrid styleClass="panelgridFormTable" columns="2">
                                                         <ui:fragment>
                                                             <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
@@ -136,6 +128,7 @@
                                                                 <p:inputText id="input_TextDefault" size="90"
                                                                              value="#{datasetFieldVal.strValue}">
                                                                 </p:inputText>
+                                                                <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
                                                                 <p:message for="input_TextDefault"/>
                                                             </p:panelGrid>
                                                         </ui:fragment>
@@ -181,11 +174,11 @@
                                         <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
                                         <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileName"/>
-                                        <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
+                                       <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
                                     </p:column>
                                     <p:column>
-                                        <h:outputLink value="/api/access/datafile/#{file.id}"  rendered="#{!empty file.id}">
-                            			<h:outputText value="Download"/>
+                                       <h:outputLink value="/api/access/datafile/#{file.id}"  rendered="#{!empty file.id}">
+                           			<h:outputText value="Download"/>
                         		</h:outputLink>
                                         <h:outputText value="[UNSAVED FILE]" rendered="#{empty file.id}"/>
                                     </p:column>
@@ -196,7 +189,6 @@
                         		</h:outputLink>
 
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
-                                        
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
@@ -206,6 +198,28 @@
                             <p:tab id="metadataTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
                                 <p:accordionPanel>
                                     <p:tab title="General Metadata">
+                                        
+                                        <p:dataGrid columns="1" value="#{DatasetPage.otherMetadataValues}" var="datasetFieldVal">
+                                    <p:column rendered="#{datasetFieldVal.datasetField.name != 'datasetId'}">
+                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                                        <ui:fragment>
+                                                            <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
+                                                        </ui:fragment>
+                                                        <ui:fragment>
+                                                            <h:outputText rendered="#{(empty DatasetPage.editMode)}"
+                                                                          value="#{datasetFieldVal.strValue}">
+                                                            </h:outputText>                                                           
+                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                                                                <p:inputText id="input_TextDefault" size="90"
+                                                                             value="#{datasetFieldVal.strValue}">
+                                                                </p:inputText>
+                                                                <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
+                                                                <p:message for="input_TextDefault"/>
+                                                            </p:panelGrid>
+                                                        </ui:fragment>
+                                                    </p:panelGrid>
+                                                </p:column>
+                                        </p:dataGrid>
                                         <!-- Distributor -->
 
 
@@ -224,28 +238,7 @@
                                     
                                     <!-- NEEDS MORE WORK ON LAYOUT -->
                                     <p:tab title="Domain Specific Metadata">
-                                        <p:dataGrid columns="1" value="#{DatasetPage.datasetFieldsDataModel}" var="customFieldsDataModel">
-                                            <p:dataTable value="#{customFieldsDataModel[1]}" var="customValuesDataModel">
-                                                <p:column>
-                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
-                                                        <ui:fragment>
-                                                            <h:outputText value="#{customFieldsDataModel[0].title}" title="#{customFieldsDataModel[0].title} - #{customFieldsDataModel[0].description}"/>
-                                                        </ui:fragment>
-                                                        <ui:fragment>
-                                                            <h:outputText rendered="#{(empty DatasetPage.editMode)}"
-                                                                          value="#{customValuesDataModel[0].strValue}">
-                                                            </h:outputText>                                      
-                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'METADATA')}">
-                                                                <p:inputText id="input_TextDefault" size="90"
-                                                                             value="#{customValuesDataModel[0].strValue}">
-                                                                </p:inputText>
-                                                                <p:message for="input_TextDefault"/>
-                                                            </p:panelGrid>
-                                                        </ui:fragment>
-                                                    </p:panelGrid>
-                                                </p:column>
-                                            </p:dataTable>
-                                        </p:dataGrid>
+
                                     </p:tab>
                                     
                                     <p:tab title="Data Availability">
@@ -280,7 +273,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save" immediate="true" value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save()}" update="@all">                            
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save()}" update="@all">                            
                         </p:commandButton>
                         <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
