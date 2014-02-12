@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.UserRoleAssignments;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -32,14 +34,11 @@ public class DataverseRoleServiceBean {
 	}
 	
 	public RoleAssignment save( RoleAssignment assignment ) {
-		logger.info("Saving: " + assignment );
 		if ( assignment.getId() == null ) {
-			logger.info("persisting" );
 			em.persist(assignment);
 			em.flush();
 			return assignment;
 		} else {
-			logger.info("merging" );
 			return em.merge( assignment );
 		}
 	}
@@ -76,6 +75,13 @@ public class DataverseRoleServiceBean {
 		em.refresh(user);
 	}
 	
+	public void revoke( RoleAssignment ra ) {
+		if ( ! em.contains(ra) ) {
+			ra = em.merge(ra);
+		}
+		em.remove(ra);
+	}
+	
 	public UserRoleAssignments roleAssignments( DataverseUser user, Dataverse dv ) {
 		UserRoleAssignments retVal = new UserRoleAssignments(user);
 		while ( dv != null ) {
@@ -84,6 +90,21 @@ public class DataverseRoleServiceBean {
 			dv = dv.getOwner();
 		}
 		return retVal;
+	}
+	
+	public Set<RoleAssignment> rolesAssignments( Dataverse dv ) {
+		Set<RoleAssignment> ras = new HashSet<>();
+		
+		while ( ! dv.isEffectivlyPermissionRoot() ) {
+			ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+					.setParameter("definitionPointId", dv.getId() ).getResultList() );
+			dv = dv.getOwner();
+		}
+		
+		ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+					.setParameter("definitionPointId", dv.getId() ).getResultList() );
+		
+		return ras;
 	}
 	
 	/**
@@ -102,5 +123,24 @@ public class DataverseRoleServiceBean {
 		query.setParameter("userId", user.getId());
 		query.setParameter("dvoId", dvo.getId());
 		return query.getResultList();
+	}
+	
+	/**
+	 * Get all the available roles in a given dataverse, mapped by the
+	 * dataverse that defines them. Map entries are ordered by reversed hierarchy 
+	 * (root is always last).
+	 * @param dvId The id of dataverse whose available roles we query
+	 * @return map of available roles.
+	 */
+	public LinkedHashMap<Dataverse,Set<DataverseRole>> availableRoles( Long dvId ) {
+		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();
+		Dataverse dv = em.find(Dataverse.class, dvId);
+		roles.put( dv, dv.getRoles() );
+		while( !dv.isEffectivlyPermissionRoot() ) {
+			dv = dv.getOwner();
+			roles.put( dv, dv.getRoles() );
+		}
+		
+		return roles;
 	}
 }
