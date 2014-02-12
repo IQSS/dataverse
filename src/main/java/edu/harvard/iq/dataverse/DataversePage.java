@@ -46,7 +46,7 @@ public class DataversePage implements java.io.Serializable {
     private Dataverse dataverse = new Dataverse();
     private boolean editMode = false;
     private Long ownerId;
-    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
+//    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
         return dataverse;
@@ -72,13 +72,13 @@ public class DataversePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
-    public TreeNode getTreeWidgetRootNode() {
-        return treeWidgetRootNode;
-    }
-
-    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
-        this.treeWidgetRootNode = treeWidgetRootNode;
-    }
+//    public TreeNode getTreeWidgetRootNode() {
+//        return treeWidgetRootNode;
+//    }
+//
+//    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
+//        this.treeWidgetRootNode = treeWidgetRootNode;
+//    }
 
     public void init() {
         
@@ -107,7 +107,7 @@ public class DataversePage implements java.io.Serializable {
             }
         }
 
-        populateTreeWidget(treeWidgetRootNode);
+//        populateTreeWidget(treeWidgetRootNode);
     }
 
     public List getContents() {

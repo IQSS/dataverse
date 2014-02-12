@@ -168,15 +168,15 @@
                         <ui:param name="dataverseLinksStayOnPage" value="true"/>
                     </ui:include>
                 </ui:fragment>
-                <p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="#{!DataversePage.editMode}" style="fon">
-                    <p:tree value="#{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >
-                        <p:treeNode id="treeNode">
-                            <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
-                                <h:outputText value="#{node.name} Dataverse" style="font-weight: #{DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>
-                            </h:outputLink>
-                        </p:treeNode>
-                    </p:tree>
-                </p:panel>
+                <!--<p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="{!DataversePage.editMode}" style="fon">-->
+                    <!--<p:tree value="{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >-->
+                        <!--<p:treeNode id="treeNode">-->
+                            <!--<h:outputLink value="/dataverse.xhtml?id={node.id}">-->
+                                <!--<h:outputText value="{node.name} Dataverse" style="font-weight: {DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>-->
+                            <!--</h:outputLink>-->
+                        <!--</p:treeNode>-->
+                    <!--</p:tree>-->
+                <!--</p:panel>-->
             </ui:define>
         </ui:composition>        
     </h:body>
