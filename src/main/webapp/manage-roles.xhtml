@@ -225,7 +225,18 @@
 													value="#{manageRolesPage.assignRoleUsername}"
 													completeMethod="#{manageRolesPage.acUsername}"
 													queryDelay="1000"
-													/> 
+													var="u"
+													itemLabel="#{u.userName}"
+													itemValue="#{u.userName}">
+										<f:facet name="itemtip">
+											<div>
+												<strong>#{u.firstName} #{u.lastName}</strong><br/>
+												<em>#{u.affiliation}</em>
+												#{u.email}
+											</div>
+											
+										</f:facet>
+									</p:autoComplete> 
 									<h:selectOneMenu id="userRole" value="#{manageRolesPage.assignRoleRoleId}">
 										<f:selectItems value="#{manageRolesPage.availableRoles()}"
 													   var="role"

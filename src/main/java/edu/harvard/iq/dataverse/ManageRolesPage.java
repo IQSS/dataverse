@@ -192,13 +192,17 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	// TODO add an itemtip, as per http://www.primefaces.org/showcase/ui/autoCompleteItemtip.jsf
-	public List<String> acUsername( String input ) {
+	public List<String> _acUsername( String input ) {
 		List<DataverseUser> users = usersService.listByUsernamePart(input);
 		List<String> out = new ArrayList<>(users.size());
 		for ( DataverseUser u : users ) {
 			out.add( u.getUserName() );
 		}
 		return out;
+	}
+	
+	public List<DataverseUser> acUsername( String input ) {
+		return usersService.listByUsernamePart(input);
 	}
 	
 	public List<RoleAssignmentRow> getRoleAssignments() {

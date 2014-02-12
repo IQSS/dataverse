@@ -63,7 +63,6 @@ public class DataverseRoleServiceBean {
 				.getResultList();
 	}
 	
-	
 	public void revoke( Set<DataverseRole> roles, DataverseUser user ) {
 		for ( DataverseRole role : roles ) {
 			em.createNamedQuery("RoleAssignment.deleteByUserIdRoleId")
