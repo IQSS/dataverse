@@ -46,28 +46,37 @@
         </p:panelGrid>
     </p:panel>
 
+    
     <!-- Breadcrumbs Panel -->
     <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{showBreadcrumbs}">
 
         <ui:repeat value="#{dataverse.owners}" var="owner">
-            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                <h:outputText value="#{owner.name} Dataverse"/>
-            </h:outputLink>
+            <p:tree value="#{dataverseHeaderFragment.getDataverseTree(owner)}" var="node" dynamic="true" cache="true" id="tree">
+            <p:treeNode>
+                <h:outputLink value="/dataverse.xhtml?id=#{node.id}">
+                    <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                </h:outputLink>
+            </p:treeNode>
+            </p:tree>              
             <h:outputText value=" > "/>
         </ui:repeat>
 
-        <h:outputText value="#{dataverse.name} Dataverse" style="font-weight:bold;" rendered="#{dataset == null}"/> 
-
-        <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}" rendered="#{dataset != null}">
-            <h:outputText value="#{dataverse.name} Dataverse"/> 
-        </h:outputLink>
+        <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dataverse)}" var="node" dynamic="true" cache="true" id="tree2">
+            <p:treeNode>
+                <h:outputText value="#{node.name}s Dataverse" style="font-weight:bold;" rendered="#{dataset == null and dataverse.id == node.id}"/> 
+              <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataset != null or dataverse.id != node.id}">
+                    <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                </h:outputLink>
+            </p:treeNode>
+        </p:tree>   
 
         <ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}" >
             <h:outputText value=" > "/>
             <h:outputText value="#{dataset.latestVersion.metadata.title}" style="font-weight:bold;"/>
         </ui:fragment>
-    </p:panel>       
+    </p:panel>    
 
+    
     <!-- Message Panel -->
     <p:panel styleClass="panelLayoutTitleBlock" rendered="#{showMessagePanel}">
         <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
