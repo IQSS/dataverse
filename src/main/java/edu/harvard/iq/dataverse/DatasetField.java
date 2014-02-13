@@ -259,4 +259,25 @@ public class DatasetField implements Serializable,   Comparable<DatasetField> {
     public int compareTo(DatasetField o) {
         return Integer.compare(this.getDisplayOrder(),(o.getDisplayOrder()));        
     }       
+
+    public String getSolrField() {
+        String solrType;
+        if (fieldType != null) {
+            // these are all "dynamic fields" from a Solr perspective
+            if (fieldType.equals("textBox")) {
+                solrType = "_s";
+            } else if (fieldType.equals("date")) {
+                solrType = "_i";
+            } else if (fieldType.equals("email")) {
+                solrType = "_s";
+            } else if (fieldType.equals("url")) {
+                solrType = "_s";
+            } else {
+                solrType = "_s";
+            }
+            return name + solrType;
+        } else {
+            return "nulltype_s";
+        }
+    }
 }
