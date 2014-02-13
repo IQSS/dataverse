@@ -121,14 +121,15 @@
                                                             <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
                                                         </ui:fragment>
                                                         <ui:fragment>
-                                                            <h:outputText rendered="#{(empty DatasetPage.editMode)}"
+                                                            <h:outputText rendered="#{(empty DatasetPage.editMode  and !datasetFieldVal.datasetField.hasChildren)}"
                                                                           value="#{datasetFieldVal.strValue}">
                                                             </h:outputText>                                                           
-                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
+                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                                                                 <p:inputText id="input_TextDefault" size="90"
                                                                              value="#{datasetFieldVal.strValue}">
                                                                 </p:inputText>
                                                                 <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
+                                                                <p:watermark for="input_TextDefault" value="Last Name, First Name..." rendered="#{datasetFieldVal.datasetField.name == 'authorName'}"/>
                                                                 <p:message for="input_TextDefault"/>
                                                             </p:panelGrid>
                                                         </ui:fragment>

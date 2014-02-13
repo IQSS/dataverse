@@ -132,6 +132,7 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             editVersion = dataset.getLatestVersion();
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
             editValues = editVersion.getDatasetFieldValues();
             citationValues = extractValues(editValues, true);
             otherMetadataValues = extractValues(editValues, false);
@@ -203,18 +204,18 @@ public class DatasetPage implements java.io.Serializable {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: " + dataset.getFileSystemDirectory().toString());
                 boolean ingestedAsTabular = false; 
                 /* Make sure the dataset directory exists: */
-                if (!Files.exists(dataset.getFileSystemDirectory())) {
+               if (!Files.exists(dataset.getFileSystemDirectory())) {
                     /* Note that "createDirectories()" must be used - not 
                      * "createDirectory()", to make sure all the parent 
                      * directories that may not yet exist are created as well. 
                      */
                     Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-
+               }
+                
                 // Re-set the owner of the datafile - last time the owner was 
                 // set was before the owner dataset was saved/synced with the db;
                 // this way the datafile will know the id of its .getOwner() - 
-                // even if this is a brand new dataset here. -- L.A.
+               // even if this is a brand new dataset here. -- L.A.
                 dFile.setOwner(dataset);
                 
                 if (ingestableAsTabular(dFile)) {
@@ -245,14 +246,14 @@ public class DatasetPage implements java.io.Serializable {
 
                 if (!ingestedAsTabular) {
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                    Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());
+                Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());               
                 }
 
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-        }
+                  
+        }        
         newFiles.clear();
         editMode = null;
     }
@@ -351,7 +352,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retList;
     }   
-    
+
     private boolean ingestableAsTabular (DataFile dataFile) {
         /* 
          * Eventually we'll be using some complex technology of identifying 
@@ -361,7 +362,7 @@ public class DatasetPage implements java.io.Serializable {
          */
         if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
             return true;
-        }
+}
         return false;
     } 
 
