@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -60,6 +61,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private int selectedTabIndex;
     private Map<UploadedFile,DataFile> newFiles = new HashMap();
+    private Map<MetadataBlock, Object> metadataBlockValues = new HashMap();
     private DatasetVersion editVersion = new DatasetVersion();   
     private List<DatasetField> citationFields = new ArrayList();
     private List<DatasetField> otherMetadataFields = new ArrayList();
@@ -79,6 +81,17 @@ public class DatasetPage implements java.io.Serializable {
     public List<DatasetFieldValue> getOtherMetadataValues() {
         return otherMetadataValues;
     }
+    /*
+    public Map<MetadataBlock, Object> getMetadataBlockValues() {
+        return metadataBlockValues;
+    }*/
+    
+    public List<Map.Entry<MetadataBlock, Object>> getMetadataBlockValues() {
+    Set<Map.Entry<MetadataBlock, Object>> metadataSet = 
+                     metadataBlockValues.entrySet();
+    return new ArrayList<>(metadataSet);
+}
+
 
     public void setOtherMetadataValues(List<DatasetFieldValue> otherMetadataValues) {
         this.otherMetadataValues = otherMetadataValues;
@@ -136,6 +149,7 @@ public class DatasetPage implements java.io.Serializable {
             editValues = editVersion.getDatasetFieldValues();
             citationValues = extractValues(editValues, true);
             otherMetadataValues = extractValues(editValues, false);
+            getMetadataValueBlocks(editValues);
             ownerId = dataset.getOwner().getId();
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -150,6 +164,7 @@ public class DatasetPage implements java.io.Serializable {
             editValues = editVersion.getDatasetFieldValues();
             citationValues = extractValues(editValues, true);
             otherMetadataValues = extractValues(editValues, false);
+            getMetadataValueBlocks(editValues);
             dataset.getVersions().add(editVersion);
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -342,6 +357,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private List<DatasetFieldValue> extractValues(List<DatasetFieldValue> inList, boolean citation){
+        
         List retList = new ArrayList();
         for (DatasetFieldValue dsfv : inList){
             if (citation && dsfv.getDatasetField().getMetadataBlock().isShowOnCreate()) { 
@@ -351,7 +367,24 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return retList;
-    }   
+    }
+    
+    private void getMetadataValueBlocks(List<DatasetFieldValue> inList){
+        metadataBlockValues.clear();
+        for(MetadataBlock mdb: dataset.getOwner().getMetadataBlocks()){
+            List addList = new ArrayList();
+            if(!mdb.isShowOnCreate()){
+                for (DatasetFieldValue dsfv: inList){
+                     if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)){
+                         addList.add(dsfv);
+                     }
+                }
+                metadataBlockValues.put(mdb, addList);
+            }
+        }
+            
+     int a = 1;    
+    }
 
     private boolean ingestableAsTabular (DataFile dataFile) {
         /* 
