@@ -6,7 +6,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -193,29 +200,59 @@ public class DatasetPage implements java.io.Serializable {
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
             try {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: "+dataset.getFileSystemDirectory().toString());
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: " + dataset.getFileSystemDirectory().toString());
+                boolean ingestedAsTabular = false; 
                 /* Make sure the dataset directory exists: */
-               if (!Files.exists(dataset.getFileSystemDirectory())) {
+                if (!Files.exists(dataset.getFileSystemDirectory())) {
                     /* Note that "createDirectories()" must be used - not 
                      * "createDirectory()", to make sure all the parent 
                      * directories that may not yet exist are created as well. 
                      */
                     Files.createDirectories(dataset.getFileSystemDirectory());
-               }
-                
+                }
+
                 // Re-set the owner of the datafile - last time the owner was 
                 // set was before the owner dataset was saved/synced with the db;
                 // this way the datafile will know the id of its .getOwner() - 
-               // even if this is a brand new dataset here. -- L.A.
+                // even if this is a brand new dataset here. -- L.A.
                 dFile.setOwner(dataset);
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: "+dFile.getFileSystemLocation().toString());               
-                Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());               
+                
+                if (ingestableAsTabular(dFile)) {
+                    // Locate ingest plugin for the file format by looking
+                    // it up with the Ingest Service Provider manager:
+                    //TabularDataFileReader ingestPlugin = DataIngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
+                    TabularDataFileReader ingestPlugin = new DTAFileReader(
+                        new DTAFileReaderSpi()
+                    );
+                    try {
+                        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
+                    
+                        if (tabDataIngest != null) {
+                            if (tabDataIngest.getDataTable() != null) {
+                                dFile.setDataTable(tabDataIngest.getDataTable());
+                                tabDataIngest.getDataTable().setDataFile(dFile);
+                            }
+                            File tabFile = tabDataIngest.getTabDelimitedFile();
+                            if (tabFile != null && tabFile.exists()) {
+                                Files.copy(Paths.get(tabFile.getAbsolutePath()), dFile.getFileSystemLocation());
+                            }
+                            ingestedAsTabular = true;
+                        }
+                    } catch (IOException iex) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
+                    }
+                }
+
+                if (!ingestedAsTabular) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+                    Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());
+                }
 
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
-                  
-        }        
+
+        }
         newFiles.clear();
         editMode = null;
     }
@@ -314,5 +351,18 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retList;
     }   
+    
+    private boolean ingestableAsTabular (DataFile dataFile) {
+        /* 
+         * Eventually we'll be using some complex technology of identifying 
+         * potentially ingestable file formats here, similar to what we had in 
+         * v.3.*; for now - just a hardcoded list of filename extensions:
+         *  -- L.A. 4.0alpha1
+         */
+        if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
+            return true;
+        }
+        return false;
+    } 
 
 }
