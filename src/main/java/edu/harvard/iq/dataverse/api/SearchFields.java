@@ -29,10 +29,9 @@ public class SearchFields {
      * http://stackoverflow.com/questions/16559911/facet-query-will-give-wrong-output-on-dynamicfield-in-solr
      */
 //    public static final String AUTHOR_STRING = "authorstring_s";
-    /**
-     * @todo: use authorName here instead, right?
-     */
-    public static final String AUTHOR_STRING = DatasetFieldConstant.author +  "string_s";
+    public static final String AUTHOR_STRING = DatasetFieldConstant.authorName +  "_s";
+    public static final String KEYWORD = DatasetFieldConstant.keywordValue + "_s";
+    public static final String DISTRIBUTOR = DatasetFieldConstant.distributorName + "_s";
     public static final String FILE_TYPE = "filetype_s";
     public static final String FILE_TYPE_GROUP = "filetypegroup_s";
     public static final String ORIGINAL_DATAVERSE = "originaldataverse_s";

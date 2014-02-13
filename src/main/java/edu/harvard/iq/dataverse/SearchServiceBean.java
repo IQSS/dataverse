@@ -58,6 +58,8 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.AFFILIATION);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
+        solrQuery.addFacetField(SearchFields.KEYWORD);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.SUBTREE);
