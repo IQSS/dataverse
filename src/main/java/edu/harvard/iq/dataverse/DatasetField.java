@@ -18,7 +18,7 @@ import javax.persistence.*;
  * @author Stephen Kraffmiller
  */
 @Entity
-public class DatasetField implements Serializable {
+public class DatasetField implements Serializable,   Comparable<DatasetField> {
         
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -127,26 +127,31 @@ public class DatasetField implements Serializable {
     public void setParentDatasetField(DatasetField parentDatasetField) {
         this.parentDatasetField = parentDatasetField;
     }
-
+    
+    
     /**
      * Holds value of property studies. 
      */
     /*
     @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
     private Collection<Study> studies;
+
     @ManyToMany(mappedBy="advSearchFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> advSearchFieldVDCs;
-    @ManyToMany(mappedBy="searchResultFields",cascade={CascadeType.REMOVE })
+
+   @ManyToMany(mappedBy="searchResultFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> searchResultFieldVDCs;
-    @ManyToMany(mappedBy="anySearchFields",cascade={CascadeType.REMOVE })
+   
+   @ManyToMany(mappedBy="anySearchFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> anySearchFieldVDCs;
-    @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
+    
+   @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
     private Collection<VDC> summaryFieldVDCs;
-     */
+*/
     public String getSearchValue() {
         return searchValue;
     }
-
+   
     public void setSearchValue(String searchValue) {
         this.searchValue = searchValue;
     }
@@ -182,7 +187,15 @@ public class DatasetField implements Serializable {
     public void setSearchResultField(boolean searchResultField) {
         this.searchResultField = searchResultField;
     }
-
+    
+    public boolean isHasChildren(){
+        return !this.childDatasetFields.isEmpty();
+    }
+    
+    public boolean isHasParent(){
+        return this.parentDatasetField != null;
+    }
+    
  public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
@@ -241,5 +254,9 @@ public class DatasetField implements Serializable {
     public void setDatasetFieldValueStrings(List<String> newValList) {}
 
     public void setDatasetFieldValueSingleString(String newVal) {}
-        
+    
+    @Override
+    public int compareTo(DatasetField o) {
+        return Integer.compare(this.getDisplayOrder(),(o.getDisplayOrder()));        
+    }       
 }
