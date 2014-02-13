@@ -135,32 +135,11 @@
                                                         </ui:fragment>
                                                     </p:panelGrid>
                                                 </p:column>
-                                        </p:dataGrid>
+                                 </p:dataGrid>
                             </ui:fragment>
                         </p:panelGrid>
                     </p:panel>
 
-                    <!-- Author -->
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{ (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-
-                        </p:panelGrid>
-                    </p:panel>
-
-                    <!-- Description Panel -->
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{ (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-
-                        </p:panelGrid>
-                    </p:panel>
-                    
-                    <!-- Keyword -->
-
-
-                    <!-- Topic Classification -->
-
-
-                    <!-- Content Panel -->
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
@@ -199,69 +178,56 @@
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
                                 </p:dataTable>
+                            </p:tab>                                                       
+                           
+                            <p:tab id="metadataMapEdit" title="Metadata Map Accordion Panel" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
+                                 <h:outputText  value="Something for the Tab..." />
+                                <p:accordionPanel>
+                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
+                                  <p:column>  
+                                  <p:tab title="#{metadataBlockVal.key.displayName}">                                                                                                                                                         
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <h:outputText  value="#{fieldValues.strValue}" />
+                                            </p:column>
+                                    
+                                        </p:dataGrid>                                                                        
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <p:inputText id="input_Textblock" size="90"
+                                                                             value="#{fieldValues.strValue}">
+                                                 </p:inputText>
+                                            </p:column>                                    
+                                        </p:dataGrid>                               
+                                      </p:tab>
+                                      </p:column>
+                                       </p:dataGrid> 
+                                  </p:accordionPanel>
                             </p:tab>
                             
-                            
-                            
-                            <p:tab id="metadataTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
-                                <p:accordionPanel>
-                                    <p:tab title="General Metadata">
-                                        
-                                        <p:dataGrid columns="1" value="#{DatasetPage.otherMetadataValues}" var="datasetFieldVal">
-                                    <p:column rendered="#{datasetFieldVal.datasetField.name != 'datasetId'}">
-                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
-                                                        <ui:fragment>
-                                                            <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
-                                                        </ui:fragment>
-                                                        <ui:fragment>
-                                                            <h:outputText rendered="#{(empty DatasetPage.editMode)}"
-                                                                          value="#{datasetFieldVal.strValue}">
-                                                            </h:outputText>                                                           
-                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                                                                <p:inputText id="input_TextDefault" size="90"
-                                                                             value="#{datasetFieldVal.strValue}">
-                                                                </p:inputText>
-                                                                <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
-                                                                <p:message for="input_TextDefault"/>
-                                                            </p:panelGrid>
-                                                        </ui:fragment>
-                                                    </p:panelGrid>
-                                                </p:column>
-                                        </p:dataGrid>
-                                        <!-- Distributor -->
-
-
-                                        <!-- Producer -->
-
-                                        
-                                        <!-- Production -->
-
-                                        
-                                        <!-- Depositor -->
-
-
-                                        <!-- Funding Agency -->
-
-                                    </p:tab>
-                                    
-                                    <!-- NEEDS MORE WORK ON LAYOUT -->
-                                    <p:tab title="Domain Specific Metadata">
-
-                                    </p:tab>
-                                    
-                                    <p:tab title="Data Availability">
-
-                                    </p:tab>
-                                    
-                                    <p:tab title="Other Information">
-                                        <!-- Other Info - Notes -->
-                                        <p:panel styleClass="panelLayoutBlock">
-                                            <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-
-                                            </p:panelGrid>
-                                        </p:panel>
-                                    </p:tab>
-                                </p:accordionPanel>
+                            <p:tab id="metadataMapTab" title="Metadata Map Without Accordion" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
+                                  <h:outputText  value="Something for the Tab..." />
+                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
+                                    <p:column>  
+                                    <h:outputText value="#{metadataBlockVal.key.displayName}"/>                                                                                                                                                         
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <h:outputText  value="#{fieldValues.strValue}" />
+                                            </p:column>                                    
+                                        </p:dataGrid>                                                                        
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <p:inputText id="input_Textblock" size="90"
+                                                                             value="#{fieldValues.strValue}">
+                                                 </p:inputText>
+                                            </p:column>                                    
+                                        </p:dataGrid>                               
+                                   </p:column>
+                                 </p:dataGrid> 
                             </p:tab>
                             <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                 <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">

@@ -17,7 +17,12 @@
                 <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId == null}"/>
             </ui:fragment>
             <ui:fragment>
-                <p:panelGrid columns="2">
+                <p:panelGrid columns="3">
+                    <ui:fragment>
+                        <h:outputLink value="/guides/index.html" target="_blank">
+                            User Guides
+                        </h:outputLink>
+                    </ui:fragment>
                     <ui:fragment>
                         <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{dataverseSession.user.guest}">
                             Create Account
