@@ -5,6 +5,17 @@
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui">
 
+    <!-- Breadcrumbs Panel (fancy breadcrumbs come from the template -->
+    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{showSimpleBreadCrumbs == true}">
+        <ui:repeat value="#{SearchIncludeFragment.dataverse.owners}" var="owner">
+            <h:outputLink value="?id=#{owner.id}">
+                <h:outputText value="#{owner.name} Dataverse"/>
+            </h:outputLink>
+            <h:outputText value=" > "/>
+        </ui:repeat>
+        <h:outputText value="#{SearchIncludeFragment.dataverse.name} Dataverse" style="font-weight:bold;"/>
+    </p:panel>
+
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock">
         <h:form>

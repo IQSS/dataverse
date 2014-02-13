@@ -166,6 +166,8 @@
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
                         <ui:param name="dataverseLinksStayOnPage" value="true"/>
+                        <!--FIXME: set showSimpleBreadCrumbs to false (or remove) when fancy breadcrumbs don't require two clicks to go "up"-->
+                        <ui:param name="showSimpleBreadCrumbs" value="#{true}"/>
                     </ui:include>
                 </ui:fragment>
                 <!--<p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="{!DataversePage.editMode}" style="fon">-->
