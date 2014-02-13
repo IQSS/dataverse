@@ -447,7 +447,6 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        int c = 2;
         //Collections.sort(retList);
         Collections.sort(retList, new Comparator<DatasetFieldValue>(){
            public int compare (DatasetFieldValue d1, DatasetFieldValue d2){
