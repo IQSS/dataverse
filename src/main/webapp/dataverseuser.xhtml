@@ -20,11 +20,6 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                 </f:metadata>
                 
-                <!-- Message Panel -->
-                <p:panel styleClass="panelLayoutTitleBlock">
-                    <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}'s Account" rendered="#{DataverseUserPage.editMode == 'INFO' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                </p:panel>
-
                 <h:form id="dataverseUserForm">
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
