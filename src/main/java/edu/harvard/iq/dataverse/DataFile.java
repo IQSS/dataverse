@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
-import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.CascadeType;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -20,11 +15,8 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  */
 @Entity
-public class DataFile implements Serializable {
+public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     
     @NotBlank
     private String name;
@@ -32,17 +24,70 @@ public class DataFile implements Serializable {
     @NotBlank    
     private String contentType;
     
-    @ManyToOne     
-    private Dataset dataset;
+    private String fileSystemName;
+
+    /*
+        Tabular (formerly "subsettable") data files have DataTable objects
+        associated with them:
+    */
     
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DataTable> dataTables;
+    
+    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<FileMetadata> fileMetadatas;
 
-    public Long getId() {
-        return id;
+    public DataFile() {
+        this.fileMetadatas = new ArrayList<FileMetadata>();
+    }    
+
+    public DataFile(String name, String contentType) {
+        this.name = name;
+        this.contentType = contentType;
+        this.fileMetadatas = new ArrayList<FileMetadata>();
+    }    
+
+    public List<DataTable> getDataTables() {
+        return dataTables;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setDataTables(List<DataTable> dataTables) {
+        this.dataTables = dataTables;
     }
+    
+    public List<FileMetadata> getFileMetadatas() {
+        return fileMetadatas;
+    }
+
+    public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
+        this.fileMetadatas = fileMetadatas;
+    }
+    
+    public DataTable getDataTable() {
+        if ( getDataTables() != null && getDataTables().size() > 0 ) {
+            return getDataTables().get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void setDataTable(DataTable dt) {
+        if (this.getDataTables() == null) {
+            this.setDataTables( new ArrayList() );
+        } else {
+            this.getDataTables().clear();
+        }
+
+        this.getDataTables().add(dt);
+    }
+    
+    public boolean isTabularData() {
+        if ( getDataTables() != null && getDataTables().size() > 0 ) {
+            return true; 
+        }
+        return false; 
+    }
+    
 
     public String getName() {
         return name;
@@ -60,31 +105,64 @@ public class DataFile implements Serializable {
         this.contentType = contentType;
     }
 
-    public Dataset getDataset() {
-        return dataset;
-    }
-
-    public void setDataset(Dataset dataset) {
-        this.dataset = dataset;
-    }
-    
-    
-    
-    public DataFile() {
-    }    
-
-    public DataFile(String name, String contentType) {
-        this.name = name;
-        this.contentType = contentType;
-    }    
-
     @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+    public Dataset getOwner() {
+        return (Dataset) super.getOwner();
     }
 
+    public void setOwner(Dataset dataset) {
+        super.setOwner(dataset);
+    }
+    
+    public String getFileSystemName() {
+        return this.fileSystemName;
+    }
+
+    public void setFileSystemName(String fileSystemName) {
+        this.fileSystemName = fileSystemName;
+    }
+    
+    public String getDescription() {
+        FileMetadata fmd = getLatestFileMetadata();
+        
+        if (fmd == null) {
+            return null;
+        }
+        return fmd.getDescription();
+    }
+
+    public void setDescription(String description) {
+        FileMetadata fmd = getLatestFileMetadata();
+        
+        if (fmd != null) {
+            fmd.setDescription(description);
+        }
+    }
+    
+    public FileMetadata getFileMetadata() {
+        return getLatestFileMetadata();
+    }
+    
+    private FileMetadata getLatestFileMetadata() {
+        FileMetadata fmd = null;
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+                fmd = fileMetadata;
+            }                       
+        }
+        return fmd;
+    }
+    
+    public Path getFileSystemLocation() {
+        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
+        return Paths.get(studyDirectory, this.name);
+    }
+    
+    public boolean isImage() {
+        return (contentType != null && contentType.startsWith("image/"));
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -92,15 +170,12 @@ public class DataFile implements Serializable {
             return false;
         }
         DataFile other = (DataFile) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(getId(), other.getId());
     }
 
     @Override
-    public String toString() {
-        return "edu.harvard.iq.dataverse.File[ id=" + id + " ]";
+    protected String toStringExtras() {
+        return "name:" + getName();
     }
     
 }

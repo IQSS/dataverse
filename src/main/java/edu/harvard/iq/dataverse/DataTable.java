@@ -22,6 +22,8 @@ import javax.persistence.OrderBy;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
+
 /**
  *
  * @author Leonid Andreev
@@ -78,10 +80,23 @@ public class DataTable implements Serializable {
      /*
       * DataVariables in this DataTable:
      */
-    //@OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
-    //@OrderBy ("fileOrder")
-    //private List<DataVariable> dataVariables;
-     
+    @OneToMany (mappedBy="dataTable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OrderBy ("fileOrder")
+    private List<DataVariable> dataVariables;
+    
+    /* 
+     * originalFileType: the format of the file from which this data table was
+     * extracted (STATA, SPSS, R, etc.)
+     * Note: this was previously stored in the StudyFile. 
+     */
+    private String originalFileFormat;
+    
+    /*
+     * originalFormatVersion: the version/release number of the original file
+     * format; for example, STATA 9, SPSS 12, etc. 
+     */
+    private String originalFormatVersion;
+    
     /*
      * Getter and Setter methods:
      */
@@ -133,9 +148,7 @@ public class DataTable implements Serializable {
         this.dataFile = dataFile;
     }
 
-    
-
-    /* 
+     
     public List<DataVariable> getDataVariables() {
         return this.dataVariables;
     }
@@ -144,7 +157,23 @@ public class DataTable implements Serializable {
     public void setDataVariables(List<DataVariable> dataVariables) {
         this.dataVariables = dataVariables;
     } 
-    */
+    
+    public String getOriginalFileFormat() {
+        return originalFileFormat;
+    }
+
+    public void setOriginalFileFormat(String originalFileType) {
+        this.originalFileFormat = originalFileType;
+    }
+
+    
+    public String getOriginalFormatVersion() {
+        return originalFormatVersion;
+    }
+
+    public void setOriginalFormatVersion(String originalFormatVersion) {
+        this.originalFormatVersion = originalFormatVersion;
+    }
     
     /* 
      * Custom overrides for hashCode(), equals() and toString() methods:

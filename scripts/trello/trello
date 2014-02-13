@@ -1,0 +1,4 @@
+curl -s https://api.trello.com/1/boards/527d1605c7b30060420027b0 | python -m json.tool
+#curl -s https://api.trello.com/1/lists/527d1605c7b30060420027b0?fields=name&cards=open&card_fields=name
+# https://api.trello.com/1/lists/4eea4ffc91e31d174600004a?fields=name&cards=open&card_fields=name&key=[application_key]&token=[optional_auth_token]
+

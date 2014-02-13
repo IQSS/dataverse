@@ -40,9 +40,47 @@ public class VariableServiceBean {
     }    
     
     public List<DataVariable> findByDataFileId(Long fileId) {
-         Query query = em.createQuery("select object(o) from DataVariable as o where o.datatable.datafile.id =:fileId order by o.fileOrder");
+         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataF"
+                 + "ile.id =:fileId order by o.fileOrder");
          query.setParameter("fileId", fileId);
          return query.getResultList();
     }
+    
+    public List<DataVariable> findByDataTableId(Long dtId) {
+         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.id =:dtId order by o.fileOrder");
+         query.setParameter("dtId", dtId);
+         return query.getResultList();
+    }
+    
+    /* 
+     * This is awful!
+     * TODO: stop keeping format types in the database!
+     * Re-work VariableFormatType to just define constants for "numeric" and "character";
+     * better yet, re-work the entire scheme of how variable types are stored and 
+     * defined.
+     * -- L.A. 4.0
+     */
+    public VariableFormatType findVariableFormatTypeByName(String name) {
+        String query="SELECT t from VariableFormatType t where t.name = '"+name+"'";
+        VariableFormatType type = null;
+        try {
+            type=(VariableFormatType)em.createQuery(query).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return type;
+    }
+    
+    public VariableIntervalType findVariableIntervalTypeByName(String name) {
+        String query="SELECT t from VariableIntervalType t where t.name = '"+name+"'";
+        VariableIntervalType type = null;
+        try {
+            type=(VariableIntervalType)em.createQuery(query).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return type;
+    }
+    
     
 }

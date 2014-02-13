@@ -1,0 +1,11 @@
+{
+  "alias": "contrib",
+  "name": "Dataverse Contributor",
+  "description": "Someone that can add data to a dataverse, but not remove it.",
+  "permissions": [
+    "Access",
+    "AccessRestrictedMetadata",
+    "UndoableEdit",
+    "EditMetadata"
+  ]
+}

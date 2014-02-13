@@ -1,0 +1,8 @@
+ {
+ 	"alias":"umaSub2",
+    "name":"Uma's restricted",
+    "affiliation":"Affiliation value",
+    "contactEmail":"Uma@mailinator.com",
+    "permissionRoot":true,
+    "description":"Pete can't get here"
+}

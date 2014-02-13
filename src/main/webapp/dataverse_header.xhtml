@@ -1,0 +1,134 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:p="http://primefaces.org/ui">
+
+    <!-- Header Panel -->
+    <p:panel style="background-color: lightskyblue; height:70px;">
+        <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
+            <ui:fragment>
+                <h:outputLink value="/dataverse.xhtml?id=#{dataverse.id}" rendered="#{dataverse.id != null}">
+                    <h:outputText id="nameOutput" value="#{dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
+                </h:outputLink>
+
+                <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId != null}"/>
+
+                <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId == null}"/>
+            </ui:fragment>
+            <ui:fragment>
+                <p:panelGrid columns="3">
+                    <ui:fragment>
+                        <h:outputLink value="/guides/index.html" target="_blank">
+                            User Guides
+                        </h:outputLink>
+                    </ui:fragment>
+                    <ui:fragment>
+                        <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{dataverseSession.user.guest}">
+                            Create Account
+                        </h:outputLink>
+                        <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" rendered="#{!dataverseSession.user.guest}">
+                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
+                            <span style="margin-left: 5px; font-size:10pt">
+                                <h:outputLink value="loginpage.xhtml">
+                                    (not you?)
+                                </h:outputLink>
+                            </span>
+                        </h:outputLink>
+                    </ui:fragment>
+                    <ui:fragment>
+                        <h:outputLink value="/loginpage.xhtml" rendered="#{dataverseSession.user.guest}">
+                            Log In
+                        </h:outputLink>
+                        <h:form id="headerForm">
+                            <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!dataverseSession.user.guest}">
+                                Log Out
+                            </h:commandLink>
+                        </h:form>
+                    </ui:fragment>
+                </p:panelGrid>
+            </ui:fragment>
+        </p:panelGrid>
+    </p:panel>
+
+    <style type="text/css">
+        #breadcrumbNavBlock > .ui-panel-content {overflow:hidden;}
+        
+        #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
+        
+        button[id$='breadcrumbBtn'] span.ui-button-text, 
+        button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
+        
+        button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
+        button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
+        
+        button[id$='breadcrumbBtn'] .ui-button-icon-left, 
+        button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
+        
+        #breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+        
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
+        
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
+        
+        #breadcrumbNavBlock button[id$='breadcrumbBtn'], 
+        #breadcrumbNavBlock button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
+        #breadcrumbNavBlock button[id$='breadcrumbBtn'] span.ui-icon, 
+        #breadcrumbNavBlock button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
+        
+        #breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
+        
+        
+        
+    </style>
+
+    <!-- Breadcrumbs Panel -->
+    <p:panel id="breadcrumbNavBlock" styleClass="panelLayoutBlock" rendered="#{showBreadcrumbs}">
+        <!-- Dataverses -->
+        <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
+            <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/> 
+
+            <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                
+                <p:outputPanel id="breadcrumbPnlIcn" style="float:left; margin-top:.3em; width:16px; height:16px; background-image: url(/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap); background-position:-64px -16px;"/>
+                
+                <h:outputLink id="breadcrumbLnk" value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;">
+                    <h:outputText value="#{dv.name} Dataverse"/>
+                </h:outputLink>
+                
+<!--                <p:commandButton id="breadcrumbBtn" value="#{dv.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>-->
+                
+                <p:overlayPanel id="breadcrumbPanel" for="breadcrumbPnlIcn" hideEffect="fade">  
+                    <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
+                        <p:treeNode>
+                            <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == node.id and dataset == null }"/>
+                            <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
+                                <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
+                            </h:outputLink>
+                        </p:treeNode>
+                    </p:tree>
+                </p:overlayPanel>
+            </ui:fragment>
+            
+            <ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                <h:outputText value="#{dv.name} Dataverse" style="font-weight:#{dataverse.id == dv.id ? 'bold' : 'normal'}; padding-top:1px; margin-left:.2em; display:block; float:left;" rendered="#{dataverse.id == dv.id and dataset == null }"/>
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;" rendered="#{dataverse.id != dv.id or dataset != null}">
+                    <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"/>
+                </h:outputLink>
+            </ui:fragment>
+        </ui:repeat>            
+        <!-- Dataset, if available -->
+        <ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}">
+            <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
+            <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
+        </ui:fragment>
+    </p:panel>
+
+
+    <!-- Message Panel -->
+    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{showMessagePanel}">
+        <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
+    </p:panel>
+
+</div>

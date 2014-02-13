@@ -19,6 +19,7 @@
 
             .panelgridLayoutTable, .panelgridFormTable {width:100%;}
             .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+            form[id$=loginForm] .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:10%;}
 
             .panelLayoutButtonBlock button {margin-right:2em;}
 
@@ -34,7 +35,11 @@
         </style>
     </h:head>
 
-    <h:body>        
+    <h:body>
+        <f:metadata>
+            <f:viewAction action="#{LoginPage.init}"/>
+        </f:metadata>
+        
         <!-- Header Panel -->
         <p:panel style="background-color: lightskyblue; height:70px;">
             <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
@@ -44,31 +49,50 @@
             </p:panelGrid>
         </p:panel>        
 
-        <p:panel>
+        <!-- Message Panel -->
+        <p:panel styleClass="panelLayoutTitleBlock">
             <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
         </p:panel>
 
-        <h:form id="loginForm" > 
-            <p:focus context="loginForm"/> 
-            <p:panelGrid columns="3">
-                <p:outputLabel value="Username  " for="userName" />
-                <p:inputText id="userName" value="#{LoginPage.userName}" />
-                <p:message for="userName" /> 
+        <h:form id="loginForm">
+            <p:focus context="loginForm"/>
+            <p:panel styleClass="panelLayoutBlock"> 
+                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+                    <ui:fragment>
+                        <p:panelGrid columns="2" styleClass="panelgridFormTable">
+                            <p:outputLabel value="Username" for="userName"/>
+                            <ui:fragment>
+                                <p:panelGrid columns="2">
+                                    <p:inputText id="userName" value="#{LoginPage.userName}"/>
+                                    <p:message for="userName"/>
+                                </p:panelGrid>
+                            </ui:fragment>
 
-                <p:outputLabel value="Password  " for="password" />
-                <p:password id="password" value="#{LoginPage.password}" />
-                <p:message for="password" />                                       
-            </p:panelGrid>           
-            <p:panel>
+                            <p:outputLabel value="Password" for="password"/>
+                            <ui:fragment>
+                                <p:panelGrid columns="2">
+                                    <p:password id="password" value="#{LoginPage.password}"/>
+                                    <p:message for="password"/>
+                                </p:panelGrid>
+                            </ui:fragment>
+                        </p:panelGrid>
+                    </ui:fragment>
+                    
+                    <ui:fragment>
+                        &#160;
+                    </ui:fragment>
+                </p:panelGrid>
+            </p:panel>
+            <p:panel styleClass="panelLayoutButtonBlock">
                 <ui:fragment>
                     <p:commandButton id="login" value="Login" action="#{LoginPage.login}" update="@all"> 
-                        <p:resetInput target="@all" />
+                        <p:resetInput target="@all"/>
                     </p:commandButton>    
                     <p:button value="Cancel" outcome="/dataverse.xhtml"/>
-
                 </ui:fragment>
             </p:panel>
         </h:form>
+        
         <!-- Crazy Egg Tracking -->
         <script type="text/javascript">
             setTimeout(function(){var a=document.createElement("script");

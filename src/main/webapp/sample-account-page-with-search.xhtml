@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="thisPageTitle" value="Sample Account Page with Search"/>
+            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
+
+            <ui:define name="body">
+
+                <f:metadata>
+                    <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
+                    <f:viewAction action="#{SampleAccountPageWithSearch.init}" />
+                    <f:viewAction action="#{SearchIncludeFragment.search()}" />
+                    <f:viewParam name="dataverseId" value="#{SearchIncludeFragment.dataverseId}"/>
+                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
+                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
+                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
+                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
+                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
+                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
+                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
+                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
+                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
+                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
+                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
+                </f:metadata>
+
+                <!-- Breadcrumbs Panel -->
+                <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
+                    <h:outputText value="#{thisPageTitle}" style="font-weight:bold;"/>
+                </p:panel>
+
+                <!-- Message Panel -->
+                <p:panel styleClass="panelLayoutTitleBlock">
+                    <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
+                </p:panel>
+
+                <h2>
+                    <h:outputText value="#{SampleAccountPageWithSearch.dataverseUser.firstName} #{SampleAccountPageWithSearch.dataverseUser.lastName}'s Account with Search" />
+                    <br/>
+                    <h:outputText value="Data Related To Me (#{SampleAccountPageWithSearch.dataverseUser.firstName} #{SampleAccountPageWithSearch.dataverseUser.lastName})" />
+                </h2>
+
+                <ui:include src="search-include-fragment.xhtml">
+                    <ui:param name="showAdvancedSearchLink" value="false"/>
+                    <ui:param name="dataverseLinksStayOnPage" value="false"/>
+                </ui:include>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

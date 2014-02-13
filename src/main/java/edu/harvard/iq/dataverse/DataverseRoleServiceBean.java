@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.UserRoleAssignments;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -16,6 +19,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DataverseRoleServiceBean {
+	private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getName());
 	
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -29,8 +33,22 @@ public class DataverseRoleServiceBean {
 		}
 	}
 	
+	public RoleAssignment save( RoleAssignment assignment ) {
+		if ( assignment.getId() == null ) {
+			em.persist(assignment);
+			em.flush();
+			return assignment;
+		} else {
+			return em.merge( assignment );
+		}
+	}
+	
 	public DataverseRole find( Long id ) {
 		return em.find( DataverseRole.class, id );
+	}
+	
+	public List<DataverseRole> findAll() {
+		return em.createNamedQuery("DataverseRole.listAll", DataverseRole.class).getResultList();
 	}
 	
 	public void delete( Long id ) {
@@ -45,15 +63,9 @@ public class DataverseRoleServiceBean {
 				.getResultList();
 	}
 	
-	public void grant( Set<DataverseRole> roles, DataverseUser user ) {
-		for ( DataverseRole role : roles ) {
-			em.merge( new UserDataverseAssignedRole(role, user) );
-		}
-	}
-	
 	public void revoke( Set<DataverseRole> roles, DataverseUser user ) {
 		for ( DataverseRole role : roles ) {
-			em.createNamedQuery("UserDataverseAssignedRole.deleteByUserIdRoleId")
+			em.createNamedQuery("RoleAssignment.deleteByUserIdRoleId")
 					.setParameter("userId", user.getId())
 					.setParameter("roleId", role.getId())
 					.executeUpdate();
@@ -62,35 +74,72 @@ public class DataverseRoleServiceBean {
 		em.refresh(user);
 	}
 	
-	public Set<DataverseRole> effectiveRoles( DataverseUser user, Dataverse dv ) {
-		Set<DataverseRole> roles = new HashSet<>();
+	public void revoke( RoleAssignment ra ) {
+		if ( ! em.contains(ra) ) {
+			ra = em.merge(ra);
+		}
+		em.remove(ra);
+	}
+	
+	public UserRoleAssignments roleAssignments( DataverseUser user, Dataverse dv ) {
+		UserRoleAssignments retVal = new UserRoleAssignments(user);
 		while ( dv != null ) {
-			roles.addAll( definedRoles(user, dv) );
+			retVal.add( directRoleAssignments(user, dv) );
 			if ( dv.isPermissionRoot() ) break;
 			dv = dv.getOwner();
 		}
-		return roles;
+		return retVal;
+	}
+	
+	public Set<RoleAssignment> rolesAssignments( Dataverse dv ) {
+		Set<RoleAssignment> ras = new HashSet<>();
+		
+		while ( ! dv.isEffectivlyPermissionRoot() ) {
+			ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+					.setParameter("definitionPointId", dv.getId() ).getResultList() );
+			dv = dv.getOwner();
+		}
+		
+		ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
+					.setParameter("definitionPointId", dv.getId() ).getResultList() );
+		
+		return ras;
 	}
 	
 	/**
-	 * Retrieves the roles defined for {@code user}, directly on {@code dv}.
+	 * Retrieves the roles assignments for {@code user}, directly on {@code dv}.
 	 * No traversal on the containment hierarchy is done.
 	 * @param user the user whose roles are given
-	 * @param dv the dataverse defining the roles
+	 * @param dvo the object where the roles are defined.
 	 * @return Set of roles defined for the user in the given dataverse.
-	 * @see #effectiveRoles(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
+	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
-	public Set<DataverseRole> definedRoles( DataverseUser user, Dataverse dv ) {
-		TypedQuery<UserDataverseAssignedRole> query = em.createQuery(
-				"SELECT r FROM UserDataverseAssignedRole r WHERE r.user.id=:userId AND r.role.owner.id=:dataverseId",
-				UserDataverseAssignedRole.class);
+	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
+		if ( user==null ) throw new IllegalArgumentException("User cannot be null");
+		TypedQuery<RoleAssignment> query = em.createQuery(
+				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.owner.id=:dvoId",
+				RoleAssignment.class);
 		query.setParameter("userId", user.getId());
-		query.setParameter("dataverseId", dv.getId());
-		HashSet<DataverseRole> retVal = new HashSet<>();
-		for ( UserDataverseAssignedRole ar : query.getResultList() ) {
-			retVal.add( ar.getRole() );
+		query.setParameter("dvoId", dvo.getId());
+		return query.getResultList();
+	}
+	
+	/**
+	 * Get all the available roles in a given dataverse, mapped by the
+	 * dataverse that defines them. Map entries are ordered by reversed hierarchy 
+	 * (root is always last).
+	 * @param dvId The id of dataverse whose available roles we query
+	 * @return map of available roles.
+	 */
+	public LinkedHashMap<Dataverse,Set<DataverseRole>> availableRoles( Long dvId ) {
+		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();
+		Dataverse dv = em.find(Dataverse.class, dvId);
+		roles.put( dv, dv.getRoles() );
+		while( !dv.isEffectivlyPermissionRoot() ) {
+			dv = dv.getOwner();
+			roles.put( dv, dv.getRoles() );
 		}
 		
-		return retVal;
+		return roles;
 	}
 }

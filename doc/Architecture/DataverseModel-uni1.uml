@@ -1,0 +1,45 @@
+@startuml
+
+class DataverseObject {
+	id: Long
+	name: String
+}
+
+class Dataverse {
+	alias: String
+	description: String
+	contactEmail: String
+	affiliation: String
+	owner: Dataverse
+	roles: Set<DataverseRole>
+	permissionRoot:Boolean
+	content: Set<DataverseObject>
+}
+
+class DataSet {
+	citationDate: Date
+	distributor: String
+	description: String
+	owner: Dataverse
+	files: List<DataFile>
+	metadata: Metadata
+}
+
+class DataFile {
+	contentType: String
+	owner: Dataset
+}
+
+Dataverse --|> DataverseObject
+DataSet --|> DataverseObject
+DataFile --|> DataverseObject
+Dataverse "0..*" *- "0..1" Dataverse 
+DataSet "0..*" - "1" Dataverse
+DataFile "0..*" - "1" DataSet
+
+
+legend center
+	Somewhat consolidated object model. 
+endlegend
+
+@enduml

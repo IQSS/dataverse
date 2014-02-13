@@ -1,0 +1,10 @@
+id	name	alias	owner	contactEmail	description	affiliation
+1	Nature	nature		root@nature.com	(not used)	Earth Inc.
+2	Birds	birds	1	birds@birds.com	A bird dataverse with some trees	Birds Inc.
+3	Trees	trees	1	trees@trees.com	A tree dataverse with some birds	Trees Inc.
+4	Finches	finches	2	finches@birds.com	A dataverse with finches	Birds Inc.
+5	Sparrows	sparrows	2	sparrows@birds.com	A dataverse featuring sparrows	Birds Inc.
+6	Wrens	wrens	2	wrens@birds.com	A dataverse full of wrens	Birds Inc.
+7	Spruce	spruce	3	spruce@trees.com	A spruce with some birds	Trees Inc.
+8	Chestnut Sparrows	chestnutsparrows	5	chestnutsparrows@birds.com	A dataverse with chestnut sparrows	Birds Inc.
+9	Chestnut Trees	chestnuttrees	3	chestnuttrees@trees.com	A dataverse with chestnut trees and an oriole	Trees Inc.

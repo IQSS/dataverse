@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 
 /**
@@ -30,4 +31,5 @@ public interface CommandContext {
 	
 	public SearchServiceBean search();
 	
+	public PermissionServiceBean permissions();
 }

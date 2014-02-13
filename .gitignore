@@ -1,5 +1,6 @@
 nb-configuration.xml
 target
+nbactions.xml
 
 # OS generated files #
 ######################

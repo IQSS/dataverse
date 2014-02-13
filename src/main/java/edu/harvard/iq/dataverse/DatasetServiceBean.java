@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -30,10 +32,12 @@ public class DatasetServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public Dataset save(Dataset dataset) {
+    public Dataset save(Dataset dataset) { 
+
+        em.merge(dataset.getVersions().get(0));           
         Dataset savedDataset = em.merge(dataset);
-        String indexingResult = indexService.index();
-        logger.info("during dataset save, indexing result was: " + indexingResult);
+       String indexingResult = indexService.indexDataset(savedDataset);
+       logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 
@@ -42,13 +46,35 @@ public class DatasetServiceBean {
     }    
     
     public List<Dataset> findByOwnerId(Long ownerId) {
-         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.title");
+         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
          query.setParameter("ownerId", ownerId);
          return query.getResultList();
     }  
 
     public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.title").getResultList();
+        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+    }
+    
+    public void removeCollectionElement(Collection coll, Object elem) {
+        coll.remove(elem);
+        em.remove(elem);
+    }
+     public void removeCollectionElement(List list,int index) {
+        System.out.println("index is "+index+", list size is "+list.size());
+        em.remove(list.get(index));
+        list.remove(index);
+    }  
+    public void removeCollectionElement(Iterator iter, Object elem) {
+        iter.remove();
+        em.remove(elem);
+    }
+    
+    public String getDatasetVersionTitle(DatasetVersion version){
+        Long id = version.getId();
+        Query query = em.createQuery("select v.strValue from DatasetFieldValue as v, DatasetVersion as dv, DatasetField as dsf where dsf.name ='title'"
+                 + " and dsf.id = v.datasetField.id and dv.id =:id ");
+        query.setParameter("id", id);         
+        return (String) query.getSingleResult();
     }
 
 }

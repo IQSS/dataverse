@@ -6,266 +6,256 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
-        <title>Dataverse</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <meta http-equiv="Content-Language" content="en"/>
-        <style type="text/css">
-            .panelgridHeaderTable {width:100%;}
-            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
-            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
-
-            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
-
-            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
-            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
-
-            .panelLayoutButtonBlock button {margin-right:2em;}
-
-            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
-            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
-            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
-
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
-
-            .rightClass {text-align: right;}
-        </style>
     </h:head>
 
     <h:body>
-        <f:metadata>
-            <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
-            <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
-            <f:viewAction action="#{DatasetPage.init}" />
-        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Dataset"/>
+            <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
+            <ui:define name="body">
 
-        <!-- Header Panel -->
-        <p:panel style="background-color: lightskyblue; height:70px;">
-            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
-                <ui:fragment>
-                    <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
-                        <h:outputText id="nameOutput" value="#{DatasetPage.dataset.owner.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
-                    </h:outputLink>
-                </ui:fragment>
-                <ui:fragment>
-                    <p:panelGrid columns="2">
-                        <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
-                                Create Account
+                <f:metadata>
+                    <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
+                    <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                    <f:viewAction action="#{DatasetPage.init}" />
+                </f:metadata>
+
+                <h:form id="datasetForm">
+                    <!-- Breadcrumbs Panel -->
+                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{empty DatasetPage.editMode}">
+                        <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">
+                            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
+                                <h:outputText value="#{owner.name} Dataverse"/>
                             </h:outputLink>
-                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
+                            <h:outputText value=" > "/>
+                        </ui:repeat>
+                        <!--<br/>-->
+                        <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
+                            <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
+                        </h:outputLink>
+
+                        <ui:fragment rendered="#{!empty DatasetPage.dataset.latestVersion.title}">
+                            <h:outputText value=" > "/>
+                            <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" style="font-weight:bold;"/>
                         </ui:fragment>
-                        <ui:fragment>
-                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
-                                Log In
-                            </h:outputLink>
-                            <h:form id="headerForm">
-                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
-                                    Log Out
-                                </h:commandLink>   
-                            </h:form>                            
-                        </ui:fragment>
-                    </p:panelGrid>
-                </ui:fragment>
-            </p:panelGrid>
-        </p:panel>
+                    </p:panel>
 
-        <h:form id="datasetForm">
-            <!-- Breadcrumbs Panel -->
-            <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{empty DatasetPage.editMode}">
-                
-                <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">                   
-                    <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                        <h:outputText value="#{owner.name} Dataverse"/>             
-                    </h:outputLink> 
-                    <h:outputText value=" > "/>
-                </ui:repeat>
-                <!--<br/>-->
-                <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
-                    <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/> 
-                </h:outputLink>
-                
-                <ui:fragment rendered="#{!empty DatasetPage.dataset.title}">
-                    <h:outputText value=" > "/>
-                    <h:outputText value="#{DatasetPage.dataset.title}" style="font-weight:bold;"/>
-                </ui:fragment>
-                
-            </p:panel>
-            
-            <!-- Message Panel -->
-            <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
-                
-                <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-                
-                <!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
-                <!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
-                <!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
-                <!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
-            </p:panel>
+                    <!-- Message Panel -->
+                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
+                        <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
+                        <!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
+                        <!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
+                    </p:panel>
 
-            <!-- Title / Button Panel -->
-            <p:panel styleClass="panelLayoutBlock">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                    <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="font-size:1.25em;font-weight:bold;"/>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="3" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                            <p:outputLabel value="Title" for="title"/>
-                            <ui:fragment>
-                                <p:inputText id="title" size="40" value="#{DatasetPage.dataset.title}"/>
-                                <p:watermark for="title" value="Enter title..."/>
-                            </ui:fragment>
-                            <p:message for="title"/>
-
-                            <h:outputText value="Host Dataverse"/>
-                            <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                            </p:selectOneMenu>
-                            <ui:fragment>
-                                &#160;
-                            </ui:fragment>
-                        </p:panelGrid>
-                    </ui:fragment>
+                    <style type="text/css">
+                        .panelgridLayoutTable .ui-datatable-tablewrapper thead {display:none;}
+                    </style>
                     
-                    <ui:fragment>
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{!empty dataverseSession.user and empty DatasetPage.editMode}">
-                            <p:panel styleClass="panelLayoutButtonBlock">
-                                <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
-                                    <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                    </p:menuitem>
-                                    <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                    </p:menuitem>
-                                    <p:menuitem value="Edit Permissions" disabled="true"/>
-                                </p:menuButton>
-                            </p:panel>
-                        </p:panelGrid>
-                    </ui:fragment>
-                </p:panelGrid>
-            </p:panel>
-
-            <!-- Citation -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="1" rendered="#{empty DatasetPage.editMode}">
-                        <p:panel style="background-color: #F5F5F5;">
-                            <h:outputText id="citation" value="#{DatasetPage.dataset.citation}"/>
-                        </p:panel>
-                        <p:panel>
-                            <p:panelGrid columns="2">
-                                <p:commandButton value="Copy Citation" disabled="true"/>
-                                <h:outputLink onclick="PF('whyCite').show();" value="javascript:void(0)">
-                                    <h:outputText value="Why cite?" style="color: green"/>
-                                </h:outputLink>
-                                <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">
-                                    <h:outputText value="Info on why to use a data citation."/>
-                                </p:dialog>
-                            </p:panelGrid>
-                        </p:panel>
-                </p:panelGrid>
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                    <h:outputText value="Data Citation"/>
-                    <p:panelGrid styleClass="panelgridLayoutTable" columns="3">
-                        <p:outputLabel value="Author" for="author" />
-                        <p:inputText id="author" value="#{DatasetPage.dataset.author}" />
-                        <p:message for="author" />
-
-                        <p:outputLabel value="Date" for="date" />
-                        <p:inputText id="date" value="#{DatasetPage.dataset.citationDate}" />
-                        <p:message for="date" />
-
-                        <p:outputLabel value="Distributor" for="distributor" />
-                        <p:inputText id="distributor" value="#{DatasetPage.dataset.distributor}" />
-                        <p:message for="distributor" />
-                    </p:panelGrid>
-                </p:panelGrid>
-                
-            </p:panel>
-            <!-- Description Panel -->
-            <p:panel styleClass="panelLayoutBlock" rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')}">
-                <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                    <ui:fragment>
-                        <h:outputText value="#{DatasetPage.dataset.description}" rendered="#{empty DatasetPage.editMode}"/>
-                        <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                            <p:outputLabel value="Description" for="description"/>
+                    <!-- Title / Button Panel -->
+                    <p:panel styleClass="panelLayoutBlock">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
                             <ui:fragment>
-                                <p:inputTextarea id="description" value="#{DatasetPage.dataset.description}"
-                                                 rows="5" cols="50" counter="counter" maxlength="1000"
-                                                 counterTemplate="{0} characters remaining" autoResize="false"/>
-                                <h:outputText id="counter" style="display:block;"/>
+                                <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
+
+                                <h:outputText value="#{DatasetPage.dataset.latestVersion.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
+
+                                <!--<h:outputText value="Data Citation: " style="display:block; margin-top:.5em;"/>-->
+                                <p:panel style="background-color: #F5F5F5;">
+                                    <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.citation}" escape="false"/>
+                                </p:panel>
+                                <!--<p:panel>
+                                    <p:panelGrid columns="2">
+                                        <p:commandButton value="Copy Citation" disabled="true"/>
+                                        <h:outputLink onclick="PF('whyCite').show();" value="javascript:void(0)">
+                                            <h:outputText value="Why cite?" style="color: green"/>
+                                        </h:outputLink>
+                                        <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">
+                                            <h:outputText value="Info on why to use a data citation."/>
+                                        </p:dialog>
+                                    </p:panelGrid>
+                                </p:panel>-->
                             </ui:fragment>
-                            <p:message for="description"/>
+                            <ui:fragment>
+                                <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
+                                <!--<p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">-->
+                                    <p:panel styleClass="panelLayoutButtonBlock">
+                                        <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
+                                            <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                            </p:menuitem>
+                                            <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                            </p:menuitem>
+                                            <p:menuitem value="Edit Permissions" disabled="true"/>
+                                        </p:menuButton>
+                                    </p:panel>
+                                </p:panelGrid>
+                            </ui:fragment>
                         </p:panelGrid>
-                    </ui:fragment>
-                    <ui:fragment>
-                        &#160;
-                    </ui:fragment>
-                </p:panelGrid>
-            </p:panel>
 
-            <!-- Content Panel -->
-            <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
-                <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                    <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
-                        <p:message for="fileUpload" showDetail="true"/>
-                        <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                      fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add" style="margin-top:.5em;"/>
-                        <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
-                            <p:column>
-                                <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-                                <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                <p:message for="fileName"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputText id="fileTypeOutput" value="#{file.contentType}" />
-                            </p:column>
-                        </p:dataTable>
-                    </p:tab>
-                    <p:tab id="metadataTab" title="Metadata" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                        <p:panelGrid columns="3">
-                            <p:outputLabel value="Keyword" for="keyword" />
-                            <h:outputText id="keywordOutput" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode != 'METADATA'}"/>
-                            <p:inputText id="keyword" value="#{DatasetPage.dataset.keyword}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="keyword" />
 
-                            <p:outputLabel value="Topic Classification" for="topicClassification" />
-                            <h:outputText id="topicClassificationOutput" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="topicClassification" value="#{DatasetPage.dataset.topicClassification}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="topicClassification" />
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
+                            <ui:fragment>
+                                <p:panelGrid styleClass="panelgridFormTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                                    <ui:fragment>
+                                        <p:outputLabel value="Title" /> <h:outputText value="*" style="color: #B94A48;"/>
+                                    </ui:fragment>
+                                    <ui:fragment>
+                                    </ui:fragment>
+                                    <ui:fragment>
+                                        <h:outputText value="Host Dataverse"/>
+                                    </ui:fragment>
+                                    <ui:fragment>
+                                        <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
+                                        </p:selectOneMenu>
+                                    </ui:fragment>
+                                </p:panelGrid>
 
-                            <p:outputLabel value="Topic Classification URL" for="topicClassificationUrl" />
-                            <h:outputText id="topicClassificationUrlOutput" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="topicClassificationUrl" value="#{DatasetPage.dataset.topicClassificationUrl}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="topicClassificationUrl" />
-
-                            <p:outputLabel value="Geographic Coverage" for="geographicCoverage" />
-                            <h:outputText id="geographicCoverageOutput" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode != 'METADATA'}" />
-                            <p:inputText id="geographicCoverage" value="#{DatasetPage.dataset.geographicCoverage}" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                            <p:message for="geographicCoverage" />
+                                <p:dataGrid columns="1" value="#{DatasetPage.citationValues}" var="datasetFieldVal">
+                                    <p:column rendered="#{datasetFieldVal.datasetField.name != 'datasetId'}">
+                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
+                                                        <ui:fragment>
+                                                            <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
+                                                        </ui:fragment>
+                                                        <ui:fragment>
+                                                            <h:outputText rendered="#{(empty DatasetPage.editMode  and !datasetFieldVal.datasetField.hasChildren)}"
+                                                                          value="#{datasetFieldVal.strValue}">
+                                                            </h:outputText>                                                           
+                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                                                <p:inputText id="input_TextDefault" size="90"
+                                                                             value="#{datasetFieldVal.strValue}">
+                                                                </p:inputText>
+                                                                <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
+                                                                <p:watermark for="input_TextDefault" value="Last Name, First Name..." rendered="#{datasetFieldVal.datasetField.name == 'authorName'}"/>
+                                                                <p:message for="input_TextDefault"/>
+                                                            </p:panelGrid>
+                                                        </ui:fragment>
+                                                    </p:panelGrid>
+                                                </p:column>
+                                 </p:dataGrid>
+                            </ui:fragment>
                         </p:panelGrid>
-                    </p:tab>
-                    <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}"/>
-                </p:tabView>
-            </p:panel>
-            
-            <!-- Create/Save Dataset Button Panel -->
-            <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                <p:commandButton id="save" value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
-                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-                </p:commandButton>
-                <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
-                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-                </p:commandButton>
-                <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
-            </p:panel>
-        </h:form>
-        <!-- Crazy Egg Tracking -->
-        <script type="text/javascript">
-            setTimeout(function(){var a=document.createElement("script");
-            var b=document.getElementsByTagName("script")[0];
-            a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0020/3547.js?"+Math.floor(new Date().getTime()/3600000);
-            a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
-        </script>
+                    </p:panel>
+
+                    <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
+                            <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                                <p:message for="fileUpload" showDetail="true"/>
+                                <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                              fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add" style="margin-top:.5em;"/>
+                    <style type="text/css">
+                        div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
+                    </style>
+                                <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
+                                    <p:column>
+                                        <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                        <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
+                                        <p:message for="fileName"/>
+                                       <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
+                                        <h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>
+
+                                        <p:inputText id="fileDescription" value="#{file.description}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
+                                        <p:message for="fileDescription"/>
+                                    </p:column>
+                                    <p:column>
+                                       <h:outputLink value="/api/access/datafile/#{file.id}"  rendered="#{!empty file.id}">
+                           			<h:outputText value="Download"/>
+                        		</h:outputLink>
+                                        <h:outputText value="[UNSAVED FILE]" rendered="#{empty file.id}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
+					<h:outputLink value="/dataexplore/gui.html?dfId=#{file.id}" target="_new" rendered="#{file.tabularData}">
+                            			<h:outputText value="(Explore Data)"/>
+                        		</h:outputLink>
+
+                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>                                                       
+                           
+                            <p:tab id="metadataMapEdit" title="Metadata Map Accordion Panel" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
+                                 <h:outputText  value="Something for the Tab..." />
+                                <p:accordionPanel>
+                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
+                                  <p:column>  
+                                  <p:tab title="#{metadataBlockVal.key.displayName}">                                                                                                                                                         
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <h:outputText  value="#{fieldValues.strValue}" />
+                                            </p:column>
+                                    
+                                        </p:dataGrid>                                                                        
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <p:inputText id="input_Textblock" size="90"
+                                                                             value="#{fieldValues.strValue}">
+                                                 </p:inputText>
+                                            </p:column>                                    
+                                        </p:dataGrid>                               
+                                      </p:tab>
+                                      </p:column>
+                                       </p:dataGrid> 
+                                  </p:accordionPanel>
+                            </p:tab>
+                            
+                            <p:tab id="metadataMapTab" title="Metadata Map Without Accordion" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
+                                  <h:outputText  value="Something for the Tab..." />
+                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
+                                    <p:column>  
+                                    <h:outputText value="#{metadataBlockVal.key.displayName}"/>                                                                                                                                                         
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <h:outputText  value="#{fieldValues.strValue}" />
+                                            </p:column>                                    
+                                        </p:dataGrid>                                                                        
+                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
+                                            <p:column>                                 
+                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                <p:inputText id="input_Textblock" size="90"
+                                                                             value="#{fieldValues.strValue}">
+                                                 </p:inputText>
+                                            </p:column>                                    
+                                        </p:dataGrid>                               
+                                   </p:column>
+                                 </p:dataGrid> 
+                            </p:tab>
+                            <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
+                                <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
+                                    <p:column>
+                                        <h:outputText id="versionTitleOutput" value="#{version.title}" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="versionDateOutput" value="#{version.lastUpdateTime}" />
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+
+                    <!-- Create/Save Dataset Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save()}" update="@all">                            
+                        </p:commandButton>
+                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
+                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
+                        </p:commandButton>
+                        <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
     </h:body>
 </html>

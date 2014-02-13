@@ -5,16 +5,25 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.engine.Permission;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 @Path("browse")
 public class Browse {
@@ -25,14 +34,34 @@ public class Browse {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseUserServiceBean dataverseUserService;
+    @EJB
+    PermissionServiceBean permissionService;
+
+    // this is highly experimental
+    @GET
+    @Path("{user}")
+    public String browseByUser(@PathParam("user") String username) {
+        DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
+        if (dataverseUser != null) {
+            List<Dataset> datasetsByUser = new ArrayList<>();
+            List<Dataset> allDatasets = datasetService.findAll();
+            Permission permission = Permission.Access;
+            for (Dataset dataset : allDatasets) {
+                if (permissionService.permissionsFor(dataverseUser, dataset).contains(permission)) {
+                    datasetsByUser.add(dataset);
+                }
+            }
+            return username + " has permission \"" + permission + "\" (" + permission.getHumanName() + ") to these datasets: " + datasetsByUser + "\n";
+        } else {
+            return "User " + username + " could not be found!\n";
+        }
+    }
 
     @GET
     public String browse() throws FileNotFoundException {
         try {
-            logger.info("indexing...");
-            if (dataverseService == null) {
-                return "dataverseService is null\n";
-            }
             List<Dataverse> dataverses = dataverseService.findAll();
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             JsonArrayBuilder dataversesArrayBuilder = Json.createArrayBuilder();
@@ -44,14 +73,14 @@ public class Browse {
                 Long ownerId = dataverse.getId();
                 List<Dataset> datasets = datasetService.findByOwnerId(ownerId);
                 for (Dataset dataset : datasets) {
-                    logger.info("dataset: " + dataset.getTitle());
-                    String datasetInfo = dataverse.getAlias() + "|" + dataset.getTitle();
+                    //logger.info("dataset: " + dataset.getTitle());
+                    String datasetInfo = dataverse.getAlias();// + "|" + dataset.getTitle();
                     JsonObjectBuilder datasetObjectBuilder = Json.createObjectBuilder().add("datasetInfo", datasetInfo);
                     datasetsArrayBuilder.add(datasetObjectBuilder);
                     List<DataFile> files = dataset.getFiles();
                     for (DataFile file : files) {
                         logger.info("file: " + file.getName());
-                        String fileInfo = dataverse.getAlias() + "|" + dataset.getTitle() + "|" + file.getName();
+                        String fileInfo = dataverse.getAlias();// + "|" + dataset.getTitle() + "|" + file.getName();
                         JsonObjectBuilder fileInfoBuilder = Json.createObjectBuilder().add("fileInfo", fileInfo);
                         filesArrayBuilder.add(fileInfoBuilder);
                     }
@@ -66,13 +95,27 @@ public class Browse {
                     .add("files", filesArrayBuilder)
                     .build();
             return Util.jsonObject2prettyString(jsonObject);
-        } catch (NullPointerException ex) {
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                    }
+                }
+            }
+            return Util.message2ApiError(sb.toString());
+        } catch (Exception ex) {
             StackTraceElement stacktrace = ex.getStackTrace()[0];
             if (stacktrace != null) {
                 String javaFile = stacktrace.getFileName();
                 String methodName = stacktrace.getMethodName();
                 int lineNumber = stacktrace.getLineNumber();
-                String error = "Indexing failed. " + ex.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
+                String error = "Browsing failed. " + ex.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
                 logger.info(error);
                 /**
                  * @todo use Util.message2ApiError() instead

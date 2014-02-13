@@ -40,5 +40,10 @@ public class TestCommandContext implements CommandContext {
 	public SearchServiceBean search() {
 		return null;
 	}
+
+	@Override
+	public PermissionServiceBean permissions() {
+		return null;
+	}
 	
 }

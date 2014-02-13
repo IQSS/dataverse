@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -29,7 +30,22 @@ public class Search {
 //    public JsonObject search(@QueryParam("q") String query) {
     public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("start") final int paginationStart) {
         if (query != null) {
-            SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+            SolrQueryResponse solrQueryResponse;
+            try {
+                solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+            } catch (EJBException ex) {
+                Throwable cause = ex;
+                StringBuilder sb = new StringBuilder();
+                sb.append(cause + " ");
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    sb.append(cause.getClass().getCanonicalName() + " ");
+                    sb.append(cause + " ");
+                }
+                String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart ["+ paginationStart +"]: " + sb.toString();
+                logger.info(message);
+                return Util.message2ApiError(message);
+            }
 
             JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();

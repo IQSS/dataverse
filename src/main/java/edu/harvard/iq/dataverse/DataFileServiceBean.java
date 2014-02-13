@@ -43,14 +43,24 @@ public class DataFileServiceBean {
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 
            to the past. -- L.A.
         */
-        Query query = em.createQuery("select object(o) from DataFile as o where o.dataset.id =:studyId order by o.title");
+        Query query = em.createQuery("select object(o) from DataFile as o where o.dataset.id =:studyId order by o.id");
         query.setParameter("studyId", studyId);
         return query.getResultList();
     }  
 
+    public DataTable findDataTableByFileId(Long fileId) {
+        Query query = em.createQuery("select object(o) from DataTable as o where o.dataFile.id =:fileId order by o.id");
+        query.setParameter("fileId", fileId);
+        return (DataTable)query.getSingleResult();
+    }
+    
     public List<DataFile> findAll() {
         return em.createQuery("select object(o) from DataFile as o order by o.id").getResultList();
     }
     
+    public DataFile save(DataFile dataFile) {   
+        DataFile savedDataFile = em.merge(dataFile);
+        return savedDataFile;
+    }
     
 }

@@ -86,6 +86,11 @@ public class BitSet implements Serializable {
 		return new BitSet( this );
 	}
 	
+	/**
+	 * Adds {@code other} to {@code this} set.
+	 * @param other The we union with.
+	 * @return {@code this}, for call chaining.
+	 */
 	public BitSet union( BitSet other ) {
 		store = store | other.getBits();
 		return this;

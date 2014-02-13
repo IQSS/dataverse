@@ -5,17 +5,33 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.html.HtmlDataTable;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.model.DataModel;
+import javax.faces.model.ListDataModel;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
@@ -34,16 +50,59 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DataverseServiceBean dataverseService;
+    DataFileServiceBean datafileService;
+    @EJB
+    DataverseServiceBean dataverseService;    
+   @EJB
+    TemplateServiceBean templateService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
     private int selectedTabIndex;
     private Map<UploadedFile,DataFile> newFiles = new HashMap();
+    private Map<MetadataBlock, Object> metadataBlockValues = new HashMap();
+    private DatasetVersion editVersion = new DatasetVersion();   
+    private List<DatasetField> citationFields = new ArrayList();
+    private List<DatasetField> otherMetadataFields = new ArrayList();
+    private List<DatasetFieldValue> citationValues = new ArrayList();
 
+    public List<DatasetFieldValue> getCitationValues() {
+        return citationValues;
+    }
+
+    public void setCitationValues(List<DatasetFieldValue> citationValues) {
+        this.citationValues = citationValues;
+    }
+    private List<DatasetFieldValue> otherMetadataValues = new ArrayList();    
+    private List<DatasetFieldValue> editValues = new ArrayList();
+    
+    
+    public List<DatasetFieldValue> getOtherMetadataValues() {
+        return otherMetadataValues;
+    }
+    /*
+    public Map<MetadataBlock, Object> getMetadataBlockValues() {
+        return metadataBlockValues;
+    }*/
+    
+    public List<Map.Entry<MetadataBlock, Object>> getMetadataBlockValues() {
+    Set<Map.Entry<MetadataBlock, Object>> metadataSet = 
+                     metadataBlockValues.entrySet();
+    return new ArrayList<>(metadataSet);
+}
+
+
+    public void setOtherMetadataValues(List<DatasetFieldValue> otherMetadataValues) {
+        this.otherMetadataValues = otherMetadataValues;
+    }
+    
     public Dataset getDataset() {
         return dataset;
+    }
+    
+    public List<DatasetFieldValue> getEditValues() {
+        return editValues;
     }
 
     public void setDataset(Dataset dataset) {
@@ -58,6 +117,14 @@ public class DatasetPage implements java.io.Serializable {
         this.editMode = editMode;
     }
 
+    public DatasetVersion getEditVersion() {
+        return editVersion;
+    }
+
+    public void setEditVersion(DatasetVersion editVersion) {
+        this.editVersion = editVersion;
+    }
+    
     public Long getOwnerId() {
         return ownerId;
     }
@@ -77,46 +144,130 @@ public class DatasetPage implements java.io.Serializable {
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
+            editVersion = dataset.getLatestVersion();
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
+            getMetadataValueBlocks(editValues);
             ownerId = dataset.getOwner().getId();
-
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataset", " - Fill in the required fields and add your data files."));
-            FacesContext.getCurrentInstance().addMessage("datasetForm:tabView:fileUpload", new FacesMessage(FacesMessage.SEVERITY_INFO,"Add Files - ", "You can drag and drop your files from your desktop, directly into the upload widget."));
             dataset.setOwner(dataverseService.find(ownerId));
-
+            dataset.setVersions(new ArrayList());
+            editVersion.setDataset(dataset);           
+            editVersion.setFileMetadatas(new ArrayList());
+            editVersion.setDatasetFieldValues(null);            
+            editVersion.setVersionState(VersionState.DRAFT);
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
+            editVersion.setVersionNumber(new Long(1));  
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
+            getMetadataValueBlocks(editValues);
+            dataset.getVersions().add(editVersion);
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
-        }
+        }        
+        setCitationFields(dataverseService.findCitationDatasetFieldsByDataverseId(ownerId));
+        setOtherMetadataFields(dataverseService.findOtherMetadataDatasetFieldsByDataverseId(ownerId));       
     }
     
     public void edit(EditMode editMode) {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
+            editVersion = dataset.getEditVersion();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Info", " - Edit your dataset info."));
         } else if (editMode == EditMode.FILE) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit the metadata for your files."));
-            FacesContext.getCurrentInstance().addMessage("datasetForm:tabView:fileUpload", new FacesMessage(FacesMessage.SEVERITY_INFO,"Add Files - ", "You can drag and drop your files from your desktop, directly into the upload widget."));
+            editVersion = dataset.getEditVersion();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
+            editVersion = dataset.getEditVersion();
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
+            editVersion.setVersionNumber(new Long(1));  
+            editValues = editVersion.getDatasetFieldValues();
+            citationValues = extractValues(editValues, true);
+            otherMetadataValues = extractValues(editValues, false);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
     }
        
     public void save() {
+        
         dataset.setOwner(dataverseService.find(ownerId));
-        dataset = datasetService.save(dataset);
+        //TODO get real application-wide protocol/authority
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("5555");
 
+        if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
+            int fmdIndex = 0;
+            for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
+                for (FileMetadata fmdTest : editVersion.getFileMetadatas()) {
+                    if (fmd.equals(fmdTest)) {
+                        dataset.getVersions().get(0).getFileMetadatas().get(fmdIndex).setDataFile(fmdTest.getDataFile());
+                    }
+                }
+                fmdIndex++;
+            }
+        }        
+        dataset = datasetService.save(dataset);
         // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
             try {
-                if (!Files.exists(Paths.get("files",dataset.getTitle()))) {
-                    Files.createDirectory(Paths.get("files",dataset.getTitle()));
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: " + dataset.getFileSystemDirectory().toString());
+                boolean ingestedAsTabular = false; 
+                /* Make sure the dataset directory exists: */
+               if (!Files.exists(dataset.getFileSystemDirectory())) {
+                    /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                     */
+                    Files.createDirectories(dataset.getFileSystemDirectory());
+               }
+                
+                // Re-set the owner of the datafile - last time the owner was 
+                // set was before the owner dataset was saved/synced with the db;
+                // this way the datafile will know the id of its .getOwner() - 
+               // even if this is a brand new dataset here. -- L.A.
+                dFile.setOwner(dataset);
+                
+                if (ingestableAsTabular(dFile)) {
+                    // Locate ingest plugin for the file format by looking
+                    // it up with the Ingest Service Provider manager:
+                    //TabularDataFileReader ingestPlugin = DataIngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
+                    TabularDataFileReader ingestPlugin = new DTAFileReader(
+                        new DTAFileReaderSpi()
+                    );
+                    try {
+                        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
+                    
+                        if (tabDataIngest != null) {
+                            if (tabDataIngest.getDataTable() != null) {
+                                dFile.setDataTable(tabDataIngest.getDataTable());
+                                tabDataIngest.getDataTable().setDataFile(dFile);
+                            }
+                            File tabFile = tabDataIngest.getTabDelimitedFile();
+                            if (tabFile != null && tabFile.exists()) {
+                                Files.copy(Paths.get(tabFile.getAbsolutePath()), dFile.getFileSystemLocation());
+                            }
+                            ingestedAsTabular = true;
+                        }
+                    } catch (IOException iex) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
+                    }
                 }
-                Files.copy(uFile.getInputstream(), Paths.get("files",dataset.getTitle(), dFile.getName()));
+
+                if (!ingestedAsTabular) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+                Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());               
+                }
+
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
             }
+                  
         }        
         newFiles.clear();
         editMode = null;
@@ -133,9 +284,119 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile( uFile.getFileName(), uFile.getContentType()); 
-        dFile.setDataset(dataset);
+        FileMetadata fmd = new FileMetadata();       
+        dFile.setOwner(dataset);
+        fmd.setDataFile(dFile);
+        dFile.getFileMetadatas().add(fmd);
+        fmd.setLabel(dFile.getName());
+        fmd.setCategory(dFile.getContentType());
+        fmd.setDescription("add description");
+        if (editVersion.getFileMetadatas() == null){
+            editVersion.setFileMetadatas(new ArrayList() );
+        }
+        editVersion.getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(editVersion);       
         dataset.getFiles().add( dFile );
         newFiles.put(uFile, dFile);
     }
+    
+    public void addRow(ActionEvent ae) {       
+        //      UIComponent dataTable = ae.getComponent().getParent().getParent().getParent();
+        HtmlDataTable dataTable = (HtmlDataTable)ae.getComponent().getParent().getParent();
+            DatasetAuthor newElem = new DatasetAuthor();
+           // newElem.setMetadata(editVersion.getMetadata());
+           // editVersion.getMetadata().getDatasetAuthors().add(dataTable.getRowIndex()+1,newElem);
+            //JavascriptContext.addJavascriptCall(getFacesContext(),"initAddAuthorSync();");
+                         
+    }
+
+                
+    public DataModel getDatasetFieldsDataModel() {
+        List values = new ArrayList();  
+        int i = 0;
+        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+            DatasetField datasetField = dsfv.getDatasetField();                      
+                Object[] row = new Object[4];
+                row[0] = datasetField;
+                row[1] = getValuesDataModel(dsfv);
+                row[2] = new Integer(i);
+                row[3] = datasetField;                
+                values.add(row);
+                i++;
+        }         
+        return new ListDataModel(values);
+    }
+    
+    private DataModel getValuesDataModel(DatasetFieldValue datasetFieldValue) {
+        List values = new ArrayList();
+                Object[] row = new Object[2];
+                row[0] = datasetFieldValue;
+                row[1] = datasetFieldValue.getDatasetField().getDatasetFieldValues(); // used by the remove method
+                values.add(row);
+        return new ListDataModel(values);
+    }
+    
+    public String getTitle() {
+        return datasetService.getDatasetVersionTitle(dataset.getLatestVersion());
+    }
+
+    public List<DatasetField> getCitationFields() {
+        return citationFields;
+    }
+
+    public void setCitationFields(List<DatasetField> citationFields) {
+        this.citationFields = citationFields;
+    }
+
+    public List<DatasetField> getOtherMetadataFields() {
+        return otherMetadataFields;
+    }
+
+    public void setOtherMetadataFields(List<DatasetField> otherMetadataFields) {
+        this.otherMetadataFields = otherMetadataFields;
+    }
+    
+    private List<DatasetFieldValue> extractValues(List<DatasetFieldValue> inList, boolean citation){
+        
+        List retList = new ArrayList();
+        for (DatasetFieldValue dsfv : inList){
+            if (citation && dsfv.getDatasetField().getMetadataBlock().isShowOnCreate()) { 
+                  retList.add(dsfv);                
+            } else if (!citation && !dsfv.getDatasetField().getMetadataBlock().isShowOnCreate()) {
+                  retList.add(dsfv);
+            }
+        }
+        return retList;
+    }
+    
+    private void getMetadataValueBlocks(List<DatasetFieldValue> inList){
+        metadataBlockValues.clear();
+        for(MetadataBlock mdb: dataset.getOwner().getMetadataBlocks()){
+            List addList = new ArrayList();
+            if(!mdb.isShowOnCreate()){
+                for (DatasetFieldValue dsfv: inList){
+                     if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)){
+                         addList.add(dsfv);
+                     }
+                }
+                metadataBlockValues.put(mdb, addList);
+            }
+        }
+            
+     int a = 1;    
+    }
+
+    private boolean ingestableAsTabular (DataFile dataFile) {
+        /* 
+         * Eventually we'll be using some complex technology of identifying 
+         * potentially ingestable file formats here, similar to what we had in 
+         * v.3.*; for now - just a hardcoded list of filename extensions:
+         *  -- L.A. 4.0alpha1
+         */
+        if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
+            return true;
+}
+        return false;
+    } 
 
 }

@@ -53,14 +53,16 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
-        solrQuery.addFacetField(SearchFields.TYPE);
-        solrQuery.addFacetField(SearchFields.SUBTREE);
         solrQuery.addFacetField(SearchFields.ORIGINAL_DATAVERSE);
         solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
-//        solrQuery.addFacetField(SearchFields.AFFILIATION);
-        solrQuery.addFacetField(SearchFields.CATEGORY);
-        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        solrQuery.addFacetField(SearchFields.AFFILIATION);
+//        solrQuery.addFacetField(SearchFields.CATEGORY);
+//        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
+        solrQuery.addFacetField(SearchFields.KEYWORD);
         solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
+        solrQuery.addFacetField(SearchFields.TYPE);
+        solrQuery.addFacetField(SearchFields.SUBTREE);
         /**
          * @todo: do sanity checking... throw error if negative
          */
@@ -79,10 +81,15 @@ public class SearchServiceBean {
          * @todo make this configurable
          */
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-        final int citationYearRangeStart = 2000;
+        /**
+         * @todo: odd or even makes a difference. Couldn't find value of 2014
+         * when this was set to 2000
+         */
+        final int citationYearRangeStart = 1901;
         final int citationYearRangeEnd = thisYear;
         final int citationYearRangeSpan = 2;
-        solrQuery.addNumericRangeFacet(SearchFields.CITATION_YEAR, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
+        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
+        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         /**
          * @todo: make the number of results per page configurable?
          */
@@ -98,17 +105,18 @@ public class SearchServiceBean {
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        String name = null;
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
+            String affiliation = (String) solrDocument.getFieldValue(SearchFields.AFFILIATION);
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
-            name = (String) solrDocument.getFieldValue(SearchFields.NAME);
-            Collection<String> fieldNames = solrDocument.getFieldNames();
+            String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
+            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
+            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
 //                logger.info("highlight snippets: " + highlightSnippets);
@@ -122,6 +130,25 @@ public class SearchServiceBean {
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
+            solrSearchResult.setAffiliation(affiliation);
+            Map<String, String> parent = new HashMap<>();
+            if (type.equals("dataverses")) {
+                solrSearchResult.setName(name);
+            } else if (type.equals("datasets")) {
+                if (titles != null) {
+                    solrSearchResult.setTitle((String) titles.get(0));
+                }
+                else {
+                    solrSearchResult.setTitle("EMPTY STRING: dataset.getLatestVersion().getMetadata().getTitle().isEmpty()");
+                }
+            } else if (type.equals("files")) {
+                solrSearchResult.setName(name);
+                solrSearchResult.setFiletype(filetype);
+            }
+            parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
+            parent.put("type", (String) solrDocument.getFieldValue(SearchFields.PARENT_TYPE));
+            parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
+            solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }
         Map<String, List<String>> spellingSuggestionsByToken = new HashMap<>();
@@ -151,7 +178,9 @@ public class SearchServiceBean {
             }
             facetCategory.setName(facetField.getName());
             facetCategory.setFacetLabel(facetLabelList);
-            facetCategoryList.add(facetCategory);
+            if (!facetLabelList.isEmpty()) {
+                facetCategoryList.add(facetCategory);
+            }
         }
 
         // for now the only range facet is citation year
@@ -181,7 +210,9 @@ public class SearchServiceBean {
                 facetLabelListReversed.add((FacetLabel) li.previous());
             }
             facetCategory.setFacetLabel(facetLabelListReversed);
-            facetCategoryList.add(facetCategory);
+            if (!facetLabelList.isEmpty()) {
+                facetCategoryList.add(facetCategory);
+            }
         }
 
         SolrQueryResponse solrQueryResponse = new SolrQueryResponse();

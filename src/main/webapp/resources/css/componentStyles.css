@@ -14,3 +14,56 @@
 	box-shadow: 0 2px 4px rgba(0,0,0,.5);
 	padding: 4px;
 }
+
+.space-bottom {
+	margin-bottom: 1em;
+}
+.space-right {
+	margin-right: 1em;
+}
+
+.placeholder {
+	border-radius: 5px;
+	background-color: #AAA;
+	color: #EEE;
+	padding: 4px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.75) inset;
+}
+
+.helpText {
+	background-color: #CCF;
+	font-size: smaller;
+}
+
+.helpText:before {
+	content:"?";
+	display: inline-block;
+	background-color: blue;
+	color: white;
+	margin-right: 4px;
+	padding: 4px;
+}
+
+ul.navigationLinks {
+	padding: 4px;
+	border: 1px solid #DDD;
+	background-color: #EEE;
+}
+
+ul.navigationLinks li {
+	display: inline-block;
+	padding: 0;
+	padding-left: 1em;
+}
+
+ul.navigationLinks li a:hover {
+	color: blue;
+}
+
+ul.navigationLinks li a:active {
+	color: red;
+}
+
+ul.navigationLinks li:first-child {
+	padding-left: 0;
+}

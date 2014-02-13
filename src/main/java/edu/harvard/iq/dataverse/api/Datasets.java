@@ -27,7 +27,7 @@ public class Datasets {
         List<Dataset> datasets = datasetService.findAll();
         JsonArrayBuilder datasetsArrayBuilder = Json.createArrayBuilder();
         for (Dataset dataset : datasets) {
-            logger.info("dataset: " + dataset.getTitle());
+           // logger.info("dataset: " + dataset.getTitle());
             JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
                     /**
                      * @todo refactor to be same as index service bean?
@@ -39,13 +39,13 @@ public class Datasets {
                      * @todo: should we assign a dataset title to name like
                      * this?
                      */
-                    .add("name", dataset.getTitle())
-                    .add(SearchFields.AUTHOR_STRING, dataset.getAuthor())
-                    .add(SearchFields.TITLE, dataset.getTitle())
+                    //.add("name", dataset.getTitle())
+                   // .add(SearchFields.AUTHOR_STRING, dataset.getAuthor())
+                   // .add(SearchFields.TITLE, dataset.getTitle())
                     /**
                      * @todo: don't use distributor for category. testing facets
                      */
-                    .add(SearchFields.CATEGORY, dataset.getDistributor())
+                   // .add(SearchFields.CATEGORY, dataset.getDistributor())
                     .add(SearchFields.DESCRIPTION, dataset.getDescription());
             datasetsArrayBuilder.add(datasetInfoBuilder);
         }
@@ -67,7 +67,7 @@ public class Datasets {
                 // elasticsearch fails on "today" with
                 // MapperParsingException[failed to parse date field [today],
                 // tried both date format [dateOptionalTime], and timestamp number with locale []]
-                dataset.setCitationDate(null);
+                //dataset.setCitationDate(null);
                 // too much information
                 dataset.setOwner(null);
                 return dataset;
@@ -84,6 +84,6 @@ public class Datasets {
     @POST
     public String add(Dataset dataset) {
         datasetService.save(dataset);
-        return "dataset " + dataset.getTitle() + " created (and hopefully indexed)\n";
+        return "dataset " + dataset.getId() + " created/updated (and probably indexed, check server.log)\n";
     }
 }

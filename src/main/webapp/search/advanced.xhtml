@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="thisPageTitle" value="Advanced Search"/>
+            <ui:param name="pageTitle" value="#{thisPageTitle}"/>
+            <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
+            <ui:param name="ownerId" value="#{DataversePage.ownerId}"/> 
+            <ui:define name="body">        
+
+                <f:metadata>
+                    <f:viewAction action="#{AdvancedSearchPage.init}"/>
+                    <f:viewParam name="q" value="#{AdvancedSearchPage.query}"/>
+                    <f:viewParam name="title" value="#{AdvancedSearchPage.title}"/>
+                    <f:viewParam name="author" value="#{AdvancedSearchPage.author}"/>
+                </f:metadata>
+
+                <!-- Breadcrumbs Panel -->
+                <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock">
+                    <h:outputText value="#{thisPageTitle}" style="font-weight:bold;"/>
+                </p:panel>
+                
+                <!-- Search Panel -->
+                <p:panel styleClass="panelLayoutBlock">
+                    <h:form>
+                        <p:focus/>
+                        <p:accordionPanel>
+                            
+                            <p:tab title="Citation" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(0)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(0)}" var="item" >
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>
+                            <p:tab title="Discoverability" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(1)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(1)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                            <p:tab title="Dataset Availability" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(2)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(2)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                            <p:tab title="Term of Use" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(3)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(3)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>
+                            <p:tab title="Domain Metadata" rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(4)}">
+                                <p:dataList value="#{AdvancedSearchPage.metadataFieldList.get(4)}" var="item">
+                                    <h:outputLabel value="#{item.title}" />
+                                    <p:inputText id="searchValue" value="#{item.searchValue}"/>
+                                 </p:dataList> 
+                            </p:tab>  
+                               
+                          <!--  <p:tab title="General Metadata">
+                                <h:outputText value="Citation" style="font-weight: bolder"/>
+                                <br/>
+                                <ui:fragment>
+                                    <h:outputLabel value="Author " for="author"/>
+                                    <h:inputText id="author" value="#{AdvancedSearchPage.author}"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Dataset Release Date "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <p:outputLabel value="Title " for="title"/>
+                                    <h:inputText id="title" value="#{AdvancedSearchPage.title}"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Dataset Global ID "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Publisher "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Version "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <br/>
+                                <h:outputText value="General" style="font-weight: bolder"/>
+                                <br/>
+                                <ui:fragment>
+                                    <h:outputLabel value="Description/Abstract "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Keyword "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Topic Classification Controlled Vocabulary "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Topic Classification Controlled Vocabulary URL "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Original or Related Publications "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Other ID "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Distributor "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Contact "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Producer "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Production Date "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Production Place "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Depositor "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Deposit Date (set) "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Funding Agency "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Funding Grant Number "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Related Material "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Related Datasets "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Other References "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Data Sources "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Social Science Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="Country/Nation "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Biomedical Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Astrophysics Metadata (FIXME: populate with full list of fields)">
+                                <ui:fragment>
+                                    <h:outputLabel value="FIXME... "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Dataset Terms of Use">
+                                <ui:fragment>
+                                    <h:outputLabel value="License "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab>
+                            <p:tab title="Files">
+                                <ui:fragment>
+                                    <h:outputLabel value="Name "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                                <ui:fragment>
+                                    <h:outputLabel value="Filetype "/>
+                                    <h:inputText disabled="true"/>
+                                    <br/>
+                                </ui:fragment>
+                            </p:tab> -->
+                        </p:accordionPanel>
+                        <ui:fragment>
+                            <h:outputLabel value="All Fields? "/>
+                            <h:inputText disabled="true"/>
+                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>
+                            <br/>
+                        </ui:fragment>
+                        <br/>
+                        <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                    </h:form>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

@@ -1,0 +1,108 @@
+@startuml
+
+package model {
+	class DvObject <<(A,#BBBBFF)abstract>> {
+		id: Long
+		owner: DvObjectContainer
+	}
+
+	class DvObjectContainer <<(A,#BBBBFF) abstract>> {
+	}
+
+	class Dataverse {
+		name: String
+		alias: String 
+		owner: Dataverse
+		hasRelesedDescendant: boolean
+		description: String
+		contactEmail: String
+		affiliation: String
+		roles: Set<DataverseRole>
+		permissionRoot:Boolean
+		add( Dataset )
+		add( Dataverse )
+		getContent() Set<DvObject>
+	}
+
+	class Dataset {
+		owner: Dataverse
+		hasReleasedVersion: boolean
+		versions: List<DatasetVersion>
+		currentVersion():DatasetVersion
+		archivedVersions():List<DatasetVersion>
+		releasedVersion:DatasetVersion
+		content(): List<FileMetadata>
+	}
+
+	class FileMetadata {
+		name: String
+		owner: Dataset
+		versions: List<DataFileVersion>
+		getCurrentVestion(): DataFileVersion
+	}
+
+	class DataFile {
+		getCurrentMetadata: FileMetadata
+	}
+
+	FileMetadata "1..*" -> "1" DataFile
+
+	class MetadataSchema {
+
+	}
+	class Metadata{
+		title: String
+		citationDate: Date
+		distributor: String
+		description: String
+
+		extendedValues: ExtendedMetadata
+	}
+
+	class Template {
+		name: String
+		description: String
+
+	}
+
+	class DatasetVersion {
+		isReleased: boolean
+		getContent() Set<FileMetadata>
+	}
+ 
+	Metadata "0..*" -> "1" MetadataSchema
+	DatasetVersion -> Metadata
+	Dataverse o-> Template
+	Template -> Metadata : default
+}
+
+package permissions {
+	class User {
+		
+	}
+
+	class Group {
+		
+	}
+
+	class Role {
+		permissions: Set<Permission>
+	}
+}
+Group -|> User
+DvObjectContainer -up-|> DvObject
+Dataverse -up-|> DvObjectContainer
+Dataset   -up-|> DvObjectContainer
+DataFile  -up-|> DvObject 
+
+DvObject --> "0..1" DvObjectContainer : < Belongs to
+
+Dataset "1" *-- "1..*" DatasetVersion
+DatasetVersion "1" *-- "1..*" FileMetadata
+
+User .> DvObject : Has Permissions for >
+User o-- Role : For a given DV
+Group o-- Role  : For a given DV
+Group "0..*" o--> "0..*" User : contains
+Dataverse *-- Role
+@enduml

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
@@ -31,18 +32,16 @@ public class SearchPage implements java.io.Serializable {
     private String fq9;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private Long searchResultsCount;
-
-    public Long getSearchResultsCount() {
-        return searchResultsCount;
-    }
-
-    public void setSearchResultsCount(Long searchResultsCount) {
-        this.searchResultsCount = searchResultsCount;
-    }
     private int paginationStart;
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
     private Map<String, String> friendlyName = new HashMap<>();
+    private Map<String,Integer> numberOfFacets = new HashMap<>();
+    private Map<String,Integer> numberOfChildDatasets = new HashMap<>();
+    private Long fromDataverseId;
+    private Dataverse fromDataverse;
+
+    
 
     @EJB
     SearchServiceBean searchService;
@@ -58,6 +57,8 @@ public class SearchPage implements java.io.Serializable {
     public void search() {
         logger.info("Search button clicked. Query: " + query);
 
+//        query = query.trim(); // buggy, threw an NPE
+//        query = query.isEmpty() ? "*" : query; // also buggy
         query = query == null ? "*" : query;
         /**
          * @todo: Will JSF allow us to put more than one filter query (fq) in
@@ -75,9 +76,45 @@ public class SearchPage implements java.io.Serializable {
                 filterQueries.add(fq);
             }
         }
-        SolrQueryResponse solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+        SolrQueryResponse solrQueryResponse = null;
+        try {
+            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(cause + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause + " ");
+            }
+            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
+            logger.info(message);
+            return;
+        }
         searchResultsList = solrQueryResponse.getSolrSearchResults();
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        for (SolrSearchResult solrSearchResult : searchResults) {
+            if (solrSearchResult.getType().equals("dataverses")) {
+                List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
+                solrSearchResult.setDatasets(datasets);
+            } else if (solrSearchResult.getType().equals("datasets")) {
+                Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
+                if (dataset != null) {
+                    try {
+                        if (dataset.getLatestVersion().getCitation() != null) {
+                            solrSearchResult.setCitation(dataset.getLatestVersion().getCitation());
+                        }
+                    } catch (NullPointerException npe) {
+                        logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
+                    }
+                }
+            } else if (solrSearchResult.getType().equals("files")) {
+                /**
+                 * @todo: show DataTable variables
+                 */
+            }
+        }
         searchResultsCount = solrQueryResponse.getNumResultsFound();
         for (Map.Entry<String, List<String>> entry : solrQueryResponse.getSpellingSuggestionsByToken().entrySet()) {
             spelling_alternatives.add(entry.getValue().toString());
@@ -85,33 +122,14 @@ public class SearchPage implements java.io.Serializable {
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
         friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
         friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
-        friendlyName.put(SearchFields.CATEGORY, "Category");
+//        friendlyName.put(SearchFields.CATEGORY, "Category");
         friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
-        friendlyName.put(SearchFields.CITATION_YEAR, "Citation Year");
-        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
-        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type Group");
-    }
-
-    public int getPaginationStart() {
-        return paginationStart;
-    }
-
-    public void setPaginationStart(int paginationStart) {
-        this.paginationStart = paginationStart;
-    }
-
-    public void addFacet(FacetLabel facetLabel) {
-        String filterQuery = facetLabel.getFilterQuery();
-        logger.info("facet clicked: " + filterQuery);
-        filterQueries.add(filterQuery);
-        search();
-    }
-
-    public void removeFacet(FacetLabel facetLabel) {
-        String filterQuery = facetLabel.getFilterQuery();
-        logger.info("facet removed: " + filterQuery);
-        filterQueries.remove(filterQuery);
-        search();
+        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
+//        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
+        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
+        if (fromDataverseId != null) {
+            fromDataverse = dataverseService.find(fromDataverseId);
+        }
     }
 
     public String getQuery() {
@@ -218,6 +236,22 @@ public class SearchPage implements java.io.Serializable {
         this.searchResultsList = searchResultsList;
     }
 
+    public Long getSearchResultsCount() {
+        return searchResultsCount;
+    }
+
+    public void setSearchResultsCount(Long searchResultsCount) {
+        this.searchResultsCount = searchResultsCount;
+    }
+
+    public int getPaginationStart() {
+        return paginationStart;
+    }
+
+    public void setPaginationStart(int paginationStart) {
+        this.paginationStart = paginationStart;
+    }
+
     public List<FacetCategory> getFacetCategoryList() {
         return facetCategoryList;
     }
@@ -240,6 +274,58 @@ public class SearchPage implements java.io.Serializable {
 
     public void setFriendlyName(Map<String, String> friendlyName) {
         this.friendlyName = friendlyName;
+    }
+
+    public  int getNumberOfFacets(String name, int defaultValue) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numberOfFacets.put(name,defaultValue);
+            numFacets = defaultValue;
+        }
+        return numFacets;
+    }
+    
+    public void incrementFacets(String name, int incrementNum) {
+        Integer numFacets = numberOfFacets.get(name);
+        if (numFacets == null) {
+            numFacets = incrementNum;
+        }
+        numberOfFacets.put(name, numFacets + incrementNum);   
+    }
+    
+    
+    public  int getNumberOfChildDatasets(String name, int defaultValue) {
+        Integer numChildDatasets = numberOfChildDatasets.get(name);
+        if (numChildDatasets == null) {
+            numberOfChildDatasets.put(name,defaultValue);
+            numChildDatasets = defaultValue;
+        }
+        return numChildDatasets;
+    }
+    
+    public void incrementChildDatasets(String name, int incrementNum) {
+        Integer numChildDatasets = numberOfChildDatasets.get(name);
+        if (numChildDatasets == null) {
+            numChildDatasets = incrementNum;
+        }
+        numberOfChildDatasets.put(name, numChildDatasets + incrementNum);   
+    }
+    
+
+    public Long getFromDataverseId() {
+        return fromDataverseId;
+    }
+
+    public void setFromDataverseId(Long fromDataverseId) {
+        this.fromDataverseId = fromDataverseId;
+    }
+
+    public Dataverse getFromDataverse() {
+        return fromDataverse;
+    }
+
+    public void setFromDataverse(Dataverse fromDataverse) {
+        this.fromDataverse = fromDataverse;
     }
 
 }

@@ -19,10 +19,12 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Named
 public class DataverseUserServiceBean {
-
+	
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
+	private static final String GUEST_USERNAME = "__GUEST__";
+	
     public String encryptPassword(String plainText) {
         return PasswordEncryption.getInstance().encrypt(plainText);
     }
@@ -31,16 +33,23 @@ public class DataverseUserServiceBean {
          return em.merge(dataverseUser);
     }
     
-    /*
-    public List<DataverseUser> findByUserName(String userName) {
-        Query query = em.createQuery("select object(o) from DataverseUser as o where o.userName =:userName");
-        query.setParameter("userName", userName);
-        return query.getResultList();
-    }
-    */
-    
+	public DataverseUser findGuestUser() {
+		DataverseUser theGuest = findByUserName(GUEST_USERNAME);
+		theGuest.setGuest(true);
+		return theGuest;
+	}
+	
+	public DataverseUser createGuestUser() {
+		DataverseUser guest = new DataverseUser();
+		guest.setUserName(GUEST_USERNAME);
+		guest.setEmail("hello@world.com");
+		guest.setFirstName("Guest");
+		guest.setLastName("Guest");
+		return save(guest);
+	}
+	
     public DataverseUser find(Long pk) {
-        return (DataverseUser) em.find(DataverseUser.class, pk);
+        return em.find(DataverseUser.class, pk);
     }    
     
     public DataverseUser findByUserName(String userName) {
@@ -52,7 +61,13 @@ public class DataverseUserServiceBean {
         }
         return user;
     }
-
+	
+	public List<DataverseUser> listByUsernamePart ( String part ) {
+		return em.createNamedQuery("DataverseUser.listByUserNameLike", DataverseUser.class)
+				.setParameter("userNameLike", "%" + part + "%")
+				.getResultList();
+	}
+	
     public DataverseUser findByEmail(String email) {
         String query = "SELECT u from DataverseUser u where u.email = :email ";
         DataverseUser user = null;
