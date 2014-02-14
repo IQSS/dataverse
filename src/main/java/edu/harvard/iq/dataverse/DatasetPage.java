@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,46 +212,44 @@ public class DatasetPage implements java.io.Serializable {
                 fmdIndex++;
             }
         }        
-        dataset = datasetService.save(dataset);
+
         // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
             try {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Study Directory: " + dataset.getFileSystemDirectory().toString());
-                boolean ingestedAsTabular = false; 
+                boolean ingestedAsTabular = false;
                 /* Make sure the dataset directory exists: */
-               if (!Files.exists(dataset.getFileSystemDirectory())) {
+                if (!Files.exists(dataset.getFileSystemDirectory())) {
                     /* Note that "createDirectories()" must be used - not 
                      * "createDirectory()", to make sure all the parent 
                      * directories that may not yet exist are created as well. 
                      */
                     Files.createDirectories(dataset.getFileSystemDirectory());
-               }
-                
-                // Re-set the owner of the datafile - last time the owner was 
-                // set was before the owner dataset was saved/synced with the db;
-                // this way the datafile will know the id of its .getOwner() - 
-               // even if this is a brand new dataset here. -- L.A.
-                dFile.setOwner(dataset);
-                
+                }
+
                 if (ingestableAsTabular(dFile)) {
                     // Locate ingest plugin for the file format by looking
                     // it up with the Ingest Service Provider manager:
                     //TabularDataFileReader ingestPlugin = DataIngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
                     TabularDataFileReader ingestPlugin = new DTAFileReader(
-                        new DTAFileReaderSpi()
+                            new DTAFileReaderSpi()
                     );
                     try {
                         TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
-                    
+
                         if (tabDataIngest != null) {
                             if (tabDataIngest.getDataTable() != null) {
+                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
+                                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
                                 dFile.setDataTable(tabDataIngest.getDataTable());
                                 tabDataIngest.getDataTable().setDataFile(dFile);
                             }
                             File tabFile = tabDataIngest.getTabDelimitedFile();
                             if (tabFile != null && tabFile.exists()) {
-                                Files.copy(Paths.get(tabFile.getAbsolutePath()), dFile.getFileSystemLocation());
+                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                                dFile.setName(dFile.getName().replaceAll("\\.dta$", ".tab"));
+                                Files.copy(Paths.get(tabFile.getAbsolutePath()), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
                             }
                             ingestedAsTabular = true;
                         }
@@ -261,14 +260,19 @@ public class DatasetPage implements java.io.Serializable {
 
                 if (!ingestedAsTabular) {
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation());               
+                    Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                 }
-
+                
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+                // TODO: 
+                // discard the datafile and disconnect it from the dataset object.
             }
-                  
-        }        
+
+        }
+        
+        dataset = datasetService.save(dataset);
+
         newFiles.clear();
         editMode = null;
     }
@@ -283,19 +287,19 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        DataFile dFile = new DataFile( uFile.getFileName(), uFile.getContentType()); 
-        FileMetadata fmd = new FileMetadata();       
+        DataFile dFile = new DataFile(uFile.getFileName(), uFile.getContentType());
+        FileMetadata fmd = new FileMetadata();
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
         dFile.getFileMetadatas().add(fmd);
         fmd.setLabel(dFile.getName());
         fmd.setCategory(dFile.getContentType());
         fmd.setDescription("add description");
-        if (editVersion.getFileMetadatas() == null){
-            editVersion.setFileMetadatas(new ArrayList() );
+        if (editVersion.getFileMetadatas() == null) {
+            editVersion.setFileMetadatas(new ArrayList());
         }
         editVersion.getFileMetadatas().add(fmd);
-        fmd.setDatasetVersion(editVersion);       
+        fmd.setDatasetVersion(editVersion);
         dataset.getFiles().add( dFile );
         newFiles.put(uFile, dFile);
     }

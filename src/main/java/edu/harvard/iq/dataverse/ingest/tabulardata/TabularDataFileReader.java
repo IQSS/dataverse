@@ -34,61 +34,31 @@ import static java.lang.System.*;
  */
 public abstract class TabularDataFileReader {
 
-    /**
-     * StatData I/O API version number as a <code>String</code>
-     */
+    
     /*
      * TODO: rename! -- L.A. 4.0 
      */
     public static String SDIO_VERSION = "4.0";
 
 
-    /**
-     * The <code>StatDataFileReaderSpi</code> object that instantiated this 
-     * object, or  <code>null</code> if its identity is not known or none
-     * exists.  By default it is initially set to <code>null</code>.
-     */
+    
     protected TabularDataFileReaderSpi originatingProvider;
 
-    /**
-     * Constructs an <code>StatDataFileReader</code> and sets its 
-     * <code>originatingProvider</code> field to the given value.
-     * 
-     * @param originatingProvider the <code>StatDataFileReaderSpi</code>
-     * that invokes this constructor, or <code>null</code>.
-     */
     protected TabularDataFileReader(TabularDataFileReaderSpi originatingProvider){
         this.originatingProvider = originatingProvider;
     }
+    
+    public TabularDataFileReader(){
+    }
 
-    /**
-     * Returns the <code>StatDataFileReaderSpi</code> that was supplied to the
-     * the constructor. This value may be <code>null</code>.
-     * 
-     * @return <code>StatDataFileReaderSpi</code>, or <code>null</code>.
-     */
     public TabularDataFileReaderSpi getOriginatingProvider() {
         return originatingProvider;
     }
     
-    /**
-     * Returns a <code>String</code> that identifies the format of 
-     * the input source
-     * 
-     * @return the format name as a <code>String</code>.
-     * 
-     * @throws java.io.IOException if a reading error occurs.
-     */
     public String getFormatName() throws IOException {
         return originatingProvider.getFormatNames()[0];
     }
     
-    /**
-     * Releases any resources held by this instance.
-     * 
-     * <p>The current default implementation does not take any
-     * action.
-     */
     public void dispose() {
     
     }
@@ -140,13 +110,6 @@ public abstract class TabularDataFileReader {
     // Utility methods
 
 
-    /**
-     * Writes the contents of the given <code>byte</code> array 
-     * as a hexadecimal string
-     *
-     * @param buff a <code>byte</code> array
-     * @param hdr  a <code>String</code> line before the hexadecimal string
-     */
     public void printHexDump(byte[] buff, String hdr) {
         int counter = 0;
         if (hdr != null) {
