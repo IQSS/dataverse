@@ -94,7 +94,6 @@ public class DataverseRoleServiceBean {
 	
 	public Set<RoleAssignment> rolesAssignments( Dataverse dv ) {
 		Set<RoleAssignment> ras = new HashSet<>();
-		
 		while ( ! dv.isEffectivlyPermissionRoot() ) {
 			ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
 					.setParameter("definitionPointId", dv.getId() ).getResultList() );
@@ -118,7 +117,7 @@ public class DataverseRoleServiceBean {
 	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
 		if ( user==null ) throw new IllegalArgumentException("User cannot be null");
 		TypedQuery<RoleAssignment> query = em.createQuery(
-				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.owner.id=:dvoId",
+				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.definitionPoint.id=:dvoId",
 				RoleAssignment.class);
 		query.setParameter("userId", user.getId());
 		query.setParameter("dvoId", dvo.getId());

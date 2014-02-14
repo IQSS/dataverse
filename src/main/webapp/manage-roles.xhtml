@@ -74,7 +74,7 @@
 										layout="pageDirection"> 
 										<f:selectItems value="#{manageRolesPage.availableRoles()}"
 													   var="role"
-													   itemLabel="#{role.name}"
+													   itemLabel="#{role.name} (defined at #{role.owner.name})"
 													   itemValue="#{role.id}"
 													   />
 									</h:selectManyCheckbox>  
@@ -86,7 +86,7 @@
 										<p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
 											Guest users inherit these roles from parent dataverses:
 											<p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
-												#{ra.role.name} (from #{ra.definitionPoint.name})
+												#{ra.role.name} <small>(assigned at #{ra.definitionPoint.name})</small>
 											</p:dataList>
 										</p:outputPanel>
 									</h:panelGroup>

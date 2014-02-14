@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
 import edu.harvard.iq.dataverse.engine.Permission;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,7 +18,7 @@ import javax.ws.rs.QueryParam;
  */
 @Path("permissions")
 public class Permissions extends AbstractApiBean {
-	
+	private static final Logger logger = Logger.getLogger(Permissions.class.getName());
 	@EJB
 	PermissionServiceBean permissions;
 	

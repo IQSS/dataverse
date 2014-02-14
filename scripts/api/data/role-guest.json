@@ -1,0 +1,8 @@
+{
+  "alias": "guest-role",
+  "name": "What guests can do",
+  "description": "Guests can browse",
+  "permissions": [
+    "Access"
+  ]
+}

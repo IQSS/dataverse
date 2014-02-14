@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.util.BitSet;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -138,5 +139,29 @@ public class DataverseRole implements Serializable  {
 	public String toString() {
 		return "DataverseRole{" + "id=" + id + ", alias=" + alias + '}';
 	}
+
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 97 * hash + Objects.hashCode(this.id);
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final DataverseRole other = (DataverseRole) obj;
+		if (!Objects.equals(this.id, other.id)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 	
 }

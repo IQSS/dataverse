@@ -131,7 +131,6 @@ public class ManageRolesPage implements java.io.Serializable {
 		DataverseRole aRole = new DataverseRole();
 		setRole( aRole );
 		setActiveTab(ObjectType.ROLES);
-		logger.info("Create new role");
 	}
 	
 	public void cancelEdit( ActionEvent e ) {
@@ -151,7 +150,8 @@ public class ManageRolesPage implements java.io.Serializable {
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
 		}
-		
+		objectType=ObjectType.DATAVERSE;
+		setIntent( Intent.VIEW );
 	}
 	
 	public void saveRole( ActionEvent e ) {
