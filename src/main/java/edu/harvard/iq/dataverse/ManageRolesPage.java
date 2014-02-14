@@ -5,10 +5,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRoles;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRoot;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -58,10 +60,10 @@ public class ManageRolesPage implements java.io.Serializable {
 	@Inject
 	DataversePage dvpage;
 	
-	private List<String> selectedPermissions;
 	
 	private Intent intent = null;
 	
+	private List<String> selectedPermissions;
 	private String intentParam;
 	private Long viewRoleId;
 	private int activeTabIndex;
@@ -74,6 +76,9 @@ public class ManageRolesPage implements java.io.Serializable {
 	private String assignRoleUsername;
 	private Dataverse dataverse;
 	private Long assignRoleRoleId;
+	private List<DataverseRole> guestRolesHere;
+	private List<RoleAssignment> guestRolesUp;
+	private List<String> guestRolesHereId;
 	
 	public void init() {
 		
@@ -92,6 +97,21 @@ public class ManageRolesPage implements java.io.Serializable {
 			} 
 		}
 		dvpage.setDataverse(dataverse);
+		
+		guestRolesHere = new LinkedList<>();
+		guestRolesUp = new LinkedList<>();
+		for ( RoleAssignment ra : rolesService.roleAssignments(usersService.findGuestUser(), dataverse).getAssignments() ) {
+			if ( ra.getDefinitionPoint().equals(dataverse) ) {
+				guestRolesHere.add(ra.getRole());
+			} else {
+				guestRolesUp.add( ra );
+			}
+		}
+		guestRolesHereId = new LinkedList<>();
+		for ( DataverseRole aRole : guestRolesHere ) {
+			guestRolesHereId.add( Long.toString(aRole.getId()) );
+		}
+		
 	}
 	
 	public List<DataverseRole> getRoles() {
@@ -119,7 +139,19 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	public void saveDataverse( ActionEvent e ) {
-		// TODO do
+		Set<DataverseRole> guestRolesToAddHere = new HashSet<>();
+		for ( String roleId : getGuestRolesHereId() ) {
+			guestRolesToAddHere.add( em.find(DataverseRole.class, Long.parseLong(roleId)) );
+		}
+		
+		try {
+			engineService.submit( new UpdateDataverseGuestRoles(guestRolesToAddHere, session.getUser(), dataverse));
+			engineService.submit( new UpdateDataversePermissionRoot(permissionRoot, session.getUser(), dataverse));
+			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
+		} catch (CommandException ex) {
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
+		}
+		
 	}
 	
 	public void saveRole( ActionEvent e ) {
@@ -136,6 +168,8 @@ public class ManageRolesPage implements java.io.Serializable {
 	public List<Permission> getRolePermissions() {
 		return (role != null ) ? new ArrayList( role.permissions() ) : Collections.emptyList();
 	}
+	
+	
 	
 	public List<String> getSelectedPermissions() {
 		return selectedPermissions;
@@ -175,7 +209,7 @@ public class ManageRolesPage implements java.io.Serializable {
 				roles.add( aRole );
 			}
 		}
-		
+		Collections.sort(roles, DataverseRole.CMP_BY_NAME );
 		return roles;
 	}
 	
@@ -189,16 +223,6 @@ public class ManageRolesPage implements java.io.Serializable {
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage() );
 		}
-	}
-	
-	// TODO add an itemtip, as per http://www.primefaces.org/showcase/ui/autoCompleteItemtip.jsf
-	public List<String> _acUsername( String input ) {
-		List<DataverseUser> users = usersService.listByUsernamePart(input);
-		List<String> out = new ArrayList<>(users.size());
-		for ( DataverseUser u : users ) {
-			out.add( u.getUserName() );
-		}
-		return out;
 	}
 	
 	public List<DataverseUser> acUsername( String input ) {
@@ -308,6 +332,26 @@ public class ManageRolesPage implements java.io.Serializable {
 
 	public Dataverse getDataverse() {
 		return dataverse;
+	}
+	
+	public List<RoleAssignment> getGuestRolesUp() {
+		return guestRolesUp;
+	}
+
+	public List<DataverseRole> getGuestRolesHere() {
+		return guestRolesHere;
+	}
+
+	public void setGuestRolesHere(List<DataverseRole> guestRolesHere) {
+		this.guestRolesHere = guestRolesHere;
+	}
+
+	public List<String> getGuestRolesHereId() {
+		return guestRolesHereId;
+	}
+
+	public void setGuestRolesHereId(List<String> guestUserRolesHereId) {
+		this.guestRolesHereId = guestUserRolesHereId;
 	}
 	
 	public static class RoleAssignmentRow {

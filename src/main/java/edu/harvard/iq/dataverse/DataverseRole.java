@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +35,15 @@ import org.hibernate.validator.constraints.NotBlank;
 })
 @Entity
 public class DataverseRole implements Serializable  {
-	
+	public static final Comparator<DataverseRole> CMP_BY_NAME = new Comparator<DataverseRole>(){
+
+		@Override
+		public int compare(DataverseRole o1, DataverseRole o2) {
+			int cmp = o1.getName().compareTo(o2.getName());
+			if ( cmp != 0 ) return cmp;
+			return o1.getOwner().getName().compareTo( o2.getOwner().getName() );
+		}
+	};
 	public static Set<Permission> permissionSet( Iterable<DataverseRole> roles ) {
 		long miniset = 0l;
 		for ( DataverseRole role : roles ) {

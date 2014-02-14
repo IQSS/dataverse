@@ -70,13 +70,31 @@
 										box unchecked.
 									</h:panelGroup>
 									<h:outputText value="Guest User" />
-									<div class="placeholder">We'll have a list of applicable roles here.</div>
+									<h:selectManyCheckbox value="#{manageRolesPage.guestRolesHereId}"  
+										layout="pageDirection"> 
+										<f:selectItems value="#{manageRolesPage.availableRoles()}"
+													   var="role"
+													   itemLabel="#{role.name}"
+													   itemValue="#{role.id}"
+													   />
+									</h:selectManyCheckbox>  
 									<h:panelGroup>
-										Define what guest users can and cannot do on this dataverse.
+										Define what roles non-logged in users have.
+										<p:outputPanel rendered="#{empty manageRolesPage.guestRolesUp}">
+											Guests do not inherit any role from parent dataverses.
+										</p:outputPanel>
+										<p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
+											Guest users inherit these roles from parent dataverses:
+											<p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
+												#{ra.role.name} (from #{ra.definitionPoint.name})
+											</p:dataList>
+										</p:outputPanel>
 									</h:panelGroup>
 								</p:panelGrid>
 							</p:panelGrid>
-							<p:commandButton value="Save" actionListener="#{manageRolesPage.saveDataverse()}" />
+							<p:commandButton value="Save"
+											 actionListener="#{manageRolesPage.saveDataverse}"
+											 update="@all"/>
 						</h:form>
 					</p:tab>
 
@@ -145,7 +163,7 @@
 									</p:panelGrid>
 								</p:panel>
 								<p:panel styleClass="panelLayoutBlock" header="Role Permissions">
-									<h:selectManyCheckbox id="pageDirection" value="#{manageRolesPage.selectedPermissions}"  
+									<h:selectManyCheckbox value="#{manageRolesPage.selectedPermissions}"  
 										layout="pageDirection"> 
 										<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn" 
 													   itemLabel="#{pmsn.humanName} (#{pmsn.name()})"

@@ -33,14 +33,23 @@
 .helpText {
 	background-color: #CCF;
 	font-size: smaller;
+	position: relative;
+	padding-left: 2em;
 }
 
 .helpText:before {
 	content:"?";
-	display: inline-block;
+	position: absolute;
+	top:0;
+	left:0;
+	bottom:0;
+	width: 1em;
+	text-align: center;
+	vertical-align: middle;
 	background-color: blue;
 	color: white;
 	margin-right: 4px;
+	line-height: 1em;
 	padding: 4px;
 }
 
