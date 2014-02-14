@@ -25,7 +25,7 @@ import javax.persistence.OrderBy;
 
 
 @Entity
-public class DatasetFieldValue implements Serializable {
+public class DatasetFieldValue implements Serializable,   Comparable<DatasetFieldValue> {
 
     public DatasetFieldValue () {
     }
@@ -132,5 +132,10 @@ public class DatasetFieldValue implements Serializable {
     private int displayOrder;
     public int getDisplayOrder() { return this.displayOrder;}
     public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
+
+    @Override
+    public int compareTo(DatasetFieldValue o) {
+        return Integer.compare(this.getDatasetField().getDisplayOrder(),(o.getDatasetField().getDisplayOrder())); 
+    }
     
 }

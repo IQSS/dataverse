@@ -40,8 +40,7 @@ public class VariableServiceBean {
     }    
     
     public List<DataVariable> findByDataFileId(Long fileId) {
-         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataF"
-                 + "ile.id =:fileId order by o.fileOrder");
+         Query query = em.createQuery("select object(o) from DataVariable as o where o.dataTable.dataFile.id =:fileId order by o.fileOrder");
          query.setParameter("fileId", fileId);
          return query.getResultList();
     }
@@ -61,10 +60,11 @@ public class VariableServiceBean {
      * -- L.A. 4.0
      */
     public VariableFormatType findVariableFormatTypeByName(String name) {
-        String query="SELECT t from VariableFormatType t where t.name = '"+name+"'";
+        Query query = em.createQuery("SELECT t from VariableFormatType t where t.name = :name");
+        query.setParameter("name", name);
         VariableFormatType type = null;
         try {
-            type=(VariableFormatType)em.createQuery(query).getSingleResult();
+            type = (VariableFormatType)query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }

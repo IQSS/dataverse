@@ -10,12 +10,9 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

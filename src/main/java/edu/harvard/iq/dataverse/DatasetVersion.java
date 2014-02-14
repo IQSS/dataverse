@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -91,7 +93,7 @@ public class DatasetVersion implements Serializable {
     }
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-   @OrderBy("datasetField") 
+    @OrderBy("datasetField.displayOrder") 
     private List<DatasetFieldValue> datasetFieldValues;
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return datasetFieldValues;
@@ -99,6 +101,9 @@ public class DatasetVersion implements Serializable {
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
     }
+
+    
+    
     /*
      @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
      private List<VersionContributor> versionContributors;
@@ -442,6 +447,15 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+        //Collections.sort(retList);
+        Collections.sort(retList, new Comparator<DatasetFieldValue>(){
+           public int compare (DatasetFieldValue d1, DatasetFieldValue d2){
+               int a = d1.getDatasetField().getDisplayOrder();
+               int b = d2.getDatasetField().getDisplayOrder();
+               return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+           }
+       });
+        
         return retList;
     }
 }

@@ -20,11 +20,6 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                 </f:metadata>
                 
-                <!-- Message Panel -->
-                <p:panel styleClass="panelLayoutTitleBlock">
-                    <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}'s Account" rendered="#{DataverseUserPage.editMode == 'INFO' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                </p:panel>
-
                 <h:form id="dataverseUserForm">
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
@@ -157,7 +152,7 @@
                     </p:tabView>
                     <p:tabView id="tabView2" rendered="#{DataverseUserPage.editMode == 'INFO'}">
                         <p:tab id="somedata" title="Data Related To Me">
-                            <p:panel>
+                          <!--  <p:panel>
                                 <p:panelGrid columns="4">
                                     <ui:fragment>
                                     <p:selectOneMenu value="#{DataverseUserPage.permissionType}">
@@ -171,23 +166,23 @@
                                             <ui:param name="userId" value="#{DataverseUserPage.dataverseUser.id}"/>
                                             <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
                                         </ui:include>
-                                    </ui:fragment>
+                                    </ui:fragment> -->
                                     <ui:fragment>    
                                         <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
                                             <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
                                             <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
                                         </p:menuButton>
                                     </ui:fragment> 
-                                </p:panelGrid>
-                            </p:panel>
+                            <!--    </p:panelGrid>
+                            </p:panel> -->
                         </p:tab>
-                        <p:tab id="notifications" title="Notifications">
+                       <!--   <p:tab id="notifications" title="Notifications">
                             <p:panel>
                                 <p:dataList value="#{DataverseUserPage.notifications}" var="item">  
                                     <h:outputText value="#{item.notification}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;"/>
                                 </p:dataList> 
                             </p:panel>
-                        </p:tab>
+                        </p:tab> -->
                     </p:tabView>
                 </h:form>
             </ui:define>

@@ -34,6 +34,11 @@ import java.text.*;
 import org.apache.commons.lang.*;
 import org.apache.commons.codec.binary.Hex;
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -60,7 +65,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
  */
 
 public class DTAFileReader extends TabularDataFileReader{
-    @EJB VariableServiceBean varService;
+    @Inject
+    VariableServiceBean varService;
     // static fields, STATA-specific constants, etc. 
     // (should it all be isolated in some other class?) 
 
@@ -412,7 +418,7 @@ public class DTAFileReader extends TabularDataFileReader{
     private NumberFormat doubleNumberFormatter = new DecimalFormat();
 
     //private SDIOMetadata smd = new DTAMetadata();
-   TabularDataIngest ingesteddata;
+    TabularDataIngest ingesteddata = new TabularDataIngest();
 
     /* 
      * stataDataSection was the old "DataTable" - the proprietary object
@@ -473,16 +479,6 @@ public class DTAFileReader extends TabularDataFileReader{
      * -- L.A. 4.0
      */
     // private Map<String, String> variableLabelMap = new LinkedHashMap<String, String>();
-
-
-    /**
-     * The <code>String</code> that represents the numeric missing value 
-     * for a tab-delimited data file. Historically, "NA" was used -  
-     * after the symbol for missing value in R. These days, we are  
-     * using an empty string (""), for both strings and numerics. 
-     * TODO: lose these 2 distinct variables and just use one missing value? 
-     * -- L.A. 4.0. 
-     */
     
     private static final String MissingValueForTabDelimitedFile = "";
   
@@ -498,12 +494,14 @@ public class DTAFileReader extends TabularDataFileReader{
         super(originator);
     }
 
-
     // Methods ---------------------------------------------------------------//
 
-    private void init(){
+    /*
+     * This method configures Stata's release-specific parameters:
+     */
+    private void init() throws IOException {
         //
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("release number="+releaseNumber);
+        if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("release number="+releaseNumber);
         
         if (releaseNumber < 111) {
             typeOffsetTable = release105type;
@@ -540,6 +538,13 @@ public class DTAFileReader extends TabularDataFileReader{
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340);
 
+        try {
+            Context ctx = new InitialContext();
+            varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
+        } catch (NamingException nex) {
+            if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
+            throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
+        }
     }
 
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
@@ -570,7 +575,6 @@ public class DTAFileReader extends TabularDataFileReader{
         
         // 4.0 smd.setVariableStorageType(variableTypesFinal);
 
-        
         ingesteddata.setDataTable(dataTable);
         
         dbgLog.info("***** DTAFileReader: read() end *****");
@@ -612,9 +616,9 @@ public class DTAFileReader extends TabularDataFileReader{
                     + "we cannot ingest this Stata file.");
             throw new IllegalArgumentException("given file is not stata-dta type");
         } else {
+            releaseNumber = (int) magic_number[0];
             init();
 
-            releaseNumber = (int) magic_number[0];
             // smd.getFileInformation().put("releaseNumber", releaseNumber);
             // smd.getFileInformation().put("byteOrder", (int)magic_number[1]);
             // smd.getFileInformation().put("OSByteOrder", ByteOrder.nativeOrder().toString());
@@ -633,7 +637,7 @@ public class DTAFileReader extends TabularDataFileReader{
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("this file is stata-dta type: "
                         + STATA_RELEASE_NUMBER.get(releaseNumber)
-                        + "(Number=" + releaseNumber + ")");
+                        + " (that means Stata version " + releaseNumber + ")");
             }
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("Endian(file)(Big: 1; Little:2)=" + magic_number[1]);
@@ -675,6 +679,10 @@ public class DTAFileReader extends TabularDataFileReader{
         // smd.getFileInformation().put("varQnty", new Integer(shrt_nvar));
         dataTable.setVarQuantity(new Long(shrt_nvar));
         int nvar = shrt_nvar;
+        
+        if (dbgLog.isLoggable(Level.FINE)) {
+            dbgLog.fine("number of variables(nvar)=" + nvar);
+        }
 
         // 4.0 Initialize variables: 
         List<DataVariable> variableList = new ArrayList<DataVariable>();
@@ -887,7 +895,11 @@ public class DTAFileReader extends TabularDataFileReader{
                 if (typeLabel != null) {
                     // TODO: get rid of the service lookups for known format and interval 
                     // types, etc. -- L.A. 4.0
-                    dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                    VariableFormatType formatTypeNumeric = varService.findVariableFormatTypeByName("numeric");
+                    if (formatTypeNumeric == null) {
+                        throw new IOException("No numeric format type in the database. (has the db been populated with reference data?)");
+                    }
+                    dataTable.getDataVariables().get(i).setVariableFormatType(formatTypeNumeric);
                     if (typeLabel.equals("Byte") || typeLabel.equals("Integer") || typeLabel.equals("Long")) {
                         // these are treated as discrete:
                         dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));

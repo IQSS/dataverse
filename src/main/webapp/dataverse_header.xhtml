@@ -17,7 +17,12 @@
                 <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{dataverse.id == null and ownerId == null}"/>
             </ui:fragment>
             <ui:fragment>
-                <p:panelGrid columns="2">
+                <p:panelGrid columns="3">
+                    <ui:fragment>
+                        <h:outputLink value="/guides/index.html" target="_blank">
+                            User Guides
+                        </h:outputLink>
+                    </ui:fragment>
                     <ui:fragment>
                         <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE" rendered="#{dataverseSession.user.guest}">
                             Create Account
@@ -47,33 +52,35 @@
     </p:panel>
 
     <style type="text/css">
-        div[id$='breadcrumbNavBlock'] > .ui-panel-content {overflow:hidden;}
-
+        #breadcrumbNavBlock > .ui-panel-content {overflow:hidden;}
+        
+        #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
+        
         button[id$='breadcrumbBtn'] span.ui-button-text, 
         button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
-
+        
         button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
         button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
-
+        
         button[id$='breadcrumbBtn'] .ui-button-icon-left, 
         button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
-
-        div[id$='breadcrumbNavBlock'] .breadcrumbCarrot {float:left; margin:0 .2em; color:#B3B3B3;}
-
-        div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
-        div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
-
-        div[id$='breadcrumbNavBlock'] > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
-
-        div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn'], 
-        div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
-        div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn'] span.ui-icon, 
-        div[id$='breadcrumbNavBlock'] button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
-
-        div[id$='breadcrumbNavBlock'] .ui-tree.ui-widget-content {border:0;}
-
-
-
+        
+        #breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+        
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
+        
+        #breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
+        
+        #breadcrumbNavBlock button[id$='breadcrumbBtn'], 
+        #breadcrumbNavBlock button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
+        #breadcrumbNavBlock button[id$='breadcrumbBtn'] span.ui-icon, 
+        #breadcrumbNavBlock button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
+        
+        #breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
+        
+        
+        
     </style>
 
     <!-- Breadcrumbs Panel -->
@@ -83,8 +90,16 @@
             <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/> 
 
             <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                <p:commandButton id="breadcrumbBtn" value="#{dv.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>
-                <p:overlayPanel id="breadcrumbPanel" for="breadcrumbBtn" hideEffect="fade">  
+                
+                <p:outputPanel id="breadcrumbPnlIcn" style="float:left; margin-top:.3em; width:16px; height:16px; background-image: url(/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap); background-position:-64px -16px;"/>
+                
+                <h:outputLink id="breadcrumbLnk" value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;">
+                    <h:outputText value="#{dv.name} Dataverse"/>
+                </h:outputLink>
+                
+<!--                <p:commandButton id="breadcrumbBtn" value="#{dv.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>-->
+                
+                <p:overlayPanel id="breadcrumbPanel" for="breadcrumbPnlIcn" hideEffect="fade">  
                     <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
                         <p:treeNode>
                             <h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == node.id and dataset == null }"/>
@@ -97,8 +112,8 @@
             </ui:fragment>
             
             <ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null }"/>
-                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" rendered="#{dataverse.id != dv.id or dataset != null}">
+                <h:outputText value="#{dv.name} Dataverse" style="font-weight:#{dataverse.id == dv.id ? 'bold' : 'normal'}; padding-top:1px; margin-left:.2em; display:block; float:left;" rendered="#{dataverse.id == dv.id and dataset == null }"/>
+                <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;" rendered="#{dataverse.id != dv.id or dataset != null}">
                     <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"/>
                 </h:outputLink>
             </ui:fragment>

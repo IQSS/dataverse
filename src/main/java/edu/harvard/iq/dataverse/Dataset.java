@@ -169,7 +169,7 @@ public class Dataset extends DvObjectContainer {
             filesRootDirectory = "/tmp/files";
         }
         
-        studyDir = Paths.get(filesRootDirectory, this.getId().toString());        
+        studyDir = Paths.get(filesRootDirectory, this.getAuthority().toString(), this.getIdentifier().toString());        
         return studyDir; 
     }
 
