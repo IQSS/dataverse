@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -218,6 +220,8 @@ public class DatasetPage implements java.io.Serializable {
             DataFile dFile = newFiles.get(uFile);
             try {
                 boolean ingestedAsTabular = false;
+                boolean metadataExtracted = false; 
+                
                 /* Make sure the dataset directory exists: */
                 if (!Files.exists(dataset.getFileSystemDirectory())) {
                     /* Note that "createDirectories()" must be used - not 
@@ -228,33 +232,24 @@ public class DatasetPage implements java.io.Serializable {
                 }
 
                 if (ingestableAsTabular(dFile)) {
-                    // Locate ingest plugin for the file format by looking
-                    // it up with the Ingest Service Provider manager:
-                    //TabularDataFileReader ingestPlugin = DataIngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
-                    TabularDataFileReader ingestPlugin = new DTAFileReader(
-                            new DTAFileReaderSpi()
-                    );
-                    try {
-                        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
-
-                        if (tabDataIngest != null) {
-                            if (tabDataIngest.getDataTable() != null) {
-                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
-                                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
-                                dFile.setDataTable(tabDataIngest.getDataTable());
-                                tabDataIngest.getDataTable().setDataFile(dFile);
-                            }
-                            File tabFile = tabDataIngest.getTabDelimitedFile();
-                            if (tabFile != null && tabFile.exists()) {
-                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
-                                dFile.setName(dFile.getName().replaceAll("\\.dta$", ".tab"));
-                                Files.copy(Paths.get(tabFile.getAbsolutePath()), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                            }
-                            ingestedAsTabular = true;
-                        }
+                    
+                    try {          
+                        ingestedAsTabular = ingestAsTabular(uFile, dFile);
                     } catch (IOException iex) {
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
+                        ingestedAsTabular = false; 
+                    }
+                } else if (fileMetadataExtractable(dFile)) {
+                    
+                    try {
+                        metadataExtracted = extractIndexableMetadata(uFile, dFile);
+                    } catch(IOException mex) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file "+dFile.getName(), mex);
+                    }
+                    if (metadataExtracted) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
+                    } else {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
                     }
                 }
 
@@ -266,7 +261,7 @@ public class DatasetPage implements java.io.Serializable {
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
                 // TODO: 
-                // discard the datafile and disconnect it from the dataset object.
+                // discard the DataFile and disconnect it from the dataset object!
             }
 
         }
@@ -390,7 +385,7 @@ public class DatasetPage implements java.io.Serializable {
      int a = 1;    
     }
 
-    private boolean ingestableAsTabular (DataFile dataFile) {
+    private boolean ingestableAsTabular(DataFile dataFile) {
         /* 
          * Eventually we'll be using some complex technology of identifying 
          * potentially ingestable file formats here, similar to what we had in 
@@ -399,8 +394,75 @@ public class DatasetPage implements java.io.Serializable {
          */
         if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
             return true;
-}
+        }
         return false;
     } 
+    
+    private boolean fileMetadataExtractable(DataFile dataFile) {
+        /* 
+         * Eventually we'll be consulting the Ingest Service Provider Registry
+         * to see if there is a plugin for this type of file;
+         * for now - just a hardcoded list of filename extensions:
+         *  -- L.A. 4.0alpha1
+         */
+        if (dataFile.getName() != null && dataFile.getName().endsWith(".fits")) {
+            return true;
+        }
+        return false;
+    }
 
+    private boolean ingestAsTabular(UploadedFile uFile, DataFile dataFile) throws IOException {
+        boolean ingestSuccessful = false;
+
+        // Locate ingest plugin for the file format by looking
+        // it up with the Ingest Service Provider Registry:
+        
+        //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
+        TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+
+        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
+
+        if (tabDataIngest != null) {
+            File tabFile = tabDataIngest.getTabDelimitedFile();
+
+            if (tabDataIngest.getDataTable() != null
+                    && tabFile != null
+                    && tabFile.exists()) {
+
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
+                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+
+                dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
+                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                
+                dataFile.setDataTable(tabDataIngest.getDataTable());
+                tabDataIngest.getDataTable().setDataFile(dataFile);
+
+                ingestSuccessful = true;
+            }
+        }
+        return ingestSuccessful;
+    }
+    
+    private boolean extractIndexableMetadata(UploadedFile uFile, DataFile dataFile) throws IOException {
+        boolean ingestSuccessful = false; 
+        
+        // Locate metadata extraction plugin for the file format by looking
+        // it up with the Ingest Service Provider Registry:
+        
+        //FileMetadataExtractor extractorPlugin = IngestSP.getMetadataExtractorByMIMEType(dfile.getContentType());
+        FileMetadataExtractor extractorPlugin = new FITSFileMetadataExtractor();
+        
+        Map<String, Set<String>> extractedMetadata = extractorPlugin.ingest(new BufferedInputStream(uFile.getInputstream()));
+        
+        // Store the fields and values we've gathered for safe-keeping:
+        
+        // ...
+        
+        ingestSuccessful = true;
+        
+        return ingestSuccessful;
+    }
 }
