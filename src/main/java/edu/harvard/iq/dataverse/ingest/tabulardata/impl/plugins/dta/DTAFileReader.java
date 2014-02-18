@@ -633,6 +633,7 @@ public class DTAFileReader extends TabularDataFileReader{
              * -- L.A. 4.0 
              */
             dataTable.setOriginalFormatVersion(STATA_RELEASE_NUMBER.get(releaseNumber));
+            dataTable.setUnf("UNF:6:FILEFILEFILEFILE");
 
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("this file is stata-dta type: "
@@ -690,17 +691,14 @@ public class DTAFileReader extends TabularDataFileReader{
         for (int i = 0; i < nvar; i++) {
             DataVariable dv = new DataVariable();
             dv.setInvalidRanges(new ArrayList());
-            //dv.setSummaryStatistics( new ArrayList() );
+            dv.setSummaryStatistics( new ArrayList() );
+            dv.setUnf("UNF:6:XXX");
             dv.setCategories(new ArrayList());
-            //dv.setName( xmlr.getAttributeValue(null, "name") );
             variableList.add(dv);
 
-            // set fileOrder to size of list (pre add, since indexes start at 0)
-            // dv.setFileOrder( dataTable.getDataVariables().size() );
             dv.setFileOrder(i);
 
             dv.setDataTable(dataTable);
-            // dataTable.getDataVariables().add(dv);
         }
 
         dataTable.setDataVariables(variableList);

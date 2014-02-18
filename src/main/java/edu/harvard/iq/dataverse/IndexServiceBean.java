@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -250,6 +251,52 @@ public class IndexServiceBean {
             if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {
                 datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getLatestVersion().getTitle());
             }
+            
+            // If this is a tabular data file -- i.e., if there are data
+            // variables associated with this file, we index the variable 
+            // names and labels: 
+            
+            if (dataFile.isTabularData()) {
+                List<DataVariable> variables = dataFile.getDataTable().getDataVariables();
+                for (DataVariable var : variables) {
+                    // Hard-coded search fields, for now: 
+                    // TODO: immediately: define these as constants in SearchFields;
+                    // TODO: eventually: review, decide how datavariables should
+                    // be handled for indexing purposes. (should it be a fixed
+                    // setup, defined in the code? should it be flexible? unlikely
+                    // that this needs to be domain-specific... since these data
+                    // variables are quite specific to tabular data, which in turn
+                    // is something social science-specific...
+                    // anyway -- needs to be reviewed. -- L.A. 4.0alpha1 
+                    
+                    if (var.getName() != null && !var.getName().equals("")) {
+                        datafileSolrInputDocument.addField("varname_s", var.getName());
+                    }
+                    if (var.getName() != null && !var.getLabel().equals("")) {
+                        datafileSolrInputDocument.addField("varlabel_s", var.getName());
+                    }
+                }
+            }
+            
+            // And if the file has indexable file-level metadata associated
+            // with it, we'll index that too:
+            
+            List<FileMetadataFieldValue> fileMetadataFieldValues = dataFile.getFileMetadataFieldValues();
+            if (fileMetadataFieldValues != null && fileMetadataFieldValues.size() > 0) {
+                for (int j = 0; j < fileMetadataFieldValues.size(); j++) {
+
+                    String fieldValue = fileMetadataFieldValues.get(j).getStrValue();
+
+                    FileMetadataField fmf = fileMetadataFieldValues.get(j).getFileMetadataField();
+                    String fileMetadataFieldName = fmf.getName();
+                    String fileMetadataFieldFormatName = fmf.getFileFormatName();
+                    String fieldName = fileMetadataFieldFormatName + "-" + fileMetadataFieldName  + "_s";
+
+                    datafileSolrInputDocument.addField(fieldName, fieldValue);
+
+                }
+            }
+            
             docs.add(datafileSolrInputDocument);
         }
 

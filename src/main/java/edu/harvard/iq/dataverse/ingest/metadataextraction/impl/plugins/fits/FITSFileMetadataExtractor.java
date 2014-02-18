@@ -502,6 +502,14 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return summary; 
     }
     
+    @Override
+    public String getFormatName() throws IOException {
+        if (originatingProvider != null) {
+            return originatingProvider.getFormatNames()[0];
+        }
+        return "fits";
+    }
+    
     /**
      * main() method, for testing
      * usage: java edu.harvard.iq.dvn.ingest.specialother.impl.plugins.fits.FITSFileMetadataExtractor testfile.fits
