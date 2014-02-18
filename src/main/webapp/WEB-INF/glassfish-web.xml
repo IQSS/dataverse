@@ -8,4 +8,6 @@
       <description>Keep a copy of the generated servlet class' java code.</description>
     </property>
   </jsp-config>
+  <property name="alternatedocroot_1" value="from=/guides/* dir=./docroot"/>
+  <property name="alternatedocroot_2" value="from=/dataexplore/* dir=./docroot"/>
 </glassfish-web-app>
