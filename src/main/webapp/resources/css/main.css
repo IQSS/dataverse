@@ -1,0 +1,30 @@
+/*
+This used to be in the dataverse_header.xhtml file.
+*/
+#breadcrumbNavBlock > .ui-panel-content {overflow:hidden;}
+        
+#breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
+
+button[id$='breadcrumbBtn'] span.ui-button-text, 
+button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
+
+button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
+button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
+
+button[id$='breadcrumbBtn'] .ui-button-icon-left, 
+button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
+
+#breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+
+#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
+#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
+
+#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
+
+#breadcrumbNavBlock button[id$='breadcrumbBtn'], 
+#breadcrumbNavBlock button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
+#breadcrumbNavBlock button[id$='breadcrumbBtn'] span.ui-icon, 
+#breadcrumbNavBlock button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
+
+#breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
+

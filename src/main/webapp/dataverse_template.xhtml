@@ -1,26 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+	  lang="en">
     
     <h:head>
         <title><h:outputText value="#{pageTitle}"/></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta http-equiv="Content-Language" content="en"/>
-        
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
         <link type="text/css" rel="stylesheet" href="/resources/css/structure.css"/>
+		<h:outputStylesheet library="bs" name="css/bootstrap.css" />
+		<h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
+  		<h:outputStylesheet library="css" name="ie-compat.css" />
   		<h:outputStylesheet library="css" name="componentStyles.css" />
+  		<h:outputStylesheet library="css" name="main.css" />
+		
     </h:head>
     
     <h:body>
+		<a href="#content" class="sr-only">Skip to main content</a>
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showBreadcrumbs" value="#{showBreadcrumbs != null ? showBreadcrumbs : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
             <ui:param name="ownerId" value="#{ownerId}"/>            
-        </ui:include> 
-       <ui:insert name="body">Default Body</ui:insert>        
+        </ui:include>
+		<div class="container" id="content">
+			<ui:insert name="body">Default Body</ui:insert>
+		</div>
+		<h:outputScript library="js" name="jquery.min.js" />
+		<h:outputScript library="bs" name="js/bootstrap.min.js" />
+		<h:outputScript library="js" name="ie-compat.js" />
+		<script>
+			$(document).ready( function(){ 
+				$("a[data-toggle='tooltip']").tooltip(); 
+				$("a[data-toggle='popover']").popover(); 
+			} );
+		</script>
     </h:body>
 </html>

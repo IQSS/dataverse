@@ -56,6 +56,7 @@ public class SampleCommandPage {
 	private String newName;
 	private Long selectedDvObjectId;
 	private DataverseUser selectedUser;
+	private String message;
 	
 	
 	public void init() {
@@ -75,6 +76,14 @@ public class SampleCommandPage {
 				selectedDvObjectId = objects.get(0).getId();
 			}
 		}
+		
+	}
+	
+	public void addMessage( ActionEvent e ) {
+		JH.addMessage(FacesMessage.SEVERITY_FATAL, "FATAL! " + getMessage(), "Such useful details! Oh My!");
+		JH.addMessage(FacesMessage.SEVERITY_ERROR, "ERROR! " + getMessage(), "Such useful details! Oh My!");
+		JH.addMessage(FacesMessage.SEVERITY_WARN,  "This is just a warning", getMessage());
+		JH.addMessage(FacesMessage.SEVERITY_INFO,  "Informational message: " + getMessage() + ", for your info", "Such useful details! Oh My!");
 	}
 	
 	public void actionSave( ActionEvent e ) {
@@ -205,6 +214,14 @@ public class SampleCommandPage {
 
 	public void setSelectedDvObjectId(Long selectedDvObjectId) {
 		this.selectedDvObjectId = selectedDvObjectId;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 	
 	

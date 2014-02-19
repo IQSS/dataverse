@@ -7,182 +7,134 @@
 
     <h:head>
         <title>Command Sample Page</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <meta http-equiv="Content-Language" content="en"/>
-		<h:outputStylesheet library="css" name="componentStyles.css" />
-        <style type="text/css">
-            .panelgridHeaderTable {width:100%;}
-            .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
-            .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
-
-            .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
-
-            .panelgridLayoutTable, .panelgridFormTable {width:100%;}
-            .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
-
-            .panelLayoutButtonBlock button {margin-right:2em;}
-
-            .panelLayoutBlock > .ui-widget-content {border-bottom:1px solid #DDDDDD;}
-            .panelLayoutBlock.breadcrumbNavBlock > .ui-widget-content {border-bottom:0;}
-            .panelLayoutTitleBlock > .ui-widget-content {border:0;}
-
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid {margin-bottom: 1em;}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
-            .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
-
-            .rightClass {text-align: right;}
-
-            .dataverseChildren .ui-datalist-data {padding-left:1em;}
-            .dataverseChildren .ui-datalist-data li.ui-datalist-item {list-style-type:none; margin-left:0; margin-bottom:6px;}
-        </style>
     </h:head>
 
 	<f:metadata>
 		<f:viewAction action="#{sampleCommandPage.init}"/>
 		<f:viewAction action="#{DataversePage.init}"/>
 	</f:metadata>
-	
+
     <h:body>
 
-        <!-- Header Panel -->
-        <p:panel style="background-color: lightskyblue; height:70px;">
-            <p:panelGrid styleClass="panelgridHeaderTable" columns="2">
-                <ui:fragment>
-                    <h:outputLink value="/dataverse.xhtml?id=#{DataversePage.dataverse.id}" rendered="#{DataversePage.dataverse.id != null}">
-                        <h:outputText id="nameOutput" value="#{DataversePage.dataverse.name} Dataverse" style="font-size:1.5em;font-weight:bold; padding:4px 0 4px 34px; background: url(/resources/images/icon_dataverse.png) no-repeat 0 50%;"/>
-                    </h:outputLink>
-
-                    <h:outputText value="New Dataverse" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-
-                    <h:outputText value="Welcome to the Dataverse Network" style="font-size:1.5em;font-weight:bold;" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId == null}"/>
-                </ui:fragment>
-                <ui:fragment>
-                    <p:panelGrid columns="2">
-                        <ui:fragment>
-                            <h:outputLink value="/dataverseuser.xhtml" rendered="#{empty dataverseSession.user}">
-                                Create Account
-                            </h:outputLink>
-                            <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{!empty dataverseSession.user}"/>
-                        </ui:fragment>
-                        <ui:fragment>
-                            <h:outputLink value="/loginpage.xhtml" rendered="#{empty dataverseSession.user}">
-                                Log In
-                            </h:outputLink>
-                            <h:form id="headerForm">
-                                <h:commandLink actionListener="#{dataverseSession.setUser(null)}" rendered="#{!empty dataverseSession.user}">
-                                    Log Out
-                                </h:commandLink>   
-                            </h:form>                            
-                        </ui:fragment>
-                    </p:panelGrid>
-                </ui:fragment>
-            </p:panelGrid>
-        </p:panel>
-		<p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{!DataversePage.editMode}">
-			<ui:repeat value="#{DataversePage.dataverse.owners}" var="owner">
-				<h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-					<h:outputText value="#{owner.name} Dataverse"/>
-				</h:outputLink>
-				<h:outputText value=" > "/>
-			</ui:repeat>
-			<h:outputText value="#{DataversePage.dataverse.name} Dataverse"  style="font-weight:bold;"/>
-		</p:panel>
-		<p:panel styleClass="panelLayoutTitleBlock">
-			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-		</p:panel>
-
-		<p:panel rendered="#{sampleCommandPage.setupNeeded}">
-			<div style="background-color: #FF8888;">
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Sample Command Page"/>
+            <ui:param name="showMessagePanel" value="#{true}"/> 
+            <ui:define name="body">
+				<p:panel rendered="#{sampleCommandPage.setupNeeded}">
+					<div style="background-color: #FF8888;">
+						<h:form>
+							Please setup the users before proceeding. A root dataverse will also be created, if needed.
+							<h:commandButton value="Setup Users" 
+											 actionListener="#{sampleCommandPage.setupUsers()}" />
+						</h:form>
+					</div>
+				</p:panel>
+				<h3>Add messsages</h3>
 				<h:form>
-					Please setup the users before proceeding. A root dataverse will also be created, if needed.
-					<h:commandButton value="Setup Users" 
-									 actionListener="#{sampleCommandPage.setupUsers()}" />
+					<h:inputText value="#{sampleCommandPage.message}" styleClass="form-control">
+						<f:passThroughAttribute name="placeholder" value="Type your message here" />
+					</h:inputText>
+					<h:commandButton styleClass="btn btn-default" value="Submit message" actionListener="#{sampleCommandPage.addMessage}"/>
 				</h:form>
-			</div>
-		</p:panel>
-
-		<p:panel rendered="#{!sampleCommandPage.setupNeeded}">
-			<h:form>
-				User: 
-				<h:selectOneMenu value="#{sampleCommandPage.selectedUserUserName}">
-					<f:selectItems value="#{sampleCommandPage.dataverseUsers}" var="user"
-								   itemLabel="#{user.firstName} #{user.lastName}"
-								   itemValue="#{user.userName}"/>
-					<p:ajax update="permissionList" />
-				</h:selectOneMenu>
-				<h:commandButton value="Login as this user (no need to click if you stay on this page) (also, long button titles are a sign of an unusable UI)"
-								 actionListener="#{sampleCommandPage.changeUser()}" />
-				<p:panel header="Permission-dependent display" rendered="#{DataversePage.dataverse.id ne null}">
-					<div class="helpText">
-						Rendering/unrendering based on user permissions, or ability to issue commands.
-						See <code>sample-command-page.xhtml</code> on how this works.
+				<h3>Some icons, to test the fonts</h3>
+				<div class="row">
+					<div class="col-xs-3">
+						<span class="glyphicon glyphicon-bell"></span>
 					</div>
-					<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('UndoableEdit')}">
-						Has permission UndoableEdit <br />
-					</h:panelGroup>
-					<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('Release')}">
-						Has permission Release<br />
-					</h:panelGroup>
-					<h:panelGroup layout="block" rendered="#{empty permissionServiceBean.on(DataversePage.dataverse).permissions}">
-						Has no permissions at all<br />
-					</h:panelGroup>
-					<h:panelGroup layout="block" rendered="#{sampleCommandPage.canRelease}">
-						User can release a dataverse<br />
-					</h:panelGroup>
-					<h:panelGroup layout="block" rendered="#{not sampleCommandPage.canRelease}">
-						User is not permitted to release a dataverse<br />
-					</h:panelGroup>
-					<h:panelGroup layout="block" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverse')}">
-						User can release a dataverse (command issue version)<br />
-					</h:panelGroup>
-				</p:panel>
-				
-				<p:panel header="Permission-dependent display" rendered="#{DataversePage.dataverse.id eq null}">
-					No dataverse to display permissions on. Is there a root dataverse?
-				</p:panel>
-				
-				<p:panel header="Permissions of Selected User">
-					<div class="helpText">
-						See which permissions the selected user has on various <code>DvObject</code>s.
+					<div class="col-xs-3">
+						<span class="glyphicon glyphicon-download-alt"></span>
 					</div>
-					DvObject:
-					<h:selectOneMenu id="dvoList" 
-									 value="#{sampleCommandPage.selectedDvObjectId}"
-									 onselect="">
-						<f:selectItems value="#{sampleCommandPage.dvObjects}" var="dv"
-									   itemLabel="#{dv.toString()}"
-									   itemValue="#{dv.id}"/>
-						<p:ajax update="permissionList, dvoId"/>
-					</h:selectOneMenu>
-
-					<p:panel id="permissionArea">
-						Object Id: <h:outputText id="dvoId" value="#{sampleCommandPage.selectedDvObjectId}" /> <br />
-						<p:dataList id="permissionList" value="#{sampleCommandPage.userPermissionsOnDvObject()}" var="pmsn" emptyMessage="No Permissions">
-							#{pmsn.toString()}
-						</p:dataList>
-					</p:panel>
-				</p:panel>
-				
-				<p:panel header="Sample Command: Rename Dataverse">
-					<div class="helpText">
-						Sample usage of the command pattern. See both <code>sample-command-page.xhtml</code>
-						and backing bean <code>SampleCommandPage.java</code> on how this works.
+					<div class="col-xs-3">
+						<span class="glyphicon glyphicon-tree-conifer"></span>
 					</div>
-					<h:selectOneMenu id="dvList" value="#{sampleCommandPage.selectedDataverseId}">
-						<f:selectItems value="#{sampleCommandPage.dataverseList}" var="dv"
-									   itemLabel="#{dv.name}"
-									   itemValue="#{dv.id}"/>
-					</h:selectOneMenu>
-					<h:inputText value="#{sampleCommandPage.newName}"></h:inputText>
-					
-					<p:commandButton actionListener="#{sampleCommandPage.actionSave}"
-									 process="@all"
-									 value="Rename"
-									 update="dvList"/>
+					<div class="col-xs-3">
+						<span class="glyphicon glyphicon-tree-deciduous"></span>
+					</div>
+				</div>
+				
+				<p:panel rendered="#{!sampleCommandPage.setupNeeded}">
+					<h:form>
+						User: 
+						<h:selectOneMenu value="#{sampleCommandPage.selectedUserUserName}">
+							<f:selectItems value="#{sampleCommandPage.dataverseUsers}" var="user"
+										   itemLabel="#{user.firstName} #{user.lastName}"
+										   itemValue="#{user.userName}"/>
+							<p:ajax update="permissionList" />
+						</h:selectOneMenu>
+						<h:commandButton value="Login as this user (no need to click if you stay on this page) (also, long button titles are a sign of an unusable UI)"
+										 actionListener="#{sampleCommandPage.changeUser()}" />
+						<p:panel header="Permission-dependent display" rendered="#{DataversePage.dataverse.id ne null}">
+							<div class="helpText">
+								Rendering/unrendering based on user permissions, or ability to issue commands.
+								See <code>sample-command-page.xhtml</code> on how this works.
+							</div>
+							<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('UndoableEdit')}">
+								Has permission UndoableEdit <br />
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{dataverseSession.on(DataversePage.dataverse).has('Release')}">
+								Has permission Release<br />
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{empty permissionServiceBean.on(DataversePage.dataverse).permissions}">
+								Has no permissions at all<br />
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{sampleCommandPage.canRelease}">
+								User can release a dataverse<br />
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{not sampleCommandPage.canRelease}">
+								User is not permitted to release a dataverse<br />
+							</h:panelGroup>
+							<h:panelGroup layout="block" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverse')}">
+								User can release a dataverse (command issue version)<br />
+							</h:panelGroup>
+						</p:panel>
 
+						<p:panel header="Permission-dependent display" rendered="#{DataversePage.dataverse.id eq null}">
+							No dataverse to display permissions on. Is there a root dataverse?
+						</p:panel>
+
+						<p:panel header="Permissions of Selected User">
+							<div class="helpText">
+								See which permissions the selected user has on various <code>DvObject</code>s.
+							</div>
+							DvObject:
+							<h:selectOneMenu id="dvoList" 
+											 value="#{sampleCommandPage.selectedDvObjectId}"
+											 onselect="">
+								<f:selectItems value="#{sampleCommandPage.dvObjects}" var="dv"
+											   itemLabel="#{dv.toString()}"
+											   itemValue="#{dv.id}"/>
+								<p:ajax update="permissionList, dvoId"/>
+							</h:selectOneMenu>
+
+							<p:panel id="permissionArea">
+								Object Id: <h:outputText id="dvoId" value="#{sampleCommandPage.selectedDvObjectId}" /> <br />
+								<p:dataList id="permissionList" value="#{sampleCommandPage.userPermissionsOnDvObject()}" var="pmsn" emptyMessage="No Permissions">
+									#{pmsn.toString()}
+								</p:dataList>
+							</p:panel>
+						</p:panel>
+
+						<p:panel header="Sample Command: Rename Dataverse">
+							<div class="helpText">
+								Sample usage of the command pattern. See both <code>sample-command-page.xhtml</code>
+								and backing bean <code>SampleCommandPage.java</code> on how this works.
+							</div>
+							<h:selectOneMenu id="dvList" value="#{sampleCommandPage.selectedDataverseId}">
+								<f:selectItems value="#{sampleCommandPage.dataverseList}" var="dv"
+											   itemLabel="#{dv.name}"
+											   itemValue="#{dv.id}"/>
+							</h:selectOneMenu>
+							<h:inputText value="#{sampleCommandPage.newName}"></h:inputText>
+
+							<p:commandButton actionListener="#{sampleCommandPage.actionSave}"
+											 process="@all"
+											 value="Rename"
+											 update="dvList"/>
+
+						</p:panel>
+					</h:form>
 				</p:panel>
-			</h:form>
-		</p:panel>
+			</ui:define>
+		</ui:composition>
     </h:body>
 </html>

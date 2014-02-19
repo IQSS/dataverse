@@ -100,15 +100,27 @@
                             </ui:fragment>
 
                             <ui:fragment rendered="#{!empty dataverseSession.user and !DataversePage.editMode}">
-                                <p:menuButton id="editDataverse" value="Edit Dataverse" iconPos="right">
-                                    <p:menuitem id="editInfo" value="Edit Info" actionListener="#{DataversePage.edit}" update="@all"/>
-									<p:menuitem id="manageRoles" value="Roles and Permissions" outcome="manage-roles">
-                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                        <f:param name="objectType" value="DATAVERSE" />
-                                    </p:menuitem>
-                                    <p:menuitem value="Edit Theme" disabled="true"/>
-                                    <p:menuitem value="Edit Permissions" disabled="true"/>
-                                </p:menuButton>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                      Edit Dataverse <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                                      <li>
+                                          <p:commandLink id="editInfo" actionListener="#{DataversePage.edit}" update="@all">  
+                                              <h:outputText value="General Information" />
+                                          </p:commandLink>
+                                      </li>
+                                      <li>
+                                          <h:link id="manageRoles" outcome="manage-roles">  
+                                              <h:outputText value="Roles + Permissions" />
+                                              <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                              <f:param name="objectType" value="DATAVERSE" />
+                                          </h:link>
+                                      </li>
+                                      <li><a href="#" style="pointer-events: none; color: grey;">Theme</a></li>
+                                      <li><a href="#" style="pointer-events: none; color: grey;">Permissions</a></li>
+                                    </ul>
+                                </div>
                             </ui:fragment>
                         </p:panelGrid>
                     </p:panel>
@@ -149,13 +161,18 @@
                     <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                         <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}">
                             <h:form id="shareForm" style="margin-left:auto;">
-                                <p:menuButton id="shareData" value="Add Data" iconPos="right">
-                                    <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                                    <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}"/>
-                                    <p:menuitem value="Link to Existing Dataverse" disabled="true"/>
-                                    <p:menuitem value="Link to Existing Dataset" disabled="true"/>
-                                    <p:menuitem value="Create Query" disabled="true"/>
-                                </p:menuButton>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                      Add Data <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                      <li><a href="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataverse</a></li>
+                                      <li><a href="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataset</a></li>
+                                      <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
+                                      <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>
+                                      <li><a href="#" style="pointer-events: none; color: grey;">New Query</a></li>
+                                    </ul>
+                                </div>
                             </h:form>
                         </ui:fragment>
                     </p:panelGrid>
