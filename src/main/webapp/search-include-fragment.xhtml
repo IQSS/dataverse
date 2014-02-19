@@ -30,7 +30,7 @@
                     </p:selectManyCheckbox>
                 </h:form>
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
-                    <h:outputText value="#{SearchIncludeFragment.friendlyName.get(facetCategory.name)}" rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}"/>
+                    <h:outputText value="#{SearchIncludeFragment.friendlyName.get(facetCategory.name)}" styleClass="facetCategoryName" rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}" rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}">
                         <h:outputLink>
                             <h:outputText value="#{facetLabel.name} (#{facetLabel.count})"/>
