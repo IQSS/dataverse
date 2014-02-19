@@ -19,5 +19,5 @@ Edit Your Account
 #. On the right of your account information, click on the "Edit Account" button and from there you can either select "Change your Password" or "Edit Account".
 #. Select "Save Changes" when you are done.
 
-Notifications: Setup & Maintain
-=================================
+Notifications: Setup & Maintainance
+===================================
