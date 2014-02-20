@@ -68,7 +68,7 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Header Panel -->
     <div class="container" style="background:gold; margin:0 auto .5em auto; padding:2em 1em;">
         <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a>
@@ -82,41 +82,33 @@
 
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
 
-                <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
 
-                    <div style="float:left; position:relative;">
-                        <div class="dropdown">
+                <div style="float:left; position:relative;">
+                    <div class="dropdown">
 
-                            <h:outputText id="breadcrumbLnk#{status.index}" value="#{dv.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == dv.id}"/>
+                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"  rendered="#{dataverse.id == dv.id and dataset == null}"/>
+                        <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
+                            <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?id=#{dv.id}">
+                                <h:outputText value="#{dv.name} Dataverse"/>
+                            </a>
+                        </ui:fragment>
+                        
+                        <a id="breadcrumbLnkTree#{status.index}" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                            <span class="caret"></span>
+                        </a>
 
-                            <ui:fragment rendered="#{dataverse.id != dv.id}">
-                                <a id="breadcrumbLnk#{status.index}" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" href="/dataverse.xhtml?id=#{dv.id}">
-                                  <h:outputText value="#{dv.name} Dataverse"/> <span class="caret"></span>
-                                </a>
-                            </ui:fragment>
-
-                            <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}">
-                                <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
-                                  <p:treeNode>
-                                      <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
-                                      <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
-                                          <h:outputText value="#{node.name} Dataverse"/>
-                                      </h:outputLink>
-                                  </p:treeNode>
-                              </p:tree>
-                            </div>
-
+                        <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                            <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
+                                <p:treeNode>
+                                    <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
+                                    <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
+                                        <h:outputText value="#{node.name} Dataverse"/>
+                                    </h:outputLink>
+                                </p:treeNode>
+                            </p:tree>
                         </div>
                     </div>
-
-                </ui:fragment>
-
-                <ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                    <h:outputText value="#{dv.name} Dataverse" style="font-weight:bold; padding-top:1px; margin-left:.2em; display:block; float:left;" rendered="#{dataverse.id == dv.id and dataset == null }"/>
-                    <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;" rendered="#{dataverse.id != dv.id or dataset != null}">
-                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: bold;"/>
-                    </h:outputLink>
-                </ui:fragment>
+                </div>
 
             </ui:repeat>
 
