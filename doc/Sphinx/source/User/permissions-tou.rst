@@ -1,6 +1,20 @@
 Permissions and Terms of Use
 ++++++++++++++++++++++++++++++
 
+To access permissions related to your dataverse, log in to your account. After you've logged in, you can access your dataverse by selecting it from the "Data Related to You" tab. Once on your dataverse's page, click on the Edit Dataverse button and choose "Roles + Permissions" from the drop down menu. There are three tabs on the Roles + Permissions page: Dataverse, Roles, and Users. Within these tabs you can determine how another user can access your dataverse and the datasets contained within it, create and assign roles to specific users, and determine groups. 
+
+Dataverse Tab
+==============
+
+
+Roles Tab
+==============
+
+
+Users Tab
+==============
+
+
 Manage Permissions
 ==================
 
