@@ -6,15 +6,36 @@
      xmlns:p="http://primefaces.org/ui">
 
     <!-- Search Form -->
-    <p:panel styleClass="panelLayoutBlock">
-        <h:form>
-            <p:focus/>
-            <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
-            <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
-            <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
-                <h:outputText value="Advanced Search"/>
-            </h:outputLink>
-        </h:form>
+    <p:panel styleClass="panelLayoutBlock panelSerchForm">
+            
+        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+            <ui:fragment>
+                <h:form>
+                <p:focus/>
+                <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
+                <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
+                <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
+                    <h:outputText value="Advanced Search"/>
+                </h:outputLink>
+            </h:form>
+            </ui:fragment>
+            <ui:fragment>
+                <h:form id="shareForm" rendered="#{!DataversePage.editMode and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                          Add Data <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                          <li><a href="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataverse</a></li>
+                          <li><a href="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataset</a></li>
+                          <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
+                          <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>
+                          <li><a href="#" style="pointer-events: none; color: grey;">New Query</a></li>
+                        </ul>
+                    </div>
+                </h:form>
+            </ui:fragment>
+        </p:panelGrid>
     </p:panel>
     <!-- Search Results -->
     <p:panel>

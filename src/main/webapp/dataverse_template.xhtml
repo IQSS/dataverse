@@ -35,6 +35,9 @@
         <h:outputScript library="js" name="ie-compat.js" />
         <script>
             $(document).ready(function() {
+                navbarH = $("#navbarFixed").height();
+                $("body").css("padding-top", navbarH + "px");
+                
                 $("a[data-toggle='tooltip']").tooltip();
                 $("a[data-toggle='popover']").popover();
             });

@@ -57,6 +57,8 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 #breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
 
 /* -------- SEARCH -------- */
+.panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;}
+
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
 em {background-color: yellow;}
