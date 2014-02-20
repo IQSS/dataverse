@@ -10,6 +10,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -39,7 +40,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         if (dataverse == null) { // the primefaces component seems to call this with dataverse == null for some reason
             return null;
         }
-        return getDataverseNode(dataverse, new DefaultTreeNode("Root", null), true);
+        return getDataverseNode(dataverse, null, true);
     }
 
     private TreeNode getDataverseNode(Dataverse dataverse, TreeNode root, boolean expand) {
@@ -49,8 +50,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         for (Dataverse child : childDataversesOfCurrentDataverse) {
             getDataverseNode(child, dataverseNode, false);
         }
-
-        return root;
-    }
-
+        
+        return dataverseNode;
+}
+      
 }
