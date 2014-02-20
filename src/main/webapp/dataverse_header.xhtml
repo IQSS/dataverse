@@ -3,108 +3,118 @@
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui"
-	 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!-- Header Panel -->
-	<nav class="navbar navbar-default" role="navigation">
-		<div class="container">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="/dataverse.xhtml?id=#{dataverse.id}">#{dataverse.name} Dataverse</a>
-			</div>
-			<div class="collapse navbar-collapse" id="topNavBar">
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/dataverse.xhtml?id=#{dataverse.id}">#{dataverse.name} Dataverse</a>
+            </div>
+            <div class="collapse navbar-collapse" id="topNavBar">
 
-				<ul class="nav navbar-nav navbar-right">
-					<li>
-						<h:outputLink value="/guides/index.html" target="_blank">
-							User Guides
-						</h:outputLink>
-					</li>
-					<ui:fragment rendered="#{dataverseSession.user.guest}">
-						<li>
-							<h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
-								Create Account
-							</h:outputLink>
-						</li>
-					</ui:fragment>
-					<ui:fragment rendered="#{!dataverseSession.user.guest}">
-						<li>
-							<h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
-								<h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
-							</h:outputLink>
-						</li>
-					</ui:fragment>
-					<ui:fragment rendered="#{dataverseSession.user.guest}">
-						<li>
-							<h:outputLink value="/loginpage.xhtml">
-								Log In
-							</h:outputLink>
-						</li>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <h:outputLink value="/guides/index.html" target="_blank">
+                            User Guides
+                        </h:outputLink>
+                    </li>
+                    <ui:fragment rendered="#{dataverseSession.user.guest}">
+                        <li>
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
+                                Create Account
+                            </h:outputLink>
+                        </li>
                     </ui:fragment>
-					<ui:fragment rendered="#{not dataverseSession.user.guest}">
-						<h:form styleClass="navbar-form navbar-left" role="logout">
-							<h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
-						</h:form>
-					</ui:fragment>
-				</ul>
-			</div>
-		</div>
-	</nav>
+                    <ui:fragment rendered="#{!dataverseSession.user.guest}">
+                        <li>
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
+                            </h:outputLink>
+                        </li>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{dataverseSession.user.guest}">
+                        <li>
+                            <h:outputLink value="/loginpage.xhtml">
+                                Log In
+                            </h:outputLink>
+                        </li>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{not dataverseSession.user.guest}">
+                        <h:form styleClass="navbar-form navbar-left" role="logout">
+                            <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
+                        </h:form>
+                    </ui:fragment>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <!-- Breadcrumbs Panel -->
-	<div class="container">
-		<ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+    <ui:fragment rendered="#{showBreadcrumbs}">
+        <div id="breadcrumbNavBlock" class="container">
+            <!-- Dataverses -->
+            <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
 
-			<p:outputPanel id="breadcrumbPnlIcn" style="float:left; margin-top:.3em; width:16px; height:16px; background-image: url(/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap); background-position:-64px -16px;"/>
+                <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
 
-			<!-- Breadcrumbs Panel -->
-			<p:panel id="breadcrumbNavBlock" styleClass="panelLayoutBlock" rendered="#{showBreadcrumbs}">
-				<!-- Dataverses -->
-				<ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
-					<h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/> 
-					<h:outputLink id="breadcrumbLnk" value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;">
-						<h:outputText value="#{dv.name} Dataverse"/>
-					</h:outputLink>
+                <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
 
-				<!--                <p:commandButton id="breadcrumbBtn" value="#{dv.name} Dataverse" type="button" icon="/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap"/>-->
+                    <div style="float:left; position:relative;">
+                        <div class="dropdown">
 
-					<p:overlayPanel id="breadcrumbPanel" for="breadcrumbPnlIcn" hideEffect="fade">  
-						<p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
-							<p:treeNode>
-								<h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == node.id and dataset == null }"/>
-								<h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
-									<h:outputText value="#{node.name} Dataverse" style="font-weight: #{dataverse.id == node.id ? 'bold' : 'normal'}"/>
-								</h:outputLink>
-							</p:treeNode>
-						</p:tree>
-					</p:overlayPanel>
+                            <h:outputText id="breadcrumbLnk#{status.index}" value="#{dv.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == dv.id}"/>
 
-					<ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-						<h:outputText value="#{dv.name} Dataverse" style="font-weight:#{dataverse.id == dv.id ? 'bold' : 'normal'}; padding-top:1px; margin-left:.2em; display:block; float:left;" rendered="#{dataverse.id == dv.id and dataset == null }"/>
-						<h:outputLink value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;" rendered="#{dataverse.id != dv.id or dataset != null}">
-							<h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"/>
-						</h:outputLink>
-					</ui:fragment>
-				</ui:repeat>            
-				<!-- Dataset, if available -->
-				<ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}">
-					<h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-					<h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
-				</ui:fragment>
-			</p:panel>
-		</ui:fragment>
-	</div>
+                            <ui:fragment rendered="#{dataverse.id != dv.id}">
+                                <a id="breadcrumbLnk#{status.index}" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" href="/dataverse.xhtml?id=#{dv.id}">
+                                  <h:outputText value="#{dv.name} Dataverse"/> <span class="caret"></span>
+                                </a>
+                            </ui:fragment>
+
+                            <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}">
+                                <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node" dynamic="true" cache="true" id="tree">
+                                  <p:treeNode>
+                                      <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
+                                      <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
+                                          <h:outputText value="#{node.name} Dataverse"/>
+                                      </h:outputLink>
+                                  </p:treeNode>
+                              </p:tree>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </ui:fragment>
+
+                <ui:fragment rendered="#{empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                    <h:outputText value="#{dv.name} Dataverse" style="font-weight:bold; padding-top:1px; margin-left:.2em; display:block; float:left;" rendered="#{dataverse.id == dv.id and dataset == null }"/>
+                    <h:outputLink value="/dataverse.xhtml?id=#{dv.id}" style="padding-top:1px; display:block; float:left;" rendered="#{dataverse.id != dv.id or dataset != null}">
+                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: bold;"/>
+                    </h:outputLink>
+                </ui:fragment>
+
+            </ui:repeat>
+
+            <!-- Dataset, if available -->
+            <ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}">
+                <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
+                <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
+            </ui:fragment>
+        </div>
+    </ui:fragment>
 
     <!-- Message Panel -->
-	<ui:fragment rendered="#{showMessagePanel}">
-		<div class="container">
-			<iqbs:messages collapsible="false" />
-		</div>
-	</ui:fragment>
+    <ui:fragment rendered="#{showMessagePanel}">
+        <div class="container">
+            <iqbs:messages collapsible="false" />
+        </div>
+    </ui:fragment>
 
 </div>
