@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.api.SearchFields;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -57,7 +58,10 @@ public class AdvancedSearchPage {
         List<String> queryStrings = new ArrayList();
         for (DatasetField datasetField : metadataFieldList) {
             if (!"".equals(datasetField.getSearchValue())) {
-                queryStrings.add(datasetField.getName() + ":" + datasetField.getSearchValue());
+                StringTokenizer st = new StringTokenizer(datasetField.getSearchValue());
+                while (st.hasMoreElements()) {
+                    queryStrings.add(datasetField.getName() + ":" + st.nextElement());
+                }
             }
         }
         query = new String();
