@@ -45,13 +45,6 @@
                             </h:outputLink>
                         </li>
                     </ui:fragment>
-                    <ui:fragment rendered="#{!dataverseSession.user.guest}">
-                        <li>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
-                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" />
-                            </h:outputLink>
-                        </li>
-                    </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
                             <h:outputLink value="/loginpage.xhtml">
@@ -59,10 +52,24 @@
                             </h:outputLink>
                         </li>
                     </ui:fragment>
-                    <ui:fragment rendered="#{not dataverseSession.user.guest}">
-                        <h:form styleClass="navbar-form navbar-left" role="logout">
-                            <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
-                        </h:form>
+                    <ui:fragment rendered="#{!dataverseSession.user.guest}">
+                        <li class="dropdown">
+                            <a value="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" /> <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
+                                        <h:outputText value="Account Page" />
+                                    </h:outputLink>
+                                </li>
+                                <li>
+                                    <h:form styleClass="navbar-form navbar-left" role="logout">
+                                        <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
+                                    </h:form>
+                                </li>
+                            </ul>
+                        </li>
                     </ui:fragment>
                 </ul>
             </div>
