@@ -11,7 +11,9 @@
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="User"/>
-            <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/> 
+            <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showBreadcrumbs" value="false"/>
             <ui:define name="body">                
 
                 <f:metadata>
@@ -20,7 +22,7 @@
                     <f:viewAction action="#{DataverseUserPage.init}" />
                 </f:metadata>
                 
-                <h:form id="dataverseUserForm">
+                <h:form id="dataverseUserForm" style="margin-top:1em;">
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
                     </p:panel>
@@ -133,8 +135,8 @@
 
                                     <p:panel rendered="#{DataverseUserPage.editMode == 'INFO'}">
                                         <p:menuButton id="editAccountButton" value="Edit Account" iconPos="right">
-                                            <p:menuitem id="editAccount" value="Edit Account" actionListener="#{DataverseUserPage.edit}" update="@all" />
-                                            <p:menuitem id="changePassword" value="Change Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
+                                            <p:menuitem id="editAccount" value="Account Information" actionListener="#{DataverseUserPage.edit}" update="@all" />
+                                            <p:menuitem id="changePassword" value="Account Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
                                         </p:menuButton>
                                     </p:panel>
                                 </p:panelGrid>
@@ -169,8 +171,8 @@
                                     </ui:fragment> -->
                                     <ui:fragment>    
                                         <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                                            <p:menuitem id="createDataverse" value="Create Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                            <p:menuitem id="UploadDataset" value="Add Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                            <p:menuitem id="createDataverse" value="New Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                            <p:menuitem id="UploadDataset" value="New Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
                                         </p:menuButton>
                                     </ui:fragment> 
                             <!--    </p:panelGrid>

@@ -23,6 +23,7 @@
         <a href="#content" class="sr-only">Skip to main content</a>
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showBreadcrumbs" value="#{showBreadcrumbs != null ? showBreadcrumbs : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
             <ui:param name="ownerId" value="#{ownerId}"/>
@@ -37,6 +38,10 @@
             $(document).ready(function() {
                 navbarH = $("#navbarFixed").height();
                 $("body").css("padding-top", navbarH + "px");
+                
+                $('#breadcrumbNavBlock .dropdown-menu span.ui-tree-toggler').click(function(){
+                    //FIGURE OUT WHAT TO DO ABOUT FIXING THIS
+                });
                 
                 $("a[data-toggle='tooltip']").tooltip();
                 $("a[data-toggle='popover']").popover();

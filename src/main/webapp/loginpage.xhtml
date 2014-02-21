@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"  
-      xmlns:h="http://java.sun.com/jsf/html"  
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ui="http://java.sun.com/jsf/facelets"      
-      xmlns:p="http://primefaces.org/ui">  
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
     <h:head>
     </h:head>
@@ -12,47 +12,40 @@
         <f:metadata>
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
-		<ui:composition template="/dataverse_template.xhtml">
+        <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="Login Page"/>
-            <ui:param name="showMessagePanel" value="#{true}"/> 
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showBreadcrumbs" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-				<div class="row">
-					<h:form id="loginForm" styleClass="form-horizontal">
-						<p:focus context="loginForm"/>
-						<div class="form-group">
-							<p:outputLabel value="Username" for="userName" styleClass="col-sm-2 control-label"/>
-							<div class="col-sm-9">
-								<h:inputText id="userName" value="#{LoginPage.userName}" styleClass="form-control"/>
-								<p:message for="userName"/>
-							</div>
-						</div>
-						<div class="form-group">
-							<p:outputLabel value="Password" for="password" styleClass="col-sm-2 control-label"/>
-							<div class="col-sm-9">
-								<h:inputSecret id="password" value="#{LoginPage.password}" styleClass="form-control"/>
-								<p:message for="password"/>
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="col-sm-offset-2 col-sm-9">
-								<p:commandButton id="login" value="Login" action="#{LoginPage.login}" update="@all"> 
-									<p:resetInput target="@all"/>
-								</p:commandButton>    
-								<p:button value="Cancel" outcome="/dataverse.xhtml"/>
-							</div>
-						</div>
-					</h:form>
-				</div>
-
-				<!-- Crazy Egg Tracking -->
-				<script type="text/javascript">
-					setTimeout(function(){var a=document.createElement("script");
-					var b=document.getElementsByTagName("script")[0];
-					a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0020/3547.js?"+Math.floor(new Date().getTime()/3600000);
-					a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
-				</script>				
-			</ui:define>
-		</ui:composition>
-        
+                <div class="row" style="margin-top:1em;">
+                    <h:form id="loginForm" styleClass="form-horizontal">
+                        <p:focus context="loginForm"/>
+                        <div class="form-group">
+                            <p:outputLabel value="Username" for="userName" styleClass="col-sm-2 control-label"/>
+                            <div class="col-sm-9">
+                                <h:inputText id="userName" size="40" style="width:auto;" value="#{LoginPage.userName}" styleClass="form-control"/>
+                                <p:message for="userName"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <p:outputLabel value="Password" for="password" styleClass="col-sm-2 control-label"/>
+                            <div class="col-sm-9">
+                                <h:inputSecret id="password" size="40" style="width:auto;" value="#{LoginPage.password}" styleClass="form-control"/>
+                                <p:message for="password"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-9">
+                                <p:commandButton id="login" value="Log In" action="#{LoginPage.login}" update="@all">
+                                    <p:resetInput target="@all"/>
+                                </p:commandButton>
+                                <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
     </h:body>
 </html>

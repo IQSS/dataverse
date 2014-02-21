@@ -41,8 +41,8 @@
     <p:panel>
         <ui:fragment rendered="#{!SearchIncludeFragment.solrIsDown}">
 
-            <div style="width:20%;float:left;">
-                <h:form>
+            <div style="width:20%;float:left;padding-right:1em;">
+                <h:form style="margin-bottom:.5em;" id="searchTypeFacet">
                     <p:selectManyCheckbox layout="pageDirection" value="#{SearchIncludeFragment.selectedTypes}">  
                         <f:selectItem itemLabel="Dataverses (#{SearchIncludeFragment.facetCountDataverses})" itemValue="dataverses"/>
                         <f:selectItem itemLabel="Datasets (#{SearchIncludeFragment.facetCountDatasets})" itemValue="datasets"/>

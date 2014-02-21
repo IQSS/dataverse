@@ -15,7 +15,9 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <h:outputText styleClass="navbar-brand" value="Dataverse App"/>
+                <h:outputLink value="/">
+                    <h:outputText styleClass="navbar-brand" value="Dataverse App" style="padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;"/>
+                </h:outputLink>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
 
@@ -35,13 +37,13 @@
                     </li>
                     <li>
                         <h:outputLink value="/guides/index.html" target="_blank">
-                            User Guides
+                            Support
                         </h:outputLink>
                     </li>
                     <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
                             <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
-                                Create Account
+                                Sign Up
                             </h:outputLink>
                         </li>
                     </ui:fragment>
@@ -77,9 +79,11 @@
     </nav>
 
     <!-- Header Panel -->
-    <div class="container" style="background:gold; margin:0 auto .5em auto; padding:2em 1em;">
-        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a>
-    </div>
+    <ui:fragment rendered="#{showBreadcrumbs}">
+        <div class="container" style="background:#E2BA7F; margin:0 auto .5em auto; padding:2em 1em;">
+            <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a>
+        </div>
+    </ui:fragment>
 
     <!-- Breadcrumbs Panel -->
     <ui:fragment rendered="#{showBreadcrumbs}">
@@ -100,7 +104,7 @@
                             </a>
                         </ui:fragment>
                         
-                        <a id="breadcrumbLnkTree#{status.index}" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                        <a id="breadcrumbLnkTree#{status.index}" title="Browse child items" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
                             <span class="caret"></span>
                         </a>
 
@@ -129,7 +133,7 @@
 
     <!-- Message Panel -->
     <ui:fragment rendered="#{showMessagePanel}">
-        <div class="container">
+        <div class="container" style="margin-top:1em;">
             <iqbs:messages collapsible="false" />
         </div>
     </ui:fragment>
