@@ -96,5 +96,7 @@ your sort order.
 
 **Browse Dataverse**
 
+To browse dataverse, click on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
 
+The dataverse breadcrumbs appear on each dataverse page and can be used to navigate throughout Dataverse.
 
