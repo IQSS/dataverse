@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-DOCROOT       ?= /usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse-4.0
+DOCROOT       ?= /usr/local/glassfish4/glassfish/domains/domain1/docroot
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4

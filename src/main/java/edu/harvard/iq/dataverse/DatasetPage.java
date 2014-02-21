@@ -240,6 +240,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     try {          
                         ingestedAsTabular = ingestAsTabular(uFile, dFile);
+                        dFile.setContentType("text/tab-separated-values");
                     } catch (IOException iex) {
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
                         ingestedAsTabular = false; 
@@ -248,6 +249,7 @@ public class DatasetPage implements java.io.Serializable {
                     
                     try {
                         metadataExtracted = extractIndexableMetadata(uFile, dFile);
+                        dFile.setContentType("application/fits");
                     } catch(IOException mex) {
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file "+dFile.getName(), mex);
                     }

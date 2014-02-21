@@ -258,6 +258,8 @@ public class IndexServiceBean {
             
             if (dataFile.isTabularData()) {
                 List<DataVariable> variables = dataFile.getDataTable().getDataVariables();
+                String variableNamesToIndex = null;
+                String variableLabelsToIndex = null; 
                 for (DataVariable var : variables) {
                     // Hard-coded search fields, for now: 
                     // TODO: immediately: define these as constants in SearchFields;
@@ -270,11 +272,27 @@ public class IndexServiceBean {
                     // anyway -- needs to be reviewed. -- L.A. 4.0alpha1 
                     
                     if (var.getName() != null && !var.getName().equals("")) {
-                        datafileSolrInputDocument.addField("varname_s", var.getName());
+                        if (variableNamesToIndex == null) {
+                            variableNamesToIndex = var.getName();
+                        } else {
+                            variableNamesToIndex = variableNamesToIndex + " " + var.getName();
+                        }
                     }
-                    if (var.getName() != null && !var.getLabel().equals("")) {
-                        datafileSolrInputDocument.addField("varlabel_s", var.getName());
+                    if (var.getLabel() != null && !var.getLabel().equals("")) {
+                        if (variableLabelsToIndex == null) {
+                            variableLabelsToIndex = var.getLabel();
+                        } else {
+                            variableLabelsToIndex = variableLabelsToIndex + " " + var.getLabel();
+                        }
                     }
+                }
+                if (variableNamesToIndex != null) {
+                    logger.info("indexing  " + variableNamesToIndex.length() + " bytes");
+                    datafileSolrInputDocument.addField("varname_s", variableNamesToIndex);
+                }
+                if (variableLabelsToIndex != null) {
+                    logger.info("indexing  " + variableLabelsToIndex.length() + " bytes");
+                    datafileSolrInputDocument.addField("varlabel_s", variableLabelsToIndex);
                 }
             }
             
