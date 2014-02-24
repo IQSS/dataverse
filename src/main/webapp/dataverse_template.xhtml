@@ -39,8 +39,9 @@
                 navbarH = $("#navbarFixed").height();
                 $("body").css("padding-top", navbarH + "px");
                 
-                $('#breadcrumbNavBlock .dropdown-menu span.ui-tree-toggler').click(function(){
-                    //FIGURE OUT WHAT TO DO ABOUT FIXING THIS
+                $(document).on('click', '.dropdown-menu', function (e) {
+                    $(this).hasClass('keep-open'),
+                    e.stopPropagation();
                 });
                 
                 $("a[data-toggle='tooltip']").tooltip();

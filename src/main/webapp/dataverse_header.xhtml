@@ -65,6 +65,7 @@
                                         <h:outputText value="Account Page" />
                                     </h:outputLink>
                                 </li>
+                                <li class="divider"></li>
                                 <li>
                                     <h:form styleClass="navbar-form navbar-left" role="logout">
                                         <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
@@ -79,7 +80,7 @@
     </nav>
 
     <!-- Header Panel -->
-    <ui:fragment rendered="#{showBreadcrumbs}">
+    <ui:fragment rendered="#{showDataverseHeader}">
         <div class="container" style="background:#E2BA7F; margin:0 auto .5em auto; padding:2em 1em;">
             <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a>
         </div>
@@ -95,7 +96,7 @@
 
 
                 <div style="float:left; position:relative;">
-                    <div class="dropdown">
+                    <div class="dropdown#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? ' keep-on' : ''}">
 
                         <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"  rendered="#{dataverse.id == dv.id and dataset == null}"/>
                         <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
@@ -129,6 +130,7 @@
                 <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
             </ui:fragment>
         </div>
+        
     </ui:fragment>
 
     <!-- Message Panel -->
