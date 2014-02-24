@@ -47,6 +47,7 @@ public class SearchIncludeFragment {
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
+    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String typeFilterQuery;
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
@@ -54,7 +55,7 @@ public class SearchIncludeFragment {
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
-    private Map<String, String> friendlyName = new HashMap<>();
+//    private Map<String, String> friendlyName = new HashMap<>();
 
     /**
      * @todo:
@@ -178,15 +179,15 @@ public class SearchIncludeFragment {
          * @todo: pull values from datasetField.getTitle() rather than hard
          * coding them here
          */
-        friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
-        friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
-        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
-        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
-        friendlyName.put(SearchFields.KEYWORD, "Keyword");
-        friendlyName.put(SearchFields.DISTRIBUTOR, "Distributor");
-        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
-        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
-        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+//        friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
+//        friendlyName.put(SearchFields.HOST_DATAVERSE, "Original Dataverse");
+//        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
+//        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
+//        friendlyName.put(SearchFields.KEYWORD, "Keyword");
+//        friendlyName.put(SearchFields.DISTRIBUTOR, "Distributor");
+//        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
+//        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
+//        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
     public int getNumberOfFacets(String name, int defaultValue) {
@@ -198,6 +199,9 @@ public class SearchIncludeFragment {
         return numFacets;
     }
 
+    /**
+     * @todo why do we have to click "More" twice?
+     */
     public void incrementFacets(String name, int incrementNum) {
         Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
@@ -410,6 +414,14 @@ public class SearchIncludeFragment {
         this.searchFieldSubtree = searchFieldSubtree;
     }
 
+    public String getSearchFieldHostDataverse() {
+        return searchFieldHostDataverse;
+    }
+
+    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
+        this.searchFieldHostDataverse = searchFieldHostDataverse;
+    }
+
     public String getTypeFilterQuery() {
         return typeFilterQuery;
     }
@@ -446,12 +458,13 @@ public class SearchIncludeFragment {
         this.directChildDvObjectContainerList = directChildDvObjectContainerList;
     }
 
-    public Map<String, String> getFriendlyName() {
-        return friendlyName;
-    }
+//    public Map<String, String> getFriendlyName() {
+//        return friendlyName;
+//        return null;
+//    }
 
-    public void setFriendlyName(Map<String, String> friendlyName) {
-        this.friendlyName = friendlyName;
-    }
+//    public void setFriendlyName(Map<String, String> friendlyName) {
+//        this.friendlyName = friendlyName;
+//    }
 
 }

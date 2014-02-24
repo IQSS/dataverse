@@ -75,8 +75,8 @@
                         <div style="overflow:hidden;">
                             <div style="width:20%;float:left;">
                                 <p:dataList id="facetCategoryList" value="#{SearchPage.facetCategoryList}" var="facetCategory">
-                                    <!--<h:outputText value="#{SearchPage.friendlyName.get(facetCategory.name)}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>-->
-                                    <h:outputText value="#{SearchPage.friendlyName.get(facetCategory.name)}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>
+                                    <!--<h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>-->
+                                    <h:outputText value="#{facetCategory.name}" styleClass="facetCategoryName" rendered="#{facetCategory.name != 'type_s'}"/>
                                     <!--<p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel" rendered="#{facetCategory.name != 'type_s'}">-->
                                     <p:dataList id="facetLabelList" value="#{facetCategory.facetLabel}" var="facetLabel"  rows="#{SearchPage.getNumberOfFacets(facetCategory.name,5)}">
                                         <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;" rendered='#{facetLabel.filterQuery =="type_s:\"dataverses\""}'/>
@@ -88,8 +88,8 @@
                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                             </c:forEach>
                                             <f:param name="fq#{SearchPage.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
-                                            <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name} Dataverse" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}" rendered="#{SearchPage.friendlyName.get(facetCategory.name) == 'Original Dataverse' or SearchPage.friendlyName.get(facetCategory.name) == 'Dataverse Hierarchy Tag'}"/>
-                                            <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name}" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}" rendered="#{SearchPage.friendlyName.get(facetCategory.name) != 'Original Dataverse' and SearchPage.friendlyName.get(facetCategory.name) != 'Dataverse Hierarchy Tag'}"/>
+                                            <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name} Dataverse" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}"/>
+                                            <h:outputText value="#{facetCategory.name == 'type_s' ? facetLabel.capitalizedName : facetLabel.name}" style="color: #{SearchPage.filterQueries.contains(facetLabel.filterQuery) ? '#C55B28' : 'black'}"/>
                                         </h:outputLink>
                                         <h:outputText value=" (#{facetLabel.count})" style="color:#AAA; margin-right:.5em;"/>
                                         <h:outputLink rendered="#{SearchPage.filterQueries.contains(facetLabel.filterQuery)}" style="color:#C55B28">
