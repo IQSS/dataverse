@@ -183,5 +183,8 @@ public class Dataset extends DvObjectContainer {
         return Objects.equals(getId(), other.getId());
     }
 
-    
+    @Override
+	public void accept( Visitor v ) {
+		v.visit(this);
+	}
 }

@@ -41,15 +41,15 @@ public class DataFile extends DvObject {
     private List<FileMetadataFieldValue> fileMetadataFieldValues;
 
     public DataFile() {
-        this.fileMetadatas = new ArrayList<FileMetadata>();
-        fileMetadataFieldValues = new ArrayList<FileMetadataFieldValue>();
+        this.fileMetadatas = new ArrayList<>();
+        fileMetadataFieldValues = new ArrayList<>();
     }    
 
     public DataFile(String name, String contentType) {
         this.name = name;
         this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<FileMetadata>();
-        fileMetadataFieldValues = new ArrayList<FileMetadataFieldValue>();
+        this.fileMetadatas = new ArrayList<>();
+        fileMetadataFieldValues = new ArrayList<>();
     }    
 
     public List<DataTable> getDataTables() {
@@ -190,5 +190,9 @@ public class DataFile extends DvObject {
     protected String toStringExtras() {
         return "name:" + getName();
     }
-    
+	
+	@Override
+	public void accept( Visitor v ) {
+		v.visit(this);
+	}
 }

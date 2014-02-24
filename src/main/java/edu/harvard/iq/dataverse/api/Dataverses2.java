@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -11,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +98,47 @@ public class Dataverses2 extends AbstractApiBean {
 		JsonArrayBuilder jab = Json.createArrayBuilder();
 		for ( DataverseRole r : dataverse.getRoles() ){
 			jab.add( json(r) );
+		}
+		return ok(jab);
+	}
+	
+	@GET
+	@Path("{identifier}/contents")
+	public String listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) {
+			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+		
+		final JsonArrayBuilder jab = Json.createArrayBuilder();
+		DvObject.Visitor ser = new DvObject.Visitor() {
+
+			@Override
+			public void visit(Dataverse dv) {
+				jab.add( Json.createObjectBuilder().add("type", "dataverse")
+						.add("id", dv.getId())
+						.add("title",dv.getName() ));
+			}
+
+			@Override
+			public void visit(Dataset ds) {
+				jab.add( Json.createObjectBuilder().add("type", "dataset")
+						.add("id", ds.getId())
+						.add("title",ds.getLatestVersion().getTitle() ));
+			}
+
+			@Override
+			public void visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
+		};
+		try {
+			for ( DvObject o : engineSvc.submit( new ListDataverseContentCommand(u, dataverse)) ) {
+				o.accept(ser);
+			}
+		} catch (CommandException ex) {
+			return error(ex.getMessage());
 		}
 		return ok(jab);
 	}

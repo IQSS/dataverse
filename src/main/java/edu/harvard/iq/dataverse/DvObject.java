@@ -23,6 +23,12 @@ public abstract class DvObject implements java.io.Serializable {
 	@ManyToOne( cascade = CascadeType.MERGE )
 	private DvObjectContainer owner;
 	
+	public interface Visitor {
+		public void visit( Dataverse dv );
+		public void visit( Dataset ds );
+		public void visit( DataFile df );
+	}
+	
 	/**
 	 * Sets the owner of the object. This is {@code protected} rather than
 	 * {@code public}, since different sub-classes have different possible
@@ -45,6 +51,8 @@ public abstract class DvObject implements java.io.Serializable {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	
+	public abstract void accept(  Visitor v );
 	
 	@Override
     public int hashCode() {

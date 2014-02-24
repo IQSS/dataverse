@@ -153,5 +153,8 @@ public class Dataverse extends DvObjectContainer {
         return "name:" + getName();
     }
 
-
+	@Override
+	public void accept( Visitor v ) {
+		v.visit(this);
+	}
 }
