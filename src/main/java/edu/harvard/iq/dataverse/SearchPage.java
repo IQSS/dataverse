@@ -35,7 +35,7 @@ public class SearchPage implements java.io.Serializable {
     private int paginationStart;
     private List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
     private List<String> spelling_alternatives = new ArrayList<>();
-    private Map<String, String> friendlyName = new HashMap<>();
+//    private Map<String, String> friendlyName = new HashMap<>();
     private Map<String,Integer> numberOfFacets = new HashMap<>();
     private Map<String,Integer> numberOfChildDatasets = new HashMap<>();
     private Long fromDataverseId;
@@ -120,13 +120,13 @@ public class SearchPage implements java.io.Serializable {
             spelling_alternatives.add(entry.getValue().toString());
         }
         facetCategoryList = solrQueryResponse.getFacetCategoryList();
-        friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
-        friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
+//        friendlyName.put(SearchFields.SUBTREE, "Dataverse Subtree");
+//        friendlyName.put(SearchFields.ORIGINAL_DATAVERSE, "Original Dataverse");
 //        friendlyName.put(SearchFields.CATEGORY, "Category");
-        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
-        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
+//        friendlyName.put(SearchFields.AUTHOR_STRING, "Author");
+//        friendlyName.put(SearchFields.AFFILIATION, "Affiliation");
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
-        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
+//        friendlyName.put(SearchFields.FILE_TYPE_GROUP, "File Type");
         if (fromDataverseId != null) {
             fromDataverse = dataverseService.find(fromDataverseId);
         }
@@ -268,13 +268,13 @@ public class SearchPage implements java.io.Serializable {
         this.spelling_alternatives = spelling_alternatives;
     }
 
-    public Map<String, String> getFriendlyName() {
-        return friendlyName;
-    }
-
-    public void setFriendlyName(Map<String, String> friendlyName) {
-        this.friendlyName = friendlyName;
-    }
+//    public Map<String, String> getFriendlyName() {
+//        return friendlyName;
+//    }
+//
+//    public void setFriendlyName(Map<String, String> friendlyName) {
+//        this.friendlyName = friendlyName;
+//    }
 
     public  int getNumberOfFacets(String name, int defaultValue) {
         Integer numFacets = numberOfFacets.get(name);

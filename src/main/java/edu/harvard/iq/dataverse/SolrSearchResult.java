@@ -52,7 +52,11 @@ public class SolrSearchResult {
             typeSpecificFields.add(SearchFields.NAME, this.name);
 //            typeSpecificFields.add(SearchFields.AFFILIATION, affiliation);
         } else if (this.type.equals("datasets")) {
-            typeSpecificFields.add(SearchFields.TITLE, this.title);
+//            typeSpecificFields.add(SearchFields.TITLE, this.title);
+            /**
+             * @todo: don't hard code this
+             */
+            typeSpecificFields.add("title_s", this.title);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE, this.filetype);

@@ -88,4 +88,32 @@ public class Index {
             return Util.message2ApiError(sb.toString());
         }
     }
+
+    @GET
+    @Path("{type}")
+    public String indexTypeById(@PathParam("type") String type) {
+        try {
+            if (type.equals("test")) {
+                return "test\n";
+//                return indexService.test() + "\n";
+            } else {
+                return Util.message2ApiError("illegal type: " + type);
+            }
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                    }
+                }
+            }
+            return Util.message2ApiError(sb.toString());
+        }
+    }
 }

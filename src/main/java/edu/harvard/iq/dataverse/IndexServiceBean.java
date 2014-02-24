@@ -29,8 +29,8 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
 
-    List<String> advancedSearchFields = new ArrayList<>();
-    List<String> notAdvancedSearchFields = new ArrayList<>();
+//    List<String> advancedSearchFields = new ArrayList<>();
+//    List<String> notAdvancedSearchFields = new ArrayList<>();
 
     public String indexAll() {
         /**
@@ -62,8 +62,8 @@ public class IndexServiceBean {
             datasetIndexCount++;
             logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
         }
-        logger.info("advanced search fields: " + advancedSearchFields);
-        logger.info("not advanced search fields: " + notAdvancedSearchFields);
+//        logger.info("advanced search fields: " + advancedSearchFields);
+//        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
         return dataverseIndexCount + " dataverses" + " and " + datasetIndexCount + " datasets indexed\n";
@@ -77,7 +77,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
-        solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataverse.getName());
+        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getName());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
@@ -152,82 +152,115 @@ public class IndexServiceBean {
                 String idDashName = id + "-" + name;
 //                logger.info(idDashTitle);
 //                logger.info(name + ": " + datasetFieldValue.getStrValue());
-                if (datasetField.isAdvancedSearchField()) {
+                String solrField = datasetField.getSolrField();
+                if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty()) {
+//                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
+                    if (solrField.endsWith("_i")) {
+                        String dateAsString = datasetFieldValue.getStrValue();
+                        logger.info("date as string: " + dateAsString);
+                        if (dateAsString != null && !dateAsString.isEmpty()) {
+                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
+                            try {
+                                /**
+                                 * @todo when bean validation is working we
+                                 * won't have to convert strings into dates
+                                 */
+                                logger.info("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
+                                Date dateAsDate = inputDateyyyy.parse(dateAsString);
+                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+                                String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
+                                logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
+                                solrInputDocument.addField(solrField, Integer.parseInt(datasetFieldFlaggedAsDate));
+                            } catch (Exception ex) {
+                                logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + datasetField.getName() + ")");
+                            }
+                        }
+                    } else {
+                        // _s (dynamic string) and all other Solr fields
+                        solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());
+                    }
+                }
+                /**
+                 * @todo: review all code below... commented out old indexing of
+                 * hard coded fields. Also, should we respect the
+                 * isAdvancedSearchField boolean?
+                 */
+//                if (datasetField.isAdvancedSearchField()) {
 //                    advancedSearchFields.add(idDashName);
 //                    logger.info(idDashName + " is an advanced search field (" + title + ")");
-                    if (name.equals(DatasetFieldConstant.title)) {
-                        String toIndexTitle = datasetFieldValue.getStrValue();
-                        if (toIndexTitle != null && !toIndexTitle.isEmpty()) {
-                            solrInputDocument.addField(SearchFields.TITLE, toIndexTitle);
-                        }
-                    } else if (name.equals(DatasetFieldConstant.authorName)) {
-                        String toIndexAuthor = datasetFieldValue.getStrValue();
-                        if (toIndexAuthor != null && !toIndexAuthor.isEmpty()) {
+//                    if (name.equals(DatasetFieldConstant.title)) {
+//                        String toIndexTitle = datasetFieldValue.getStrValue();
+//                        if (toIndexTitle != null && !toIndexTitle.isEmpty()) {
+//                            solrInputDocument.addField(SearchFields.TITLE, toIndexTitle);
+//                        }
+//                    } else if (name.equals(DatasetFieldConstant.authorName)) {
+//                        String toIndexAuthor = datasetFieldValue.getStrValue();
+//                        if (toIndexAuthor != null && !toIndexAuthor.isEmpty()) {
 //                            logger.info("index this author: " + toIndexAuthor);
-                            solrInputDocument.addField(SearchFields.AUTHOR_STRING, toIndexAuthor);
-                        }
-                    } else if (name.equals(DatasetFieldConstant.productionDate)) {
-                        String toIndexProductionDateString = datasetFieldValue.getStrValue();
+//                            solrInputDocument.addField(SearchFields.AUTHOR_STRING, toIndexAuthor);
+//                        }
+//                    } else if (name.equals(DatasetFieldConstant.productionDate)) {
+//                        String toIndexProductionDateString = datasetFieldValue.getStrValue();
 //                        logger.info("production date: " + toIndexProductionDateString);
-                        if (toIndexProductionDateString != null && !toIndexProductionDateString.isEmpty()) {
-                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-                            try {
+//                        if (toIndexProductionDateString != null && !toIndexProductionDateString.isEmpty()) {
+//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
+//                            try {
 //                                logger.info("Trying to convert " + toIndexProductionDateString + " to a YYYY date from dataset " + dataset.getId());
-                                Date productionDate = inputDateyyyy.parse(toIndexProductionDateString);
-                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-                                String productionYear = yearOnly.format(productionDate);
+//                                Date productionDate = inputDateyyyy.parse(toIndexProductionDateString);
+//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+//                                String productionYear = yearOnly.format(productionDate);
 //                                logger.info("YYYY only: " + productionYear);
-                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_YEAR_ONLY, Integer.parseInt(productionYear));
-                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_ORIGINAL, productionDate);
-                            } catch (Exception ex) {
-                                logger.info("unable to convert " + toIndexProductionDateString + " into YYYY format");
-                            }
-                        }
-                        /**
-                         * @todo: DRY! this is the same as above!
-                         */
-                    } else if (name.equals(DatasetFieldConstant.distributionDate)) {
-                        String toIndexdistributionDateString = datasetFieldValue.getStrValue();
+//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_YEAR_ONLY, Integer.parseInt(productionYear));
+//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_ORIGINAL, productionDate);
+//                            } catch (Exception ex) {
+//                                logger.info("unable to convert " + toIndexProductionDateString + " into YYYY format");
+//                            }
+//                        }
+//                        /**
+//                         * @todo: DRY! this is the same as above!
+//                         */
+//                    } else if (name.equals(DatasetFieldConstant.distributionDate)) {
+//                        String toIndexdistributionDateString = datasetFieldValue.getStrValue();
 //                        logger.info("distribution date: " + toIndexdistributionDateString);
-                        if (toIndexdistributionDateString != null && !toIndexdistributionDateString.isEmpty()) {
-                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-                            try {
+//                        if (toIndexdistributionDateString != null && !toIndexdistributionDateString.isEmpty()) {
+//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
+//                            try {
 //                                logger.info("Trying to convert " + toIndexdistributionDateString + " to a YYYY date from dataset " + dataset.getId());
-                                Date distributionDate = inputDateyyyy.parse(toIndexdistributionDateString);
-                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-                                String distributionYear = yearOnly.format(distributionDate);
+//                                Date distributionDate = inputDateyyyy.parse(toIndexdistributionDateString);
+//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
+//                                String distributionYear = yearOnly.format(distributionDate);
 //                                logger.info("YYYY only: " + distributionYear);
-                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, Integer.parseInt(distributionYear));
-                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_ORIGINAL, distributionDate);
-                            } catch (Exception ex) {
-                                logger.info("unable to convert " + toIndexdistributionDateString + " into YYYY format");
-                            }
-                        }
-                    } else if (name.equals(DatasetFieldConstant.keywordValue)) {
-                        String toIndexKeyword = datasetFieldValue.getStrValue();
-                        if (toIndexKeyword != null && !toIndexKeyword.isEmpty()) {
-                            solrInputDocument.addField(SearchFields.KEYWORD, toIndexKeyword);
-                        }
-                    } else if (name.equals(DatasetFieldConstant.distributorName)) {
-                        String toIndexDistributor = datasetFieldValue.getStrValue();
-                        if (toIndexDistributor != null && !toIndexDistributor.isEmpty()) {
-                            solrInputDocument.addField(SearchFields.DISTRIBUTOR, toIndexDistributor);
-                        }
-                    } else if (name.equals(DatasetFieldConstant.description)) {
-                        String toIndexDescription = datasetFieldValue.getStrValue();
-                        if (toIndexDescription != null && !toIndexDescription.isEmpty()) {
-                            solrInputDocument.addField(SearchFields.DESCRIPTION, toIndexDescription);
-                        }
-                    }
-                } else {
+//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, Integer.parseInt(distributionYear));
+//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_ORIGINAL, distributionDate);
+//                            } catch (Exception ex) {
+//                                logger.info("unable to convert " + toIndexdistributionDateString + " into YYYY format");
+//                            }
+//                        }
+//                    } else if (name.equals(DatasetFieldConstant.keywordValue)) {
+//                        String toIndexKeyword = datasetFieldValue.getStrValue();
+//                        if (toIndexKeyword != null && !toIndexKeyword.isEmpty()) {
+//                            solrInputDocument.addField(SearchFields.KEYWORD, toIndexKeyword);
+//                        }
+//                    } else if (name.equals(DatasetFieldConstant.distributorName)) {
+//                        String toIndexDistributor = datasetFieldValue.getStrValue();
+//                        if (toIndexDistributor != null && !toIndexDistributor.isEmpty()) {
+//                            solrInputDocument.addField(SearchFields.DISTRIBUTOR, toIndexDistributor);
+//                        }
+//                    } else if (name.equals(DatasetFieldConstant.description)) {
+//                        String toIndexDescription = datasetFieldValue.getStrValue();
+//                        if (toIndexDescription != null && !toIndexDescription.isEmpty()) {
+//                            solrInputDocument.addField(SearchFields.DESCRIPTION, toIndexDescription);
+//                        }
+//                    }
+//                } else {
 //                    notAdvancedSearchFields.add(idDashName);
 //                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
-                }
+//                }
             }
         }
 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-        solrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataset.getOwner().getName());
+        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
         solrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
@@ -244,7 +277,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_GROUP, dataFile.getContentType().split("/")[0]);
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-            datafileSolrInputDocument.addField(SearchFields.ORIGINAL_DATAVERSE, dataFile.getOwner().getOwner().getName());
+            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
             datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
