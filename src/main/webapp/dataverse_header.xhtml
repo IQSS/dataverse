@@ -3,6 +3,7 @@
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:p="http://primefaces.org/ui"
+     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!-- Navbar Panel -->
@@ -67,7 +68,7 @@
                                 </li>
                                 <li class="divider"></li>
                                 <li>
-                                    <h:form styleClass="navbar-form navbar-left" role="logout">
+                                    <h:form styleClass="navbar-form navbar-left" pt:role="logout">
                                         <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
                                     </h:form>
                                 </li>
@@ -104,10 +105,12 @@
                                 <h:outputText value="#{dv.name} Dataverse"/>
                             </a>
                         </ui:fragment>
-                        
-                        <a id="breadcrumbLnkTree#{status.index}" title="Browse child items" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                            <span class="caret"></span>
-                        </a>
+
+                        <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}" >
+                            <a id="breadcrumbLnkTree#{status.index}" title="Browse child items" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#">
+                                <span class="caret"></span>
+                            </a>
+                        </ui:fragment>
 
                         <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
                             <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
@@ -130,7 +133,7 @@
                 <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
             </ui:fragment>
         </div>
-        
+
     </ui:fragment>
 
     <!-- Message Panel -->
