@@ -277,7 +277,8 @@ public class DatasetField implements Serializable,   Comparable<DatasetField> {
             }
             return name + solrType;
         } else {
-            return "nulltype_s";
+            // _ss to avoid "multiple values encountered for non multiValued field nulltype_s"
+            return "nulltype_ss";
         }
     }
 }
