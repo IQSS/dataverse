@@ -57,6 +57,8 @@ public class Dataverse extends DvObjectContainer {
      * dataverses.
      */
     private boolean permissionRoot;
+    private boolean metadataBlockRoot;
+    private boolean facetRoot;
 
     @OneToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks;
@@ -66,7 +68,11 @@ public class Dataverse extends DvObjectContainer {
     private List<DataverseFacet> dataverseFacets;
 
     public List<MetadataBlock> getMetadataBlocks() {
+        if (metadataBlockRoot || getOwner() == null) {
         return metadataBlocks;
+        } else {
+            return getOwner().getMetadataBlocks();
+        }
     }
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
@@ -74,7 +80,11 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<DataverseFacet> getDataverseFacets() {
+        if (facetRoot || getOwner() == null ) {
         return dataverseFacets;
+        } else {
+            return getOwner().getDataverseFacets();
+        }
     }
 
     public void setDataverseFacets(List<DataverseFacet> dataverseFacets) {
