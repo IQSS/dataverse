@@ -277,8 +277,11 @@ public class DatasetField implements Serializable,   Comparable<DatasetField> {
             }
             return name + solrType;
         } else {
-            // _ss to avoid "multiple values encountered for non multiValued field nulltype_s"
-            return "nulltype_ss";
+            return name + getTmpNullFieldTypeIdentifier();
         }
+    }
+    // help us identify fields that have null fieldType values
+    public String getTmpNullFieldTypeIdentifier() {
+        return "NullFieldType_s";
     }
 }

@@ -38,6 +38,7 @@ public class Index {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause.getMessage() + " ");
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
