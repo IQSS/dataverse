@@ -128,9 +128,9 @@
             </ui:repeat>
 
             <!-- Dataset, if available -->
-            <ui:fragment rendered="#{!empty dataset.latestVersion.metadata.title}">
+            <ui:fragment rendered="#{!empty dataset.latestVersion.title}">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-                <h:outputText value="#{dataset.latestVersion.metadata.title}" style="float:left; font-weight:bold;"/>
+                <h:outputText value="#{dataset.latestVersion.title}" style="font-weight:bold;"/>
             </ui:fragment>
         </div>
 

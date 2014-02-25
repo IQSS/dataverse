@@ -10,8 +10,9 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Dataset"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
+            <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:define name="body">
 
                 <f:metadata>
@@ -21,32 +22,14 @@
                 </f:metadata>
 
                 <h:form id="datasetForm">
-                    <!-- Breadcrumbs Panel -->
-                    <p:panel styleClass="panelLayoutBlock breadcrumbNavBlock" rendered="#{empty DatasetPage.editMode}">
-                        <ui:repeat value="#{DatasetPage.dataset.owner.owners}" var="owner">
-                            <h:outputLink value="/dataverse.xhtml?id=#{owner.id}">
-                                <h:outputText value="#{owner.name} Dataverse"/>
-                            </h:outputLink>
-                            <h:outputText value=" > "/>
-                        </ui:repeat>
-                        <!--<br/>-->
-                        <h:outputLink value="/dataverse.xhtml?id=#{DatasetPage.dataset.owner.id}">
-                            <h:outputText value="#{DatasetPage.dataset.owner.name} Dataverse"/>
-                        </h:outputLink>
-
-                        <ui:fragment rendered="#{!empty DatasetPage.dataset.latestVersion.title}">
-                            <h:outputText value=" > "/>
-                            <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" style="font-weight:bold;"/>
-                        </ui:fragment>
-                    </p:panel>
 
                     <!-- Message Panel -->
                     <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
                         <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-                        <!--<h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>-->
-                        <!--<h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>-->
-                        <!--<h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>-->
-                        <!--<h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>-->
+                        <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
+                        <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
+                        <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
+                        <h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
                     </p:panel>
 
                     <style type="text/css">
@@ -57,12 +40,35 @@
                     <p:panel styleClass="panelLayoutBlock">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
                             <ui:fragment>
+                                
+                                <style type="text/css">
+                                    span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
+                                    
+                                    #title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
+                                    #author, #contact {display:block; margin-bottom:.5em;}
+                                    #citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
+                                    #description {display:block; margin-bottom:.5em;}
+                                    #keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
+                                    #keywords {margin-top:1em;}
+                                </style>
+<!--                                <div style="border:2px dashed gold; margin-bottom:1em;">
+                                    <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
+                                    <span id="author">Victorino, Shane (RF); Pedroia, Dustin (2B); Ortiz, David (DH); Napoli, Mike (1B); Nava, Daniel (LF); Bogaerts, Xander (SS); Pierzynski, A.J. (C); Middlebrooks, Will (3B); Bradley, Jackie (CF)</span>
+                                    <span id="contact">Contact: <a href="#" onclick="return false;">Name, Email Icon</a></span>
+                                    <div id="citation">
+                                        <span>Victorino, Shane (RF); Pedroia, Dustin (2B); Ortiz, David (DH); Napoli, Mike (1B); Nava, Daniel (LF); Bogaerts, Xander (SS); Pierzynski, A.J. (C); Middlebrooks, Will (3B); Bradley, Jackie (CF), 4/4/2014, "Fake Kinda Long And Wordy Dataset Title That I Made Up Without Much Thought", http://hdl.handle.net/1902.1/FAKEIDHDL UNF:3:reds0x2o14fakedthisId== Harvard Dataverse [Distributor] V1 [Version]</span>
+                                    </div>
+                                    <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
+                                    <span id="keywords">Keywords: <a href="#" onclick="return false;">Fake</a>, <a href="#" onclick="return false;">Red Sox</a>, <a href="#" onclick="return false;">Baseball</a></span>
+                                    <span id="topicclassification">Topic Classification: mra murraydiversity murrayaudio; 501-1000 (<a href="#" onclick="return false;">Sampsize</a>); female,male (<a href="#" onclick="return false;">Gender</a>); mixed (<a href="#" onclick="return false;">Age</a>); mixed (<a href="#" onclick="return false;">Race</a>); not asked (<a href="#" onclick="return false;">SES</a>); 2 (<a href="#" onclick="return false;">Generations</a>); Special aspects of education (<a href="#" onclick="return false;">Education</a>)</span>
+                                    <span id="publication">Original Publication: Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
+                                    <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>
+                                </div>-->
+                                
                                 <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
 
                                 <h:outputText value="#{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
 
-                        
-                                <!--<h:outputText value="Data Citation: " style="display:block; margin-top:.5em;"/>-->
                                 <p:panel style="background-color: #F5F5F5;">
                                     <h:outputText id="citationDisplay" value="#{DatasetPage.datasetVersionUI.citation}" escape="false"/>
                                 </p:panel>
@@ -78,9 +84,8 @@
                                     </p:panelGrid>
                                 </p:panel>-->
                             </ui:fragment>
-                            <ui:fragment>
+                            <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
                                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
-                                <!--<p:panelGrid styleClass="panelgridLayoutTable" columns="2" rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">-->
                                     <p:panel styleClass="panelLayoutButtonBlock">
                                         <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
                                             <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
