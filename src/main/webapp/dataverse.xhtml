@@ -41,15 +41,15 @@
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
                             <p:panelGrid columns="2">
                                 <ui:fragment>
-                                    <p:inputText id="name" value="#{DataversePage.dataverse.name}"/>
-                                    <p:outputLabel value=" Dataverse" for="name"/>
+                                    <p:inputText id="name" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
+                                    <p:outputLabel value="Dataverse" for="name"/>
                                     <h:outputText value="*" style="color: #B94A48;"/>
                                     <p:watermark for="name" value="Enter name..."/>
                                 </ui:fragment>
                                 <p:message for="name"/>
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
-                                <h:outputText value="Host Dataverse"/>
+                                <p:outputLabel value="Host Dataverse" for="hostDataverse"/>
                                 <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                     <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
                                                    itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
