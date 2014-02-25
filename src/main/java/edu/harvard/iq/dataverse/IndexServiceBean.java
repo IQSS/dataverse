@@ -153,8 +153,8 @@ public class IndexServiceBean {
 //                logger.info(idDashTitle);
 //                logger.info(name + ": " + datasetFieldValue.getStrValue());
                 String solrField = datasetField.getSolrField();
-                if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty()) {
-//                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
+                if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrField != null) {
+                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
                     if (solrField.endsWith("_i")) {
                         String dateAsString = datasetFieldValue.getStrValue();
                         logger.info("date as string: " + dateAsString);
