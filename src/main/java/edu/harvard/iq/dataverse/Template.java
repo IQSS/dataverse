@@ -27,25 +27,20 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.Collection;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
- * @author Ellen Kraffmiller
+ * @author Stephen Kraffmiller
  */
 @Entity
 public class Template implements java.io.Serializable {
     @OneToMany (mappedBy="template",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<TemplateField> templateFields;
-    
-    
-    /**
-     * Creates a new instance of Template
-     */
+
     public Template() {
         /*
         metadata = new Metadata();
@@ -64,11 +59,9 @@ public class Template implements java.io.Serializable {
             TemplateField tf = new TemplateField();
             tf.setTemplate(this);
             tf.setDatasetField(sourceField.getDatasetField());
-
             //tf.setControlledVocabulary(sourceField.getControlledVocabulary());
             tf.setFieldInputLevelString(sourceField.getFieldInputLevelString());
             tf.setDisplayOrder(sourceField.getDisplayOrder());
-
             templateFields.add(tf);
         }
     }
@@ -144,46 +137,31 @@ public class Template implements java.io.Serializable {
      */
     @Version
     private Long version;
-
-    /**
-     * Getter for property version.
-     * @return Value of property version.
-     */
     public Long getVersion() {
         return this.version;
     }
-
-    /**
-     * Setter for property version.
-     * @param version New value of property version.
-     */
     public void setVersion(Long version) {
         this.version = version;
     }   
 
    @ManyToOne
    private Dataverse dataverse;
-
    public Dataverse getDataverse() {
         return this.dataverse;
-   }
-   
+   }   
    public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
    }
    
     @OneToOne(cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Metadata metadata;
-
     public Metadata getMetadata() {
         return metadata;
     }
-
     public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
     
- 
     
    public int hashCode() {
         int hash = 0;

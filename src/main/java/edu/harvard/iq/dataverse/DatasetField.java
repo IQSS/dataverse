@@ -99,6 +99,21 @@ public class DatasetField implements Serializable,   Comparable<DatasetField> {
         this.fieldType = fieldType;
     }
 
+    private boolean facetable;
+    public boolean isFacetable() {
+        return facetable;
+    }
+    public void setFacetable(boolean facetable) {
+        this.facetable = facetable;
+    }
+    
+    private boolean showAboveFold;
+    public boolean isShowAboveFold() {
+        return showAboveFold;
+    }
+    public void setShowAboveFold(boolean showAboveFold) {
+        this.showAboveFold = showAboveFold;
+    }
 
     @ManyToOne(cascade = CascadeType.MERGE) 
     private MetadataBlock metadataBlock;   

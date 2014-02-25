@@ -24,12 +24,22 @@ public class DatasetFieldServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
+    private static final String NAME_QUERY = "SELECT dsf from DatasetField dsf where dsf.name= :fieldName ";
     private static final String FILEMETA_NAME_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName ";
     private static final String FILEMETA_NAME_FORMAT_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName and fmf.fileFormatName= :fileFormatName ";
  
     
     public List<DatasetField> findAll() {
         return em.createQuery("select object(o) from DatasetField as o where o.advancedSearchField = true and o.title != '' order by o.id").getResultList();
+    }    
+    
+    public DatasetField find(Object pk) {
+        return (DatasetField) em.find(DatasetField.class, pk);
+    } 
+    
+    public DatasetField findByName(String name) {
+        DatasetField dsf = (DatasetField) em.createQuery(NAME_QUERY).setParameter("fieldName",name).getSingleResult();
+        return dsf;
     }
     
     public List findAvailableFileMetadataFields() {

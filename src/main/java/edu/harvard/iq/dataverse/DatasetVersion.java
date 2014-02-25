@@ -101,9 +101,7 @@ public class DatasetVersion implements Serializable {
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
     }
-
-    
-    
+   
     /*
      @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
      private List<VersionContributor> versionContributors;
@@ -407,10 +405,10 @@ public class DatasetVersion implements Serializable {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            str += sa.getName();
+            str += sa.getName().getStrValue();
             if (affiliation) {
-                if (!StringUtil.isEmpty(sa.getAffiliation())) {
-                    str += " (" + sa.getAffiliation() + ")";
+                if (!StringUtil.isEmpty(sa.getAffiliation().getStrValue())) {
+                    str += " (" + sa.getAffiliation().getStrValue() + ")";
                 }
             }
         }
@@ -423,8 +421,6 @@ public class DatasetVersion implements Serializable {
         List<MetadataBlock> allFields = this.getDataset().getOwner().getMetadataBlocks();
         if (valueList != null) {
             for (DatasetFieldValue dsfv : valueList) {
-                //DatasetField dsf = dsfv.getDatasetField();  
-                //dsf.getDatasetFieldValues().add(dsfv);
                 retList.add(dsfv);
             }
         }
@@ -441,8 +437,17 @@ public class DatasetVersion implements Serializable {
                     DatasetFieldValue addDsfv = new DatasetFieldValue();
                     addDsfv.setDatasetField(dsf);
                     addDsfv.setDatasetVersion(this);
-                    //addDsfv.setStrValue("init");
+                    
                     dsf.getDatasetFieldValues().add(addDsfv);
+                    if (dsf.isHasChildren()) {
+                        for (DatasetField dsfc : dsf.getChildDatasetFields()) {
+                            DatasetFieldValue dsfvc = new DatasetFieldValue();
+                            dsfvc.setDatasetField(dsfc);
+                            dsfvc.setParentDatasetFieldValue(addDsfv);
+                            dsfvc.setDatasetVersion(this);
+                            retList.add(dsfvc);
+                        }
+                    }
                     retList.add(addDsfv);
                 }
             }

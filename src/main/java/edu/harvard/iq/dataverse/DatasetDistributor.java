@@ -18,7 +18,6 @@ import javax.persistence.Version;
  *
  * @author skraffmiller
  */
-@Entity
 public class DatasetDistributor {
         
     /** Creates a new instance of StudyDistributor */
@@ -28,15 +27,6 @@ public class DatasetDistributor {
     /**
      * Holds value of property id.
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    public Long getId() {
-        return this.id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
     
     private int displayOrder;
     public int getDisplayOrder() {
@@ -46,25 +36,14 @@ public class DatasetDistributor {
         this.displayOrder = displayOrder;
     }
 
-    private String name;
-    public String getName() {
+    private DatasetFieldValue name;
+    public DatasetFieldValue getName() {
         return this.name;
     }
-    public void setName(String name) {
+    public void setName(DatasetFieldValue name) {
         this.name = name;
     }
-    
-    @ManyToOne
-    @JoinColumn(nullable=false)
-    private Metadata metadata;
 
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
-    }
     
     @Version
     private Long version;
@@ -75,60 +54,45 @@ public class DatasetDistributor {
         this.version = version;
     }    
 
-    private String url;
-    public String getUrl() {
+    private DatasetFieldValue url;
+    public DatasetFieldValue getUrl() {
         return this.url;
     }
-    public void setUrl(String url) {
+    public void setUrl(DatasetFieldValue url) {
         this.url = url;
     }
     
-    private String logo;
-    public String getLogo() {
+    private DatasetFieldValue logo;
+    public DatasetFieldValue getLogo() {
         return this.logo;
     }
-    public void setLogo(String logo) {
+    public void setLogo(DatasetFieldValue logo) {
         this.logo = logo;
     }
     
-    private String affiliation;
-    public String getAffiliation() {
+    private DatasetFieldValue affiliation;
+    public DatasetFieldValue getAffiliation() {
         return this.affiliation;
     }
-    public void setAffiliation(String affiliation) {
+    public void setAffiliation(DatasetFieldValue affiliation) {
         this.affiliation = affiliation;
     }
 
-    private String abbreviation;
-    public String getAbbreviation() {
+    private DatasetFieldValue abbreviation;
+    public DatasetFieldValue getAbbreviation() {
         return this.abbreviation;
     }
-    public void setAbbreviation(String abbreviation) {
+    public void setAbbreviation(DatasetFieldValue abbreviation) {
         this.abbreviation = abbreviation;
     }
     
       public boolean isEmpty() {
-        return ((abbreviation==null || abbreviation.trim().equals(""))
-            && (affiliation==null || affiliation.trim().equals(""))
-            && (logo==null || logo.trim().equals(""))
-            && (name==null || name.trim().equals(""))
-            && (url==null || url.trim().equals("")));
+        return ((abbreviation==null || abbreviation.getStrValue().trim().equals(""))
+            && (affiliation==null || affiliation.getStrValue().trim().equals(""))
+            && (logo==null || logo.getStrValue().trim().equals(""))
+            && (name==null || name.getStrValue().trim().equals(""))
+            && (url==null || url.getStrValue().trim().equals("")));
     }
       
- public int hashCode() {
-        int hash = 0;
-        hash += (this.id != null ? this.id.hashCode() : 0);
-        return hash;
-    }
-
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetDistributor)) {
-            return false;
-        }
-        DatasetDistributor other = (DatasetDistributor)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
-        return true;
-    } 
     
 }

@@ -20,6 +20,8 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String publication = "publication";
     public final static String otherId = "otherId";
     public final static String author =  "author";
+    public final static String authorFirstName =  "authorFirstName";
+    public final static String authorLastName =  "authorLastName";
     public final static String producer = "producer";
     public final static String software = "software";
     public final static String grantNumber = "grantNumber";
@@ -161,6 +163,13 @@ public class DatasetFieldConstant implements java.io.Serializable  {
         return authorName;
     }
     
+    public String getAuthorLastName() {
+        return authorLastName;
+    }
+    
+    public String getAuthorFirstName() {
+        return authorFirstName;
+    }    
     public String getAuthorAffiliation() {
         return authorAffiliation;
     }

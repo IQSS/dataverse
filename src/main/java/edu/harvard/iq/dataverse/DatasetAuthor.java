@@ -6,43 +6,50 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Version;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author skraffmiller
  */
-@Entity
-public class DatasetAuthor implements java.io.Serializable {
-       
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
 
-    public Long getId() {
-        return this.id;
+public class DatasetAuthor {
+       
+    private DatasetVersion datasetVersion;
+    public DatasetVersion getDatasetVersion() {
+        return datasetVersion;
     }
-    public void setId(Long id) {
-        this.id = id;
+    public void setDatasetVersion(DatasetVersion metadata) {
+        this.datasetVersion = metadata;
     }
 
     //@NotBlank(message = "Please enter an Author Name for your dataset.")
-    private String name;
+    private DatasetFieldValue name;
 
-    public String getName() {
+    public DatasetFieldValue getName() {
         return this.name;
     }
-    public void setName(String name) {
+    public void setName(DatasetFieldValue name) {
         this.name = name;
     }
+    
+    private DatasetFieldValue firstName;
+
+    public DatasetFieldValue getFirstName() {
+        return this.firstName;
+    }
+    public void setFirstName(DatasetFieldValue firstName) {
+        this.firstName = firstName;
+    }
+
+    private DatasetFieldValue lastName;
+
+    public DatasetFieldValue getLastName() {
+        return this.lastName;
+    }
+    public void setLastName(DatasetFieldValue lastName) {
+        this.lastName = lastName;
+    }
+  
 
     private int displayOrder;
     public int getDisplayOrder() {
@@ -52,34 +59,11 @@ public class DatasetAuthor implements java.io.Serializable {
         this.displayOrder = displayOrder;
     }
 
-    /**
-     * Holds value of property metadata.
-     */
-    @ManyToOne 
-    @JoinColumn(nullable=false)
-    private Metadata metadata;
-     public Metadata getMetadata() {
-        return metadata;
-    }
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
-    }
-
-    @Version
-    private Long version;
-    public Long getVersion() {
-        return this.version;
-    }
-    public void setVersion(Long version) {
-        this.version = version;
-    }
-
-
-    private String affiliation;
-    public String getAffiliation() {
+    private DatasetFieldValue affiliation;
+    public DatasetFieldValue getAffiliation() {
         return this.affiliation;
     }
-    public void setAffiliation(String affiliation) {
+    public void setAffiliation(DatasetFieldValue affiliation) {
         this.affiliation = affiliation;
     }
     
@@ -110,25 +94,9 @@ public class DatasetAuthor implements java.io.Serializable {
     }
        
     public boolean isEmpty() {
-        return ( (affiliation==null || affiliation.trim().equals(""))
-            && (name==null || name.trim().equals(""))
+        return ( (affiliation==null || affiliation.getStrValue().trim().equals(""))
+            && (name==null || name.getStrValue().trim().equals(""))
            );
-    }
-    
-     public int hashCode() {
-        int hash = 0;
-        hash += (this.id != null ? this.id.hashCode() : 0);
-        return hash;
-    }
-
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetAuthor)) {
-            return false;
-        }
-        DatasetAuthor other = (DatasetAuthor)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
-        return true;
     }
     
 }

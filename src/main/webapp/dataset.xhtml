@@ -59,11 +59,12 @@
                             <ui:fragment>
                                 <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
 
-                                <h:outputText value="#{DatasetPage.dataset.latestVersion.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
+                                <h:outputText value="#{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
 
+                        
                                 <!--<h:outputText value="Data Citation: " style="display:block; margin-top:.5em;"/>-->
                                 <p:panel style="background-color: #F5F5F5;">
-                                    <h:outputText id="citationDisplay" value="#{DatasetPage.dataset.latestVersion.citation}" escape="false"/>
+                                    <h:outputText id="citationDisplay" value="#{DatasetPage.datasetVersionUI.citation}" escape="false"/>
                                 </p:panel>
                                 <!--<p:panel>
                                     <p:panelGrid columns="2">
@@ -94,14 +95,9 @@
                                 </p:panelGrid>
                             </ui:fragment>
                         </p:panelGrid>
-
-
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
+                       <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
                             <ui:fragment>
                                 <p:panelGrid styleClass="panelgridFormTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                                    <ui:fragment>
-                                        <p:outputLabel value="Title" /> <h:outputText value="*" style="color: #B94A48;"/>
-                                    </ui:fragment>
                                     <ui:fragment>
                                     </ui:fragment>
                                     <ui:fragment>
@@ -113,31 +109,118 @@
                                         </p:selectOneMenu>
                                     </ui:fragment>
                                 </p:panelGrid>
-
-                                <p:dataGrid columns="1" value="#{DatasetPage.citationValues}" var="datasetFieldVal">
-                                    <p:column rendered="#{datasetFieldVal.datasetField.name != 'datasetId'}">
-                                                    <p:panelGrid styleClass="panelgridFormTable" columns="2">
-                                                        <ui:fragment>
-                                                            <h:outputText value="#{datasetFieldVal.datasetField.title}" title="#{datasetFieldVal.datasetField.title} - #{datasetFieldVal.datasetField.description}"/>
-                                                        </ui:fragment>
-                                                        <ui:fragment>
-                                                            <h:outputText rendered="#{(empty DatasetPage.editMode  and !datasetFieldVal.datasetField.hasChildren)}"
-                                                                          value="#{datasetFieldVal.strValue}">
-                                                            </h:outputText>                                                           
-                                                            <p:panelGrid columns="2" rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
-                                                                <p:inputText id="input_TextDefault" size="90"
-                                                                             value="#{datasetFieldVal.strValue}">
-                                                                </p:inputText>
-                                                                <p:watermark for="input_TextDefault" value="Enter title..." rendered="#{datasetFieldVal.datasetField.name == 'title'}"/>
-                                                                <p:watermark for="input_TextDefault" value="Last Name, First Name..." rendered="#{datasetFieldVal.datasetField.name == 'authorName'}"/>
-                                                                <p:message for="input_TextDefault"/>
-                                                            </p:panelGrid>
-                                                        </ui:fragment>
-                                                    </p:panelGrid>
-                                                </p:column>
-                                 </p:dataGrid>
                             </ui:fragment>
                         </p:panelGrid>
+                        <ui:fragment>
+                            <p:outputLabel value="Title " /> <h:outputText value="* " style="color: #B94A48;"/>
+                            <h:outputText value=" #{DatasetPage.datasetVersionUI.title.strValue}" rendered="#{empty DatasetPage.editMode}"/>
+                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                  <p:inputText id="input_Title" size="90" value="#{DatasetPage.datasetVersionUI.title.strValue}">
+                                  </p:inputText>
+                                  <p:watermark for="input_Title" value="Enter title..." />                                          
+                                  <p:message for="input_Title"/>
+                        </ui:fragment>
+                        </ui:fragment>
+                        
+                        <ui:fragment>
+                            <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
+                            <h:outputText value=" #{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode}"/>
+                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                <h:outputText value="Organization as Author(Single Name): " /> 
+                                <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" > 
+                                     <p:ajax update="@all" />  
+                                </p:selectBooleanCheckbox> 
+                                <p:dataTable id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
+                                    <p:column>   
+                                        <p:outputLabel value="First Name " rendered="#{!DatasetPage.authorAsOrg}" />
+                                        <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
+                                        <p:message for="firstName"/>
+                                    </p:column>
+                                    <p:column>   
+                                        <p:outputLabel value="Last Name " rendered="#{!DatasetPage.authorAsOrg}" />
+                                        <p:outputLabel value="Organization Name " rendered="#{DatasetPage.authorAsOrg}" />
+                                        <p:inputText id="lastName" value="#{author.lastName.strValue}" />
+                                        <p:message for="lastName"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Author Affiliation" />
+                                        <p:inputText id="authorAffiliation" value="#{author.affiliation.strValue}" />
+                                        <p:message for="authorAffiliation"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton id="editFileButton" value="Add Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                        <p:commandButton id="editMetadataButton" value="Delete Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </ui:fragment>
+                        </ui:fragment>
+                        <ui:fragment>
+                            <p:outputLabel value="Description" /> 
+                            <h:outputText value=" #{DatasetPage.datasetVersionUI.description.strValue}" rendered="#{empty DatasetPage.editMode}"/>
+                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                        <p:inputText id="description" value="#{DatasetPage.datasetVersionUI.description.strValue}" /> 
+                                        <p:message for="description"/>
+                            </ui:fragment>
+                        </ui:fragment>
+                        
+                        <ui:fragment>
+                            <p:outputLabel value="Keyword(s)" /> 
+                            <h:outputText value=" #{DatasetPage.datasetVersionUI.keywordsStr}" rendered="#{empty DatasetPage.editMode}"/>
+                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                <p:dataTable id="keywordsTable" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
+                                    <p:column>   
+                                        <p:outputLabel value="Keyword " />
+                                        <p:inputText id="keyword" value="#{keyword.value.strValue}" /> 
+                                        <p:message for="keyword"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton id="editFileButton" value="Add Keyword"  actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                        <p:commandButton id="editMetadataButton" value="Delete Keyword"  actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </ui:fragment>
+                        </ui:fragment>
+                        
+                        <ui:fragment>
+                            <p:outputLabel value="Topic Classification" /> 
+                            <h:outputText value=" #{DatasetPage.datasetVersionUI.topicClassStr}" rendered="#{empty DatasetPage.editMode}"/>
+                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                                <p:dataTable id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
+                                    <p:column>   
+                                        <p:outputLabel value="Topic Classification " />
+                                        <p:inputText id="topic" value="#{topic.value.strValue}" /> 
+                                        <p:message for="topic"/>
+                                    </p:column>
+                                    <p:column>   
+                                        <p:outputLabel value="Contolled Vocabulary " />
+                                        <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" /> 
+                                        <p:message for="topicVocab"/>
+                                    </p:column>
+                                   <p:column>   
+                                        <p:outputLabel value="Contolled Vocabulary URI " />
+                                        <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" /> 
+                                        <p:message for="topicVocabURI"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton id="editFileButton" value="Add Topic"  actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                        <p:commandButton id="editMetadataButton" value="Delete Topic"  actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </ui:fragment>
+                        </ui:fragment>
+
                     </p:panel>
 
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">

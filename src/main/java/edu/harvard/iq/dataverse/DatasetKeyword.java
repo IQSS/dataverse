@@ -19,18 +19,8 @@ import javax.persistence.Version;
  *
  * @author skraffmiller
  */
-@Entity
-public class DatasetKeyword implements java.io.Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    public Long getId() {
-        return this.id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
+public class DatasetKeyword  {
 
     private int displayOrder;
     public int getDisplayOrder() {
@@ -40,25 +30,22 @@ public class DatasetKeyword implements java.io.Serializable {
         this.displayOrder = displayOrder;
     }
 
-    @Column(columnDefinition="TEXT")
-    private String value;
-    public String getValue() {
+    private DatasetFieldValue value;
+    public DatasetFieldValue getValue() {
         return this.value;
     }
-    public void setValue(String value) {
+    public void setValue(DatasetFieldValue value) {
         this.value = value;
     }
     
-    @ManyToOne
-    @JoinColumn(nullable=false)
-    private Metadata metadata;
-    public Metadata getMetadata() {
-        return metadata;
+    private DatasetVersion datasetVersion;
+    public DatasetVersion getDatasetVersion() {
+        return datasetVersion;
     }
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
+    public void setDatasetVersion(DatasetVersion metadata) {
+        this.datasetVersion = metadata;
     }
-    
+    /*
     @Version
     private Long version;
     public Long getVersion() {
@@ -66,45 +53,30 @@ public class DatasetKeyword implements java.io.Serializable {
     }
     public void setVersion(Long version) {
         this.version = version;
-    }    
+    }  */  
 
-    private String vocab;
-    public String getVocab() {
+    private DatasetFieldValue vocab;
+    public DatasetFieldValue getVocab() {
         return this.vocab;
     }
-    public void setVocab(String vocab) {
+    public void setVocab(DatasetFieldValue vocab) {
         this.vocab = vocab;
     }
 
-    private String vocabURI;
-    public String getVocabURI() {
+    private DatasetFieldValue vocabURI;
+    public DatasetFieldValue getVocabURI() {
         return this.vocabURI;
     }
-    public void setVocabURI(String vocabURI) {
+    public void setVocabURI(DatasetFieldValue vocabURI) {
         this.vocabURI = vocabURI;
     }
 
 
      public boolean isEmpty() {
-        return ((value==null || value.trim().equals(""))
-            && (vocab==null || vocab.trim().equals(""))
-            && (vocabURI==null || vocabURI.trim().equals("")));
+        return ((value==null || value.getStrValue().trim().equals(""))
+            && (vocab==null || vocab.getStrValue().trim().equals(""))
+            && (vocabURI==null || vocabURI.getStrValue().trim().equals("")));
     }
      
-  public int hashCode() {
-        int hash = 0;
-        hash += (this.id != null ? this.id.hashCode() : 0);
-        return hash;
-    }
 
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetKeyword)) {
-            return false;
-        }
-        DatasetKeyword other = (DatasetKeyword)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
-        return true;
-    }   
-    
 }

@@ -71,6 +71,16 @@ public class DatasetPage implements java.io.Serializable {
     private List<DatasetField> citationFields = new ArrayList();
     private List<DatasetField> otherMetadataFields = new ArrayList();
     private List<DatasetFieldValue> citationValues = new ArrayList();
+    private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
+    private boolean authorAsOrg = false;
+
+    public boolean isAuthorAsOrg() {
+        return authorAsOrg;
+    }
+
+    public void setAuthorAsOrg(boolean authorAsOrg) {
+        this.authorAsOrg = authorAsOrg;
+    }
     
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
@@ -149,6 +159,17 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
+    private boolean initOrgAsAuthorFlag() {
+        for (DatasetAuthor author : datasetVersionUI.getDatasetAuthors()) {
+            if (author.getLastName() != null && author.getFirstName() != null) {
+                if (!author.getLastName().isEmpty() && author.getFirstName().isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
@@ -159,6 +180,8 @@ public class DatasetPage implements java.io.Serializable {
             otherMetadataValues = extractValues(editValues, false);
             getMetadataValueBlocks(editValues);
             ownerId = dataset.getOwner().getId();
+            datasetVersionUI = new DatasetVersionUI(editVersion); 
+            authorAsOrg = initOrgAsAuthorFlag();
         } else if (ownerId != null) { // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
@@ -173,6 +196,7 @@ public class DatasetPage implements java.io.Serializable {
             citationValues = extractValues(editValues, true);
             otherMetadataValues = extractValues(editValues, false);
             getMetadataValueBlocks(editValues);
+            datasetVersionUI = new DatasetVersionUI(editVersion);  
             dataset.getVersions().add(editVersion);
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -182,6 +206,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void edit(EditMode editMode) {
+
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
             editVersion = dataset.getEditVersion();
@@ -198,6 +223,100 @@ public class DatasetPage implements java.io.Serializable {
             otherMetadataValues = extractValues(editValues, false);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
+    }
+    
+    public void addRecord(String recordType){
+        
+    if (recordType.equals("AUTHOR")) {
+            DatasetAuthor addAuthor = new DatasetAuthor();
+            addAuthor.setDatasetVersion(editVersion);
+            DatasetFieldValue author = new DatasetFieldValue();
+            author.setDatasetVersion(editVersion);
+            author.setDatasetField(fieldService.findByName(DatasetFieldConstant.author));
+            DatasetFieldValue authorName = new DatasetFieldValue();
+            authorName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorName));
+            authorName.setDatasetVersion(editVersion);
+            authorName.setStrValue("");
+            author.setChildDatasetFieldValues(new ArrayList());
+            author.getChildDatasetFieldValues().add(authorName);
+            addAuthor.setName(authorName);
+            DatasetFieldValue firstName = new DatasetFieldValue();
+            firstName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorFirstName));
+            firstName.setDatasetVersion(editVersion);
+            firstName.setStrValue("");
+            author.getChildDatasetFieldValues().add(firstName);
+            addAuthor.setFirstName(firstName);
+                        DatasetFieldValue lastName = new DatasetFieldValue();
+            lastName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorLastName));
+            lastName.setDatasetVersion(editVersion);
+            lastName.setStrValue("");
+            author.getChildDatasetFieldValues().add(lastName);
+            addAuthor.setLastName(lastName);
+            DatasetFieldValue authorAffiliation = new DatasetFieldValue();
+            authorAffiliation.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorAffiliation));
+            authorAffiliation.setDatasetVersion(editVersion);
+            authorAffiliation.setStrValue("");
+            author.getChildDatasetFieldValues().add(authorAffiliation);
+            addAuthor.setAffiliation(authorAffiliation);
+            editVersion.getDatasetFieldValues().add(author);
+            editVersion.getDatasetFieldValues().add(authorName);
+            editVersion.getDatasetFieldValues().add(firstName);
+            editVersion.getDatasetFieldValues().add(lastName);
+            editVersion.getDatasetFieldValues().add(authorAffiliation);
+            datasetVersionUI.getDatasetAuthors().add(addAuthor);           
+        } else if (recordType.equals("KEYWORD")){
+            DatasetKeyword addKeyword = new DatasetKeyword();
+            addKeyword.setDatasetVersion(editVersion);
+            DatasetFieldValue keyword = new DatasetFieldValue();
+            keyword.setDatasetVersion(editVersion);
+            keyword.setDatasetField(fieldService.findByName(DatasetFieldConstant.keyword));
+            DatasetFieldValue keywordValue = new DatasetFieldValue();
+            keywordValue.setDatasetField(fieldService.findByName(DatasetFieldConstant.keywordValue));
+            keywordValue.setDatasetVersion(editVersion);
+            keywordValue.setStrValue("");
+            keyword.setChildDatasetFieldValues(new ArrayList());
+            keyword.getChildDatasetFieldValues().add(keywordValue);
+            addKeyword.setValue(keywordValue);
+            editVersion.getDatasetFieldValues().add(keyword);
+            editVersion.getDatasetFieldValues().add(keywordValue);
+            datasetVersionUI.getDatasetKeywords().add(addKeyword);             
+        }          else if (recordType.equals("TOPIC")){
+            DatasetTopicClass addTopic = new DatasetTopicClass();
+            addTopic.setDatasetVersion(editVersion);
+            DatasetFieldValue topic = new DatasetFieldValue();
+            topic.setDatasetVersion(editVersion);
+            topic.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassification));
+            DatasetFieldValue topicValue = new DatasetFieldValue();
+            topicValue.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassValue));
+            topicValue.setDatasetVersion(editVersion);
+            topicValue.setStrValue("");
+            DatasetFieldValue topicCV = new DatasetFieldValue();
+            topicCV.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassVocab));
+            topicCV.setDatasetVersion(editVersion);
+            topicCV.setStrValue("");
+            topic.setChildDatasetFieldValues(new ArrayList());
+            topic.getChildDatasetFieldValues().add(topicValue);
+            topic.getChildDatasetFieldValues().add(topicCV);
+            DatasetFieldValue topicURI = new DatasetFieldValue();
+            topicURI.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassVocabURI));
+            topicURI.setDatasetVersion(editVersion);
+            topicURI.setStrValue("");
+            topic.setChildDatasetFieldValues(new ArrayList());
+            topic.getChildDatasetFieldValues().add(topicValue);
+            topic.getChildDatasetFieldValues().add(topicCV);
+            topic.getChildDatasetFieldValues().add(topicURI);
+            addTopic.setValue(topicValue);
+            addTopic.setVocab(topicCV);
+            addTopic.setVocabURI(topicURI);
+            editVersion.getDatasetFieldValues().add(topic);
+            editVersion.getDatasetFieldValues().add(topicValue);
+            editVersion.getDatasetFieldValues().add(topicCV);
+            editVersion.getDatasetFieldValues().add(topicURI);
+            datasetVersionUI.getDatasetTopicClasses().add(addTopic);             
+        }       
+    }
+    public void deleteRecord(String recordType){
+        
     }
        
     public void save() {
@@ -342,9 +461,10 @@ public class DatasetPage implements java.io.Serializable {
         return new ListDataModel(values);
     }
     
-    public String getTitle() {
-        return datasetService.getDatasetVersionTitle(dataset.getLatestVersion());
+    public DatasetVersionUI getDatasetVersionUI(){
+        return datasetVersionUI;
     }
+    
 
     public List<DatasetField> getCitationFields() {
         return citationFields;

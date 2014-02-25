@@ -160,11 +160,12 @@ public class Metadata implements Serializable {
         }
         
         // compound and/or multiple fields
+        /*
         if( copyField(tfMap.get(DatasetFieldConstant.distributorContact), copyHidden, copyDisabled) ) {
              this.setDistributorContact(source.distributorContact); 
              this.setDistributorContactAffiliation(source.distributorContactAffiliation); 
              this.setDistributorContactEmail(source.distributorContactEmail); 
-        }   
+        }  */ 
         
         if (copyField(tfMap.get(DatasetFieldConstant.series), copyHidden, copyDisabled)) {
             this.setSeriesName(source.seriesName);
@@ -176,7 +177,7 @@ public class Metadata implements Serializable {
             this.setVersionDate(source.versionDate);            
         }   
                
-        if (copyField(tfMap.get(DatasetFieldConstant.author), copyHidden, copyDisabled)) {
+        /*if (copyField(tfMap.get(DatasetFieldConstant.author), copyHidden, copyDisabled)) {
             this.setDatasetAuthors(new ArrayList<DatasetAuthor>());
             for (DatasetAuthor author : source.datasetAuthors) {
                 DatasetAuthor cloneAuthor = new DatasetAuthor();
@@ -186,8 +187,8 @@ public class Metadata implements Serializable {
                 cloneAuthor.setName(author.getName());
                 this.getDatasetAuthors().add(cloneAuthor);
             }
-        }
-                
+        }*/
+        /*       
         if (copyField(tfMap.get(DatasetFieldConstant.distributor), copyHidden, copyDisabled)) {
             this.setDatasetDistributors(new ArrayList<DatasetDistributor>());
             for (DatasetDistributor dist : source.datasetDistributors) {
@@ -201,7 +202,7 @@ public class Metadata implements Serializable {
                 cloneDist.setUrl(dist.getUrl());
                 this.getDatasetDistributors().add(cloneDist);
             }
-        }
+        }*/
         
         if (copyField(tfMap.get(DatasetFieldConstant.description), copyHidden, copyDisabled)) {
             this.setDatasetAbstracts(new ArrayList<DatasetAbstract>());
@@ -214,7 +215,7 @@ public class Metadata implements Serializable {
                 this.getDatasetAbstracts().add(cloneAbstract);
             }
         }
-                
+        /*        
         if (copyField(tfMap.get(DatasetFieldConstant.keyword), copyHidden, copyDisabled)) {
             this.setDatasetKeywords(new ArrayList<DatasetKeyword>());
             for (DatasetKeyword key : source.datasetKeywords) {
@@ -226,7 +227,7 @@ public class Metadata implements Serializable {
                 cloneKey.setVocabURI(key.getVocabURI());
                 this.getDatasetKeywords().add(cloneKey);
             }
-        }
+        }*/
                 
         if (copyField(tfMap.get(DatasetFieldConstant.note), copyHidden, copyDisabled)) {
             this.setDatasetNotes(new ArrayList<DatasetNote>());
@@ -353,7 +354,7 @@ public class Metadata implements Serializable {
         }
 
 
-        
+      /*  
         
         if (copyField(tfMap.get(DatasetFieldConstant.topicClassification), copyHidden, copyDisabled)) {
 
@@ -369,7 +370,7 @@ public class Metadata implements Serializable {
             }
         }
         
-
+*/
 /*
 
         if (copyField(tfMap.get(DatasetFieldConstant.geographicBoundingBox), copyHidden, copyDisabled)) {
@@ -424,29 +425,8 @@ public class Metadata implements Serializable {
         this.setTitle(source.title);
         this.setVersionDate(source.versionDate);
         this.setDatasetCompletion(source.datasetCompletion);
- 
-        this.setDatasetAuthors(new ArrayList<DatasetAuthor>());
-        for (DatasetAuthor author: source.datasetAuthors) {
-            DatasetAuthor cloneAuthor = new DatasetAuthor();
-            cloneAuthor.setAffiliation(author.getAffiliation());
-            cloneAuthor.setDisplayOrder(author.getDisplayOrder());
-            cloneAuthor.setMetadata(this);
-            cloneAuthor.setName(author.getName());
-            this.getDatasetAuthors().add(cloneAuthor);
-        }
+
        
-        this.setDatasetDistributors(new ArrayList<DatasetDistributor>());
-        for (DatasetDistributor dist: source.datasetDistributors){
-            DatasetDistributor cloneDist = new DatasetDistributor();
-            cloneDist.setAbbreviation(dist.getAbbreviation());
-            cloneDist.setAffiliation(dist.getAffiliation());
-            cloneDist.setDisplayOrder(dist.getDisplayOrder());
-            cloneDist.setMetadata(this);
-            cloneDist.setLogo(dist.getLogo());
-            cloneDist.setName(dist.getName());
-            cloneDist.setUrl(dist.getUrl());
-            this.getDatasetDistributors().add(cloneDist);
-        }
         
         this.setDatasetAbstracts(new ArrayList<DatasetAbstract>());
         for(DatasetAbstract sa: source.datsetAbstracts) {
@@ -457,7 +437,7 @@ public class Metadata implements Serializable {
             cloneAbstract.setText(sa.getText());
             this.getDatasetAbstracts().add(cloneAbstract);
         }
-        
+        /*
         this.setDatasetKeywords(new ArrayList<DatasetKeyword>());
         for(DatasetKeyword key: source.datasetKeywords) {
             DatasetKeyword cloneKey = new DatasetKeyword();
@@ -467,7 +447,7 @@ public class Metadata implements Serializable {
             cloneKey.setVocab(key.getVocab());
             cloneKey.setVocabURI(key.getVocabURI());
             this.getDatasetKeywords().add(cloneKey);
-        }
+        }*/
                
        this.setDatasetNotes(new ArrayList<DatasetNote>());
        for(DatasetNote note: source.datasetNotes) {
@@ -566,7 +546,7 @@ public class Metadata implements Serializable {
             this.getDatasetGrants().add(cloneGrant);
         }
 
-
+/*
         this.setDatasetTopicClasses(new ArrayList<DatasetTopicClass>());
         for (DatasetTopicClass topic: source.datasetTopicClasses){
             DatasetTopicClass cloneTopic = new DatasetTopicClass();
@@ -576,15 +556,16 @@ public class Metadata implements Serializable {
             cloneTopic.setVocab(topic.getVocab());
             cloneTopic.setVocabURI(topic.getVocabURI());
             this.getDatasetTopicClasses().add(cloneTopic);
-        }
+        }*/
 
        
     } 
-       
+ /*      
     public String getAuthorsStr() {
         return getAuthorsStr(true);
     }
-
+    */
+/*
     public String getAuthorsStr(boolean affiliation) {
         String str="";
         for (DatasetAuthor sa : getDatasetAuthors()){
@@ -600,17 +581,8 @@ public class Metadata implements Serializable {
         }
         return str;       
     }
+*/
 
-    public String getDistributorNames() {
-        String str="";
-        for (DatasetDistributor sd : this.getDatasetDistributors()){
-        if (str.trim().length()>1) {
-                str+=";";
-            }
-            str += sd.getName();   
-        }
-        return str;       
-    }
    
     @Column(columnDefinition="TEXT")
     private String UNF;
@@ -638,7 +610,7 @@ public class Metadata implements Serializable {
     /* DatasetFieldValues - Holds list of values for domain specific metadata
     */
 
-    
+    /*
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private java.util.List<DatasetAuthor> datasetAuthors = new ArrayList();
@@ -648,7 +620,8 @@ public class Metadata implements Serializable {
     public void setDatasetAuthors(java.util.List<DatasetAuthor> datasetAuthors) {
         this.datasetAuthors = datasetAuthors;
     }
-    
+    */
+    /*
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private java.util.List<DatasetKeyword> datasetKeywords;
@@ -659,7 +632,7 @@ public class Metadata implements Serializable {
     public void setDatasetKeywords(java.util.List<DatasetKeyword> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     }
-
+*/
     @Version
     private Long version;    
     public Long getVersion() {
@@ -692,9 +665,9 @@ public class Metadata implements Serializable {
     public void setDatasetSoftware(List<DatasetSoftware> datasetSoftware) {
         this.datasetSoftware = datasetSoftware;
     }
-
-
-
+ 
+    
+/*
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetDistributor> datasetDistributors;
@@ -704,6 +677,7 @@ public class Metadata implements Serializable {
     public void setDatasetDistributors(List<DatasetDistributor> datasetDistributors) {
         this.datasetDistributors = datasetDistributors;
     }    
+    */
     
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
@@ -716,7 +690,7 @@ public class Metadata implements Serializable {
     }
     
 
-
+/*
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetTopicClass> datasetTopicClasses;
@@ -728,7 +702,7 @@ public class Metadata implements Serializable {
     public void setDatasetTopicClasses(List<DatasetTopicClass> datasetTopicClasses) {
         this.datasetTopicClasses = datasetTopicClasses;
     }
-
+*/
 
 
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -1134,15 +1108,7 @@ public class Metadata implements Serializable {
     
     public String getCitation(boolean isOnlineVersion) {
 
-
-
         String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        }
 
         if (!StringUtil.isEmpty(getDistributionDate())) {
             if (!StringUtil.isEmpty(str)) {
@@ -1171,11 +1137,12 @@ public class Metadata implements Serializable {
             }
             str += getUNF();
         }
+        /*
         String distributorNames = getDistributorNames();
         if (distributorNames.length() > 0) {
             str += " " + distributorNames;
             str += " [Distributor]";
-        }
+        }*/
 
 
         return str;
@@ -1241,30 +1208,22 @@ public class Metadata implements Serializable {
      *  we need empty elements for the users to enter data into.
      */
     public void initCollections() {  
-        
-        if ( this.getDatasetAuthors()==null || this.getDatasetAuthors().isEmpty()) {
-            List authors = new ArrayList();
-            DatasetAuthor anAuthor = new DatasetAuthor();
-            anAuthor.setMetadata(this);
-            authors.add(anAuthor);
-            this.setDatasetAuthors(authors);
-        }
-        
+       /* 
         if (this.getDatasetDistributors()==null || this.getDatasetDistributors().isEmpty()) {
             List distributors = new ArrayList();
             DatasetDistributor elem = new DatasetDistributor();
             elem.setMetadata(this);
             distributors.add(elem);
             this.setDatasetDistributors(distributors);
-        }        
-        
+        }  */      
+        /*
         if (this.getDatasetKeywords()==null || this.getDatasetKeywords().size()==0 ) {
             List keywords = new ArrayList();
             DatasetKeyword elem = new DatasetKeyword();
             elem.setMetadata(this);
             keywords.add(elem);
             this.setDatasetKeywords(keywords);
-        }
+        }*/
         
         if (this.getDatasetNotes()==null || this.getDatasetNotes().size()==0) {
             List notes = new ArrayList();
@@ -1322,7 +1281,7 @@ public class Metadata implements Serializable {
             list.add(elem);
             this.setDatasetRelDatasets(list);
         }
-        
+     /*   
         if (this.getDatasetTopicClasses()==null || this.getDatasetTopicClasses().size()==0 ) {
             List topicClasses = new ArrayList();
             DatasetTopicClass elem = new DatasetTopicClass();
@@ -1330,7 +1289,7 @@ public class Metadata implements Serializable {
             topicClasses.add(elem);
             this.setDatasetTopicClasses(topicClasses);
         }
-        
+        */
         if (this.getDatasetSoftware()==null || this.getDatasetSoftware().size()==0) {
             List software = new ArrayList();
             DatasetSoftware elem = new DatasetSoftware();
@@ -1378,19 +1337,16 @@ public class Metadata implements Serializable {
    public void setDisplayOrders() {
        
         int i = 0;
-        for (DatasetAuthor elem : this.getDatasetAuthors()) {
-            elem.setDisplayOrder(i++);
-        }
-                
+        /*        
         i = 0;
         for (DatasetDistributor elem : this.getDatasetDistributors()) {
             elem.setDisplayOrder(i++);
-        }
-        
+        }*/
+        /*
         i = 0;
         for (DatasetKeyword elem : this.getDatasetKeywords()) {
             elem.setDisplayOrder(i++);
-        }
+        }*/
     
         i = 0;
         for (DatasetNote elem : this.getDatasetNotes()) {
@@ -1428,10 +1384,10 @@ public class Metadata implements Serializable {
             elem.setDisplayOrder(i++);
         }
         
-        i = 0;
+      /*  i = 0;
         for (DatasetTopicClass elem : this.getDatasetTopicClasses()) {
             elem.setDisplayOrder(i++);
-        }
+        }*/
         
         i = 0;
         for (DatasetSoftware elem : this.getDatasetSoftware()) {
