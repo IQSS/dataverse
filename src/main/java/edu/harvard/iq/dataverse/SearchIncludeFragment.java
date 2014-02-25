@@ -127,7 +127,7 @@ public class SearchIncludeFragment {
         filterQueriesFinal.add(typeFilterQuery);
 
         try {
-            solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart);
+            solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart, dataverse);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

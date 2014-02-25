@@ -13,6 +13,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
@@ -45,20 +46,24 @@ public class Dataverse extends DvObjectContainer {
     private String contactEmail;
 
     private String affiliation;
-	
-	@OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE},
-		fetch = FetchType.LAZY,
-		mappedBy = "owner")
-	private Set<DataverseRole> roles;
-	
-	/** 
-	 * When {@code true}, users are not granted permissions the got for parent dataverses. 
-	 */
-	private boolean permissionRoot;
 
-        
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE},
+            fetch = FetchType.LAZY,
+            mappedBy = "owner")
+    private Set<DataverseRole> roles;
+
+    /**
+     * When {@code true}, users are not granted permissions the got for parent
+     * dataverses.
+     */
+    private boolean permissionRoot;
+
     @OneToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks;
+
+    @OneToMany(mappedBy = "dataverse")
+    @OrderBy("displayOrder")
+    private List<DataverseFacet> dataverseFacets;
 
     public List<MetadataBlock> getMetadataBlocks() {
         return metadataBlocks;
@@ -66,6 +71,14 @@ public class Dataverse extends DvObjectContainer {
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
+    }
+
+    public List<DataverseFacet> getDataverseFacets() {
+        return dataverseFacets;
+    }
+
+    public void setDataverseFacets(List<DataverseFacet> dataverseFacets) {
+        this.dataverseFacets = dataverseFacets;
     }
 
     public String getName() {
@@ -108,31 +121,31 @@ public class Dataverse extends DvObjectContainer {
         this.affiliation = affiliation;
     }
 
-	public boolean isEffectivlyPermissionRoot() {
-		return isPermissionRoot() || (getOwner()==null);
-	}
-	
-	public boolean isPermissionRoot() {
-		return permissionRoot;
-	}
+    public boolean isEffectivlyPermissionRoot() {
+        return isPermissionRoot() || (getOwner() == null);
+    }
 
-	public void setPermissionRoot(boolean permissionRoot) {
-		this.permissionRoot = permissionRoot;
-	}
-    
-	public void addRole( DataverseRole role ) {
-		role.setOwner(this);
-		roles.add( role );
-	}
-	
-	public Set<DataverseRole> getRoles() {
-		return roles;
-	}
-	
+    public boolean isPermissionRoot() {
+        return permissionRoot;
+    }
+
+    public void setPermissionRoot(boolean permissionRoot) {
+        this.permissionRoot = permissionRoot;
+    }
+
+    public void addRole(DataverseRole role) {
+        role.setOwner(this);
+        roles.add(role);
+    }
+
+    public Set<DataverseRole> getRoles() {
+        return roles;
+    }
+
     public List<Dataverse> getOwners() {
         List owners = new ArrayList();
         if (getOwner() != null) {
-            owners.addAll( getOwner().getOwners() );
+            owners.addAll(getOwner().getOwners());
             owners.add(getOwner());
         }
         return owners;
@@ -147,14 +160,14 @@ public class Dataverse extends DvObjectContainer {
         Dataverse other = (Dataverse) object;
         return Objects.equals(getId(), other.getId());
     }
-	
+
     @Override
     protected String toStringExtras() {
         return "name:" + getName();
     }
 
-	@Override
-	public void accept( Visitor v ) {
-		v.visit(this);
-	}
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
+    }
 }

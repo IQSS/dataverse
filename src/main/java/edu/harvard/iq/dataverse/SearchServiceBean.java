@@ -39,8 +39,15 @@ public class SearchServiceBean {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    
+    @EJB
+    DataverseServiceBean dataverseService;
 
     public SolrQueryResponse search(String query, List<String> filterQueries, int paginationStart) {
+        return search(query, filterQueries, paginationStart, dataverseService.findRootDataverse());
+    }    
+    
+    public SolrQueryResponse search(String query, List<String> filterQueries, int paginationStart, Dataverse dataverse) {
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -83,7 +90,8 @@ public class SearchServiceBean {
          * stop assigning titleSolrField in the for loop
          */
         String titleSolrField = "TO_BE_DETERMINED";
-        for (DatasetField datasetField: datasetFieldService.findAll()) {
+        for (DataverseFacet dataverseFacet: dataverse.getDataverseFacets()) {
+            DatasetField datasetField = dataverseFacet.getDatasetField();
             solrQuery.addFacetField(datasetField.getSolrField());
             if (datasetField.getId().equals(1L)) {
                 // 1 should be "title" according to the dataset reference data
