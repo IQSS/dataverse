@@ -77,9 +77,18 @@ public class SearchServiceBean {
          * also, findAll only returns advancedSearchField = true... we should
          * probably introduce the "isFacetable" boolean rather than caring about
          * if advancedSearchField is true or false
+         * 
+         * when a method more granual than datasetFieldService.findAll() is
+         * available (i.e. a way to targe an individual dataset field) we'll
+         * stop assigning titleSolrField in the for loop
          */
+        String titleSolrField = "TO_BE_DETERMINED";
         for (DatasetField datasetField: datasetFieldService.findAll()) {
             solrQuery.addFacetField(datasetField.getSolrField());
+            if (datasetField.getId().equals(1L)) {
+                // 1 should be "title" according to the dataset reference data
+                titleSolrField = datasetField.getSolrField();
+            }
         }
         /**
          * @todo: do sanity checking... throw error if negative
@@ -151,10 +160,7 @@ public class SearchServiceBean {
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
-            /**
-             * @todo: don't hard code this
-             */
-            String title = (String) solrDocument.getFieldValue("title_s");
+            String title = (String) solrDocument.getFieldValue(titleSolrField);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
@@ -179,7 +185,7 @@ public class SearchServiceBean {
                     solrSearchResult.setTitle((String) title);
                 }
                 else {
-                    solrSearchResult.setTitle("EMPTY STRING: dataset.getLatestVersion().getMetadata().getTitle().isEmpty()");
+                    solrSearchResult.setTitle("NULL: NO TITLE INDEXED");
                 }
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
