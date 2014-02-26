@@ -52,11 +52,11 @@ public class SearchIncludeFragment {
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
-    private Long page = 1L;
+    private int page = 1;
     private List<Long> pages = new ArrayList<Long>();
-    private Long paginationGuiStart = 1L;
-    private Long paginationGuiEnd = 10L;
-    private Long paginationGuiRows = 10L;
+    private int paginationGuiStart = 1;
+    private int paginationGuiEnd = 10;
+    private int paginationGuiRows = 10;
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
@@ -130,30 +130,18 @@ public class SearchIncludeFragment {
         filterQueriesFinal.addAll(filterQueries);
         filterQueriesFinal.add(typeFilterQuery);
 
-        int paginationStart = 0;
-        Long calculatedPaginationStart = page * paginationGuiRows;
+        int paginationStart = (page - 1) * paginationGuiRows;
         /**
          * @todo
-         *
-         * Integer.parseInt(calculatedPaginationStart.toString()) ?? should we
-         * even be using a Long for page and paginationGuiRows?? need try/catch at the very least!
-         *
          * bug: showing all pages, even if there are hundreds of pages
          * 
          * bug: previous and next buttons don't work
          * 
          * bug: first page (<<) and last page (>>) buttons don't work
-         * 
-         * bug: 61 to 70 of 61 results (math is hard)
-         *
-         * bug: 1 to 10 of 4 results (math is hard)
          *
          * design/make room for sort widget drop down: https://redmine.hmdc.harvard.edu/issues/3482
          *
          */
-        paginationGuiStart = calculatedPaginationStart - 9L;
-        paginationGuiEnd = calculatedPaginationStart;
-        paginationStart = Integer.parseInt(calculatedPaginationStart.toString());
 
         try {
             solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart, dataverse);
@@ -174,6 +162,8 @@ public class SearchIncludeFragment {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
             this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+            paginationGuiStart = paginationStart + 1;
+            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount.intValue());            
             pages = new ArrayList<Long>();
             for (Long i = 0L; i < this.searchResultsCount; i += paginationGuiRows) {
                 // scary. math is hard
@@ -476,11 +466,11 @@ public class SearchIncludeFragment {
         return findFacetCountByType("files");
     }
 
-    public Long getPage() {
+    public int getPage() {
         return page;
     }
 
-    public void setPage(Long page) {
+    public void setPage(int page) {
         this.page = page;
     }
 
@@ -492,27 +482,27 @@ public class SearchIncludeFragment {
         this.pages = pages;
     }
 
-    public Long getPaginationGuiStart() {
+    public int getPaginationGuiStart() {
         return paginationGuiStart;
     }
 
-    public void setPaginationGuiStart(Long paginationGuiStart) {
+    public void setPaginationGuiStart(int paginationGuiStart) {
         this.paginationGuiStart = paginationGuiStart;
     }
 
-    public Long getPaginationGuiEnd() {
+    public int getPaginationGuiEnd() {
         return paginationGuiEnd;
     }
 
-    public void setPaginationGuiEnd(Long paginationGuiEnd) {
+    public void setPaginationGuiEnd(int paginationGuiEnd) {
         this.paginationGuiEnd = paginationGuiEnd;
     }
 
-    public Long getPaginationGuiRows() {
+    public int getPaginationGuiRows() {
         return paginationGuiRows;
     }
 
-    public void setPaginationGuiRows(Long paginationGuiRows) {
+    public void setPaginationGuiRows(int paginationGuiRows) {
         this.paginationGuiRows = paginationGuiRows;
     }
 
