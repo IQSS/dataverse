@@ -3,7 +3,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 
     <h:head>
     </h:head>
@@ -39,8 +40,7 @@
                     <!-- Title / Button Panel -->
                     <p:panel styleClass="panelLayoutBlock">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
-                            <ui:fragment>
-                                
+                            <ui:fragment rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
                                 <style type="text/css">
                                     span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
@@ -53,36 +53,18 @@
                                 </style>
                                 <div style="border:2px dashed gold; margin-bottom:1em;">
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
-                                    <span id="author">Victorino, Shane (RF); Pedroia, Dustin (2B); Ortiz, David (DH); Napoli, Mike (1B); Nava, Daniel (LF); Bogaerts, Xander (SS); Pierzynski, A.J. (C); Middlebrooks, Will (3B); Bradley, Jackie (CF)</span>
+                                    <span id="author">#{DatasetPage.datasetVersionUI.authorsStr}</span>
                                     <span id="contact">Contact: <a href="#" onclick="return false;">Name, Email Icon</a></span>
                                     <div id="citation">
-                                        <span>Victorino, Shane (RF); Pedroia, Dustin (2B); Ortiz, David (DH); Napoli, Mike (1B); Nava, Daniel (LF); Bogaerts, Xander (SS); Pierzynski, A.J. (C); Middlebrooks, Will (3B); Bradley, Jackie (CF), 4/4/2014, "Fake Kinda Long And Wordy Dataset Title That I Made Up Without Much Thought", http://hdl.handle.net/1902.1/FAKEIDHDL UNF:3:reds0x2o14fakedthisId== Harvard Dataverse [Distributor] V1 [Version]</span>
+                                        <span>#{DatasetPage.datasetVersionUI.citation}</span>
+<!--                                        <span>AUTHORS, 4/4/2014, "Fake Kinda Long And Wordy Dataset Title That I Made Up Without Much Thought", http://hdl.handle.net/1902.1/FAKEIDHDL UNF:3:reds0x2o14fakedthisId== Harvard Dataverse [Distributor] V1 [Version]</span>-->
                                     </div>
                                     <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
-                                    <span id="keywords">Keywords: <a href="#" onclick="return false;">Fake</a>, <a href="#" onclick="return false;">Red Sox</a>, <a href="#" onclick="return false;">Baseball</a></span>
-                                    <span id="topicclassification">Topic Classification: mra murraydiversity murrayaudio; 501-1000 (<a href="#" onclick="return false;">Sampsize</a>); female,male (<a href="#" onclick="return false;">Gender</a>); mixed (<a href="#" onclick="return false;">Age</a>); mixed (<a href="#" onclick="return false;">Race</a>); not asked (<a href="#" onclick="return false;">SES</a>); 2 (<a href="#" onclick="return false;">Generations</a>); Special aspects of education (<a href="#" onclick="return false;">Education</a>)</span>
+                                    <span id="keywords">Keywords: #{DatasetPage.datasetVersionUI.keywordsStr}</span>
+                                    <span id="topicclassification">Topic Classification: #{DatasetPage.datasetVersionUI.topicClassStr}</span>
                                     <span id="publication">Original Publication: Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
                                     <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>
                                 </div>
-                                
-                                <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
-
-                                <h:outputText value="#{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block; margin-bottom:.5em;" />
-
-                                <p:panel style="background-color: #F5F5F5;">
-                                    <h:outputText id="citationDisplay" value="#{DatasetPage.datasetVersionUI.citation}" escape="false"/>
-                                </p:panel>
-                                <!--<p:panel>
-                                    <p:panelGrid columns="2">
-                                        <p:commandButton value="Copy Citation" disabled="true"/>
-                                        <h:outputLink onclick="PF('whyCite').show();" value="javascript:void(0)">
-                                            <h:outputText value="Why cite?" style="color: green"/>
-                                        </h:outputLink>
-                                        <p:dialog header="Why cite?" widgetVar="whyCite" modal="true" height="100">
-                                            <h:outputText value="Info on why to use a data citation."/>
-                                        </p:dialog>
-                                    </p:panelGrid>
-                                </p:panel>-->
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
                                 <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -116,21 +98,21 @@
                                 </p:panelGrid>
                             </ui:fragment>
                         </p:panelGrid>
-                        <ui:fragment>
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Title " /> <h:outputText value="* " style="color: #B94A48;"/>
-                            <h:outputText value=" #{DatasetPage.datasetVersionUI.title.strValue}" rendered="#{empty DatasetPage.editMode}"/>
-                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.title.strValue}" rendered="#{empty DatasetPage.editMode}"/>-->
+                            <ui:fragment>
                                   <p:inputText id="input_Title" size="90" value="#{DatasetPage.datasetVersionUI.title.strValue}">
                                   </p:inputText>
                                   <p:watermark for="input_Title" value="Enter title..." />                                          
                                   <p:message for="input_Title"/>
-                        </ui:fragment>
+                            </ui:fragment>
                         </ui:fragment>
                         
-                        <ui:fragment>
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
-                            <h:outputText value=" #{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode}"/>
-                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode}"/>-->
+                            <ui:fragment>
                                 <h:outputText value="Organization as Author(Single Name): " /> 
                                 <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" > 
                                      <p:ajax update="@all" />  
@@ -163,19 +145,19 @@
                                 </p:dataTable>
                             </ui:fragment>
                         </ui:fragment>
-                        <ui:fragment>
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Description" /> 
-                            <h:outputText value=" #{DatasetPage.datasetVersionUI.description.strValue}" rendered="#{empty DatasetPage.editMode}"/>
-                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.description.strValue}" rendered="#{empty DatasetPage.editMode}"/>-->
+                            <ui:fragment>
                                         <p:inputText id="description" value="#{DatasetPage.datasetVersionUI.description.strValue}" /> 
                                         <p:message for="description"/>
                             </ui:fragment>
                         </ui:fragment>
                         
-                        <ui:fragment>
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Keyword(s)" /> 
-                            <h:outputText value=" #{DatasetPage.datasetVersionUI.keywordsStr}" rendered="#{empty DatasetPage.editMode}"/>
-                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.keywordsStr}" rendered="#{empty DatasetPage.editMode}"/>-->
+                            <ui:fragment>
                                 <p:dataTable id="keywordsTable" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
                                     <p:column>   
                                         <p:outputLabel value="Keyword " />
@@ -194,10 +176,10 @@
                             </ui:fragment>
                         </ui:fragment>
                         
-                        <ui:fragment>
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Topic Classification" /> 
-                            <h:outputText value=" #{DatasetPage.datasetVersionUI.topicClassStr}" rendered="#{empty DatasetPage.editMode}"/>
-                            <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.topicClassStr}" rendered="#{empty DatasetPage.editMode}"/>-->
+                            <ui:fragment>
                                 <p:dataTable id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
                                     <p:column>   
                                         <p:outputLabel value="Topic Classification " />
