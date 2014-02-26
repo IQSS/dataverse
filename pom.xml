@@ -64,7 +64,12 @@
             <groupId>org.primefaces.themes</groupId>
             <artifactId>all-themes</artifactId>
             <version>1.0.10</version>
-        </dependency>      
+        </dependency>    
+        <dependency>
+            <groupId>org.omnifaces</groupId>
+            <artifactId>omnifaces</artifactId>
+            <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
+        </dependency>          
         
         <dependency>
             <groupId>org.hibernate</groupId>

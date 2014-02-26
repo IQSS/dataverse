@@ -29,7 +29,7 @@ public class SearchIncludeFragment {
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
-    private Long searchResultsCount;
+    private int searchResultsCount;
     private String fq0;
     private String fq1;
     private String fq2;
@@ -53,7 +53,6 @@ public class SearchIncludeFragment {
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
     private int page = 1;
-    private List<Long> pages = new ArrayList<Long>();
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
     private int paginationGuiRows = 10;
@@ -94,10 +93,14 @@ public class SearchIncludeFragment {
     public void search() {
         logger.info("search called");
 
+        // wildcard/browse (*) unless user supplies a query
+        String queryToPassToSolr = "*";
         if (this.query == null) {
-            this.query = "*";
+            queryToPassToSolr = "*";
         } else if (this.query.isEmpty()) {
-            this.query = "*";
+            queryToPassToSolr = "*";
+        } else {
+            queryToPassToSolr = query;
         }
 
         filterQueries = new ArrayList<>();
@@ -133,18 +136,15 @@ public class SearchIncludeFragment {
         int paginationStart = (page - 1) * paginationGuiRows;
         /**
          * @todo
-         * bug: showing all pages, even if there are hundreds of pages
-         * 
-         * bug: previous and next buttons don't work
-         * 
-         * bug: first page (<<) and last page (>>) buttons don't work
          *
          * design/make room for sort widget drop down: https://redmine.hmdc.harvard.edu/issues/3482
          *
          */
 
         try {
-            solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart, dataverse);
+            logger.info("query from user:   " + query);
+            logger.info("queryToPassToSolr: " + queryToPassToSolr);
+            solrQueryResponse = searchService.search(queryToPassToSolr, filterQueriesFinal, paginationStart, dataverse);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -154,21 +154,16 @@ public class SearchIncludeFragment {
                 sb.append(cause.getClass().getCanonicalName() + " ");
                 sb.append(cause + " ");
             }
-            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
+            String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
             logger.info(message);
             this.solrIsDown = true;
         }
         if (!solrIsDown) {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
-            this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+            this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
             paginationGuiStart = paginationStart + 1;
-            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount.intValue());            
-            pages = new ArrayList<Long>();
-            for (Long i = 0L; i < this.searchResultsCount; i += paginationGuiRows) {
-                // scary. math is hard
-                pages.add((i / 10) + 1L);
-            }
+            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
             for (SolrSearchResult solrSearchResult : searchResults) {
@@ -294,11 +289,11 @@ public class SearchIncludeFragment {
         this.searchResultsList = searchResultsList;
     }
 
-    public Long getSearchResultsCount() {
+    public int getSearchResultsCount() {
         return searchResultsCount;
     }
 
-    public void setSearchResultsCount(Long searchResultsCount) {
+    public void setSearchResultsCount(int searchResultsCount) {
         this.searchResultsCount = searchResultsCount;
     }
 
@@ -474,13 +469,11 @@ public class SearchIncludeFragment {
         this.page = page;
     }
 
-    public List<Long> getPages() {
-        return pages;
-    }
+    // helper method
+    public int getTotalPages() {
+        return ( (searchResultsCount - 1) / paginationGuiRows) + 1;
+    } 
 
-    public void setPages(List<Long> pages) {
-        this.pages = pages;
-    }
 
     public int getPaginationGuiStart() {
         return paginationGuiStart;
