@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
 	  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
 	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	  xmlns:fn="http://java.sun.com/jsp/jstl/functions">
@@ -19,11 +20,8 @@
 				<ui:fragment rendered="#{cc.attrs.collapsible}">
 					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 				</ui:fragment>
-				#{msg.summary}
-				<ui:fragment rendered="#{not empty msg.detail}">
-					<br />
-					<small>#{msg.detail}</small>
-				</ui:fragment>
+				<span class="glyphicon glyphicon-info-sign"></span> <strong>#{msg.summary}</strong>
+				<h:outputText value="#{msg.detail}" rendered="#{not empty msg.detail}"/>
 			</div>
 			#{msg.rendered()}
 		</ui:repeat>
