@@ -24,13 +24,13 @@
                 <h:form id="datasetForm">
 
                     <!-- Message Panel -->
-                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
+<!--                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
                         <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
                         <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
                         <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
                         <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
                         <h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                    </p:panel>
+                    </p:panel>-->
 
                     <style type="text/css">
                         .panelgridLayoutTable .ui-datatable-tablewrapper thead {display:none;}
@@ -51,7 +51,7 @@
                                     #keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
                                     #keywords {margin-top:1em;}
                                 </style>
-<!--                                <div style="border:2px dashed gold; margin-bottom:1em;">
+                                <div style="border:2px dashed gold; margin-bottom:1em;">
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
                                     <span id="author">Victorino, Shane (RF); Pedroia, Dustin (2B); Ortiz, David (DH); Napoli, Mike (1B); Nava, Daniel (LF); Bogaerts, Xander (SS); Pierzynski, A.J. (C); Middlebrooks, Will (3B); Bradley, Jackie (CF)</span>
                                     <span id="contact">Contact: <a href="#" onclick="return false;">Name, Email Icon</a></span>
@@ -63,7 +63,7 @@
                                     <span id="topicclassification">Topic Classification: mra murraydiversity murrayaudio; 501-1000 (<a href="#" onclick="return false;">Sampsize</a>); female,male (<a href="#" onclick="return false;">Gender</a>); mixed (<a href="#" onclick="return false;">Age</a>); mixed (<a href="#" onclick="return false;">Race</a>); not asked (<a href="#" onclick="return false;">SES</a>); 2 (<a href="#" onclick="return false;">Generations</a>); Special aspects of education (<a href="#" onclick="return false;">Education</a>)</span>
                                     <span id="publication">Original Publication: Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
                                     <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>
-                                </div>-->
+                                </div>
                                 
                                 <h:outputText value="#{DatasetPage.dataset.latestVersion.title}" rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}" style="display:block;font-size:1.25em;font-weight:bold;"/>
 
