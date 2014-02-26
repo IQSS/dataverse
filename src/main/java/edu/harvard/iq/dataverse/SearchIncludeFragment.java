@@ -29,7 +29,7 @@ public class SearchIncludeFragment {
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
-    private Long searchResultsCount;
+    private int searchResultsCount;
     private String fq0;
     private String fq1;
     private String fq2;
@@ -53,7 +53,6 @@ public class SearchIncludeFragment {
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
     private int page = 1;
-    private List<Long> pages = new ArrayList<Long>();
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
     private int paginationGuiRows = 10;
@@ -167,14 +166,9 @@ public class SearchIncludeFragment {
         if (!solrIsDown) {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
-            this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+            this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
             paginationGuiStart = paginationStart + 1;
-            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount.intValue());            
-            pages = new ArrayList<Long>();
-            for (Long i = 0L; i < this.searchResultsCount; i += paginationGuiRows) {
-                // scary. math is hard
-                pages.add((i / 10) + 1L);
-            }
+            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
             for (SolrSearchResult solrSearchResult : searchResults) {
@@ -300,11 +294,11 @@ public class SearchIncludeFragment {
         this.searchResultsList = searchResultsList;
     }
 
-    public Long getSearchResultsCount() {
+    public int getSearchResultsCount() {
         return searchResultsCount;
     }
 
-    public void setSearchResultsCount(Long searchResultsCount) {
+    public void setSearchResultsCount(int searchResultsCount) {
         this.searchResultsCount = searchResultsCount;
     }
 
@@ -480,13 +474,11 @@ public class SearchIncludeFragment {
         this.page = page;
     }
 
-    public List<Long> getPages() {
-        return pages;
-    }
+    // helper method
+    public int getTotalPages() {
+        return ( (searchResultsCount - 1) / paginationGuiRows) + 1;
+    } 
 
-    public void setPages(List<Long> pages) {
-        this.pages = pages;
-    }
 
     public int getPaginationGuiStart() {
         return paginationGuiStart;
