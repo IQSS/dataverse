@@ -136,11 +136,6 @@ public class SearchIncludeFragment {
         int paginationStart = (page - 1) * paginationGuiRows;
         /**
          * @todo
-         * bug: showing all pages, even if there are hundreds of pages
-         * 
-         * bug: previous and next buttons don't work
-         * 
-         * bug: first page (<<) and last page (>>) buttons don't work
          *
          * design/make room for sort widget drop down: https://redmine.hmdc.harvard.edu/issues/3482
          *
