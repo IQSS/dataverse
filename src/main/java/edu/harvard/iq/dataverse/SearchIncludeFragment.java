@@ -52,6 +52,11 @@ public class SearchIncludeFragment {
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
+    private Long page = 1L;
+    private List<Long> pages = new ArrayList<Long>();
+    private Long paginationGuiStart = 1L;
+    private Long paginationGuiEnd = 10L;
+    private Long paginationGuiRows = 10L;
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
@@ -103,7 +108,6 @@ public class SearchIncludeFragment {
         }
 
         SolrQueryResponse solrQueryResponse = null;
-        int paginationStart = 0;
 
         List<String> filterQueriesFinal = new ArrayList<>();
         if (dataverseId != null) {
@@ -126,6 +130,31 @@ public class SearchIncludeFragment {
         filterQueriesFinal.addAll(filterQueries);
         filterQueriesFinal.add(typeFilterQuery);
 
+        int paginationStart = 0;
+        Long calculatedPaginationStart = page * paginationGuiRows;
+        /**
+         * @todo
+         *
+         * Integer.parseInt(calculatedPaginationStart.toString()) ?? should we
+         * even be using a Long for page and paginationGuiRows?? need try/catch at the very least!
+         *
+         * bug: showing all pages, even if there are hundreds of pages
+         * 
+         * bug: previous and next buttons don't work
+         * 
+         * bug: first page (<<) and last page (>>) buttons don't work
+         * 
+         * bug: 61 to 70 of 61 results (math is hard)
+         *
+         * bug: 1 to 10 of 4 results (math is hard)
+         *
+         * design/make room for sort widget drop down: https://redmine.hmdc.harvard.edu/issues/3482
+         *
+         */
+        paginationGuiStart = calculatedPaginationStart - 9L;
+        paginationGuiEnd = calculatedPaginationStart;
+        paginationStart = Integer.parseInt(calculatedPaginationStart.toString());
+
         try {
             solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart, dataverse);
         } catch (EJBException ex) {
@@ -145,6 +174,11 @@ public class SearchIncludeFragment {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
             this.searchResultsCount = solrQueryResponse.getNumResultsFound();
+            pages = new ArrayList<Long>();
+            for (Long i = 0L; i < this.searchResultsCount; i += paginationGuiRows) {
+                // scary. math is hard
+                pages.add((i / 10) + 1L);
+            }
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
             for (SolrSearchResult solrSearchResult : searchResults) {
@@ -440,6 +474,46 @@ public class SearchIncludeFragment {
 
     public Long getFacetCountFiles() {
         return findFacetCountByType("files");
+    }
+
+    public Long getPage() {
+        return page;
+    }
+
+    public void setPage(Long page) {
+        this.page = page;
+    }
+
+    public List<Long> getPages() {
+        return pages;
+    }
+
+    public void setPages(List<Long> pages) {
+        this.pages = pages;
+    }
+
+    public Long getPaginationGuiStart() {
+        return paginationGuiStart;
+    }
+
+    public void setPaginationGuiStart(Long paginationGuiStart) {
+        this.paginationGuiStart = paginationGuiStart;
+    }
+
+    public Long getPaginationGuiEnd() {
+        return paginationGuiEnd;
+    }
+
+    public void setPaginationGuiEnd(Long paginationGuiEnd) {
+        this.paginationGuiEnd = paginationGuiEnd;
+    }
+
+    public Long getPaginationGuiRows() {
+        return paginationGuiRows;
+    }
+
+    public void setPaginationGuiRows(Long paginationGuiRows) {
+        this.paginationGuiRows = paginationGuiRows;
     }
 
     public boolean isSolrIsDown() {
