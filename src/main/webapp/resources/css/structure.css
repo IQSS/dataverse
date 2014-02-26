@@ -80,3 +80,7 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 div[id$="resultsTable"] .ui-datatable-tablewrapper table > thead {display:none;}
 
 div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
+
+/* -------- DATASET -------- */
+/* Overwrite Primefaces */
+button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
