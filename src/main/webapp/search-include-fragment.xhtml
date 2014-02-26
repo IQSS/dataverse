@@ -12,6 +12,7 @@
             <ui:fragment>
                 <h:form>
                 <p:focus/>
+                <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
                 <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
                 <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
                 <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">

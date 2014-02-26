@@ -94,10 +94,14 @@ public class SearchIncludeFragment {
     public void search() {
         logger.info("search called");
 
+        // wildcard/browse (*) unless user supplies a query
+        String queryToPassToSolr = "*";
         if (this.query == null) {
-            this.query = "*";
+            queryToPassToSolr = "*";
         } else if (this.query.isEmpty()) {
-            this.query = "*";
+            queryToPassToSolr = "*";
+        } else {
+            queryToPassToSolr = query;
         }
 
         filterQueries = new ArrayList<>();
@@ -144,7 +148,9 @@ public class SearchIncludeFragment {
          */
 
         try {
-            solrQueryResponse = searchService.search(query, filterQueriesFinal, paginationStart, dataverse);
+            logger.info("query from user:   " + query);
+            logger.info("queryToPassToSolr: " + queryToPassToSolr);
+            solrQueryResponse = searchService.search(queryToPassToSolr, filterQueriesFinal, paginationStart, dataverse);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -154,7 +160,7 @@ public class SearchIncludeFragment {
                 sb.append(cause.getClass().getCanonicalName() + " ");
                 sb.append(cause + " ");
             }
-            String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
+            String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
             logger.info(message);
             this.solrIsDown = true;
         }
