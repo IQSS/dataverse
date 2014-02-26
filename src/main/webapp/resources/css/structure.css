@@ -85,5 +85,21 @@ div[id$="resultsTable"] .ui-datatable-tablewrapper table > thead {display:none;}
 div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
 
 /* -------- DATASET -------- */
+.panelgridLayoutTable.titleCitationBlock, 
+.panelgridLayoutTable.titleCitationBlock tr.ui-widget-content, 
+.panelgridLayoutTable.titleCitationBlock tr.ui-widget-content td {border:0;}
+
+span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
+                                    
+#title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
+#author, #contact {display:block; margin-bottom:.5em;}
+#citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
+#description {display:block; margin-bottom:.5em;}
+#keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
+#keywords {margin-top:1em;}
+
+div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
+#datasetForm .form-group {overflow: hidden;}
+
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
