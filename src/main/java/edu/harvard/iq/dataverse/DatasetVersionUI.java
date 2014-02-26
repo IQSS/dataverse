@@ -342,14 +342,14 @@ public class DatasetVersionUI {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            if (sa.getValue() != null && !sa.getValue().getStrValue().isEmpty() ){
-                 str += sa.getValue().getStrValue(); 
-            }
             if (sa.getVocab() != null && !sa.getVocab().getStrValue().isEmpty() ){
-                 str += sa.getVocab().getStrValue() + " "; 
+                 str += sa.getVocab().getStrValue() + ": "; 
             }
             if (sa.getVocabURI() != null && !sa.getVocabURI().getStrValue().isEmpty() ){
-                 str += sa.getVocabURI().getStrValue() + " "; 
+                 str += "<a href='" + sa.getVocabURI().getStrValue() + "'>"; 
+            }
+            if (sa.getValue() != null && !sa.getValue().getStrValue().isEmpty() ){
+                 str += sa.getValue().getStrValue() + "</a>";
             }
         }
         return str;

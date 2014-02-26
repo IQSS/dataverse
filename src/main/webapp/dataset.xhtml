@@ -35,23 +35,25 @@
 
                     <style type="text/css">
                         .panelgridLayoutTable .ui-datatable-tablewrapper thead {display:none;}
+                        .panelgridLayoutTable.titleCitationBlock, 
+                        .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content, 
+                        .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content td {border:0;}
+                        
+                        span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
+                                    
+                        #title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
+                        #author, #contact {display:block; margin-bottom:.5em;}
+                        #citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
+                        #description {display:block; margin-bottom:.5em;}
+                        #keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
+                        #keywords {margin-top:1em;}
                     </style>
                     
                     <!-- Title / Button Panel -->
-                    <p:panel styleClass="panelLayoutBlock">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
+                    <ui:fragment>
+                        <p:panelGrid styleClass="panelgridLayoutTable titleCitationBlock" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
                             <ui:fragment rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
-                                <style type="text/css">
-                                    span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
-                                    
-                                    #title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
-                                    #author, #contact {display:block; margin-bottom:.5em;}
-                                    #citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
-                                    #description {display:block; margin-bottom:.5em;}
-                                    #keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
-                                    #keywords {margin-top:1em;}
-                                </style>
-                                <div style="border:2px dashed gold; margin-bottom:1em;">
+                                <div>
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
                                     <span id="author">#{DatasetPage.datasetVersionUI.authorsStr}</span>
                                     <span id="contact">Contact: <a href="#" onclick="return false;">Name, Email Icon</a></span>
@@ -61,9 +63,9 @@
                                     </div>
                                     <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
                                     <span id="keywords">Keywords: #{DatasetPage.datasetVersionUI.keywordsStr}</span>
-                                    <span id="topicclassification">Topic Classification: #{DatasetPage.datasetVersionUI.topicClassStr}</span>
+                                    <span id="topicclassification">Topic Classification: <h:outputText value="#{DatasetPage.datasetVersionUI.topicClassStr}" escape="false"/></span>
                                     <span id="publication">Original Publication: Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
-                                    <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>
+<!--                                    <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>-->
                                 </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
@@ -82,22 +84,7 @@
                                 </p:panelGrid>
                             </ui:fragment>
                         </p:panelGrid>
-                       <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
-                            <ui:fragment>
-                                <p:panelGrid styleClass="panelgridFormTable" columns="2" rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
-                                    <ui:fragment>
-                                    </ui:fragment>
-                                    <ui:fragment>
-                                        <h:outputText value="Host Dataverse"/>
-                                    </ui:fragment>
-                                    <ui:fragment>
-                                        <p:selectOneMenu value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                                        </p:selectOneMenu>
-                                    </ui:fragment>
-                                </p:panelGrid>
-                            </ui:fragment>
-                        </p:panelGrid>
+                        
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Title " /> <h:outputText value="* " style="color: #B94A48;"/>
 <!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.title.strValue}" rendered="#{empty DatasetPage.editMode}"/>-->
@@ -109,47 +96,58 @@
                             </ui:fragment>
                         </ui:fragment>
                         
-                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
-                            <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
-<!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode}"/>-->
+                        <ui:fragment rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
+                            <p:outputLabel value="Host Dataverse" for="hostdataverse"/>
                             <ui:fragment>
-                                <h:outputText value="Organization as Author(Single Name): " /> 
-                                <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" > 
-                                     <p:ajax update="@all" />  
-                                </p:selectBooleanCheckbox> 
-                                <p:dataTable id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
-                                    <p:column>   
-                                        <p:outputLabel value="First Name " rendered="#{!DatasetPage.authorAsOrg}" />
-                                        <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
-                                        <p:message for="firstName"/>
-                                    </p:column>
-                                    <p:column>   
-                                        <p:outputLabel value="Last Name " rendered="#{!DatasetPage.authorAsOrg}" />
-                                        <p:outputLabel value="Organization Name " rendered="#{DatasetPage.authorAsOrg}" />
-                                        <p:inputText id="lastName" value="#{author.lastName.strValue}" />
-                                        <p:message for="lastName"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:outputLabel value="Author Affiliation" />
-                                        <p:inputText id="authorAffiliation" value="#{author.affiliation.strValue}" />
-                                        <p:message for="authorAffiliation"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:commandButton id="editFileButton" value="Add Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                        <p:commandButton id="editMetadataButton" value="Delete Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                    </p:column>
-                                </p:dataTable>
+                                <p:selectOneMenu id="hostdataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                    <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
+                                </p:selectOneMenu>
                             </ui:fragment>
+                        </ui:fragment>
+                        
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                            <div>
+                                <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
+<!--                                <h:outputText value=" #{DatasetPage.datasetVersionUI.authorsStr}" rendered="#{empty DatasetPage.editMode}"/>-->
+                                <ui:fragment>
+                                    <h:outputText value="Organization as Author(Single Name): " /> 
+                                    <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" > 
+                                         <p:ajax update="@all" />  
+                                    </p:selectBooleanCheckbox> 
+                                    <p:dataTable id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
+                                        <p:column>   
+                                            <p:outputLabel value="First Name " rendered="#{!DatasetPage.authorAsOrg}" />
+                                            <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
+                                            <p:message for="firstName"/>
+                                        </p:column>
+                                        <p:column>   
+                                            <p:outputLabel value="Last Name " rendered="#{!DatasetPage.authorAsOrg}" />
+                                            <p:outputLabel value="Organization Name " rendered="#{DatasetPage.authorAsOrg}" />
+                                            <p:inputText id="lastName" value="#{author.lastName.strValue}" />
+                                            <p:message for="lastName"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel value="Author Affiliation" />
+                                            <p:inputText id="authorAffiliation" value="#{author.affiliation.strValue}" />
+                                            <p:message for="authorAffiliation"/>
+                                        </p:column>
+                                        <p:column>
+                                            <p:commandButton id="editFileButton" value="Add Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                            </p:commandButton>
+                                            <p:commandButton id="editMetadataButton" value="Delete Author"  actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </ui:fragment>
+                            </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <p:outputLabel value="Description" /> 
 <!--                            <h:outputText value=" #{DatasetPage.datasetVersionUI.description.strValue}" rendered="#{empty DatasetPage.editMode}"/>-->
                             <ui:fragment>
-                                        <p:inputText id="description" value="#{DatasetPage.datasetVersionUI.description.strValue}" /> 
+                                        <p:inputTextarea rows="5" cols="80" id="description" value="#{DatasetPage.datasetVersionUI.description.strValue}" /> 
                                         <p:message for="description"/>
                             </ui:fragment>
                         </ui:fragment>
@@ -208,8 +206,9 @@
                             </ui:fragment>
                         </ui:fragment>
 
-                    </p:panel>
+                    </ui:fragment>
 
+                    <!-- Tabs -->
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
