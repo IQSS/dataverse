@@ -149,7 +149,7 @@
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                         </c:forEach>
-                                        <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages)}"/>
+                                        <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
                                     </h:outputLink>                                
                                 </li>
                                 <li>
