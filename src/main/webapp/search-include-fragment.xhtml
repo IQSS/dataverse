@@ -8,31 +8,31 @@
 
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm">
-            
+
         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
             <ui:fragment>
                 <h:form>
-                <p:focus/>
-                <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
-                <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
-                <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
-                <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
-                    <h:outputText value="Advanced Search"/>
-                </h:outputLink>
-            </h:form>
+                    <p:focus/>
+                    <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
+                    <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
+                    <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
+                    <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
+                        <h:outputText value="Advanced Search"/>
+                    </h:outputLink>
+                </h:form>
             </ui:fragment>
             <ui:fragment>
                 <h:form id="shareForm" rendered="#{!DataversePage.editMode and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                          Add Data <span class="caret"></span>
+                            Add Data <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu" style="text-align:left;">
-                          <li><a href="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataverse</a></li>
-                          <li><a href="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataset</a></li>
-                          <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
-                          <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>
-                          <li><a href="#" style="pointer-events: none; color: grey;">New Query</a></li>
+                            <li><a href="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataverse</a></li>
+                            <li><a href="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataset</a></li>
+                            <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
+                            <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>
+                            <li><a href="#" style="pointer-events: none; color: grey;">New Query</a></li>
                         </ul>
                     </div>
                 </h:form>
@@ -99,6 +99,7 @@
                             <h:outputText value="#{SearchIncludeFragment.searchResultsCount == 1 ? 'result' : 'results'}"/>
                         </div>
                         <!-- PAGINATOR -->
+                        <o:importFunctions type="java.lang.Math" />
                         <div class="pagination" style="float:left; width: 70%; margin:0;">
                             <ul class="pagination">
                                 <!--should take you to page 1-->
@@ -121,16 +122,16 @@
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                         </c:forEach>
-                                        <f:param name="page" value="#{SearchIncludeFragment.page-1}"/>
+                                        <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
                                     </h:outputLink>                                
                                 </li>
-                                <o:importFunctions type="java.lang.Math" />
                                 <c:forEach begin="#{Math:max(SearchIncludeFragment.page-2,1)}" end="#{Math:min(SearchIncludeFragment.page+2,SearchIncludeFragment.totalPages)}" var="pageListItem">
                                     <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
                                         <h:outputLink>
                                             <h:outputText value="#{pageListItem}"/>
-                                            <!--do we need this sr-only thing from http://getbootstrap.com/components/#pagination ?-->
-                                            <span class="sr-only">(current)</span>
+                                            <span class="#{SearchIncludeFragment.page == pageListItem ? 'sr-only' : ''}">
+                                                <h:outputText value="#{SearchIncludeFragment.page == pageListItem ? ' (current)' : ''}"/>
+                                            </span>
                                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -148,7 +149,7 @@
                                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                         </c:forEach>
-                                        <f:param name="page" value="#{SearchIncludeFragment.page+1}"/>
+                                        <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages)}"/>
                                     </h:outputLink>                                
                                 </li>
                                 <li>
