@@ -3,7 +3,8 @@
      xmlns:f="http://java.sun.com/jsf/core"
      xmlns:ui="http://java.sun.com/jsf/facelets"
      xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui">
+     xmlns:p="http://primefaces.org/ui"
+     xmlns:o="http://omnifaces.org/ui">
 
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm">
@@ -100,10 +101,31 @@
                         <!-- PAGINATOR -->
                         <div class="pagination" style="float:left; width: 70%; margin:0;">
                             <ul class="pagination">
-                                <li class="disabled"><a href="#">&lt; Previous</a></li>
                                 <!--should take you to page 1-->
-                                <li class="disabled"><a href="#">&#171;</a></li>
-                                <ui:repeat value="#{SearchIncludeFragment.pages}" var="pageListItem">
+                                <li>
+                                    <h:outputLink>
+                                        <h:outputText value="&#171;"/>
+                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                        </c:forEach>
+                                        <f:param name="page" value="1"/>
+                                    </h:outputLink>                                    
+                                </li>                                
+                                <li>
+                                    <h:outputLink>
+                                        <h:outputText value="&lt; Previous"/>
+                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                        </c:forEach>
+                                        <f:param name="page" value="#{SearchIncludeFragment.page-1}"/>
+                                    </h:outputLink>                                
+                                </li>
+                                <o:importFunctions type="java.lang.Math" />
+                                <c:forEach begin="#{Math:max(SearchIncludeFragment.page-2,1)}" end="#{Math:min(SearchIncludeFragment.page+2,SearchIncludeFragment.totalPages)}" var="pageListItem">
                                     <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
                                         <h:outputLink>
                                             <h:outputText value="#{pageListItem}"/>
@@ -117,9 +139,29 @@
                                             <f:param name="page" value="#{pageListItem}"/>
                                         </h:outputLink>
                                     </li>
-                                </ui:repeat>
-                                <li class="disabled"><a href="#">&#187;</a></li>
-                                <li class="disabled"><a href="#">Next &gt;</a></li>
+                                </c:forEach>                                
+                                <li>
+                                    <h:outputLink>
+                                        <h:outputText value="Next &gt;"/>
+                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                        </c:forEach>
+                                        <f:param name="page" value="#{SearchIncludeFragment.page+1}"/>
+                                    </h:outputLink>                                
+                                </li>
+                                <li>
+                                    <h:outputLink>
+                                        <h:outputText value="&#187;"/>
+                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                        </c:forEach>
+                                        <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
+                                    </h:outputLink>                                 
+                                </li>                                
                             </ul>
                         </div>
                     </div>
