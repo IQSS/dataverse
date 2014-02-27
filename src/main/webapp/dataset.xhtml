@@ -193,7 +193,9 @@
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
-                                <p:message for="fileUpload" showDetail="true"/>
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                    <p class="alert alert-info" style="padding:1em;"><h:outputText value="Tip: You can drag and drop your files from your desktop, directly into the upload widget" /></p>
+                                </ui:fragment>
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add" style="margin-top:.5em;"/>
                     <style type="text/css">
