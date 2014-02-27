@@ -125,7 +125,9 @@
                                         <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
                                     </h:outputLink>                                
                                 </li>
-                                <c:forEach begin="#{Math:max(SearchIncludeFragment.page-2,1)}" end="#{Math:min(SearchIncludeFragment.page+2,SearchIncludeFragment.totalPages)}" var="pageListItem">
+                                <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}" 
+                                           end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}" 
+                                           var="pageListItem">
                                     <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
                                         <h:outputLink>
                                             <h:outputText value="#{pageListItem}"/>
