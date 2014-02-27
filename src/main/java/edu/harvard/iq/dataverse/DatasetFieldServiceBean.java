@@ -28,12 +28,13 @@ public class DatasetFieldServiceBean {
     private static final String FILEMETA_NAME_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName ";
     private static final String FILEMETA_NAME_FORMAT_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName and fmf.fileFormatName= :fileFormatName ";
  
-    /**
-     * @todo: rename this method? it doesn't find all...
-     */
-    public List<DatasetField> findAll() {
+    public List<DatasetField> findAllAdvancedSearchFields() {
         return em.createQuery("select object(o) from DatasetField as o where o.advancedSearchField = true and o.title != '' order by o.id").getResultList();
-    }    
+    }
+    
+    public List<DatasetField> findAllFacetableFields() {
+        return em.createQuery("select object(o) from DatasetField as o where o.facetable = true and o.title != '' order by o.id").getResultList();
+    } 
 
     // no, really, find *all* and I mean all all
     public List<DatasetField> findAllAll() {
