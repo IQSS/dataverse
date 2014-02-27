@@ -36,14 +36,29 @@
         <h:outputScript library="js" name="ie-compat.js" />
         <script>
             $(document).ready(function() {
+                // Navbar Body Padding
                 navbarH = $("#navbarFixed").height();
                 $("body").css("padding-top", navbarH + "px");
                 
+                // Navbar Search Toggle
+                $(document).on('click', '#navbar-search-toggle', function (e) {
+                    $(this).parent("li").toggle();
+                    $("form.navbar-form[role='search']").toggle();
+                });
+                $('body').click(function(e) {
+                    if (!$(e.target).closest("form.navbar-form[role='search']").length) {
+                        $("form.navbar-form[role='search']").hide();
+                        $("#navbar-search-toggle").parent("li").show();
+                    };
+                });
+                
+                // Breadcrumb Tree Keep Open
                 $(document).on('click', '.dropdown-menu', function (e) {
                     $(this).hasClass('keep-open'),
                     e.stopPropagation();
                 });
                 
+                // Permissions + Dataset Tooltips/Popovers
                 $("a[data-toggle='tooltip']").tooltip({container: 'body'});
                 $("a[data-toggle='popover']").popover();
             });

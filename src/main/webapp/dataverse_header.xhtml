@@ -23,7 +23,7 @@
             <div class="collapse navbar-collapse" id="topNavBar">
 
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
+<!--                    <li class="dropdown">
                         <a value="#" class="dropdown-toggle" data-toggle="dropdown">
                             Search <b class="caret"></b>
                         </a>
@@ -35,11 +35,35 @@
                                 </button>
                             </form>
                         </div>
-                    </li>
+                    </li>-->
                     <li>
-                        <h:outputLink value="/guides/index.html" target="_blank">
-                            Support
-                        </h:outputLink>
+                        <a value="#" id="navbar-search-toggle">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </a>
+                    </li>
+                    <form class="navbar-form navbar-left" role="search" style="display:none;">
+                        <div class="form-group">
+                            <label class="sr-only" for="navbarsearch">Search</label>
+                            <input id="navbarsearch" type="text" class="form-control" size="40" value="" placeholder="Search the entire app..." />
+                        </div>
+                        <button type="submit" class="btn btn-default">Find</button>
+                    </form>
+                    <li class="dropdown">
+                        <a value="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Support <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <h:outputLink value="http://www.thedata.org/support" target="_blank">
+                                    <h:outputText value="Report Bugs + Community" />
+                                </h:outputLink>
+                            </li>
+                            <li>
+                                <h:outputLink value="/guides/index.html" target="_blank">
+                                    User Guides
+                                </h:outputLink>
+                            </li>
+                        </ul>
                     </li>
                     <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
