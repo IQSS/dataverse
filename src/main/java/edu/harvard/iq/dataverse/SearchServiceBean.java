@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
+import javax.persistence.NoResultException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -84,19 +87,11 @@ public class SearchServiceBean {
          * also, findAll only returns advancedSearchField = true... we should
          * probably introduce the "isFacetable" boolean rather than caring about
          * if advancedSearchField is true or false
-         * 
-         * when a method more granual than datasetFieldService.findAll() is
-         * available (i.e. a way to targe an individual dataset field) we'll
-         * stop assigning titleSolrField in the for loop
+         *
          */
-        String titleSolrField = "TO_BE_DETERMINED";
         for (DataverseFacet dataverseFacet: dataverse.getDataverseFacets()) {
             DatasetField datasetField = dataverseFacet.getDatasetField();
             solrQuery.addFacetField(datasetField.getSolrField());
-            if (datasetField.getId().equals(1L)) {
-                // 1 should be "title" according to the dataset reference data
-                titleSolrField = datasetField.getSolrField();
-            }
         }
         /**
          * @todo: do sanity checking... throw error if negative
@@ -159,6 +154,18 @@ public class SearchServiceBean {
          */
         Object searchFieldsObject = new SearchFields();
         Field[] staticSearchFields = searchFieldsObject.getClass().getDeclaredFields();
+        String titleSolrField = null;
+        try {
+            DatasetField titleDatasetField = datasetFieldService.findByName(DatasetFieldConstant.title);
+            titleSolrField = titleDatasetField.getSolrField();
+        } catch (EJBTransactionRolledbackException ex) {
+            logger.info("Couldn't find " + DatasetFieldConstant.title);
+            if (ex.getCause() instanceof TransactionRolledbackLocalException) {
+                if (ex.getCause().getCause() instanceof NoResultException) {
+                    logger.info("Caught NoResultException");
+                }
+            }
+        }
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
@@ -169,6 +176,8 @@ public class SearchServiceBean {
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             String title = (String) solrDocument.getFieldValue(titleSolrField);
+            logger.info("titleSolrField: " + titleSolrField);
+            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
@@ -193,7 +202,7 @@ public class SearchServiceBean {
                     solrSearchResult.setTitle((String) title);
                 }
                 else {
-                    solrSearchResult.setTitle("NULL: NO TITLE INDEXED");
+                    solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
                 }
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
