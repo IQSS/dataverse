@@ -42,8 +42,12 @@ public class SearchIncludeFragment {
     private String fq9;
     private Long dataverseId;
     private Dataverse dataverse;
-    private String dataverseSubtreeContext;
+    // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
+//    private String dataverseSubtreeContext;
     private String[] selectedTypesArray = {"dataverses", "datasets", "files"};
+    /**
+     * @todo removed from GUI. rename this to selectedTypeToPassToSolr?
+     */
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
@@ -119,13 +123,13 @@ public class SearchIncludeFragment {
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             if (!this.dataverse.equals(dataverseService.findRootDataverse())) {
                 filterQueriesFinal.add(filterDownToSubtree);
-                this.dataverseSubtreeContext = dataversePath;
+//                this.dataverseSubtreeContext = dataversePath;
             } else {
-                this.dataverseSubtreeContext = "all";
+//                this.dataverseSubtreeContext = "all";
             }
         } else {
             this.dataverse = dataverseService.findRootDataverse();
-            this.dataverseSubtreeContext = "all";
+//            this.dataverseSubtreeContext = "all";
         }
 
         selectedTypesHumanReadable = combine(selectedTypesArray, " OR ");
@@ -393,13 +397,13 @@ public class SearchIncludeFragment {
         this.dataverse = dataverse;
     }
 
-    public String getDataverseSubtreeContext() {
-        return dataverseSubtreeContext;
-    }
-
-    public void setDataverseSubtreeContext(String dataverseSubtreeContext) {
-        this.dataverseSubtreeContext = dataverseSubtreeContext;
-    }
+//    public String getDataverseSubtreeContext() {
+//        return dataverseSubtreeContext;
+//    }
+//
+//    public void setDataverseSubtreeContext(String dataverseSubtreeContext) {
+//        this.dataverseSubtreeContext = dataverseSubtreeContext;
+//    }
 
     public String[] getSelectedTypes() {
         return selectedTypesArray;

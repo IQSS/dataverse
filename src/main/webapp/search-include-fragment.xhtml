@@ -89,7 +89,18 @@
             <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
             <div style="width:80%;float:left;">
                 <ui:fragment>
-                    <h:outputText value="Search context: #{SearchIncludeFragment.dataverseSubtreeContext}. Types: #{SearchIncludeFragment.selectedTypesHumanReadable}. Filters: #{SearchIncludeFragment.filterQueries}"/>
+                    <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
+                        <h:outputText value="#{filterQuery}"/>
+                        <h:outputLink style="color:#C55B28">
+                            <h:outputText value="X" style="color: #C55B28"/>
+                            <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
+                            </c:forEach>
+                            <h:outputText value=" "/>
+                        </h:outputLink>
+                    </ui:repeat>
                     <!--<pre>1 to 10 of 7777 results ‹ Previous « 1 2 3 4 5 » Next › (design goal from <a href="https://redmine.hmdc.harvard.edu/issues/3575">#3575</a>)</pre>-->
                     <div style="overflow:hidden;">
                         <div style="float:left; width: 30%; margin:20px 0; padding:6px 12px;">
