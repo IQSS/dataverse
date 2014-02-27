@@ -44,7 +44,7 @@
                     e.stopPropagation();
                 });
                 
-                $("a[data-toggle='tooltip']").tooltip();
+                $("a[data-toggle='tooltip']").tooltip({container: 'body'});
                 $("a[data-toggle='popover']").popover();
             });
         </script>

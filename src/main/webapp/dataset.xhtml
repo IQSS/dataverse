@@ -24,15 +24,6 @@
 
                 <h:form id="datasetForm">
 
-                    <!-- Message Panel -->
-<!--                    <p:panel styleClass="panelLayoutTitleBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:messages id="messages" showDetail="true" autoUpdate="true" closable="true"/>
-                        <h:outputText value="Upload your dataset:" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
-                        <h:outputText value="Edit your dataset's information:" rendered="#{DatasetPage.editMode == 'INFO'}"/>
-                        <h:outputText value="Edit your dataset's files:" rendered="#{DatasetPage.editMode == 'FILE'}"/>
-                        <h:outputText value="Edit your dataset's metadata" rendered="#{DatasetPage.editMode == 'METADATA'}"/>
-                    </p:panel>-->
-
                     <!-- Title / Button Panel -->
                     <ui:fragment>
                         <p:panelGrid styleClass="panelgridLayoutTable titleCitationBlock" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
@@ -40,15 +31,15 @@
                                 <div>
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
                                     <span id="author">#{DatasetPage.datasetVersionUI.authorsStr}</span>
-                                    <span id="contact">Contact: <a href="#" onclick="return false;">Name, Email Icon</a></span>
+                                    <span id="contact">Contact: <a href="#" onclick="return false;" data-container="body" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Name, Email Icon</a></span>
                                     <div id="citation">
                                         <span>#{DatasetPage.datasetVersionUI.citation}</span>
 <!--                                        <span>AUTHORS, 4/4/2014, "Fake Kinda Long And Wordy Dataset Title That I Made Up Without Much Thought", http://hdl.handle.net/1902.1/FAKEIDHDL UNF:3:reds0x2o14fakedthisId== Harvard Dataverse [Distributor] V1 [Version]</span>-->
                                     </div>
                                     <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
-                                    <span id="keywords">Keywords: #{DatasetPage.datasetVersionUI.keywordsStr}</span>
-                                    <span id="topicclassification">Topic Classification: <h:outputText value="#{DatasetPage.datasetVersionUI.topicClassStr}" escape="false"/></span>
-                                    <span id="publication">Original Publication: Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
+                                    <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
+                                    <span id="topicclassification">Topic Classification(s): <h:outputText value="#{DatasetPage.datasetVersionUI.topicClassStr}" escape="false"/></span>
+                                    <span id="publication">Original Publication(s): Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
 <!--                                    <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>-->
                                 </div>
                             </ui:fragment>
@@ -125,42 +116,6 @@
                                     </ui:repeat>
                                 </div>
                             </div>
-
-<!--                            <div>
-                                <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
-                                <ui:fragment>
-                                    <h:outputText value="Organization as Author(Single Name): " />
-                                    <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" >
-                                         <p:ajax update="@all" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:dataTable id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
-                                        <p:column>
-                                            <p:outputLabel value="First Name " rendered="#{!DatasetPage.authorAsOrg}" />
-                                            <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
-                                            <p:message for="firstName"/>
-                                        </p:column>
-                                        <p:column>
-                                            <p:outputLabel value="Last Name " rendered="#{!DatasetPage.authorAsOrg}" />
-                                            <p:outputLabel value="Organization Name " rendered="#{DatasetPage.authorAsOrg}" />
-                                            <p:inputText id="lastName" value="#{author.lastName.strValue}" />
-                                            <p:message for="lastName"/>
-                                        </p:column>
-                                        <p:column>
-                                            <p:outputLabel value="Author Affiliation" />
-                                            <p:inputText id="authorAffiliation" value="#{author.affiliation.strValue}" />
-                                            <p:message for="authorAffiliation"/>
-                                        </p:column>
-                                        <p:column>
-                                            <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                            </p:commandButton>
-                                            <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                            </p:commandButton>
-                                        </p:column>
-                                    </p:dataTable>
-                                </ui:fragment>
-                            </div>-->
                         </ui:fragment>
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
@@ -195,29 +150,11 @@
                                     </ui:repeat>
                                 </div>
                             </div>
-<!--                            <p:outputLabel value="Keyword(s)" />
-                            <ui:fragment>
-                                <p:dataTable id="keywordsTable" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
-                                    <p:column>
-                                        <p:outputLabel value="Keyword " />
-                                        <p:inputText id="keyword" value="#{keyword.value.strValue}" />
-                                        <p:message for="keyword"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                        <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                    </p:column>
-                                </p:dataTable>
-                            </ui:fragment>-->
                         </ui:fragment>
 
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
-                                <label for="topicsTable" class="col-sm-2 control-label">Topic Classification</label>
+                                <label for="topicsTable" class="col-sm-2 control-label">Topic Classification(s)</label>
                                 <div class="col-sm-10">
                                     <ui:repeat id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
                                         <div class="row" style="margin-bottom:1em;">
@@ -248,34 +185,6 @@
                                     </ui:repeat>
                                 </div>
                             </div>
-<!--                            <p:outputLabel value="Topic Classification" />
-                            <ui:fragment>
-                                <p:dataTable id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
-                                    <p:column>
-                                        <p:outputLabel value="Topic Classification " />
-                                        <p:inputText id="topic" value="#{topic.value.strValue}" />
-                                        <p:message for="topic"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:outputLabel value="Contolled Vocabulary " />
-                                        <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" />
-                                        <p:message for="topicVocab"/>
-                                    </p:column>
-                                   <p:column>
-                                        <p:outputLabel value="Contolled Vocabulary URI " />
-                                        <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" />
-                                        <p:message for="topicVocabURI"/>
-                                    </p:column>
-                                    <p:column>
-                                        <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                        <p:commandButton styleClass="btn btn-default btn-sm" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
-                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
-                                    </p:column>
-                                </p:dataTable>
-                            </ui:fragment>-->
                         </ui:fragment>
 
                     </ui:fragment>
@@ -326,9 +235,7 @@
                                 <p class="bg-info" style="padding:1em;"><h:outputText  value="This section is using the Bootstrap accordion component and it's kinda awesome." /></p>
 
                                 <div class="panel-group" id="accordion">
-                                
                                     <ui:repeat value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
-                                        
                                         <div class="panel panel-default">
                                             <div class="panel-heading">
                                                 <h4 class="panel-title">
@@ -339,29 +246,23 @@
                                             </div>
                                             <div id="collapse#{block.index}" class="panel-collapse collapse #{block.index == '0' ? 'in' : ''}">
                                                 <div class="panel-body">
-
-                                                    <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">
-                                                        <p:column>
-                                                            <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                            <h:outputText  value="#{fieldValues.strValue}" />
-                                                        </p:column>
-                                                    </p:dataGrid>
-
-                                                    <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">
-                                                        <p:column>
-                                                            <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                            <p:inputText id="input_Textblock" size="90"
-                                                                         value="#{fieldValues.strValue}">
-                                                            </p:inputText>
-                                                        </p:column>
-                                                    </p:dataGrid>
-
+                                                    <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
+                                                        <div class="form-group">
+                                                                <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                                        #{fieldValues.datasetField.title}
+                                                                    </a>
+                                                                </label>
+                                                            <div class="col-sm-6">
+                                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode}" />
+                                                                <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA'}" />
+                                                            </div>
+                                                        </div>
+                                                    </ui:repeat>
                                                 </div>
                                             </div>
                                         </div>
-                                            
                                     </ui:repeat>
-                                        
                                 </div>
                             </p:tab>
 
@@ -390,7 +291,9 @@
                         </p:commandButton>
                         <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                     </p:panel>
+                    
                 </h:form>
+                
             </ui:define>
         </ui:composition>
     </h:body>
