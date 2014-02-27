@@ -144,9 +144,11 @@ public class SearchServiceBean {
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
         /**
-         * @todo when a findByName method is available, use that instead
+         * @todo: switch to findAll when it finds all. Also, think about what a
+         * datasetFieldService.findBySolrField() method would look like...
          */
-        List<DatasetField> datasetFields = datasetFieldService.findAll();
+//        List<DatasetField> datasetFields = datasetFieldService.findAll();
+        List<DatasetField> datasetFields = datasetFieldService.findAllAll();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
