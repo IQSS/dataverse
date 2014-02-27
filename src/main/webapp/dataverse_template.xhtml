@@ -2,7 +2,9 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
       lang="en">
 
     <h:head>
@@ -31,6 +33,14 @@
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>
+        <p:ajaxStatus style="width:31px;height:31px;position:fixed;right:50%;bottom:50%;" id="ajaxStatusPanel">
+            <f:facet name="start">
+                <h:graphicImage value="/resources/images/ajax-loading.gif" />
+            </f:facet>
+            <f:facet name="complete">
+                <!-- DO NOTHING -->
+            </f:facet>
+        </p:ajaxStatus>
 <!--        <h:outputScript library="js" name="jquery.min.js" />-->
         <h:outputScript library="bs" name="js/bootstrap.min.js" />
         <h:outputScript library="js" name="ie-compat.js" />
@@ -39,7 +49,7 @@
                 // Navbar Body Padding
                 navbarH = $("#navbarFixed").height();
                 $("body").css("padding-top", navbarH + "px");
-                
+
                 // Navbar Search Toggle
                 $(document).on('click', '#navbar-search-toggle', function (e) {
                     $(this).parent("li").toggle();
@@ -51,13 +61,13 @@
                         $("#navbar-search-toggle").parent("li").show();
                     };
                 });
-                
+
                 // Breadcrumb Tree Keep Open
                 $(document).on('click', '.dropdown-menu', function (e) {
                     $(this).hasClass('keep-open'),
                     e.stopPropagation();
                 });
-                
+
                 // Permissions + Dataset Tooltips/Popovers
                 $("a[data-toggle='tooltip']").tooltip({container: 'body'});
                 $("a[data-toggle='popover']").popover();
