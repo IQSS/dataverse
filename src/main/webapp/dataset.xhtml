@@ -68,18 +68,18 @@
                                 </p:panelGrid>
                             </ui:fragment>
                         </p:panelGrid>
-                        
+
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
                                 <label for="input_Title" class="col-sm-2 control-label">Title <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
                                 <div class="col-sm-10">
                                     <p:inputText id="input_Title" size="90" value="#{DatasetPage.datasetVersionUI.title.strValue}"/>
-                                    <p:watermark for="input_Title" value="Enter title..." />                                          
+                                    <p:watermark for="input_Title" value="Enter title..." />
                                     <p:message for="input_Title"/>
                                 </div>
                             </div>
                         </ui:fragment>
-                        
+
                         <ui:fragment rendered="#{DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <div class="form-group">
                                 <label for="select_HostDataverse" class="col-sm-2 control-label">Host Dataverse</label>
@@ -90,7 +90,7 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        
+
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
                                 <label for="authorsTable" class="col-sm-2 control-label">Author(s) <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
@@ -125,21 +125,21 @@
                                     </ui:repeat>
                                 </div>
                             </div>
-                            
+
 <!--                            <div>
                                 <p:outputLabel value="Author(s)" /> <h:outputText value="* " style="color: #B94A48;"/>
                                 <ui:fragment>
-                                    <h:outputText value="Organization as Author(Single Name): " /> 
-                                    <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" > 
-                                         <p:ajax update="@all" />  
-                                    </p:selectBooleanCheckbox> 
+                                    <h:outputText value="Organization as Author(Single Name): " />
+                                    <p:selectBooleanCheckbox value="#{DatasetPage.authorAsOrg}" >
+                                         <p:ajax update="@all" />
+                                    </p:selectBooleanCheckbox>
                                     <p:dataTable id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
-                                        <p:column>   
+                                        <p:column>
                                             <p:outputLabel value="First Name " rendered="#{!DatasetPage.authorAsOrg}" />
                                             <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
                                             <p:message for="firstName"/>
                                         </p:column>
-                                        <p:column>   
+                                        <p:column>
                                             <p:outputLabel value="Last Name " rendered="#{!DatasetPage.authorAsOrg}" />
                                             <p:outputLabel value="Organization Name " rendered="#{DatasetPage.authorAsOrg}" />
                                             <p:inputText id="lastName" value="#{author.lastName.strValue}" />
@@ -171,7 +171,7 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        
+
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
                                 <label for="keywordsTable" class="col-sm-2 control-label">Keyword(s)</label>
@@ -180,7 +180,7 @@
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Keyword" />
-                                                <p:inputText id="keyword" value="#{keyword.value.strValue}" /> 
+                                                <p:inputText id="keyword" value="#{keyword.value.strValue}" />
                                                 <p:message for="keyword"/>
                                             </div>
                                             <div class="col-xs-3">
@@ -198,9 +198,9 @@
 <!--                            <p:outputLabel value="Keyword(s)" />
                             <ui:fragment>
                                 <p:dataTable id="keywordsTable" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
-                                    <p:column>   
+                                    <p:column>
                                         <p:outputLabel value="Keyword " />
-                                        <p:inputText id="keyword" value="#{keyword.value.strValue}" /> 
+                                        <p:inputText id="keyword" value="#{keyword.value.strValue}" />
                                         <p:message for="keyword"/>
                                     </p:column>
                                     <p:column>
@@ -214,7 +214,7 @@
                                 </p:dataTable>
                             </ui:fragment>-->
                         </ui:fragment>
-                        
+
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
                                 <label for="topicsTable" class="col-sm-2 control-label">Topic Classification</label>
@@ -223,17 +223,17 @@
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Topic Classification" />
-                                                <p:inputText id="topic" value="#{topic.value.strValue}" /> 
+                                                <p:inputText id="topic" value="#{topic.value.strValue}" />
                                                 <p:message for="topic"/>
                                             </div>
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Contolled Vocabulary" />
-                                                <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" /> 
+                                                <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" />
                                                 <p:message for="topicVocab"/>
                                             </div>
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Contolled Vocabulary URI" />
-                                                <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" /> 
+                                                <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" />
                                                 <p:message for="topicVocabURI"/>
                                             </div>
                                             <div class="col-xs-3">
@@ -251,19 +251,19 @@
 <!--                            <p:outputLabel value="Topic Classification" />
                             <ui:fragment>
                                 <p:dataTable id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
-                                    <p:column>   
+                                    <p:column>
                                         <p:outputLabel value="Topic Classification " />
-                                        <p:inputText id="topic" value="#{topic.value.strValue}" /> 
+                                        <p:inputText id="topic" value="#{topic.value.strValue}" />
                                         <p:message for="topic"/>
                                     </p:column>
-                                    <p:column>   
+                                    <p:column>
                                         <p:outputLabel value="Contolled Vocabulary " />
-                                        <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" /> 
+                                        <p:inputText id="topicVocab" value="#{topic.vocab.strValue}" />
                                         <p:message for="topicVocab"/>
                                     </p:column>
-                                   <p:column>   
+                                   <p:column>
                                         <p:outputLabel value="Contolled Vocabulary URI " />
-                                        <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" /> 
+                                        <p:inputText id="topicVocabURI" value="#{topic.vocabURI.strValue}" />
                                         <p:message for="topicVocabURI"/>
                                     </p:column>
                                     <p:column>
@@ -319,57 +319,52 @@
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
                                 </p:dataTable>
-                            </p:tab>                                                       
-                           
-                            <p:tab id="metadataMapEdit" title="Metadata Map Accordion Panel" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
-                                 <h:outputText  value="Something for the Tab..." />
-                                <p:accordionPanel>
-                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
-                                  <p:column>  
-                                  <p:tab title="#{metadataBlockVal.key.displayName}">                                                                                                                                                         
-                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
-                                            <p:column>                                 
-                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                <h:outputText  value="#{fieldValues.strValue}" />
-                                            </p:column>
-                                    
-                                        </p:dataGrid>                                                                        
-                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
-                                            <p:column>                                 
-                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                <p:inputText id="input_Textblock" size="90"
-                                                                             value="#{fieldValues.strValue}">
-                                                 </p:inputText>
-                                            </p:column>                                    
-                                        </p:dataGrid>                               
-                                      </p:tab>
-                                      </p:column>
-                                       </p:dataGrid> 
-                                  </p:accordionPanel>
                             </p:tab>
-                            
-                            <p:tab id="metadataMapTab" title="Metadata Map Without Accordion" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
-                                  <h:outputText  value="Something for the Tab..." />
-                                  <p:dataGrid columns="1" value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal">
-                                    <p:column>  
-                                    <h:outputText value="#{metadataBlockVal.key.displayName}"/>                                                                                                                                                         
-                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">                                    
-                                            <p:column>                                 
-                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                <h:outputText  value="#{fieldValues.strValue}" />
-                                            </p:column>                                    
-                                        </p:dataGrid>                                                                        
-                                        <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">                                    
-                                            <p:column>                                 
-                                                <h:outputText  value="#{fieldValues.datasetField.title}:  " />
-                                                <p:inputText id="input_Textblock" size="90"
-                                                                             value="#{fieldValues.strValue}">
-                                                 </p:inputText>
-                                            </p:column>                                    
-                                        </p:dataGrid>                               
-                                   </p:column>
-                                 </p:dataGrid> 
+
+                            <p:tab id="metadataMapTab" title="Additional Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
+
+                                <p class="bg-info" style="padding:1em;"><h:outputText  value="This section is using the Bootstrap accordion component and it's kinda awesome." /></p>
+
+                                <div class="panel-group" id="accordion">
+                                
+                                    <ui:repeat value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
+                                        
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">
+                                                <h4 class="panel-title">
+                                                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse#{block.index}">
+                                                        #{metadataBlockVal.key.displayName}
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            <div id="collapse#{block.index}" class="panel-collapse collapse #{block.index == '0' ? 'in' : ''}">
+                                                <div class="panel-body">
+
+                                                    <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{empty DatasetPage.editMode}">
+                                                        <p:column>
+                                                            <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                            <h:outputText  value="#{fieldValues.strValue}" />
+                                                        </p:column>
+                                                    </p:dataGrid>
+
+                                                    <p:dataGrid columns="1" value="#{metadataBlockVal.value}" var="fieldValues" rendered="#{DatasetPage.editMode == 'METADATA'}">
+                                                        <p:column>
+                                                            <h:outputText  value="#{fieldValues.datasetField.title}:  " />
+                                                            <p:inputText id="input_Textblock" size="90"
+                                                                         value="#{fieldValues.strValue}">
+                                                            </p:inputText>
+                                                        </p:column>
+                                                    </p:dataGrid>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                            
+                                    </ui:repeat>
+                                        
+                                </div>
                             </p:tab>
+
                             <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                 <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
                                     <p:column>
@@ -388,7 +383,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save()}" update="@all">                            
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save()}" update="@all">
                         </p:commandButton>
                         <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
