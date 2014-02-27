@@ -36,7 +36,7 @@ public class AdvancedSearchPage {
          * hierarchy
          */
         this.dataverse = dataverseServiceBean.findRootDataverse();
-        this.metadataFieldList = datasetFieldService.findAll();          
+        this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFields();          
     }
 
     public String find() throws IOException {
@@ -58,17 +58,21 @@ public class AdvancedSearchPage {
         List<String> queryStrings = new ArrayList();
         for (DatasetField datasetField : metadataFieldList) {
             if (!"".equals(datasetField.getSearchValue())) {
-                StringTokenizer st = new StringTokenizer(datasetField.getSearchValue());
+                StringTokenizer st = new StringTokenizer(datasetField.getSearchValue(), "\"");
                 while (st.hasMoreElements()) {
-                    queryStrings.add(datasetField.getName() + ":" + st.nextElement());
-                }
+                    String token = st.nextToken().trim();
+                    if (!token.equals(" ") && !token.isEmpty()) {
+                        queryStrings.add(datasetField.getName() + ":" + token); 
+                    }
+                }    
             }
         }
         query = new String();
         for (String string : queryStrings) {
             query += string + " ";
         }
-        return "/search.xhtml?q=" + query + "faces-redirect=true";
+        //return "/search.xhtml?q=" + query + "faces-redirect=true";
+        return "/dataverse.xhtml?q=" + query + "faces-redirect=true";
     }
 
     public Dataverse getDataverse() {
