@@ -10,9 +10,10 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DataversePage.dataverse.name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? 'New' : DataversePage.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
+            <ui:param name="showBreadcrumbs" value="#{! DataversePage.editMode}"/>
             <ui:define name="body">
 
                 <f:metadata>
