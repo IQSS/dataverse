@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.persistence.*;
 
 /**
@@ -19,6 +20,8 @@ import javax.persistence.*;
  */
 @Entity
 public class DatasetField implements Serializable, Comparable<DatasetField> {
+
+    private static final Logger logger = Logger.getLogger(DatasetField.class.getCanonicalName());
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -187,7 +190,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public void setDataverseFacets(Set<DataverseFacet> dataverseFacets) {
         this.dataverseFacets = dataverseFacets;
     }
-    
+
     public String getSearchValue() {
         return searchValue;
     }
@@ -314,8 +317,10 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public String getSolrField() {
         String solrType;
         if (fieldType != null) {
-            // these are all "dynamic fields" from a Solr perspective
+            // these are all "dynamic fields" from a Solr perspective because they match "_*"
             if (fieldType.equals("textBox")) {
+                solrType = "_s";
+            } else if (fieldType.equals("text")) {
                 solrType = "_s";
             } else if (fieldType.equals("date")) {
                 solrType = "_i";
@@ -324,9 +329,49 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
             } else if (fieldType.equals("url")) {
                 solrType = "_s";
             } else {
+                /**
+                 * @todo: what should we do with types we don't expect?
+                 */
                 solrType = "_s";
             }
-            return name + solrType;
+
+            String dynamicFieldSingle = name + solrType;
+            String lastLetter = dynamicFieldSingle.substring(dynamicFieldSingle.length() - 1);
+            // i.e. _ss for multivalued string
+            String dynamicFieldMultiple = dynamicFieldSingle + lastLetter;
+
+            String solrField = null;
+
+            Boolean parentAllowsMultiplesBoolean = false;
+            if (isHasParent()) {
+                if (getParentDatasetField() != null) {
+                    DatasetField parent = getParentDatasetField();
+                    parentAllowsMultiplesBoolean = parent.isAllowMultiples();
+                }
+            }
+
+            // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
+            boolean makeSolrFieldMultivalued = false;
+
+            if (solrType.endsWith("_s")) {
+                if (allowMultiples || parentAllowsMultiplesBoolean) {
+                    makeSolrFieldMultivalued = true;
+//                    logger.info(name + " allows multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
+                } else {
+                    makeSolrFieldMultivalued = false;
+//                    logger.info(name + " does not allow multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
+                }
+            } else {
+                makeSolrFieldMultivalued = false;
+//                logger.info(name + " only converting _s (String) fields to multiple, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
+            }
+
+            if (makeSolrFieldMultivalued) {
+                return dynamicFieldMultiple;
+            } else {
+                return dynamicFieldSingle;
+            }
+
         } else {
             return name + getTmpNullFieldTypeIdentifier();
         }

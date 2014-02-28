@@ -1,3 +1,3 @@
 #!/bin/sh
-curl 'http://localhost:8983/solr/collection1/select?q=*%3A*&rows=100&wt=json&indent=true'
-curl 'http://localhost:9200/_search?pretty=true&q=*'
+curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=*%3A*'
+#curl 'http://localhost:9200/_search?pretty=true&q=*'
