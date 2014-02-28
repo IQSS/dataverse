@@ -10,14 +10,15 @@ Search in Dataverse 4.0 depends on Solr, which you should run on localhost durin
 Installing and Running Solr
 ===========================
 
-Download solr-4.6.0.tgz from http://lucene.apache.org/solr/ to any directory you like but in the example below, we have downloaded the tarball to a directory called "solr" in our home directory. For now we are using the "example" template without modification and starting Solr by running "start.jar".
+Download solr-4.6.0.tgz from http://lucene.apache.org/solr/ to any directory you like but in the example below, we have downloaded the tarball to a directory called "solr" in our home directory. For now we are using the "example" template but we are replacing ``schema.xml`` with our own.
 
 - ``cd ~/solr``
 - ``tar xvfz solr-4.6.0.tgz``
 - ``cd solr-4.6.0/example``
+- ``cp ~/NetBeansProjects/dataverse_temp/conf/solr/4.6.0/schema.xml solr/collection1/conf/schema.xml``
 - ``java -jar start.jar``
 
-Please note: If you prefer, you can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line.
+Please note: If you prefer, once the proper ``schema.xml`` file is in place, you can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line.
 
 Once Solr is up and running you should be able to see a "Solr Admin" dashboard at http://localhost:8983/solr
 
