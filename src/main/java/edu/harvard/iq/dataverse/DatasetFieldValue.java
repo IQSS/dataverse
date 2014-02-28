@@ -12,6 +12,7 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -70,12 +71,12 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
 
     @OneToMany(mappedBy = "parentDatasetFieldValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private Collection<DatasetFieldValue> childDatasetFieldValues;
+    private List<DatasetFieldValue> childDatasetFieldValues;
 
-    public Collection<DatasetFieldValue> getChildDatasetFieldValues() {
+    public List<DatasetFieldValue> getChildDatasetFieldValues() {
         return this.childDatasetFieldValues;
     }
-    public void setChildDatasetFieldValues(Collection<DatasetFieldValue> childDatasetFieldValues) {
+    public void setChildDatasetFieldValues(List<DatasetFieldValue> childDatasetFieldValues) {
         this.childDatasetFieldValues = childDatasetFieldValues;
     }
     
