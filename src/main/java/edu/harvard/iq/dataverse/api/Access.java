@@ -84,14 +84,19 @@ public class Access {
         DownloadInfo dInfo = new DownloadInfo(df);
 
         /*
-         * The only "optional access service" supported as of now (4.0alpha1)
-         * is image thumbnail generation: 
+         * The only "optional access services" supported as of now (4.0alpha1)
+         * are image thumbnail generation and "saved original": 
          * (and yes, this is a hack)
+         * TODO: un-hack this. -- L.A. 4.0 alpha 1
          */
         if (df.getContentType() != null && df.getContentType().startsWith("image/")) {
             dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
         }
 
+        if (df.isTabularData()) {
+            String originalMimeType = df.getDataTable().getOriginalFileFormat();
+            dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "fileFormat=original","Saved original (" + originalMimeType + ")"));
+        }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         
         for (String key : uriInfo.getQueryParameters().keySet()) {

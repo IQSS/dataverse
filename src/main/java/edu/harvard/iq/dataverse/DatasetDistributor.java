@@ -6,12 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
 /**
@@ -20,14 +14,11 @@ import javax.persistence.Version;
  */
 public class DatasetDistributor {
         
-    /** Creates a new instance of StudyDistributor */
+    /** Creates a new instance of DatasetDistributor */
     public DatasetDistributor() {
     }
 
-    /**
-     * Holds value of property id.
-     */
-    
+
     private int displayOrder;
     public int getDisplayOrder() {
         return this.displayOrder;

@@ -89,7 +89,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                     */
                     
-                    /* No special services for "Subsettable" files just yet:
                     
                     if (sf.isTabularData()) {
                         if (di.getConversionParam().equals("noVarHeader")) {
@@ -99,7 +98,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             
                             if ("original".equals(di.getConversionParamValue())) {
                                 accessObject = StoredOriginalFile.retrieve(sf, (FileAccessObject)accessObject);
-                            } else {
+                            } /* else {
                                 // Other format conversions: 
                                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue()); 
                                 if (requestedMimeType == null) {
@@ -112,10 +111,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         sf, 
                                         (FileAccessObject)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
-                            }
+                            } */
                         }
                     }
-                    */
+                    
                     
                     if (accessObject == null) {
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);

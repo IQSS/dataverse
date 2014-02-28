@@ -45,7 +45,7 @@
 
             <div style="width:20%;float:left;padding-right:1em;">
                 <h:form style="margin-bottom:.5em;" id="searchTypeFacet">
-                    <p:selectManyCheckbox layout="pageDirection" value="#{SearchIncludeFragment.selectedTypes}">  
+                    <p:selectManyCheckbox layout="pageDirection" value="#{SearchIncludeFragment.selectedTypes}">
                         <f:selectItem itemLabel="Dataverses (#{SearchIncludeFragment.facetCountDataverses})" itemValue="dataverses"/>
                         <f:selectItem itemLabel="Datasets (#{SearchIncludeFragment.facetCountDatasets})" itemValue="datasets"/>
                         <f:selectItem itemLabel="Files (#{SearchIncludeFragment.facetCountFiles})" itemValue="files" />
@@ -66,7 +66,7 @@
                             </c:forEach>
                         </h:outputLink>
                         <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" style="color:#C55B28">
-                            <h:outputText value="X" style="color: #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ?  '#C55B28' : 'black'}"/>
+                            <h:outputText value="X" style="margin-left:.25em; color: #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ?  '#C55B28' : 'black'}"/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -90,9 +90,9 @@
             <div style="width:80%;float:left;">
                 <ui:fragment>
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
-                        <h:outputText value="#{filterQuery}"/>
-                        <h:outputLink style="color:#C55B28">
-                            <h:outputText value="X" style="color: #C55B28"/>
+                        <h:outputLink style="color:#C55B28;">
+                            <h:outputText value="#{filterQuery}"/>
+                            <h:outputText value=" X"/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -102,8 +102,8 @@
                         </h:outputLink>
                     </ui:repeat>
                     <!--<pre>1 to 10 of 7777 results ‹ Previous « 1 2 3 4 5 » Next › (design goal from <a href="https://redmine.hmdc.harvard.edu/issues/3575">#3575</a>)</pre>-->
-                    <div style="overflow:hidden;">
-                        <div style="float:left; width: 30%; margin:20px 0; padding:6px 12px;">
+                    <div id="resultsCountPaginatorBlock">
+                        <div class="results-count pull-left">
                             <!-- RESULTS COUNT -->
                             <h:outputText value="#{SearchIncludeFragment.paginationGuiStart} to #{SearchIncludeFragment.paginationGuiEnd} of "/>
                             <h:outputText value="#{SearchIncludeFragment.searchResultsCount} "/>
@@ -112,7 +112,7 @@
                         <!-- PAGINATOR -->
                         <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
                             <o:importFunctions type="java.lang.Math" />
-                            <div class="pagination" style="float:left; width: 70%; margin:0;">
+                            <div class="pagination pull-left">
                                 <ul class="pagination">
                                     <!--should take you to page 1-->
                                     <li>
@@ -124,8 +124,8 @@
                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                             </c:forEach>
                                             <f:param name="page" value="1"/>
-                                        </h:outputLink>                                    
-                                    </li>                                
+                                        </h:outputLink>
+                                    </li>
                                     <li>
                                         <h:outputLink>
                                             <h:outputText value="&lt; Previous"/>
@@ -135,10 +135,10 @@
                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                             </c:forEach>
                                             <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
-                                        </h:outputLink>                                
+                                        </h:outputLink>
                                     </li>
-                                    <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}" 
-                                               end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}" 
+                                    <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
+                                               end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
                                                var="pageListItem">
                                         <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
                                             <h:outputLink>
@@ -154,7 +154,7 @@
                                                 <f:param name="page" value="#{pageListItem}"/>
                                             </h:outputLink>
                                         </li>
-                                    </c:forEach>                                
+                                    </c:forEach>
                                     <li>
                                         <h:outputLink>
                                             <h:outputText value="Next &gt;"/>
@@ -164,7 +164,7 @@
                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                             </c:forEach>
                                             <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
-                                        </h:outputLink>                                
+                                        </h:outputLink>
                                     </li>
                                     <li>
                                         <h:outputLink>
@@ -175,8 +175,8 @@
                                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                             </c:forEach>
                                             <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
-                                        </h:outputLink>                                 
-                                    </li>                                
+                                        </h:outputLink>
+                                    </li>
                                 </ul>
                             </div>
                         </ui:fragment>

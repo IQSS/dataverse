@@ -92,6 +92,15 @@ public class DatasetAuthor {
             setIdType("");
         }
     }
+    
+    private boolean authorAsOrg;
+
+    public boolean isAuthorAsOrg() {
+        return authorAsOrg;
+    }
+    public void setAuthorAsOrg(boolean authorAsOrg) {
+        this.authorAsOrg = authorAsOrg;
+    }
        
     public boolean isEmpty() {
         return ( (affiliation==null || affiliation.getStrValue().trim().equals(""))

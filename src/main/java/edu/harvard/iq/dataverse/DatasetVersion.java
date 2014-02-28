@@ -416,35 +416,43 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<DatasetFieldValue> initDatasetFieldValues() {
+        //retList - Return List of values
         List<DatasetFieldValue> retList = new ArrayList();
-        List<DatasetFieldValue> valueList = this.getDatasetFieldValues();
-        List<MetadataBlock> allFields = this.getDataset().getOwner().getMetadataBlocks();
-        if (valueList != null) {
-            for (DatasetFieldValue dsfv : valueList) {
-                retList.add(dsfv);
-            }
+        //if the datasetversion already has values add them here
+        if (this.getDatasetFieldValues()!= null){
+           retList.addAll(this.getDatasetFieldValues());
         }
-
-        for (MetadataBlock mdb : allFields) {
+               
+        //Test to see that there are values for 
+        // all fields in this dataset via metadata blocks
+        //only add if not added above
+        for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
             for (DatasetField dsf : mdb.getDatasetFields()) {
                 boolean add = true;
+                //don't add if already added as a val
                 for (DatasetFieldValue dsfv : retList) {
                     if (dsf.equals(dsfv.getDatasetField())) {
                         add = false;
                     }
                 }
+                //don't add if it has a parent - it will be added as a child
+                if (dsf.isHasParent()){
+                    add = false;
+                }
                 if (add) {
                     DatasetFieldValue addDsfv = new DatasetFieldValue();
                     addDsfv.setDatasetField(dsf);
-                    addDsfv.setDatasetVersion(this);
-                    
+                    addDsfv.setDatasetVersion(this);  
                     dsf.getDatasetFieldValues().add(addDsfv);
+                    //if there are children create link here
                     if (dsf.isHasChildren()) {
+                        addDsfv.setChildDatasetFieldValues(new ArrayList());
                         for (DatasetField dsfc : dsf.getChildDatasetFields()) {
                             DatasetFieldValue dsfvc = new DatasetFieldValue();
                             dsfvc.setDatasetField(dsfc);
                             dsfvc.setParentDatasetFieldValue(addDsfv);
                             dsfvc.setDatasetVersion(this);
+                            addDsfv.getChildDatasetFieldValues().add(dsfvc);
                             retList.add(dsfvc);
                         }
                     }
@@ -452,7 +460,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        //Collections.sort(retList);
+        //sort via display order on dataset field
         Collections.sort(retList, new Comparator<DatasetFieldValue>(){
            public int compare (DatasetFieldValue d1, DatasetFieldValue d2){
                int a = d1.getDatasetField().getDisplayOrder();
