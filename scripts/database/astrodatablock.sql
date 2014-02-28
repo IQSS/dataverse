@@ -1,3 +1,4 @@
+-- Astrophysics metadatablock definitions.
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (117, 'Type', 'Type', 'type', TRUE, TRUE, TRUE, TRUE, 6 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (118, 'Facility', 'Facility', 'facility', TRUE, TRUE, TRUE, TRUE, 6 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (119, 'Instrument', 'Instrument', 'instrument', TRUE, TRUE, TRUE, TRUE, 6 );
@@ -24,7 +25,9 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (140, 'Resolution.Spectral', 'Resolution.Spectral', 'resolution.Spectral', TRUE, TRUE, TRUE, TRUE, 6 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (141, 'Resolution.Temporal', 'Resolution.Temporal', 'resolution.Temporal', TRUE, TRUE, TRUE, TRUE, 6 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (142, 'UCD (Unified Content Descriptors)', 'UCD (Unified Content Descriptors)', 'ucd', TRUE, TRUE, TRUE, TRUE, 6 );
-
+-- field type definitions: 
+-- (everything is a textBox, except for Coverage.Temporal.StartTime
+-- and Coverage.Temporal.StopTime, which are dates)
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 117;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 118;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 119;
@@ -39,10 +42,8 @@ UPDATE datasetfield SET fieldtype = 'textBox' where id = 127;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 128;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 129;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 130;
-
 UPDATE datasetfield SET fieldtype = 'date' WHERE id = 131;
 UPDATE datasetfield SET fieldtype = 'date' WHERE id = 132;
-
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 133;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 134;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 135;
@@ -53,7 +54,8 @@ UPDATE datasetfield SET fieldtype = 'textBox' where id = 139;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 140;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 141;
 UPDATE datasetfield SET fieldtype = 'textBox' where id = 142;
-
+-- parent field definitions: 
+-- "Coverage" nested fields: 
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 122;
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 123;
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 124;
@@ -69,12 +71,12 @@ UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 133;
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 134;
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 135;
 UPDATE datasetfield SET parentdatasetfield_id = 121 where id = 136;
-
+-- "Resolution" nested fields: 
 UPDATE datasetfield SET parentdatasetfield_id = 137 where id = 138;
 UPDATE datasetfield SET parentdatasetfield_id = 137 where id = 139;
 UPDATE datasetfield SET parentdatasetfield_id = 137 where id = 140;
 UPDATE datasetfield SET parentdatasetfield_id = 137 where id = 141;
-
+-- display orders: "type" is 0, everything else is 1, for now:
 UPDATE datasetfield SET displayorder = 0 WHERE id=117;
 UPDATE datasetfield SET displayorder = 1 WHERE id=118;
 UPDATE datasetfield SET displayorder = 1 WHERE id=119;
@@ -101,3 +103,5 @@ UPDATE datasetfield SET displayorder = 1 WHERE id=139;
 UPDATE datasetfield SET displayorder = 1 WHERE id=140;
 UPDATE datasetfield SET displayorder = 1 WHERE id=141;
 UPDATE datasetfield SET displayorder = 1 WHERE id=142;
+-- finally, add the astro metadatablock to the root dataverse:
+INSERT INTO dvobject_metadatablock(dataverse_id, metadatablocks_id) VALUES (1, 6);
