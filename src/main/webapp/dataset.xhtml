@@ -152,7 +152,7 @@
                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;" title="Add Keyword" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
-                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;" title="Delete Keyword" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('KEYWORD')}" update="@all">
+                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;" title="Delete Keyword" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.deleteRecord('KEYWORD', keyword)}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
                                             </div>
@@ -187,7 +187,7 @@
                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  title="Add Topic Classification" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
-                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  title="Delete Topic Classification" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('TOPIC')}" update="@all">
+                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  title="Delete Topic Classification" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.deleteRecord('TOPIC', topic)}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
                                             </div>
