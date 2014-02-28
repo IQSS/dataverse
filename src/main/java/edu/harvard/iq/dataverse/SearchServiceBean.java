@@ -178,8 +178,8 @@ public class SearchServiceBean {
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             String title = (String) solrDocument.getFieldValue(titleSolrField);
-            logger.info("titleSolrField: " + titleSolrField);
-            logger.info("title: " + title);
+//            logger.info("titleSolrField: " + titleSolrField);
+//            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);

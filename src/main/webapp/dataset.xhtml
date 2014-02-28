@@ -11,9 +11,10 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
+            <ui:param name="pageTitle" value="#{empty DatasetPage.dataset.latestVersion.title ? 'Add New Dataset' : DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
+            <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:define name="body">
 
                 <f:metadata>
@@ -23,7 +24,6 @@
                 </f:metadata>
 
                 <h:form id="datasetForm">
-
                     <!-- Title / Button Panel -->
                     <ui:fragment>
                         <p:panelGrid styleClass="panelgridLayoutTable titleCitationBlock" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">

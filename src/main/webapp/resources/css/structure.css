@@ -101,5 +101,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
 
+.btn-sm.ui-button {padding: 5px 10px;}
+
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}

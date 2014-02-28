@@ -198,6 +198,7 @@ public class DatasetPage implements java.io.Serializable {
             getMetadataValueBlocks(editValues);
             datasetVersionUI = new DatasetVersionUI(editVersion);  
             dataset.getVersions().add(editVersion);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Add New Dataset", " - Add your dataset metadata and files."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }        
@@ -213,7 +214,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Info", " - Edit your dataset info."));
         } else if (editMode == EditMode.FILE) {
             editVersion = dataset.getEditVersion();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files."));
         } else if (editMode == EditMode.METADATA) {
             editVersion = dataset.getEditVersion();
             editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 

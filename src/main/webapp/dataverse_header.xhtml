@@ -107,7 +107,7 @@
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
         <div class="container" style="background:#97E1C6; margin:0 auto .5em auto; padding:2em 1em;">
-            <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a>
+            <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{empty dataverse.name ? 'New' : dataverse.name} Dataverse</a>
         </div>
     </ui:fragment>
 
