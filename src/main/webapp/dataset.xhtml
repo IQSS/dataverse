@@ -205,7 +205,7 @@
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <p:message for="fileUpload" showDetail="true"/>
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                              fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add" style="margin-top:.5em;"/>
+                                              fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
                     <style type="text/css">
                         div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
                     </style>
@@ -229,12 +229,12 @@
                         		</h:outputLink>
                                         
                                         <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
-                                            <p:menuitem id="editFiles" update="@all">
+                                            <p:menuitem value="">
                                                 <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}">
                                                     <h:outputText value="As Tab-Delimited"/>
                                                 </h:outputLink>
                                             </p:menuitem>
-                                            <p:menuitem>
+                                            <p:menuitem value="">
                                                 <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
                                                     <h:outputText value="Saved Original"/>
                                                 </h:outputLink>
