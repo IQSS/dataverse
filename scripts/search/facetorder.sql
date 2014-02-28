@@ -1,0 +1,1 @@
+select dataversefacet.id,title,name,datasetfield.id,dataversefacet.displayorder,dataverse_id from dataversefacet, datasetfield where dataversefacet.datasetfield_id = datasetfield.id order by displayorder;
