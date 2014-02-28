@@ -72,10 +72,10 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
-//        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+//        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
 //        solrQuery.addFacetField(SearchFields.KEYWORD);
-        solrQuery.addFacetField(SearchFields.FILE_TYPE_GROUP);
+        solrQuery.addFacetField(SearchFields.FILE_TYPE);
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.SUBTREE);
         /**
@@ -182,7 +182,7 @@ public class SearchServiceBean {
             String title = (String) solrDocument.getFieldValue(titleSolrField);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
-            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE);
+            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
 //                logger.info("highlight snippets: " + highlightSnippets);

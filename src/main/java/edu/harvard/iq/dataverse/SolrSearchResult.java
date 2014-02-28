@@ -59,7 +59,7 @@ public class SolrSearchResult {
             typeSpecificFields.add("title_s", this.title);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
-            typeSpecificFields.add(SearchFields.FILE_TYPE, this.filetype);
+            typeSpecificFields.add(SearchFields.FILE_TYPE_MIME, this.filetype);
         }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add(SearchFields.ID, this.id)
