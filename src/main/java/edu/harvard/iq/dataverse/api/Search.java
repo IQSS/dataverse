@@ -42,7 +42,7 @@ public class Search {
                     sb.append(cause.getClass().getCanonicalName() + " ");
                     sb.append(cause + " ");
                 }
-                String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart ["+ paginationStart +"]: " + sb.toString();
+                String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
                 return Util.message2ApiError(message);
             }
@@ -62,15 +62,25 @@ public class Search {
             JsonArrayBuilder facets = Json.createArrayBuilder();
             JsonObjectBuilder facetCategoryBuilder = Json.createObjectBuilder();
             for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
-                JsonArrayBuilder facetLabelBuilder = Json.createArrayBuilder();
+                JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
+                JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
                 for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
                     JsonObjectBuilder countBuilder = Json.createObjectBuilder();
                     countBuilder.add(facetLabel.getName(), facetLabel.getCount());
-                    facetLabelBuilder.add(countBuilder);
+                    facetLabelBuilderData.add(countBuilder);
                 }
-                facetCategoryBuilder.add(facetCategory.getName(), facetLabelBuilder);
+                facetCategoryBuilderFriendlyPlusData.add("friendly", facetCategory.getFriendlyName());
+                facetCategoryBuilderFriendlyPlusData.add("labels", facetLabelBuilderData);
+                facetCategoryBuilder.add(facetCategory.getName(), facetCategoryBuilderFriendlyPlusData);
             }
             facets.add(facetCategoryBuilder);
+            Map<String, String> datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
+//            logger.info("the hash: " + datasetfieldFriendlyNamesBySolrField);
+            for (Map.Entry<String, String> entry : datasetfieldFriendlyNamesBySolrField.entrySet()) {
+                String string = entry.getKey();
+                String string1 = entry.getValue();
+//                logger.info(string + ":" + string1);
+            }
 
             JsonObject value = Json.createObjectBuilder()
                     .add("total_count", solrQueryResponse.getNumResultsFound())

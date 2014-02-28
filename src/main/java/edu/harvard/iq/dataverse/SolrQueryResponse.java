@@ -1,15 +1,21 @@
 package edu.harvard.iq.dataverse;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class SolrQueryResponse {
+
+    private static final Logger logger = Logger.getLogger(SolrQueryResponse.class.getCanonicalName());
 
     private List<SolrSearchResult> solrSearchResults;
     private Long numResultsFound;
     private Long resultsStart;
     private Map<String, List<String>> spellingSuggestionsByToken;
     private List<FacetCategory> facetCategoryList;
+    Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
+    private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
 
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -49,6 +55,22 @@ public class SolrQueryResponse {
 
     public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
         this.facetCategoryList = facetCategoryList;
+    }
+
+    public Map<String, String> getDatasetfieldFriendlyNamesBySolrField() {
+        return datasetfieldFriendlyNamesBySolrField;
+    }
+
+    void setDatasetfieldFriendlyNamesBySolrField(Map<String, String> datasetfieldFriendlyNamesBySolrField) {
+        this.datasetfieldFriendlyNamesBySolrField = datasetfieldFriendlyNamesBySolrField;
+    }
+
+    public Map<String, String> getStaticSolrFieldFriendlyNamesBySolrField() {
+        return staticSolrFieldFriendlyNamesBySolrField;
+    }
+
+    void setStaticSolrFieldFriendlyNamesBySolrField(Map<String, String> staticSolrFieldFriendlyNamesBySolrField) {
+        this.staticSolrFieldFriendlyNamesBySolrField = staticSolrFieldFriendlyNamesBySolrField;
     }
 
 }

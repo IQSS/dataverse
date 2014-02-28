@@ -60,6 +60,8 @@ public class SearchIncludeFragment {
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
     private int paginationGuiRows = 10;
+    Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
+    Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
@@ -166,6 +168,8 @@ public class SearchIncludeFragment {
             this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
             this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
+            this.datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
+            this.staticSolrFieldFriendlyNamesBySolrField = solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
@@ -519,13 +523,27 @@ public class SearchIncludeFragment {
         this.directChildDvObjectContainerList = directChildDvObjectContainerList;
     }
 
-//    public Map<String, String> getFriendlyName() {
-//        return friendlyName;
-//        return null;
-//    }
-
-//    public void setFriendlyName(Map<String, String> friendlyName) {
-//        this.friendlyName = friendlyName;
-//    }
-
+    public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
+        String[] parts = filterQuery.split(":");
+        String key = parts[0];
+        String value = parts[1];
+        List<String> friendlyNames = new ArrayList<>();
+        String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
+        if (datasetfieldFriendyName != null) {
+            friendlyNames.add(datasetfieldFriendyName);
+        } else {
+            String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
+            if (nonDatasetSolrField != null) {
+                friendlyNames.add(nonDatasetSolrField);
+            } else {
+                // meh. better than nuthin'
+                friendlyNames.add(key);
+            }
+        }
+        String noLeadingQuote = value.replaceAll("^\"", "");
+        String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
+        String valueWithoutQuotes = noTrailingQuote;
+        friendlyNames.add(valueWithoutQuotes);
+        return friendlyNames;
+    }
 }

@@ -168,6 +168,8 @@ public class SearchServiceBean {
                 }
             }
         }
+        Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
+        Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
@@ -246,8 +248,10 @@ public class SearchServiceBean {
             facetCategory.setFriendlyName(facetField.getName());
             // try to find a friendlier name to display as a facet
             /**
-             * @todo we want the datasetFields array to go away once we have
-             * more than findAll() available per the todo above
+             * @todo hmm, we thought we wanted the datasetFields array to go
+             * away once we have more granularity than findAll() available per
+             * the todo above but we need a way to lookup by Solr field, so
+             * we'll build a hashmap
              */
             for (DatasetField datasetField : datasetFields) {
                 String solrFieldNameForDataset = datasetField.getSolrField();
@@ -262,9 +266,12 @@ public class SearchServiceBean {
                         break;
                     }
                 }
+                datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField(), datasetField.getTitle());
             }
             /**
-             * @todo get rid of this crazy reflection, per todo above
+             * @todo get rid of this crazy reflection, per todo above... or
+             * should we... let's put into a hash the friendly names of facet
+             * categories, indexed by Solr field
              */
             for (Field fieldObject : staticSearchFields) {
                 String name = fieldObject.getName();
@@ -282,7 +289,11 @@ public class SearchServiceBean {
                     for (String part : parts) {
                         stringBuilder.append(getCapitalizedName(part.toLowerCase()) + " ");
                     }
-                    facetCategory.setFriendlyName(stringBuilder.toString());
+                    String friendlyNameWithTrailingSpace = stringBuilder.toString();
+                    String friendlyName = friendlyNameWithTrailingSpace.replaceAll(" $", "");
+                    facetCategory.setFriendlyName(friendlyName);
+//                    logger.info("adding <<<" + staticSearchField + ":" + friendlyName + ">>>");
+                    staticSolrFieldFriendlyNamesBySolrField.put(staticSearchField, friendlyName);
                     // stop examining the declared/static fields in the SearchFields object. we found a match
                     break;
                 }
@@ -332,6 +343,8 @@ public class SearchServiceBean {
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
+        solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);
+        solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
         return solrQueryResponse;
     }
 

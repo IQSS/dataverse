@@ -90,8 +90,9 @@
             <div style="width:80%;float:left;">
                 <ui:fragment>
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
+                        <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                         <h:outputLink style="color:#C55B28;">
-                            <h:outputText value="#{filterQuery}"/>
+                            <h:outputText value="#{friendlyNames.get(0)}:#{friendlyNames.get(1)}"/>
                             <h:outputText value=" X"/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
