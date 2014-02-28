@@ -445,3 +445,9 @@ update datasetfield set showabovefold = false;
 update datasetfield set showabovefold = true
 where id in (1, 3, 27, 30, 33 );
 
+CREATE SEQUENCE filesystemname_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 2
+  CACHE 1;

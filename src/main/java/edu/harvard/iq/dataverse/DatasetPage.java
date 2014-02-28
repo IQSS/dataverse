@@ -14,10 +14,12 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReade
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
 import java.io.IOException;
+import java.io.InputStream; 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.Path; 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -398,6 +400,8 @@ public class DatasetPage implements java.io.Serializable {
                     Files.createDirectories(dataset.getFileSystemDirectory());
                 }
 
+                datasetService.generateFileSystemName(dFile);
+                
                 if (ingestableAsTabular(dFile)) {
                     
                     try {          
@@ -423,6 +427,9 @@ public class DatasetPage implements java.io.Serializable {
                 }
 
                 if (!ingestedAsTabular) {
+                    while (Files.exists(dFile.getFileSystemLocation())) {
+                        datasetService.generateFileSystemName(dFile);
+                    }
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
                     Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                 }
@@ -559,8 +566,21 @@ public class DatasetPage implements java.io.Serializable {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
                 dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
+                // A safety check, if through some sorcery the file exists already: 
+                while (Files.exists(dataFile.getFileSystemLocation())) {
+                    datasetService.generateFileSystemName(dataFile);
+                }
                 Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                 
+                // And we want to save the original of the ingested file: 
+                
+                try {
+                    saveIngestedOriginal(dataFile, uFile.getInputstream());
+                } catch (IOException iox) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! "+iox.getMessage());
+                }
+                
+                tabDataIngest.getDataTable().setOriginalFileFormat("application/x-stata");
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
 
@@ -568,6 +588,17 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return ingestSuccessful;
+    }
+    
+    private void saveIngestedOriginal(DataFile dataFile, InputStream originalFileStream) throws IOException {
+        String ingestedFileName = dataFile.getFileSystemName(); 
+        
+        if (ingestedFileName != null && !ingestedFileName.equals("")) {
+            Path savedOriginalPath = Paths.get(dataFile.getOwner().getFileSystemDirectory().toString(), "_"+ingestedFileName);
+            Files.copy(originalFileStream, savedOriginalPath);
+        } else {
+            throw new IOException("Ingested tabular data file: no filesystem name.");
+        }     
     }
     
     private boolean extractIndexableMetadata(UploadedFile uFile, DataFile dataFile) throws IOException {

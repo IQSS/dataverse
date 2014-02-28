@@ -168,8 +168,18 @@ public class DataFile extends DvObject {
     }
     
     public Path getFileSystemLocation() {
+        
         String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
-        return Paths.get(studyDirectory, this.name);
+ 
+        if (this.fileSystemName == null || this.fileSystemName.equals("")) {
+            // *temporary* legacy hack - so that the files saved with their
+            // user-supplied file names can still be downloaded; 
+            // TODO: -- remove this as soon as it's no longer needed. 
+            // -- L.A., 4.0 alpha 1
+            
+            return Paths.get(studyDirectory, this.name);
+        }
+        return Paths.get(studyDirectory, this.fileSystemName);
     }
     
     public boolean isImage() {

@@ -77,4 +77,11 @@ public class DatasetServiceBean {
         return (String) query.getSingleResult();
     }
 
+    public void generateFileSystemName(DataFile dataFile) {
+        String fileSystemName = null;
+        Long result = (Long) em.createNativeQuery("select nextval('filesystemname_seq')").getSingleResult();
+        dataFile.setFileSystemName(result.toString());
+
+    }
+    
 }

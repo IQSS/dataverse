@@ -224,10 +224,24 @@
                                         <p:message for="fileDescription"/>
                                     </p:column>
                                     <p:column>
-                                       <h:outputLink value="/api/access/datafile/#{file.id}"  rendered="#{!empty file.id}">
+                                       <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}" rendered="#{!(file.tabularData)}">
                            			<h:outputText value="Download"/>
                         		</h:outputLink>
-                                        <h:outputText value="[UNSAVED FILE]" rendered="#{empty file.id}"/>
+                                        
+                                        <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
+                                            <p:menuitem id="editFiles" update="@all">
+                                                <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}">
+                                                    <h:outputText value="As Tab-Delimited"/>
+                                                </h:outputLink>
+                                            </p:menuitem>
+                                            <p:menuitem>
+                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
+                                                    <h:outputText value="Saved Original"/>
+                                                </h:outputLink>
+                                            </p:menuitem>
+                                            <p:menuitem value="As RData" disabled="true"/>
+                                        </p:menuButton>
+                                        <!-- h:outputText value="Download" rendered="#{empty file.id}"/ -->
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
