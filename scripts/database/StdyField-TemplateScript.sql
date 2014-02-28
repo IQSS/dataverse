@@ -142,8 +142,10 @@ INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSe
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (114, 'Publication Id Type', 'Publication Id Type', 'publicationIDType', FALSE, FALSE, FALSE, FALSE, 2 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (115, 'Publication Id', 'Publication Id', 'publicationIDNumber', FALSE, FALSE, FALSE,  TRUE, 2 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (116, 'Publication URL', 'Publication URL', 'publicationURL', FALSE, FALSE, FALSE,  TRUE, 2 );
+INSERT INTO datasetfield(id, advancedsearchfield, allowcontrolledvocabulary, allowmultiples, basicsearchfield, description, displayorder, fieldtype, "name", required, searchresultfield, title, metadatablock_id, parentdatasetfield_id)VALUES (117, false, false, false, false, 'Author First Name', 1, 'text', 'authorFirstName', false, false, 'First Name', 1, 3);
+INSERT INTO datasetfield(id, advancedsearchfield, allowcontrolledvocabulary, allowmultiples, basicsearchfield, description, displayorder, fieldtype, "name", required, searchresultfield, title, metadatablock_id, parentdatasetfield_id) VALUES (118, false, false, false,  false, 'Author Last Name', 1, 'text', 'authorLastName', false, false, 'Last Name', 1, 3);
 
-ALTER SEQUENCE datasetfield_id_seq RESTART WITH 116;
+ALTER SEQUENCE datasetfield_id_seq RESTART WITH 119;
 
 --set the parent child relationship
 update datasetfield set parentdatasetfield_id = 3 where id = 99;
@@ -434,3 +436,12 @@ INSERT INTO variablerangetype (id, "name") VALUES (2, 'max');
 INSERT INTO variablerangetype (id, "name") VALUES (3, 'min');
 INSERT INTO variablerangetype (id, "name") VALUES (4, 'max');
 INSERT INTO variablerangetype (id, "name") VALUES (5, 'point');
+
+update datasetfield set allowmultiples = false;
+update datasetfield set allowmultiples = true
+where id in (3,5, 10, 13, 15, 24, 27, 28, 30, 33, 83, 85, 79, 92);
+
+update datasetfield set showabovefold = false;
+update datasetfield set showabovefold = true
+where id in (1, 3, 27, 30, 33 );
+

@@ -24,6 +24,7 @@
                 </f:metadata>
 
                 <h:form id="datasetForm">
+
                     <!-- Title / Button Panel -->
                     <ui:fragment>
                         <p:panelGrid styleClass="panelgridLayoutTable titleCitationBlock" columns="2" columnClasses="leftClass,rightClass" rendered="#{empty DatasetPage.editMode}">
@@ -89,14 +90,23 @@
                                     <ui:repeat id="authorsTable" value="#{DatasetPage.datasetVersionUI.datasetAuthors}" var="author">
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-xs-3">
-                                                <p:outputLabel value="First Name" rendered="#{!DatasetPage.authorAsOrg}" />
-                                                <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!DatasetPage.authorAsOrg}" />
+                                                <p:outputLabel value="Author is Organization"  />
+                                                <p:selectBooleanCheckbox value="#{author.authorAsOrg}">  
+                                                <p:ajax update="@all" />  
+                                             </p:selectBooleanCheckbox>
+                                            </div>
+                                            <div class="col-xs-3">
+                                                <p:outputLabel value="First Name" rendered="#{!author.authorAsOrg}" />
+                                                <p:inputText id="firstName" value="#{author.firstName.strValue}" rendered="#{!author.authorAsOrg}" />
+                                                <p:watermark for="firstName" value="Enter First Name..." />
                                                 <p:message for="firstName"/>
                                             </div>
                                             <div class="col-xs-3">
-                                                <p:outputLabel value="Last Name" rendered="#{!DatasetPage.authorAsOrg}" />
-                                                <p:outputLabel value="Organization Name" rendered="#{DatasetPage.authorAsOrg}" />
+                                                <p:outputLabel value="Last Name" rendered="#{!author.authorAsOrg}" />
+                                                <p:outputLabel value="Organization Name" rendered="#{author.authorAsOrg}" />
                                                 <p:inputText id="lastName" value="#{author.lastName.strValue}" />
+                                                <p:watermark for="lastName" value="Enter Last Name..." rendered="#{!author.authorAsOrg}" />
+                                                <p:watermark for="lastName" value="Enter Organization Name..." rendered="#{author.authorAsOrg}" />
                                                 <p:message for="lastName"/>
                                             </div>
                                             <div class="col-xs-3">
@@ -108,7 +118,7 @@
                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;" title="Add Author" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
-                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;" title="Delete Author" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.addRecord('AUTHOR')}" update="@all">
+                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;" title="Delete Author" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" actionListener="#{DatasetPage.deleteRecord('AUTHOR', author)}" update="@all">
                                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 </p:commandButton>
                                             </div>
@@ -193,9 +203,7 @@
                     <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
-                                <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                                    <p class="alert alert-info" style="padding:1em;"><h:outputText value="Tip: You can drag and drop your files from your desktop, directly into the upload widget" /></p>
-                                </ui:fragment>
+                                <p:message for="fileUpload" showDetail="true"/>
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add" style="margin-top:.5em;"/>
                     <style type="text/css">
@@ -235,9 +243,15 @@
                             <p:tab id="metadataMapTab" title="Additional Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
                                 <p class="bg-info" style="padding:1em;"><h:outputText  value="This section is using the Bootstrap accordion component and it's kinda awesome." /></p>
+                              <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
+     
+                               <p:commandButton  title="Add Author" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                               </p:commandButton>
+                            </ui:fragment>
 
                                 <div class="panel-group" id="accordion">
-                                    <ui:repeat value="#{DatasetPage.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
+                                    <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
                                         <div class="panel panel-default">
                                             <div class="panel-heading">
                                                 <h4 class="panel-title">
@@ -249,15 +263,27 @@
                                             <div id="collapse#{block.index}" class="panel-collapse collapse #{block.index == '0' ? 'in' : ''}">
                                                 <div class="panel-body">
                                                     <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
-                                                        <div class="form-group">
+                                                        <div class="form-group" rendered="#{(empty DatasetPage.editMode and !empty fieldValues.strValue) or DatasetPage.editMode == 'METADATA' }">
                                                                 <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
                                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
                                                                         #{fieldValues.datasetField.title}
                                                                     </a>
                                                                 </label>
                                                             <div class="col-sm-6">
-                                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode}" />
-                                                                <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA'}" />
+                                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}" />
+                                                                <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren}" />
+                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
+                                                                                 title="Add General Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
+                                                                                 rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}"
+                                                                                 actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
+                                                                </p:commandButton>
+                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
+                                                                                 title="Delete Topic Classification" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                                 rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}"
+                                                                                 escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
+                                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                </p:commandButton>
+                                                                
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
