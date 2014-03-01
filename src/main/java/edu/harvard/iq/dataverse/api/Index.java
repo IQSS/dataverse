@@ -44,6 +44,15 @@ public class Index {
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
                         sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
                     }
+                } else if (cause instanceof NullPointerException) {
+                    StackTraceElement stacktrace = cause.getStackTrace()[0];
+                    if (stacktrace != null) {
+                        String javaFile = stacktrace.getFileName();
+                        String methodName = stacktrace.getMethodName();
+                        int lineNumber = stacktrace.getLineNumber();
+                        String error = "Error. " + cause.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
+                        sb.append(error);
+                    }
                 }
             }
             if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
