@@ -275,7 +275,7 @@
                                 <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#E6F1F6;padding:4px;"/>
 
                                 <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
-                                    <h:outputText value="Original Dataverse: #{result.parent.get('name')} Dataverse"/>
+                                    <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
                                 </h:outputLink>
 
                                 <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
