@@ -45,13 +45,15 @@ public class Index {
                         sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
                     }
                 } else if (cause instanceof NullPointerException) {
-                    StackTraceElement stacktrace = cause.getStackTrace()[0];
-                    if (stacktrace != null) {
-                        String javaFile = stacktrace.getFileName();
-                        String methodName = stacktrace.getMethodName();
-                        int lineNumber = stacktrace.getLineNumber();
-                        String error = "Error. " + cause.getClass().getCanonicalName() + " on line " + javaFile + ":" + lineNumber + " (method: " + methodName + ")";
-                        sb.append(error);
+                    for (int i = 0; i < 2; i++) {
+                        StackTraceElement stacktrace = cause.getStackTrace()[i];
+                        if (stacktrace != null) {
+                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
+                            String methodName = stacktrace.getMethodName();
+                            int lineNumber = stacktrace.getLineNumber();
+                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
+                            sb.append(error);
+                        }
                     }
                 }
             }
@@ -84,15 +86,27 @@ public class Index {
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
+            sb.append("Problem indexing " + type + "/" +id + ": ");
             sb.append(ex + " ");
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause.getMessage());
+                sb.append(cause.getMessage() + " ");
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
                         sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                    }
+                } else if (cause instanceof NullPointerException) {
+                    for (int i = 0; i < 2; i++) {
+                        StackTraceElement stacktrace = cause.getStackTrace()[i];
+                        if (stacktrace != null) {
+                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
+                            String methodName = stacktrace.getMethodName();
+                            int lineNumber = stacktrace.getLineNumber();
+                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
+                            sb.append(error);
+                        }
                     }
                 }
             }

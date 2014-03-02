@@ -94,7 +94,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("datasetField.displayOrder") 
-    private List<DatasetFieldValue> datasetFieldValues;
+    private List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return datasetFieldValues;
     }

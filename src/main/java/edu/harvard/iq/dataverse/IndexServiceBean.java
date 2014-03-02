@@ -130,7 +130,7 @@ public class IndexServiceBean {
         logger.info("indexing dataset " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> dataverseSegments = null;
+        List<String> dataverseSegments = new ArrayList<>();
         try {
             dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
         } catch (Exception ex) {
