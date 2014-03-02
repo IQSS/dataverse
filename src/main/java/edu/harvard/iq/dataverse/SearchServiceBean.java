@@ -75,9 +75,6 @@ public class SearchServiceBean {
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
 //        solrQuery.addFacetField(SearchFields.KEYWORD);
-        solrQuery.addFacetField(SearchFields.FILE_TYPE);
-        solrQuery.addFacetField(SearchFields.TYPE);
-        solrQuery.addFacetField(SearchFields.SUBTREE);
         /**
          * @todo when a new method on datasetFieldService is available
          * (retrieveFacetsByDataverse?) only show the facets that the dataverse
@@ -93,6 +90,11 @@ public class SearchServiceBean {
             DatasetField datasetField = dataverseFacet.getDatasetField();
             solrQuery.addFacetField(datasetField.getSolrField());
         }
+        solrQuery.addFacetField(SearchFields.FILE_TYPE);
+        /**
+         * @todo: hide the extra line this shows in the GUI... at least it's last...
+         */
+        solrQuery.addFacetField(SearchFields.TYPE);
         /**
          * @todo: do sanity checking... throw error if negative
          */
