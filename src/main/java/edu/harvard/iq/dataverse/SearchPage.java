@@ -101,13 +101,14 @@ public class SearchPage implements java.io.Serializable {
             } else if (solrSearchResult.getType().equals("datasets")) {
                 Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                 if (dataset != null) {
-                    try {
-                        if (dataset.getLatestVersion().getCitation() != null) {
-                            solrSearchResult.setCitation(dataset.getLatestVersion().getCitation());
-                        }
-                    } catch (NullPointerException npe) {
-                        logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
-                    }
+                    solrSearchResult.setCitation("FIXME: get real citation");
+//                    try {
+//                        if (dataset.getLatestVersion().getCitation() != null) {
+//                            solrSearchResult.setCitation(dataset.getLatestVersion().getCitation());
+//                        }
+//                    } catch (NullPointerException npe) {
+//                        logger.info("caught NullPointerException trying to get citation for " + dataset.getId());
+//                    }
                 }
             } else if (solrSearchResult.getType().equals("files")) {
                 /**

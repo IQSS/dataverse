@@ -312,10 +312,18 @@ public class DatasetVersion implements Serializable {
         return dateString;
     }
 
+    /**
+     * @todo: delete this method? It seems to have been replaced by the version
+     * in DatasetVersionUI
+     */
     public String getCitation() {
         return getCitation(true);
     }
 
+    /**
+     * @todo: delete this method? It seems to have been replaced by the version
+     * in DatasetVersionUI
+     */
     public String getCitation(boolean isOnlineVersion) {
 
         Dataset dataset = getDataset();
