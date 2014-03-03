@@ -13,8 +13,10 @@
             <ui:fragment>
                 <h:form>
                     <p:focus/>
-                    <p:watermark for="autoCompleteSearch" value="Search this dataverse..."/>
-                    <p:autoComplete id="autoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" completeMethod="#{autoCompleteBean.complete}" style="margin-right:1em;"/>
+                    <p:watermark for="formerAutoCompleteSearch" value="Search this dataverse..."/>
+                    <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
+                    <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
+                    <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" style="margin-right:1em;"/>
                     <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
