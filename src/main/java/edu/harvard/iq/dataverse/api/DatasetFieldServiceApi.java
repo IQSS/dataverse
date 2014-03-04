@@ -61,6 +61,9 @@ public class DatasetFieldServiceApi {
         try {
             DatasetField dsf = datasetFieldService.findByName(name);
             Long id = dsf.getId();
+            String title = dsf.getTitle();
+            String fieldType = dsf.getFieldType();
+            String solrField = dsf.getSolrField();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
             String parentAllowsMultiplesDisplay = "N/A (no parent)";
@@ -70,16 +73,14 @@ public class DatasetFieldServiceApi {
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = parentAllowsMultiplesBoolean.toString();
             }
-            boolean makeSolrFieldMultivalued = false;
-            if (allowsMultiples || parentAllowsMultiplesBoolean) {
-                makeSolrFieldMultivalued = true;
-            }
-            return dsf.getTitle() + ":\n"
+            return dsf.getName() + ":\n"
                     + "- id: " + id + "\n"
+                    + "- title: " + title + "\n"
+                    + "- fieldType: " + fieldType + "\n"
                     + "- allowsMultiples: " + allowsMultiples + "\n"
                     + "- hasParent: " + hasParent + "\n"
                     + "- parentAllowsMultiples: " + parentAllowsMultiplesDisplay + "\n"
-                    + "- makeSolrFieldMultivalued: " + makeSolrFieldMultivalued + "\n"
+                    + "- solrField: " + solrField + "\n"
                     + "";
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;

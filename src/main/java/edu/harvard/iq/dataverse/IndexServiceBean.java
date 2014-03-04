@@ -153,6 +153,12 @@ public class IndexServiceBean {
 //                logger.info(idDashTitle);
 //                logger.info(name + ": " + datasetFieldValue.getStrValue());
                 String solrField = datasetField.getSolrField();
+                /**
+                 * @todo: remove this when authorName gives us a value
+                 */
+                if (datasetFieldValue.getDatasetField().getName().equals("authorName")) {
+                    solrInputDocument.addField(solrField, "FIXME: #3602");
+                }
                 if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrField != null) {
                     logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
                     if (solrField.endsWith("_i")) {
