@@ -187,10 +187,15 @@ public class SearchIncludeFragment {
                             try {
                                 datasetVersionUI = new DatasetVersionUI(datasetVersion);
                             } catch (NullPointerException ex) {
-                                logger.info("Won't be able to show citation for dataset " + dataset.getId() + ". Caught exception trying to instantiate DatasetVersionUI: " + ex);
+                                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
                             }
                             if (datasetVersionUI != null) {
-                                String citation = datasetVersionUI.getCitation();
+                                String citation = null;
+                                try {
+                                    citation = datasetVersionUI.getCitation();
+                                } catch (NullPointerException ex) {
+                                    logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
+                                }
                                 solrSearchResult.setCitation(citation);
                             }
                         }
