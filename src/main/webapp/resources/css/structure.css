@@ -100,7 +100,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
-#keywords, #topicclassification, #publication, #originaldataverse {display:block; margin-bottom:.5em;}
+#keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 #keywords {margin-top:1em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}

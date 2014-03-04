@@ -35,13 +35,12 @@
                                     <span id="contact">Contact: <a href="#" onclick="return false;" data-container="body" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Name, Email Icon</a></span>
                                     <div id="citation">
                                         <span>#{DatasetPage.datasetVersionUI.citation}</span>
-<!--                                        <span>AUTHORS, 4/4/2014, "Fake Kinda Long And Wordy Dataset Title That I Made Up Without Much Thought", http://hdl.handle.net/1902.1/FAKEIDHDL UNF:3:reds0x2o14fakedthisId== Harvard Dataverse [Distributor] V1 [Version]</span>-->
                                     </div>
                                     <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
                                     <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
-                                    <span id="topicclassification">Topic Classification(s): <h:outputText value="#{DatasetPage.datasetVersionUI.topicClassStr}" escape="false"/></span>
-                                    <span id="publication">Original Publication(s): Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
-<!--                                    <span id="originaldataverse">Original Dataverse (!!): <a href="#" onclick="return false;">Murray Research Archive Original Collection Dataverse</a></span>-->
+                                    <span id="subject">Subject(s): Fake, Faker, Fakest</span>
+                                    <span id="publication">Related Publication (FIRST VALUE ONLY): Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a> <a href="#" onclick="return false;">(HERE ARE THE OTHER VALUES) SEE MORE RELATED PUBLICATIONS</a></span>
+                                    <span id="note">Note(s): Fake note that I wrote. Fake note that I wrote. Fake note that I wrote.</span>
                                 </div>
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
@@ -161,10 +160,55 @@
                                 </div>
                             </div>
                         </ui:fragment>
+                        
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                            <div class="form-group">
+                                <label for="subjectTable" class="col-sm-2 control-label">Subject(s)</label>
+                                <div class="col-sm-10">
+                                    <!--<ui:repeat id="subjectTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">-->
+                                        <div class="row" style="margin-bottom:1em;">
+                                            <div class="col-sm-10">
+                                                DROP DOWN (MULTIPLE?)
+                                            </div>
+                                        </div>
+                                    <!--</ui:repeat>-->
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                            <div class="form-group">
+                                <label for="noteTable" class="col-sm-2 control-label">Related Publication(s)</label>
+                                <div class="col-sm-10">
+                                    <!--<ui:repeat id="noteTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">-->
+                                        <div class="row" style="margin-bottom:1em;">
+                                            <div class="col-sm-10">
+                                                Related Publication field group will be located here.
+                                            </div>
+                                        </div>
+                                    <!--</ui:repeat>-->
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        
+                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
+                            <div class="form-group">
+                                <label for="noteTable" class="col-sm-2 control-label">Note(s)</label>
+                                <div class="col-sm-10">
+                                    <!--<ui:repeat id="noteTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">-->
+                                        <div class="row" style="margin-bottom:1em;">
+                                            <div class="col-sm-10">
+                                                Fake notes that I wrote. Fake notes that I wrote. Fake notes that I wrote.
+                                            </div>
+                                        </div>
+                                    <!--</ui:repeat>-->
+                                </div>
+                            </div>
+                        </ui:fragment>
 
                         <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
                             <div class="form-group">
-                                <label for="topicsTable" class="col-sm-2 control-label">Topic Classification(s)</label>
+                                <label for="topicsTable" class="col-sm-2 control-label">Topic Classification(s) (MOVE INTO TAB)</label>
                                 <div class="col-sm-10">
                                     <ui:repeat id="topicsTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">
                                         <div class="row" style="margin-bottom:1em;">
@@ -256,13 +300,14 @@
 
                             <p:tab id="metadataMapTab" title="Additional Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                <p class="bg-info" style="padding:1em;"><h:outputText  value="This section is using the Bootstrap accordion component and it's kinda awesome." /></p>
-                              <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
-     
-                               <p:commandButton  title="Add Author" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                               </p:commandButton>
-                            </ui:fragment>
+                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
+                                    <p class="bg-info" style="padding:1em;">
+                                        <h:outputText value="This edit button is here to make life easier for you." />
+                                        <p:commandButton style="margin-left:1em;" title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                    </p>
+                                </ui:fragment>
 
                                 <div class="panel-group" id="accordion">
                                     <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
@@ -278,27 +323,46 @@
                                                 <div class="panel-body">
                                                     <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
                                                         <div class="form-group" rendered="#{(empty DatasetPage.editMode and !empty fieldValues.strValue) or DatasetPage.editMode == 'METADATA' }">
-                                                                <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
                                                                         #{fieldValues.datasetField.title}
-                                                                    </a>
-                                                                </label>
+                                                                </a>
+                                                            </label>
                                                             <div class="col-sm-6">
                                                                 <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}" />
-                                                                <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren}" />
-                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
-                                                                                 title="Add General Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                 rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}"
-                                                                                 actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
-                                                                </p:commandButton>
-                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
-                                                                                 title="Delete Topic Classification" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
-                                                                                 rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}"
-                                                                                 escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
-                                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                </p:commandButton>
+                                                                <!-- CHILDS -->
+                                                                <ui:repeat value="#{fieldValues.datasetField.hasChildren}" var="hasChildren" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}">
+                                                                    <div class="form-group col-sm-6" style="border:1px solid gold;">
+                                                                        <label class="control-label" for="metadata_BLANK">
+                                                                            <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">CHIL'DENS STATIC</a>
+                                                                        </label>
+                                                                        <div>STATIC VALUE</div>
+                                                                    </div>
+                                                                </ui:repeat>
                                                                 
+                                                                <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren}" />
+                                                                <ui:repeat value="#{fieldValues.datasetField.hasChildren}" var="hasChildren" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
+                                                                    <div class="form-group col-sm-6" style="border:1px solid gold;">
+                                                                        <label class="control-label" for="metadata_BLANK">
+                                                                            <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">CHIL'DENS STATIC</a>
+                                                                        </label>
+                                                                        <input class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" name="metadata_BLANK" type="text" value="STATIC VALUE" disabled="disabled" />
+                                                                    </div>
+                                                                </ui:repeat>
                                                             </div>
+                                                            <ui:fragment rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}">
+                                                                <div class="col-xs-2">
+                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
+                                                                                    title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
+                                                                                    actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
+                                                                    </p:commandButton>
+                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
+                                                                                    title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                                    escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
+                                                                       <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                    </p:commandButton>
+                                                                </div>
+                                                            </ui:fragment>
                                                         </div>
                                                     </ui:repeat>
                                                 </div>
