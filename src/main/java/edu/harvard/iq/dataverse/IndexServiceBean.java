@@ -183,6 +183,11 @@ public class IndexServiceBean {
                         }
                     } else {
                         // _s (dynamic string) and all other Solr fields
+
+                        // collapse authorAffiliation into the affiliation facet used by dataverses 
+                        if (datasetFieldValue.getDatasetField().getName().equals("authorAffiliation")) {
+                            solrField = SearchFields.AFFILIATION;
+                        }
                         solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());
                     }
                 }
