@@ -89,7 +89,6 @@ public class IndexServiceBean {
         }
         // checking for NPE is important so we can create the root dataverse
         if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
-            solrInputDocument.addField(SearchFields.PARENT_TYPE, "dataverses");
             // important when creating root dataverse
             if (dataverse.getOwner() != null) {
                 solrInputDocument.addField(SearchFields.PARENT_ID, dataverse.getOwner().getId());
@@ -272,7 +271,6 @@ public class IndexServiceBean {
 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
-        solrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
@@ -290,7 +288,6 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
             datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
-            datafileSolrInputDocument.addField(SearchFields.PARENT_TYPE, "datasets");
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
             if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {

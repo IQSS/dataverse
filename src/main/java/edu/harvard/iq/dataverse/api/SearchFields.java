@@ -39,10 +39,9 @@ public class SearchFields {
 //    public static final String PRODUCTION_DATE_YEAR_ONLY = DatasetFieldConstant.productionDate + "_i";
 //    public static final String DISTRIBUTION_DATE_ORIGINAL = DatasetFieldConstant.distributionDate + "_dt";
 //    public static final String DISTRIBUTION_DATE_YEAR_ONLY = DatasetFieldConstant.distributionDate + "_i";
-    // experimental... try storing info about parent in solr
-    public static final String PARENT_TYPE = "parenttype_s";
-    public static final String PARENT_NAME = "parentname_s";
-    // should we use _l (Long) instead?
-    public static final String PARENT_ID = "parentid_s";
+
+    // Used for performance. Why hit the db if solr has the data?
+    public static final String PARENT_NAME = "parentname";
+    public static final String PARENT_ID = "parentid";
 
 }

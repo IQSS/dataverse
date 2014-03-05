@@ -214,8 +214,10 @@ public class SearchServiceBean {
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
             }
+            /**
+             * @todo store PARENT_ID as a long instead and cast as such
+             */
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
-            parent.put("type", (String) solrDocument.getFieldValue(SearchFields.PARENT_TYPE));
             parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);

@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlDataTable;
@@ -50,6 +51,8 @@ import org.primefaces.model.UploadedFile;
 @ViewScoped
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
+
+    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
    public enum EditMode {CREATE, INFO, FILE, METADATA};
     
@@ -441,7 +444,21 @@ public class DatasetPage implements java.io.Serializable {
             }
 
         }       
-        dataset = datasetService.save(dataset);
+        try {
+            dataset = datasetService.save(dataset);
+        } catch (EJBException ex) {
+            StringBuilder error = new StringBuilder();
+            error.append(ex + " ");
+            error.append(ex.getMessage() + " ");
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                error.append(cause + " ");
+                error.append(cause.getMessage() + " ");
+            }
+            logger.info("Couldn't save dataset: " + error.toString());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + error.toString()));
+        }
         newFiles.clear();
         editMode = null;
     }
