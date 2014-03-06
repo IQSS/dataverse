@@ -375,20 +375,13 @@ public class DatasetPage implements java.io.Serializable {
         // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
+            /*
             try {
+            */
                 boolean ingestedAsTabular = false;
                 boolean metadataExtracted = false; 
                 
-                /* Make sure the dataset directory exists: */
-                if (!Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-
-                datasetService.generateFileSystemName(dFile);
+                
                 
                 if (ingestableAsTabular(dFile)) {
                     
@@ -415,18 +408,21 @@ public class DatasetPage implements java.io.Serializable {
                 }
 
                 if (!ingestedAsTabular) {
+                    /*
                     while (Files.exists(dFile.getFileSystemLocation())) {
                         datasetService.generateFileSystemName(dFile);
                     }
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
                     Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                    */
                 }
-                
+            /*    
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
                 // TODO: 
                 // discard the DataFile and disconnect it from the dataset object!
             }
+            */
 
         }       
         try {
@@ -473,6 +469,27 @@ public class DatasetPage implements java.io.Serializable {
         fmd.setDatasetVersion(editVersion);
         dataset.getFiles().add( dFile );
         newFiles.put(uFile, dFile);
+        
+        /* Try to save the file: */
+        /* Make sure the dataset directory exists: */
+        try {
+            if (!Files.exists(dataset.getFileSystemDirectory())) {
+                /* Note that "createDirectories()" must be used - not 
+                * "createDirectory()", to make sure all the parent 
+                * directories that may not yet exist are created as well. 
+                */
+
+                Files.createDirectories(dataset.getFileSystemDirectory());
+            }
+            datasetService.generateFileSystemName(dFile);
+            
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+            Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+            
+            
+        } catch (IOException ioex) {
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
+        }
     }
                 
     public DataModel getDatasetFieldsDataModel() {

@@ -9,6 +9,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
@@ -20,6 +21,7 @@ import javax.ejb.Singleton;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 
@@ -131,5 +133,29 @@ public class Access {
          */
         //return retValue; 
         return downloadInstance;
+    }
+    
+    @Path("imagethumb/{fileSystemName}")
+    @GET
+    @Produces({ "image/png" })
+    public InputStream imagethumb(@PathParam("fileSystemName") String fileSystemName, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+        if (ImageThumbConverter.generateImageThumb(fileSystemName)) {
+            InputStream in;
+
+            try {
+                in = new FileInputStream(fileSystemName+".thumb");
+            } catch (Exception ex) {
+                // We don't particularly care what the reason why we have
+                // failed to access the file was.
+                // From the point of view of the download subsystem, it's a
+                // binary operation -- it's either successfull or not.
+                // If we can't access it for whatever reason, we are saying
+                // it's 404 NOT FOUND in our HTTP response.
+                return null;
+            }
+            return in;
+        }
+
+        return null; 
     }
 }
