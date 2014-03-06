@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
@@ -32,19 +33,24 @@ public class DataversePage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
+    public enum EditMode {
+
+        CREATE, INFO, PERMISSIONS, SETUP
+    };
+
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
-	@Inject
-	DataverseSession session;
-	@EJB
-	EjbDataverseEngine commandEngine;
+    @Inject
+    DataverseSession session;
+    @EJB
+    EjbDataverseEngine commandEngine;
     @EJB
     SearchServiceBean searchService;
 
     private Dataverse dataverse = new Dataverse();
-    private boolean editMode = false;
+    private EditMode editMode;
     private Long ownerId;
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
@@ -56,11 +62,11 @@ public class DataversePage implements java.io.Serializable {
         this.dataverse = dataverse;
     }
 
-    public boolean isEditMode() {
+    public EditMode getEditMode() {
         return editMode;
     }
 
-    public void setEditMode(boolean editMode) {
+    public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
     }
 
@@ -79,35 +85,30 @@ public class DataversePage implements java.io.Serializable {
 //    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
-
     public void init() {
-        
+
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
-        
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else if (ownerId != null) { // create mode for a new child dataverse
-            editMode = true;
+            editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
             dataverse.setContactEmail(session.getUser().getEmail());
             dataverse.setAffiliation(session.getUser().getAffiliation());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)
             try {
                 dataverse = dataverseService.findRootDataverse();
             } catch (EJBException e) {
                 if (e.getCause() instanceof NoResultException) {
-                    editMode = true;
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse. Asterisks indicate required fields."));
+                    editMode = EditMode.INFO;
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create Root Dataverse", " - To get started, you need to create your root dataverse. Asterisks indicate required fields."));
                 } else {
                     throw e;
                 }
-
             }
         }
-
-//        populateTreeWidget(treeWidgetRootNode);
     }
 
     public List getContents() {
@@ -116,30 +117,42 @@ public class DataversePage implements java.io.Serializable {
         return contentsList;
     }
 
-    public void edit(ActionEvent e) {
-        editMode = true;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
+    public void edit(EditMode editMode) {
+        this.editMode = editMode;
+        if (editMode == EditMode.INFO) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
+        } else if (editMode == EditMode.SETUP) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
+        }      
     }
 
     public void save(ActionEvent e) {
-        dataverse.setOwner( ownerId != null ? dataverseService.find(ownerId) : null );
-		
-		CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
-		
-		try {
-			dataverse = commandEngine.submit(cmd);
-			editMode = false;
-		} catch (CommandException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
-		}
-	
+        // TODO; needs to use actual command model for all saves
+        if (EditMode.INFO.equals(editMode)) {
+
+            dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+
+            CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
+
+            try {
+                dataverse = commandEngine.submit(cmd);
+                editMode = null;
+            } catch (CommandException ex) {
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+            }
+        } else if (EditMode.SETUP.equals(editMode)) {
+            dataverseService.save(dataverse);
+            editMode = null;          
+
+        }
+
     }
 
     public void cancel(ActionEvent e) {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
         ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
-        editMode = false;
+        editMode = null;
     }
 
     public boolean isRootDataverse() {
@@ -149,43 +162,25 @@ public class DataversePage implements java.io.Serializable {
             return false;
         }
     }
-	
-	public Dataverse getOwner() {
-		return (ownerId!=null) ? dataverseService.find(ownerId) : null;
-	}
 
-        public TreeNode populateTreeWidget(TreeNode root) {
-        TreeNode firstNode = new DefaultTreeNode();
-        if (dataverse.getOwner() != null) {
-            TreeNode parentDataverseNode = new DefaultTreeNode(dataverse.getOwner(), root);
-            firstNode = parentDataverseNode;
-        } else {
-            firstNode = root;
-        }
-        firstNode.setExpanded(true);
-        TreeNode currentDataverseNode = new DefaultTreeNode(dataverse, firstNode);
-        currentDataverseNode.setExpanded(true);
-        currentDataverseNode.setSelectable(false);
-        List<Dataverse> childDataversesOfCurrentDataverse = dataverseService.findByOwnerId(dataverse.getId());
-        /**
-         * @todo: support arbitrary depth of dataverse heirarchy
-         */
-        for (Dataverse child1 : childDataversesOfCurrentDataverse) {
-            TreeNode treeNode1 = new DefaultTreeNode(child1, currentDataverseNode);
-            List<Dataverse> childDataversesOfLevel1Dataverse = dataverseService.findByOwnerId(child1.getId());
-            for (Dataverse child2 : childDataversesOfLevel1Dataverse) {
-                TreeNode treeNode2 = new DefaultTreeNode(child2, treeNode1);
-                List<Dataverse> childDataversesOfLevel2Dataverse = dataverseService.findByOwnerId(child2.getId());
-                for (Dataverse child3 : childDataversesOfLevel2Dataverse) {
-                    TreeNode treeNode3 = new DefaultTreeNode(child3, treeNode2);
-                    List<Dataverse> childDataversesOfLevel3Dataverse = dataverseService.findByOwnerId(child3.getId());
-                    for (Dataverse child4 : childDataversesOfLevel3Dataverse) {
-                        TreeNode treeNode4 = new DefaultTreeNode(child4, treeNode3);
-                    }
-                }
-            }
-        }
-        return root;
+    public Dataverse getOwner() {
+        return (ownerId != null) ? dataverseService.find(ownerId) : null;
     }
 
+    // METHODS for Dataverse Setup
+    public boolean isInheritMetadataBlockFromParent() {
+        return !dataverse.isMetadataBlockRoot();
+    }
+
+    public void setInheritMetadataBlockFromParent(boolean inheritMetadataBlockFromParent) {
+        dataverse.setMetadataBlockRoot(!inheritMetadataBlockFromParent);
+    }
+
+    public void editMetadataBlocks() {
+        if (dataverse.isMetadataBlockRoot()) {
+            dataverse.getMetadataBlocks().addAll(dataverse.getOwner().getMetadataBlocks());
+        } else {
+            dataverse.getMetadataBlocks(true).clear();
+        }
+    }
 }
