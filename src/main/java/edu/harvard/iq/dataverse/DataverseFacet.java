@@ -89,7 +89,7 @@ public class DataverseFacet implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.DataverseFacet[ dataverseId=" + id + " ]";
+        return "edu.harvard.iq.dataverse.DataverseFacet[ id=" + id + " ]";
     }
     
 }
