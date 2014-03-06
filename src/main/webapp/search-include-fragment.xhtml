@@ -25,14 +25,14 @@
             </ui:fragment>
             <ui:fragment>
  
-                <h:form id="shareForm" rendered="#{empty DataversePage.editMode and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
+                <h:form id="shareForm" rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             Add Data <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu" style="text-align:left;">
-                            <li><a href="/dataverse.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataverse</a></li>
-                            <li><a href="/dataset.xhtml?ownerId=#{DataversePage.dataverse.id}">New Dataset</a></li>
+                            <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
+                            <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
                             <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
                             <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>
                             <li><a href="#" style="pointer-events: none; color: grey;">New Query</a></li>
