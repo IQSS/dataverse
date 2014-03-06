@@ -196,10 +196,6 @@
                                     </a>
                                 </label>
                                 <div class="col-sm-6" rendered="#{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}">
-                                    <h:outputText value="No Child/No Parent" rendered="#{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}" /> 
-                                    <h:outputText value="Has Children boolean #{fieldValues.datasetField.hasChildren}" rendered="#{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}"   /> 
-                                    <h:outputText value="Has Parent boolean #{fieldValues.datasetField.hasParent}"  rendered="#{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}"  /> 
-                                    <h:outputText value="render? #{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}" rendered="#{!fieldValues.datasetField.hasChildren  and !fieldValues.datasetField.hasParent}"   />
                                     <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode}" />                                                                   
                                     <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}" />
                                 </div>

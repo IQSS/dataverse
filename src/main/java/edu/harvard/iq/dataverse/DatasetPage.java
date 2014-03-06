@@ -342,6 +342,23 @@ public class DatasetPage implements java.io.Serializable {
                 editVersion.getDatasetFieldValues().add(toAdd);
             }
         }
+        //Get Values out of child dv recs
+        //save isn't working we lose child dsfv's 
+        //in the grouped compound fields
+        /*
+        List<DatasetFieldValue> updateList = new ArrayList();
+        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+            if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.producer)){
+                 updateList.addAll(dsfv.getChildDatasetFieldValues());
+            }
+        }
+        for (DatasetFieldValue update: updateList){
+            for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+            if(dsfv == update){
+                 dsfv.setStrValue(update.getStrValue());
+            }
+        }
+        }*/
                  
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
