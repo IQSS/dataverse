@@ -329,7 +329,7 @@ public class DatasetPage implements java.io.Serializable {
             boolean add = true;
             for (DatasetFieldValue dsfv: editVersion.getDatasetFieldValues() ){
                 if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)){
-                    if(dsfv.getStrValue().equals(subjectVal)){
+                    if(dsfv.getStrValue() != null && dsfv.getStrValue().equals(subjectVal)){
                         add = false;
                     }
                 }

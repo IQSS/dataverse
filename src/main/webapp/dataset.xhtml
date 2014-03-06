@@ -42,7 +42,7 @@
                             </div>
                         </ui:fragment>
                         
-                            <ui:fragment rendered="#{empty DatasetPage.editMode or !(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'CREATE')}">
+                            <ui:fragment rendered="#{empty DatasetPage.editMode }">
                                 <div>
                                     <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
                                     <span id="author">#{DatasetPage.datasetVersionUI.authorsStr}</span>
