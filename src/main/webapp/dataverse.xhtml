@@ -13,13 +13,13 @@
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? 'New' : DataversePage.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
-            <ui:param name="showBreadcrumbs" value="#{! DataversePage.editMode}"/>
+            <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
             <ui:define name="body">
 
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                    <f:viewAction action="#{DataversePage.init}"/>
+                    <f:viewAction action="#{DataversePage.init}"/>                
                     <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
@@ -38,7 +38,7 @@
 
                 <h:form id="dataverseForm">
                     <!-- Name Panel -->
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode}">
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
 
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
                             <p:panelGrid columns="2">
@@ -63,28 +63,28 @@
 
                     <!-- Info / Buttons Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{(not empty DataversePage.owner
-                                                                            and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand'))
-                                                                            or DataversePage.editMode}">
+                                                                       and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand'))
+                                                                       or DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                            <ui:fragment>
+                            <ui:fragment rendered="#{empty DataversePage.editMode or DataversePage.editMode == 'INFO'}">
                                 <p:panelGrid columns="2" styleClass="panelgridFormTable">
                                     <ui:fragment>
-                                        <p:outputLabel value="Alias" for="alias"/> <h:outputText value="*" rendered="#{DataversePage.editMode}" style="color: #B94A48;"/>
+                                        <p:outputLabel value="Alias" for="alias"/> <h:outputText value="*" rendered="#{DataversePage.editMode == 'INFO'}" style="color: #B94A48;"/>
                                     </ui:fragment>
                                     <ui:fragment>
-                                        <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{!DataversePage.editMode}"/>
-                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                        <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}" rendered="#{empty DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode == 'INFO'}">
                                             <p:inputText id="alias" value="#{DataversePage.dataverse.alias}"/>
                                             <p:message for="alias"/>
                                         </p:panelGrid>
                                     </ui:fragment>
 
                                     <ui:fragment>
-                                        <p:outputLabel value="Contact E-mail" for="contactEmail"/> <h:outputText value="*" rendered="#{DataversePage.editMode}" style="color: #B94A48;"/>
+                                        <p:outputLabel value="Contact E-mail" for="contactEmail"/> <h:outputText value="*" rendered="#{DataversePage.editMode == 'INFO'}" style="color: #B94A48;"/>
                                     </ui:fragment>
                                     <ui:fragment>
-                                        <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{!DataversePage.editMode}"/>
-                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                        <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}" rendered="#{empty DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode == 'INFO'}">
                                             <p:inputText id="contactEmail" value="#{DataversePage.dataverse.contactEmail}"/>
                                             <p:message for="contactEmail"/>
                                         </p:panelGrid>
@@ -92,8 +92,8 @@
 
                                     <p:outputLabel value="Affiliation" for="affiliation"/>
                                     <ui:fragment>
-                                        <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}" rendered="#{!DataversePage.editMode}"/>
-                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode}">
+                                        <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}" rendered="#{empty DataversePage.editMode}"/>
+                                        <p:panelGrid columns="2" rendered="#{DataversePage.editMode == 'INFO'}">
                                             <p:inputText id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
                                             <p:message for="affiliation"/>
                                         </p:panelGrid>
@@ -101,26 +101,30 @@
                                 </p:panelGrid>
                             </ui:fragment>
 
-                            <ui:fragment rendered="#{!empty dataverseSession.user and !DataversePage.editMode}">
+                            <ui:fragment rendered="#{!empty dataverseSession.user and empty DataversePage.editMode}">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                      Edit Dataverse <span class="caret"></span>
+                                        Edit Dataverse <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu" role="menu" style="text-align:left;">
-                                      <li>
-                                          <p:commandLink id="editInfo" actionListener="#{DataversePage.edit}" update="@all">
-                                              <h:outputText value="General Information" />
-                                          </p:commandLink>
-                                      </li>
-                                      <li>
-                                          <h:link id="manageRoles" outcome="manage-roles">
-                                              <h:outputText value="Roles + Permissions" />
-                                              <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                              <f:param name="objectType" value="DATAVERSE" />
-                                          </h:link>
-                                      </li>
-                                      <li><a href="#" style="pointer-events: none; color: grey;">Theme</a></li>
-                                      <li><a href="#" style="pointer-events: none; color: grey;">Permissions</a></li>
+                                        <li>
+                                            <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@all">
+                                                <h:outputText value="General Information" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <h:link id="manageRoles" outcome="manage-roles">
+                                                <h:outputText value="Roles + Permissions" />
+                                                <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                                <f:param name="objectType" value="DATAVERSE" />
+                                            </h:link>
+                                        </li>
+                                        <li>
+                                            <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
+                                                <h:outputText value="Dataverse Setup" />
+                                            </p:commandLink>   
+                                        </li>
+                                        <li><a href="#" style="pointer-events: none; color: grey;">Theme</a></li>
                                     </ul>
                                 </div>
                             </ui:fragment>
@@ -131,8 +135,8 @@
                     <p:panel styleClass="panelLayoutBlock">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                             <ui:fragment>
-                                <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{!DataversePage.editMode}"/>
-                                <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DataversePage.editMode}">
+                                <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{empty DataversePage.editMode}"/>
+                                <p:panelGrid columns="3" styleClass="panelgridFormTable" rendered="#{DataversePage.editMode == 'INFO'}">
                                     <p:outputLabel value="Description" for="description"/>
                                     <ui:fragment>
                                         <p:inputTextarea id="description" value="#{DataversePage.dataverse.description}"
@@ -143,37 +147,52 @@
                                     <p:message for="description"/>
                                 </p:panelGrid>
                             </ui:fragment>
-                            <ui:fragment rendered="#{!DataversePage.editMode}">
+                            <ui:fragment rendered="#{empty DataversePage.editMode}">
                                 &#160;
                             </ui:fragment>
                         </p:panelGrid>
                     </p:panel>
 
-                    <!-- Create Dataverse Button Panel -->
-                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{DataversePage.editMode}">
-                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" actionListener="#{DataversePage.save}" update="@all"/>
+                    <!-- Dataverse Setup Panel -->                
+                    <ui:fragment  rendered="#{DataversePage.editMode == 'SETUP'}">
+                        <!-- Dataverse Setup Form -->
+                        <h:outputText value="Use MetadataBlocks form Parent Dataverse? "/>
+                        <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}" rendered="#{DataversePage.dataverse.owner != null}">  
+                            <p:ajax update="@all" listener="#{DataversePage.editMetadataBlocks}"/>  
+                        </p:selectBooleanCheckbox>        
+
+                        <p:selectManyMenu id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter" rendered="#{DataversePage.dataverse.metadataBlockRoot}" 
+                                          showCheckbox="true"  style="width:250px;height:300px">  
+                            <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
+                                           itemLabel="#{mdb.displayName}" itemValue="#{mdb}" /> 
+                        </p:selectManyMenu>  
+
+                        <hr/>     
+                    </ui:fragment>                    
+
+                    <!-- Save / Cancel Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
+                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}"  actionListener="#{DataversePage.save}" update="@all"/>
                         <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all" rendered="#{DataversePage.dataverse.id != null}"/>
                         <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </p:panel>
                 </h:form>
 
-                
-
                 <!-- Content Panel -->
-                <ui:fragment  rendered="#{!DataversePage.editMode}">
+                <ui:fragment  rendered="#{empty DataversePage.editMode}">
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
                         <ui:param name="dataverseLinksStayOnPage" value="true"/>
                     </ui:include>
                 </ui:fragment>
-                <!--<p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="{!DataversePage.editMode}" style="fon">-->
-                    <!--<p:tree value="{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >-->
-                        <!--<p:treeNode id="treeNode">-->
-                            <!--<h:outputLink value="/dataverse.xhtml?id={node.id}">-->
-                                <!--<h:outputText value="{node.name} Dataverse" style="font-weight: {DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>-->
-                            <!--</h:outputLink>-->
-                        <!--</p:treeNode>-->
-                    <!--</p:tree>-->
+                <!--<p:panel styleClass="panelLayoutBlock dataverseChildren" rendered="{empty DataversePage.editMode}" style="fon">-->
+                <!--<p:tree value="{DataversePage.treeWidgetRootNode}" var="node" id="tree" style="width:100%" >-->
+                <!--<p:treeNode id="treeNode">-->
+                <!--<h:outputLink value="/dataverse.xhtml?id={node.id}">-->
+                <!--<h:outputText value="{node.name} Dataverse" style="font-weight: {DataversePage.dataverse.id == node.id ? 'bold' : 'normal'}"/>-->
+                <!--</h:outputLink>-->
+                <!--</p:treeNode>-->
+                <!--</p:tree>-->
                 <!--</p:panel>-->
             </ui:define>
         </ui:composition>
