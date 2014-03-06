@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,52 +79,16 @@ public class DatasetPage implements java.io.Serializable {
     private int selectedTabIndex;
     private Map<UploadedFile,DataFile> newFiles = new HashMap();
     private DatasetVersion editVersion = new DatasetVersion();   
-    private List<DatasetFieldValue> citationValues = new ArrayList();
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
-    private boolean authorAsOrg = false;
 
-    public boolean isAuthorAsOrg() {
-        return authorAsOrg;
-    }
-
-    public void setAuthorAsOrg(boolean authorAsOrg) {
-        this.authorAsOrg = authorAsOrg;
-    }
-    
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
 
-    public List<DatasetFieldValue> getCitationValues() {
-        return citationValues;
-    }
-
-    public void setCitationValues(List<DatasetFieldValue> citationValues) {
-        this.citationValues = citationValues;
-    }
-    private List<DatasetFieldValue> otherMetadataValues = new ArrayList();    
-    private List<DatasetFieldValue> editValues = new ArrayList();
-    
-    
-    public List<DatasetFieldValue> getOtherMetadataValues() {
-        return otherMetadataValues;
-    }
-
-    
-
-
-
-    public void setOtherMetadataValues(List<DatasetFieldValue> otherMetadataValues) {
-        this.otherMetadataValues = otherMetadataValues;
-    }
     
     public Dataset getDataset() {
         return dataset;
     }
     
-    public List<DatasetFieldValue> getEditValues() {
-        return editValues;
-    }
-
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
@@ -159,28 +125,14 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
     
-    private boolean initOrgAsAuthorFlag() {
-        for (DatasetAuthor author : datasetVersionUI.getDatasetAuthors()) {
-            if (author.getLastName() != null && author.getFirstName() != null) {
-                if (!author.getLastName().isEmpty() && author.getFirstName().isEmpty()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     public void init() {
         
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
-            editVersion = dataset.getLatestVersion();
-            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
-            editValues = editVersion.getDatasetFieldValues();
+            editVersion = dataset.getLatestVersion(); 
             ownerId = dataset.getOwner().getId();
-            datasetVersionUI = new DatasetVersionUI(editVersion); 
             editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
-            authorAsOrg = initOrgAsAuthorFlag();
+            datasetVersionUI = new DatasetVersionUI(editVersion); 
         } else if (ownerId != null) { 
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -192,7 +144,6 @@ public class DatasetPage implements java.io.Serializable {
             editVersion.setVersionState(VersionState.DRAFT);
             editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues()); 
             editVersion.setVersionNumber(new Long(1));  
-            editValues = editVersion.getDatasetFieldValues();
             datasetVersionUI = new DatasetVersionUI(editVersion);  
             dataset.getVersions().add(editVersion);
         } else {
@@ -209,6 +160,7 @@ public class DatasetPage implements java.io.Serializable {
             editVersion = dataset.getEditVersion();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Files", " - Edit your dataset files. Tip: You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
+            editVersion = dataset.getEditVersion();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
     }
@@ -310,30 +262,29 @@ public class DatasetPage implements java.io.Serializable {
         }  
     }
     
-    public void addGeneralRecord(Object recordType){
-           DatasetFieldValue dfvType = (DatasetFieldValue) recordType;
-           DatasetFieldValue addNew = new DatasetFieldValue();
-            MetadataBlock mdb = dfvType.getDatasetField().getMetadataBlock();
-            addNew.setDatasetVersion(editVersion);
-            addNew.setDatasetField(dfvType.getDatasetField());
-            if (dfvType.getDatasetField().isHasChildren()){
-                addNew.setChildDatasetFieldValues(new ArrayList());
-                for (DatasetField dsfc: addNew.getDatasetField().getChildDatasetFields()){
-                    DatasetFieldValue cv = new DatasetFieldValue();
-                    cv.setParentDatasetFieldValue(addNew);
-                    cv.setDatasetField(dsfc);
-                    cv.setDatasetVersion(editVersion);
-                    addNew.getChildDatasetFieldValues().add(cv);
-                    datasetVersionUI.getGeneralDatasetValues().add(cv);                   
-                    editVersion.getDatasetFieldValues().add(cv);
-                }
+    public void addGeneralRecord(Object recordType) {
+        //The page provides the value record to be added        
+        DatasetFieldValue dfvType = (DatasetFieldValue) recordType;
+        DatasetFieldValue addNew = new DatasetFieldValue();
+        addNew.setDatasetVersion(editVersion);
+        addNew.setDatasetField(dfvType.getDatasetField());
+        //If there are children create them and add to map list        
+        if (dfvType.getDatasetField().isHasChildren()) {
+            addNew.setChildDatasetFieldValues(new ArrayList());
+            for (DatasetField dsfc : addNew.getDatasetField().getChildDatasetFields()) {
+                DatasetFieldValue cv = new DatasetFieldValue();
+                cv.setParentDatasetFieldValue(addNew);
+                cv.setDatasetField(dsfc);
+                cv.setDatasetVersion(editVersion);                
+                addNew.getChildDatasetFieldValues().add(cv);                  
+                editVersion.getDatasetFieldValues().add(cv);
             }
-            editVersion.getDatasetFieldValues().add(addNew);
-            datasetVersionUI.getGeneralDatasetValues().add(addNew);
-            //setMetadataValueBlocks(datasetVersionUI.getGeneralDatasetValues());
-    }
-    
-    
+        }
+        // add parent value
+        editVersion.getDatasetFieldValues().add(addNew);
+        //Refresh the UI to add the new fields to the blocks
+        datasetVersionUI = new DatasetVersionUI(editVersion); 
+    }   
     
     public void deleteRecord(String recordType, Object toDelete){
         
@@ -346,7 +297,6 @@ public class DatasetPage implements java.io.Serializable {
              fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),deleteAuthor.getLastName());
              fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),deleteAuthor.getAffiliation());
              fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),parentToRemove);
-
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getName());
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getLastName());
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getFirstName());
@@ -369,12 +319,47 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
+        //Todo set up real prod date
         for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
             if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.productionDate)){
                  dsfv.setStrValue("2014");
             }
         }
-
+        for (String subjectVal: datasetVersionUI.getSubjects()){
+            boolean add = true;
+            for (DatasetFieldValue dsfv: editVersion.getDatasetFieldValues() ){
+                if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)){
+                    if(dsfv.getStrValue() != null && dsfv.getStrValue().equals(subjectVal)){
+                        add = false;
+                    }
+                }
+            }
+            if (add){
+                DatasetFieldValue toAdd = new DatasetFieldValue();
+                toAdd.setDatasetField(fieldService.findByName(DatasetFieldConstant.subject));
+                toAdd.setStrValue(subjectVal);
+                toAdd.setDatasetVersion(editVersion);
+                editVersion.getDatasetFieldValues().add(toAdd);
+            }
+        }
+        //Get Values out of child dv recs
+        //save isn't working we lose child dsfv's 
+        //in the grouped compound fields
+        /*
+        List<DatasetFieldValue> updateList = new ArrayList();
+        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+            if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.producer)){
+                 updateList.addAll(dsfv.getChildDatasetFieldValues());
+            }
+        }
+        for (DatasetFieldValue update: updateList){
+            for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+            if(dsfv == update){
+                 dsfv.setStrValue(update.getStrValue());
+            }
+        }
+        }*/
+                 
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -390,20 +375,13 @@ public class DatasetPage implements java.io.Serializable {
         // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
+            /*
             try {
+            */
                 boolean ingestedAsTabular = false;
                 boolean metadataExtracted = false; 
                 
-                /* Make sure the dataset directory exists: */
-                if (!Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-
-                datasetService.generateFileSystemName(dFile);
+                
                 
                 if (ingestableAsTabular(dFile)) {
                     
@@ -430,22 +408,25 @@ public class DatasetPage implements java.io.Serializable {
                 }
 
                 if (!ingestedAsTabular) {
+                    /*
                     while (Files.exists(dFile.getFileSystemLocation())) {
                         datasetService.generateFileSystemName(dFile);
                     }
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
                     Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                    */
                 }
-                
+            /*    
             } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
                 // TODO: 
                 // discard the DataFile and disconnect it from the dataset object!
             }
+            */
 
         }       
         try {
-            dataset = datasetService.save(dataset);
+        dataset = datasetService.save(dataset);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
@@ -488,18 +469,28 @@ public class DatasetPage implements java.io.Serializable {
         fmd.setDatasetVersion(editVersion);
         dataset.getFiles().add( dFile );
         newFiles.put(uFile, dFile);
-    }
-    
-    public void addRow(ActionEvent ae) {       
-        //      UIComponent dataTable = ae.getComponent().getParent().getParent().getParent();
-        HtmlDataTable dataTable = (HtmlDataTable)ae.getComponent().getParent().getParent();
-            DatasetAuthor newElem = new DatasetAuthor();
-           // newElem.setMetadata(editVersion.getMetadata());
-           // editVersion.getMetadata().getDatasetAuthors().add(dataTable.getRowIndex()+1,newElem);
-            //JavascriptContext.addJavascriptCall(getFacesContext(),"initAddAuthorSync();");
-                         
-    }
+        
+        /* Try to save the file: */
+        /* Make sure the dataset directory exists: */
+        try {
+            if (!Files.exists(dataset.getFileSystemDirectory())) {
+                /* Note that "createDirectories()" must be used - not 
+                * "createDirectory()", to make sure all the parent 
+                * directories that may not yet exist are created as well. 
+                */
 
+                Files.createDirectories(dataset.getFileSystemDirectory());
+            }
+            datasetService.generateFileSystemName(dFile);
+            
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+            Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+            
+            
+        } catch (IOException ioex) {
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
+        }
+    }
                 
     public DataModel getDatasetFieldsDataModel() {
         List values = new ArrayList();  

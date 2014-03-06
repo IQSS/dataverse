@@ -146,7 +146,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String notesText="notesText";
     public final static String noteInformationType="noteInformationType";
     public final static String notesInformationSubject="notesInformationSubject";
-    
+    public final static String subject="subject";
     /*
      * The following getters are needed so we can use them as properties in JSP 
      */
@@ -638,6 +638,10 @@ public class DatasetFieldConstant implements java.io.Serializable  {
 
     public String getDatasetVersionValue() {
         return datasetVersionValue;
+    }
+    
+    public String getSubject() {
+        return subject;
     }
     
 }

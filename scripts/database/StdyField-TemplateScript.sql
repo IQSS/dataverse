@@ -16,15 +16,15 @@ INSERT INTO metadatablock(
 
 INSERT INTO metadatablock(
             id, "name", displayname, showoncreate)
-    VALUES (5, 'socialscience', 'Domain Metadata', false);
+    VALUES (5, 'socialscience', 'Social Science', false);
 
 INSERT INTO metadatablock(
             id, "name", displayname, showoncreate)
-    VALUES (6, 'astrophysics', 'Domain Metadata', false);
+    VALUES (6, 'astrophysics', 'Astrophysics', false);
 
 INSERT INTO metadatablock(
             id, "name", displayname, showoncreate)
-    VALUES (7, 'biomedical', 'Domain Metadata', false);
+    VALUES (7, 'biomedical', 'Bio-Medical', false);
 
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (1, 'Title', 'Title', 'title', TRUE, TRUE, TRUE, TRUE, 1 );
 INSERT INTO datasetfield (id,title,description, name,basicSearchField,advancedSearchField, searchResultField,  allowControlledVocabulary, metadatablock_id) VALUES (2, 'Dataset ID', 'Dataset ID', 'datasetId', TRUE, TRUE, TRUE,  TRUE, 1  );
@@ -451,3 +451,4 @@ CREATE SEQUENCE filesystemname_seq
   MAXVALUE 9223372036854775807
   START 2
   CACHE 1;
+ALTER TABLE filesystemname_seq OWNER TO "dvnApp";

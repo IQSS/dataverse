@@ -182,6 +182,16 @@ public class DataFile extends DvObject {
         return Paths.get(studyDirectory, this.fileSystemName);
     }
     
+    public String getFilename() {
+        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
+ 
+        if (studyDirectory == null || this.fileSystemName == null || this.fileSystemName.equals("")) {
+            return null;
+        }
+        String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
+        return fileSystemPath.replaceAll("/", "%2F");
+    }
+    
     public boolean isImage() {
         return (contentType != null && contentType.startsWith("image/"));
     }

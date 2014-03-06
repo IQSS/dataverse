@@ -152,12 +152,6 @@ public class IndexServiceBean {
 //                logger.info(idDashTitle);
 //                logger.info(name + ": " + datasetFieldValue.getStrValue());
                 String solrField = datasetField.getSolrField();
-                /**
-                 * @todo: remove this when authorName gives us a value
-                 */
-                if (datasetFieldValue.getDatasetField().getName().equals("authorName")) {
-                    solrInputDocument.addField(solrField, "FIXME: #3602");
-                }
                 if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrField != null) {
                     logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
                     if (solrField.endsWith("_i")) {
@@ -183,8 +177,17 @@ public class IndexServiceBean {
                     } else {
                         // _s (dynamic string) and all other Solr fields
 
-                        // collapse authorAffiliation into the affiliation facet used by dataverses 
                         if (datasetFieldValue.getDatasetField().getName().equals("authorAffiliation")) {
+                            /**
+                             * @todo think about how to tie the fact that this
+                             * needs to be multivalued (_ss) because a
+                             * multivalued facet (authorAffilition_ss) is being
+                             * collapsed into here at index time. The business
+                             * logic to determine if a data-driven metadata
+                             * field should be indexed into Solr as a single or
+                             * multiple value lives in the getSolrField() method
+                             * of DatasetField.java
+                             */
                             solrField = SearchFields.AFFILIATION;
                         }
                         solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());

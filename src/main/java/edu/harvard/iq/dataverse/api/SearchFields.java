@@ -19,7 +19,14 @@ public class SearchFields {
     // etc.
     public static final String ENTITY_ID = "entityid_l";
     public static final String TYPE = "type_s";
-    public static final String AFFILIATION = "affiliation_s";
+    /**
+     * @todo think about how to tie the fact that this needs to be multivalued
+     * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed
+     * into it at index time. The business logic to determine if a data-driven
+     * metadata field should be indexed into Solr as a single or multiple value
+     * lives in the getSolrField() method of DatasetField.java
+     */
+    public static final String AFFILIATION = "affiliation_ss";
     /**
      * @todo: use a field called "author" instead. Solr default has "author" as
      * "text_general" so the field is tokenized ("Foo Bar" becomes "foo" "bar"

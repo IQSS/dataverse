@@ -78,7 +78,7 @@ public class ImageThumbConverter {
     }
     
     
-    private static boolean generateImageThumb(String fileLocation) {
+    public static boolean generateImageThumb(String fileLocation) {
 
         String thumbFileLocation = fileLocation + ".thumb";
 

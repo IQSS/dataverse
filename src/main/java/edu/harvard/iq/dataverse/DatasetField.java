@@ -47,6 +47,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
 
     @OneToMany(mappedBy = "datasetField")
     private Set<DataverseFacet> dataverseFacets;
+    
 
     @Transient
     private String searchValue;
@@ -87,7 +88,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public void setDescription(String description) {
         this.description = description;
     }
-
+    
     public boolean isAllowControlledVocabulary() {
         return allowControlledVocabulary;
     }
@@ -143,6 +144,18 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
 
     public void setMetadataBlock(MetadataBlock metadataBlock) {
         this.metadataBlock = metadataBlock;
+    }
+    
+   @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+   @OrderBy("displayOrder ASC")
+    private Collection<ControlledVocabularyValue> controlledVocabularyValues;
+
+    public Collection<ControlledVocabularyValue> getControlledVocabularyValuess() {
+        return this.controlledVocabularyValues;
+    }
+
+    public void setControlledVocabularyValuess(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
+        this.controlledVocabularyValues = controlledVocabularyValues;
     }
 
     @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})

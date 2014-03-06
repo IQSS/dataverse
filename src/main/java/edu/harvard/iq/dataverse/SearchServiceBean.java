@@ -175,7 +175,6 @@ public class SearchServiceBean {
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
-            String affiliation = (String) solrDocument.getFieldValue(SearchFields.AFFILIATION);
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
@@ -198,7 +197,6 @@ public class SearchServiceBean {
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
-            solrSearchResult.setAffiliation(affiliation);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);

@@ -69,4 +69,27 @@ public class MetadataBlock implements Serializable {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+    
+    public int hashCode() {
+        int hash = 0;
+        hash += (this.id != null ? this.id.hashCode() : 0);
+        return hash;
+    }
+
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof MetadataBlock)) {
+            return false;
+        }
+        MetadataBlock other = (MetadataBlock) object;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }    
+    
+    @Override
+    public String toString() {
+        return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
+    }    
 }
