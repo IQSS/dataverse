@@ -24,7 +24,8 @@
                 </h:form>
             </ui:fragment>
             <ui:fragment>
-                <h:form id="shareForm" rendered="#{!DataversePage.editMode and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
+ 
+                <h:form id="shareForm" rendered="#{empty DataversePage.editMode and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DatasetCreate')}" style="margin-left:auto;">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             Add Data <span class="caret"></span>
