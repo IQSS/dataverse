@@ -367,7 +367,7 @@ public class DatasetVersionUI {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            if (sa.toString() != null && !sa.toString().trim().isEmpty() ){
+            if (sa != null && sa.toString() != null && !sa.toString().trim().isEmpty() ){
                  str += sa.toString().trim(); 
             }
         }

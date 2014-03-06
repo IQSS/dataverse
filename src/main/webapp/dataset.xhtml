@@ -325,7 +325,7 @@
                                             <div id="collapse#{block.index}" class="panel-collapse collapse #{block.index == '0' ? 'in' : ''}">
                                                 <div class="panel-body">
                                                     <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
-                                                        <div class="form-group" >
+
                                                             <ui:fragment rendered="#{(empty DatasetPage.editMode and !empty fieldValues.strValue) or DatasetPage.editMode == 'METADATA' }"> 
                                                             <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label" rendered ="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" >
                                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
@@ -376,7 +376,7 @@
                                                                     </p:commandButton>
                                                                 </div>
                                                             </ui:fragment>
-                                                        </div>
+
                                                     </ui:repeat>
                                                 </div>
                                             </div>
