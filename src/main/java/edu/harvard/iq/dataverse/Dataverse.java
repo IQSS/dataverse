@@ -68,8 +68,12 @@ public class Dataverse extends DvObjectContainer {
     private List<DataverseFacet> dataverseFacets;
 
     public List<MetadataBlock> getMetadataBlocks() {
-        if (metadataBlockRoot || getOwner() == null) {
-        return metadataBlocks;
+        return getMetadataBlocks(false);
+    }
+
+    public List<MetadataBlock> getMetadataBlocks(boolean returnActualDB) {
+        if (returnActualDB || metadataBlockRoot || getOwner() == null) {
+            return metadataBlocks;
         } else {
             return getOwner().getMetadataBlocks();
         }
@@ -80,8 +84,12 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<DataverseFacet> getDataverseFacets() {
-        if (facetRoot || getOwner() == null ) {
-        return dataverseFacets;
+        return getDataverseFacets(false);
+    }    
+    
+    public List<DataverseFacet> getDataverseFacets(boolean returnActualDB) {
+        if (returnActualDB || facetRoot || getOwner() == null) {
+            return dataverseFacets;
         } else {
             return getOwner().getDataverseFacets();
         }
@@ -141,6 +149,22 @@ public class Dataverse extends DvObjectContainer {
 
     public void setPermissionRoot(boolean permissionRoot) {
         this.permissionRoot = permissionRoot;
+    }
+
+    public boolean isMetadataBlockRoot() {
+        return metadataBlockRoot;
+    }
+
+    public void setMetadataBlockRoot(boolean metadataBlockRoot) {
+        this.metadataBlockRoot = metadataBlockRoot;
+    }
+
+    public boolean isFacetRoot() {
+        return facetRoot;
+    }
+
+    public void setFacetRoot(boolean facetRoot) {
+        this.facetRoot = facetRoot;
     }
 
     public void addRole(DataverseRole role) {
