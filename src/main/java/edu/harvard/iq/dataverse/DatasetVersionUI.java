@@ -14,45 +14,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
 
 /**
  *
  * @author skraffmiller
  */
 public class DatasetVersionUI {
-    
+    @EJB
+    DataverseServiceBean dataverseService; 
     public DatasetVersionUI() {
     }
     
-    private Map<MetadataBlock, Object> metadataBlockValues = new HashMap(); 
+    private Map<MetadataBlock, List> metadataBlockValues = new HashMap(); 
     
-    public List<Map.Entry<MetadataBlock, Object>> getMetadataBlockValues() { 
-       Set<Map.Entry<MetadataBlock, Object>> metadataSet = metadataBlockValues.entrySet();
+    public List<Map.Entry<MetadataBlock, List>> getMetadataBlockValues() { 
+       Set<Map.Entry<MetadataBlock, List>> metadataSet = metadataBlockValues.entrySet();
         return new ArrayList<>(metadataSet);
     }
     
     public DatasetVersionUI(DatasetVersion datasetVersion) {
         /*takes in the values of a dataset version 
-         and apportiones them into lists for 
+         and apportions them into lists for 
          viewing and editng in the dataset page.
          */
         setDatasetVersion(datasetVersion);
         this.setDatasetAuthors(new ArrayList());
         this.setDatasetKeywords(new ArrayList());
-        this.setDatasetDistributors(new ArrayList());
-        this.setGeneralDatasetValues(new ArrayList());
-        
+        this.setDatasetDistributors(new ArrayList()); 
+        this.setSubjects(new ArrayList());
 
         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
             //Special Fields for 'above the fold'
             if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.title)) {
                 setTitle(dsfv);
-            }
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.descriptionText)) {
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.descriptionText)) {
                 setDescription(dsfv);
-            }
-
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.author)) {
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.author)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetAuthor datasetAuthor = new DatasetAuthor();
                 if (childVals != null) {
@@ -74,12 +73,12 @@ public class DatasetVersionUI {
                 }
                 datasetAuthor.setAuthorAsOrg(false);
                 //TODO save Author as Org to DB somehow?
+                
                 if(datasetAuthor.getFirstName().isEmpty() && !datasetAuthor.getLastName().isEmpty()){
                     datasetAuthor.setAuthorAsOrg(true);
                 }
                 this.getDatasetAuthors().add(datasetAuthor);
-            }
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.keyword)) {
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.keyword)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetKeyword datasetKeyword = new DatasetKeyword();
                 if (childVals != null) {
@@ -91,8 +90,8 @@ public class DatasetVersionUI {
                     }
                 }
                 this.getDatasetKeywords().add(datasetKeyword);
-            }
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.topicClassification)) {
+            } 
+            /*else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.topicClassification)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetTopicClass datasetTopicClass = new DatasetTopicClass();
                 if (childVals != null) {
@@ -110,8 +109,8 @@ public class DatasetVersionUI {
                     }
                 }
                 this.getDatasetTopicClasses().add(datasetTopicClass);
-            }
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.distributor)) {
+            }*/
+            else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.distributor)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetDistributor datasetDistributor = new DatasetDistributor();
                 if (childVals != null) {
@@ -134,10 +133,15 @@ public class DatasetVersionUI {
                         }
                     }
                 }
-                this.getDatasetDistributors().add(datasetDistributor);
-            }
+                this.getDatasetDistributors().add(datasetDistributor);            
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
+                this.getSubjects().add(dsfv.getStrValue());
+            } else if (dsfv.getDatasetField().isShowAboveFold()) {
+                this.getAboveFoldGeneralValues().add(dsfv);                                
+            } 
         }
      setMetadataValueBlocks(datasetVersion);
+     loadSubjectControlledVocabulary();
     }
     
     private Dataset getDataset(){
@@ -160,20 +164,28 @@ public class DatasetVersionUI {
         this.title = title;
     }
 
+    private List <String> subjects = new ArrayList();
+    public List<String>  getSubjects() {
+        return subjects;
+    }
+    public void setSubjects(List <String> subjects) {
+        this.subjects = subjects;
+    }
+
+    private List <SelectItem> subjectControlledVocabulary = new ArrayList();
+    public List<SelectItem>  getSubjectControlledVocabulary() {
+        return subjectControlledVocabulary;
+    }
+    public void setSubjectControlledVocabulary(List <SelectItem> subjectControlledVocabulary) {
+        this.subjectControlledVocabulary = subjectControlledVocabulary;
+    }
+    
     private List<DatasetAuthor> datasetAuthors = new ArrayList();
     public List<DatasetAuthor> getDatasetAuthors() {
         return datasetAuthors;
     }
     public void setDatasetAuthors(List<DatasetAuthor> datasetAuthors) {
         this.datasetAuthors = datasetAuthors;
-    }
-    
-    private List<DatasetFieldValue> generalDatasetValues = new ArrayList();
-    public List<DatasetFieldValue> getGeneralDatasetValues() {
-        return generalDatasetValues;
-    }
-    public void setGeneralDatasetValues(List<DatasetFieldValue> datasetValues) {
-        this.generalDatasetValues = datasetValues;
     }
     
     private DatasetFieldValue description;
@@ -209,9 +221,17 @@ public class DatasetVersionUI {
     } 
     
     public String getUNF() {
-        //todo get dist date from datasetfieldvalue table
+        //todo get UNF to calculate and display here.
         return "";
     }
+    
+    private List<DatasetFieldValue> aboveFoldGeneralValues = new ArrayList();
+    public List<DatasetFieldValue> getAboveFoldGeneralValues() {
+        return aboveFoldGeneralValues;
+    }
+    public void setAboveFoldGeneralValues(List<DatasetFieldValue> aboveFoldGeneralValues) {
+        this.aboveFoldGeneralValues = aboveFoldGeneralValues;
+    }    
 
     //TODO - make sure getCitation works
     private String getYearForCitation(String dateString) {
@@ -258,8 +278,6 @@ public class DatasetVersionUI {
             }
             str += "\"" + getTitle().getStrValue() + "\"";
         }
-
-
         
         if (!StringUtil.isEmpty(dataset.getIdentifier())) {
             if (!StringUtil.isEmpty(str)) {
@@ -272,12 +290,17 @@ public class DatasetVersionUI {
             }
         }
         
-                
-        if (!StringUtil.isEmpty(getDatasetVersion().getDataset().getOwner().getName())) {
+        //Get root dataverse name for Citation
+         Dataverse root = getDatasetVersion().getDataset().getOwner();
+         while (root.getOwner() != null){
+             root = root.getOwner();
+         }
+         String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
-            str += " " + getDatasetVersion().getDataset().getOwner().getName() + " [Publisher] ";
+            str += " " + rootDataverseName + " [Publisher] ";
         }
         
                 
@@ -285,7 +308,7 @@ public class DatasetVersionUI {
             str += " V" + this.getDatasetVersion().getVersionNumber();
             str += " [Version]";
         }
-        
+        /*UNF is not calculated yet
         if (!StringUtil.isEmpty(getUNF())) {
             if (!StringUtil.isEmpty(str)) {
                 str += " ";
@@ -293,13 +316,10 @@ public class DatasetVersionUI {
             str += getUNF();
         }
         String distributorNames = getDistributorNames();
-        if (distributorNames.length() > 0) {
+        if (distributorNames.trim().length() > 0) {
             str += " " + distributorNames;
             str += " [Distributor]";
-        }
-
-
-
+        }*/
         return str;
     }
     
@@ -336,6 +356,19 @@ public class DatasetVersionUI {
             }
             if (sa.getValue() != null && !sa.getValue().getStrValue().isEmpty() ){
                  str += sa.getValue().getStrValue(); 
+            }
+        }
+        return str;
+    }
+    
+    public String getSubjectStr() {
+        String str = "";
+        for (String sa : this.getSubjects()) {
+            if (str.trim().length() > 1) {
+                str += "; ";
+            }
+            if (sa.toString() != null && !sa.toString().trim().isEmpty() ){
+                 str += sa.toString().trim(); 
             }
         }
         return str;
@@ -397,44 +430,40 @@ public class DatasetVersionUI {
         return str.trim();
     }
     
-   private void setMetadataValueBlocks(DatasetVersion datasetVersion){
-       
+    public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         metadataBlockValues.clear();
-
-
-        
-        for(MetadataBlock mdb: this.datasetVersion.getDataset().getOwner().getMetadataBlocks()){
+        for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
             List addList = new ArrayList();
-            if(!mdb.isShowOnCreate()){
-
-             for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues() ){
-             /*   This gets the sort right but does not save child vals correctly 
-             if (!dsfv.getDatasetField().isShowAboveFold() && !dsfv.getDatasetField().isHasParent() && dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
-                addList.add(dsfv);
-                if (dsfv.getChildDatasetFieldValues() != null && !dsfv.getChildDatasetFieldValues().isEmpty()) {
-                    for (DatasetFieldValue dsfcvo : datasetVersion.getDatasetFieldValues()) {
-                        if (dsfcvo.getParentDatasetFieldValue() != null
-                                && dsfcvo.getParentDatasetFieldValue().getDatasetField().getName().equals(dsfv.getDatasetField().getName())) {
-                            addList.add(dsfcvo);
-                        }
+            if (!mdb.isShowOnCreate()) {
+                for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
+                    if (!dsfv.getDatasetField().isShowAboveFold() && dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
+                        addList.add(dsfv);
                     }
                 }
-             }*/
-                 
-                // saves child vals of compoud fields but doesnt sort right.
-                if (!dsfv.getDatasetField().isShowAboveFold()  && dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
-                    addList.add(dsfv);
-                }
-                }
-      Collections.sort(addList, new Comparator<DatasetFieldValue>(){
-           public int compare (DatasetFieldValue d1, DatasetFieldValue d2){
-               int a = d1.getDatasetField().getDisplayOrder();
-               int b = d2.getDatasetField().getDisplayOrder();
-               return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-           }
-       });
+                Collections.sort(addList, new Comparator<DatasetFieldValue>() {
+                    public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+                        int a = d1.getDatasetField().getDisplayOrder();
+                        int b = d2.getDatasetField().getDisplayOrder();
+                        return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                    }
+                });
                 metadataBlockValues.put(mdb, addList);
             }
-        }              
+        }
+    }
+    
+    private void loadSubjectControlledVocabulary(){        
+       for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()){
+            if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)){
+                 this.subjectControlledVocabulary.clear();
+                 for (ControlledVocabularyValue value : dsfv.getDatasetField().getControlledVocabularyValuess()){
+                     SelectItem item = new SelectItem();
+                     item.setValue(value.getStrValue());
+                     item.setLabel(value.getStrValue());
+                     this.subjectControlledVocabulary.add(item);
+                 }
+                 break; //only do once if multiple values
+            }
+        }               
     }
 }

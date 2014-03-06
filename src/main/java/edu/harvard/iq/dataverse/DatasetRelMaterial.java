@@ -19,19 +19,11 @@ import javax.persistence.Version;
  *
  * @author skraffmiller
  */
-@Entity
-public class DatasetRelMaterial implements java.io.Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    public Long getId() {
-        return this.id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    @Column(columnDefinition="TEXT")
+public class DatasetRelMaterial  {
+
+
+
     private String text;
     public String getText() {
         return this.text;
@@ -48,17 +40,7 @@ public class DatasetRelMaterial implements java.io.Serializable {
         this.displayOrder = displayOrder;
     }
 
-    @ManyToOne
-    @JoinColumn(nullable=false)
-    private Metadata metadata;
 
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
-    }
     
       /**
      * Holds value of property version.
@@ -89,7 +71,7 @@ public class DatasetRelMaterial implements java.io.Serializable {
 
      public int hashCode() {
         int hash = 0;
-        hash += (this.id != null ? this.id.hashCode() : 0);
+        //hash += (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
 
@@ -99,7 +81,7 @@ public class DatasetRelMaterial implements java.io.Serializable {
             return false;
         }
         DatasetRelMaterial other = (DatasetRelMaterial)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
+        //if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
         return true;
     }
     
