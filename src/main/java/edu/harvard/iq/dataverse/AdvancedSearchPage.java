@@ -56,22 +56,29 @@ public class AdvancedSearchPage {
          }
          logger.info("query: " + query); */
         List<String> queryStrings = new ArrayList();
+        String delimiter = "[\"]+";
         for (DatasetField datasetField : metadataFieldList) {
             if (!"".equals(datasetField.getSearchValue())) {
-                StringTokenizer st = new StringTokenizer(datasetField.getSearchValue(), "\"");
-                while (st.hasMoreElements()) {
-                    String token = st.nextToken().trim();
-                    if (!token.equals(" ") && !token.isEmpty()) {
-                        queryStrings.add(datasetField.getName() + ":" + token); 
+                String myString = datasetField.getSearchValue();
+                if (myString.contains("\"")) {
+                    String [] tempString = datasetField.getSearchValue().split(delimiter);
+                    for (int i = 1; i < tempString.length; i++) {
+                        if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
+                            queryStrings.add(datasetField.getSolrField() + ":" + "\"" + tempString[i].trim() + "\"");
+                        }
                     }
-                }    
+                } else {
+                    StringTokenizer st = new StringTokenizer(datasetField.getSearchValue());
+                    while (st.hasMoreElements()) {
+                        queryStrings.add(datasetField.getSolrField() + ":" + st.nextElement());
+                    }
+                } 
             }
         }
         query = new String();
         for (String string : queryStrings) {
             query += string + " ";
         }
-        //return "/search.xhtml?q=" + query + "faces-redirect=true";
         return "/dataverse.xhtml?q=" + query + "faces-redirect=true";
     }
 
