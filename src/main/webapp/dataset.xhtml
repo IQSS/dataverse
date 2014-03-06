@@ -199,8 +199,7 @@
                                     <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode}" />                                                                   
                                     <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}" />
                                 </div>
-                                <div class="col-sm-6" rendered="#{fieldValues.datasetField.hasChildren}">
-                                    <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}" />
+                                <div class="col-sm-6" rendered="#{fieldValues.datasetField.hasChildren}">                                    
                                     <!-- CHILDS -->
                                     <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}">
                                         <div class="form-group col-sm-6" style="border:1px solid gold;">
@@ -331,8 +330,7 @@
                                                                 <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}" />
                                                             </div>
                                                             </ui:fragment>
-                                                            <div class="col-sm-6" rendered="#{fieldValues.datasetField.hasChildren}">
-                                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}" />
+                                                            <div class="col-sm-6" rendered="#{fieldValues.datasetField.hasChildren}">                                                               
                                                                 <!-- CHILDS -->
                                                                 <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}">                                                              
                                                                     <div class="form-group col-sm-6" style="border:1px solid gold;">
