@@ -333,11 +333,8 @@ public class DatasetVersionUI {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            if (sa.getFirstName() != null && !StringUtil.isEmpty(sa.getFirstName().getStrValue())){
-                str += sa.getFirstName().getStrValue(); 
-            }
-            if (sa.getLastName() != null && !StringUtil.isEmpty(sa.getLastName().getStrValue())){
-                str += " " + sa.getLastName().getStrValue();
+            if (sa.getName() != null && !StringUtil.isEmpty(sa.getName().getStrValue())){
+                str += sa.getName().getStrValue(); 
             }
             if (affiliation) {
                 if (sa.getAffiliation() != null && !StringUtil.isEmpty(sa.getAffiliation().getStrValue())) {
