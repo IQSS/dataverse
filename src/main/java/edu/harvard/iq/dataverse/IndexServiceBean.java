@@ -183,8 +183,17 @@ public class IndexServiceBean {
                     } else {
                         // _s (dynamic string) and all other Solr fields
 
-                        // collapse authorAffiliation into the affiliation facet used by dataverses 
                         if (datasetFieldValue.getDatasetField().getName().equals("authorAffiliation")) {
+                            /**
+                             * @todo think about how to tie the fact that this
+                             * needs to be multivalued (_ss) because a
+                             * multivalued facet (authorAffilition_ss) is being
+                             * collapsed into here at index time. The business
+                             * logic to determine if a data-driven metadata
+                             * field should be indexed into Solr as a single or
+                             * multiple value lives in the getSolrField() method
+                             * of DatasetField.java
+                             */
                             solrField = SearchFields.AFFILIATION;
                         }
                         solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());

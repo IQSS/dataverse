@@ -161,7 +161,7 @@
                                                 <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                             </div>
                                             
-                                            <h:outputText value="#{result.affiliation}" rendered="#{result.affiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                            <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
                                             
                                             <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
                                                 <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>

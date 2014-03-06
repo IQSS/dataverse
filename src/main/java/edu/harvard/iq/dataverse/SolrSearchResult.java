@@ -24,7 +24,7 @@ public class SolrSearchResult {
     private Map<String, String> parent;
     // used on the SearchPage but not the search API
     private List<Dataset> datasets;
-    private String affiliation;
+    private String dataverseAffiliation;
     private String citation;
     private String filetype;
 
@@ -50,7 +50,7 @@ public class SolrSearchResult {
         JsonObjectBuilder typeSpecificFields = Json.createObjectBuilder();
         if (this.type.equals("dataverses")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
-//            typeSpecificFields.add(SearchFields.AFFILIATION, affiliation);
+//            typeSpecificFields.add(SearchFields.AFFILIATION, dataverseAffiliation);
         } else if (this.type.equals("datasets")) {
 //            typeSpecificFields.add(SearchFields.TITLE, this.title);
             /**
@@ -151,12 +151,12 @@ public class SolrSearchResult {
         this.datasets = datasets;
     }
 
-    public String getAffiliation() {
-        return affiliation;
+    public String getDataverseAffiliation() {
+        return dataverseAffiliation;
     }
 
-    public void setAffiliation(String affiliation) {
-        this.affiliation = affiliation;
+    public void setDataverseAffiliation(String dataverseAffiliation) {
+        this.dataverseAffiliation = dataverseAffiliation;
     }
 
     public String getCitation() {

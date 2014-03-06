@@ -174,10 +174,26 @@ public class SearchIncludeFragment {
             paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
+            /**
+             * @todo consider creating Java objects called DatasetCard,
+             * DatasetCart, and FileCard since that's what we call them in the
+             * UI. These objects' fields (affiliation, citation, etc.) would be
+             * populated from Solr if possible (for performance, to avoid extra
+             * database calls) or by a database call (if it's tricky or doesn't
+             * make sense to get the data in and out of Solr). We would continue
+             * to iterate through all the SolrSearchResult objects as we build
+             * up the new card objects. Think about how we have a
+             * solrSearchResult.setCitation method but only the dataset card in
+             * the UI (currently) shows this "citation" field.
+             */
             for (SolrSearchResult solrSearchResult : searchResults) {
                 if (solrSearchResult.getType().equals("dataverses")) {
-                    List<Dataset> datasets = datasetService.findByOwnerId(solrSearchResult.getEntityId());
-                    solrSearchResult.setDatasets(datasets);
+                    Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
+                    if (dataverseInCard != null) {
+                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId());
+                        solrSearchResult.setDatasets(datasets);
+                        solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
+                    }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                     if (dataset != null) {
