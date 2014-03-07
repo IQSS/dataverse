@@ -2,6 +2,11 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -17,6 +22,9 @@ public class DatasetFieldServiceApi {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @GET
     public String getAll() {
@@ -56,7 +64,7 @@ public class DatasetFieldServiceApi {
     }
 
     @GET
-    @Path("{name}")
+    @Path("info/{name}")
     public String getByName(@PathParam("name") String name) {
         try {
             DatasetField dsf = datasetFieldService.findByName(name);
@@ -100,6 +108,62 @@ public class DatasetFieldServiceApi {
             return Util.message2ApiError(sb.toString());
         }
 
+    }
+
+    @GET
+    @Path("load/{fileName}")
+    public String loadDatasetFields(@PathParam("fileName") String fileName) {
+        BufferedReader br = null;
+        String line = "";
+        String splitBy = "\t";
+        int lineNumber = 0;
+
+        try {
+
+            br = new BufferedReader(new FileReader("/" + fileName.replace(".", "/")));
+            while ((line = br.readLine()) != null) {
+                // if lineNumber == 0, skip header
+                if (lineNumber++ != 0) {
+
+                    // use comma as separator
+                    String[] dsfString = line.split(splitBy);
+
+                    DatasetField dsf = new DatasetField();
+                    dsf.setName(dsfString[0]);
+                    dsf.setTitle(dsfString[1]);
+                    dsf.setDescription(dsfString[2]);
+                    dsf.setFieldType(dsfString[3]);
+                    dsf.setDisplayOrder(new Integer(dsfString[4]).intValue());
+                    dsf.setAdvancedSearchField(new Boolean(dsfString[5]).booleanValue());
+                    dsf.setAllowControlledVocabulary(new Boolean(dsfString[6]).booleanValue());
+                    dsf.setAllowMultiples(new Boolean(dsfString[7]).booleanValue());
+                    dsf.setFacetable(new Boolean(dsfString[8]).booleanValue());
+                    dsf.setShowAboveFold(new Boolean(dsfString[9]).booleanValue());
+                    dsf.setRequired(new Boolean(dsfString[10]).booleanValue());
+                    dsf.setMetadataBlock( dataverseService.findMDBByName(dsfString[11]) );
+                    if (dsfString.length == 13) {
+                        dsf.setParentDatasetField( datasetFieldService.findByName(dsfString[12]));
+                    }
+                    
+                    datasetFieldService.save(dsf);
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return "DatasetFields loaded: " + (lineNumber - 1);
     }
 
 }
