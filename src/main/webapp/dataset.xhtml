@@ -334,76 +334,73 @@
 
                                 <div class="panel-group">
                                     <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlockValues}" var="metadataBlockVal" varStatus="block">
-                                        <div class="panel panel-default">
-                                            <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading">
-                                                #{metadataBlockVal.key.displayName}
-                                            </div>
-                                            
-                                            <div id="collapse#{block.index}" class="collapse">
-                                                <div class="panel-body">
-                                                    <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
+                                            <div class="panel panel-default">
+                                                <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading">
+                                                    #{metadataBlockVal.key.displayName}
+                                                </div>
 
-                                                            <ui:fragment rendered="#{((empty DatasetPage.editMode and !empty fieldValues.strValue ) or DatasetPage.editMode == 'METADATA') and !fieldValues.datasetField.hasParent }"> 
-                                                                <ui:fragment>
-                                                                    <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label" style="border:1px solid red;">
-                                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
-                                                                               #{fieldValues.datasetField.title}
-                                                                        </a>
-                                                                    </label>
-                                                                </ui:fragment>
-                                                            </ui:fragment>
-                                                            
-                                                            <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
-                                                                <div class="col-sm-6" style="border:1px solid red;">
-                                                                    <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
-                                                                    <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' }" />
-                                                                </div>
-                                                            </ui:fragment>
-                                                            
-                                                            <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
-                                                                <div class="col-sm-6" style="border:1px solid gold;">
-                                                                    <!-- CHILDS -->
-                                                                    <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}">                                                              
-                                                                        <div class="form-group col-sm-6" style="border:1px solid gold;">
-                                                                            <label class="control-label" for="metadata_BLANK">
-                                                                                <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                <div id="collapse#{block.index}" class="collapse">
+                                                    <div class="panel-body">
+                                                        <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
+                                                            <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasParent) or (empty DatasetPage.editMode and !empty fieldValues.strValue)}">
+                                                                <div class="form-group">
+                                                                    <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
+                                                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                                                       #{fieldValues.datasetField.title}
+                                                                                </a>
                                                                             </label>
-                                                                            <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
-                                                                        </div>
-                                                                    </ui:repeat>                                                                
-                                                                    
-                                                                    
-                                                                    
-                                                                    
-                                                                    <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
-                                                                        <div class="form-group col-sm-6" style="border:1px solid gold;">
-                                                                            <label class="control-label" for="metadata_BLANK">
-                                                                                <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
-                                                                            </label>                                                                       
-                                                                            <p:inputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/>
-                                                                        </div>
-                                                                    </ui:repeat>
-                                                                </div>
-                                                            </ui:fragment>
-                                                            
-                                                            <ui:fragment rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}">
-                                                                <div class="col-xs-2">
-                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
-                                                                                    title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                    actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
-                                                                    </p:commandButton>
-                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
-                                                                                    title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
-                                                                                    escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
-                                                                       <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                    </p:commandButton>
-                                                                </div>
-                                                            </ui:fragment>
+                                                                    </ui:fragment>
 
-                                                    </ui:repeat>
+                                                                    <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
+                                                                        <div class="col-sm-6">
+                                                                            <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
+                                                                            <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA'}" />
+                                                                        </div>
+                                                                    </ui:fragment>
+
+                                                                    <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
+                                                                        <div class="col-sm-6">
+                                                                            <!-- CHILDS -->
+                                                                            <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and !fieldValues.datasetField.hasChildren}">                                                              
+                                                                                <div class="form-group col-sm-6">
+                                                                                    <label class="control-label" for="metadata_BLANK">
+                                                                                        <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                                                    </label>
+                                                                                    <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                                                </div>
+                                                                            </ui:repeat>                                                                
+
+                                                                            <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
+                                                                                <div class="form-group col-sm-6">
+                                                                                    <label class="control-label" for="metadata_BLANK">
+                                                                                        <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                                                    </label>                                                                       
+                                                                                    <p:inputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/>
+                                                                                </div>
+                                                                            </ui:repeat>
+                                                                        </div>
+                                                                    </ui:fragment>
+
+                                                                    <ui:fragment rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}">
+                                                                        <div class="col-xs-2">
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
+                                                                                            title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
+                                                                                            actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
+                                                                            </p:commandButton>
+                                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
+                                                                                            title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                                            escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
+                                                                               <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                            </p:commandButton>
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </div>
+                                                            </ui:fragment>
+                                                        </ui:repeat>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                     </ui:repeat>
                                 </div>
                             </p:tab>
