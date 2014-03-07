@@ -93,6 +93,34 @@ public class SearchIncludeFragment {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
+    public String searchRedirect(String stayOnDataversePage) {
+        /**
+         * These are our decided-upon search/browse rules, the way we expect
+         * users to search/browse and how we want the app behave:
+         *
+         * 1. When a user is browsing (i.e. hasn't entered a search term) we
+         * only show dataverses and datasets. Files are hidden. See
+         * https://redmine.hmdc.harvard.edu/issues/3573
+         *
+         * 2. A search is always brand new. Don't keep around old facets that
+         * were selected. Show page 1 of results. Make the results bookmarkable:
+         * https://redmine.hmdc.harvard.edu/issues/3664
+         *
+         * 3. When you add or remove a facet, you should always go to page 1 of
+         * search results. Search terms should be preserved.
+         *
+         * 4. After search terms have been entered and facets have been
+         * selected, we expect users to (optionally) page through search results
+         * and as they do so we will preserve the state of both their search
+         * terms and their facet selections.
+         */
+        if (stayOnDataversePage.equals("true")) {
+            return "dataverse.xhtml?faces-redirect=true&q=" + query + "&amp;types=dataverses:datasets:files" ;
+        } else {
+            return "FIXME";
+        }
+    }
+
     public void search() {
         logger.info("search called");
 
