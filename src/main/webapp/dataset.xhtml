@@ -124,11 +124,11 @@
                             <div class="form-group">
                                 <label for="keywordsTable" class="col-sm-2 control-label">Keyword(s)</label>
                                 <div class="col-sm-10">
-                                    <ui:repeat id="keywordsTable" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
+                                    <ui:repeat id="keywordsTable" varStatus="loop" value="#{DatasetPage.datasetVersionUI.datasetKeywords}" var="keyword">
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Keyword" />
-                                                <p:inputText id="keyword" value="#{keyword.value.strValue}" />
+                                                <p:inputText id="keyword" value="#{DatasetPage.datasetVersionUI.datasetKeywords[loop.index]}" />
                                                 <p:message for="keyword"/>
                                             </div>
                                             <div class="col-xs-3">
