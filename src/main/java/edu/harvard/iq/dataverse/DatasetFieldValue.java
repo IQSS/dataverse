@@ -83,7 +83,7 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
     public boolean isChildEmpty(){
         //check all child values for empty...        
         for (DatasetFieldValue dsfvc: this.childDatasetFieldValues){
-            if(!dsfvc.getStrValue().isEmpty()){
+            if(dsfvc.getStrValue()!= null && !dsfvc.getStrValue().isEmpty()){
                 return false;
             }
         }
