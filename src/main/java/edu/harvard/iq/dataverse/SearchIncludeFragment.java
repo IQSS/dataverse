@@ -44,10 +44,8 @@ public class SearchIncludeFragment {
     private Dataverse dataverse;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
-    private String[] selectedTypesArray = {"dataverses", "datasets", "files"};
-    /**
-     * @todo removed from GUI. rename this to selectedTypeToPassToSolr?
-     */
+    private String selectedTypesString = "dataverses:datasets";
+    private List<String> selectedTypesList = new ArrayList<String>();
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
@@ -65,13 +63,12 @@ public class SearchIncludeFragment {
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
+    private boolean debug = false;
+    List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
 
     /**
      * @todo:
-     *
-     * facets with checkboxes: make bookmarkable? don't require select button
-     * (just check box to call search method)?
      *
      * better style and icons for facets
      *
@@ -134,8 +131,19 @@ public class SearchIncludeFragment {
 //            this.dataverseSubtreeContext = "all";
         }
 
-        selectedTypesHumanReadable = combine(selectedTypesArray, " OR ");
-        typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
+//        selectedTypesArray = ;
+        selectedTypesList = new ArrayList<>();
+        String[] parts = selectedTypesString.split(":");
+//        int count = 0;
+        for (String string : parts) {
+            selectedTypesList.add(string);
+        }
+
+        String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
+        selectedTypesHumanReadable = combine(arr, " OR ");
+        if (!selectedTypesHumanReadable.isEmpty()) {
+            typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
+        }
         filterQueriesFinal.addAll(filterQueries);
         filterQueriesFinal.add(typeFilterQuery);
 
@@ -150,6 +158,7 @@ public class SearchIncludeFragment {
         try {
             logger.info("query from user:   " + query);
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
+            filterQueriesDebug = filterQueriesFinal;
             solrQueryResponse = searchService.search(queryToPassToSolr, filterQueriesFinal, paginationStart, dataverse);
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -436,12 +445,20 @@ public class SearchIncludeFragment {
 //        this.dataverseSubtreeContext = dataverseSubtreeContext;
 //    }
 
-    public String[] getSelectedTypes() {
-        return selectedTypesArray;
+    public String getSelectedTypesString() {
+        return selectedTypesString;
     }
 
-    public void setSelectedTypes(String[] selectedTypesArray) {
-        this.selectedTypesArray = selectedTypesArray;
+    public void setSelectedTypesString(String selectedTypesString) {
+        this.selectedTypesString = selectedTypesString;
+    }
+
+    public List<String> getSelectedTypesList() {
+        return selectedTypesList;
+    }
+
+    public void setSelectedTypesList(List<String> selectedTypesList) {
+        this.selectedTypesList = selectedTypesList;
     }
 
     public String getSelectedTypesHumanReadable() {
@@ -550,6 +567,18 @@ public class SearchIncludeFragment {
         this.directChildDvObjectContainerList = directChildDvObjectContainerList;
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
+    public List<String> getFilterQueriesDebug() {
+        return filterQueriesDebug;
+    }
+
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         String[] parts = filterQuery.split(":");
         String key = parts[0];
@@ -572,5 +601,26 @@ public class SearchIncludeFragment {
         String valueWithoutQuotes = noTrailingQuote;
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
+    }
+
+    public String getNewSelectedTypes(String typeClicked) {
+        List<String> newTypesSelected = new ArrayList<>();
+        for (String selectedType : selectedTypesList) {
+            if (selectedType.equals(typeClicked)) {
+
+            } else {
+                newTypesSelected.add(selectedType);
+            }
+
+        }
+        if (selectedTypesList.contains(typeClicked)) {
+
+        } else {
+            newTypesSelected.add(typeClicked);
+        }
+
+        String[] arr = newTypesSelected.toArray(new String[newTypesSelected.size()]);
+        return combine(arr, ":");
+
     }
 }

@@ -87,9 +87,9 @@ public class Search {
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("count_in_response", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
-                    .add("spelling_alternatives", spelling_alternatives)
-                    .add("itemsJson", filesArrayBuilder.build())
-                    .add("facets", facets)
+//                    .add("spelling_alternatives", spelling_alternatives)
+//                    .add("itemsJson", filesArrayBuilder.build())
+//                    .add("facets", facets)
                     .build();
 //            logger.info("value: " + value);
             return Util.jsonObject2prettyString(value);
