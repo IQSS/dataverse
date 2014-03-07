@@ -183,6 +183,7 @@ public class DatasetPage implements java.io.Serializable {
             author.setChildDatasetFieldValues(new ArrayList());
             author.getChildDatasetFieldValues().add(authorName);
             addAuthor.setName(authorName);
+            /*
             DatasetFieldValue firstName = new DatasetFieldValue();
             firstName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorFirstName));
             firstName.setDatasetVersion(editVersion);
@@ -197,6 +198,7 @@ public class DatasetPage implements java.io.Serializable {
             lastName.setStrValue("");
             author.getChildDatasetFieldValues().add(lastName);
             addAuthor.setLastName(lastName);
+            */
             DatasetFieldValue authorAffiliation = new DatasetFieldValue();
             authorAffiliation.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorAffiliation));
             authorAffiliation.setDatasetVersion(editVersion);
@@ -206,11 +208,12 @@ public class DatasetPage implements java.io.Serializable {
             addAuthor.setAffiliation(authorAffiliation);
             editVersion.getDatasetFieldValues().add(author);
             editVersion.getDatasetFieldValues().add(authorName);
-            editVersion.getDatasetFieldValues().add(firstName);
-            editVersion.getDatasetFieldValues().add(lastName);
+            //editVersion.getDatasetFieldValues().add(firstName);
+            //editVersion.getDatasetFieldValues().add(lastName);
             editVersion.getDatasetFieldValues().add(authorAffiliation);
             datasetVersionUI.getDatasetAuthors().add(addAuthor);           
         } else if (recordType.equals("KEYWORD")){
+            /*
             DatasetKeyword addKeyword = new DatasetKeyword();
             addKeyword.setDatasetVersion(editVersion);
             DatasetFieldValue keyword = new DatasetFieldValue();
@@ -226,7 +229,9 @@ public class DatasetPage implements java.io.Serializable {
             addKeyword.setValue(keywordValue);
             editVersion.getDatasetFieldValues().add(keyword);
             editVersion.getDatasetFieldValues().add(keywordValue);           
-            datasetVersionUI.getDatasetKeywords().add(addKeyword);             
+            datasetVersionUI.getDatasetKeywords().add(addKeyword);  
+            */
+            datasetVersionUI.getDatasetKeywords().add(new String());
         }   else if (recordType.equals("TOPIC")){
             DatasetTopicClass addTopic = new DatasetTopicClass();
             addTopic.setDatasetVersion(editVersion);
