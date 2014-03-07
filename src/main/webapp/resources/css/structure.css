@@ -1,5 +1,7 @@
 /*--------- BODY --------- */
 /* body, .ui-widget {font:13px/1.7em "Open Sans","trebuchet ms",arial,sans-serif;} */
+a, a:link, a:active, .ui-widget-content a, .ui-widget-content a:link, .ui-widget-content a:active {color: #428BCA;}
+a:hover, a:focus, .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
 
 /* -------- TEMPLATE -------- */
 .panelgridHeaderTable {width:100%;}
@@ -80,6 +82,8 @@ div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; marg
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 .facetCategoryName {font-weight:bold;}
+
+.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {color:#C55B28;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
