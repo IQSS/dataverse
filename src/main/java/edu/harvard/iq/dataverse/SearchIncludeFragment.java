@@ -44,7 +44,7 @@ public class SearchIncludeFragment {
     private Dataverse dataverse;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
-    private String selectedTypesString = "dataverses:datasets";
+    private String selectedTypesString;
     private List<String> selectedTypesList = new ArrayList<String>();
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
@@ -131,7 +131,17 @@ public class SearchIncludeFragment {
 //            this.dataverseSubtreeContext = "all";
         }
 
-//        selectedTypesArray = ;
+        if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+            /**
+             *
+             * "When you browse to a dataverse, we show dataverses OR datasets.
+             * The moment you type a term and search, we show all types
+             * (dataverses, datasets, files)."
+             *
+             * -- https://redmine.hmdc.harvard.edu/issues/3573
+             */
+            selectedTypesString = "dataverses:datasets";
+        }
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
 //        int count = 0;

@@ -48,7 +48,7 @@
 
             <div style="width:20%;float:left;padding-right:1em;">
                 <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
-                <h:outputLink>
+                <h:outputLink disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
@@ -62,7 +62,7 @@
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})"/>
                 </h:outputLink>
                 <br/>
-                <h:outputLink>
+                <h:outputLink disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
@@ -76,7 +76,7 @@
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})"/>
                 </h:outputLink>
                 <br/>
-                <h:outputLink>
+                <h:outputLink disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <!--<f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>-->
