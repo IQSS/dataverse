@@ -80,6 +80,16 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
         this.childDatasetFieldValues = childDatasetFieldValues;
     }
     
+    public boolean isChildEmpty(){
+        //check all child values for empty...        
+        for (DatasetFieldValue dsfvc: this.childDatasetFieldValues){
+            if(!dsfvc.getStrValue().isEmpty()){
+                return false;
+            }
+        }
+        return true;
+    }
+    
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetFieldValue parentDatasetFieldValue;
     public DatasetFieldValue getParentDatasetFieldValue() {

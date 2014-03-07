@@ -164,8 +164,7 @@ public class DatasetPage implements java.io.Serializable {
             editVersion = dataset.getEditVersion();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
-    }
-    
+    }   
     
     public void addRecord(String recordType){ 
      
@@ -175,6 +174,7 @@ public class DatasetPage implements java.io.Serializable {
             DatasetFieldValue author = new DatasetFieldValue();
             author.setDatasetVersion(editVersion);
             author.setDatasetField(fieldService.findByName(DatasetFieldConstant.author));
+            
             DatasetFieldValue authorName = new DatasetFieldValue();
             authorName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorName));
             authorName.setDatasetVersion(editVersion);
@@ -183,22 +183,6 @@ public class DatasetPage implements java.io.Serializable {
             author.setChildDatasetFieldValues(new ArrayList());
             author.getChildDatasetFieldValues().add(authorName);
             addAuthor.setName(authorName);
-            /*
-            DatasetFieldValue firstName = new DatasetFieldValue();
-            firstName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorFirstName));
-            firstName.setDatasetVersion(editVersion);
-            firstName.setParentDatasetFieldValue(author);
-            firstName.setStrValue("");
-            author.getChildDatasetFieldValues().add(firstName);
-            addAuthor.setFirstName(firstName);
-            DatasetFieldValue lastName = new DatasetFieldValue();
-            lastName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorLastName));
-            lastName.setDatasetVersion(editVersion);
-            lastName.setParentDatasetFieldValue(author);
-            lastName.setStrValue("");
-            author.getChildDatasetFieldValues().add(lastName);
-            addAuthor.setLastName(lastName);
-            */
             DatasetFieldValue authorAffiliation = new DatasetFieldValue();
             authorAffiliation.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorAffiliation));
             authorAffiliation.setDatasetVersion(editVersion);
@@ -208,30 +192,15 @@ public class DatasetPage implements java.io.Serializable {
             addAuthor.setAffiliation(authorAffiliation);
             editVersion.getDatasetFieldValues().add(author);
             editVersion.getDatasetFieldValues().add(authorName);
-            //editVersion.getDatasetFieldValues().add(firstName);
-            //editVersion.getDatasetFieldValues().add(lastName);
             editVersion.getDatasetFieldValues().add(authorAffiliation);
             datasetVersionUI.getDatasetAuthors().add(addAuthor);           
         } else if (recordType.equals("KEYWORD")){
-            /*
-            DatasetKeyword addKeyword = new DatasetKeyword();
-            addKeyword.setDatasetVersion(editVersion);
             DatasetFieldValue keyword = new DatasetFieldValue();
             keyword.setDatasetVersion(editVersion);
             keyword.setDatasetField(fieldService.findByName(DatasetFieldConstant.keyword));
-            DatasetFieldValue keywordValue = new DatasetFieldValue();
-            keywordValue.setDatasetField(fieldService.findByName(DatasetFieldConstant.keywordValue));
-            keywordValue.setDatasetVersion(editVersion);
-            keywordValue.setParentDatasetFieldValue(keyword);
-            keywordValue.setStrValue("");
-            keyword.setChildDatasetFieldValues(new ArrayList());
-            keyword.getChildDatasetFieldValues().add(keywordValue);
-            addKeyword.setValue(keywordValue);
-            editVersion.getDatasetFieldValues().add(keyword);
-            editVersion.getDatasetFieldValues().add(keywordValue);           
-            datasetVersionUI.getDatasetKeywords().add(addKeyword);  
-            */
-            datasetVersionUI.getDatasetKeywords().add(new String());
+            keyword.setStrValue("");
+            editVersion.getDatasetFieldValues().add(keyword);          
+            datasetVersionUI.getDatasetKeywords().add(keyword);  
         }   else if (recordType.equals("TOPIC")){
             DatasetTopicClass addTopic = new DatasetTopicClass();
             addTopic.setDatasetVersion(editVersion);
@@ -276,21 +245,26 @@ public class DatasetPage implements java.io.Serializable {
         addNew.setDatasetField(dfvType.getDatasetField());
         //If there are children create them and add to map list        
         if (dfvType.getDatasetField().isHasChildren()) {
-            addNew.setChildDatasetFieldValues(new ArrayList());
-            for (DatasetField dsfc : addNew.getDatasetField().getChildDatasetFields()) {
-                DatasetFieldValue cv = new DatasetFieldValue();
-                cv.setParentDatasetFieldValue(addNew);
-                cv.setDatasetField(dsfc);
-                cv.setDatasetVersion(editVersion);                
-                addNew.getChildDatasetFieldValues().add(cv);                  
-                editVersion.getDatasetFieldValues().add(cv);
-            }
+            addNew = addChildren(addNew);
         }
         // add parent value
         editVersion.getDatasetFieldValues().add(addNew);
         //Refresh the UI to add the new fields to the blocks
         datasetVersionUI = new DatasetVersionUI(editVersion); 
-    }   
+    } 
+    
+    private DatasetFieldValue addChildren (DatasetFieldValue dsfvIn){      
+        dsfvIn.setChildDatasetFieldValues(new ArrayList());
+            for (DatasetField dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
+                DatasetFieldValue cv = new DatasetFieldValue();
+                cv.setParentDatasetFieldValue(dsfvIn);
+                cv.setDatasetField(dsfc);
+                cv.setDatasetVersion(editVersion);                
+                dsfvIn.getChildDatasetFieldValues().add(cv);                  
+                editVersion.getDatasetFieldValues().add(cv);
+            }        
+        return dsfvIn;
+    }
     
     public void deleteRecord(String recordType, Object toDelete){
         
