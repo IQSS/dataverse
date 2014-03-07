@@ -181,7 +181,12 @@ public class DataFile extends DvObject {
 
     public Path getFileSystemLocation() {
         
-        String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
+        
+        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
+        if (studyDirectoryPath == null) {
+            return null;
+        }
+        String studyDirectory = studyDirectoryPath.toString();
  
         if (this.fileSystemName == null || this.fileSystemName.equals("")) {
             // *temporary* legacy hack - so that the files saved with their
