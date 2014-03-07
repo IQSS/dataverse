@@ -17,7 +17,7 @@
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" style="margin-right:1em;"/>
-                    <p:commandButton id="searchbutton" value="Find" actionListener="#{SearchIncludeFragment.search()}" update="@all"/>
+                    <p:commandButton id="searchbutton" value="Find" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                     </h:outputLink>

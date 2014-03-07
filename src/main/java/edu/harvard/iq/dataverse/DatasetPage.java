@@ -428,7 +428,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         try {
-            dataset = datasetService.save(dataset);
+            datasetService.save(dataset);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
