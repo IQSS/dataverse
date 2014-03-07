@@ -101,4 +101,9 @@ public class DatasetFieldServiceBean {
         em.flush();
         
     }
+
+    public DatasetField save(DatasetField dsf) {
+       return em.merge(dsf);
+    }     
+    
 }
