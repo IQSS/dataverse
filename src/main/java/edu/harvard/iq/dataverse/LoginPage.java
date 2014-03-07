@@ -42,7 +42,7 @@ public class LoginPage implements java.io.Serializable {
     
     public void init() {
         
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Log In", " - Log in to continue."));  
+        // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Log In", " - Log in to continue."));  
         
     }
 
