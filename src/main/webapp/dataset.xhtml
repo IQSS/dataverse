@@ -260,9 +260,11 @@
                                     <p:column>
                                         <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
                                         <h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>
-
                                         <p:inputText id="fileDescription" value="#{file.description}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileDescription"/>
+                                        <p>
+                                            <h:outputText id="fileMD5" value="MD5: #{file.md5}"/>
+                                        </p>
                                     </p:column>
                                     <p:column>
                                         <p:button value="Download" href="/api/access/datafile/#{file.id}" disabled="#{empty file.id}" rendered="#{!(file.tabularData)}"/>

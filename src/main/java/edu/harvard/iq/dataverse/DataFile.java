@@ -26,6 +26,8 @@ public class DataFile extends DvObject {
     
     private String fileSystemName;
 
+    //private String md5;
+
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -167,6 +169,16 @@ public class DataFile extends DvObject {
         return fmd;
     }
     
+    
+    public String getmd5() { 
+        //return this.md5; 
+        return "c897d1410af8f2c74fba11b1db511e9e";
+    }
+    
+    public void setmd5(String md5) { 
+        //this.md5 = md5; 
+    }
+
     public Path getFileSystemLocation() {
         
         String studyDirectory = this.getOwner().getFileSystemDirectory().toString();
