@@ -138,7 +138,7 @@
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-xs-3">
                                                 <p:outputLabel value="Keyword" />
-                                                <p:inputText id="keyword" value="#{DatasetPage.datasetVersionUI.datasetKeywords[loop.index]}" />
+                                                <p:inputText id="keyword" value="#{keyword.strValue}" />
                                                 <p:message for="keyword"/>
                                             </div>
                                             <div class="col-xs-3">
@@ -232,7 +232,6 @@
                                                 <div><h:outputText value="#{childVal.strValue}"/></div>
                                             </div>
                                         </ui:repeat>
-                                        <p:inputText styleClass="form-control" id="Cmetadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren  and fieldValues.datasetField.hasParent}" />
                                         <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
                                             <div class="form-group col-sm-5" style="border:1px solid gold; margin-right:1em; padding-left:0;">
                                                 <label for="metadata_BLANK">
@@ -344,7 +343,7 @@
                                                 <div class="panel-body">
                                                     <ui:repeat value="#{metadataBlockVal.value}" var="fieldValues">
 
-                                                            <ui:fragment rendered="#{(empty DatasetPage.editMode and !empty fieldValues.strValue) or DatasetPage.editMode == 'METADATA' }"> 
+                                                            <ui:fragment rendered="#{((empty DatasetPage.editMode and !empty fieldValues.strValue ) or DatasetPage.editMode == 'METADATA') and !fieldValues.datasetField.hasParent }"> 
                                                                 <ui:fragment>
                                                                     <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label" style="border:1px solid red;">
                                                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
@@ -354,10 +353,10 @@
                                                                 </ui:fragment>
                                                             </ui:fragment>
                                                             
-                                                            <ui:fragment rendered="#{!empty fieldValues.strValue and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
+                                                            <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
                                                                 <div class="col-sm-6" style="border:1px solid red;">
                                                                     <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
-                                                                    <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}" />
+                                                                    <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' }" />
                                                                 </div>
                                                             </ui:fragment>
                                                             
@@ -374,7 +373,6 @@
                                                                     </ui:repeat>                                                                
                                                                     
                                                                     
-                                                                    <p:inputText styleClass="form-control" id="Cmetadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and fieldValues.datasetField.hasParent}" />
                                                                     
                                                                     
                                                                     <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">

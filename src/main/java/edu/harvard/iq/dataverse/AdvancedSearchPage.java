@@ -58,7 +58,7 @@ public class AdvancedSearchPage {
         List<String> queryStrings = new ArrayList();
         String delimiter = "[\"]+";
         for (DatasetField datasetField : metadataFieldList) {
-            if (!"".equals(datasetField.getSearchValue())) {
+            if (datasetField.getSearchValue() != null && !datasetField.getSearchValue().equals("")) {
                 String myString = datasetField.getSearchValue();
                 if (myString.contains("\"")) {
                     String [] tempString = datasetField.getSearchValue().split(delimiter);

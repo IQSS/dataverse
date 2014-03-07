@@ -72,47 +72,10 @@ public class DatasetVersionUI {
                     }
                 }
                 datasetAuthor.setAuthorAsOrg(false);
-                //TODO save Author as Org to DB somehow?
-                /*
-                if(datasetAuthor.getFirstName().isEmpty() && !datasetAuthor.getLastName().isEmpty()){
-                    datasetAuthor.setAuthorAsOrg(true);
-                }
-                */
                 this.getDatasetAuthors().add(datasetAuthor);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.keyword)) {
-                /*Collection childVals = dsfv.getChildDatasetFieldValues();
-                DatasetKeyword datasetKeyword = new DatasetKeyword();
-                if (childVals != null) {
-                    for (Object cv : childVals) {
-                        DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.keywordValue)) {
-                            datasetKeyword.setValue(cvo);
-                        }
-                    }
-                }               
-                this.getDatasetKeywords().add(datasetKeyword);
-                */
-                this.getDatasetKeywords().add(dsfv.getStrValue());
+                this.getDatasetKeywords().add(dsfv);
             } 
-            /*else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.topicClassification)) {
-                Collection childVals = dsfv.getChildDatasetFieldValues();
-                DatasetTopicClass datasetTopicClass = new DatasetTopicClass();
-                if (childVals != null) {
-                    for (Object cv : childVals) {
-                        DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.topicClassValue)) {
-                            datasetTopicClass.setValue(cvo);
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.topicClassVocab)) {
-                            datasetTopicClass.setVocab(cvo);
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.topicClassVocabURI)) {
-                            datasetTopicClass.setVocabURI(cvo);
-                        }
-                    }
-                }
-                this.getDatasetTopicClasses().add(datasetTopicClass);
-            }*/
             else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.distributor)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetDistributor datasetDistributor = new DatasetDistributor();
@@ -139,7 +102,7 @@ public class DatasetVersionUI {
                 this.getDatasetDistributors().add(datasetDistributor);            
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
                 this.getSubjects().add(dsfv.getStrValue());
-            } else if (dsfv.getDatasetField().isShowAboveFold()) {
+            } else if (dsfv.getDatasetField().isShowAboveFold() &&  !dsfv.getDatasetField().isHasParent() &&  !dsfv.getDatasetField().isHasChildren() ) {
                 this.getAboveFoldGeneralValues().add(dsfv);                                
             } 
         }
@@ -199,11 +162,11 @@ public class DatasetVersionUI {
         this.description = description;
     }
     
-    private List<String> datasetKeywords = new ArrayList();
-    public List<String> getDatasetKeywords() {
+    private List<DatasetFieldValue> datasetKeywords = new ArrayList();
+    public List<DatasetFieldValue> getDatasetKeywords() {
         return datasetKeywords;
     }
-    public void setDatasetKeywords(List<String> datasetKeywords) {
+    public void setDatasetKeywords(List<DatasetFieldValue> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     } 
     
@@ -350,12 +313,12 @@ public class DatasetVersionUI {
     
     public String getKeywordsStr() {
         String str = "";
-        for (String sa : this.getDatasetKeywords()) {
+        for (DatasetFieldValue sa : this.getDatasetKeywords()) {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            if (sa != null && sa.toString() != null && !sa.toString().trim().isEmpty() ){
-                 str += sa.toString().trim(); 
+            if (sa.getStrValue() != null && sa.getStrValue().toString() != null && !sa.getStrValue().toString().trim().isEmpty() ){
+                 str += sa.getStrValue().toString().trim(); 
             }
         }
         return str;
