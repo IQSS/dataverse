@@ -73,13 +73,14 @@ public class DatasetVersionUI {
                 }
                 datasetAuthor.setAuthorAsOrg(false);
                 //TODO save Author as Org to DB somehow?
-                
+                /*
                 if(datasetAuthor.getFirstName().isEmpty() && !datasetAuthor.getLastName().isEmpty()){
                     datasetAuthor.setAuthorAsOrg(true);
                 }
+                */
                 this.getDatasetAuthors().add(datasetAuthor);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.keyword)) {
-                Collection childVals = dsfv.getChildDatasetFieldValues();
+                /*Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetKeyword datasetKeyword = new DatasetKeyword();
                 if (childVals != null) {
                     for (Object cv : childVals) {
@@ -88,8 +89,10 @@ public class DatasetVersionUI {
                             datasetKeyword.setValue(cvo);
                         }
                     }
-                }
+                }               
                 this.getDatasetKeywords().add(datasetKeyword);
+                */
+                this.getDatasetKeywords().add(dsfv.getStrValue());
             } 
             /*else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.topicClassification)) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
@@ -196,11 +199,11 @@ public class DatasetVersionUI {
         this.description = description;
     }
     
-    private List<DatasetKeyword> datasetKeywords = new ArrayList();
-    public List<DatasetKeyword> getDatasetKeywords() {
+    private List<String> datasetKeywords = new ArrayList();
+    public List<String> getDatasetKeywords() {
         return datasetKeywords;
     }
-    public void setDatasetKeywords(List<DatasetKeyword> datasetKeywords) {
+    public void setDatasetKeywords(List<String> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     } 
     
@@ -347,12 +350,12 @@ public class DatasetVersionUI {
     
     public String getKeywordsStr() {
         String str = "";
-        for (DatasetKeyword sa : this.getDatasetKeywords()) {
+        for (String sa : this.getDatasetKeywords()) {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            if (sa.getValue() != null && !sa.getValue().getStrValue().isEmpty() ){
-                 str += sa.getValue().getStrValue(); 
+            if (sa != null && sa.toString() != null && !sa.toString().trim().isEmpty() ){
+                 str += sa.toString().trim(); 
             }
         }
         return str;
