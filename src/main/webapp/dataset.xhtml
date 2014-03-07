@@ -265,9 +265,7 @@
                                         <p:message for="fileDescription"/>
                                     </p:column>
                                     <p:column>
-                                       <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}" rendered="#{!(file.tabularData)}">
-                           			<h:outputText value="Download"/>
-                        		</h:outputLink>
+                                        <p:button value="Download" href="/api/access/datafile/#{file.id}" disabled="#{empty file.id}" rendered="#{!(file.tabularData)}"/>
                                         
                                         <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
                                             <p:menuitem value="">
@@ -287,13 +285,10 @@
                                                 </h:outputLink>
                                             </p:menuitem>
                                         </p:menuButton>
-                                        <!-- h:outputText value="Download" rendered="#{empty file.id}"/ -->
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
-					<h:outputLink value="/dataexplore/gui.html?dfId=#{file.id}" target="_new" rendered="#{file.tabularData}">
-                            			<h:outputText value="(Explore Data)"/>
-                        		</h:outputLink>
+                                        <p:button value="Explore" href="/dataexplore/gui.html?dfId=#{file.id}" target="_new" rendered="#{file.tabularData}"/>
 
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
