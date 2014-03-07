@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
@@ -17,12 +16,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-
 /**
  *
  * @author gdurand
  */
-
 @Stateless
 @Named
 public class DataverseServiceBean {
@@ -30,10 +27,10 @@ public class DataverseServiceBean {
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
-		
-	@Inject
-	DataverseSession session;
-	
+
+    @Inject
+    DataverseSession session;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
@@ -46,33 +43,33 @@ public class DataverseServiceBean {
 
     public Dataverse find(Object pk) {
         return (Dataverse) em.find(Dataverse.class, pk);
-    }    
-    
+    }
+
     public List<Dataverse> findAll() {
         return em.createQuery("select object(o) from Dataverse as o order by o.name").getResultList();
     }
-    
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
-         Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
-         query.setParameter("ownerId", ownerId);
-         return query.getResultList();
-    }  
-    
+        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name");
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
+    }
+
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }
-	
-	public Dataverse findByAlias( String anAlias ) {
-		return em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
-				.setParameter("alias", anAlias)
-				.getSingleResult();
-	}
-	
-	public boolean isRootDataverseExists() {
-		long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
-		return (count==1);
-	}
-	
+
+    public Dataverse findByAlias(String anAlias) {
+        return em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
+                .setParameter("alias", anAlias)
+                .getSingleResult();
+    }
+
+    public boolean isRootDataverseExists() {
+        long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
+        return (count == 1);
+    }
+
     public String determineDataversePath(Dataverse dataverse) {
         List<String> dataversePathSegments = new ArrayList();
         indexService.findPathSegments(dataverse, dataversePathSegments);
@@ -82,17 +79,17 @@ public class DataverseServiceBean {
         }
         return dataversePath.toString();
     }
-    
-    public List<DatasetField> findCitationDatasetFieldsByDataverseId(Long ownerId) {         
-         return findDatasetFieldsByDataverseId(ownerId, true);
+
+    public List<DatasetField> findCitationDatasetFieldsByDataverseId(Long ownerId) {
+        return findDatasetFieldsByDataverseId(ownerId, true);
     }
-            
-   public List<DatasetField> findOtherMetadataDatasetFieldsByDataverseId(Long ownerId) {
+
+    public List<DatasetField> findOtherMetadataDatasetFieldsByDataverseId(Long ownerId) {
         return findDatasetFieldsByDataverseId(ownerId, false);
     }
-    
+
     public List<DatasetField> findDatasetFieldsByDataverseId(Long ownerId, boolean showOnCreate) {
-         List retlist = new <DatasetField> ArrayList();
+        List retlist = new <DatasetField> ArrayList();
         String queryString = "select m.id from MetadataBlock m  join DvObject_MetadataBlock j on j.metadataBlocks_id = m.id "
                 + " join DvObject d on d.id = j.dataverse_id "
                 + " where d.id = " + ownerId
@@ -100,23 +97,28 @@ public class DataverseServiceBean {
                 + " ;";
         List blockList = new ArrayList();
 
-            Query query = em.createNativeQuery(queryString);
-            for (Object currentResult : query.getResultList()) {
-                blockList.add(new Long(((Integer)currentResult).longValue()));
-                MetadataBlock mdb = this.findMDB(new Long(((Integer)currentResult).longValue()));
-                for (DatasetField dsf: mdb.getDatasetFields()){
-                    retlist.add(dsf);
-                }
-            }          
-         return retlist;
+        Query query = em.createNativeQuery(queryString);
+        for (Object currentResult : query.getResultList()) {
+            blockList.add(new Long(((Integer) currentResult).longValue()));
+            MetadataBlock mdb = this.findMDB(new Long(((Integer) currentResult).longValue()));
+            for (DatasetField dsf : mdb.getDatasetFields()) {
+                retlist.add(dsf);
+            }
+        }
+        return retlist;
     }
-       
+
     public MetadataBlock findMDB(Long id) {
         return (MetadataBlock) em.find(MetadataBlock.class, id);
     }
 
+    public MetadataBlock findMDBByName(String name) {
+        return em.createQuery("select m from MetadataBlock m WHERE m.name=:name", MetadataBlock.class)
+                .setParameter("name", name)
+                .getSingleResult();
+    }
+
     public List<MetadataBlock> findAllMetadataBlocks() {
         return em.createQuery("select object(o) from MetadataBlock as o order by o.name").getResultList();
-    
-    }    
+    }  
 }
