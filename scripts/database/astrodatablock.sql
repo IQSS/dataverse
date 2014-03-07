@@ -34,10 +34,9 @@ UPDATE datasetfield SET fieldtype = 'date' where metadatablock_id = 6 AND title 
 -- display orders:
 UPDATE datasetfield SET displayorder = 1 WHERE metadatablock_id = 6;
 UPDATE datasetfield SET displayorder = 0 WHERE metadatablock_id = 6 AND title = 'Type';
--- finally, add the astro metadatablock to the root dataverse:
-INSERT INTO dvobject_metadatablock(dataverse_id, metadatablocks_id) VALUES (1, 6);
+
 -- parent field definitions: 
 -- "Coverage" nested fields:
-UPDATE datasetfield SET parentdatasetfield_id = (SELECT id FROM datasetfield WHERE name='coverage') where name ~ '^coverage\..*';"
+UPDATE datasetfield SET parentdatasetfield_id = (SELECT id FROM datasetfield WHERE name='coverage') where name ~ '^coverage\..*';
 -- "Resolution" nested fields:
-UPDATE datasetfield SET parentdatasetfield_id = (SELECT id FROM datasetfield WHERE name='resolution') where name ~ '^resolution\..*';"
+UPDATE datasetfield SET parentdatasetfield_id = (SELECT id FROM datasetfield WHERE name='resolution') where name ~ '^resolution\..*';
