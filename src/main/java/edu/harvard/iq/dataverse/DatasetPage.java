@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
+import edu.harvard.iq.dataverse.util.MD5Checksum;
 import java.io.IOException;
 import java.io.InputStream; 
 import java.io.BufferedInputStream;
@@ -372,61 +373,39 @@ public class DatasetPage implements java.io.Serializable {
             }
         }        
 
-        // save any new files
         for (UploadedFile uFile : newFiles.keySet()) {
             DataFile dFile = newFiles.get(uFile);
-            /*
-            try {
-            */
-                boolean ingestedAsTabular = false;
-                boolean metadataExtracted = false; 
-                
-                
-                
-                if (ingestableAsTabular(dFile)) {
-                    
-                    try {          
-                        ingestedAsTabular = ingestAsTabular(uFile, dFile);
-                        dFile.setContentType("text/tab-separated-values");
-                    } catch (IOException iex) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
-                        ingestedAsTabular = false; 
-                    }
-                } else if (fileMetadataExtractable(dFile)) {
-                    
-                    try {
-                        metadataExtracted = extractIndexableMetadata(uFile, dFile);
-                        dFile.setContentType("application/fits");
-                    } catch(IOException mex) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file "+dFile.getName(), mex);
-                    }
-                    if (metadataExtracted) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
-                    } else {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
-                    }
-                }
 
-                if (!ingestedAsTabular) {
-                    /*
-                    while (Files.exists(dFile.getFileSystemLocation())) {
-                        datasetService.generateFileSystemName(dFile);
-                    }
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                    Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                    */
+            boolean ingestedAsTabular = false;
+            boolean metadataExtracted = false;
+
+            if (ingestableAsTabular(dFile)) {
+
+                try {
+                    ingestedAsTabular = ingestAsTabular(uFile, dFile);
+                    dFile.setContentType("text/tab-separated-values");
+                } catch (IOException iex) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
+                    ingestedAsTabular = false;
                 }
-            /*    
-            } catch (IOException ex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
-                // TODO: 
-                // discard the DataFile and disconnect it from the dataset object!
+            } else if (fileMetadataExtractable(dFile)) {
+
+                try {
+                    metadataExtracted = extractIndexableMetadata(uFile, dFile);
+                    dFile.setContentType("application/fits");
+                } catch (IOException mex) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + dFile.getName(), mex);
+                }
+                if (metadataExtracted) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
+                } else {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
+                }
             }
-            */
-
-        }       
+        } 
+        
         try {
-        dataset = datasetService.save(dataset);
+            dataset = datasetService.save(dataset);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
@@ -486,6 +465,8 @@ public class DatasetPage implements java.io.Serializable {
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
             Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
             
+            MD5Checksum md5Checksum = new MD5Checksum();
+            dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
             
         } catch (IOException ioex) {
             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
