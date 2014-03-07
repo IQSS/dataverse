@@ -352,36 +352,80 @@ public class DatasetPage implements java.io.Serializable {
             }
         }        
 
-        for (UploadedFile uFile : newFiles.keySet()) {
-            DataFile dFile = newFiles.get(uFile);
+        /*
+         * Save and/or ingest files, if there are any:
+         */
+        if (newFiles != null && newFiles.size() > 0)
+        {
+            try {
+                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
+                    /* Note that "createDirectories()" must be used - not 
+                    * "createDirectory()", to make sure all the parent 
+                    * directories that may not yet exist are created as well. 
+                    */
 
-            boolean ingestedAsTabular = false;
-            boolean metadataExtracted = false;
-
-            if (ingestableAsTabular(dFile)) {
-
-                try {
-                    ingestedAsTabular = ingestAsTabular(uFile, dFile);
-                    dFile.setContentType("text/tab-separated-values");
-                } catch (IOException iex) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
-                    ingestedAsTabular = false;
+                    Files.createDirectories(dataset.getFileSystemDirectory());
                 }
-            } else if (fileMetadataExtractable(dFile)) {
+            } catch (IOException dirEx) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Failed to create study directory "+dataset.getFileSystemDirectory().toString());
+            }
+        
+            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
+                for (UploadedFile uFile : newFiles.keySet()) {
+                    DataFile dFile = newFiles.get(uFile);
 
-                try {
-                    metadataExtracted = extractIndexableMetadata(uFile, dFile);
-                    dFile.setContentType("application/fits");
-                } catch (IOException mex) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + dFile.getName(), mex);
-                }
-                if (metadataExtracted) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
-                } else {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
+                    boolean ingestedAsTabular = false;
+                    boolean metadataExtracted = false;
+
+                    datasetService.generateFileSystemName(dFile);
+
+                    if (ingestableAsTabular(dFile)) {
+
+                        try {
+                            ingestedAsTabular = ingestAsTabular(uFile, dFile);
+                            dFile.setContentType("text/tab-separated-values");
+                        } catch (IOException iex) {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
+                            ingestedAsTabular = false;
+                        }
+                    } else if (fileMetadataExtractable(dFile)) {
+
+                        try {
+                            metadataExtracted = extractIndexableMetadata(uFile, dFile);
+                            dFile.setContentType("application/fits");
+                        } catch (IOException mex) {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + dFile.getName(), mex);
+                        }
+                        if (metadataExtracted) {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
+                        } else {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
+                        }
+                    }
+            
+                    /* Try to save the file in its permanent location: 
+                     * (unless it was already ingested and saved as tabular data) 
+                     */
+                    if (!ingestedAsTabular) {
+                        try {
+                    
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+                            Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+            
+                            MD5Checksum md5Checksum = new MD5Checksum();
+                            try {
+                                dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
+                            } catch (Exception md5ex) {
+                                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + dFile.getName());
+                            }
+            
+                        } catch (IOException ioex) {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
+                        }
+                    }
                 }
             }
-        } 
+        }
         
         try {
             dataset = datasetService.save(dataset);
@@ -402,6 +446,29 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
     }
 
+    private String getFilesTempDirectory() {
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+        
+        String filesTempDirectory = filesRootDirectory + "/temp";
+        
+        if (!Files.exists(Paths.get(filesTempDirectory))) {
+            /* Note that "createDirectories()" must be used - not 
+             * "createDirectory()", to make sure all the parent 
+             * directories that may not yet exist are created as well. 
+             */
+            try {
+                Files.createDirectories(Paths.get(filesTempDirectory));
+            } catch (IOException ex) {
+                return null;
+            }
+        }
+        
+        return filesTempDirectory;
+    }
+    
     public void cancel() {
         // reset values
         dataset = datasetService.find(dataset.getId());
@@ -426,30 +493,22 @@ public class DatasetPage implements java.io.Serializable {
         editVersion.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(editVersion);
         dataset.getFiles().add( dFile );
+        
+        datasetService.generateFileSystemName(dFile);
+
+        // save the file, in the temporary location for now: 
+        
+        if (getFilesTempDirectory() != null) {
+            try {
+
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
+                Files.copy(uFile.getInputstream(), Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ioex) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemName());
+            }
+        }
         newFiles.put(uFile, dFile);
         
-        /* Try to save the file: */
-        /* Make sure the dataset directory exists: */
-        try {
-            if (!Files.exists(dataset.getFileSystemDirectory())) {
-                /* Note that "createDirectories()" must be used - not 
-                * "createDirectory()", to make sure all the parent 
-                * directories that may not yet exist are created as well. 
-                */
-
-                Files.createDirectories(dataset.getFileSystemDirectory());
-            }
-            datasetService.generateFileSystemName(dFile);
-            
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-            Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-            
-            MD5Checksum md5Checksum = new MD5Checksum();
-            dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
-            
-        } catch (IOException ioex) {
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
-        }
     }
                 
     public DataModel getDatasetFieldsDataModel() {

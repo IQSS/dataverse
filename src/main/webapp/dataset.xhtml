@@ -278,8 +278,8 @@
                                         <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileName"/>
                                        <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
-                                       <h:outputText id="imgPreview" value="preview: " rendered="#{empty file.id and !empty file.filename and file.image}"/>
-                                       <p:graphicImage value="/api/access/imagethumb/#{file.filename}" rendered="#{empty file.id and !empty file.filename and file.image}"/>
+                                       <h:outputText id="imgPreview" value="preview: " rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
+                                       <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}" rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
