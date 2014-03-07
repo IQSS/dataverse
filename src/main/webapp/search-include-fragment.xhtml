@@ -57,7 +57,7 @@
                         <!--<f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>-->
                     <!--</c:forEach>-->
                     <f:param name="page" value="1"/>
-                    <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{true}"/>
+                    <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Dataverses" style="font-weight: #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'bold': 'normal'}"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})"/>
                 </h:outputLink>
@@ -71,7 +71,7 @@
                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                     </c:forEach>
                     <f:param name="page" value="1"/>
-                    <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{true}"/>
+                    <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Datasets" style="font-weight: #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'bold': 'normal'}"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})"/>
                 </h:outputLink>
@@ -86,7 +86,7 @@
                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                     </c:forEach>
                     <f:param name="page" value="1"/>
-                    <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{true}"/>
+                    <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Files" style="font-weight: #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'bold': 'normal'}"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountFiles})"/>
                 </h:outputLink>
