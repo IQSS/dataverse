@@ -1,0 +1,2 @@
+#!/bin/sh
+curl http://localhost:8080/api/datasets?owner=birds -H 'Content-type:application/json' --data-binary @data/in/datasets/1

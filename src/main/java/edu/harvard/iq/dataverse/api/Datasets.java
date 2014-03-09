@@ -2,17 +2,24 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 @Path("datasets")
 public class Datasets {
@@ -21,12 +28,16 @@ public class Datasets {
 
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @GET
     public String get() {
+        logger.info("called GET");
         List<Dataset> datasets = datasetService.findAll();
         JsonArrayBuilder datasetsArrayBuilder = Json.createArrayBuilder();
         for (Dataset dataset : datasets) {
+            logger.info("found a dataset: " + dataset.getId());
            // logger.info("dataset: " + dataset.getTitle());
             JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
                     /**
@@ -46,7 +57,7 @@ public class Datasets {
                      * @todo: don't use distributor for category. testing facets
                      */
                    // .add(SearchFields.CATEGORY, dataset.getDistributor())
-                    .add(SearchFields.DESCRIPTION, dataset.getDescription());
+                    .add(SearchFields.DESCRIPTION, dataset.getDescription() != null ? dataset.getDescription() : "UNKNOWN");
             datasetsArrayBuilder.add(datasetInfoBuilder);
         }
         JsonArray jsonArray = datasetsArrayBuilder.build();
@@ -64,6 +75,11 @@ public class Datasets {
                 logger.info("found " + dataset);
                 // prevent HTTP Status 500 - Internal Server Error
                 dataset.setFiles(null);
+                dataset.setAuthority(null);
+//                dataset.setDescription(null);
+                dataset.setIdentifier(null);
+                dataset.setProtocol(null);
+                dataset.setVersions(null);
                 // elasticsearch fails on "today" with
                 // MapperParsingException[failed to parse date field [today],
                 // tried both date format [dateOptionalTime], and timestamp number with locale []]
@@ -82,8 +98,51 @@ public class Datasets {
     }
 
     @POST
-    public String add(Dataset dataset) {
-        datasetService.save(dataset);
-        return "dataset " + dataset.getId() + " created/updated (and probably indexed, check server.log)\n";
+    public String add(Dataset dataset, @QueryParam("owner") String owner) {
+        try {
+            DatasetVersion editVersion = new DatasetVersion();
+            editVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+            editVersion.setDataset(dataset);
+            Dataverse owningDataverse = dataverseService.findByAlias(owner);
+            dataset.setOwner(owningDataverse);
+            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues());
+            dataset.getVersions().add(editVersion);
+            dataset.setIdentifier("myIdentifier");
+            dataset.setProtocol("myProtocol");
+            datasetService.save(dataset);
+            return "dataset " + dataset.getId() + " created/updated (and probably indexed, check server.log)\n";
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex + " ");
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+                sb.append(cause.getClass().getCanonicalName() + " ");
+                sb.append(cause.getMessage() + " ");
+                if (cause instanceof ConstraintViolationException) {
+                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                    }
+//                } else if (cause instanceof NullPointerException) {
+                } else {
+                    for (int i = 0; i < 2; i++) {
+                        StackTraceElement stacktrace = cause.getStackTrace()[i];
+                        if (stacktrace != null) {
+                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
+                            String methodName = stacktrace.getMethodName();
+                            int lineNumber = stacktrace.getLineNumber();
+                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
+                            sb.append(error);
+                        }
+                    }
+                }
+            }
+            if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
+                return "indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway\n";
+            } else {
+                return Util.message2ApiError(sb.toString());
+            }
+        }
     }
 }

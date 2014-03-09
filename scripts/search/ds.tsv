@@ -1,0 +1,8 @@
+id	title	author	owner	description	citationDate	distributor
+1	general dataset	Dr. Doctor	1	About birds	2013-12-11	For All
+2	bird dataset	Dr. Bird	2	bird study 1	2003-12-11	For the Birds
+3	bird dataset	Dr. Bird	2	bird study 2	2003-12-11	For the Birds
+4	finch dataset	Dr. Bird	3	bird study 2	2003-12-11	For the Birds
+5	goldfinch dataset	Dr. Bird	5	bird study 2	2003-12-11	For the Birds
+6	tree dataset	Dr. Tree	4	tree study 2	2003-12-11	For the Trees
+7	chestnut dataset	Dr. Tree	6	tree study	2003-12-11	For the Trees

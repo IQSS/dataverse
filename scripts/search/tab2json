@@ -22,6 +22,16 @@ for row in rows:
         del row["id"]
         del row["owner"]
         row["permissionRoot"] = "false"
+    elif "title" in row:
+        row["@type"] = "dataset"
+        row["files"] = []
+        row["versions"] = []
+        del row["id"]
+        del row["owner"]
+        del row["title"]
+        del row["author"]
+        del row["citationDate"]
+        del row["distributor"]
     elif "contentType" in row:
         del row["id"]
         row["permissionRoot"] = "false"
