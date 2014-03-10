@@ -96,7 +96,7 @@ div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0
    -moz-hyphens: auto;
         hyphens: auto;}
 
-.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {color:#C55B28;}
+.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {color:#FFF; background-color:#428BCA; padding-left:.3em; padding-right:.3em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}

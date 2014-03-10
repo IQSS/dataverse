@@ -60,6 +60,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Dataverses"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') != null}"/>
                 </h:outputLink>
                 <br/>
                 <h:outputLink styleClass="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
@@ -74,6 +75,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Datasets"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('datasets') != null}"/>
                 </h:outputLink>
                 <br/>
                 <h:outputLink styleClass="#{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
@@ -89,6 +91,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Files"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountFiles})"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('files') != null}"/>
                 </h:outputLink>
                 <p/>
                 <!--NON-TYPE FACETS-->
@@ -112,7 +115,7 @@
                             <h:outputText value="#{facetLabel.name}#{facetCategory.name == SearchIncludeFragment.searchFieldHostDataverse ? ' Dataverse' : ''}"/>
                             <h:outputText value=" (#{facetLabel.count})"/>
                             
-                            <h:outputText value="X" style="margin-left:.25em;"/>
+                            <h:outputText styleClass="glyphicon glyphicon-remove" value="" style="margin-left:.25em;"/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -140,16 +143,15 @@
                 <ui:fragment>
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                         <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                        <h:outputLink style="color:#C55B28;">
+                        <h:outputLink styleClass="facetSelected" style="margin-right:1em;">
                             <h:outputText value="#{friendlyNames.get(0)}:#{friendlyNames.get(1)}"/>
-                            <h:outputText value=" X"/>
+                            <h:outputText styleClass="glyphicon glyphicon-remove" value=""/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
                             </c:forEach>
                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                            <h:outputText value=" "/>
                         </h:outputLink>
                     </ui:repeat>
                     <!--<pre>1 to 10 of 7777 results ‹ Previous « 1 2 3 4 5 » Next › (design goal from <a href="https://redmine.hmdc.harvard.edu/issues/3575">#3575</a>)</pre>-->
