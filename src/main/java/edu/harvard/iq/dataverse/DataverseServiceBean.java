@@ -119,6 +119,6 @@ public class DataverseServiceBean {
     }
 
     public List<MetadataBlock> findAllMetadataBlocks() {
-        return em.createQuery("select object(o) from MetadataBlock as o order by o.name").getResultList();
+        return em.createQuery("select object(o) from MetadataBlock as o order by o.id").getResultList();
     }  
 }
