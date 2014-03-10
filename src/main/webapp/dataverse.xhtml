@@ -77,7 +77,7 @@
                                     </p:panelGrid>
                                 </ui:fragment>
                                 <ui:fragment>
-                                    <p:outputLabel value="Contact E-mail" for="contactEmail"/> <h:outputText value="*" style="color: #B94A48;"/>
+                                    <p:outputLabel value="E-mail" for="contactEmail"/> <h:outputText value="*" style="color: #B94A48;"/>
                                 </ui:fragment>
                                 <ui:fragment>
                                     <p:panelGrid columns="2">
@@ -110,33 +110,34 @@
                                     </button>
                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                         <li>
-                                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                                    <p:outputLabel value="Alias" for="alias"/>
-                                                    <h:outputText id="aliasOutput" value="#{DataversePage.dataverse.alias}"/>
-
-                                                    <p:outputLabel value="Contact E-mail" for="contactEmail" style="white-space:nowrap;"/>
-                                                    <h:outputText id="contactEmailOutput" value="#{DataversePage.dataverse.contactEmail}"/>
-
-                                                    <p:outputLabel value="Affiliation" for="affiliation"/>
-                                                    <h:outputText id="affiliationOutput" value="#{DataversePage.dataverse.affiliation}"/>
-                                            </p:panelGrid>
+                                            <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
+                                                <div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                                                    <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                                                </div>
+                                                <div style="float:left; width:300px;">
+                                                    <div style="font-weight:bold;">#{DataversePage.dataverse.name} Dataverse <h:outputText value=" (#{DataversePage.dataverse.affiliation})" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
+                                                    <div style="color:#777;">#{DataversePage.dataverse.alias}</div>
+                                                    <div style="color:#777;">#{DataversePage.dataverse.contactEmail}</div>
+                                                </div>
+                                            </div>
                                         </li>
+                                        <li class="divider" role="presentation"></li>
                                         <li>
                                             <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@all">
                                                 <h:outputText value="General Information" />
                                             </p:commandLink>
                                         </li>
                                         <li>
-                                            <h:link id="manageRoles" outcome="manage-roles">
+                                            <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
                                                 <h:outputText value="Roles + Permissions" />
                                                 <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 <f:param name="objectType" value="DATAVERSE" />
                                             </h:link>
                                         </li>
-                                        <li><a href="#" style="pointer-events: none; color: grey;">Theme</a></li>
+                                        <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>
                                         <li>
                                             <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
-                                                <h:outputText value="Dataverse Setup" />
+                                                <h:outputText value="Setup" />
                                             </p:commandLink>   
                                         </li>
                                     </ul>
