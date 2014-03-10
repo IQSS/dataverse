@@ -100,7 +100,7 @@
 
                     <!-- Description Panel -->
                     <div class="clearfix" style="border-bottom:1px solid #DDDDDD;">
-                        
+
                         <!-- Edit Button -->
                         <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode}">
                             <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
@@ -144,11 +144,11 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        
+
                         <div style="padding-bottom:.75em;">
                             <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{empty DataversePage.editMode}"/>
                         </div>
-                        
+
                         <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                             <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                                 <ui:fragment>
@@ -170,12 +170,14 @@
                     <!-- Dataverse Setup Panel -->                
                     <ui:fragment  rendered="#{DataversePage.editMode == 'SETUP'}">
                         <!-- Dataverse Setup Form -->
-                        <h:outputText value="Use MetadataBlocks form Parent Dataverse? "/>
-                        <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}" rendered="#{DataversePage.dataverse.owner != null}">  
-                            <p:ajax update="@all" listener="#{DataversePage.editMetadataBlocks}"/>  
-                        </p:selectBooleanCheckbox>        
+                        <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
+                            <h:outputText value="Use MetadataBlocks form Parent Dataverse? " />
+                            <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}">  
+                                <p:ajax update="@all" listener="#{DataversePage.editMetadataBlocks}"/>  
+                            </p:selectBooleanCheckbox> 
+                        </ui:fragment> 
 
-                        <p:selectManyMenu id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter" rendered="#{DataversePage.dataverse.metadataBlockRoot}" 
+                        <p:selectManyMenu id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter" rendered="#{DataversePage.dataverse.metadataBlockRoot or DataversePage.dataverse.owner == null }" 
                                           showCheckbox="true"  style="width:250px;height:300px">  
                             <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
                                            itemLabel="#{mdb.displayName}" itemValue="#{mdb}" /> 
@@ -199,7 +201,7 @@
                         <ui:param name="dataverseLinksStayOnPage" value="true"/>
                     </ui:include>
                 </ui:fragment>
-                
+
             </ui:define>
         </ui:composition>
     </h:body>
