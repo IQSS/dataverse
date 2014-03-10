@@ -32,84 +32,28 @@
                         <div style="margin-bottom:1em;">
                             <h:outputLabel value="Basic Search"/>
                             <p:inputText size="40" disabled="true" style="margin-left:1em;"/>
-<!--                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>-->
+                            <!--                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>-->
                         </div>
 
-                        <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(0)}">
-                            <div class="panel panel-default">
-                                <div data-toggle="collapse" data-target="#citationFieldList" class="panel-heading">Citation</div>
-                                <div id="citationFieldList" class="collapse in" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldList.get(0)}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">#{item.title}</label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
+                        <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">                        
+                            <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
+                                <div class="panel panel-default">
+                                    <div data-toggle="collapse" data-target="#citationFieldList#{mdb.id}" class="panel-heading">
+                                        <h:outputText value="#{mdb.displayName}"/>
+                                    </div>
+                                    <div id="citationFieldList#{mdb.id}" class="collapse #{status.first?'in':''}" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
+                                        <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">#{item.title}</label>
+                                                <div class="col-sm-6">
+                                                    <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ui:repeat>
+                                        </ui:repeat>
+                                    </div>
                                 </div>
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(1)}">
-                            <div class="panel panel-default">
-                                <div data-toggle="collapse" data-target="#discoverabilityFieldList" class="panel-heading">Discoverability</div>
-                                <div id="discoverabilityFieldList" class="collapse in" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldList.get(1)}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">#{item.title}</label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(2)}">
-                            <div class="panel panel-default">
-                                <div data-toggle="collapse" data-target="#availabilityFieldList" class="panel-heading">Dataset Availability</div>
-                                <div id="availabilityFieldList" class="collapse in" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldList.get(2)}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">#{item.title}</label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(3)}">
-                            <div class="panel panel-default">
-                                <div data-toggle="collapse" data-target="#termsFieldList" class="panel-heading">Term of Use</div>
-                                <div id="termsFieldList" class="form-group collapse in" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldList.get(3)}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">#{item.title}</label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldList.get(4)}">
-                            <div class="panel panel-default">
-                                <div data-toggle="collapse" data-target="#domainFieldList" class="panel-heading">Domain Metadata</div>
-                                <div id="domainFieldList" class="form-group collapse in" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldList.get(4)}" var="item">
-                                        <div class="form-group">
-                                            <label class="col-sm-4 control-label">#{item.title}</label>
-                                            <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
-                                            </div>
-                                        </div>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:fragment>
+                            </ui:fragment>
+                        </ui:repeat>
 
                         <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
 
