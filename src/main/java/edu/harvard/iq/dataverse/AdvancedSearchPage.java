@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.SearchFields;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -27,7 +27,9 @@ public class AdvancedSearchPage {
     private String query;
     private String title;
     private String author;
-    private List<DatasetField> metadataFieldList;
+    private List<MetadataBlock> metadataBlocks;
+    private Map<Long,List<DatasetField>> metadataFieldMap = new HashMap();
+    private List<DatasetField> metadataFieldList;    
 
 
     public void init() {
@@ -36,7 +38,20 @@ public class AdvancedSearchPage {
          * hierarchy
          */
         this.dataverse = dataverseServiceBean.findRootDataverse();
-        this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFields();          
+        this.metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
+        this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFields();
+
+        for (MetadataBlock mdb : metadataBlocks) {
+           
+            List datasetFields = new ArrayList();
+            for (DatasetField datasetField : metadataFieldList) {
+                if (datasetField.getMetadataBlock().getId().equals(mdb.getId())) {
+                    datasetFields.add(datasetField);
+                }
+            }
+            metadataFieldMap.put(mdb.getId(), datasetFields);
+        }       
+        
     }
 
     public String find() throws IOException {
@@ -115,17 +130,19 @@ public class AdvancedSearchPage {
         this.author = author;
     }
 
-    public List getMetadataFieldList() {
-        List metadataBlock = new ArrayList();
-        for (int i = 1; i < 6; i++) {
-            List metadata = new ArrayList();
-            for (DatasetField datasetField : metadataFieldList) {
-                if (datasetField.getMetadataBlock().getId() == i) {
-                    metadata.add(datasetField);
-                }
-            }
-            metadataBlock.add(metadata);
-        }
-        return metadataBlock;
+    public List<MetadataBlock> getMetadataBlocks() {
+        return metadataBlocks;
+    }
+
+    public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
+        this.metadataBlocks = metadataBlocks;
+    }
+
+    public Map<Long, List<DatasetField>> getMetadataFieldMap() {
+        return metadataFieldMap;
+    }
+
+    public void setMetadataFieldMap(Map<Long, List<DatasetField>> metadataFieldMap) {
+        this.metadataFieldMap = metadataFieldMap;
     }
 }
