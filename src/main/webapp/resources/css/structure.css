@@ -83,6 +83,19 @@ div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 .facetCategoryName {font-weight:bold;}
 
+.facetCategoryName, .facetLink {
+-ms-word-break: break-all;
+
+     /* Be VERY careful with this, breaks normal words wh_erever */
+     word-break: break-all;
+
+     /* Non standard for webkit */
+     word-break: break-word;
+
+-webkit-hyphens: auto;
+   -moz-hyphens: auto;
+        hyphens: auto;}
+
 .facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {color:#C55B28;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
