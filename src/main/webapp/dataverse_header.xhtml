@@ -132,7 +132,7 @@
 
                         <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}" >
                             <a id="breadcrumbLnkTree#{status.index}" title="Browse child items" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#">
-                                <span class="caret"></span>
+                                <span class="glyphicon glyphicon-chevron-down" style="vertical-align:middle;padding-bottom:2px;"></span>
                             </a>
                         </ui:fragment>
 
