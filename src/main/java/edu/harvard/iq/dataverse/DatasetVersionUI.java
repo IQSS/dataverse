@@ -102,6 +102,10 @@ public class DatasetVersionUI {
                 }
                 this.getDatasetRelPublications().add(datasetRelPublication);  
             }
+            //Get notes text for display
+            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.notesText)){
+                this.setNotesText(dsfv.getStrValue());
+            }
         }
      setMetadataValueBlocks(datasetVersion);
      loadSubjectControlledVocabulary();
@@ -166,7 +170,6 @@ public class DatasetVersionUI {
     public void setDatasetKeywords(List<DatasetFieldValue> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     } 
-
     
     private List<DatasetRelPublication> datasetRelPublications;
     public List<DatasetRelPublication> getDatasetRelPublications() {
@@ -175,6 +178,16 @@ public class DatasetVersionUI {
     public void setDatasetRelPublications(List<DatasetRelPublication> datasetRelPublications) {
         this.datasetRelPublications = datasetRelPublications;
     } 
+    
+    private String notesText;
+
+    public String getNotesText() {
+        return notesText;
+    }
+
+    public void setNotesText(String notesText) {
+        this.notesText = notesText;
+    }
     
     public String getRelPublicationCitation(){
         if(!this.datasetRelPublications.isEmpty()){
