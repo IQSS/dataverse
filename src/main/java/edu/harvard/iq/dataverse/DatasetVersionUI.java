@@ -42,7 +42,7 @@ public class DatasetVersionUI {
         setDatasetVersion(datasetVersion);
         this.setDatasetAuthors(new ArrayList());
         this.setDatasetKeywords(new ArrayList());
-        this.setDatasetDistributors(new ArrayList()); 
+        this.setDatasetRelPublications(new ArrayList()); 
         this.setSubjects(new ArrayList());
 
         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
@@ -60,51 +60,47 @@ public class DatasetVersionUI {
                         if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.authorName)) {
                             datasetAuthor.setName(cvo);
                         }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.authorLastName)) {
-                            datasetAuthor.setLastName(cvo);
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.authorFirstName)) {
-                            datasetAuthor.setFirstName(cvo);
-                        }
                         if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(cvo);
                         }
                     }
                 }
-                datasetAuthor.setAuthorAsOrg(false);
                 this.getDatasetAuthors().add(datasetAuthor);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.keyword)) {
                 this.getDatasetKeywords().add(dsfv);
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
+                this.getSubjects().add(dsfv.getStrValue());
+            } else if (dsfv.getDatasetField().isShowAboveFold()) {                
+                this.getAboveFoldGeneralValues().add(dsfv);                                
             } 
-            else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.distributor)) {
+        //Special handling for Related Materials
+        /* Treated as below the tabs for editing, but must get first value for display above tabs    
+        */
+            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.publication) && this.datasetRelPublications.isEmpty()) {
                 Collection childVals = dsfv.getChildDatasetFieldValues();
-                DatasetDistributor datasetDistributor = new DatasetDistributor();
+                DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
                 if (childVals != null) {
                     for (Object cv : childVals) {
                         DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorName)) {
-                            datasetDistributor.setName(cvo);
+                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                            datasetRelPublication.setText(cvo.getStrValue());
                         }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorAbbreviation)) {
-                            datasetDistributor.setAbbreviation(cvo);
+                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                            datasetRelPublication.setIdNumber(cvo.getStrValue());
                         }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorAffiliation)) {
-                            datasetDistributor.setAffiliation(cvo);
+                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                            datasetRelPublication.setIdType(cvo.getStrValue());
                         }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorLogo)) {
-                            datasetDistributor.setLogo(cvo);
+                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
+                            datasetRelPublication.setUrl(null);
                         }
                         if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL)) {
-                            datasetDistributor.setUrl(cvo);
+                            datasetRelPublication.setUrl(cvo.getStrValue());
                         }
                     }
                 }
-                this.getDatasetDistributors().add(datasetDistributor);            
-            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
-                this.getSubjects().add(dsfv.getStrValue());
-            } else if (dsfv.getDatasetField().isShowAboveFold() &&  !dsfv.getDatasetField().isHasParent() &&  !dsfv.getDatasetField().isHasChildren() ) {
-                this.getAboveFoldGeneralValues().add(dsfv);                                
-            } 
+                this.getDatasetRelPublications().add(datasetRelPublication);  
+            }
         }
      setMetadataValueBlocks(datasetVersion);
      loadSubjectControlledVocabulary();
@@ -169,22 +165,23 @@ public class DatasetVersionUI {
     public void setDatasetKeywords(List<DatasetFieldValue> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     } 
+
     
-    private List<DatasetTopicClass> datasetTopicClasses = new ArrayList();
-    public List<DatasetTopicClass> getDatasetTopicClasses() {
-        return datasetTopicClasses;
+    private List<DatasetRelPublication> datasetRelPublications;
+    public List<DatasetRelPublication> getDatasetRelPublications() {
+        return datasetRelPublications;
     }
-    public void setDatasetTopicClasses(List<DatasetTopicClass> datasetTopicClasses) {
-        this.datasetTopicClasses = datasetTopicClasses;
+    public void setDatasetRelPublications(List<DatasetRelPublication> datasetRelPublications) {
+        this.datasetRelPublications = datasetRelPublications;
     } 
     
-    private List<DatasetDistributor> datasetDistributors;
-    public List<DatasetDistributor> getDatasetDistributors() {
-        return datasetDistributors;
+    public String getRelPublicationCitation(){
+        if(!this.datasetRelPublications.isEmpty()){
+            return this.getDatasetRelPublications().get(0).getText();
+        } else {
+            return "";
+        }
     }
-    public void setDatasetDistributors(List<DatasetDistributor> datasetDistributors) {
-        this.datasetDistributors = datasetDistributors;
-    } 
     
     public String getUNF() {
         //todo get UNF to calculate and display here.
@@ -336,31 +333,6 @@ public class DatasetVersionUI {
         }
         return str;
     }
-    
-    public String getTopicClassStr() {
-        String str = "";
-        for (DatasetTopicClass sa : this.getDatasetTopicClasses()) {
-            if (str.trim().length() > 1) {
-                str += "; ";
-            }
-            if (sa.getVocabURI() != null && !sa.getVocabURI().getStrValue().isEmpty() ){
-                 str += "<a href='" + sa.getVocabURI().getStrValue() + "' target='_blank'>"; 
-            }
-            if (sa.getVocab() != null && !sa.getVocab().getStrValue().isEmpty() ){
-                 str += sa.getVocab().getStrValue(); 
-            }
-            if (sa.getVocabURI() != null && !sa.getVocabURI().getStrValue().isEmpty() ){
-                 str += "</a>";
-            }
-            if (sa.getVocab() != null && !sa.getVocab().getStrValue().isEmpty() ){
-                 str += ": "; 
-        }
-            if (sa.getValue() != null && !sa.getValue().getStrValue().isEmpty() ){
-                 str += sa.getValue().getStrValue();
-            }
-        }
-        return str;
-    }
 
     public String getProductionDate() {        
         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()){
@@ -378,19 +350,6 @@ public class DatasetVersionUI {
             }
         }
         return "";
-    }
-
-    public String getDistributorNames() {
-        String str = "";
-        for (DatasetDistributor sd : this.getDatasetDistributors()) {
-            if (str.trim().length() > 1) {
-                str += ";";
-            }
-            if (sd.getName() != null){
-                str += sd.getName().getStrValue();
-            }
-        }
-        return str.trim();
     }
     
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
@@ -419,7 +378,7 @@ public class DatasetVersionUI {
        for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()){
             if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)){
                  this.subjectControlledVocabulary.clear();
-                 for (ControlledVocabularyValue value : dsfv.getDatasetField().getControlledVocabularyValuess()){
+                 for (ControlledVocabularyValue value : dsfv.getDatasetField().getControlledVocabularyValues()){
                      SelectItem item = new SelectItem();
                      item.setValue(value.getStrValue());
                      item.setLabel(value.getStrValue());

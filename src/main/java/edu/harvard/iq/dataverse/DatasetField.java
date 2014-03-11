@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
 /**
@@ -150,12 +151,23 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
    @OrderBy("displayOrder ASC")
     private Collection<ControlledVocabularyValue> controlledVocabularyValues;
 
-    public Collection<ControlledVocabularyValue> getControlledVocabularyValuess() {
+    public Collection<ControlledVocabularyValue> getControlledVocabularyValues() {
         return this.controlledVocabularyValues;
     }
 
-    public void setControlledVocabularyValuess(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
+    public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
         this.controlledVocabularyValues = controlledVocabularyValues;
+    }
+       
+    public List<SelectItem> getControlledVocabularySelectItems(){
+        List<SelectItem> retList = new ArrayList();
+         for (ControlledVocabularyValue value : this.getControlledVocabularyValues()){
+                     SelectItem item = new SelectItem();
+                     item.setValue(value.getStrValue());
+                     item.setLabel(value.getStrValue());
+                     retList.add(item);
+         }
+        return retList;
     }
 
     @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
