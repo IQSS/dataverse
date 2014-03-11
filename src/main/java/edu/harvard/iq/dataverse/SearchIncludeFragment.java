@@ -54,6 +54,8 @@ public class SearchIncludeFragment {
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
+    Map<String,Long> previewCountbyType = new HashMap<>();
+    private SolrQueryResponse solrQueryResponseAllTypes;
     private int page = 1;
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
@@ -177,13 +179,17 @@ public class SearchIncludeFragment {
             selectedTypesList.add(string);
         }
 
+        List<String> filterQueriesFinalAllTypes = new ArrayList<>();
         String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
         selectedTypesHumanReadable = combine(arr, " OR ");
         if (!selectedTypesHumanReadable.isEmpty()) {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
         }
         filterQueriesFinal.addAll(filterQueries);
+        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);
         filterQueriesFinal.add(typeFilterQuery);
+        String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
+        filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
         int paginationStart = (page - 1) * paginationGuiRows;
         /**
@@ -198,6 +204,7 @@ public class SearchIncludeFragment {
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
             filterQueriesDebug = filterQueriesFinal;
             solrQueryResponse = searchService.search(queryToPassToSolr, filterQueriesFinal, paginationStart, dataverse);
+            solrQueryResponseAllTypes = searchService.search(queryToPassToSolr, filterQueriesFinalAllTypes, paginationStart, dataverse);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -271,6 +278,21 @@ public class SearchIncludeFragment {
                      */
                 }
             }
+
+            // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
+            previewCountbyType.put("dataverses", 0L);
+            previewCountbyType.put("datasets", 0L);
+            previewCountbyType.put("files", 0L);
+            if (solrQueryResponseAllTypes != null) {
+                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getFacetCategoryList()) {
+                    if (facetCategory.getName().equals(SearchFields.TYPE)) {
+                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
+                        }
+                    }
+                }
+            }
+
         } else {
             List contentsList = dataverseService.findByOwnerId(dataverse.getId());
             contentsList.addAll(datasetService.findByOwnerId(dataverse.getId()));
@@ -326,17 +348,7 @@ public class SearchIncludeFragment {
     }
 
     private Long findFacetCountByType(String type) {
-        for (FacetCategory facetCategory : facetCategoryList) {
-            if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                    String facetLabelName = facetLabel.getName();
-                    if (facetLabelName.equals(type)) {
-                        return facetLabel.getCount();
-                    }
-                }
-            }
-        }
-        return 0L;
+        return previewCountbyType.get(type);
     }
 
     public String getQuery() {
