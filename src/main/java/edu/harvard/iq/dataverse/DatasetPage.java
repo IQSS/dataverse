@@ -173,8 +173,7 @@ public class DatasetPage implements java.io.Serializable {
             addAuthor.setDatasetVersion(editVersion);
             DatasetFieldValue author = new DatasetFieldValue();
             author.setDatasetVersion(editVersion);
-            author.setDatasetField(fieldService.findByName(DatasetFieldConstant.author));
-            
+            author.setDatasetField(fieldService.findByName(DatasetFieldConstant.author));         
             DatasetFieldValue authorName = new DatasetFieldValue();
             authorName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorName));
             authorName.setDatasetVersion(editVersion);
@@ -200,40 +199,7 @@ public class DatasetPage implements java.io.Serializable {
             keyword.setDatasetField(fieldService.findByName(DatasetFieldConstant.keyword));
             keyword.setStrValue("");
             editVersion.getDatasetFieldValues().add(keyword);          
-            datasetVersionUI.getDatasetKeywords().add(keyword);  
-        }   else if (recordType.equals("TOPIC")){
-            DatasetTopicClass addTopic = new DatasetTopicClass();
-            addTopic.setDatasetVersion(editVersion);
-            DatasetFieldValue topic = new DatasetFieldValue();
-            topic.setDatasetVersion(editVersion);
-            topic.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassification));
-            DatasetFieldValue topicValue = new DatasetFieldValue();
-            topicValue.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassValue));
-            topicValue.setDatasetVersion(editVersion);
-            topicValue.setStrValue("");
-            topicValue.setParentDatasetFieldValue(topic);
-            DatasetFieldValue topicCV = new DatasetFieldValue();
-            topicCV.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassVocab));
-            topicCV.setDatasetVersion(editVersion);
-            topicCV.setStrValue("");
-            topicCV.setParentDatasetFieldValue(topic);
-            DatasetFieldValue topicURI = new DatasetFieldValue();
-            topicURI.setDatasetField(fieldService.findByName(DatasetFieldConstant.topicClassVocabURI));
-            topicURI.setDatasetVersion(editVersion);
-            topicURI.setStrValue("");
-            topicURI.setParentDatasetFieldValue(topic);
-            topic.setChildDatasetFieldValues(new ArrayList());
-            topic.getChildDatasetFieldValues().add(topicValue);
-            topic.getChildDatasetFieldValues().add(topicCV);
-            topic.getChildDatasetFieldValues().add(topicURI);
-            addTopic.setValue(topicValue);
-            addTopic.setVocab(topicCV);
-            addTopic.setVocabURI(topicURI);
-            editVersion.getDatasetFieldValues().add(topic);
-            editVersion.getDatasetFieldValues().add(topicValue);
-            editVersion.getDatasetFieldValues().add(topicCV);
-            editVersion.getDatasetFieldValues().add(topicURI);
-            datasetVersionUI.getDatasetTopicClasses().add(addTopic);             
+            datasetVersionUI.getDatasetKeywords().add(keyword);              
         }  
     }
     
@@ -266,20 +232,11 @@ public class DatasetPage implements java.io.Serializable {
         return dsfvIn;
     }
     
-    public void deleteRecord(String recordType, Object toDelete){
-        
+    public void deleteRecord(String recordType, Object toDelete){  
       if (recordType.equals("AUTHOR")) {
             DatasetAuthor deleteAuthor = (DatasetAuthor) toDelete ;
              datasetVersionUI.getDatasetAuthors().remove(deleteAuthor);
-             DatasetFieldValue parentToRemove = deleteAuthor.getAffiliation().getParentDatasetFieldValue();
-             fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(), deleteAuthor.getName());
-             fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(), deleteAuthor.getFirstName()); 
-             fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),deleteAuthor.getLastName());
-             fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),deleteAuthor.getAffiliation());
-             fieldValueService.removeCollectionElement(editVersion.getDatasetFieldValues(),parentToRemove);
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getName());
-             editVersion.getDatasetFieldValues().remove(deleteAuthor.getLastName());
-             editVersion.getDatasetFieldValues().remove(deleteAuthor.getFirstName());
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getAffiliation());
              editVersion.getDatasetFieldValues().remove(deleteAuthor.getAffiliation().getParentDatasetFieldValue());
 
@@ -290,7 +247,6 @@ public class DatasetPage implements java.io.Serializable {
         }  else if (recordType.equals("ALL")){
 
         }
-        
     }
        
     public void save() {
@@ -322,23 +278,6 @@ public class DatasetPage implements java.io.Serializable {
                 editVersion.getDatasetFieldValues().add(toAdd);
             }
         }
-        //Get Values out of child dv recs
-        //save isn't working we lose child dsfv's 
-        //in the grouped compound fields
-        /*
-        List<DatasetFieldValue> updateList = new ArrayList();
-        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
-            if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.producer)){
-                 updateList.addAll(dsfv.getChildDatasetFieldValues());
-            }
-        }
-        for (DatasetFieldValue update: updateList){
-            for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
-            if(dsfv == update){
-                 dsfv.setStrValue(update.getStrValue());
-            }
-        }
-        }*/
                  
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;

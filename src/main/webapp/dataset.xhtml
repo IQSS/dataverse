@@ -53,7 +53,7 @@
                                     <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
                                     <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
                                     <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
-                                    <span id="publication">Related Publication (Static Text): Kristopher J. Preacher, Derek D. Rucker, Andrew F. Hayes. 2007. "Addressing Moderated Mediation Hypotheses: Theory, Methods, and Prescriptions." Multivariate Behavioral Research, 42(1), 185-227. <a href="#" onclick="return false;">article available here</a></span>
+                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#" onclick="return false;">article available here</a></span>
                                     <span id="note">Note(s): Static Text</span>
                                 </div>
                             </ui:fragment>
@@ -176,24 +176,7 @@
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Related Publications</a>
                                 </label>
                                 <div class="col-sm-10">
-                                    <!--<ui:repeat id="noteTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">-->
-                                        <div class="row" style="margin-bottom:1em;">
-                                            <div class="col-sm-10">
-                                                Static Text
-                                            </div>
-                                        </div>
-                                    <!--</ui:repeat>-->
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        
-                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
-                            <div class="form-group">
-                                <label for="noteTable" class="col-sm-2 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Note(s)</a>
-                                </label>
-                                <div class="col-sm-10">
-                                    <!--<ui:repeat id="noteTable" value="#{DatasetPage.datasetVersionUI.datasetTopicClasses}" var="topic">-->
+                                    <!--<ui:repeat id="noteTable" value="" var="topic">-->
                                         <div class="row" style="margin-bottom:1em;">
                                             <div class="col-sm-10">
                                                 Static Text
@@ -204,20 +187,33 @@
                             </div>
                         </ui:fragment>
 
-                        <ui:repeat value="#{DatasetPage.datasetVersionUI.aboveFoldGeneralValues}" var="fieldValues" rendered="#{(empty DatasetPage.editMode and !empty fieldValues.strValue) or DatasetPage.editMode == 'METADATA' }">
+                        <ui:repeat value="#{DatasetPage.datasetVersionUI.aboveFoldGeneralValues}" var="fieldValues" 
+                                   rendered="#{(empty DatasetPage.editMode and (!empty fieldValues.strValue or (fieldValues.datasetField.hasChildren and !fieldValues.childEmpty))) 
+                                               or ((DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !fieldValues.datasetField.hasParent) }">
                             <div class="form-group">
+                                <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
                                 <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-2 control-label">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
-                                        #{fieldValues.datasetField.title}
+                                     #{fieldValues.datasetField.title}
                                     </a>
                                 </label>
+                                </ui:fragment> 
                                 <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
                                     <div class="col-sm-5">
                                         <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode}" />
                                         <ui:fragment rendered="#{!empty DatasetPage.editMode and fieldValues.datasetField.allowMultiples}">
                                             <label>#{fieldValues.datasetField.title}</label>
                                         </ui:fragment>
-                                        <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}" />
+                                        <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" 
+                                                    rendered="#{(DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') 
+                                                                                                     and (fieldValues.datasetField.fieldType == 'text'
+                                                                                                     or fieldValues.datasetField.fieldType == ''
+                                                                                                     or fieldValues.datasetField.fieldType == 'url'
+                                                                                                     or fieldValues.datasetField.fieldType == 'date')}" />
+                                         <p:inputTextarea rows="5" cols="80" id="description" value="#{fieldValues.strValue}" 
+                                                                                             rendered="#{(DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') 
+                                                                                                         and fieldValues.datasetField.fieldType == 'textbox'}" />
+                                    
                                     </div>
                                 </ui:fragment>
                                     
@@ -232,12 +228,36 @@
                                                 <div><h:outputText value="#{childVal.strValue}"/></div>
                                             </div>
                                         </ui:repeat>
-                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
+                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" 
+                                                   rendered="#{(DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')
+                                                            and fieldValues.datasetField.hasChildren}">
                                             <div class="form-group col-sm-5" style="border:1px solid gold; margin-right:1em; padding-left:0;">
                                                 <label for="metadata_BLANK">
                                                     <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
                                                 </label>                                            
-                                                <p:inputText styleClass="form-control" value="#{childVal.strValue}" rendered="#{DatasetPage.editMode == 'METADATA' and childVal.parentDatasetFieldValue == fieldValues}" />
+                                                <p:inputText value="#{childVal.strValue}" 
+                                                             rendered="#{childVal.parentDatasetFieldValue == fieldValues
+                                                                                                     and empty childVal.datasetField.controlledVocabularySelectItems        
+                                                                                                     and (childVal.datasetField.fieldType == 'text'
+                                                                                                     or childVal.datasetField.fieldType == ''
+                                                                                                     or childVal.datasetField.fieldType == 'url'
+                                                                                                     or childVal.datasetField.fieldType == 'date')}"/>
+                                                <p:inputTextarea rows="5" cols="80" id="description" value="#{childVal.strValue}" 
+                                                                 rendered="#{childVal.parentDatasetFieldValue == fieldValues
+                                                                                                         and childVal.datasetField.fieldType == 'textbox'}" />
+
+                                                <h:selectManyListbox value="#{childVal.strValue}" 
+                                                                     rendered="#{!empty childVal.datasetField.controlledVocabularySelectItems
+                                                                                                            and childVal.datasetField.allowMultiples }">
+                                                    <f:selectItems value="#{childVal.datasetField.controlledVocabularySelectItems}" />
+                                                </h:selectManyListbox>        
+                                                <p:selectOneMenu  value="#{childVal.strValue}" 
+                                                                  filterMatchMode="startsWith"
+                                                                  rendered="#{!empty childVal.datasetField.controlledVocabularySelectItems
+                                                                                                            and !childVal.datasetField.allowMultiples }">
+                                                    <f:selectItems value="#{childVal.datasetField.controlledVocabularySelectItems}" />
+                                                </p:selectOneMenu>
+
                                             </div>
                                         </ui:repeat>
                                     </div>
@@ -355,7 +375,15 @@
                                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
                                                                         <div class="col-sm-6">
                                                                             <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
-                                                                            <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" rendered="#{DatasetPage.editMode == 'METADATA'}" />
+                                                                            <p:inputText styleClass="form-control" id="metadata_#{fieldValues.datasetField.name}" value="#{fieldValues.strValue}" 
+                                                                                         rendered="#{DatasetPage.editMode == 'METADATA' 
+                                                                                                     and (fieldValues.datasetField.fieldType == 'text'
+                                                                                                     or fieldValues.datasetField.fieldType == ''
+                                                                                                     or fieldValues.datasetField.fieldType == 'url'
+                                                                                                     or fieldValues.datasetField.fieldType == 'date')}" />
+                                                                            <p:inputTextarea rows="5" cols="80" id="description" value="#{fieldValues.strValue}" 
+                                                                                             rendered="#{DatasetPage.editMode == 'METADATA' 
+                                                                                                         and fieldValues.datasetField.fieldType == 'textbox'}" />
                                                                         </div>
                                                                     </ui:fragment>
 
@@ -376,7 +404,29 @@
                                                                                     <label class="control-label" for="metadata_BLANK">
                                                                                         <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
                                                                                     </label>                                                                       
-                                                                                    <p:inputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/>
+                                                                                    <p:inputText value="#{childVal.strValue}" 
+                                                                                                 rendered="#{childVal.parentDatasetFieldValue == fieldValues
+                                                                                                     and empty childVal.datasetField.controlledVocabularySelectItems        
+                                                                                                     and (childVal.datasetField.fieldType == 'text'
+                                                                                                     or childVal.datasetField.fieldType == ''
+                                                                                                     or childVal.datasetField.fieldType == 'url'
+                                                                                                     or childVal.datasetField.fieldType == 'date')}"/>
+                                                                                    <p:inputTextarea rows="5" cols="80" id="description" value="#{childVal.strValue}" 
+                                                                                             rendered="#{childVal.parentDatasetFieldValue == fieldValues
+                                                                                                         and childVal.datasetField.fieldType == 'textbox'}" />
+                                                                                    
+                                                                                    <h:selectManyListbox value="#{childVal.strValue}" 
+                                                                                                         rendered="#{!empty childVal.datasetField.controlledVocabularySelectItems
+                                                                                                            and childVal.datasetField.allowMultiples }">
+                                                                                        <f:selectItems value="#{childVal.datasetField.controlledVocabularySelectItems}" />
+                                                                                    </h:selectManyListbox>        
+                                                                                    <p:selectOneMenu  value="#{childVal.strValue}" 
+                                                                                                     filterMatchMode="startsWith"
+                                                                                                     rendered="#{!empty childVal.datasetField.controlledVocabularySelectItems
+                                                                                                            and !childVal.datasetField.allowMultiples }">
+                                                                                        <f:selectItems value="#{childVal.datasetField.controlledVocabularySelectItems}" />
+                                                                                    </p:selectOneMenu>
+                                                                                    
                                                                                 </div>
                                                                             </ui:repeat>
                                                                         </div>

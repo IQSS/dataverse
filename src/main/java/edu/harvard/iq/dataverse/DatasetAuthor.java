@@ -31,25 +31,6 @@ public class DatasetAuthor {
     public void setName(DatasetFieldValue name) {
         this.name = name;
     }
-    
-    private DatasetFieldValue firstName;
-
-    public DatasetFieldValue getFirstName() {
-        return this.firstName;
-    }
-    public void setFirstName(DatasetFieldValue firstName) {
-        this.firstName = firstName;
-    }
-
-    private DatasetFieldValue lastName;
-
-    public DatasetFieldValue getLastName() {
-        return this.lastName;
-    }
-    public void setLastName(DatasetFieldValue lastName) {
-        this.lastName = lastName;
-    }
-  
 
     private int displayOrder;
     public int getDisplayOrder() {
@@ -92,16 +73,7 @@ public class DatasetAuthor {
             setIdType("");
         }
     }
-    
-    private boolean authorAsOrg;
 
-    public boolean isAuthorAsOrg() {
-        return authorAsOrg;
-    }
-    public void setAuthorAsOrg(boolean authorAsOrg) {
-        this.authorAsOrg = authorAsOrg;
-    }
-       
     public boolean isEmpty() {
         return ( (affiliation==null || affiliation.getStrValue().trim().equals(""))
             && (name==null || name.getStrValue().trim().equals(""))
