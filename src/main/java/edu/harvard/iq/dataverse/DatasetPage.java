@@ -165,44 +165,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Edit Dataset Metadata", " - Edit your dataset metadata."));
         }
     }   
-    
-    public void addRecord(String recordType){ 
-     
-    if (recordType.equals("AUTHOR")) {
-            DatasetAuthor addAuthor = new DatasetAuthor();
-            addAuthor.setDatasetVersion(editVersion);
-            DatasetFieldValue author = new DatasetFieldValue();
-            author.setDatasetVersion(editVersion);
-            author.setDatasetField(fieldService.findByName(DatasetFieldConstant.author));         
-            DatasetFieldValue authorName = new DatasetFieldValue();
-            authorName.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorName));
-            authorName.setDatasetVersion(editVersion);
-            authorName.setStrValue("");
-            authorName.setParentDatasetFieldValue(author);
-            author.setChildDatasetFieldValues(new ArrayList());
-            author.getChildDatasetFieldValues().add(authorName);
-            addAuthor.setName(authorName);
-            DatasetFieldValue authorAffiliation = new DatasetFieldValue();
-            authorAffiliation.setDatasetField(fieldService.findByName(DatasetFieldConstant.authorAffiliation));
-            authorAffiliation.setDatasetVersion(editVersion);
-            authorAffiliation.setParentDatasetFieldValue(author);
-            authorAffiliation.setStrValue("");
-            author.getChildDatasetFieldValues().add(authorAffiliation);
-            addAuthor.setAffiliation(authorAffiliation);
-            editVersion.getDatasetFieldValues().add(author);
-            editVersion.getDatasetFieldValues().add(authorName);
-            editVersion.getDatasetFieldValues().add(authorAffiliation);
-            datasetVersionUI.getDatasetAuthors().add(addAuthor);           
-        } else if (recordType.equals("KEYWORD")){
-            DatasetFieldValue keyword = new DatasetFieldValue();
-            keyword.setDatasetVersion(editVersion);
-            keyword.setDatasetField(fieldService.findByName(DatasetFieldConstant.keyword));
-            keyword.setStrValue("");
-            editVersion.getDatasetFieldValues().add(keyword);          
-            datasetVersionUI.getDatasetKeywords().add(keyword);              
-        }  
-    }
-    
+       
     public void addGeneralRecord(Object recordType) {
         //The page provides the value record to be added        
         DatasetFieldValue dfvType = (DatasetFieldValue) recordType;
