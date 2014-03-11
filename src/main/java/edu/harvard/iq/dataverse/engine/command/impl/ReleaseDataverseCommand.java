@@ -13,9 +13,9 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * @author michael
  */
 @RequiredPermissions( Permission.Release )
-public class ReleaseDataverse extends AbstractVoidCommand {
+public class ReleaseDataverseCommand extends AbstractVoidCommand {
 
-	public ReleaseDataverse(DataverseUser aUser, Dataverse anAffectedDataverse) {
+	public ReleaseDataverseCommand(DataverseUser aUser, Dataverse anAffectedDataverse) {
 		super(aUser, anAffectedDataverse);
 	}
 	
