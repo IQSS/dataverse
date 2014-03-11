@@ -131,6 +131,10 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public boolean isShowAboveFold() {
         return showAboveFold;
     }
+    
+    public boolean isDisplayOnCreate() {
+        return showAboveFold;
+    }
 
     public void setShowAboveFold(boolean showAboveFold) {
         this.showAboveFold = showAboveFold;
