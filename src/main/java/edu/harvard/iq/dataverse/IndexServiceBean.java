@@ -98,6 +98,11 @@ public class IndexServiceBean {
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        if (dataversePaths.size() > 0) {
+            // don't show yourself while indexing or in search results: https://redmine.hmdc.harvard.edu/issues/3613
+//            logger.info(dataverse.getName() + " size " + dataversePaths.size());
+            dataversePaths.remove(dataversePaths.size() - 1);
+        }
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
