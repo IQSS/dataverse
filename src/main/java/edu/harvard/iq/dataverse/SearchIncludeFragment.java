@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.engine.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 @ViewScoped
@@ -24,6 +26,10 @@ public class SearchIncludeFragment {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    PermissionServiceBean permissionService;
+    @Inject
+    DataverseSession session;
 
     private String query;
     private List<String> filterQueries = new ArrayList<>();
@@ -349,6 +355,14 @@ public class SearchIncludeFragment {
 
     private Long findFacetCountByType(String type) {
         return previewCountbyType.get(type);
+    }
+
+    public boolean isAllowedToClickAddData() {
+        /**
+         * @todo is this the right permission to check?
+         */
+        // being explicit about the user, could just call permissionService.on(dataverse)
+        return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
     public String getQuery() {
