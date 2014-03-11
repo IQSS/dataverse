@@ -1,0 +1,3 @@
+#!/bin/sh
+#~/.homebrew/bin/psql dataverseDb -f $HOME/NetBeansProjects/dataverse_temp/scripts/database/sequences.sql.pdurbin
+~/.homebrew/bin/psql dataverseDb -c 'ALTER TABLE filesystemname_seq OWNER TO "dataverseApp";'
