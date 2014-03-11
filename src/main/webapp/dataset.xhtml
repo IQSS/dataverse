@@ -186,23 +186,6 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        
-                        <ui:fragment rendered="#{(DatasetPage.editMode == 'INFO' or DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE') and !datasetFieldVal.datasetField.hasChildren}">
-                            <div class="form-group">
-                                <label for="noteTable" class="col-sm-2 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Note(s)</a>
-                                </label>
-                                <div class="col-sm-10">
-                                    <!--<ui:repeat id="noteTable" value="" var="topic">-->
-                                        <div class="row" style="margin-bottom:1em;">
-                                            <div class="col-sm-10">
-                                                Static Text
-                                            </div>
-                                        </div>
-                                    <!--</ui:repeat>-->
-                                </div>
-                            </div>
-                        </ui:fragment>
 
                         <ui:repeat value="#{DatasetPage.datasetVersionUI.aboveFoldGeneralValues}" var="fieldValues" 
                                    rendered="#{(empty DatasetPage.editMode and (!empty fieldValues.strValue or (fieldValues.datasetField.hasChildren and !fieldValues.childEmpty))) 

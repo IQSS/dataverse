@@ -70,7 +70,8 @@ public class DatasetVersionUI {
                 this.getDatasetKeywords().add(dsfv);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
                 this.getSubjects().add(dsfv.getStrValue());
-            } else if (dsfv.getDatasetField().isShowAboveFold()) {                
+            } else if (dsfv.getDatasetField().isShowAboveFold()) {   
+                //General fields Above Fold
                 this.getAboveFoldGeneralValues().add(dsfv);                                
             } 
         //Special handling for Related Materials
