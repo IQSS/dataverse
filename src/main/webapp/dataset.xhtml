@@ -28,7 +28,7 @@
                     <!-- Title / Button Panel -->
                     <ui:fragment>
                         
-                        <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
+                        <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
                             <div style="float:right;">
                                 <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
                                     <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
@@ -323,7 +323,7 @@
 
                             <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreate') and empty DatasetPage.editMode}">
+                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
                                     <p class="bg-info" style="padding:1em;">
                                         <h:outputText value="This edit button is here to make life easier for you." />
                                         <p:commandButton style="margin-left:1em;" title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
