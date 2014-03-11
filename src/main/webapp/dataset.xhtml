@@ -245,7 +245,9 @@
                                                 <div><h:outputText value="#{childVal.strValue}"/></div>
                                             </div>
                                         </ui:repeat>
-                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{DatasetPage.editMode == 'METADATA' and fieldValues.datasetField.hasChildren}">
+                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" 
+                                                   rendered="#{(DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE')
+                                                            and fieldValues.datasetField.hasChildren}">
                                             <div class="form-group col-sm-5" style="border:1px solid gold; margin-right:1em; padding-left:0;">
                                                 <label for="metadata_BLANK">
                                                     <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
