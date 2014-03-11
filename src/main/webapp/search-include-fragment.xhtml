@@ -60,7 +60,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Dataverses"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})"/>
-                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') != null}"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('dataverses')}"/>
                 </h:outputLink>
                 <br/>
                 <h:outputLink styleClass="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
@@ -75,7 +75,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Datasets"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})"/>
-                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('datasets') != null}"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('datasets')}"/>
                 </h:outputLink>
                 <br/>
                 <h:outputLink styleClass="#{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
@@ -91,7 +91,7 @@
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Files"/>
                     <h:outputText value=" (#{SearchIncludeFragment.facetCountFiles})"/>
-                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('files') != null}"/>
+                    <h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('files')}"/>
                 </h:outputLink>
                 <p/>
                 <!--NON-TYPE FACETS-->
