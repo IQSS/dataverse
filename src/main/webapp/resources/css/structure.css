@@ -61,6 +61,8 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 .messagePanel {margin-top:1em; font-size: 1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
+#footer {padding-bottom:4em;}
+
 /* -------- SEARCH -------- */
 .panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;}
 
