@@ -292,7 +292,7 @@ public class Metadata implements Serializable {
                 this.getDatasetRelMaterials().add(cloneRel);
             }
         }*/
-       
+       /*
         if (copyField(tfMap.get(DatasetFieldConstant.publication), copyHidden, copyDisabled)) {
             this.setDatasetRelPublications(new ArrayList<DatasetRelPublication>());
             for (DatasetRelPublication rel : source.datasetRelPublications) {
@@ -306,7 +306,7 @@ public class Metadata implements Serializable {
                 cloneRel.setReplicationData(rel.isReplicationData());
                 this.getDatasetRelPublications().add(cloneRel);
             }
-        } 
+        } */
         /*
         if (copyField(tfMap.get(DatasetFieldConstant.relatedDatasets), copyHidden, copyDisabled)) {
             this.setDatasetRelDatasets(new ArrayList<DatasetRelDataset>());
@@ -503,6 +503,7 @@ public class Metadata implements Serializable {
             this.getDatasetRelMaterials().add(cloneRel);
         }
        */
+       /*
        this.setDatasetRelPublications(new ArrayList<DatasetRelPublication>());
         for(DatasetRelPublication rel: source.datasetRelPublications){
             DatasetRelPublication cloneRel = new DatasetRelPublication();
@@ -515,7 +516,7 @@ public class Metadata implements Serializable {
             cloneRel.setReplicationData(rel.isReplicationData());            
             this.getDatasetRelPublications().add(cloneRel);
         }
-        
+        */
         this.setDatasetRelDatasets(new ArrayList<DatasetRelDataset>());
         for(DatasetRelDataset rel: source.datasetRelDatasets){
             DatasetRelDataset cloneRel = new DatasetRelDataset();
@@ -1022,7 +1023,7 @@ public class Metadata implements Serializable {
     public void setDatasetRelMaterials(List<DatasetRelMaterial> datasetRelMaterials) {
         this.datasetRelMaterials = datasetRelMaterials;
     }*/
-    
+    /*
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
     private List<DatasetRelPublication> datasetRelPublications;
@@ -1032,6 +1033,7 @@ public class Metadata implements Serializable {
     public void setDatasetRelPublications(List<DatasetRelPublication> datasetRelPublications) {
         this.datasetRelPublications = datasetRelPublications;
     }
+    */
     
     @OneToMany(mappedBy="metadata", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder")
@@ -1268,7 +1270,7 @@ public class Metadata implements Serializable {
             this.setDatasetRelMaterials(mats);
         }*/
         
-        
+        /*
         if (this.getDatasetRelPublications()==null || this.getDatasetRelPublications().size()==0) {
             List list = new ArrayList();
             DatasetRelPublication elem = new DatasetRelPublication();
@@ -1276,7 +1278,7 @@ public class Metadata implements Serializable {
             list.add(elem);
             this.setDatasetRelPublications(list);
         }
-        
+        */
         if (this.getDatasetRelDatasets()==null || this.getDatasetRelDatasets().size()==0) {
             List list = new ArrayList();
             DatasetRelDataset elem = new DatasetRelDataset();
@@ -1377,12 +1379,12 @@ public class Metadata implements Serializable {
             elem.setDisplayOrder(i++);
         }
         */
-        
+        /*
         i = 0;
         for (DatasetRelPublication elem : this.getDatasetRelPublications()) {
             elem.setDisplayOrder(i++);
         }       
-        
+        */
         i = 0;
         for (DatasetRelDataset elem : this.getDatasetRelDatasets()) {
             elem.setDisplayOrder(i++);

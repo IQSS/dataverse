@@ -5,8 +5,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRoles;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRoot;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRolesCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,8 +144,8 @@ public class ManageRolesPage implements java.io.Serializable {
 		}
 		
 		try {
-			engineService.submit( new UpdateDataverseGuestRoles(guestRolesToAddHere, session.getUser(), dataverse));
-			engineService.submit( new UpdateDataversePermissionRoot(permissionRoot, session.getUser(), dataverse));
+			engineService.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), dataverse));
+			engineService.submit( new UpdateDataversePermissionRootCommand(permissionRoot, session.getUser(), dataverse));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());

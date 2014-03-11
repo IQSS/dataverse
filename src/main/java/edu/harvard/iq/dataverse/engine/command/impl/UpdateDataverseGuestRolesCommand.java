@@ -17,11 +17,11 @@ import java.util.Set;
  * @author michael
  */
 @RequiredPermissions( Permission.GrantPermissions )
-public class UpdateDataverseGuestRoles extends AbstractVoidCommand {
+public class UpdateDataverseGuestRolesCommand extends AbstractVoidCommand {
 	private final Set<DataverseRole> newRoleSet;
 	private final Dataverse dv;
 
-	public UpdateDataverseGuestRoles(Set<DataverseRole> roleSet, DataverseUser aUser, Dataverse anAffectedDataverse) {
+	public UpdateDataverseGuestRolesCommand(Set<DataverseRole> roleSet, DataverseUser aUser, Dataverse anAffectedDataverse) {
 		super(aUser, anAffectedDataverse);
 		newRoleSet = roleSet;
 		dv = anAffectedDataverse;

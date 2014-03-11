@@ -29,16 +29,16 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public enum EditMode {CREATE, INFO, EDIT, CHANGE, FORGOT};
 
-    @Inject DataverseSession session; 
-    
-    @Inject DataverseServiceBean dataverseService;
-    
-    @Inject UserNotificationServiceBean userNotificationService; 
-    
-    @Inject DatasetServiceBean datasetService;
-    
-    @Inject PermissionServiceBean permissionService;
-    
+    @Inject 
+    DataverseSession session; 
+    @EJB 
+    DataverseServiceBean dataverseService;
+    @EJB 
+    UserNotificationServiceBean userNotificationService; 
+    @EJB 
+    DatasetServiceBean datasetService;
+    @EJB
+    PermissionServiceBean permissionService;
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
