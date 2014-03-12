@@ -63,6 +63,9 @@ import org.apache.commons.lang.ArrayUtils;
  * Based on the original implementation for DVN v3.*, by Matt Owen (2012-2013),
  * completed by Leonid Andreev in 2013. 
  * 
+ * This version is a serious re-write of the plugin, using the new 4.0 
+ * ingest plugin architecture. 
+ * 
  * original 
  * @author Matthew Owen
  * @author Leonid Andreev
@@ -94,11 +97,6 @@ public class RDATAFileReader extends TabularDataFileReader {
   private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.pwrd");
   private static int RSERVE_PORT;
   
-  public static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
-  public static final String DSB_TEMP_DIR = System.getProperty("dataverse.temp.dir");
-  public static final String DVN_TEMP_DIR = null;
-  public static final String WEB_TEMP_DIR = null;
-
   // DATE FORMATS
   private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
     new SimpleDateFormat("yyyy-MM-dd")
@@ -180,7 +178,7 @@ public class RDATAFileReader extends TabularDataFileReader {
   /* 
    * TODO: 
    * Switch to the implementation in iq.dataverse.rserve
-   * -- L.A. 4.0 alpha
+   * -- L.A. 4.0 alpha 1
   */
   private class RWorkspace {
     public String mParent, mWeb, mDvn, mDsb;
@@ -587,8 +585,6 @@ public class RDATAFileReader extends TabularDataFileReader {
                 .append(RSCRIPT_DATASET_INFO_SCRIPT)
                 .toString();
 
-        Map<String, String> variableLabels = new LinkedHashMap<String, String>();
-
         try {
             RRequest request = mRequestBuilder.build();
             request.script(fileInfoScript);
@@ -666,32 +662,31 @@ public class RDATAFileReader extends TabularDataFileReader {
    * into a UTF-8 string.
    * @return a UTF-8 <code>String</code>
    */
-  private static String readLocalResource (String path) {
-    // Debug
-    LOG.fine(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
-    
-    // Get stream
-    InputStream resourceStream = RDATAFileReader.class.getResourceAsStream(path);
-    String resourceAsString = "";
-    
-    // Try opening a buffered reader stream
-    try {
-      BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, "UTF-8"));
-      
-      String line = null;
-      while ((line = rd.readLine())!=null) {
-          resourceAsString = resourceAsString.concat(line);
-      }
-      resourceStream.close();
+    private static String readLocalResource(String path) {
+        // Debug
+        LOG.fine(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
+
+        // Get stream
+        InputStream resourceStream = RDATAFileReader.class.getResourceAsStream(path);
+        String resourceAsString = "";
+
+        // Try opening a buffered reader stream
+        try {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, "UTF-8"));
+
+            String line = null;
+            while ((line = rd.readLine()) != null) {
+                resourceAsString = resourceAsString.concat(line + "\n");
+            }
+            resourceStream.close();
+        } catch (IOException ex) {
+            LOG.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));
+        }
+
+        // Return string
+        return resourceAsString;
     }
-    catch (IOException ex) {
-      LOG.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));
-    }
-    
-    // Return string
-    return resourceAsString;
-  }
-  
+
   
     /**
      * Get a HashMap matching column number to meta-data used in re-creating R
@@ -707,36 +702,10 @@ public class RDATAFileReader extends TabularDataFileReader {
         String variableTypeName = "", variableFormat = "";
         String[] variableLevels = null;
 
-        // We will also fill the valueLabelTable for the variables that are factors 
-        // (and booleans, which the DVN treats as categoricals/factors too); 
-        // Note that it is important that you place entries into the valueLabelTable
-        // ONLY for factor variables! Because SDIOMetadata will assume that any 
-        // variable with an entry is a categorical; so even an empty map entry will 
-        // confuse it. 
-        Map<String, Map<String, String>> valueLabelTable = new LinkedHashMap<String, Map<String, String>>();
 
-        // Value label mapping table specifies which variables produce categorical-type data
-        // (Matt's comment)
-        // TODO: get rid of the comment below - it came from the 3.6
-        // implementation and is no longer relevant. -- L.A. 4.0 alpha
-        // (well, to determine "which variables produce categorical-type data" 
-        // we could simply check if a variable has a non-empty entry in the valueLabelTable. 
-        // This is how this information is looked up elsewhere in the ingest 
-        // framework: Akio first looks up the key in the valueLabelMappingTable, 
-        // by the variable name, then uses this key to check the valueLabelTable map...
-        // Why this double mapping? - it really doesn't seem to serve any function...
-        // i.e. - why not look up just by the variable name? - this is essentially
-        // what Matt is doing here too)
-        // so, TODO: figure out why this is necessary!  -- L.A. 
-        // (I would assume there could be a legit case with some formats where 
-        // you could have more than one variable with the same name... but this 
-        // isn't solving this problem - since we are still using the variable 
-        // name in the lvalueLabelMappingTable!) 
         for (int k = 0; k < metaInfo.size(); k++) {
 
             try {
-                // Map for factors
-                Map<String, String> factorLabelMap = new HashMap<String, String>();
 
                 // Meta-data for a column in the data-set
                 RList columnMeta = metaInfo.at(k).asList();
@@ -774,7 +743,8 @@ public class RDATAFileReader extends TabularDataFileReader {
                     dataTable.getDataVariables().get(k).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
                     dataTable.getDataVariables().get(k).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
                     dataTable.getDataVariables().get(k).setFormatSchemaName(variableFormat);
-                    // Or should it be that "DAT10"/"DATETIME23.3" instead? 
+                    // Or should it be that "DATE10"/"DATETIME23.3" format specs instead, 
+                    // that were used in Matt's implementation? -- TODO: research this! -- L.A. 4.0 alpha 1
 
                     //dataTable.getDataVariables().get(k).setFormatCategory(variableTypeName);
                     // instead:

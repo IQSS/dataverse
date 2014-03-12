@@ -75,6 +75,10 @@ public class RTabFileParser implements java.io.Serializable {
             throw new IOException ("R Tab File Parser: varQnty=0 in the dataset metadata!");
         }
 
+        dbgLog.fine("CSV reader; varQnty: "+varQnty);
+        dbgLog.fine("CSV reader; delimiter: "+delimiterChar);
+
+
         String[] caseRow = new String[varQnty];
 
         String line;
@@ -88,7 +92,7 @@ public class RTabFileParser implements java.io.Serializable {
         boolean[] isBooleanVariable = new boolean[varQnty];
         
         if (dataTable.getDataVariables() != null) {
-            for (int i = 0; i <= varQnty; i++) {
+            for (int i = 0; i < varQnty; i++) {
                 DataVariable var = dataTable.getDataVariables().get(i);
                 if (var == null) {
                     // throw exception!
@@ -129,10 +133,6 @@ public class RTabFileParser implements java.io.Serializable {
             // throw exception!
         }
         
-
-        dbgLog.fine("CSV reader; varQnty: "+varQnty);
-        dbgLog.fine("CSV reader; delimiter: "+delimiterChar);
-
         while ((line = csvReader.readLine()) != null) {
             // chop the line:
             line = line.replaceFirst("[\r\n]*$", "");

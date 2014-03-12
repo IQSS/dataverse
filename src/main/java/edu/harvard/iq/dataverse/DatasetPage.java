@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
@@ -450,9 +452,34 @@ public class DatasetPage implements java.io.Serializable {
          */
         if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
             return true;
+        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".RData")) {
+            return true;
         }
+        
         return false;
     } 
+    
+    private TabularDataFileReader getTabDataReaderByFileNameExtension(String fileName) {
+        /* 
+         * Temporary local implementation; 
+         * eventually, the Ingest Service Provider Registry will be providing
+         * the ingest plugin lookup functionality. -- L.A. 4.0 alpha 1.
+         */
+        
+        if (fileName == null) {
+            return null; 
+        }
+        
+        TabularDataFileReader ingestPlugin = null; 
+        
+        if (fileName.endsWith(".dta")) {
+            ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        } else if (fileName.endsWith(".RData")) {
+            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
+        }
+        
+        return ingestPlugin; 
+    }
     
     private boolean fileMetadataExtractable(DataFile dataFile) {
         /* 
@@ -466,7 +493,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-
+    
     private boolean ingestAsTabular(UploadedFile uFile, DataFile dataFile) throws IOException {
         boolean ingestSuccessful = false;
 
@@ -474,10 +501,16 @@ public class DatasetPage implements java.io.Serializable {
         // it up with the Ingest Service Provider Registry:
         
         //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
-        TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        //TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        TabularDataFileReader ingestPlugin = getTabDataReaderByFileNameExtension(dataFile.getName());
 
+        if (ingestPlugin == null) {
+            throw new IOException ("Could not find ingest plugin for the file "+dataFile.getName());
+        }
+        
         TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
 
+        
         if (tabDataIngest != null) {
             File tabFile = tabDataIngest.getTabDelimitedFile();
 

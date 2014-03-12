@@ -33,8 +33,6 @@ import java.text.*;
 
 import org.apache.commons.lang.*;
 import org.apache.commons.codec.binary.Hex;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -364,23 +362,6 @@ public class DTAFileReader extends TabularDataFileReader{
     // instance fields -------------------------------------------------------//
 
     private static Logger dbgLog = Logger.getLogger(DTAFileReader.class.getPackage().getName());
-
-  
-    // 4.0 variableFormats: time/dates formats; stored in DataVariable.formatSchemaName 
-    // 4.0 private String[] variableFormats = null;
-
-    /* formatCategoryTable: stores a map variable name -> format category;
-     * (format category is "date", "time", "Boolean", "currency", "other").
-     * used to be returned in the smd object; not used anywhere in this class.
-     * -- L.A. 4.0
-     */
-    //private Map<String, String> formatCategoryTable = new LinkedHashMap<String, String>();
-
-    /* formatNameTable: stores a map variable name -> format type;
-     * used to be returned in the smd object; not used anywhere in this class.
-     * -- L.A. 4.0
-     */
-    //private Map<String, String> formatNameTable = new LinkedHashMap<String, String>();
 
     /* 
      * TODO: figure out what this map is for; (is this for some weird 2-stage
