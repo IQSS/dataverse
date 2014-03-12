@@ -23,14 +23,11 @@ public class MetadataBlockConverter implements Converter {
     DataverseServiceBean dataverseService;
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        System.out.println("getAsObject: " + submittedValue);
         MetadataBlock mdb = dataverseService.findMDB(new Long(submittedValue));
-        System.out.println("getAsObject: " + mdb);
         return mdb;
     }
 
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
-         System.out.println("getAsString: " + value);
         if (value == null || value.equals("")) {
             return "";
         } else {
