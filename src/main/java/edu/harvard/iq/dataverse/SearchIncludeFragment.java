@@ -31,6 +31,11 @@ public class SearchIncludeFragment {
     @Inject
     DataverseSession session;
 
+    public enum Modes {
+
+        BROWSE, SEARCH
+    }
+    private Modes mode = Modes.SEARCH;
     private String query;
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
@@ -56,12 +61,20 @@ public class SearchIncludeFragment {
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
     private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
+    private String searchFieldNameSort = SearchFields.NAME_SORT;
+    private String searchFieldRelevance = SearchFields.RELEVANCE;
+    final private String ASCENDING = "asc";
+    final private String DESCENDING = "desc";
     private String typeFilterQuery;
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
     Map<String,Long> previewCountbyType = new HashMap<>();
     private SolrQueryResponse solrQueryResponseAllTypes;
+    private String sortField;
+    private String sortOrder;
+    private String currentSort;
+    private String currentSortFriendly;
     private int page = 1;
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
@@ -115,12 +128,24 @@ public class SearchIncludeFragment {
          * https://redmine.hmdc.harvard.edu/issues/3664
          *
          * 3. When you add or remove a facet, you should always go to page 1 of
-         * search results. Search terms should be preserved.
+         * search results. Search terms should be preserved. Sorting should be
+         * preserved.
          *
          * 4. After search terms have been entered and facets have been
          * selected, we expect users to (optionally) page through search results
-         * and as they do so we will preserve the state of both their search
-         * terms and their facet selections.
+         * and as they do so we will preserve the state of their search terms,
+         * their facet selections, and their sorting.
+         *
+         * 5. Someday the default sort order for browse mode will be by "release
+         * date" (newest first) but that functionality is not yet available in
+         * the system ( see https://redmine.hmdc.harvard.edu/issues/3628 and
+         * https://redmine.hmdc.harvard.edu/issues/3629 ) so for now the default
+         * sort order for browse mode will by alphabetical (sort by name,
+         * ascending). The default sort order for search mode will be by
+         * relevance. (We only offer ascending ordering for relevance since
+         * descending order is unlikely to be useful.) When you sort, facet
+         * selections and what page you are on should be preserved.
+         *
          */
         if (stayOnDataversePage.equals("true")) {
             return "dataverse.xhtml?faces-redirect=true&q=" + query + "&amp;types=dataverses:datasets:files" ;
@@ -135,11 +160,25 @@ public class SearchIncludeFragment {
         // wildcard/browse (*) unless user supplies a query
         String queryToPassToSolr = "*";
         if (this.query == null) {
-            queryToPassToSolr = "*";
+            mode = Modes.BROWSE;
         } else if (this.query.isEmpty()) {
-            queryToPassToSolr = "*";
+            mode = Modes.BROWSE;
         } else {
+            mode = Modes.SEARCH;
+        }
+
+        if (mode.equals(Modes.BROWSE)) {
+            queryToPassToSolr = "*";
+            sortField = searchFieldNameSort;
+            sortOrder = ASCENDING;
+        } else if (mode.equals(Modes.SEARCH)) {
             queryToPassToSolr = query;
+            if (sortField == null) {
+                sortField = searchFieldRelevance;
+            }
+            if (sortOrder == null) {
+                sortOrder = ASCENDING;
+            }
         }
 
         filterQueries = new ArrayList<>();
@@ -208,9 +247,11 @@ public class SearchIncludeFragment {
         try {
             logger.info("query from user:   " + query);
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
+            logger.info("sort by: " + sortField);
             filterQueriesDebug = filterQueriesFinal;
-            solrQueryResponse = searchService.search(queryToPassToSolr, filterQueriesFinal, paginationStart, dataverse);
-            solrQueryResponseAllTypes = searchService.search(queryToPassToSolr, filterQueriesFinalAllTypes, paginationStart, dataverse);
+//            SolrQuery.SortClause sortClause = new SolrQuery.SortClause(sort, SolrQuery.ORDER.asc);
+            solrQueryResponse = searchService.search(dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart);
+            solrQueryResponseAllTypes = searchService.search(dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -317,6 +358,10 @@ public class SearchIncludeFragment {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+
+    public Modes getMode() {
+        return mode;
     }
 
     public int getNumberOfFacets(String name, int defaultValue) {
@@ -575,6 +620,67 @@ public class SearchIncludeFragment {
 
     public Long getFacetCountFiles() {
         return findFacetCountByType("files");
+    }
+
+    public String getSearchFieldRelevance() {
+        return searchFieldRelevance;
+    }
+
+    public void setSearchFieldRelevance(String searchFieldRelevance) {
+        this.searchFieldRelevance = searchFieldRelevance;
+    }
+
+    public String getSearchFieldNameSort() {
+        return searchFieldNameSort;
+    }
+
+    public void setSearchFieldNameSort(String searchFieldNameSort) {
+        this.searchFieldNameSort = searchFieldNameSort;
+    }
+
+    public String getASCENDING() {
+        return ASCENDING;
+    }
+
+    public String getDESCENDING() {
+        return DESCENDING;
+    }
+
+    public String getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(String sortField) {
+        this.sortField = sortField;
+    }
+
+    public String getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(String sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    public String getCurrentSortFriendly() {
+        String friendlySortField = sortField;
+        String friendlySortOrder = sortOrder;
+        if (sortField.equals(SearchFields.NAME_SORT)) {
+            friendlySortField = "Name";
+            if (sortOrder.equals(ASCENDING)) {
+                friendlySortOrder = " (A-Z)";
+            } else if (sortOrder.equals(DESCENDING)) {
+                friendlySortOrder = " (Z-A)";
+            }
+        } else if (sortField.equals(SearchFields.RELEVANCE)) {
+            friendlySortField = "Relevance";
+            friendlySortOrder = "";
+        }
+        return friendlySortField + friendlySortOrder;
+    }
+
+    public String getCurrentSort() {
+        return sortField + ":" + sortOrder;
     }
 
     public int getPage() {

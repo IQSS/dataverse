@@ -14,6 +14,15 @@ public class SolrSearchResult {
     private String type;
     private String query;
     private String name;
+    private String nameSort;
+
+    public String getNameSort() {
+        return nameSort;
+    }
+
+    public void setNameSort(String nameSort) {
+        this.nameSort = nameSort;
+    }
     /**
      * @todo: how important is it to differentiate between name and title?
      */
@@ -65,6 +74,7 @@ public class SolrSearchResult {
                 .add(SearchFields.ID, this.id)
                 .add(SearchFields.ENTITY_ID, this.entityId)
                 .add(SearchFields.TYPE, this.type)
+                .add(SearchFields.NAME_SORT, this.nameSort)
                 .add("parent", parentBuilder)
                 .add("type_specific", typeSpecificFields)
                 .build();

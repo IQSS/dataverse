@@ -247,6 +247,12 @@
    <!-- TODO: store parentid as a long instead of a string  -->
    <field name="parentid" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="parentname" type="text_general" stored="true" indexed="true" multiValued="false"/>
+
+   <!-- Added for Dataverse 4.0 alpha 1 to sort by name  -->
+   <!-- https://redmine.hmdc.harvard.edu/issues/3482 -->
+   <!-- 'Sorting can be done on the "score" of the document, or on any multiValued="false" indexed="true" field provided that field is either non-tokenized (ie: has no Analyzer) or uses an Analyzer that only produces a single Term (ie: uses the KeywordTokenizer)' http://wiki.apache.org/solr/CommonQueryParameters#sort -->
+   <!-- http://stackoverflow.com/questions/13360706/solr-4-0-alphabetical-sorting-trouble/13361226#13361226 -->
+   <field name="name_sort" type="alphaOnlySort" indexed="true" stored="true"/>
  </fields>
 
 

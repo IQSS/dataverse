@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
@@ -25,14 +26,25 @@ public class Search {
 
     @EJB
     SearchServiceBean searchService;
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("start") final int paginationStart) {
+    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("sort") String sortField, @QueryParam("order") String sortOrder, @QueryParam("start") final int paginationStart) {
         if (query != null) {
+            if (sortField == null) {
+                // sane, performant default
+                sortField = SearchFields.RELEVANCE;
+            }
+            if (sortOrder == null) {
+                // asc for alphabetical by default despite GitHub using desc by default: "The sort order if sort parameter is provided. One of asc or desc. Default: desc" -- http://developer.github.com/v3/search/
+                sortOrder = "asc";
+            }
             SolrQueryResponse solrQueryResponse;
             try {
-                solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+//                SolrQuery.SortClause sortClause = new SolrQuery.SortClause(sortField, sortOrder);
+                solrQueryResponse = searchService.search(dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
             } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -88,7 +100,7 @@ public class Search {
                     .add("count_in_response", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
 //                    .add("spelling_alternatives", spelling_alternatives)
-//                    .add("itemsJson", filesArrayBuilder.build())
+                    .add("itemsJson", filesArrayBuilder.build())
 //                    .add("facets", facets)
                     .build();
 //            logger.info("value: " + value);

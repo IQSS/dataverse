@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,7 +77,7 @@ public class SearchPage implements java.io.Serializable {
         }
         SolrQueryResponse solrQueryResponse = null;
         try {
-            solrQueryResponse = searchService.search(query, filterQueries, paginationStart);
+            solrQueryResponse = searchService.search(dataverseService.findRootDataverse(), query, filterQueries, "score", "asc", paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

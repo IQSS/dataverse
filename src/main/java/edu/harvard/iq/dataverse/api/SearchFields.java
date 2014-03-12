@@ -47,6 +47,11 @@ public class SearchFields {
 //    public static final String DISTRIBUTION_DATE_ORIGINAL = DatasetFieldConstant.distributionDate + "_dt";
 //    public static final String DISTRIBUTION_DATE_YEAR_ONLY = DatasetFieldConstant.distributionDate + "_i";
 
+    // Solr refers to "relevance" as "score"
+    public static final String RELEVANCE = "score";
+
+    // require Dataverse-specific schema.xml
+    public static final String NAME_SORT = "name_sort";
     // Used for performance. Why hit the db if solr has the data?
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";

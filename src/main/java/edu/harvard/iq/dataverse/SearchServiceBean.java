@@ -18,6 +18,7 @@ import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -46,17 +47,21 @@ public class SearchServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
 
-    public SolrQueryResponse search(String query, List<String> filterQueries, int paginationStart) {
-        return search(query, filterQueries, paginationStart, dataverseService.findRootDataverse());
-    }    
-    
-    public SolrQueryResponse search(String query, List<String> filterQueries, int paginationStart, Dataverse dataverse) {
+    public SolrQueryResponse search(Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
         /**
          * @todo make "localhost" and port number a config option
          */
         SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
+//        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
+//        if (query.equals("*") || query.equals("*:*")) {
+//            solrQuery.setSort(new SortClause(SearchFields.NAME_SORT, SolrQuery.ORDER.asc));
+        solrQuery.setSort(new SortClause(sortField, sortOrder));
+//        } else {
+//            solrQuery.setSort(sortClause);
+//        }
+//        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
         solrQuery.setParam("qt", "/spell");
@@ -179,6 +184,7 @@ public class SearchServiceBean {
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
+            String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             String title = (String) solrDocument.getFieldValue(titleSolrField);
 //            logger.info("titleSolrField: " + titleSolrField);
@@ -197,6 +203,7 @@ public class SearchServiceBean {
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
+            solrSearchResult.setNameSort(nameSort);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
