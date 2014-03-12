@@ -126,7 +126,7 @@ public class DataversePage implements java.io.Serializable {
         }      
     }
 
-    public void save(ActionEvent e) {
+    public String save() {
         // TODO; needs to use actual command model for all saves
         if (EditMode.INFO.equals(editMode)) {
 
@@ -145,6 +145,8 @@ public class DataversePage implements java.io.Serializable {
             editMode = null;          
 
         }
+        
+        return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
 
     }
 
