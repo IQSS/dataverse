@@ -142,7 +142,22 @@
             <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
             <div style="width:80%;float:left;">
                 
-                <h:outputText value="THIS IS EMPTY" rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}"/>
+                <ui:fragment rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
+                    <div class="bg-warning" style="background:#FCF8F2; padding:.5em 1em;">
+                        <ui:fragment rendered="#{dataverseSession.user.guest}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / GENERIC</h4>
+                            <p>...And there is nothing you can do about that, unless you <h:outputLink value="/loginpage.xhtml">log in</h:outputLink>.</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!dataverseSession.user.guest and !SearchIncludeFragment.allowedToClickAddData}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / LOGGED IN / NO PERMS</h4>
+                            <p>...And there is STILL nothing you can do about that. Sorry.</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!dataverseSession.user.guest and SearchIncludeFragment.allowedToClickAddData}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / LOGGED IN / PERMS</h4>
+                            <p>Hey, you should probably do something about that, like <a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">add a new dataset</a>.</p>
+                        </ui:fragment>
+                    </div>
+                </ui:fragment>
                 
                 <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}" rendered="#{SearchIncludeFragment.debug}"/>
                 <ui:fragment>
