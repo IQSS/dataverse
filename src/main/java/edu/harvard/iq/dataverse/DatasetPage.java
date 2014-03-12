@@ -195,21 +195,17 @@ public class DatasetPage implements java.io.Serializable {
         return dsfvIn;
     }
     
-    public void deleteRecord(String recordType, Object toDelete){  
-      if (recordType.equals("AUTHOR")) {
-            DatasetAuthor deleteAuthor = (DatasetAuthor) toDelete ;
-             datasetVersionUI.getDatasetAuthors().remove(deleteAuthor);
-             editVersion.getDatasetFieldValues().remove(deleteAuthor.getName());
-             editVersion.getDatasetFieldValues().remove(deleteAuthor.getAffiliation());
-             editVersion.getDatasetFieldValues().remove(deleteAuthor.getAffiliation().getParentDatasetFieldValue());
-
-        } else if (recordType.equals("KEYWORD")){
-              
-        }  else if (recordType.equals("TOPIC")){
-             
-        }  else if (recordType.equals("ALL")){
-
+    public void deleteGeneralRecord(Object toDeleteIn) {
+        DatasetFieldValue toDelete = (DatasetFieldValue) toDeleteIn;
+        //Delete children if any
+        if (toDelete.getChildDatasetFieldValues() != null && !toDelete.getChildDatasetFieldValues().isEmpty()) {
+            for (DatasetFieldValue dsfvDelete : toDelete.getChildDatasetFieldValues()) {
+                editVersion.getDatasetFieldValues().remove(dsfvDelete);
+            }
         }
+        //works to update interface does not delete from DB
+        editVersion.getDatasetFieldValues().remove(toDelete);
+        datasetVersionUI = new DatasetVersionUI(editVersion); 
     }
        
     public void save() {
