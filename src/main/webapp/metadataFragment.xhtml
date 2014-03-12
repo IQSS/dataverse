@@ -24,7 +24,9 @@
                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
                                                 #{fieldValues.datasetField.title}
                                             </a>
-                                        </label>
+                                            <!-- Mike, style as asterisk only if required true -->
+                                            <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                        </label>                  
                                     </ui:fragment>
 
                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
@@ -73,6 +75,8 @@
                                                 <div class="form-group col-sm-6">
                                                     <label class="control-label" for="metadata_BLANK">
                                                         <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                        <!-- Mike, style as asterisk -->
+                                                        <h:outputText value=" Required" rendered="#{childVal.datasetField.required}" /> 
                                                     </label>                                                                       
                                                     <p:inputText value="#{childVal.strValue}" 
                                                                  rendered="#{childVal.parentDatasetFieldValue == fieldValues
@@ -109,7 +113,7 @@
                                                 <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
                                                     <div class="form-group col-sm-6" >
                                                         <label class="control-label" for="metadata_BLANK">
-                                                            <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                            <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                         </label>
                                                         <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                     </div>

@@ -45,6 +45,7 @@ public class DatasetVersionUI {
         this.setDatasetKeywords(new ArrayList());
         this.setDatasetRelPublications(new ArrayList());
         this.setSubjects(new ArrayList());
+        this.setDisplaysAboveTabs(new ArrayList());
 
         // loop through vaues to get fields for view mode
         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
@@ -71,11 +72,10 @@ public class DatasetVersionUI {
                 this.getDatasetKeywords().add(dsfv);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
                 this.getSubjects().add(dsfv.getStrValue());
-            }
-        //Special handling for Related Publications
-        /* Treated as below the tabs for editing, but must get first value for display above tabs    
-             */
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.publication) && this.datasetRelPublications.isEmpty()) {
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.publication) ) {
+               //Special handling for Related Publications
+                // Treated as below the tabs for editing, but must get first value for display above tabs    
+                if ( this.datasetRelPublications.isEmpty()){
                 Collection childVals = dsfv.getChildDatasetFieldValues();
                 DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
                 if (childVals != null) {
@@ -99,10 +99,21 @@ public class DatasetVersionUI {
                     }
                 }
                 this.getDatasetRelPublications().add(datasetRelPublication);
-            }
-            //Get notes text for display
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.notesText)) {
+                }
+
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.notesText)) {
                 this.setNotesText(dsfv.getStrValue());
+            } else if(dsfv.getDatasetField().isDisplayOnCreate() 
+                    && ((!dsfv.getDatasetField().isHasParent() && !dsfv.getDatasetField().isHasChildren() && dsfv.getStrValue() != null &&  !dsfv.getStrValue().isEmpty())
+                    || (dsfv.getDatasetField().isHasChildren() && !dsfv.isChildEmpty()))){
+               //any fields designated as show on create
+               
+               this.getDisplaysAboveTabs().add(dsfv);
+               if (dsfv.getChildDatasetFieldValues() != null && !dsfv.getChildDatasetFieldValues().isEmpty()){
+                   for (DatasetFieldValue dsfvChild: dsfv.getChildDatasetFieldValues()){
+                       this.getDisplaysAboveTabs().add(dsfvChild);
+                   }
+               }
             }
         }
         setMetadataValueBlocks(datasetVersion);
@@ -142,16 +153,6 @@ public class DatasetVersionUI {
         this.subjects = subjects;
     }
 
-    private List<SelectItem> subjectControlledVocabulary = new ArrayList();
-
-    public List<SelectItem> getSubjectControlledVocabulary() {
-        return subjectControlledVocabulary;
-    }
-
-    public void setSubjectControlledVocabulary(List<SelectItem> subjectControlledVocabulary) {
-        this.subjectControlledVocabulary = subjectControlledVocabulary;
-    }
-
     private List<DatasetAuthor> datasetAuthors = new ArrayList();
 
     public List<DatasetAuthor> getDatasetAuthors() {
@@ -180,6 +181,16 @@ public class DatasetVersionUI {
 
     public void setDatasetKeywords(List<DatasetFieldValue> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
+    }
+    
+    private List<DatasetFieldValue> displaysAboveTabs = new ArrayList();
+
+    public List<DatasetFieldValue> getDisplaysAboveTabs() {
+        return displaysAboveTabs;
+    }
+
+    public void setDisplaysAboveTabs(List<DatasetFieldValue> displaysAboveTabs) {
+        this.displaysAboveTabs = displaysAboveTabs;
     }
 
     private List<DatasetRelPublication> datasetRelPublications;
