@@ -85,93 +85,95 @@
     <ui:fragment rendered="${!empty DatasetPage.editMode}">
         <div class="panel-group">
             <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
-                <div class="panel panel-default">
-                    <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading">
-                        #{metadataBlockVal.key.displayName}
-                    </div>
-                    <div id="collapse#{block.index}" class="collapse #{block.first?'in':''}">
-                        <div class="panel-body">
-                            <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
-                                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or fieldMap.key.displayOnCreate) and !fieldMap.key.hasParent}">
-                                    <!-- Everything except Select Multiple -->
-                                    <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.allowMultiples or empty fieldMap.key.controlledVocabularySelectItems}">
-                                        <ui:fragment rendered="#{(!fieldValues.datasetField.hasParent)}">
+                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate)}">
+                    <div class="panel panel-default">
+                        <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading">
+                            #{metadataBlockVal.key.displayName}
+                        </div>
+                        <div id="collapse#{block.index}" class="collapse #{block.first || DatasetPage.editMode == 'CREATE'?'in':''}">
+                            <div class="panel-body">
+                                <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
+                                    <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or fieldMap.key.displayOnCreate) and !fieldMap.key.hasParent}">
+                                        <!-- Everything except Select Multiple -->
+                                        <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.allowMultiples or empty fieldMap.key.controlledVocabularySelectItems}">
+                                            <ui:fragment rendered="#{(!fieldValues.datasetField.hasParent)}">
+                                                <div class="form-group">
+                                                    <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
+                                                        <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                                #{fieldValues.datasetField.title}
+                                                            </a>
+                                                            <!-- Mike, style as asterisk only if required true -->
+                                                            <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                        </label>                  
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
+                                                        <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                            <ui:param name="fieldValues" value="#{fieldValues}"/>
+                                                        </ui:include>
+                                                    </ui:fragment>
+
+                                                    <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
+                                                        <div class="col-sm-6">
+                                                            <!-- CHILDS -->
+                                                            <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{!fieldValues.datasetField.hasChildren}">                                                              
+                                                                <div class="form-group col-sm-6">
+                                                                    <label class="control-label" for="metadata_BLANK">
+                                                                        <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                                    </label>
+                                                                    <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                                </div>
+                                                            </ui:repeat>                                                                
+
+                                                            <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{fieldValues.datasetField.hasChildren}">
+                                                                <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                                    <ui:param name="fieldValues" value="#{childVal}"/>
+                                                                    <ui:param name="includeTitle" value="true"/>
+                                                                </ui:include>
+                                                            </ui:repeat>
+                                                        </div>
+                                                    </ui:fragment>
+
+                                                    <!-- Add / Remove buttons -->
+                                                    <ui:fragment rendered="#{fieldValues.datasetField.allowMultiples and empty fieldValues.datasetField.controlledVocabularySelectItems}">
+                                                        <div class="col-xs-2">
+                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
+                                                                             title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
+                                                                             actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
+                                                            </p:commandButton>
+                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
+                                                                             title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                             escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
+                                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </ui:fragment>
+                                                </div>
+                                            </ui:fragment>
+                                        </ui:repeat>
+                                        <!-- For fields that Allow Multiples with Controlled Vocab -->
+                                        <ui:fragment rendered="#{fieldMap.key.allowMultiples and !empty fieldMap.key.controlledVocabularySelectItems and !fieldValues.datasetField.hasParent}">
                                             <div class="form-group">
-                                                <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
-                                                    <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
-                                                            #{fieldValues.datasetField.title}
-                                                        </a>
-                                                        <!-- Mike, style as asterisk only if required true -->
-                                                        <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
-                                                    </label>                  
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
-                                                    <ui:include src="datasetFieldForEditFragment.xhtml">
-                                                        <ui:param name="fieldValues" value="#{fieldValues}"/>
-                                                    </ui:include>
-                                                </ui:fragment>
-
-                                                <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
-                                                    <div class="col-sm-6">
-                                                        <!-- CHILDS -->
-                                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{!fieldValues.datasetField.hasChildren}">                                                              
-                                                            <div class="form-group col-sm-6">
-                                                                <label class="control-label" for="metadata_BLANK">
-                                                                    <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
-                                                                </label>
-                                                                <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
-                                                            </div>
-                                                        </ui:repeat>                                                                
-
-                                                        <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{fieldValues.datasetField.hasChildren}">
-                                                            <ui:include src="datasetFieldForEditFragment.xhtml">
-                                                                <ui:param name="fieldValues" value="#{childVal}"/>
-                                                                <ui:param name="includeTitle" value="true"/>
-                                                            </ui:include>
-                                                        </ui:repeat>
-                                                    </div>
-                                                </ui:fragment>
-
-                                                <!-- Add / Remove buttons -->
-                                                <ui:fragment rendered="#{fieldValues.datasetField.allowMultiples and empty fieldValues.datasetField.controlledVocabularySelectItems}">
-                                                    <div class="col-xs-2">
-                                                        <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
-                                                                         title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                         actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
-                                                        </p:commandButton>
-                                                        <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
-                                                                         title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
-                                                                         escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
-                                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                        </p:commandButton>
-                                                    </div>
-                                                </ui:fragment>
+                                                <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                        #{fieldMap.key.title}
+                                                    </a>
+                                                    <!-- Mike, style as asterisk only if required true -->
+                                                    <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                </label>                                                        
+                                                <h:selectManyListbox>
+                                                    <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}" />
+                                                </h:selectManyListbox> 
                                             </div>
                                         </ui:fragment>
-                                    </ui:repeat>
-                                    <!-- For fields that Allow Multiples with Controlled Vocab -->
-                                    <ui:fragment rendered="#{fieldMap.key.allowMultiples and !empty fieldMap.key.controlledVocabularySelectItems and !fieldValues.datasetField.hasParent}">
-                                        <div class="form-group">
-                                            <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
-                                                    #{fieldMap.key.title}
-                                                </a>
-                                                <!-- Mike, style as asterisk only if required true -->
-                                                <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
-                                            </label>                                                        
-                                            <h:selectManyListbox>
-                                                <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}" />
-                                            </h:selectManyListbox> 
-                                        </div>
+
                                     </ui:fragment>
 
-                                </ui:fragment>
-
-                            </ui:repeat>
+                                </ui:repeat>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ui:fragment>
             </ui:repeat>
         </div>    
     </ui:fragment>
