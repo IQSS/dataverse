@@ -21,8 +21,6 @@ INSERT INTO variablerangetype (id, "name") VALUES (3, 'min');
 INSERT INTO variablerangetype (id, "name") VALUES (4, 'max');
 INSERT INTO variablerangetype (id, "name") VALUES (5, 'point');
 
-DROP SEQUENCE filesystemname_seq;
-
 CREATE SEQUENCE filesystemname_seq
   INCREMENT 1
   MINVALUE 1
