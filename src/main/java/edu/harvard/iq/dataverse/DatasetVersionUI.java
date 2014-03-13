@@ -7,14 +7,12 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 import javax.ejb.EJB;
-import javax.faces.model.SelectItem;
 
 /**
  *
@@ -395,11 +393,16 @@ public class DatasetVersionUI {
 
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method
-        // also need to deal with display order, so need to get away from maps
-        metadataBlocksForEdit.clear();
         metadataBlocksForView.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new HashMap();
+            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
+                    new Comparator<DatasetField>() {
+                        public int compare(DatasetField d1, DatasetField d2) {
+                            int a = d1.getDisplayOrder();
+                            int b = d2.getDisplayOrder();
+                            return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                        }
+                    });
             boolean addBlock = false;
             for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
                 if (dsfv.getDatasetField().isHasChildren() || (dsfv.getStrValue() != null && !dsfv.getStrValue().trim().equals(""))) {
@@ -417,21 +420,21 @@ public class DatasetVersionUI {
                 }
             }
 
-            /*Collections.sort(addList, new Comparator<DatasetFieldValue>() {
-             public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-             int a = d1.getDatasetField().getDisplayOrder();
-             int b = d2.getDatasetField().getDisplayOrder();
-             return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-             }
-             });*/
             if (addBlock) {
                 metadataBlocksForView.put(mdb, mdbMap);
             }
         }
-        for (MetadataBlock mdb
-                : this.datasetVersion.getDataset()
-                .getOwner().getMetadataBlocks()) {
-            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new HashMap();
+
+        metadataBlocksForEdit.clear();
+        for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
+            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
+                    new Comparator<DatasetField>() {
+                        public int compare(DatasetField d1, DatasetField d2) {
+                            int a = d1.getDisplayOrder();
+                            int b = d2.getDisplayOrder();
+                            return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                        }
+                    });
             for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
                 if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
                     List<DatasetFieldValue> dsfvValues = mdbMap.get(dsfv.getDatasetField());
@@ -442,13 +445,7 @@ public class DatasetVersionUI {
                     mdbMap.put(dsfv.getDatasetField(), dsfvValues);
                 }
             }
-            /*Collections.sort(addList, new Comparator<DatasetFieldValue>() {
-             public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-             int a = d1.getDatasetField().getDisplayOrder();
-             int b = d2.getDatasetField().getDisplayOrder();
-             return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-             }
-             });*/
+
             metadataBlocksForEdit.put(mdb, mdbMap);
         }
     }
