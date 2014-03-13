@@ -104,6 +104,14 @@ public class DatasetFieldServiceBean {
 
     public DatasetField save(DatasetField dsf) {
        return em.merge(dsf);
-    }     
+    }
+    
+    public MetadataBlock save(MetadataBlock mdb) {
+       return em.merge(mdb);
+    }   
+    
+    public ControlledVocabularyValue save(ControlledVocabularyValue cvv) {
+       return em.merge(cvv);
+    }       
     
 }
