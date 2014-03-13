@@ -4,5 +4,7 @@ if [ -z "$1" ]; then
 else
     # i.e. ./search 'q=*&fq=cat:Birds+Inc.&fq=type_s:datasets'
     # i.e. ./search 'q=*&start=10'
+    # i.e. ./search 'q=*&sort=name_sort&order=asc'
+    # i.e. ./search 'q=*&sort=name_sort&order=asc' | jq '.itemsJson[] | {name_sort}'
     curl -s "http://localhost:8080/api/search?$1"
 fi

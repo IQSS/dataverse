@@ -77,6 +77,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
+        solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getName());
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
@@ -194,6 +195,9 @@ public class IndexServiceBean {
                              * of DatasetField.java
                              */
                             solrField = SearchFields.AFFILIATION;
+                        } else if (datasetFieldValue.getDatasetField().getName().equals("title")) {
+                            // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
+                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getStrValue());
                         }
                         solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());
                     }
@@ -291,6 +295,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
+            datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getContentType());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType().split("/")[0]);
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
