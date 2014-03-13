@@ -28,11 +28,23 @@ public class DatasetVersionUI {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List> metadataBlockValues = new HashMap();
+    private Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> metadataBlocksForView = new HashMap();
+    private Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> metadataBlocksForEdit = new HashMap();
 
-    public List<Map.Entry<MetadataBlock, List>> getMetadataBlockValues() {
-        Set<Map.Entry<MetadataBlock, List>> metadataSet = metadataBlockValues.entrySet();
-        return new ArrayList<>(metadataSet);
+    public Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> getMetadataBlocksForView() {
+        return metadataBlocksForView;
+    }
+
+    public void setMetadataBlocksForView(Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> metadataBlocksForView) {
+        this.metadataBlocksForView = metadataBlocksForView;
+    }
+
+    public Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> getMetadataBlocksForEdit() {
+        return metadataBlocksForEdit;
+    }
+
+    public void setMetadataBlocksForEdit(Map<MetadataBlock, Map<DatasetField, List<DatasetFieldValue>>> metadataBlocksForEdit) {
+        this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
 
     public DatasetVersionUI(DatasetVersion datasetVersion) {
@@ -72,48 +84,48 @@ public class DatasetVersionUI {
                 this.getDatasetKeywords().add(dsfv);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)) {
                 this.getSubjects().add(dsfv.getStrValue());
-            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.publication) ) {
-               //Special handling for Related Publications
+            } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.publication)) {
+                //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
-                if ( this.datasetRelPublications.isEmpty()){
-                Collection childVals = dsfv.getChildDatasetFieldValues();
-                DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                if (childVals != null) {
-                    for (Object cv : childVals) {
-                        DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                            datasetRelPublication.setText(cvo.getStrValue());
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                            datasetRelPublication.setIdNumber(cvo.getStrValue());
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                            datasetRelPublication.setIdType(cvo.getStrValue());
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            datasetRelPublication.setUrl(null);
-                        }
-                        if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL)) {
-                            datasetRelPublication.setUrl(cvo.getStrValue());
+                if (this.datasetRelPublications.isEmpty()) {
+                    Collection childVals = dsfv.getChildDatasetFieldValues();
+                    DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
+                    if (childVals != null) {
+                        for (Object cv : childVals) {
+                            DatasetFieldValue cvo = (DatasetFieldValue) cv;
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                                datasetRelPublication.setText(cvo.getStrValue());
+                            }
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                                datasetRelPublication.setIdNumber(cvo.getStrValue());
+                            }
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                                datasetRelPublication.setIdType(cvo.getStrValue());
+                            }
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
+                                datasetRelPublication.setUrl(null);
+                            }
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL)) {
+                                datasetRelPublication.setUrl(cvo.getStrValue());
+                            }
                         }
                     }
-                }
-                this.getDatasetRelPublications().add(datasetRelPublication);
+                    this.getDatasetRelPublications().add(datasetRelPublication);
                 }
 
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.notesText)) {
                 this.setNotesText(dsfv.getStrValue());
-            } else if(dsfv.getDatasetField().isDisplayOnCreate() 
-                    && ((!dsfv.getDatasetField().isHasParent() && !dsfv.getDatasetField().isHasChildren() && dsfv.getStrValue() != null &&  !dsfv.getStrValue().isEmpty())
-                    || (dsfv.getDatasetField().isHasChildren() && !dsfv.isChildEmpty()))){
-               //any fields designated as show on create
-               
-               this.getDisplaysAboveTabs().add(dsfv);
-               if (dsfv.getChildDatasetFieldValues() != null && !dsfv.getChildDatasetFieldValues().isEmpty()){
-                   for (DatasetFieldValue dsfvChild: dsfv.getChildDatasetFieldValues()){
-                       this.getDisplaysAboveTabs().add(dsfvChild);
-                   }
-               }
+            } else if (dsfv.getDatasetField().isDisplayOnCreate()
+                    && ((!dsfv.getDatasetField().isHasParent() && !dsfv.getDatasetField().isHasChildren() && dsfv.getStrValue() != null && !dsfv.getStrValue().isEmpty())
+                    || (dsfv.getDatasetField().isHasChildren() && !dsfv.isChildEmpty()))) {
+                //any fields designated as show on create
+
+                this.getDisplaysAboveTabs().add(dsfv);
+                if (dsfv.getChildDatasetFieldValues() != null && !dsfv.getChildDatasetFieldValues().isEmpty()) {
+                    for (DatasetFieldValue dsfvChild : dsfv.getChildDatasetFieldValues()) {
+                        this.getDisplaysAboveTabs().add(dsfvChild);
+                    }
+                }
             }
         }
         setMetadataValueBlocks(datasetVersion);
@@ -182,7 +194,7 @@ public class DatasetVersionUI {
     public void setDatasetKeywords(List<DatasetFieldValue> datasetKeywords) {
         this.datasetKeywords = datasetKeywords;
     }
-    
+
     private List<DatasetFieldValue> displaysAboveTabs = new ArrayList();
 
     public List<DatasetFieldValue> getDisplaysAboveTabs() {
@@ -225,7 +237,6 @@ public class DatasetVersionUI {
         //todo get UNF to calculate and display here.
         return "";
     }
-
 
     //TODO - make sure getCitation works
     private String getYearForCitation(String dateString) {
@@ -383,22 +394,62 @@ public class DatasetVersionUI {
     }
 
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
-        metadataBlockValues.clear();
+        //TODO: A lot of clean up on the logic of this method
+        // also need to deal with display order, so need to get away from maps
+        metadataBlocksForEdit.clear();
+        metadataBlocksForView.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            List addList = new ArrayList();
+            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new HashMap();
+            boolean addBlock = false;
             for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
-                if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
-                    addList.add(dsfv);
+                if (dsfv.getDatasetField().isHasChildren() || (dsfv.getStrValue() != null && !dsfv.getStrValue().trim().equals(""))) {
+                    if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
+                        List<DatasetFieldValue> dsfvValues = mdbMap.get(dsfv.getDatasetField());
+                        if (dsfvValues == null) {
+                            dsfvValues = new ArrayList();
+                        }
+                        dsfvValues.add(dsfv);
+                        mdbMap.put(dsfv.getDatasetField(), dsfvValues);
+                        if (!dsfv.getDatasetField().isHasChildren()) {
+                            addBlock = true;
+                        }
+                    }
                 }
             }
-            Collections.sort(addList, new Comparator<DatasetFieldValue>() {
-                public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-                    int a = d1.getDatasetField().getDisplayOrder();
-                    int b = d2.getDatasetField().getDisplayOrder();
-                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+
+            /*Collections.sort(addList, new Comparator<DatasetFieldValue>() {
+             public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+             int a = d1.getDatasetField().getDisplayOrder();
+             int b = d2.getDatasetField().getDisplayOrder();
+             return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+             }
+             });*/
+            if (addBlock) {
+                metadataBlocksForView.put(mdb, mdbMap);
+            }
+        }
+        for (MetadataBlock mdb
+                : this.datasetVersion.getDataset()
+                .getOwner().getMetadataBlocks()) {
+            Map<DatasetField, List<DatasetFieldValue>> mdbMap = new HashMap();
+            for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
+                if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
+                    List<DatasetFieldValue> dsfvValues = mdbMap.get(dsfv.getDatasetField());
+                    if (dsfvValues == null) {
+                        dsfvValues = new ArrayList();
+                    }
+                    dsfvValues.add(dsfv);
+                    mdbMap.put(dsfv.getDatasetField(), dsfvValues);
                 }
-            });
-            metadataBlockValues.put(mdb, addList);
+            }
+            /*Collections.sort(addList, new Comparator<DatasetFieldValue>() {
+             public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+             int a = d1.getDatasetField().getDisplayOrder();
+             int b = d2.getDatasetField().getDisplayOrder();
+             return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+             }
+             });*/
+            metadataBlocksForEdit.put(mdb, mdbMap);
         }
     }
 
