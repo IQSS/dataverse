@@ -31,11 +31,9 @@ public class SearchIncludeFragment {
     @Inject
     DataverseSession session;
 
-    public enum Modes {
-
-        BROWSE, SEARCH
-    }
-    private Modes mode = Modes.SEARCH;
+    private String browseModeString = "browse";
+    private String searchModeString = "search";
+    private String mode;
     private String query;
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
@@ -160,14 +158,14 @@ public class SearchIncludeFragment {
         // wildcard/browse (*) unless user supplies a query
         String queryToPassToSolr = "*";
         if (this.query == null) {
-            mode = Modes.BROWSE;
+            mode = browseModeString;
         } else if (this.query.isEmpty()) {
-            mode = Modes.BROWSE;
+            mode = browseModeString;
         } else {
-            mode = Modes.SEARCH;
+            mode = searchModeString;
         }
 
-        if (mode.equals(Modes.BROWSE)) {
+        if (mode.equals(browseModeString)) {
             queryToPassToSolr = "*";
             if (sortField == null) {
                 sortField = searchFieldNameSort;
@@ -175,7 +173,7 @@ public class SearchIncludeFragment {
             if (sortOrder == null) {
                 sortOrder = ASCENDING;
             }
-        } else if (mode.equals(Modes.SEARCH)) {
+        } else if (mode.equals(searchModeString)) {
             queryToPassToSolr = query;
             if (sortField == null) {
                 sortField = searchFieldRelevance;
@@ -364,7 +362,17 @@ public class SearchIncludeFragment {
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
-    public Modes getMode() {
+    public String getBrowseModeString() {
+        return browseModeString;
+    }
+
+    public String getSearchModeString() {
+        return searchModeString;
+    }
+
+    public String getMode() {
+        // enum would be prefered but we can't reference enums from JSF:
+        // http://stackoverflow.com/questions/2524420/how-to-testing-for-enum-equality-in-jsf/2524901#2524901
         return mode;
     }
 

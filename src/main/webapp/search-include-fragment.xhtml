@@ -154,17 +154,23 @@
                 
                 <ui:fragment rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
                     <div class="bg-warning" style="background:#FCF8F2; padding:.5em 1em;">
-                        <ui:fragment rendered="#{dataverseSession.user.guest}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / GENERIC</h4>
-                            <p>...And there is nothing you can do about that, unless you <h:outputLink value="/loginpage.xhtml">log in</h:outputLink>.</p>
+                        <h:outputText value="We are in browse mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}"/>
+                        <h:outputText value="We are in search mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
+                        <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / SEARCH</h4>
+                            <p>Your search didn't return any results. You may want to broaden your search.</p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!dataverseSession.user.guest and !SearchIncludeFragment.allowedToClickAddData}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / LOGGED IN / NO PERMS</h4>
-                            <p>...And there is STILL nothing you can do about that. Sorry.</p>
+                        <ui:fragment rendered="#{dataverseSession.user.guest and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / GUEST</h4>
+                            <p>You have browsed to an empty dataverse. If this is your dataverse, you could add data by <h:outputLink value="/loginpage.xhtml">logging in</h:outputLink>.</p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!dataverseSession.user.guest and SearchIncludeFragment.allowedToClickAddData}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / LOGGED IN / PERMS</h4>
-                            <p>Hey, you should probably do something about that, like <a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">add a new dataset</a>.</p>
+                        <ui:fragment rendered="#{!dataverseSession.user.guest and !SearchIncludeFragment.allowedToClickAddData and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS</h4>
+                            <p>You have browsed to an empty dataverse. You don't have permission to add data. Who knows why it's empty.</p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{!dataverseSession.user.guest and SearchIncludeFragment.allowedToClickAddData and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / PERMS</h4>
+                            <p>This dataverse is empty and you have the power to fill it! Why not <a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">add a dataset</a>.</p>
                         </ui:fragment>
                     </div>
                 </ui:fragment>
