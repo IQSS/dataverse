@@ -55,6 +55,15 @@ public class MetadataBlock implements Serializable {
     public void setDatasetFields(Collection<DatasetField> datasetFields) {
         this.datasetFields = datasetFields;
     }
+    
+    public boolean isDisplayOnCreate() {
+        for (DatasetField datasetField : datasetFields) {
+            if (datasetField.isDisplayOnCreate()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean isShowOnCreate() {
         return showOnCreate;
