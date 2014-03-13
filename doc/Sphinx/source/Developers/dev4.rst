@@ -74,4 +74,5 @@ If you have an old copy of the database and want to start fresh, here are the re
 - via web browser, go to the Root Dataverse / Edit Dataverse Setup. Add the Citation block and any others. You may also choose to select some  dataset-specific facets. (**)
 
 (*) This script calls a curl command for each of the (current) metadata blocks. If you want to exclude a block, just modify the file and remove that block.
+
 (**) Todo: This needs to get added to the api for the root dataverse.
