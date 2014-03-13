@@ -120,5 +120,13 @@ public class DataverseServiceBean {
 
     public List<MetadataBlock> findAllMetadataBlocks() {
         return em.createQuery("select object(o) from MetadataBlock as o order by o.id").getResultList();
+    }
+    
+    public DataverseFacet findFacet(Long id) {
+        return (DataverseFacet) em.find(DataverseFacet.class, id);
+    }
+    
+    public List<DataverseFacet> findAllDataverseFacets() {
+        return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
     }  
-}
+}  
