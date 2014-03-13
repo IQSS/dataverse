@@ -59,6 +59,8 @@ public class DataFileConverter {
     public static String FILE_TYPE_TAB = "tab";
     public static String FILE_TYPE_RDATA = "RData";
     
+    public static String SERVICE_REQUEST_CONVERT = "convert";
+    
     
     public static FileAccessObject performFormatConversion (DataFile file, FileAccessObject fileDownload, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
@@ -197,44 +199,39 @@ public class DataFileConverter {
             // if the *requested* format is TAB-delimited, we don't
             // need to call R to do any conversions, we can just
             // send back the TAB file we have just produced.
+            
+            // (OK, so that the assumption is, if this is a fixed-field file -- 
+            // from ICPSR or otherwise -- the Access service has already 
+            // converted it to tab-delimited... TODO: review this logic; 
+            // perhaps fixed-field to tabular should also be handled here? 
+            // -- L.A. 4.0 alpha 1)
 
             return tabFile;
         }
 
         List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
         RJobRequest sro = null;
-        Map<String, List<String>> paramListToR = null;
         Map<String, Map<String, String>> vls = null;
-
-        dbgLog.fine(" ***** remote: set-up block for format conversion cases *****");
-
-        paramListToR = new HashMap<String, List<String>>();
-
-        paramListToR.put("dtdwnld", Arrays.asList(formatRequested));
-        paramListToR.put("requestType", Arrays.asList("Download"));
-
-        //vls = getValueTablesForAllRequestedVariables();
+        
         vls = getValueTableForRequestedVariables(dataVariables);
         dbgLog.fine("format conversion: variables(getDataVariableForRequest())="+dataVariables+"\n");
         dbgLog.fine("format conversion: variables(dataVariables)="+dataVariables+"\n");
         dbgLog.fine("format conversion: value table(vls)="+vls+"\n");
 
-        /* Note: parameters changed! 4.0 alpha 1 */
-        paramListToR.put("DataFilePath", Arrays.asList(tabFile.getAbsolutePath()));
-        paramListToR.put("DataFileName",Arrays.asList(tabFile.getName()));
 
-        File frmtCnvrtdFile = null;
-        Map<String, String> resultInfo = new HashMap<String, String>();
-
-        dbgLog.fine("local: paramListToR="+paramListToR);
-
-        sro = new RJobRequest(dataVariables, paramListToR, vls);
-
+        File formatConvertedFile = null;
+        
+        sro = new RJobRequest(dataVariables, vls);
+        
+        sro.setTabularDataFileName(tabFile.getAbsolutePath());
+        sro.setRequestType(SERVICE_REQUEST_CONVERT);
+        sro.setFormatRequested(FILE_TYPE_RDATA);
+        
         // create the service instance
-        // WORK IN PROGRESS! 4.0 alpha 1 DvnRforeignFileConversionServiceImpl dfcs = new DvnRforeignFileConversionServiceImpl();
+        RemoteDataFrameService dfs = new RemoteDataFrameService();
 
         // execute the service
-        // WORK IN PROGRESS! 4.0 alpha 1 resultInfo = dfcs.execute(sro);
+        Map<String, String> resultInfo = dfs.execute(sro);
 
         //resultInfo.put("offlineCitation", citation);
         dbgLog.fine("resultInfo="+resultInfo+"\n");
@@ -245,20 +242,20 @@ public class DataFileConverter {
             dbgLog.fine("R-runtime error trying to convert a file.");
             return  null;
         } else {
-            String wbDataFileName = resultInfo.get("wbDataFileName");
-            dbgLog.fine("wbDataFileName="+wbDataFileName);
+            String dataFrameFileName = resultInfo.get("dataFrameFileName");
+            dbgLog.fine("data frame file name: "+dataFrameFileName);
 
-            frmtCnvrtdFile = new File(wbDataFileName);
+            formatConvertedFile = new File(dataFrameFileName);
 
-            if (frmtCnvrtdFile.exists()){
-                dbgLog.fine("frmtCnvrtdFile:length="+frmtCnvrtdFile.length());
+            if (formatConvertedFile.exists()){
+                dbgLog.fine("frmtCnvrtdFile:length="+formatConvertedFile.length());
             } else {
                 dbgLog.warning("Format-converted file was not properly created.");
                 return null;
             }
         }
 
-        return frmtCnvrtdFile;
+        return formatConvertedFile;
     }
 
     private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dvs){
