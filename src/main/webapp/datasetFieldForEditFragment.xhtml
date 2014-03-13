@@ -16,9 +16,11 @@
         <p:inputText value="#{fieldValues.strValue}" id="inputText"
                      rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
                                  and (fieldValues.datasetField.fieldType == 'text'
-                                 or fieldValues.datasetField.fieldType == ''
+                                 or fieldValues.datasetField.fieldType == 'int'
+                                 or fieldValues.datasetField.fieldType == 'float'
                                  or fieldValues.datasetField.fieldType == 'url'
-                                 or fieldValues.datasetField.fieldType == 'date')}"/>
+                                 or fieldValues.datasetField.fieldType == 'date'
+                                 or fieldValues.datasetField.fieldType == '')}"/>
         <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
         <p:inputTextarea rows="5" cols="60" id="description" value="#{fieldValues.strValue}" 
                          rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
