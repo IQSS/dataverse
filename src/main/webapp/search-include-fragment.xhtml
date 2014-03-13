@@ -325,7 +325,7 @@
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                             </h:outputLink>
                                         </li>
-                                        <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                                        <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                             <li>
                                                 <h:outputLink>
                                                     <h:outputText value="Relevance" style="font-weight: #{SearchIncludeFragment.sortedByRelevance ? 'bold' : 'normal'}"/>
