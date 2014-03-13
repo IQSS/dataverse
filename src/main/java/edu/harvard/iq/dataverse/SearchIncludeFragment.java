@@ -695,6 +695,18 @@ public class SearchIncludeFragment {
         return sortField + ":" + sortOrder;
     }
 
+    public boolean isSortedByNameAsc() {
+        return getCurrentSort().equals(searchFieldNameSort + ":" + ASCENDING) ? true : false;
+    }
+
+    public boolean isSortedByNameDesc() {
+        return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING) ? true : false;
+    }
+
+    public boolean isSortedByRelevance() {
+        return getCurrentSort().equals(searchFieldRelevance + ":" + ASCENDING) ? true : false;
+    }
+
     public int getPage() {
         return page;
     }
