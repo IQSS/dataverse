@@ -169,8 +169,12 @@ public class SearchIncludeFragment {
 
         if (mode.equals(Modes.BROWSE)) {
             queryToPassToSolr = "*";
-            sortField = searchFieldNameSort;
-            sortOrder = ASCENDING;
+            if (sortField == null) {
+                sortField = searchFieldNameSort;
+            }
+            if (sortOrder == null) {
+                sortOrder = ASCENDING;
+            }
         } else if (mode.equals(Modes.SEARCH)) {
             queryToPassToSolr = query;
             if (sortField == null) {
