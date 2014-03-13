@@ -30,7 +30,7 @@
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             Add Data <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                             <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
                             <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
                             <li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>
@@ -194,115 +194,26 @@
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         </h:outputLink>
                     </ui:repeat>
-                    <!--<pre>1 to 10 of 7777 results ‹ Previous « 1 2 3 4 5 » Next › (design goal from <a href="https://redmine.hmdc.harvard.edu/issues/3575">#3575</a>)</pre>-->
+                    
                     <ui:fragment rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
-                        <div>
-                            <!--<div>-->
-                            <div class="btn-group">
-                                <!--<div>-->
-                                <!-- http://ux.stackexchange.com/questions/23169/showing-asc-desc-icons-intuitively/23272#23272 -->
-                                <h:outputText value="Sort By: "/>
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                    <h:outputText value="#{SearchIncludeFragment.currentSortFriendly}"/> <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu" style="text-align:left;">
-                                    <!--<ul>-->
-                                    <li>
-                                        <h:outputLink>
-                                            <h:outputText value="Name (A-Z)"/>
-                                            <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
-                                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                                            </c:forEach>
-                                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                            <f:param name="page" value="1"/>
-                                            <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
-                                            <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink>
-                                            <h:outputText value="Name (Z-A)"/>
-                                            <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
-                                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                                            </c:forEach>
-                                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                            <f:param name="page" value="1"/>
-                                            <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
-                                            <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
-                                        </h:outputLink>
-                                    </li>
-                                    <li>
-                                        <h:outputLink style="#{false ? 'pointer-events: none' : ''}">
-                                            <h:outputText value="Relevance"/>
-                                            <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
-                                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                                            </c:forEach>
-                                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                            <f:param name="page" value="1"/>
-                                            <f:param name="sort" value="#{SearchIncludeFragment.searchFieldRelevance}"/>
-                                            <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
-                                        </h:outputLink>
-                                    </li>
-                                    <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Release Date (#3628 #3629)</a></li>
-                                </ul>
-                            </div>
-                        </div>
                         <div id="resultsCountPaginatorBlock">
+                            <!-- RESULTS COUNT -->
                             <div class="results-count pull-left">
-                                <!-- RESULTS COUNT -->
                                 <h:outputText value="#{SearchIncludeFragment.paginationGuiStart} to #{SearchIncludeFragment.paginationGuiEnd} of "/>
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount} "/>
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount == 1 ? 'result' : 'results'}"/>
                             </div>
-                            <!-- PAGINATOR -->
-                            <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
-                                <o:importFunctions type="java.lang.Math" />
-                                <div class="pagination pull-left">
-                                    <ul class="pagination">
-                                        <!--should take you to page 1-->
-                                        <li>
-                                            <h:outputLink>
-                                                <h:outputText value="&#171;"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
-                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                                                </c:forEach>
-                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                                                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                <f:param name="page" value="1"/>
-                                            </h:outputLink>
-                                        </li>
-                                        <li>
-                                            <h:outputLink>
-                                                <h:outputText value="&lt; Previous"/>
-                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
-                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                                                </c:forEach>
-                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                                                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
-                                            </h:outputLink>
-                                        </li>
-                                        <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
-                                                   end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
-                                                   var="pageListItem">
-                                            <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
+                            <!-- SORT + PAGINATOR -->
+                            <div class="results-sort-pagination pull-right">
+                                <!-- PAGINATOR -->
+                                <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
+                                    <o:importFunctions type="java.lang.Math" />
+                                    <div class="pagination pull-right" style="margin-left:1em;">
+                                        <ul class="pagination">
+                                            <!--should take you to page 1-->
+                                            <li>
                                                 <h:outputLink>
-                                                    <h:outputText value="#{pageListItem}"/>
-                                                    <span class="#{SearchIncludeFragment.page == pageListItem ? 'sr-only' : ''}">
-                                                        <h:outputText value="#{SearchIncludeFragment.page == pageListItem ? ' (current)' : ''}"/>
-                                                    </span>
+                                                    <h:outputText value="&#171;"/>
                                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -311,44 +222,132 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                    <f:param name="page" value="#{pageListItem}"/>
+                                                    <f:param name="page" value="1"/>
                                                 </h:outputLink>
                                             </li>
-                                        </c:forEach>
+                                            <li>
+                                                <h:outputLink>
+                                                    <h:outputText value="&lt; Previous"/>
+                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                    </c:forEach>
+                                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
+                                                </h:outputLink>
+                                            </li>
+                                            <c:forEach begin="#{Math:max(1,SearchIncludeFragment.page-Math:max(2,SearchIncludeFragment.page-SearchIncludeFragment.totalPages+4))}"
+                                                       end="#{Math:min(SearchIncludeFragment.totalPages,SearchIncludeFragment.page+Math:max(2,5-SearchIncludeFragment.page))}"
+                                                       var="pageListItem">
+                                                <li class="#{SearchIncludeFragment.page == pageListItem ? 'active' : ''}">
+                                                    <h:outputLink>
+                                                        <h:outputText value="#{pageListItem}"/>
+                                                        <span class="#{SearchIncludeFragment.page == pageListItem ? 'sr-only' : ''}">
+                                                            <h:outputText value="#{SearchIncludeFragment.page == pageListItem ? ' (current)' : ''}"/>
+                                                        </span>
+                                                        <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                        <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                        </c:forEach>
+                                                        <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                        <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                                        <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                        <f:param name="page" value="#{pageListItem}"/>
+                                                    </h:outputLink>
+                                                </li>
+                                            </c:forEach>
+                                            <li>
+                                                <h:outputLink>
+                                                    <h:outputText value="Next &gt;"/>
+                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                    </c:forEach>
+                                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+                                                </h:outputLink>
+                                            </li>
+                                            <li>
+                                                <h:outputLink>
+                                                    <h:outputText value="&#187;"/>
+                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                    </c:forEach>
+                                                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
+                                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                </h:outputLink>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </ui:fragment>
+                                <!-- SORT BY -->
+                                <div class="btn-group pull-right">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <h:outputText value=""/>Sort <span class="glyphicon glyphicon-sort"/> <span class="caret"/>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                         <li>
                                             <h:outputLink>
-                                                <h:outputText value="Next &gt;"/>
+                                                <h:outputText value="Name (A-Z)" style="font-weight: #{SearchIncludeFragment.sortedByNameAsc ? 'bold' : 'normal'}"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                                                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
                                             </h:outputLink>
                                         </li>
                                         <li>
                                             <h:outputLink>
-                                                <h:outputText value="&#187;"/>
+                                                <h:outputText value="Name (Z-A)" style="font-weight: #{SearchIncludeFragment.sortedByNameDesc ? 'bold' : 'normal'}"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                                                <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                                                <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                             </h:outputLink>
                                         </li>
+                                        <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                                            <li>
+                                                <h:outputLink>
+                                                    <h:outputText value="Relevance" style="font-weight: #{SearchIncludeFragment.sortedByRelevance ? 'bold' : 'normal'}"/>
+                                                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                    </c:forEach>
+                                                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                    <f:param name="page" value="1"/>
+                                                    <f:param name="sort" value="#{SearchIncludeFragment.searchFieldRelevance}"/>
+                                                    <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                                </h:outputLink>
+                                            </li>
+                                        </ui:fragment>
+                                        <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Release Date (#3628 #3629)</a></li>-->
                                     </ul>
                                 </div>
-                            </ui:fragment>
+                            </div>
                         </div>
                     </ui:fragment>
-                    <p:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
+                    <p:dataTable id="resultsTable" style="clear:left;" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result">
                         <p:column>
                             <ui:fragment rendered="#{result.type == 'dataverses'}">
                                 <h:outputLink value="#{dataversePage}?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">

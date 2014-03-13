@@ -68,9 +68,9 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
-#resultsCountPaginatorBlock {overflow:hidden;}
-#resultsCountPaginatorBlock div.results-count {width:35%; padding: 6px 12px; margin-top: 1px;}
-#resultsCountPaginatorBlock div.pagination {width:65%; text-align:right;}
+/*#resultsCountPaginatorBlock {overflow:hidden;}*/
+#resultsCountPaginatorBlock div.results-count {width:25%; padding: 6px 12px; margin-top: 1px;}
+#resultsCountPaginatorBlock div.results-sort-pagination {width:70%; text-align:right;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 em {background-color: yellow;}
