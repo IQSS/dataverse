@@ -62,12 +62,16 @@ If you have an old copy of the database and want to start fresh, here are the re
 
 - drop your old database
 - create a new database
+- run the reference data script: ``scripts/database/reference_data.sql`` (NOTE: run the script as user ``postgres``; i.e., do not attempt to run it as your application database user, for example, ``dvnApp``!)
 - deploy the app
 - ``cd scripts/api``
+- ``./datasetfields.sh`` * 
 - ``./setup-users.sh``  
 - ``./setup-dvs.sh`` 
-- run the reference data script: ``scripts/database/StdyField-TemplateScript.sql`` (NOTE: run the script as user ``postgres``; i.e., do not attempt to run it as your application database user, for example, ``dvnApp``!)
 - confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
 - confirm http://localhost:8080 is up
 - run "index all" by browsing to http://localhost:8080/api/index
-- (optional) in order to see dataset-specific facets when browsing, edit all the rows in the "dataverse_id" column of ``scripts/database/facetpopulate.sql`` to have the number of your root dataverse (often this is "1") and run the script
+- via web browser, go to the Root Dataverse / Edit Dataverse Setup. Add the Citation block and any others. You may also choose to select some  dataset-specific facets. **
+
+* This script calls a curl command for each of the (current) metadata blocks. If you want to exclude a block, just modify the file and remove that block.
+** Todo: This needs to get added to the api for the root dataverse.
