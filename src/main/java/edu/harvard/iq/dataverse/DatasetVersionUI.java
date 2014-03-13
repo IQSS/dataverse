@@ -230,6 +230,14 @@ public class DatasetVersionUI {
             return "";
         }
     }
+    
+    public String getRelPublicationUrl() {
+        if (!this.datasetRelPublications.isEmpty()) {
+            return this.getDatasetRelPublications().get(0).getUrl();
+        } else {
+            return "";
+        }
+    }
 
     public String getUNF() {
         //todo get UNF to calculate and display here.

@@ -12,6 +12,8 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -74,6 +76,13 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
     private List<DatasetFieldValue> childDatasetFieldValues;
 
     public List<DatasetFieldValue> getChildDatasetFieldValues() {
+           Collections.sort(childDatasetFieldValues, new Comparator<DatasetFieldValue>() {
+                public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+                    int a = d1.getDatasetField().getDisplayOrder();
+                    int b = d2.getDatasetField().getDisplayOrder();
+                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                }
+            });
         return this.childDatasetFieldValues;
     }
     public void setChildDatasetFieldValues(List<DatasetFieldValue> childDatasetFieldValues) {

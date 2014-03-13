@@ -45,6 +45,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     // mouse-overs, etc. 
     private String fieldType;
     private boolean allowControlledVocabulary;
+    private String watermark;
 
     @OneToMany(mappedBy = "datasetField")
     private Set<DataverseFacet> dataverseFacets;
@@ -115,7 +116,14 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public void setFieldType(String fieldType) {
         this.fieldType = fieldType;
     }
+    
+    public String getWatermark() {
+        return watermark;
+    }
 
+    public void setWatermark(String watermark) {
+        this.watermark = watermark;
+    }
     private boolean facetable;
 
     public boolean isFacetable() {

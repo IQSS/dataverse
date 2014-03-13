@@ -14,15 +14,16 @@
                 <h:outputText value=" Required" rendered="#{fieldValues.datasetField.required}" /> 
             </label>   
         </ui:fragment>
-        <p:inputText value="#{fieldValues.strValue}" 
+        <p:inputText value="#{fieldValues.strValue}" id="inputText"
                      rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
                                  and (fieldValues.datasetField.fieldType == 'text'
                                  or fieldValues.datasetField.fieldType == ''
                                  or fieldValues.datasetField.fieldType == 'url'
                                  or fieldValues.datasetField.fieldType == 'date')}"/>
+        <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
         <p:inputTextarea rows="5" cols="80" id="description" value="#{fieldValues.strValue}" 
                          rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
-
+        <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
        
         <p:selectOneMenu  value="#{fieldValues.strValue}" 
                           filterMatchMode="startsWith"

@@ -53,7 +53,7 @@
                                 <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
                                 <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
                                 <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
-                                <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#" onclick="return false;">article available here</a></span>
+                                <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="##{DatasetPage.datasetVersionUI.relPublicationUrl}" onclick="return false;">article available here</a></span>
                                 <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
                             </div>
                             <div class="panel-group">
@@ -63,7 +63,7 @@
                                         <div class="form-group">
                                             <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
                                                 <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                         #{fieldValues.datasetField.title}
                                                     </a>
                                                 </label>                  
@@ -80,7 +80,7 @@
                                                         <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
                                                             <div class="form-group col-sm-6" >
                                                                 <label class="control-label" for="metadata_BLANK">
-                                                                    <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                                    <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
                                                                 </label>
                                                                 <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                             </div>

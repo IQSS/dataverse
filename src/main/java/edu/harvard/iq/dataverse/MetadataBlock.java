@@ -30,7 +30,6 @@ public class MetadataBlock implements Serializable {
     private Long id;
 
     private String name;
-    private boolean showOnCreate;
     private String displayName;
 
     public Long getId() {
@@ -65,13 +64,6 @@ public class MetadataBlock implements Serializable {
         return false;
     }
 
-    public boolean isShowOnCreate() {
-        return showOnCreate;
-    }
-    public void setShowOnCreate(boolean showOnCreate) {
-        this.showOnCreate = showOnCreate;      
-    }
-    
     public String getDisplayName() {
         return displayName;
     }

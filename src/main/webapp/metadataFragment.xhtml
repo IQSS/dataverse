@@ -21,7 +21,7 @@
                                     <ui:fragment rendered="#{!empty fieldValues.strValue}">
                                         <div class="form-group">
                                             <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                     #{fieldValues.datasetField.title}
                                                 </a>
                                             </label>                  
@@ -35,7 +35,7 @@
                                 <ui:fragment  rendered="#{!fieldMap.key.hasChildren and !fieldMap.key.hasParent and fieldMap.key.allowMultiples}">
                                     <div class="form-group">
                                         <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                 #{fieldMap.key.title}
                                             </a>
                                         </label>  
@@ -52,7 +52,7 @@
                                         <div class="form-group">
                                             <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
                                                 <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                         #{fieldValues.datasetField.title}
                                                     </a>
                                                 </label>                  
@@ -63,7 +63,7 @@
                                                     <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
                                                         <div class="form-group col-sm-6" >
                                                             <label class="control-label" for="metadata_BLANK">
-                                                                <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
+                                                                <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                             </label>
                                                             <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                         </div>
@@ -100,7 +100,7 @@
                                                 <div class="form-group">
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
                                                         <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
                                                             <!-- Mike, style as asterisk only if required true -->
@@ -119,7 +119,7 @@
                                                             <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{!fieldValues.datasetField.hasChildren}">                                                              
                                                                 <div class="form-group col-sm-6">
                                                                     <label class="control-label" for="metadata_BLANK">
-                                                                        <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
+                                                                        <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
                                                                     </label>
                                                                     <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                                 </div>
@@ -155,7 +155,7 @@
                                         <ui:fragment rendered="#{fieldMap.key.allowMultiples and !empty fieldMap.key.controlledVocabularySelectItems and !fieldValues.datasetField.hasParent}">
                                             <div class="form-group">
                                                 <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
-                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                         #{fieldMap.key.title}
                                                     </a>
                                                     <!-- Mike, style as asterisk only if required true -->
