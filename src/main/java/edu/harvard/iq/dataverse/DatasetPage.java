@@ -208,7 +208,7 @@ public class DatasetPage implements java.io.Serializable {
         datasetVersionUI = new DatasetVersionUI(editVersion); 
     }
        
-    public void save() {
+    public String save() {
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
@@ -326,7 +326,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         try {
-            datasetService.save(dataset);
+            dataset = datasetService.save(dataset);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
@@ -342,6 +342,8 @@ public class DatasetPage implements java.io.Serializable {
         }
         newFiles.clear();
         editMode = null;
+        
+        return "/dataset.xhtml?id=" + dataset.getId() +"&faces-redirect=true";
     }
 
     private String getFilesTempDirectory() {
