@@ -13,7 +13,9 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
@@ -164,6 +166,13 @@ public class DatasetFieldServiceApi {
         }
 
         return "DatasetFields loaded: " + (lineNumber - 1);
+    }
+
+    @POST
+    @Consumes("text/tab-separated-values")
+    @Path("showtsv")
+    public String showDatasetFieldsfromTsv(String tsvAsString) {
+        return tsvAsString;
     }
 
 }
