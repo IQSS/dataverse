@@ -103,8 +103,7 @@
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
-                                                            <!-- Mike, style as asterisk only if required true -->
-                                                            <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
                                                         </label>                  
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
@@ -158,8 +157,7 @@
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                         #{fieldMap.key.title}
                                                     </a>
-                                                    <!-- Mike, style as asterisk only if required true -->
-                                                    <h:outputText value="Required" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
                                                 </label>                                                        
                                                 <h:selectManyListbox>
                                                     <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}" />

@@ -10,8 +10,7 @@
         <ui:fragment rendered="#{includeTitle}">
             <label class="control-label" for="metadata_BLANK">
                 <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.title}</a>
-                <!-- Mike, style as asterisk -->
-                <h:outputText value=" Required" rendered="#{fieldValues.datasetField.required}" /> 
+                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
             </label>   
         </ui:fragment>
         <p:inputText value="#{fieldValues.strValue}" id="inputText"
@@ -21,7 +20,7 @@
                                  or fieldValues.datasetField.fieldType == 'url'
                                  or fieldValues.datasetField.fieldType == 'date')}"/>
         <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
-        <p:inputTextarea rows="5" cols="80" id="description" value="#{fieldValues.strValue}" 
+        <p:inputTextarea rows="5" cols="60" id="description" value="#{fieldValues.strValue}" 
                          rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
         <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
        

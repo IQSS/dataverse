@@ -126,6 +126,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
+#datasetForm .form-group .col-sm-6 .col-sm-6 {padding-left:0;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
