@@ -640,9 +640,8 @@
              
              http://java.sun.com/j2se/1.6.0/docs/api/java/util/regex/package-summary.html
           -->
-        <filter class="solr.PatternReplaceFilterFactory"
-                pattern="([^a-z])" replacement="" replace="all"
-        />
+       <!-- commented out for Dataverse 4.0 alpha 1 because Kangaroos was being sorted before 2Legit2Quit -->
+       <!-- <filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z])" replacement="" replace="all" /> -->
       </analyzer>
     </fieldType>
     
