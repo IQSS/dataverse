@@ -1,0 +1,36 @@
+<div xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:h="http://java.sun.com/jsf/html"
+     xmlns:f="http://java.sun.com/jsf/core"
+     xmlns:ui="http://java.sun.com/jsf/facelets"
+     xmlns:c="http://java.sun.com/jsp/jstl/core"
+     xmlns:p="http://primefaces.org/ui">
+
+
+    <div class="form-group col-sm-6">
+        <ui:fragment rendered="#{includeTitle}">
+            <label class="control-label" for="metadata_BLANK">
+                <a class="tooltiplabel right" data-original-title="Default tooltip placeholder text." data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.title}</a>
+                <!-- Mike, style as asterisk -->
+                <h:outputText value=" Required" rendered="#{fieldValues.datasetField.required}" /> 
+            </label>   
+        </ui:fragment>
+        <p:inputText value="#{fieldValues.strValue}" 
+                     rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
+                                 and (fieldValues.datasetField.fieldType == 'text'
+                                 or fieldValues.datasetField.fieldType == ''
+                                 or fieldValues.datasetField.fieldType == 'url'
+                                 or fieldValues.datasetField.fieldType == 'date')}"/>
+        <p:inputTextarea rows="5" cols="80" id="description" value="#{fieldValues.strValue}" 
+                         rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
+
+       
+        <p:selectOneMenu  value="#{fieldValues.strValue}" 
+                          filterMatchMode="startsWith"
+                          rendered="#{!empty fieldValues.datasetField.controlledVocabularySelectItems
+                                      and !fieldValues.datasetField.allowMultiples }">
+            <f:selectItems value="#{fieldValues.datasetField.controlledVocabularySelectItems}" />
+        </p:selectOneMenu>
+
+    </div>
+
+</div>
