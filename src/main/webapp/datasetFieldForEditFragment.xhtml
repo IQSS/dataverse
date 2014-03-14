@@ -1,36 +1,36 @@
 <div 
-     xmlns:h="http://java.sun.com/jsf/html"
-     xmlns:f="http://java.sun.com/jsf/core"
-     xmlns:ui="http://java.sun.com/jsf/facelets"
-     xmlns:c="http://java.sun.com/jsp/jstl/core"
-     xmlns:p="http://primefaces.org/ui"
-     
-     class="#{fieldValues.datasetField.hasParent and (fieldValues.datasetField.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui"
 
-        <ui:fragment rendered="#{includeTitle}">
-            <label class="control-label" for="metadata_BLANK">
-                <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.title}</a>
-                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
-            </label>   
-        </ui:fragment>
-        <p:inputText value="#{fieldValues.strValue}" id="inputText" styleClass="form-control"
-                     rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
-                                 and (fieldValues.datasetField.fieldType == 'text'
-                                 or fieldValues.datasetField.fieldType == 'int'
-                                 or fieldValues.datasetField.fieldType == 'float'
-                                 or fieldValues.datasetField.fieldType == 'url'
-                                 or fieldValues.datasetField.fieldType == 'date'
-                                 or fieldValues.datasetField.fieldType == '')}"/>
-        <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
-        
-        <p:inputTextarea value="#{fieldValues.strValue}" rows="5" cols="60" id="description" styleClass="form-control" 
-                         rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
-        <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
-       
-        <p:selectOneMenu value="#{fieldValues.strValue}" filterMatchMode="startsWith" styleClass="form-control"
-                         rendered="#{!empty fieldValues.datasetField.controlledVocabularySelectItems
-                                     and !fieldValues.datasetField.allowMultiples }">
-            <f:selectItems value="#{fieldValues.datasetField.controlledVocabularySelectItems}"/>
-        </p:selectOneMenu>
-        
+    class="#{fieldValues.datasetField.hasParent and (fieldValues.datasetField.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+
+    <ui:fragment rendered="#{includeTitle}">
+        <label class="control-label" for="metadata_BLANK">
+            <a class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.title}</a>
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
+        </label>   
+    </ui:fragment>
+    <p:inputText value="#{fieldValues.strValue}" id="inputText" styleClass="form-control"
+                 rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
+                             and (fieldValues.datasetField.fieldType == 'text'
+                             or fieldValues.datasetField.fieldType == 'int'
+                             or fieldValues.datasetField.fieldType == 'float'
+                             or fieldValues.datasetField.fieldType == 'url'
+                             or fieldValues.datasetField.fieldType == 'date'
+                             or fieldValues.datasetField.fieldType == '')}"/>
+    <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
+
+    <p:inputTextarea value="#{fieldValues.strValue}" rows="5" cols="60" id="description" styleClass="form-control" 
+                     rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
+    <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
+
+    <p:selectOneMenu value="#{fieldValues.strValue}" filterMatchMode="startsWith" styleClass="form-control"
+                     rendered="#{!empty fieldValues.datasetField.controlledVocabularySelectItems
+                                 and !fieldValues.datasetField.allowMultiples }">
+        <f:selectItems value="#{fieldValues.datasetField.controlledVocabularySelectItems}"/>
+    </p:selectOneMenu>
+
 </div>
