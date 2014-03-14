@@ -101,9 +101,10 @@ public class DatasetVersionUI {
                                 datasetRelPublication.setIdType(cvo.getStrValue());
                             }
                             if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
-                                datasetRelPublication.setUrl(null);
+                                datasetRelPublication.setUrl(cvo.getStrValue());
                             }
-                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL)) {
+                            //if no pub URL is available get distributor url
+                            if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL) && datasetRelPublication.getUrl().isEmpty()) {
                                 datasetRelPublication.setUrl(cvo.getStrValue());
                             }
                         }
