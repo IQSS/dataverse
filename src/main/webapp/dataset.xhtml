@@ -27,14 +27,12 @@
 
                     <!-- Header / Button Panel -->
                     <ui:fragment>
-                        
                         <div style="float:right; padding-bottom:1em;">
-                        
                             <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
                                 <div style="float:right; margin-left:1em;">
                                     <div class="btn-group">
                                         <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            Edit Dataset <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataset <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                             <li>
@@ -54,15 +52,13 @@
                                     </div>
                                 </div>
                             </ui:fragment>
-                        
                             <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                 <div style="float:right;">
                                     <button type="button" class="btn btn-default">
-                                        <span>Contact Dataset Curator <span class="glyphicon glyphicon-envelope"/></span>
+                                        <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Contact Dataset Curator
                                     </button>
                                 </div>
                             </ui:fragment>
-                            
                         </div>
 
                         <!-- View mode -->
@@ -92,41 +88,6 @@
                                     <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
                                 </ui:fragment>
                             </div>
-                            
-                            <ui:repeat value="#{DatasetPage.datasetVersionUI.displaysAboveTabs}" var="fieldValues">
-                                <ui:fragment rendered="#{(!empty fieldValues.strValue and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent)
-                                                     or (fieldValues.datasetField.hasChildren and !fieldValues.childEmpty)}">
-                                    <div class="form-group" style="margin-bottom: 0.5em;">
-                                        <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
-                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
-                                                    #{fieldValues.datasetField.title}
-                                                </a>
-                                            </label>                  
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
-                                            <div class="col-sm-6">
-                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}"/>                                                                                                              
-                                            </div>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{fieldValues.datasetField.hasChildren and !fieldValues.childEmpty}">
-                                            <div class="form-group col-sm-6" style="margin-bottom:0;">
-                                                <!-- CHILDS -->
-                                                <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{fieldValues.datasetField.hasChildren}">                                                              
-                                                    <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
-                                                        <div class="col-sm-6">
-                                                            <label class="control-label" for="metadata_BLANK">
-                                                                <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.description}</a>
-                                                            </label>
-                                                            <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
-                                                        </div>
-                                                    </ui:fragment>
-                                                </ui:repeat>                                                                                                                                  
-                                            </div>
-                                        </ui:fragment>
-                                    </div>
-                                </ui:fragment>
-                            </ui:repeat>
                         </ui:fragment>
 
                         <!-- Create mode -->
@@ -146,7 +107,6 @@
                             <ui:include src="metadataFragment.xhtml"/>
                         </ui:fragment>
                     </ui:fragment>
-
 
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
@@ -178,7 +138,11 @@
                                         </p>
                                     </p:column>
                                     <p:column>
-                                        <p:button value="Download" href="/api/access/datafile/#{file.id}" disabled="#{empty file.id}" rendered="#{!(file.tabularData)}"/>
+                                        <ui:fragment rendered="#{!(file.tabularData)}">
+                                            <a class="btn btn-default" href="/api/access/datafile/#{file.id}" role="button" style="color:#333333;">
+                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
+                                            </a>
+                                        </ui:fragment>
 
                                         <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
                                             <p:menuitem value="">
