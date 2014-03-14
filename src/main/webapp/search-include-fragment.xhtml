@@ -370,7 +370,7 @@
                                     <div style="clear:left;">
 
                                         <a data-toggle="collapse" data-parent="#accordion" href="#childDatasetBlock#{result.entityId}" value="javascript:void(0)">
-                                            Preview Datasets [+]
+                                            Preview Recently Released Datasets [+]
                                         </a>
 
                                         <div class="panel-collapse collapse" id="childDatasetBlock#{result.entityId}">
@@ -384,15 +384,12 @@
                                                 <p:column headerText="Files" style="font-size: smaller; width: 10%; text-align: right">
                                                     <h:outputText value="#{dataset.getFiles().size()} #{dataset.getFiles().size() == 0 or dataset.getFiles().size() > 1 ? 'Files' : 'File'}" />
                                                 </p:column>
+                                                <f:facet name="footer">  
+                                                    <h:outputLink value="#{dataversePage}?id=#{result.entityId}" style="font-weight:normal; font-size: smaller;">
+                                                        <h:outputText value="View All Datasets and Dataverses &gt;"/>
+                                                    </h:outputLink>
+                                                </f:facet>
                                             </p:dataTable>
-                                            <p:panelGrid styleClass="childResultsMoreLess" id="childDatasetTableControls" columns="2">
-                                                <ui:fragment>
-                                                    <p:commandLink disabled="true">Less...</p:commandLink>
-                                                </ui:fragment>
-                                                <ui:fragment>
-                                                    <p:commandLink disabled="true">More...</p:commandLink>
-                                                </ui:fragment>
-                                            </p:panelGrid>
                                         </div>
                                     </div>
                                 </ui:fragment>
