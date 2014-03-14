@@ -30,6 +30,7 @@ import org.apache.commons.lang.*;
 import org.apache.commons.lang.builder.*;
 
 /**
+ * 
  * @author Leonid Andreev
  * (the name is still tentative!)
  * parts of the code are borrowed from Akio Sone's DvnRforeignFileConversionServiceImpl,
@@ -297,19 +298,19 @@ public class RemoteDataFrameService {
             dbgLog.fine("vnames:"+ StringUtils.join(tmpjvnames, ","));
             
             
-            // Parameters for the read.dvtable method executed on the R side:
+            // Parameters for the read.dataverseTabData method executed on the R side:
             
             // file -> tempFileName
             // col.names -> Arrays.deepToString(new REXPString(jvnames)).asStrings())
             // colClassesx -> Arrays.deepToString((new REXPInteger(sro.getVariableTypes())).asStrings())
             // varFormat -> Arrays.deepToString((new REXPString(getValueSet(tmpFmt, tmpFmt.keySet().toArray(new String[tmpFmt.keySet().size()])))).asStrings())
 
-            dbgLog.fine("read.dvtable parameters:");
+            dbgLog.fine("read.dataverseTabData parameters:");
             dbgLog.fine("col.names = " + Arrays.deepToString((new REXPString(jvnames)).asStrings()));
             dbgLog.fine("colClassesx = " + Arrays.deepToString((new REXPInteger(sro.getVariableTypes())).asStrings()));
             dbgLog.fine("varFormat = " + Arrays.deepToString((new REXPString(getValueSet(tmpFmt, tmpFmt.keySet().toArray(new String[tmpFmt.keySet().size()])))).asStrings()));
             
-            String readtableline = "x<-read.dvtable(file='"+tempFileNameIn+
+            String readtableline = "x<-read.dataverseTabData(file='"+tempFileNameIn+
                 "', col.names=vnames, colClassesx=vartyp, varFormat=varFmt )";
             dbgLog.fine("readtable="+readtableline);
 
@@ -428,9 +429,21 @@ public class RemoteDataFrameService {
 
            
             // invoke the data frame creation method: 
-                
-            result = runDataFrameRequest(sro, c);
+                            
+            String dataFileName = "Data." + PID + "." + sro.getFormatRequested();
             
+            // data file to be copied back to the dvn
+            String dsnprfx = RSERVE_TMP_DIR + "/" + dataFileName;
+            
+            String dataverseDataFrameCommand = "createDataverseDataFrame(dtfrm=x,"+
+                "dwnldoptn='"+sro.getFormatRequested()+"'"+
+                ", dsnprfx='"+dsnprfx+"')";
+                        
+            c.voidEval(dataverseDataFrameCommand);
+            
+            int wbFileSize = getFileSize(c,dsnprfx);
+            
+            dbgLog.fine("wbFileSize="+wbFileSize);
             
             // save workspace:
             

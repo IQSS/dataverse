@@ -95,7 +95,34 @@ public class DataFile extends DvObject {
         return false; 
     }
     
+    public String getOriginalFileFormat() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileFormat();
+            }
+        }
+        return null;
+    }
 
+    /*
+     * A user-friendly version of the "original format":
+     */
+    public String getOriginalFormatLabel() {
+        String originalFormat = getOriginalFileFormat(); 
+        
+        if (originalFormat != null) {
+            if (originalFormat.equals("application/x-stata")) {
+                return "Stata";
+            } else if (originalFormat.equals("application/x-rlang-transport")) {
+                return "RData";
+            }
+            return originalFormat; 
+        }
+        
+        return null; 
+    }
+    
     public String getName() {
         return name;
     }

@@ -152,16 +152,21 @@
                                             </p:menuitem>
                                             <p:menuitem value="">
                                                 <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
-                                                    <h:outputText value="Saved Original"/>
+                                                    <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
                                                 </h:outputLink>
                                             </p:menuitem>
-                                            <p:menuitem value="As RData" disabled="true"/>
+                                            <p:menuitem value="">
+                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
+                                                    <h:outputText value="As RData"/>
+                                                </h:outputLink>
+                                            </p:menuitem>
                                             <p:menuitem value="">
                                                 <h:outputLink value="/api/meta/datafile/#{file.id}"  disabled="#{empty file.id}">
                                                     <h:outputText value="Variable Metadata"/>
                                                 </h:outputLink>
                                             </p:menuitem>
                                         </p:menuButton>
+
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>

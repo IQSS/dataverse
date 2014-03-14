@@ -98,6 +98,8 @@ public class Access {
         if (df.isTabularData()) {
             String originalMimeType = df.getDataTable().getOriginalFileFormat();
             dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "fileFormat=original","Saved original (" + originalMimeType + ")"));
+            
+            dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "fileFormat=RData", "Data in R format"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         

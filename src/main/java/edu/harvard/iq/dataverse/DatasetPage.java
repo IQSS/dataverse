@@ -337,6 +337,15 @@ public class DatasetPage implements java.io.Serializable {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
                         }
                     }
+                    
+                    /* 
+                     * Check for the "add description" watermark - make sure it 
+                     * doesn't get saved, if the user hasn't enter a description 
+                     * of their own:
+                    */
+                    if ("add description".equals(dFile.getFileMetadata().getDescription())) {
+                        dFile.getFileMetadata().setDescription("");
+                    }
                 }
             }
         }
@@ -534,7 +543,10 @@ public class DatasetPage implements java.io.Serializable {
 
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
+                tabDataIngest.getDataTable().setOriginalFileFormat(determineMimeType(dataFile));
+                
                 dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
                 // A safety check, if through some sorcery the file exists already: 
                 while (Files.exists(dataFile.getFileSystemLocation())) {
                     datasetService.generateFileSystemName(dataFile);
@@ -548,7 +560,6 @@ public class DatasetPage implements java.io.Serializable {
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
                 }
 
-                tabDataIngest.getDataTable().setOriginalFileFormat("application/x-stata");
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
 
@@ -558,6 +569,26 @@ public class DatasetPage implements java.io.Serializable {
         return ingestSuccessful;
     }
 
+    private String determineMimeType (DataFile dataFile) {
+        /*
+         * Another placeholder method - we'll be using a new version 
+         * of the file type recognition utility instead. 
+         * -- L.A. 4.0 alpha 1
+         */
+        String fileName = dataFile.getName(); 
+        
+        if (fileName == null) {
+            return null; 
+        }
+        
+        if (fileName.endsWith(".dta")) {
+            return "application/x-stata";
+        } else if (fileName.endsWith(".RData")) {
+            return "application/x-rlang-transport";
+        }
+        
+        return null;
+    }
     private void saveIngestedOriginal(DataFile dataFile, InputStream originalFileStream) throws IOException {
         String ingestedFileName = dataFile.getFileSystemName();
 
