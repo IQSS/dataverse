@@ -116,7 +116,9 @@
                                                     <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
                                                         <div class="col-sm-6">
                                                             <label class="control-label" for="metadata_BLANK">
-                                                                <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.description}</a>
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" title="">
+                                                                    #{childVal.datasetField.title}
+                                                                </a>
                                                             </label>
                                                             <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                         </div>
