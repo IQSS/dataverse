@@ -17,8 +17,6 @@ public class SearchFields {
     // *_ss for multivalued String
     // *_l for Long
     // etc.
-    public static final String ENTITY_ID = "entityid_l";
-    public static final String TYPE = "type_s";
     /**
      * @todo think about how to tie the fact that this needs to be multivalued
      * (_ss) because a multivalued facet (authorAffilition_ss) will be collapsed
@@ -51,9 +49,10 @@ public class SearchFields {
     public static final String RELEVANCE = "score";
 
     // require Dataverse-specific schema.xml
+    public static final String TYPE = "type";
     public static final String NAME_SORT = "name_sort";
     // Used for performance. Why hit the db if solr has the data?
+    public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";
-
 }
