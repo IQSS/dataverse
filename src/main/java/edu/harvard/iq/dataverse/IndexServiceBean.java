@@ -78,6 +78,16 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
+        if (dataverse.getOwner() != null) {
+            /**
+             * @todo: decide if we want to show "Root Dataverse" in "Host
+             * Dataverse" facet or not. If we don't want it, just uncomment
+             * remove this "if" conditional to activate it:
+             */
+            // if (dataverse.getOwner() != dataverseService.findRootDataverse()) {
+            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
+            //}
+        }
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
