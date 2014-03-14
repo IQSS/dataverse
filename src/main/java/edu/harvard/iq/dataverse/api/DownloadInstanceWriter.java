@@ -77,9 +77,20 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     // Image Thumbnail conversion: 
                     
                     if (di.getConversionParam().equals("imageThumb")) {
-                        accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject); 
+                        if ("".equals(di.getConversionParamValue())) {
+                            accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject); 
+                        } else {
+                            try {
+                                int size = new Integer(di.getConversionParamValue()).intValue();
+                                if (size > 0) {
+                                    accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject, size);
+                                }
+                            } catch (java.lang.NumberFormatException ex) {
+                                accessObject = ImageThumbConverter.getImageThumb(sf, (FileAccessObject)accessObject);
+                            }
+                        }
                     }
-                    /* No other download services are supported just yet. 
+                    /* the following download services are not supported just yet: 
                     else if (di.getConversionParam().equals("TermsOfUse")) {
                         accessObject = ExportTermsOfUse.export(sf.getStudy());
                     } else if (di.getConversionParam().equals("package")) {

@@ -37,14 +37,19 @@ import edu.harvard.iq.dataverse.DataFile;
  * @author leonidandreev
  */
 public class ImageThumbConverter {
+    private static int DEFAULT_THUMBNAIL_SIZE = 64; 
+    
     public ImageThumbConverter() {
     }
     
-    
     public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload) {
+        return getImageThumb (file, fileDownload, DEFAULT_THUMBNAIL_SIZE);
+    }
+    
+    public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload, int size) {
         if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            if (generateImageThumb(file.getFileSystemLocation().toString())) {
-                File imgThumbFile = new File(file.getFileSystemLocation() + ".thumb");
+            if (generateImageThumb(file.getFileSystemLocation().toString(), size)) {
+                File imgThumbFile = new File(file.getFileSystemLocation() + ".thumb" + size);
 
                 if (imgThumbFile != null && imgThumbFile.exists()) {
 
@@ -77,10 +82,13 @@ public class ImageThumbConverter {
         return fileDownload;
     }
     
-    
     public static boolean generateImageThumb(String fileLocation) {
+        return generateImageThumb(fileLocation, DEFAULT_THUMBNAIL_SIZE);
+    }
+    
+    public static boolean generateImageThumb(String fileLocation, int size) {
 
-        String thumbFileLocation = fileLocation + ".thumb";
+        String thumbFileLocation = fileLocation + ".thumb" + size;
 
         // see if the thumb is already generated and saved:
 
@@ -90,13 +98,8 @@ public class ImageThumbConverter {
 
         // let's attempt to generate the thumb:
 
-        // (I'm scaling all the images down to 64 pixels horizontally;
-        // I picked the number 64 totally arbitrarily;
-        // TODO: (?) make the default thumb size configurable
-        // through a JVM option??
-
         /*
-         * 4.0 update: 
+         * update: 
          * Note that the thumb size has been made configurable, as of 3.6.1
          * - needs to be added here. 
         */
@@ -135,14 +138,14 @@ public class ImageThumbConverter {
 		return false; 
 	    }
 
-            double scaleFactor = ((double) 64) / (double) fullSizeImage.getWidth(null);
+            double scaleFactor = ((double) size) / (double) fullSizeImage.getWidth(null);
             int thumbHeight = (int) (fullSizeImage.getHeight(null) * scaleFactor);
 
 	    // We are willing to spend a few extra CPU cycles to generate
 	    // better-looking thumbnails, hence the SCALE_SMOOTH flag. 
 	    // SCALE_FAST would trade quality for speed. 
 
-	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(64, thumbHeight, java.awt.Image.SCALE_SMOOTH);
+	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(size, thumbHeight, java.awt.Image.SCALE_SMOOTH);
 
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");
@@ -152,7 +155,7 @@ public class ImageThumbConverter {
                 return false;
             }
 
-            BufferedImage lowRes = new BufferedImage(64, thumbHeight, BufferedImage.TYPE_INT_RGB);
+            BufferedImage lowRes = new BufferedImage(size, thumbHeight, BufferedImage.TYPE_INT_RGB);
             lowRes.getGraphics().drawImage(thumbImage, 0, 0, null);
 
             ImageOutputStream ios = ImageIO.createImageOutputStream(new File(thumbFileLocation));

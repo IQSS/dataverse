@@ -77,8 +77,18 @@ public class DownloadInstance {
                 //        return true; 
                 //    }
                 //} else {
+                    if ("imageThumb".equals(serviceArg)) {
+                        if ("true".equals(serviceArgValue)) {
+                            this.conversionParam = serviceArg; 
+                            this.conversionParamValue = "";
+                        } else {
+                            this.conversionParam = serviceArg;
+                            this.conversionParamValue = serviceArgValue;
+                        }
+                        return true; 
+                    }
                     String argValuePair = serviceArg + "=" + serviceArgValue; 
-                    if (argValuePair.equals(dataService.getServiceArguments())) {
+                    if (argValuePair.startsWith(dataService.getServiceArguments())) {
                         conversionParam = serviceArg; 
                         conversionParamValue = serviceArgValue; 
                         return true; 
@@ -105,6 +115,8 @@ public class DownloadInstance {
                         conversionParamValue = serviceArgValue; 
                         return dataService.getMimeType(); 
                     }
+                } else if (serviceArg.equals("imageThumb")) {
+                    return "image/png";
                 } else {
                     String argValuePair = serviceArg + "=" + serviceArgValue; 
                     if (argValuePair.equals(dataService.getServiceArguments())) {
