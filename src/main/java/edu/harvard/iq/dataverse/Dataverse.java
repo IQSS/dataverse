@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
@@ -38,6 +39,7 @@ public class Dataverse extends DvObjectContainer {
     private String alias;
 
     // #VALIDATION: page defines maxlength in input:textarea component
+    @Column(name = "description", columnDefinition = "TEXT")
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
 
