@@ -57,11 +57,11 @@
                                                     </a>
                                                 </label>                  
                                             </ui:fragment>
-                                            <div class="col-sm-6" >
+                                            <div class="col-sm-6">
                                                 <!-- CHILDS -->
                                                 <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and fieldValues.datasetField.hasChildren}">                                                              
                                                     <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
-                                                        <div class="form-group col-sm-6" >
+                                                        <div class="form-group col-sm-6">
                                                             <label class="control-label" for="metadata_BLANK">
                                                                 <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                             </label>
@@ -100,7 +100,7 @@
                                                 <div class="form-group">
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
                                                         <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
                                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
@@ -113,14 +113,14 @@
                                                     </ui:fragment>
 
                                                     <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
-                                                        <div class="col-sm-6">
+                                                        <div class="form-group col-sm-6">
                                                             <!-- CHILDS -->
                                                             <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{!fieldValues.datasetField.hasChildren}">                                                              
-                                                                <div class="form-group col-sm-6">
+                                                                <div class="col-sm-6">
                                                                     <label class="control-label" for="metadata_BLANK">
                                                                         <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
                                                                     </label>
-                                                                    <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                                    <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/></div>
                                                                 </div>
                                                             </ui:repeat>                                                                
 
@@ -136,11 +136,11 @@
                                                     <!-- Add / Remove buttons -->
                                                     <ui:fragment rendered="#{fieldValues.datasetField.allowMultiples and empty fieldValues.datasetField.controlledVocabularySelectItems}">
                                                         <div class="col-xs-2">
-                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin:2em 1em 0 0;"  
+                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="#{fieldValues.datasetField.hasChildren ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
                                                                              actionListener="#{DatasetPage.addGeneralRecord(fieldValues)}" update="@all">
                                                             </p:commandButton>
-                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="margin-top:2em;"  
+                                                            <p:commandButton styleClass="btn btn-default btn-sm" style="#{fieldValues.datasetField.hasChildren ? 'margin-top:1.8em;' : ''}"  
                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
                                                                              escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />

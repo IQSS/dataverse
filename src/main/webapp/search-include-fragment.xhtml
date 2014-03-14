@@ -181,7 +181,7 @@
                 <ui:fragment>
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                         <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                        <h:outputLink styleClass="facetSelected" style="margin-right:1em;">
+                        <h:outputLink styleClass="facetLink facetSelected resultsTopBlock" style="margin-right:1em;">
                             <h:outputText value="#{friendlyNames.get(0)}:#{friendlyNames.get(1)}"/>
                             <h:outputText styleClass="glyphicon glyphicon-remove" value=""/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -407,7 +407,7 @@
                                     <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
                                 </div>
 
-                                <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#E6F1F6;padding:4px;"/>
+                                <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;"/>
 
                                 <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
