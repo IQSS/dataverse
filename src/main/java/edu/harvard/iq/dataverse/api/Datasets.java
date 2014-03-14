@@ -5,14 +5,14 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.GET;
@@ -22,7 +22,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
 @Path("datasets")
-public class Datasets {
+public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
 
@@ -32,41 +32,97 @@ public class Datasets {
     DataverseServiceBean dataverseService;
 
     @GET
-    public String get() {
-        logger.info("called GET");
+    public String list(@QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		// TODO filter by what the user can see.
+		
         List<Dataset> datasets = datasetService.findAll();
         JsonArrayBuilder datasetsArrayBuilder = Json.createArrayBuilder();
         for (Dataset dataset : datasets) {
-            logger.info("found a dataset: " + dataset.getId());
-           // logger.info("dataset: " + dataset.getTitle());
-            JsonObjectBuilder datasetInfoBuilder = Json.createObjectBuilder()
-                    /**
-                     * @todo refactor to be same as index service bean?
-                     */
-                    .add(SearchFields.ID, "dataset_" + dataset.getId())
-                    .add(SearchFields.ENTITY_ID, dataset.getId())
-                    .add(SearchFields.TYPE, "datasets")
-                    /**
-                     * @todo: should we assign a dataset title to name like
-                     * this?
-                     */
-                    //.add("name", dataset.getTitle())
-                   // .add(SearchFields.AUTHOR_STRING, dataset.getAuthor())
-                   // .add(SearchFields.TITLE, dataset.getTitle())
-                    /**
-                     * @todo: don't use distributor for category. testing facets
-                     */
-                   // .add(SearchFields.CATEGORY, dataset.getDistributor())
-                    .add(SearchFields.DESCRIPTION, dataset.getDescription() != null ? dataset.getDescription() : "UNKNOWN");
-            datasetsArrayBuilder.add(datasetInfoBuilder);
+           datasetsArrayBuilder.add( json(dataset) );
         }
-        JsonArray jsonArray = datasetsArrayBuilder.build();
-        return Util.jsonArray2prettyString(jsonArray);
+		return ok(datasetsArrayBuilder);
+        
+    }
+	
+	@GET
+	@Path("{id}")
+    public String getDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		// TODO filter by what the user can see.
+		
+        Dataset ds = datasetService.find(id);
+        return (ds != null) ? ok(json(ds))
+							: error("dataset not found");
+		
+        
+    }
+	
+	@GET
+	@Path("{id}/versions")
+    public String listVersions( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		// TODO filter by what the user can see.
+		
+        Dataset ds = datasetService.find(id);
+        if (ds == null) return error("dataset not found");
+		
+		JsonArrayBuilder bld = Json.createArrayBuilder();
+		for ( DatasetVersion dsv : ds.getVersions() ) {
+			bld.add( json(dsv) );
+		}
+		
+		return ok( bld );
+    }
+	
+	@GET
+	@Path("{id}/versions/{versionId}")
+    public String getVersion( @PathParam("id") Long id, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		// TODO filter by what the user can see.
+		
+        Dataset ds = datasetService.find(id);
+        if (ds == null) return error("dataset not found");
+		
+		DatasetVersion dsv = null;
+		switch (versionId) {
+			case ":latest":
+				dsv = ds.getLatestVersion();
+				break;
+			case ":edit":
+				dsv = ds.getEditVersion();
+				break;
+			default:
+				try {
+					long versionNumericId = Long.parseLong(versionId);
+					for ( DatasetVersion aDsv : ds.getVersions() ) {
+						if ( aDsv.getId().equals(versionNumericId) ) {
+							dsv = aDsv;
+							break; // for, not while
+						}
+					}
+				} catch ( NumberFormatException nfe ) {
+					return error("Illegal id number '" + versionId + "'");
+				}	break;
+		}
+		
+		return (dsv==null)
+				? error("dataset version not found")
+				: ok( json(dsv)  );
     }
 
     // used to primarily to feed data into elasticsearch
     @GET
-    @Path("{id}/{verb}")
+	@Deprecated
+    @Path("deprecated/{id}/{verb}")
     public Dataset get(@PathParam("id") Long id, @PathParam("verb") String verb) {
         logger.info("GET called");
         if (verb.equals("dump")) {
@@ -97,7 +153,9 @@ public class Datasets {
         return null;
     }
 
+	@Path("deprecated/")
     @POST
+	@Deprecated
     public String add(Dataset dataset, @QueryParam("owner") String owner) {
         try {
             DatasetVersion editVersion = new DatasetVersion();
