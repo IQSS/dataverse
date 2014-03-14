@@ -88,6 +88,13 @@ public class AdvancedSearchPage {
                         queryStrings.add(datasetField.getSolrField() + ":" + st.nextElement());
                     }
                 } 
+            } else if (datasetField.getListValues() != null && !datasetField.getListValues().isEmpty()){
+                for (String value : datasetField.getListValues()) {
+                    StringTokenizer st = new StringTokenizer(value);
+                    while (st.hasMoreElements()) {
+                        queryStrings.add(datasetField.getSolrField() + ":" + "\"" + st.nextElement() + "\"");
+                    }
+                }
             }
         }
         query = new String();
