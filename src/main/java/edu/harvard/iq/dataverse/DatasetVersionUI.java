@@ -283,7 +283,7 @@ public class DatasetVersionUI {
                 str += getYearForCitation(getProductionDate());
             }
         }
-
+		 
         if (!StringUtil.isEmpty(getTitle().getStrValue())) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";

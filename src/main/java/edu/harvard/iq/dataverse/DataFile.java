@@ -26,7 +26,7 @@ public class DataFile extends DvObject {
     
     private String fileSystemName;
 
-    //private String md5;
+    private String md5;
 
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
@@ -198,12 +198,11 @@ public class DataFile extends DvObject {
     
     
     public String getmd5() { 
-        //return this.md5; 
-        return "c897d1410af8f2c74fba11b1db511e9e";
+        return this.md5; 
     }
     
     public void setmd5(String md5) { 
-        //this.md5 = md5; 
+        this.md5 = md5; 
     }
 
     public Path getFileSystemLocation() {

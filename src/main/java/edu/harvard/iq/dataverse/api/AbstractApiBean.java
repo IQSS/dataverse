@@ -59,5 +59,4 @@ public abstract class AbstractApiBean {
 	protected String ok( JsonArray jo ) { return Util.ok(jo); }
 	protected String ok( JsonObjectBuilder jo ) { return ok(jo.build()); }
 	protected String ok( JsonArrayBuilder jo ) { return ok(jo.build()); }
-	
 }
