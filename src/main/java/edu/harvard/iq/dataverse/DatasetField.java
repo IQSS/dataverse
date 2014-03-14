@@ -53,6 +53,9 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
 
     @Transient
     private String searchValue;
+    
+    @Transient
+    private List<String> listValues;
 
     public DatasetField() {
     }
@@ -236,6 +239,14 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
         this.searchValue = searchValue;
     }
 
+    public List<String> getListValues() {
+        return listValues;
+    }
+
+    public void setListValues(List<String> listValues) {
+        this.listValues = listValues;
+    }
+    
     private boolean required;
 
     public boolean isRequired() {
