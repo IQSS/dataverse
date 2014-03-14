@@ -223,12 +223,8 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
-        //Todo set up real prod date
-        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.productionDate)) {
-                dsfv.setStrValue("2014");
-            }
-        }
+        //Todo pre populate deposit date
+
         //Trim spaces from any input values
         for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
             if (dsfv.getStrValue() != null) {

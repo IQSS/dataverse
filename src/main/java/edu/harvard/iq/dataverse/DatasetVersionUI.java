@@ -275,13 +275,20 @@ public class DatasetVersionUI {
                 str += ", ";
             }
             str += getYearForCitation(getDistributionDate());
-        } else {
-            if (!StringUtil.isEmpty(getProductionDate())) {
+        } else if (!StringUtil.isEmpty(getProductionDate())) {
+
                 if (!StringUtil.isEmpty(str)) {
                     str += ", ";
                 }
                 str += getYearForCitation(getProductionDate());
-            }
+//getting 2014 for citation 
+//while still possible that prod date and deposit date are empty               
+        } else {
+              if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += "2014";
+            
         }
 		 
         if (!StringUtil.isEmpty(getTitle().getStrValue())) {
