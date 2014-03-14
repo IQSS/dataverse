@@ -150,12 +150,21 @@
                         <div id="contentTabs">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
+                                <!-- Upload -->
                                 <p:message for="fileUpload" showDetail="true"/>
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
-                                <style type="text/css">
-                                    div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
-                                </style>
+                                <!-- View -->
+                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                    <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <p:commandButton title="Upload + Edit Files" value="Upload + Edit Files" escape="false" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                        </p:commandButton>
+                                    </div>
+                                    <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
+                                        <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
+                                    </p>-->
+                                </ui:fragment>
                                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                                     <p:column>
                                         <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
@@ -218,17 +227,14 @@
                             <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
                                 <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
-                                    
-                                    <div style="float:right;">
-                                        <p:commandButton style="margin-left:1em;" title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                    <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <p:commandButton title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         </p:commandButton>
                                     </div>
-                                    
-                                    <p class="bg-info" style="padding:1em; margin-right:200px;">
+                                    <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
                                         <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
-                                    </p>
-                                    
+                                    </p>-->
                                 </ui:fragment>
                                 <div style="clear:left;">
                                     <ui:include src="metadataFragment.xhtml"/>

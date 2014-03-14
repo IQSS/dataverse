@@ -134,5 +134,7 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
+div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
+
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
