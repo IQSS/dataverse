@@ -146,7 +146,11 @@ public class SearchIncludeFragment {
          *
          */
         if (stayOnDataversePage.equals("true")) {
-            return "dataverse.xhtml?faces-redirect=true&q=" + query + "&amp;types=dataverses:datasets:files" ;
+            String optionalDataverseScope = "";
+            if (!dataverse.getId().equals(dataverseService.findRootDataverse().getId())) {
+                optionalDataverseScope = "&id=" + dataverse.getId();
+            }
+            return "dataverse.xhtml?faces-redirect=true&q=" + query + "&types=dataverses:datasets:files" + optionalDataverseScope ;
         } else {
             return "FIXME";
         }
