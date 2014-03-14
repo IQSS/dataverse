@@ -44,7 +44,7 @@
                                     <div id="citationFieldList#{mdb.id}" class="collapse #{status.first?'in':''}" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                         <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
                                             <div class="form-group">
-                                                <label class="col-sm-4 control-label">#{item.title}</label>
+                                                <label class="col-sm-4 control-label">#{item.displayName}</label>
                                                 <div class="col-sm-6">
                                                     <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
                                                 </div>

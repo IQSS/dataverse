@@ -43,19 +43,15 @@ public class RJobRequest {
 
     public RJobRequest(
             List <DataVariable> dv, 
-            Map <String, List<String>> listParams,
             Map <String, Map<String, String>> vts,
             Map <String, List<String>> categoryOrders
             ) {
         dataVariablesForRequest = dv;
-        
-        listParametersForRequest = listParams;
-        
+                
         valueTables = vts;
         categoryValueOrders=categoryOrders;
         dbgLog.fine("***** DvnRJobRequest: within the default constructor : initial *****");
         dbgLog.fine("DvnRJobRequest: variables="+dataVariablesForRequest);
-        dbgLog.fine("DvnRJobRequest: map="+listParametersForRequest);
         dbgLog.fine("DvnRJobRequest: value table="+valueTables);
         dbgLog.fine("DvnRJobRequest: category value orders="+categoryValueOrders);
         
@@ -68,22 +64,27 @@ public class RJobRequest {
     
     public RJobRequest(
             List<DataVariable> dv, 
-            Map <String, List<String>> listParams, 
             Map <String, Map <String, String>> vts
             ) {
-      this(dv,listParams,vts,null);
+      this(dv,vts,null);
     }
 
     
 
     private List<DataVariable> dataVariablesForRequest;
-    
-    /** list-type (one-to-many) parameter */
-    private Map<String, List<String>> listParametersForRequest;
 
+    private String tabularDataFileName; 
     
-    /** R work space, saved and cached on the Application side **/ 
-    private String savedRworkSpace; 
+    private String requestType;
+    // Note: the only "request type" supported in 4.0 (as of currently
+    // planned is "convert" - for converting tab files to data frames)
+    
+    private String formatRequested; 
+    // Again, the plan is have "RData" as the only format supported; 
+    // but we'll keep the mechanism in place for supporting multiple formats. 
+    
+    // R work space, saved and cached on the Application side
+    private String savedRworkSpace;
     
     private Map<String, Map<String, String>> valueTables;
     
@@ -99,16 +100,34 @@ public class RJobRequest {
 
     public boolean hasUnsafeVariableNames = false;
     
+    public void setRequestType (String requestType) {
+        this.requestType = requestType; 
+    }
+    
+    public String getRequestType() {
+        return this.requestType;
+    }
+
+    public void setFormatRequested (String formatRequested) {
+        this.formatRequested = formatRequested; 
+    }
+    
+    public String getFormatRequested() {
+        return this.formatRequested;
+    }
+    
+    public void setTabularDataFileName(String tabularDataFileName) {
+        this.tabularDataFileName = tabularDataFileName;
+    }
+    
+    public String getTabularDataFileName() {
+        return this.tabularDataFileName;
+    }
     
     public List<DataVariable> getDataVariablesForRequest(){
         return this.dataVariablesForRequest;
     }
     
-     
-    public Map<String, List<String>> getListParametersForRequest (){
-      return this.listParametersForRequest;
-    }
-
     public String getCachedRworkSpace(){
 	return this.savedRworkSpace; 
     }
@@ -356,7 +375,7 @@ public class RJobRequest {
         renamedResultArray   = nf.getRenamedResultArray();
     }
     
-    public List<String> getFileteredVarNameSet(List<String> varIdSet){
+    public List<String> getFilteredVarNameSet(List<String> varIdSet){
         List<String> varNameSet = new ArrayList<String>();
         for (String vid : varIdSet){
             dbgLog.fine("name list: vid="+vid);
@@ -442,38 +461,7 @@ public class RJobRequest {
     public Map<String, List<String>> getCategoryValueOrders (){
       return this.categoryValueOrders;
     }
-
-    public String getRequestType() {
-        String type=null;
-        List<String> requestTypeToken = listParametersForRequest.get("requestType");
-        type =  requestTypeToken.get(0);
-        dbgLog.fine("requestType="+type);
-        return type;
-    }
-
-    /**
-     * Returns the requested file format
-     *
-     * @return    a String ("RData")
-     */
-    public String getDownloadRequestParameter() {
-        String param=null;
-        List<String> requestTypeToken = listParametersForRequest.get("dtdwnld");
-        param =  requestTypeToken.get(0);
-        dbgLog.fine("dtdwnld="+param);
-        return param;
-    }
-
-    
-    public boolean isOutcomeBinary(){
-        List<String> oc = listParametersForRequest.get("isOutcomeBinary");
-        if (oc.get(0).equals("T")){
-            return true;
-        } 
-        return false;
-    }
-
-    
+    /*
     public String[] getBaseVarIdSet(){
         List<String> bvid = listParametersForRequest.get("baseVarIdSet");
         String[] tmp = (String[])bvid.toArray(new String[bvid.size()]);
@@ -486,6 +474,8 @@ public class RJobRequest {
         String[] tmp = (String[])bvn.toArray(new String[bvn.size()]);
         return tmp;
     }
+    */
+    
     public String[] String2StringArray(String token) {
         char[] temp = token.toCharArray();
         String[] tmp = new String[temp.length];

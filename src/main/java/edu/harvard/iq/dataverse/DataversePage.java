@@ -21,6 +21,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.DualListModel;
 import org.primefaces.model.TreeNode;
 
 /**
@@ -48,10 +49,15 @@ public class DataversePage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     SearchServiceBean searchService;
-
+    @EJB
+    DatasetFieldServiceBean datasetFieldService; 
+    @EJB
+    DataverseFacetServiceBean dataverseFacetService; 
+    
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
+    private DualListModel<DatasetField> facets; 
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
@@ -109,6 +115,19 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
+        
+        List<DatasetField> facetsSource = new ArrayList<DatasetField>();
+        List<DatasetField> facetsTarget = new ArrayList<DatasetField>();
+        
+        facetsSource.addAll(datasetFieldService.findAllFacetableFields());
+
+        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
+        for (DataverseFacet dvFacet : facetsList) {
+            DatasetField df = dvFacet.getDatasetField();
+            facetsTarget.add(df);
+            facetsSource.remove(df);
+        }
+        facets = new DualListModel<DatasetField>(facetsSource, facetsTarget);
     }
 
     public List getContents() {
@@ -144,6 +163,17 @@ public class DataversePage implements java.io.Serializable {
             dataverseService.save(dataverse);
             editMode = null;          
 
+        }
+        
+        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
+        if (!facetsList.isEmpty()) {
+            for (DataverseFacet dataverseFacet : facetsList) {
+                dataverseFacetService.delete(dataverseFacet);
+            }
+        }
+        int i=1;
+        for (DatasetField df : facets.getTarget()) {
+            dataverseFacetService.create(i++, df.getId(), dataverse.getId());
         }
         
         return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
@@ -184,5 +214,29 @@ public class DataversePage implements java.io.Serializable {
         } else {
             dataverse.getMetadataBlocks(true).clear();
         }
+    }
+    
+    public boolean isInheritFacetFromParent() {
+        return !dataverse.isFacetRoot();
+    }
+
+    public void setInheritFacetFromParent(boolean inheritFacetFromParent) {
+        dataverse.setFacetRoot(!inheritFacetFromParent);
+    }
+   
+    public void editFacets() {
+        if (dataverse.isFacetRoot()) {
+            dataverse.getDataverseFacets().addAll(dataverse.getOwner().getDataverseFacets());
+        } else {
+            dataverse.getDataverseFacets(true).clear();
+        }
+    }
+    
+    public DualListModel<DatasetField> getFacets() {
+        return facets;
+    }
+    
+    public void setFacets(DualListModel<DatasetField> facets) {
+        this.facets = facets;
     }
 }

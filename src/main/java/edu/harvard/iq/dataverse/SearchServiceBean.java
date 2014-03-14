@@ -264,18 +264,18 @@ public class SearchServiceBean {
              */
             for (DatasetField datasetField : datasetFields) {
                 String solrFieldNameForDataset = datasetField.getSolrField();
+                String friendlyName = datasetField.getDisplayName();
                 if (solrFieldNameForDataset != null && facetField.getName().endsWith(datasetField.getTmpNullFieldTypeIdentifier())) {
                     // give it the non-friendly name so we remember to update the reference data script for datasets
                     facetCategory.setName(facetField.getName());
                 } else if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
-                    String friendlyName = datasetField.getTitle();
                     if (friendlyName != null && !friendlyName.isEmpty()) {
                         facetCategory.setFriendlyName(friendlyName);
                         // stop examining available dataset fields. we found a match
                         break;
                     }
                 }
-                datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField(), datasetField.getTitle());
+                datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField(), friendlyName);
             }
             /**
              * @todo get rid of this crazy reflection, per todo above... or

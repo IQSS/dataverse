@@ -78,7 +78,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
-        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getName());
+        if (dataverse.getOwner() != null) {
+            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
+        }
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {

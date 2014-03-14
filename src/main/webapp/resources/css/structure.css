@@ -98,7 +98,9 @@ div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0
    -moz-hyphens: auto;
         hyphens: auto;}
 a.facetLink {text-decoration:none;}
-.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {color:#FFF; background-color:#428BCA; padding-left:.3em; padding-right:.3em;}
+/*.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {}*/
+.facetSelected.resultsTopBlock {background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
+a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.5em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
@@ -119,13 +121,16 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
 #title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation {background-color: #F5F5F5; padding:.5em; margin-bottom:.5em;}
+#citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 #keywords {margin-top:1em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
+#datasetForm .form-group .col-sm-6 .col-sm-6, #datasetForm .form-group .col-sm-6 .col-sm-12 {padding-left:0;}
+
+#contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 

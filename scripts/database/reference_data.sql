@@ -28,34 +28,3 @@ CREATE SEQUENCE filesystemname_seq
   START 2
   CACHE 1;
 ALTER TABLE filesystemname_seq OWNER TO "dvnApp";
-
-
-
--- create metadata blocks
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('citation', 'Citation', true);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('discoverability', 'Discoverability', false);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('datasetavailabilty', 'Dataset Availabilty', false);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('termsofuse', 'Terms of Use', false);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('socialscience', 'Social Science', false);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('astrophysics', 'Astrophysics', false);
-
-INSERT INTO metadatablock(
-            "name", displayname, showoncreate)
-    VALUES ('biomedical', 'Bio-Medical', false);

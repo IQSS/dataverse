@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,9 +16,12 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import org.apache.commons.lang.StringUtils;
 
 @Path("datasetfield")
 public class DatasetFieldServiceApi {
@@ -64,7 +70,7 @@ public class DatasetFieldServiceApi {
     }
 
     @GET
-    @Path("info/{name}")
+    @Path("{name}")
     public String getByName(@PathParam("name") String name) {
         try {
             DatasetField dsf = datasetFieldService.findByName(name);
@@ -110,47 +116,61 @@ public class DatasetFieldServiceApi {
 
     }
 
-    @GET
-    @Path("load/{fileName}")
-    public String loadDatasetFields(@PathParam("fileName") String fileName) {
+    private enum HeaderType {
+
+        METADATABLOCK, DATASETFIELD, CONTROLLEDVOCABULARY
+    }
+
+    @POST
+    @Consumes("text/tab-separated-values")
+    @Path("load")
+    public String loadDatasetFields(File file) {
         BufferedReader br = null;
         String line = "";
         String splitBy = "\t";
         int lineNumber = 0;
+        HeaderType header = null;
+        String returnString = "";
 
         try {
 
-            br = new BufferedReader(new FileReader("/" + fileName.replace(".", "/")));
+            br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
-                // if lineNumber == 0, skip header
-                if (lineNumber++ != 0) {
-
-                    // use comma as separator
-                    String[] dsfString = line.split(splitBy);
-
-                    DatasetField dsf = new DatasetField();
-                    dsf.setName(dsfString[0]);
-                    dsf.setTitle(dsfString[1]);
-                    dsf.setDescription(dsfString[2]);
-                    dsf.setFieldType(dsfString[3]);
-                    dsf.setDisplayOrder(new Integer(dsfString[4]).intValue());
-                    dsf.setAdvancedSearchField(new Boolean(dsfString[5]).booleanValue());
-                    dsf.setAllowControlledVocabulary(new Boolean(dsfString[6]).booleanValue());
-                    dsf.setAllowMultiples(new Boolean(dsfString[7]).booleanValue());
-                    dsf.setFacetable(new Boolean(dsfString[8]).booleanValue());
-                    dsf.setShowAboveFold(new Boolean(dsfString[9]).booleanValue());
-                    dsf.setRequired(new Boolean(dsfString[10]).booleanValue());
-                    dsf.setMetadataBlock( dataverseService.findMDBByName(dsfString[11]) );
-                    if (dsfString.length == 13) {
-                        dsf.setParentDatasetField( datasetFieldService.findByName(dsfString[12]));
+                lineNumber++;
+                String[] values = line.split(splitBy);
+                if (values[0].startsWith("#")) { // Header row
+                    switch (values[0]) {
+                        case "#metadataBlock":
+                            header = HeaderType.METADATABLOCK;
+                            break;
+                        case "#datasetField":
+                            header = HeaderType.DATASETFIELD;
+                            break;
+                        case "#controlledVocabulary":
+                            header = HeaderType.CONTROLLEDVOCABULARY;
+                            break;
+                        default:
+                            throw new IOException("Encountered unknown #header type at line lineNumber " + lineNumber);
                     }
-                    
-                    datasetFieldService.save(dsf);
+                } else {
+                    switch (header) {
+                        case METADATABLOCK:
+                            returnString += parseMetadataBlock(values) + " MetadataBlock added.\n";
+                            break;
+                        case DATASETFIELD:
+                            returnString += parseDatasetField(values) + " DatasetField added.\n";
+                            break;
+                        case CONTROLLEDVOCABULARY:
+                            returnString += parseControlledVocabulary(values) + " Controlled Vocabulary added.\n";
+                            break;
+                        default:
+                            throw new IOException("No #header defined in file.");
+
+                    }
                 }
             }
-
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            returnString = "File not found.";
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -163,7 +183,48 @@ public class DatasetFieldServiceApi {
             }
         }
 
-        return "DatasetFields loaded: " + (lineNumber - 1);
+        return "File parsing completed:\n\n" + returnString;
     }
 
+    private String parseMetadataBlock(String[] values) {
+        MetadataBlock mdb = new MetadataBlock();
+        mdb.setName(values[1]);
+        mdb.setDisplayName(values[2]);
+
+        datasetFieldService.save(mdb);
+        return mdb.getName();
+    }
+
+    private String parseDatasetField(String[] values) {
+        DatasetField dsf = new DatasetField();
+        dsf.setName(values[1]);
+        dsf.setTitle(values[2]);
+        dsf.setDescription(values[3]);
+        dsf.setWatermark(values[4]);
+        dsf.setFieldType(values[5]);
+        dsf.setDisplayOrder(new Integer(values[6]).intValue());
+        dsf.setAdvancedSearchField(new Boolean(values[7]).booleanValue());
+        dsf.setAllowControlledVocabulary(new Boolean(values[8]).booleanValue());
+        dsf.setAllowMultiples(new Boolean(values[9]).booleanValue());
+        dsf.setFacetable(new Boolean(values[10]).booleanValue());
+        dsf.setShowAboveFold(new Boolean(values[11]).booleanValue());
+        dsf.setRequired(new Boolean(values[12]).booleanValue());
+        if (!StringUtils.isEmpty(values[13])) {
+            dsf.setParentDatasetField(datasetFieldService.findByName(values[13]));
+        }
+        dsf.setMetadataBlock(dataverseService.findMDBByName(values[14]));
+
+        datasetFieldService.save(dsf);
+        return dsf.getName();
+    }
+
+    private String parseControlledVocabulary(String[] values) {
+        ControlledVocabularyValue cvv = new ControlledVocabularyValue();
+        cvv.setDatasetField(datasetFieldService.findByName(values[1]));
+        cvv.setStrValue(values[2]);
+        cvv.setDisplayOrder(new Integer(values[3]).intValue());
+
+        datasetFieldService.save(cvv);
+        return cvv.getStrValue();
+    }
 }

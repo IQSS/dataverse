@@ -27,78 +27,115 @@
 
                     <!-- Header / Button Panel -->
                     <ui:fragment>
-
-                        <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
-                            <div style="float:right;">
-                                <p:menuButton id="editDataSet" value="Edit Dataset" iconPos="right">
-                                    <p:menuitem id="editFiles" value="Add/Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                    </p:menuitem>
-                                    <p:menuitem id="editMetadata" value="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
-                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                    </p:menuitem>
-                                    <p:menuitem value="Edit Permissions" disabled="true"/>
-                                </p:menuButton>
-                            </div>
-                        </ui:fragment>
+                        
+                        <div style="float:right; padding-bottom:1em;">
+                        
+                            <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                <div style="float:right; margin-left:1em;">
+                                    <div class="btn-group">
+                                        <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            Edit Dataset <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                            <li>
+                                                <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                    <h:outputText value="Files (Upload + Edit)" />
+                                                </p:commandLink>   
+                                            </li>
+                                            <li>
+                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                    <h:outputText value="Metadata" />
+                                                </p:commandLink>   
+                                            </li>
+                                            <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Permissions</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                        
+                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                <div style="float:right;">
+                                    <button type="button" class="btn btn-default">
+                                        <span>Contact Dataset Curator <span class="glyphicon glyphicon-envelope"/></span>
+                                    </button>
+                                </div>
+                            </ui:fragment>
+                            
+                        </div>
 
                         <!-- View mode -->
-                        <ui:fragment rendered="#{empty DatasetPage.editMode }">
+                        <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div>
-                                <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
-                                <span id="contact">Contact: <a href="#" onclick="return false;" data-container="body" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Name, Email Icon</a></span>
-                                <div id="citation">
-                                    <span>#{DatasetPage.datasetVersionUI.citation}</span>
-                                </div>
-                                <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
-                                <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
-                                <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
-                                <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="##{DatasetPage.datasetVersionUI.relPublicationUrl}" onclick="return false;">article available here</a></span>
-                                <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.strValue}">
+                                    <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.citation}">
+                                    <div id="citation">
+                                        <span>#{DatasetPage.datasetVersionUI.citation}</span>
+                                    </div>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.strValue}">
+                                    <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordsStr}">
+                                    <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subjectStr}">
+                                    <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
+                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="##{DatasetPage.datasetVersionUI.relPublicationUrl}" onclick="return false;">relPublicationUrl</a></span>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notesText}">
+                                    <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
+                                </ui:fragment>
                             </div>
-                            <div class="panel-group">
-                                <ui:repeat value="#{DatasetPage.datasetVersionUI.displaysAboveTabs}" var="fieldValues" >
-                                    <ui:fragment rendered="#{(!empty fieldValues.strValue and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent)
-                                                             or (fieldValues.datasetField.hasChildren and !fieldValues.childEmpty)}">
-                                        <div class="form-group">
-                                            <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
-                                                <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
-                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
-                                                        #{fieldValues.datasetField.title}
-                                                    </a>
-                                                </label>                  
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
-                                                <div class="col-sm-6">
-                                                    <h:outputText value="#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}" />                                                                                                              
-                                                </div>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{fieldValues.datasetField.hasChildren and !fieldValues.childEmpty}">
-                                                <div class="col-sm-6" >
-                                                    <!-- CHILDS -->
-                                                    <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{fieldValues.datasetField.hasChildren}">                                                              
-                                                        <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
-                                                            <div class="form-group col-sm-6" >
-                                                                <label class="control-label" for="metadata_BLANK">
-                                                                    <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>
-                                                                </label>
-                                                                <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
-                                                            </div>
-                                                        </ui:fragment>
-                                                    </ui:repeat>                                                                                                                                  
-                                                </div>
-                                            </ui:fragment>
-                                        </div>
-                                    </ui:fragment>
-                                </ui:repeat>
-                            </div>
+                            
+                            <ui:repeat value="#{DatasetPage.datasetVersionUI.displaysAboveTabs}" var="fieldValues">
+                                <ui:fragment rendered="#{(!empty fieldValues.strValue and !fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent)
+                                                     or (fieldValues.datasetField.hasChildren and !fieldValues.childEmpty)}">
+                                    <div class="form-group" style="margin-bottom: 0.5em;">
+                                        <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
+                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
+                                                    #{fieldValues.datasetField.title}
+                                                </a>
+                                            </label>                  
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
+                                            <div class="col-sm-6">
+                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}"/>                                                                                                              
+                                            </div>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{fieldValues.datasetField.hasChildren and !fieldValues.childEmpty}">
+                                            <div class="form-group col-sm-6" style="margin-bottom:0;">
+                                                <!-- CHILDS -->
+                                                <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{fieldValues.datasetField.hasChildren}">                                                              
+                                                    <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
+                                                        <div class="col-sm-6">
+                                                            <label class="control-label" for="metadata_BLANK">
+                                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" title="">
+                                                                    #{childVal.datasetField.title}
+                                                                </a>
+                                                            </label>
+                                                            <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                        </div>
+                                                    </ui:fragment>
+                                                </ui:repeat>                                                                                                                                  
+                                            </div>
+                                        </ui:fragment>
+                                    </div>
+                                </ui:fragment>
+                            </ui:repeat>
                         </ui:fragment>
 
                         <!-- Create mode -->
                         <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <div class="form-group">
                                 <label for="select_HostDataverse" class="col-sm-2 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Default tooltip placeholder text." title="">Host Dataverse</a>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">Host Dataverse</a>
                                 </label>
                                 <div class="col-sm-10">
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
@@ -114,7 +151,8 @@
 
 
                     <!-- Tabs -->
-                    <p:panel id="content" styleClass="panelLayoutBlock" rendered="#{DatasetPage.editMode != 'INFO'}">
+                    <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
+                        <div id="contentTabs">
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <p:message for="fileUpload" showDetail="true"/>
@@ -136,6 +174,7 @@
                                         <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
                                         <h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>
                                         <p:inputText id="fileDescription" value="#{file.description}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
+                                        <p:watermark for="fileDescription" value="add description" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileDescription"/>
                                         <p>
                                             <h:outputText id="fileMD5" value="MD5: #{file.md5}"/>
@@ -152,16 +191,21 @@
                                             </p:menuitem>
                                             <p:menuitem value="">
                                                 <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
-                                                    <h:outputText value="Saved Original"/>
+                                                    <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
                                                 </h:outputLink>
                                             </p:menuitem>
-                                            <p:menuitem value="As RData" disabled="true"/>
+                                            <p:menuitem value="">
+                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
+                                                    <h:outputText value="As RData"/>
+                                                </h:outputLink>
+                                            </p:menuitem>
                                             <p:menuitem value="">
                                                 <h:outputLink value="/api/meta/datafile/#{file.id}"  disabled="#{empty file.id}">
                                                     <h:outputText value="Variable Metadata"/>
                                                 </h:outputLink>
                                             </p:menuitem>
                                         </p:menuButton>
+
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
@@ -175,14 +219,22 @@
                             <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
                                 <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
-                                    <p class="bg-info" style="padding:1em;">
-                                        <h:outputText value="This edit button is here to make life easier for you." />
+                                    
+                                    <div style="float:right;">
                                         <p:commandButton style="margin-left:1em;" title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                         </p:commandButton>
+                                    </div>
+                                    
+                                    <p class="bg-info" style="padding:1em; margin-right:200px;">
+                                        <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
                                     </p>
+                                    
                                 </ui:fragment>
-                                <ui:include src="metadataFragment.xhtml"/>
+                                <div style="clear:left;">
+                                    <ui:include src="metadataFragment.xhtml"/>
+                                </div>
+                                
                             </p:tab>
 
                             <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
@@ -199,7 +251,8 @@
                                 </p:dataTable>
                             </p:tab>
                         </p:tabView>
-                    </p:panel>
+                        </div>
+                    </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">

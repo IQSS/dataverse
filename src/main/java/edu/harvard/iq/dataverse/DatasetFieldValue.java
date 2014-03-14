@@ -11,6 +11,7 @@ package edu.harvard.iq.dataverse;
  * @author skraffmiller
  */
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -73,16 +74,18 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
 
     @OneToMany(mappedBy = "parentDatasetFieldValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldValue> childDatasetFieldValues;
+    private List<DatasetFieldValue> childDatasetFieldValues= new ArrayList();
 
     public List<DatasetFieldValue> getChildDatasetFieldValues() {
-           Collections.sort(childDatasetFieldValues, new Comparator<DatasetFieldValue>() {
+        if (this.childDatasetFieldValues != null) {
+            Collections.sort(this.childDatasetFieldValues, new Comparator<DatasetFieldValue>() {
                 public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
                     int a = d1.getDatasetField().getDisplayOrder();
                     int b = d2.getDatasetField().getDisplayOrder();
                     return Integer.valueOf(a).compareTo(Integer.valueOf(b));
                 }
             });
+        }
         return this.childDatasetFieldValues;
     }
     public void setChildDatasetFieldValues(List<DatasetFieldValue> childDatasetFieldValues) {
