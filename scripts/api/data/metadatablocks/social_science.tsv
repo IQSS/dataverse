@@ -1,9 +1,9 @@
 #metadataBlock	name	displayName												
 	socialscience	Social Science and Humanities												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  			0	FALSE	FALSE	TRUE	TRUE	FALSE	FALSE		socialscience
+	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  			0	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	topicClassValue	Topic Classification	Topic or Subject term.		text	1	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	socialscience
-	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	2	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	socialscience
+	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	2	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
 	topicClassVocabURI	URL	Specifies the URL location for the full controlled vocabulary.		url	3	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
 	software	Software	Software			4	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	softwareName	Software Name	Name of software used to generate the study.		text	5	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	socialscience
