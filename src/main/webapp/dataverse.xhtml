@@ -186,14 +186,14 @@
                         </p:selectManyMenu>
                         
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                <h:outputText value="Use Facets from Parent Dataverse? " /> 
-                                <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
-                                    <p:ajax update="@all" listener="#{DataversePage.editFacets}"/> 
-                                </p:selectBooleanCheckbox>
-                            </ui:fragment>
-                            
-                            <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter" 
-                                        itemLabel="#{facet.title}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
+                            <h:outputText value="Use Facets from Parent Dataverse? " /> 
+                            <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
+                                <p:ajax update="@all" listener="#{DataversePage.editFacets}"/> 
+                            </p:selectBooleanCheckbox>
+                        </ui:fragment>
+
+                        <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter" 
+                                    itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
                     </ui:fragment>                    
 
                     <!-- Save / Cancel Button Panel -->

@@ -350,6 +350,14 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public int compareTo(DatasetField o) {
         return Integer.compare(this.getDisplayOrder(), (o.getDisplayOrder()));
     }
+    
+    public String getDisplayName() {
+        if (isHasParent() && !parentDatasetField.getTitle().equals(title)) {
+        return parentDatasetField.getTitle() + " " + title;
+        } else {
+            return title;
+        }
+    }
 
     public String getSolrField() {
         String solrType;
