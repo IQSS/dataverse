@@ -2,7 +2,7 @@
 if [ -z "$1" ]; then
     curl -s 'http://localhost:8080/api/search?q=*'
 else
-    # i.e. ./search 'q=*&fq=cat:Birds+Inc.&fq=type_s:datasets'
+    # i.e. ./search 'q=*&fq=filetype_s:"image"&fq=type:files'
     # i.e. ./search 'q=*&start=10'
     # i.e. ./search 'q=*&sort=name_sort&order=asc'
     # i.e. ./search 'q=*&sort=name_sort&order=asc' | jq '.itemsJson[] | {name_sort}'

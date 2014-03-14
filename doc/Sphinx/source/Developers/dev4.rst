@@ -5,7 +5,7 @@ DVN Developers Guide
 Solr
 ++++
 
-Search in Dataverse 4.0 depends on Solr, which you should run on localhost during development.
+Dataverse 4.0 depends on Solr, which you should run on localhost during development. The Dataverse-specific ``schema.xml`` configuration file described below is required.
 
 Installing and Running Solr
 ===========================

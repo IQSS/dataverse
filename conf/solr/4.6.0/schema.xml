@@ -242,11 +242,18 @@
         unknown fields indexed and/or stored by default --> 
    <!--dynamicField name="*" type="ignored" multiValued="true" /-->
    
+
+   <!-- Added for Dataverse 4.0 alpha 1. We use "type" to distinguish between 3 types: dataverses, datasets, and files -->
+   <field name="type" type="string" stored="true" indexed="true" multiValued="false"/>
+
    <!-- Added for Dataverse 4.0 alpha 1: static "parent" fields not copied to "catchall" field https://redmine.hmdc.harvard.edu/issues/3603  -->
    <!-- We index parentid and parentname as a debugging aid in case we want to match on it with an explict query like curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentid%3A42' or curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=parentname%3Abirds' -->
    <!-- TODO: store parentid as a long instead of a string  -->
    <field name="parentid" type="string" stored="true" indexed="true" multiValued="false"/>
    <field name="parentname" type="text_general" stored="true" indexed="true" multiValued="false"/>
+
+   <!-- Added for Dataverse 4.0 alpha 1. This is a required field so we don't have to go to the database to get the database id of the entity. On cards we use the id in links -->
+   <field name="entityid" type="long" stored="true" indexed="true" multiValued="false"/>
 
    <!-- Added for Dataverse 4.0 alpha 1 to sort by name  -->
    <!-- https://redmine.hmdc.harvard.edu/issues/3482 -->
