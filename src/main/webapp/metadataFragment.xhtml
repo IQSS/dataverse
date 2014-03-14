@@ -20,12 +20,12 @@
                                 <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.hasChildren and !fieldMap.key.hasParent and !fieldMap.key.allowMultiples}">
                                     <ui:fragment rendered="#{!empty fieldValues.strValue}">
                                         <div class="form-group">
-                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                            <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                     #{fieldValues.datasetField.title}
                                                 </a>
                                             </label>                  
-                                            <div class="col-sm-6">
+                                            <div class="col-sm-9">
                                                 <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
                                             </div>                                        
                                         </div>
@@ -34,12 +34,12 @@
                                 <!-- Multiple value no child -->
                                 <ui:fragment  rendered="#{!fieldMap.key.hasChildren and !fieldMap.key.hasParent and fieldMap.key.allowMultiples}">
                                     <div class="form-group">
-                                        <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
+                                        <label for="metadata_#{fieldMap.key.name}" class="col-sm-3 control-label">
                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                 #{fieldMap.key.title}
                                             </a>
                                         </label>  
-                                        <div class="col-sm-6">
+                                        <div class="col-sm-7">
                                             <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="loop">
                                                 <h:outputText value="#{loop.first?'':'; '}#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}" />
                                             </ui:repeat> 
@@ -51,17 +51,17 @@
                                     <ui:fragment rendered="#{fieldValues.datasetField.hasChildren and !fieldValues.childEmpty}">
                                         <div class="form-group">
                                             <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
-                                                <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-3 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
                                                         #{fieldValues.datasetField.title}
                                                     </a>
                                                 </label>                  
                                             </ui:fragment>
-                                            <div class="col-sm-6">
+                                            <div class="col-sm-9">
                                                 <!-- CHILDS -->
                                                 <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{empty DatasetPage.editMode and fieldValues.datasetField.hasChildren}">                                                              
                                                     <ui:fragment rendered="#{!empty childVal.strValue and childVal.parentDatasetFieldValue == fieldValues}">
-                                                        <div class="form-group col-sm-6">
+                                                        <div class="col-sm-6">
                                                             <label class="control-label" for="metadata_BLANK">
                                                                 <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                             </label>
@@ -99,7 +99,7 @@
                                             <ui:fragment rendered="#{(!fieldValues.datasetField.hasParent)}">
                                                 <div class="form-group">
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
-                                                        <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-4 control-label">
+                                                        <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-3 control-label">
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
@@ -113,7 +113,7 @@
                                                     </ui:fragment>
 
                                                     <ui:fragment rendered="#{fieldValues.datasetField.hasChildren}">
-                                                        <div class="form-group col-sm-6">
+                                                        <div class="form-group col-sm-7">
                                                             <!-- CHILDS -->
                                                             <ui:repeat value="#{fieldValues.childDatasetFieldValues}" var="childVal" rendered="#{!fieldValues.datasetField.hasChildren}">                                                              
                                                                 <div class="col-sm-6">
@@ -153,15 +153,17 @@
                                         <!-- For fields that Allow Multiples with Controlled Vocab -->
                                         <ui:fragment rendered="#{fieldMap.key.allowMultiples and !empty fieldMap.key.controlledVocabularySelectItems and !fieldValues.datasetField.hasParent}">
                                             <div class="form-group">
-                                                <label for="metadata_#{fieldMap.key.name}" class="col-sm-4 control-label">
+                                                <label for="metadata_#{fieldMap.key.name}" class="col-sm-3 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                         #{fieldMap.key.title}
                                                     </a>
                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
-                                                </label>                                                        
-                                                <h:selectManyListbox>
-                                                    <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}" />
-                                                </h:selectManyListbox> 
+                                                </label>
+                                                <div class="col-sm-6">
+                                                    <h:selectManyListbox styleClass="form-control">
+                                                        <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}"/>
+                                                    </h:selectManyListbox>
+                                                </div>
                                             </div>
                                         </ui:fragment>
 
