@@ -518,13 +518,18 @@ public class DTAFileReader extends TabularDataFileReader{
 
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340);
-
+        Context ctx = null; 
         try {
-            Context ctx = new InitialContext();
+            ctx = new InitialContext();
             varService = (VariableServiceBean) ctx.lookup("java:global/dataverse-4.0/VariableServiceBean");
         } catch (NamingException nex) {
-            if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
-            throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
+            try {
+                ctx = new InitialContext();
+                varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
+            } catch (NamingException nex2) {
+                if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
+                throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
+            }
         }
     }
 
