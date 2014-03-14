@@ -46,7 +46,11 @@
                                             <div class="form-group">
                                                 <label class="col-sm-4 control-label">#{item.displayName}</label>
                                                 <div class="col-sm-6">
-                                                    <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}"/>
+                                                    <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
+                                                    <h:selectManyListbox value="#{item.listValues}" rendered="#{!empty item.controlledVocabularyValues}">
+                                                        <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
+                                                                itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/> 
+                                                    </h:selectManyListbox> 
                                                 </div>
                                             </div>
                                         </ui:repeat>
