@@ -53,9 +53,9 @@
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
                     <!--<f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>-->
-                    <!--<c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">-->
-                        <!--<f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>-->
-                    <!--</c:forEach>-->
+                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                    </c:forEach>
                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:param name="page" value="1"/>
@@ -153,6 +153,17 @@
             </div>
             <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
             <div style="width:80%;float:left;">
+                <!--DEBUG BEGIN-->
+                <ui:fragment rendered="#{SearchIncludeFragment.debug}">
+                    <div style="background-color: lightgray">
+                        <tt>
+                            <h:outputText value="mode:#{SearchIncludeFragment.mode} "/>
+                            <h:outputText value="sort=#{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}"/><br/>
+                            <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}"/><br/>
+                        </tt>
+                    </div>
+                </ui:fragment>
+                <!--DEBUG END-->
 
                 <ui:fragment rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
                     <div class="bg-warning" style="background:#FCF8F2; padding:.5em 1em;">
@@ -176,10 +187,6 @@
                         </ui:fragment>
                     </div>
                 </ui:fragment>
-
-                <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}" rendered="#{SearchIncludeFragment.debug}"/>
-                <h:outputText value=" #{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}" rendered="#{SearchIncludeFragment.debug}"/>
-                <h:outputText value=" mode:#{SearchIncludeFragment.mode}" rendered="#{SearchIncludeFragment.debug}"/>
                 <ui:fragment>
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                         <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
