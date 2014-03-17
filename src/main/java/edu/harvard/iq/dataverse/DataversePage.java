@@ -152,7 +152,7 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             
             // TODO: re add command call
-            dataverseService.save(dataverse);
+            dataverse = dataverseService.save(dataverse);
             editMode = null;
             /*
                     CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
