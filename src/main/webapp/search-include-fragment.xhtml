@@ -17,7 +17,9 @@
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" style="margin-right:1em;"/>
-                    <p:commandButton id="searchbutton" value="Find" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>
+                    <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
+                        <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
+                    </p:commandLink>
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                     </h:outputLink>
@@ -27,8 +29,8 @@
 
                 <h:form id="shareForm" rendered="#{SearchIncludeFragment.allowedToClickAddData}" style="margin-left:auto;">
                     <div class="btn-group">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            Add Data <span class="caret"></span>
+                        <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
+                            <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Add Data <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                             <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
@@ -166,23 +168,23 @@
 
                 <ui:fragment rendered="#{SearchIncludeFragment.searchResultsList.size() == 0}">
                     <div class="bg-warning" style="background:#FCF8F2; padding:.5em 1em;">
-                        <h:outputText value="We are in browse mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}"/>
-                        <h:outputText value="We are in search mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
+                        <!--<h:outputText value="We are in browse mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}"/>
+                        <h:outputText value="We are in search mode." rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>-->
                         <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / SEARCH</h4>
-                            <p>Your search didn't return any results. You may want to broaden your search.</p>
+                            <!--<h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / SEARCH</h4>-->
+                            <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search. You can also check out the <a href="/guides/User/find-use-data.html" target="_blank">search guide</a> for tips.</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{dataverseSession.user.guest and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / GUEST</h4>
-                            <p>You have browsed to an empty dataverse. If this is your dataverse, you could add data by <h:outputLink value="/loginpage.xhtml">logging in</h:outputLink>.</p>
+                            <!--<h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / GUEST</h4>-->
+                            <p>This Dataverse currently has no Dataverses, Datasets, or Files. Please <h:outputLink value="/loginpage.xhtml">log in</h:outputLink> to see if you are able to add to it.</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{!dataverseSession.user.guest and !SearchIncludeFragment.allowedToClickAddData and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS</h4>
-                            <p>You have browsed to an empty dataverse. You don't have permission to add data. Who knows why it's empty.</p>
+                            <!--<h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS</h4>-->
+                            <p>This Dataverse contains restricted Datasets you are not able to access.</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{!dataverseSession.user.guest and SearchIncludeFragment.allowedToClickAddData and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
-                            <h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / PERMS</h4>
-                            <p>This dataverse is empty and you have the power to fill it! Why not <a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">add a dataset</a>.</p>
+                            <!--<h4 class="text-warning" style="color:#F0AD4E;">THIS IS EMPTY / BROWSE / LOGGED IN / PERMS</h4>-->
+                            <p>This Dataverse currently has no Dataverses, Datasets, or Files. You can add to it by using the Add Data button on this page.</p>
                         </ui:fragment>
                     </div>
                 </ui:fragment>
@@ -302,7 +304,7 @@
                                 <!-- SORT BY -->
                                 <div class="btn-group pull-right">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        <h:outputText value=""/>Sort <span class="glyphicon glyphicon-sort"/> <span class="caret"/>
+                                        <span class="glyphicon glyphicon-sort" style="margin-right:.3em;"/> Sort <span class="caret"/>
                                     </button>
                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                         <li>
