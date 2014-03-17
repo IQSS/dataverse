@@ -108,12 +108,12 @@
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
         <div class="container" style="background:#97E1C6; margin:0 auto .5em auto; padding:2em 1em;">
-            <ui:fragment rendered="#{ownerId == null}">
+            <ui:fragment rendered="#{!empty dataverse.name}">
                 <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
             </ui:fragment>
-            <ui:fragment rendered="#{ownerId != null}">
+            <ui:fragment rendered="#{empty dataverse.name}">
                 <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
-            </ui:fragment>            
+            </ui:fragment>  
         </div>
     </ui:fragment>
 
