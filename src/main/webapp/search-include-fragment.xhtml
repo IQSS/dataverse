@@ -411,7 +411,8 @@
                                     <h:outputText value="#{result.title}" style="padding:4px 0;"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                    <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
+                                    <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
+                                    <p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/>
                                 </div>
 
                                 <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;"/>
@@ -435,7 +436,8 @@
                                     <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0">
-                                    <img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/>
+                                    <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
+                                    <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
                                 </div>
 
                                 <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>

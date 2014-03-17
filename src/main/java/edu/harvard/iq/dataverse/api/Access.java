@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import java.util.Properties;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +70,8 @@ public class Access {
     
     @EJB
     DataFileServiceBean dataFileService;
+    @EJB 
+    DatasetServiceBean datasetService; 
 
     @EJB
     
@@ -167,4 +172,86 @@ public class Access {
 
         return null; 
     }
+    
+    @Path("preview/{fileId}")
+    @GET
+    @Produces({ "image/png" })
+    public InputStream preview(@PathParam("fileId") Long fileId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+        
+        
+        
+        DataFile df = dataFileService.find(fileId);
+        String imageThumbFileName = null; 
+        if (df.isImage()) {
+            imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
+        } else {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_file.png";
+        }
+        
+        if (imageThumbFileName != null) {
+            InputStream in;
+
+            try {
+                in = new FileInputStream(imageThumbFileName);
+            } catch (Exception ex) {
+                // We don't particularly care what the reason why we have
+                // failed to access the file was.
+                // From the point of view of the download subsystem, it's a
+                // binary operation -- it's either successfull or not.
+                // If we can't access it for whatever reason, we are saying
+                // it's 404 NOT FOUND in our HTTP response.
+                return null;
+            }
+            return in;
+        }
+
+        return null; 
+    }
+    
+    @Path("dsPreview/{datasetId}")
+    @GET
+    @Produces({ "image/png" })
+    public InputStream dsPreview(@PathParam("datasetId") Long datasetId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+        
+        
+        
+        Dataset dataset = datasetService.find(datasetId);
+        String imageThumbFileName = null; 
+        
+        List<DataFile> dataFiles = dataset.getFiles();
+        for (DataFile dataFile : dataFiles) {
+            if (dataFile.isImage()) {
+                imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                break;
+            } 
+        }
+        
+        if (imageThumbFileName == null) {
+            Properties p = System.getProperties();
+            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_dataverse.png";
+        }
+        
+        if (imageThumbFileName != null) {
+            InputStream in;
+
+            try {
+                in = new FileInputStream(imageThumbFileName);
+            } catch (Exception ex) {
+                // We don't particularly care what the reason why we have
+                // failed to access the file was.
+                // From the point of view of the download subsystem, it's a
+                // binary operation -- it's either successfull or not.
+                // If we can't access it for whatever reason, we are saying
+                // it's 404 NOT FOUND in our HTTP response.
+                return null;
+            }
+            return in;
+        }
+
+        return null; 
+    }
+    
 }
