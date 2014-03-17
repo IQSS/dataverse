@@ -7,4 +7,4 @@ mkdir -p $DSDIR
 mkdir -p $FILESDIR
 count=1; ./tab2json dv.tsv | while read i; do echo $i | python -m json.tool > $DVDIR/$count; let count++; done
 count=1; ./tab2json ds.tsv | while read i; do echo $i | python -m json.tool > $DSDIR/$count; let count++; done
-count=1; ./tab2json files.tsv | while read i; do echo $i | python -m json.tool > $FILESDIR/$count; let count++; done
+#count=1; ./tab2json files.tsv | while read i; do echo $i | python -m json.tool > $FILESDIR/$count; let count++; done

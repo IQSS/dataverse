@@ -62,8 +62,9 @@ If you have an old copy of the database and want to start fresh, here are the re
 
 - drop your old database
 - create a new database
-- run the reference data script: ``scripts/database/reference_data.sql`` (NOTE: run the script as user ``postgres``; i.e., do not attempt to run it as your application database user, for example, ``dvnApp``!)
 - deploy the app
+- run the reference data script: ``scripts/database/reference_data.sql`` (NOTE: run the script as user ``postgres``; i.e., do not attempt to run it as your application database user, for example, ``dvnApp``!)
+- if you are not using ``dvnApp`` as the postgres role, run the following SQL line, substituting the name of the role you are using: ``ALTER TABLE filesystemname_seq OWNER TO "myRole";``
 - ``cd scripts/api``
 - ``./datasetfields.sh`` (*) 
 - ``./setup-users.sh``  

@@ -1,3 +1,0 @@
-#!/bin/sh
-echo "to populate facets, run root_dataverse_setup.sql instead"
-#~/.homebrew/bin/psql dataverseDb -f $HOME/NetBeansProjects/dataverse_temp/scripts/database/facetpopulate.sql

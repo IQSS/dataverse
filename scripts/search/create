@@ -5,7 +5,7 @@ DVDIR_TREES='data/in/dataverses.trees'
 DSDIR='data/in/datasets'
 FILESDIR='data/in/files'
 
-rm data/in/dataverses/1
+#rm data/in/dataverses/1
 for i in `ls $DVDIR_ROOT`; do
   curl -H "Content-type:application/json" -X POST -d @$DVDIR_ROOT/$i "http://localhost:8080/api/dvs/root?key=pete"
 done
@@ -19,8 +19,8 @@ for i in `ls $DVDIR_TREES`; do
 done
 
 # 9 is "sparrows"
-curl -H "Content-type:application/json" -X POST -d @data/in/dataverses.misc/8 "http://localhost:8080/api/dvs/9?key=pete"
-curl -H "Content-type:application/json" -X POST -d @data/in/dataverses.misc/9 "http://localhost:8080/api/dvs/trees?key=pete"
+#curl -H "Content-type:application/json" -X POST -d @data/in/dataverses.misc/8 "http://localhost:8080/api/dvs/9?key=pete"
+#curl -H "Content-type:application/json" -X POST -d @data/in/dataverses.misc/9 "http://localhost:8080/api/dvs/trees?key=pete"
 
 #for i in `ls $DSDIR`; do
 #  curl http://localhost:8080/api/datasets -H 'Content-type:application/json' --data-binary @$DSDIR/$i
