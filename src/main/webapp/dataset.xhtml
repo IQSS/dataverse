@@ -117,7 +117,12 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <!-- Upload -->
-                                <p:message for="fileUpload" showDetail="true"/>
+                                <!--<p:message for="fileUpload" showDetail="true"/>-->
+                                <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                    <div class="alert alert-info">
+                                        Tip: You can drag and drop your files from your desktop, directly into the upload widget.
+                                    </div>
+                                </ui:fragment>
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
                                 <!-- View -->
@@ -152,41 +157,52 @@
                                             <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
                                         </p>
                                     </p:column>
-                                    <p:column>
-                                        <ui:fragment rendered="#{!(file.tabularData) and !(empty file.id)}">
+                                    <p:column style="overflow: auto;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <ui:fragment rendered="#{!(file.tabularData)}">
                                             <a class="btn btn-default" href="/api/access/datafile/#{file.id}" role="button" style="color:#333333;">
                                                 <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                             </a>
                                         </ui:fragment>
+                                        
                                         <p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>
-
-                                        <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
-                                            <p:menuitem value="">
-                                                <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}">
-                                                    <h:outputText value="As Tab-Delimited"/>
-                                                </h:outputLink>
-                                            </p:menuitem>
-                                            <p:menuitem value="">
-                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
-                                                    <h:outputText value="As RData"/>
-                                                </h:outputLink>
-                                            </p:menuitem>
-                                            <p:menuitem value="">
-                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
-                                                    <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
-                                                </h:outputLink>
-                                            </p:menuitem>
-                                            <p:menuitem value="">
-                                                <h:outputLink value="/api/meta/datafile/#{file.id}"  disabled="#{empty file.id}">
-                                                    <h:outputText value="Variable Metadata"/>
-                                                </h:outputLink>
-                                            </p:menuitem>
-                                        </p:menuButton>
+                                        
+                                        <ui:fragment rendered="#{file.tabularData}">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <h:outputLink value="/api/access/datafile/#{file.id}"  disabled="#{empty file.id}">
+                                                            <h:outputText value="As Tab-Delimited"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                    <li>
+                                                        <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
+                                                            <h:outputText value="As RData"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                    <li>
+                                                        <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
+                                                            <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                    <li>
+                                                        <h:outputLink value="/api/meta/datafile/#{file.id}"  disabled="#{empty file.id}">
+                                                            <h:outputText value="Variable Metadata"/>
+                                                        </h:outputLink>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </ui:fragment>
 
                                     </p:column>
                                     <p:column>
-                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data " rendered="#{file.tabularData}"/>
-                                        <p:button value="Explore" href="/dataexplore/gui.html?dfId=#{file.id}" target="_new" rendered="#{file.tabularData}"/>
+                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data" rendered="#{file.tabularData}"/>
+                                        
+                                        <h:outputLink style="margin-left:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                            <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
+                                        </h:outputLink>
 
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
