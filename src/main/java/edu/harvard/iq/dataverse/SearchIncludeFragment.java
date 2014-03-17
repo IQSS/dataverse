@@ -423,7 +423,7 @@ public class SearchIncludeFragment {
         // being explicit about the user, could just call permissionService.on(dataverse)
        
         // TODO: decide on rules for this button and check actual permissions
-        return session.getUser() != null;
+        return session.getUser() != null && !session.getUser().isGuest();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
