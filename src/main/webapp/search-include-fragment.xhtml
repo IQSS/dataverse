@@ -20,6 +20,7 @@
                     <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
                         <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                     </p:commandLink>
+                    <p:commandButton id="hiddensearchbutton" style="display: none" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                     </h:outputLink>
