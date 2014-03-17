@@ -231,7 +231,7 @@ public class Access {
         if (imageThumbFileName == null) {
             Properties p = System.getProperties();
             String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_dataverse.png";
+            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_dataset.png";
         }
         
         if (imageThumbFileName != null) {
