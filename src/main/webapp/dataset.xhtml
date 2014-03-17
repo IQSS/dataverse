@@ -148,15 +148,17 @@
                                         <p:watermark for="fileDescription" value="add description" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
                                         <p:message for="fileDescription"/>
                                         <p>
-                                            <h:outputText id="fileMD5" value="MD5: #{file.md5}"/>
+                                            <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
+                                            <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
                                         </p>
                                     </p:column>
                                     <p:column>
-                                        <ui:fragment rendered="#{!(file.tabularData)}">
+                                        <ui:fragment rendered="#{!(file.tabularData) and !(empty file.id)}">
                                             <a class="btn btn-default" href="/api/access/datafile/#{file.id}" role="button" style="color:#333333;">
                                                 <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                             </a>
                                         </ui:fragment>
+                                        <p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>
 
                                         <p:menuButton id="downloadTabular" value="Download" iconPos="right" rendered="#{file.tabularData}">
                                             <p:menuitem value="">
@@ -165,13 +167,13 @@
                                                 </h:outputLink>
                                             </p:menuitem>
                                             <p:menuitem value="">
-                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
-                                                    <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
+                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
+                                                    <h:outputText value="As RData"/>
                                                 </h:outputLink>
                                             </p:menuitem>
                                             <p:menuitem value="">
-                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=RData"  disabled="#{empty file.id}">
-                                                    <h:outputText value="As RData"/>
+                                                <h:outputLink value="/api/access/datafile/#{file.id}?fileFormat=original"  disabled="#{empty file.id}">
+                                                    <h:outputText value="Saved Original (#{file.originalFormatLabel})"/>
                                                 </h:outputLink>
                                             </p:menuitem>
                                             <p:menuitem value="">

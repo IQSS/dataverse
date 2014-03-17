@@ -48,26 +48,27 @@ public class ImageThumbConverter {
     
     public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload, int size) {
         if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            if (generateImageThumb(file.getFileSystemLocation().toString(), size)) {
-                File imgThumbFile = new File(file.getFileSystemLocation() + ".thumb" + size);
+            String imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
+            if (imageThumbFileName != null) {
+                File imageThumbFile = new File(imageThumbFileName);
 
-                if (imgThumbFile != null && imgThumbFile.exists()) {
+                if (imageThumbFile != null && imageThumbFile.exists()) {
 
                     fileDownload.closeInputStream();
-                    fileDownload.setSize(imgThumbFile.length());
+                    fileDownload.setSize(imageThumbFile.length());
 
                     
-                    InputStream imgThumbInputStream = null; 
+                    InputStream imageThumbInputStream = null; 
                     
                     try {
 
-                        imgThumbInputStream = new FileInputStream(imgThumbFile);
+                        imageThumbInputStream = new FileInputStream(imageThumbFile);
                     } catch (IOException ex) {
                         return null; 
                     }
                     
-                    if (imgThumbInputStream != null) {
-                        fileDownload.setInputStream(imgThumbInputStream);
+                    if (imageThumbInputStream != null) {
+                        fileDownload.setInputStream(imageThumbInputStream);
                         fileDownload.setIsLocalFile(true);
                                
                         fileDownload.setMimeType("image/png");
@@ -82,18 +83,18 @@ public class ImageThumbConverter {
         return fileDownload;
     }
     
-    public static boolean generateImageThumb(String fileLocation) {
+    public static String generateImageThumb(String fileLocation) {
         return generateImageThumb(fileLocation, DEFAULT_THUMBNAIL_SIZE);
     }
     
-    public static boolean generateImageThumb(String fileLocation, int size) {
+    public static String generateImageThumb(String fileLocation, int size) {
 
         String thumbFileLocation = fileLocation + ".thumb" + size;
 
         // see if the thumb is already generated and saved:
 
         if (new File(thumbFileLocation).exists()) {
-            return true;
+            return thumbFileLocation;
         }
 
         // let's attempt to generate the thumb:
@@ -135,7 +136,7 @@ public class ImageThumbConverter {
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
 
 	    if ( fullSizeImage == null ) {
-		return false; 
+		return null; 
 	    }
 
             double scaleFactor = ((double) size) / (double) fullSizeImage.getWidth(null);
@@ -152,7 +153,7 @@ public class ImageThumbConverter {
             if (iter.hasNext()) {
                 writer = (ImageWriter) iter.next();
             } else {
-                return false;
+                return null;
             }
 
             BufferedImage lowRes = new BufferedImage(size, thumbHeight, BufferedImage.TYPE_INT_RGB);
@@ -169,12 +170,12 @@ public class ImageThumbConverter {
             thumbImage.flush();
             fullSizeImage.flush();
             lowRes.flush();
-            return true;
+            return thumbFileLocation;
         } catch (Exception e) {
             // something went wrong, returning "false":
 	    //dbgLog.info("ImageIO: caught an exception while trying to generate a thumbnail for "+fileLocation);
 
-            return false;
+            return null;
         }
     }
 }

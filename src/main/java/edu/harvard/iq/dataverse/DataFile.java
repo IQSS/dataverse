@@ -239,6 +239,21 @@ public class DataFile extends DvObject {
         return (contentType != null && contentType.startsWith("image/"));
     }
     
+    /* 
+     * If this is tabular data, the corresponding dataTable may have a UNF -
+     * "numeric fingerprint" signature - generated:
+     */
+    
+    public String getUnf() {
+        if (this.isTabularData()) {
+            // (isTabularData() method above verifies that that this file 
+            // has a datDatable associated with it, so the line below is 
+            // safe, in terms of a NullPointerException: 
+            return this.getDataTable().getUnf();
+        }
+        return null; 
+    }
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

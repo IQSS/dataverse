@@ -147,12 +147,12 @@ public class Access {
         }
         
         String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
-        
-        if (ImageThumbConverter.generateImageThumb(fileSystemName)) {
+        String imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+        if (imageThumbFileName != null) {
             InputStream in;
 
             try {
-                in = new FileInputStream(fileSystemName+".thumb");
+                in = new FileInputStream(imageThumbFileName);
             } catch (Exception ex) {
                 // We don't particularly care what the reason why we have
                 // failed to access the file was.
