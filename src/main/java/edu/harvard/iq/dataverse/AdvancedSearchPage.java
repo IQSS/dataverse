@@ -90,10 +90,7 @@ public class AdvancedSearchPage {
                 } 
             } else if (datasetField.getListValues() != null && !datasetField.getListValues().isEmpty()){
                 for (String value : datasetField.getListValues()) {
-                    StringTokenizer st = new StringTokenizer(value);
-                    while (st.hasMoreElements()) {
-                        queryStrings.add(datasetField.getSolrField() + ":" + "\"" + st.nextElement() + "\"");
-                    }
+                    queryStrings.add(datasetField.getSolrField() + ":" + "\"" + value + "\"");
                 }
             }
         }
