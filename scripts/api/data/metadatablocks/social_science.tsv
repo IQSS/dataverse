@@ -6,11 +6,11 @@
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	2	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
 	topicClassVocabURI	URL	Specifies the URL location for the full controlled vocabulary.		url	3	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
 	software	Software	Software			4	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
-	softwareName	Software Name	Name of software used to generate the study.		text	5	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	socialscience
-	softwareVersion	Software Version	Version of the software used to generate the study.		text	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	socialscience
+	softwareName	Name	Name of software used to generate the study.		text	5	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	socialscience
+	softwareVersion	Version	Version of the software used to generate the study.		text	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	socialscience
 	series	Series	Series			7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-	seriesName	Series Name	Name of the codebook series to which the codebook belongs.		text	8	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
-	seriesInformation	Series Information	History of the series and summary of those features that apply to the series as a whole.		text	9	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
+	seriesName	Name	Name of the codebook series to which the codebook belongs.		text	8	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		text	9	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
 	timePeriodCoveredStart	Time Period Covered - Start	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of  coding or making documents machine-readable or the dates the data were collected. Also known as span. The ISO standard for dates (YYYY-MM-DD) is recommended, although this form accepts YYYY or  YYY-MM as well. Inclusion of this element is recommended.		date	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		socialscience
 	timePeriodCoveredEnd	Time Period Covered - End	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of  coding or making documents machine-readable or the dates the data were collected. Also known as span. The ISO standard for dates (YYYY-MM-DD) is recommended, although this form accepts YYYY or  YYY-MM as well. Inclusion of this element is recommended.		date	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		socialscience
 	dateOfCollectionStart	Date of Collection - Start	Dates when the data were collected. Use the event attribute to specify start, end, or single for each date  entered. The ISO standard for dates (YYYY-MM-DD) is recommended, although this form will accept YYYY or  YYY-MM as well. Inclusion of this element in the codebook is recommended.		date	12	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience

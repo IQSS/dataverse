@@ -1,5 +1,5 @@
 #metadataBlock	name	displayName												
-	astrophysics	Astrophysics												
+	astrophysics	Astronomy and Astrophysics												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	metadatablock_id	parent
 	type	Type	The nature or genre of the content of the files in the dataset.		text	0	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		astrophysics
 	facility	Facility	The observatory or facility where the data was obtained. 		text	1	TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		astrophysics

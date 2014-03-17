@@ -108,7 +108,7 @@
                             <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        Edit Dataverse <span class="caret"></span>
+                                        <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataverse <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                         <li>
@@ -136,7 +136,7 @@
                                                 <f:param name="objectType" value="DATAVERSE" />
                                             </h:link>
                                         </li>
-                                        <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>
+                                        <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>-->
                                         <li>
                                             <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
                                                 <h:outputText value="Setup" />

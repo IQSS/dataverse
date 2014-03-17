@@ -1,4 +1,0 @@
-#!/bin/sh
-~/.homebrew/bin/psql dataverseDb -c 'ALTER TABLE datasetField ADD watermark text;'
-~/.homebrew/bin/psql dataverseDb -c "update datasetfield set watermark = 'Family Name, Given Name or Organization Name' where id = (select id from datasetfield where name = 'authorName');"
-~/.homebrew/bin/psql dataverseDb -c "update datasetfield set watermark = 'Enter title...' where id = (select id from datasetfield where name = 'title');"
