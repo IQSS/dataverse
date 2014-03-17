@@ -64,9 +64,7 @@
                     </p:panel>
 
                     <!-- Edit Info Panel -->
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{(not empty DataversePage.owner
-                                                                       and permissionServiceBean.on(DataversePage.owner).canIssueCommand('RenameDataverseCommand'))
-                                                                       and DataversePage.editMode == 'INFO'}">
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass" rendered="#{DataversePage.editMode == 'INFO'}">
                             <p:panelGrid columns="2" styleClass="panelgridFormTable">
                                 <ui:fragment>
@@ -184,7 +182,7 @@
                             <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
                                            itemLabel="#{mdb.displayName}" itemValue="#{mdb}" /> 
                         </p:selectManyMenu>
-                        
+
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                             <h:outputText value="Use Facets from Parent Dataverse? " /> 
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">

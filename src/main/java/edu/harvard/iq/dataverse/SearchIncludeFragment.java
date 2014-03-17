@@ -389,9 +389,7 @@ public class SearchIncludeFragment {
         return numFacets;
     }
 
-    /**
-     * @todo why do we have to click "More" twice?
-     */
+
     public void incrementFacets(String name, int incrementNum) {
         Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
@@ -423,7 +421,10 @@ public class SearchIncludeFragment {
          * @todo is this the right permission to check?
          */
         // being explicit about the user, could just call permissionService.on(dataverse)
-        return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
+       
+        // TODO: decide on rules for this button and check actual permissions
+        return session.getUser() != null && !session.getUser().isGuest();
+        //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
     public String getQuery() {
