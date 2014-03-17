@@ -138,33 +138,59 @@
                                     </p>-->
                                 </ui:fragment>
                                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
-                                    <p:column>
-                                        <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-                                        <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:message for="fileName"/>
+                                    <p:column styleClass="col-xs-1">
                                         <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
-                                        <h:outputText id="imgPreview" value="preview: " rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
-                                        <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}" rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
+                                        
+                                        <ui:fragment rendered="#{empty file.id and !empty file.fileSystemName and file.image}">
+                                            <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}"/>
+                                            <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
+                                        </ui:fragment>
                                     </p:column>
-                                    <p:column>
-                                        <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
-                                        <h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>
-                                        <p:inputText id="fileDescription" value="#{file.description}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:watermark for="fileDescription" value="add description" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:message for="fileDescription"/>
-                                        <p>
-                                            <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
-                                            <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
-                                        </p>
+                                    <p:column styleClass="col-sm-7">
+                                        <h:outputText id="fileNameOutput" value="#{file.name}" style="display:block;font-weight:bold;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                        
+                                        <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                            <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                                File Name
+                                            </label>
+                                            <p:inputText id="fileName" value="#{file.name}" style="margin-bottom:.5em;"/>
+                                            <p:message for="fileName"/>
+                                        </ui:fragment>
+                                        
+                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}#{!empty file.md5 ? ', ' : ''}" rendered="#{!(file.tabularData)}"/>
+                                        <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
+                                        
+                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty file.unf ? ', ' : ''}" rendered="#{file.tabularData}"/>
+                                        <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
+                                        
+                                        <div class="fileDescription">
+                                            <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
+                                            <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>-->
+
+                                            <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                                <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                                    Description
+                                                </label>
+                                                <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{file.description}" style="margin-top:.5em;"/>
+                                                <p:watermark for="fileDescription" value="Add file description..."/>
+                                                <p:message for="fileDescription"/>
+                                            </ui:fragment>
+                                        </div>
                                     </p:column>
-                                    <p:column style="overflow: auto;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                    <p:column styleClass="col-sm-4" style="overflow: auto;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <ui:fragment rendered="#{file.tabularData}">
+                                            <h:outputLink style="margin-right:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                                <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
+                                            </h:outputLink>
+                                        </ui:fragment>
+                                        
                                         <ui:fragment rendered="#{!(file.tabularData)}">
                                             <a class="btn btn-default" href="/api/access/datafile/#{file.id}" role="button" style="color:#333333;">
                                                 <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                             </a>
                                         </ui:fragment>
                                         
-                                        <p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>
+                                        <!--<p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>-->
                                         
                                         <ui:fragment rendered="#{file.tabularData}">
                                             <div class="btn-group">
@@ -195,16 +221,6 @@
                                                 </ul>
                                             </div>
                                         </ui:fragment>
-
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data" rendered="#{file.tabularData}"/>
-                                        
-                                        <h:outputLink style="margin-left:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
-                                        </h:outputLink>
-
-                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
