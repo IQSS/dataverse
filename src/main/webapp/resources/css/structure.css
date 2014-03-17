@@ -119,7 +119,7 @@ div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:se
 
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
-#title {display:block;font-size:1.25em;font-weight:bold; margin-bottom:.25em;}
+#title {display:block;font-size:1.5em;font-weight:bold; margin-bottom:.5em;}
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
@@ -135,6 +135,7 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 .btn-sm.ui-button {padding: 5px 10px;}
 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
+div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}

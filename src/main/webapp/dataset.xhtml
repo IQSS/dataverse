@@ -15,6 +15,7 @@
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
 
                 <f:metadata>
@@ -27,66 +28,68 @@
 
                     <!-- Header / Button Panel -->
                     <ui:fragment>
-                        <div style="float:right; padding-bottom:1em;">
-                            <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
-                                <div style="float:right; margin-left:1em;">
-                                    <div class="btn-group">
-                                        <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataset <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                            <li>
-                                                <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                    <h:outputText value="Files (Upload + Edit)" />
-                                                </p:commandLink>   
-                                            </li>
-                                            <li>
-                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
-                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                    <h:outputText value="Metadata" />
-                                                </p:commandLink>   
-                                            </li>
-                                            <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Permissions</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </ui:fragment>
-                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                                <div style="float:right;">
-                                    <button type="button" class="btn btn-default">
-                                        <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Contact Dataset Curator
-                                    </button>
-                                </div>
-                            </ui:fragment>
-                        </div>
-
+                        
                         <!-- View mode -->
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
-                            <div>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.strValue}">
-                                    <span id="title">#{DatasetPage.datasetVersionUI.title.strValue}</span>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.citation}">
-                                    <div id="citation">
-                                        <span>#{DatasetPage.datasetVersionUI.citation}</span>
-                                    </div>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.strValue}">
-                                    <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordsStr}">
-                                    <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subjectStr}">
-                                    <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
-                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="##{DatasetPage.datasetVersionUI.relPublicationUrl}" onclick="return false;">relPublicationUrl</a></span>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notesText}">
-                                    <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
-                                </ui:fragment>
+                            <div id="topDatasetBlock">
+                                <div id="actionButtonBlock" style="float:right;">
+                                    <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <div class="btn-group">
+                                                <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataset <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                            <h:outputText value="Files (Upload + Edit)" />
+                                                        </p:commandLink>   
+                                                    </li>
+                                                    <li>
+                                                        <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                            <h:outputText value="Metadata" />
+                                                        </p:commandLink>   
+                                                    </li>
+                                                    <li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Permissions</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                                        <div style="float:right;">
+                                            <button type="button" class="btn btn-default">
+                                                <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataset Contact
+                                            </button>
+                                        </div>
+                                    </ui:fragment>
+                                </div>
+                                <div id="datasetVersionBlock">
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.strValue}">
+                                        <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.strValue}</span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.citation}">
+                                        <div id="citation">
+                                            <span>#{DatasetPage.datasetVersionUI.citation}</span>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.strValue}">
+                                        <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordsStr}">
+                                        <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subjectStr}">
+                                        <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
+                                        <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationUrl}</a></span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notesText}">
+                                        <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
+                                    </ui:fragment>
+                                </div>
                             </div>
                         </ui:fragment>
 
@@ -120,9 +123,10 @@
                                 <!-- View -->
                                 <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                        <p:commandButton title="Upload + Edit Files" value="Upload + Edit Files" escape="false" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
+                                            <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
+                                        </p:commandLink>
                                     </div>
                                     <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
                                         <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
@@ -191,9 +195,10 @@
 
                                 <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                        <p:commandButton title="Edit Metadata" value="Edit Metadata" escape="false" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                        </p:commandButton>
+                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Metadata
+                                        </p:commandLink>
                                     </div>
                                     <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
                                         <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
