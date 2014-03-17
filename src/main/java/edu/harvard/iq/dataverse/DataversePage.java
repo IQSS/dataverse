@@ -150,34 +150,38 @@ public class DataversePage implements java.io.Serializable {
         if (EditMode.INFO.equals(editMode)) {
 
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-
-            CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
+            
+            // TODO: re add command call
+            dataverseService.save(dataverse);
+            editMode = null;
+            /*
+                    CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
 
             try {
                 dataverse = commandEngine.submit(cmd);
                 editMode = null;
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+                return null;
             }
+            */
         } else if (EditMode.SETUP.equals(editMode)) {
             dataverseService.save(dataverse);
             editMode = null;          
 
-        }
-        
-        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
-        if (!facetsList.isEmpty()) {
-            for (DataverseFacet dataverseFacet : facetsList) {
-                dataverseFacetService.delete(dataverseFacet);
+            List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
+            if (!facetsList.isEmpty()) {
+                for (DataverseFacet dataverseFacet : facetsList) {
+                    dataverseFacetService.delete(dataverseFacet);
+                }
             }
-        }
-        int i=1;
-        for (DatasetField df : facets.getTarget()) {
-            dataverseFacetService.create(i++, df.getId(), dataverse.getId());
+            int i=1;
+            for (DatasetField df : facets.getTarget()) {
+                dataverseFacetService.create(i++, df.getId(), dataverse.getId());
+            }           
         }
         
         return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
-
     }
 
     public void cancel(ActionEvent e) {
