@@ -44,10 +44,11 @@
                     <form class="navbar-form navbar-left" role="search" style="display:none;">
                         <div class="form-group">
                             <label class="sr-only" for="navbarsearch">Search</label>
-                            <input id="navbarsearch" type="text" class="form-control" size="40" value="" placeholder="Search all Dataverses..." />
+                            <input id="navbarsearch" type="text" class="form-control ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="40" value="" placeholder="Search all Dataverses..." style="font-size:1em;margin-right:1em;" />
                         </div>
-                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
-                                return false;">Find</button>
+                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
+                            <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
+                        </button>
                     </form>
                     <li class="dropdown">
                         <a value="#" class="dropdown-toggle" data-toggle="dropdown">

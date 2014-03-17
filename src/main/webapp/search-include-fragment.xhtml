@@ -13,11 +13,11 @@
             <ui:fragment>
                 <h:form>
                     <p:focus/>
-                    <p:watermark for="formerAutoCompleteSearch" value="Search this dataverse..."/>
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" style="margin-right:1em;"/>
-                    <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
+                    <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
+                    <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;font-size:.9em;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
                         <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                     </p:commandLink>
                     <p:commandButton id="hiddensearchbutton" style="display: none" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
@@ -304,7 +304,7 @@
                                 </ui:fragment>
                                 <!-- SORT BY -->
                                 <div class="btn-group pull-right">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-sort" style="margin-right:.3em;"/> Sort <span class="caret"/>
                                     </button>
                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
