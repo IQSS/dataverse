@@ -57,6 +57,29 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <div class="btn-group">
+                                                <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> {Release} <!-- Dynamic Release State --> <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
+                                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
+                                                            <span style="display:block;color:#777;font-size:small;">Some message about what it means for your dataset to be Private.</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                            <span class="glyphicon glyphicon-eye-open" style="margin-right:.3em;"/> Public
+                                                            <span style="display:block;color:#777;font-size:small;">Some message about what it means for your dataset to be Public.</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
                                             <button type="button" class="btn btn-default">
