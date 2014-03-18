@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -17,12 +15,9 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.DualListModel;
-import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -41,6 +36,8 @@ public class DataversePage implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    IndexServiceBean indexService;    
     @EJB
     DatasetServiceBean datasetService;
     @Inject
@@ -151,8 +148,10 @@ public class DataversePage implements java.io.Serializable {
 
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             
-            // TODO: re add command call
+            // TODO: re add command call (and remove indexService bean)
             dataverse = dataverseService.save(dataverse);
+            indexService.indexDataverse(dataverse);
+
             editMode = null;
             /*
                     CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
