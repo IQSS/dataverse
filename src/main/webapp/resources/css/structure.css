@@ -33,6 +33,8 @@
         
 #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
 
+#breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
+
 button[id$='breadcrumbBtn'] span.ui-button-text, 
 button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
 
@@ -83,6 +85,7 @@ div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facet
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
+div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.ui-datalist div.ui-datalist-content {padding-top:0;}
 .facetCategoryName {font-weight:bold;}
 
 .facetCategoryName, .facetLink {

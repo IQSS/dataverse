@@ -126,7 +126,7 @@
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
                                 <!-- View -->
-                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                         <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -138,8 +138,9 @@
                                     </p>-->
                                 </ui:fragment>
                                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
-                                    <p:column styleClass="col-xs-1">
+                                    <p:column styleClass="col-xs-1" style="text-align:center;">
                                         <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
+                                        <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!file.image}"/>
                                         
                                         <ui:fragment rendered="#{empty file.id and !empty file.fileSystemName and file.image}">
                                             <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}"/>
@@ -227,7 +228,7 @@
 
                             <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                         <p:commandLink style="color:black;" styleClass="btn btn-default" title="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
