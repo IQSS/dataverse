@@ -150,6 +150,10 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     public void setShowAboveFold(boolean showAboveFold) {
         this.showAboveFold = showAboveFold;
     }
+    
+    public boolean isControlledVocabulary() {
+        return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
+    }
 
     @ManyToOne(cascade = CascadeType.MERGE)
     private MetadataBlock metadataBlock;
@@ -174,16 +178,6 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
         this.controlledVocabularyValues = controlledVocabularyValues;
     }
        
-    public List<SelectItem> getControlledVocabularySelectItems(){
-        List<SelectItem> retList = new ArrayList();
-         for (ControlledVocabularyValue value : this.getControlledVocabularyValues()){
-                     SelectItem item = new SelectItem();
-                     item.setValue(value.getStrValue());
-                     item.setLabel(value.getStrValue());
-                     retList.add(item);
-         }
-        return retList;
-    }
 
     @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
