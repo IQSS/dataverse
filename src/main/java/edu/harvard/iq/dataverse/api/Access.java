@@ -68,6 +68,9 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 public class Access {
     private static final Logger logger = Logger.getLogger(Meta.class.getCanonicalName());
     
+    private static final String DEFAULT_FILE_ICON = "icon_file.png";
+    private static final String DEFAULT_DATASET_ICON = "icon_dataset.png";
+    
     @EJB
     DataFileServiceBean dataFileService;
     @EJB 
@@ -185,9 +188,7 @@ public class Access {
         if (df.isImage()) {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
         } else {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_file.png";
+            imageThumbFileName = getWebappImageResource (DEFAULT_FILE_ICON);
         }
         
         if (imageThumbFileName != null) {
@@ -229,9 +230,7 @@ public class Access {
         }
         
         if (imageThumbFileName == null) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-            imageThumbFileName = domainRoot+"/applications/dataverse-4.0/resources/images/icon_dataset.png";
+            imageThumbFileName = getWebappImageResource (DEFAULT_DATASET_ICON);
         }
         
         if (imageThumbFileName != null) {
@@ -254,4 +253,26 @@ public class Access {
         return null; 
     }
     
+    private String getWebappImageResource(String imageName) {
+        String imageFilePath = null;
+        String persistenceFilePath = null;
+        java.net.URL persistenceFileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
+        
+        
+        if (persistenceFileUrl != null) {
+            persistenceFilePath = persistenceFileUrl.getFile();
+            if (persistenceFilePath != null) {
+                persistenceFilePath = persistenceFilePath.replaceFirst("/[^/]*$", "/");
+                logger.info("Persistence file directory: " + persistenceFilePath);
+                imageFilePath = persistenceFilePath + "../../../resources/images/" + imageName;
+                logger.info("file resource location: " + imageFilePath);
+                return imageFilePath; 
+            }
+            logger.info("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
+        } else {
+            logger.info("Could not find the location of persistence.xml in the webapp root directory!");
+        }
+
+        return null;
+    }
 }
