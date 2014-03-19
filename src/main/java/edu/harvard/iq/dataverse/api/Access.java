@@ -258,19 +258,16 @@ public class Access {
         String persistenceFilePath = null;
         java.net.URL persistenceFileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
         
-        
         if (persistenceFileUrl != null) {
             persistenceFilePath = persistenceFileUrl.getFile();
             if (persistenceFilePath != null) {
                 persistenceFilePath = persistenceFilePath.replaceFirst("/[^/]*$", "/");
-                logger.info("Persistence file directory: " + persistenceFilePath);
                 imageFilePath = persistenceFilePath + "../../../resources/images/" + imageName;
-                logger.info("file resource location: " + imageFilePath);
                 return imageFilePath; 
             }
-            logger.info("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
+            logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
         } else {
-            logger.info("Could not find the location of persistence.xml in the webapp root directory!");
+            logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
         }
 
         return null;
