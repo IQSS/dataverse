@@ -161,4 +161,14 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
         return Integer.compare(this.getDatasetField().getDisplayOrder(),(o.getDatasetField().getDisplayOrder())); 
     }
     
+    @OneToMany(cascade = {CascadeType.MERGE})    
+    private List<ControlledVocabularyValue> controlledVocabularyValues;
+
+    public List<ControlledVocabularyValue> getControlledVocabularyValues() {
+        return controlledVocabularyValues;
+    }
+
+    public void setControlledVocabularyValues(List<ControlledVocabularyValue> controlledVocabularyValues) {
+        this.controlledVocabularyValues = controlledVocabularyValues;
+    }    
 }

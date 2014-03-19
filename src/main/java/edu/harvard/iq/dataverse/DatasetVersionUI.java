@@ -5,9 +5,12 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +22,6 @@ import javax.ejb.EJB;
  * @author skraffmiller
  */
 public class DatasetVersionUI {
-
-    @EJB
-    DataverseServiceBean dataverseService;
 
     public DatasetVersionUI() {
     }
@@ -59,6 +59,7 @@ public class DatasetVersionUI {
 
         // loop through vaues to get fields for view mode
         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
+            //Special Handling for various fields displayed above tabs in dataset page view.
             if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.title)) {
                 setTitle(dsfv);
             } else if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.descriptionText)) {
@@ -348,7 +349,8 @@ public class DatasetVersionUI {
     public String getAuthorsStr(boolean affiliation) {
         String str = "";
         for (DatasetAuthor sa : this.getDatasetAuthors()) {
-            if (str.trim().length() > 1) {
+            //Fix for RedMine 3731 if Author name is just one character.
+            if (str.trim().length() > 0) {
                 str += "; ";
             }
             if (sa.getName() != null && !StringUtil.isEmpty(sa.getName().getStrValue())) {

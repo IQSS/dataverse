@@ -35,9 +35,7 @@ public class DataversePage implements java.io.Serializable {
     };
 
     @EJB
-    DataverseServiceBean dataverseService;
-    @EJB
-    IndexServiceBean indexService;    
+    DataverseServiceBean dataverseService;  
     @EJB
     DatasetServiceBean datasetService;
     @Inject
@@ -148,9 +146,8 @@ public class DataversePage implements java.io.Serializable {
 
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             
-            // TODO: re add command call (and remove indexService bean)
+            // TODO: re add command call
             dataverse = dataverseService.save(dataverse);
-            indexService.indexDataverse(dataverse);
 
             editMode = null;
             /*

@@ -41,6 +41,10 @@ public class DatasetFieldServiceBean {
         return em.createQuery("select object(o) from DatasetField as o order by o.id").getResultList();
     }
 
+    public List<DatasetField> findAllOrderedByName() {
+        return em.createQuery("select object(o) from DatasetField as o order by o.name").getResultList();
+    }
+
     public DatasetField find(Object pk) {
         return (DatasetField) em.find(DatasetField.class, pk);
     } 
@@ -49,6 +53,10 @@ public class DatasetFieldServiceBean {
         DatasetField dsf = (DatasetField) em.createQuery(NAME_QUERY).setParameter("fieldName",name).getSingleResult();
         return dsf;
     }
+    
+    public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
+        return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
+    }        
     
     public List findAvailableFileMetadataFields() {
         List <FileMetadataField> fileMetadataFields = null; 

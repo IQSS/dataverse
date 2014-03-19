@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 public class SearchFields {
 
     // standard fields from example/solr/collection1/conf/schema.xml
+    // (but we are getting away from these...)
     public static final String ID = "id";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
@@ -35,8 +36,13 @@ public class SearchFields {
 //    public static final String AUTHOR_STRING = DatasetFieldConstant.authorName +  "_s";
 //    public static final String KEYWORD = DatasetFieldConstant.keywordValue + "_s";
 //    public static final String DISTRIBUTOR = DatasetFieldConstant.distributorName + "_s";
+    /**
+     * @todo: if you search for "pdf" should you get all pdfs? do we need a
+     * copyField to the catchall?
+     */
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
+
     public static final String HOST_DATAVERSE = "hostdataverse_s";
     public static final String SUBTREE = "subtree_ss";
     // i.e. http://localhost:8080/search.xhtml?q=*&fq0=citationdate_dt:[2008-01-01T00%3A00%3A00Z+TO+2011-01-01T00%3A00%3A00Z%2B1YEAR}
@@ -49,7 +55,8 @@ public class SearchFields {
     public static final String RELEVANCE = "score";
 
     // require Dataverse-specific schema.xml
-    public static final String TYPE = "type";
+    // a dvtype can be a dataverse, a dataset, or a file
+    public static final String TYPE = "dvtype";
     public static final String NAME_SORT = "name_sort";
     // Used for performance. Why hit the db if solr has the data?
     public static final String ENTITY_ID = "entityid";

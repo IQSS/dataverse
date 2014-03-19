@@ -370,33 +370,28 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
         }
     }
 
-    public String getSolrField() {
-        String solrType;
+    public SolrField getSolrField() {
+        SolrField.SolrType solrType2 = SolrField.SolrType.TEXT_GENERAL;
         if (fieldType != null) {
-            // these are all "dynamic fields" from a Solr perspective because they match "_*"
+            /**
+             * @todo: make this an enum
+             */
             if (fieldType.equals("textBox")) {
-                solrType = "_s";
+                solrType2 = SolrField.SolrType.TEXT_GENERAL;
             } else if (fieldType.equals("text")) {
-                solrType = "_s";
+                solrType2 = SolrField.SolrType.TEXT_GENERAL;
             } else if (fieldType.equals("date")) {
-                solrType = "_i";
+                solrType2 = SolrField.SolrType.INTEGER;
             } else if (fieldType.equals("email")) {
-                solrType = "_s";
+                solrType2 = SolrField.SolrType.TEXT_GENERAL;
             } else if (fieldType.equals("url")) {
-                solrType = "_s";
+                solrType2 = SolrField.SolrType.TEXT_GENERAL;
             } else {
                 /**
                  * @todo: what should we do with types we don't expect?
                  */
-                solrType = "_s";
+                solrType2 = SolrField.SolrType.TEXT_GENERAL;
             }
-
-            String dynamicFieldSingle = name + solrType;
-            String lastLetter = dynamicFieldSingle.substring(dynamicFieldSingle.length() - 1);
-            // i.e. _ss for multivalued string
-            String dynamicFieldMultiple = dynamicFieldSingle + lastLetter;
-
-            String solrField = null;
 
             Boolean parentAllowsMultiplesBoolean = false;
             if (isHasParent()) {
@@ -409,7 +404,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
             boolean makeSolrFieldMultivalued = false;
 
-            if (solrType.endsWith("_s")) {
+            if (solrType2 == SolrField.SolrType.TEXT_GENERAL) {
                 if (allowMultiples || parentAllowsMultiplesBoolean) {
                     makeSolrFieldMultivalued = true;
 //                    logger.info(name + " allows multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
@@ -422,14 +417,16 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
 //                logger.info(name + " only converting _s (String) fields to multiple, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
             }
 
-            if (makeSolrFieldMultivalued) {
-                return dynamicFieldMultiple;
-            } else {
-                return dynamicFieldSingle;
-            }
+            return new SolrField(name, solrType2, makeSolrFieldMultivalued, facetable);
 
         } else {
-            return name + getTmpNullFieldTypeIdentifier();
+            /**
+             * @todo: clean this up
+             */
+            String oddValue = name + getTmpNullFieldTypeIdentifier();
+            boolean makeSolrFieldMultivalued = false;
+            SolrField solrField2 = new SolrField(oddValue, solrType2, makeSolrFieldMultivalued, facetable);
+            return solrField2;
         }
     }
 

@@ -79,18 +79,18 @@ public class AdvancedSearchPage {
                     String [] tempString = datasetField.getSearchValue().split(delimiter);
                     for (int i = 1; i < tempString.length; i++) {
                         if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
-                            queryStrings.add(datasetField.getSolrField() + ":" + "\"" + tempString[i].trim() + "\"");
+                            queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + "\"" + tempString[i].trim() + "\"");
                         }
                     }
                 } else {
                     StringTokenizer st = new StringTokenizer(datasetField.getSearchValue());
                     while (st.hasMoreElements()) {
-                        queryStrings.add(datasetField.getSolrField() + ":" + st.nextElement());
+                        queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + st.nextElement());
                     }
                 } 
             } else if (datasetField.getListValues() != null && !datasetField.getListValues().isEmpty()){
                 for (String value : datasetField.getListValues()) {
-                    queryStrings.add(datasetField.getSolrField() + ":" + "\"" + value + "\"");
+                    queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
                 }
             }
         }
