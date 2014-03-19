@@ -361,6 +361,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             logger.info("Couldn't save dataset: " + error.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + error.toString()));
+            return null;
         }
         newFiles.clear();
         editMode = null;
@@ -408,7 +409,6 @@ public class DatasetPage implements java.io.Serializable {
         dFile.getFileMetadatas().add(fmd);
         fmd.setLabel(dFile.getName());
         fmd.setCategory(dFile.getContentType());
-        fmd.setDescription("");
         if (editVersion.getFileMetadatas() == null) {
             editVersion.setFileMetadatas(new ArrayList());
         }
