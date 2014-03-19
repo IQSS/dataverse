@@ -14,7 +14,7 @@
         </label>   
     </ui:fragment>
     <p:inputText value="#{fieldValues.strValue}" id="inputText" styleClass="form-control"
-                 rendered="#{empty fieldValues.datasetField.controlledVocabularySelectItems        
+                 rendered="#{!fieldValues.datasetField.controlledVocabulary        
                              and (fieldValues.datasetField.fieldType == 'text'
                              or fieldValues.datasetField.fieldType == 'int'
                              or fieldValues.datasetField.fieldType == 'float'
@@ -27,10 +27,10 @@
                      rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
     <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
 
-    <p:selectOneMenu value="#{fieldValues.strValue}" filterMatchMode="startsWith" styleClass="form-control"
-                     rendered="#{!empty fieldValues.datasetField.controlledVocabularySelectItems
-                                 and !fieldValues.datasetField.allowMultiples }">
-        <f:selectItems value="#{fieldValues.datasetField.controlledVocabularySelectItems}"/>
+    <p:selectOneMenu  converter="controlledVocabularyValueConverter"  styleClass="form-control"
+                     rendered="#{fieldValues.datasetField.controlledVocabularyValues and !fieldValues.datasetField.allowMultiples }">
+        <f:selectItems value="#{fieldValues.datasetField.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+
     </p:selectOneMenu>
 
 </div>
