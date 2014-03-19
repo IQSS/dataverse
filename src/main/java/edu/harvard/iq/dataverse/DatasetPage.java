@@ -268,14 +268,20 @@ public class DatasetPage implements java.io.Serializable {
             if (dsfv.getStrValue() != null) {
                 dsfv.setStrValue(dsfv.getStrValue().trim());
             }
-            //Single recs and child recs
-            if ((dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty()) && !dsfv.getDatasetField().isHasChildren()) {
+            
+            //Single recs and child recs (with no controlled vocab)
+            if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty())) {
                 toRemoveIndex.add(index);
             }
             //parent recs where all kids are empty.
             if (dsfv.getDatasetField().isHasChildren() && dsfv.isChildEmpty()) {
                 toRemoveIndex.add(index);
             }
+            //controlled vocab recs where all kids are empty.
+            if (dsfv.getDatasetField().isControlledVocabulary() && (dsfv.getControlledVocabularyValues() == null || dsfv.getControlledVocabularyValues().isEmpty())) {
+                toRemoveIndex.add(index);
+            }
+
             index++;
         }
         //Actually do the remove here
