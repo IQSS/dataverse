@@ -160,7 +160,7 @@
                                                     </a>
                                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldMap.key.required}" /> 
                                                 </label>
-                                                <div class="col-sm-6">fm:#{fieldMap.value.get(0).controlledVocabularyValues}
+                                                <div class="col-sm-6">
                                                     <h:selectManyListbox value="#{fieldMap.value.get(0).controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control">
                                                         <f:selectItems value="#{fieldMap.key.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                     </h:selectManyListbox>
