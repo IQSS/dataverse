@@ -41,6 +41,10 @@ public class DatasetFieldServiceBean {
         return em.createQuery("select object(o) from DatasetField as o order by o.id").getResultList();
     }
 
+    public List<DatasetField> findAllOrderedByName() {
+        return em.createQuery("select object(o) from DatasetField as o order by o.name").getResultList();
+    }
+
     public DatasetField find(Object pk) {
         return (DatasetField) em.find(DatasetField.class, pk);
     } 

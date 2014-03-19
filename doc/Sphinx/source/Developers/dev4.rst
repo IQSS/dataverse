@@ -22,7 +22,7 @@ Please note: If you prefer, once the proper ``schema.xml`` file is in place, you
 
 Once Solr is up and running you should be able to see a "Solr Admin" dashboard at http://localhost:8983/solr
 
-Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true
+Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/schema/fields
 
 Setting up your dev environment
 +++++++++++++++++++++++++++++++
