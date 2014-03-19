@@ -95,7 +95,7 @@
                                 <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
                                     <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or fieldMap.key.displayOnCreate) and !fieldMap.key.hasParent}">
                                         <!-- Everything except Select Multiple -->
-                                        <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.allowMultiples or empty fieldMap.key.controlledVocabularySelectItems}">
+                                        <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="valCount" rendered="#{!fieldMap.key.allowMultiples or empty fieldMap.key.controlledVocabularySelectItems}">
                                             <ui:fragment rendered="#{(!fieldValues.datasetField.hasParent)}">
                                                 <div class="form-group">
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
@@ -142,6 +142,7 @@
                                                             </p:commandButton>
                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{fieldValues.datasetField.hasChildren ? 'margin-top:1.8em;' : ''}"  
                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                             rendered="#{valCount.index gt 0}"
                                                                              escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             </p:commandButton>

@@ -24,10 +24,12 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +47,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -81,6 +84,8 @@ public class DatasetPage implements java.io.Serializable {
     DatasetFieldServiceBean fieldService;
     @EJB
     DatasetFieldValueServiceBean fieldValueService;
+    @Inject
+    DataverseSession session;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -154,12 +159,33 @@ public class DatasetPage implements java.io.Serializable {
             editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues());
             editVersion.setVersionNumber(new Long(1));
             datasetVersionUI = new DatasetVersionUI(editVersion);
+            //TODO add call to initDepositFields if it's decided that they are indeed metadata
+            //initDepositFields();
             dataset.getVersions().add(editVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }
     }
+    /*
+     private void initDepositFields(){
+     //Special Handling - fill depositor and deposit date if blank
+     //add initial values for Depositor and Desposit Date
+     for(DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()){
+     if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.depositor) && dsfv.isEmpty()) {
+     if (session.getUser() != null && session.getUser().getLastName() != null && session.getUser().getFirstName() != null  ){
+     dsfv.setStrValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+     }
+     }
+     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+     Date date = new Date();
+     if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsfv.isEmpty()) {
+     dsfv.setStrValue(dateFormat.format(date));
+     }
+            
+     }            
+     }
+     */
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
@@ -217,6 +243,15 @@ public class DatasetPage implements java.io.Serializable {
         datasetVersionUI = new DatasetVersionUI(editVersion);
     }
 
+    public String releaseDataset() {
+        dataset.setReleaseDate(new Timestamp(new Date().getTime()));
+        dataset.setReleaseUser(session.getUser());
+        dataset = datasetService.save(dataset);
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
+
     public String save() {
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
@@ -226,9 +261,31 @@ public class DatasetPage implements java.io.Serializable {
         //Todo pre populate deposit date
 
         //Trim spaces from any input values
+        //add any blank records to a "to Remove" list"
+        List<Integer> toRemoveIndex = new ArrayList();
+        int index = 0;
         for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
             if (dsfv.getStrValue() != null) {
                 dsfv.setStrValue(dsfv.getStrValue().trim());
+            }
+            //Single recs and child recs
+            if ((dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty()) && !dsfv.getDatasetField().isHasChildren()) {
+                toRemoveIndex.add(index);
+            }
+            //parent recs where all kids are empty.
+            if (dsfv.getDatasetField().isHasChildren() && dsfv.isChildEmpty()) {
+                toRemoveIndex.add(index);
+            }
+            index++;
+        }
+        //Actually do the remove here
+        // the adjustment takes into account the prior 
+        //blank fields which have been removed.
+        int adjustment = 0;
+        if (!toRemoveIndex.isEmpty()) {
+            for (Integer dsfvRI : toRemoveIndex) {
+                editVersion.getDatasetFieldValues().remove(dsfvRI.intValue() - adjustment);
+                adjustment++;
             }
         }
         // need to save multi select CVs
@@ -333,12 +390,12 @@ public class DatasetPage implements java.io.Serializable {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
                         }
                     }
-                    
+
                     /* 
                      * Check for the "add description" watermark - make sure it 
                      * doesn't get saved, if the user hasn't enter a description 
                      * of their own:
-                    */
+                     */
                     if ("add description".equals(dFile.getFileMetadata().getDescription())) {
                         dFile.getFileMetadata().setDescription("");
                     }
@@ -540,7 +597,7 @@ public class DatasetPage implements java.io.Serializable {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
                 tabDataIngest.getDataTable().setOriginalFileFormat(determineMimeType(dataFile));
-                
+
                 dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
                 dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
                 // A safety check, if through some sorcery the file exists already: 
@@ -565,26 +622,27 @@ public class DatasetPage implements java.io.Serializable {
         return ingestSuccessful;
     }
 
-    private String determineMimeType (DataFile dataFile) {
+    private String determineMimeType(DataFile dataFile) {
         /*
          * Another placeholder method - we'll be using a new version 
          * of the file type recognition utility instead. 
          * -- L.A. 4.0 alpha 1
          */
-        String fileName = dataFile.getName(); 
-        
+        String fileName = dataFile.getName();
+
         if (fileName == null) {
-            return null; 
+            return null;
         }
-        
+
         if (fileName.endsWith(".dta")) {
             return "application/x-stata";
         } else if (fileName.endsWith(".RData")) {
             return "application/x-rlang-transport";
         }
-        
+
         return null;
     }
+
     private void saveIngestedOriginal(DataFile dataFile, InputStream originalFileStream) throws IOException {
         String ingestedFileName = dataFile.getFileSystemName();
 
