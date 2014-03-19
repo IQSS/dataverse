@@ -162,7 +162,14 @@
                                 </ui:fragment>
                                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
                                     <p:column styleClass="col-xs-1" style="text-align:center;">
-                                        <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
+                                        
+                                        <ui:fragment rendered="#{!empty file.id and file.image}">
+                                            <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{file.id}?imageThumb=400&#34; alt=&#34;Preview&#34; /&gt;">
+                                                <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true"/>
+                                            </a>
+                                        </ui:fragment>
+                                        
+                                        
                                         <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!file.image}"/>
                                         
                                         <ui:fragment rendered="#{empty file.id and !empty file.fileSystemName and file.image}">
