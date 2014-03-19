@@ -54,6 +54,10 @@ public class DatasetFieldServiceBean {
         return dsf;
     }
     
+    public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
+        return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
+    }        
+    
     public List findAvailableFileMetadataFields() {
         List <FileMetadataField> fileMetadataFields = null; 
         fileMetadataFields = (List <FileMetadataField>) em.createQuery("SELECT fmf from FileMetadataField fmf ORDER by fmf.id").getResultList();
