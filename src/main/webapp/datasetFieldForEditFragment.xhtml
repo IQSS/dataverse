@@ -28,7 +28,7 @@
     <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
 
     <p:selectOneMenu  converter="controlledVocabularyValueConverter"  styleClass="form-control"
-                     rendered="#{fieldValues.datasetField.controlledVocabularyValues and !fieldValues.datasetField.allowMultiples }">
+                     rendered="#{fieldValues.datasetField.controlledVocabulary and !fieldValues.datasetField.allowMultiples }">
         <f:selectItems value="#{fieldValues.datasetField.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
 
     </p:selectOneMenu>
