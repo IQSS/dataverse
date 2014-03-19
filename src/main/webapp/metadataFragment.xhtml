@@ -103,7 +103,7 @@
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
-                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
                                                         </label>                  
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
@@ -158,11 +158,11 @@
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                         #{fieldMap.key.title}
                                                     </a>
-                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldMap.key.required}" /> 
                                                 </label>
-                                                <div class="col-sm-6">
-                                                    <h:selectManyListbox styleClass="form-control">
-                                                        <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}"/>
+                                                <div class="col-sm-6">fm:#{fieldMap.value.get(0).controlledVocabularyValues}
+                                                    <h:selectManyListbox value="#{fieldMap.value.get(0).controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control">
+                                                        <f:selectItems value="#{fieldMap.key.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                     </h:selectManyListbox>
                                                 </div>
                                             </div>
