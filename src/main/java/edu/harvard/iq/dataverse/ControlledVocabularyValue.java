@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -60,5 +61,29 @@ public class ControlledVocabularyValue implements Serializable  {
     public void setDatasetField(DatasetField datasetField) {
         this.datasetField = datasetField;
     }
+
+
+    public int hashCode() {
+        int hash = 0;
+        hash += (this.id != null ? this.id.hashCode() : 0);
+        return hash;
+    }
+
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof ControlledVocabularyValue)) {
+            return false;
+        }
+        ControlledVocabularyValue other = (ControlledVocabularyValue) object;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }    
+    
+    @Override
+    public String toString() {
+        return "edu.harvard.iq.dataverse.ControlledVocabularyValue[ id=" + id + " ]";
+    }     
     
 }
