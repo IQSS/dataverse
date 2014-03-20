@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -16,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Logger;
 import org.primefaces.model.DualListModel;
 
@@ -238,5 +240,14 @@ public class DataversePage implements java.io.Serializable {
     
     public void setFacets(DualListModel<DatasetField> facets) {
         this.facets = facets;
+    }
+    
+    public String releaseDataverse() {
+        dataverse.setReleaseDate(new Timestamp(new Date().getTime()));
+        dataverse.setReleaseUser(session.getUser());
+        dataverse = dataverseService.save(dataverse);
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
     }
 }
