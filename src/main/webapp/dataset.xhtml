@@ -65,23 +65,36 @@
                                                     <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <span class="glyphicon glyphicon-eye-open" style="margin-right:.3em;"/> Public  <span class="caret"></span>
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
                                                     </ui:fragment>
                                                 </button>
-                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;" disabled="#{DatasetPage.dataset.released}" >
-                                                    <li>
-                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
-                                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
-                                                            <span style="display:block;color:#777;font-size:small;">This dataset is Private. To make it public click 'Release dataset' link</span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
-                                                            <span class="glyphicon glyphicon-eye-open" style="margin-right:.3em;"/> Public
-                                                            <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Release Dataset" onclick="confirmation.show()"  /></span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                        <li>
+                                                            <a  style="pointer-events: none; color:red;">
+                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is Private. To make it public click 'Release dataset' link</span>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a style="pointer-events: none; color:green;">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Release Dataset" onclick="confirmation.show()"  /></span>
+                                                            </a>
+                                                        </li>                                                    
+                                                    </ul>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+
+                                                        <li>
+                                                            <a style="pointer-events: none; color:green;">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is public.  It may not be removed.</span>
+                                                            </a>
+                                                        </li>                                                    
+                                                    </ul>
+                                                </ui:fragment>
                                             </div>
                                         </div>
                                         <p:growl id="messages" showDetail="true" />  
