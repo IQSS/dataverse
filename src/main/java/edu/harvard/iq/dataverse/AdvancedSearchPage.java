@@ -25,8 +25,6 @@ public class AdvancedSearchPage {
 
     private Dataverse dataverse;
     private String query;
-    private String title;
-    private String author;
     private List<MetadataBlock> metadataBlocks;
     private Map<Long,List<DatasetField>> metadataFieldMap = new HashMap();
     private List<DatasetField> metadataFieldList;    
@@ -94,11 +92,11 @@ public class AdvancedSearchPage {
                 }
             }
         }
-        query = new String();
+
         for (String string : queryStrings) {
-            query += string + " ";
+            query += " " + string;
         }
-        return "/dataverse.xhtml?q=" + query + "faces-redirect=true";
+        return "/dataverse.xhtml?q=" + query.trim() + "faces-redirect=true";
     }
 
     public Dataverse getDataverse() {
@@ -118,21 +116,6 @@ public class AdvancedSearchPage {
 
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
 
     public List<MetadataBlock> getMetadataBlocks() {
         return metadataBlocks;
