@@ -23,6 +23,7 @@
                     <p:commandButton id="hiddensearchbutton" style="display: none" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
+                        <f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>
                     </h:outputLink>
                 </h:form>
             </ui:fragment>
