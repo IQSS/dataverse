@@ -163,7 +163,7 @@ public class IndexServiceBean {
                 String solrFieldFacetable = datasetField.getSolrField().getNameFacetable();
                 if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrFieldSearchable != null) {
                     logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
-                    if (solrFieldSearchable.endsWith("_i")) {
+                    if (datasetField.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
                         String dateAsString = datasetFieldValue.getStrValue();
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
