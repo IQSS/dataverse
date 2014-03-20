@@ -162,7 +162,7 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
     }
     
     @OneToMany(cascade = {CascadeType.MERGE})    
-    private List<ControlledVocabularyValue> controlledVocabularyValues;
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
         return controlledVocabularyValues;
@@ -171,4 +171,20 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
     public void setControlledVocabularyValues(List<ControlledVocabularyValue> controlledVocabularyValues) {
         this.controlledVocabularyValues = controlledVocabularyValues;
     }    
+    
+    public ControlledVocabularyValue getSingleControlledVocabularyValue() {
+        if (!controlledVocabularyValues.isEmpty()) {
+            return controlledVocabularyValues.get(0);
+        } else {
+            return null;
+        }    
+    }
+    
+    public void setSingleControlledVocabularyValue(ControlledVocabularyValue cvv) {
+         if (!controlledVocabularyValues.isEmpty()) {
+            controlledVocabularyValues.set(0, cvv);
+        } else {
+            controlledVocabularyValues.add(cvv);
+        }       
+    }
 }
