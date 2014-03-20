@@ -122,6 +122,14 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
         this.strValue = strValue;
         
     }    
+    
+    public String getValue() {
+        if (controlledVocabularyValues.isEmpty()) {
+            return strValue;
+        } else {
+            return controlledVocabularyValues.get(0).getStrValue();
+        }
+    }
 
     @Override
     public int hashCode() {
