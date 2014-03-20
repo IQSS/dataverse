@@ -436,7 +436,8 @@
         or to add multiple fields to the same field for easier/faster searching.  -->
 
    <!-- <copyField source="cat" dest="text"/> -->
-   <!-- <copyField source="name" dest="text"/> -->
+   <!-- Dataverse 4.0: we want the "name" field in the "catchall"  -->
+   <copyField source="name" dest="text"/>
    <!-- <copyField source="manu" dest="text"/> -->
    <!-- <copyField source="features" dest="text"/> -->
    <!-- <copyField source="includes" dest="text"/> -->
