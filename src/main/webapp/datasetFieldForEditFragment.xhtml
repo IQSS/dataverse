@@ -27,7 +27,7 @@
                      rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
     <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
 
-    <p:selectOneMenu  converter="controlledVocabularyValueConverter"  styleClass="form-control"
+    <p:selectOneMenu  value="#{fieldValues.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
                      rendered="#{fieldValues.datasetField.controlledVocabulary and !fieldValues.datasetField.allowMultiples }">
         <f:selectItems value="#{fieldValues.datasetField.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
 
