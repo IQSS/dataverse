@@ -39,7 +39,7 @@ public class DatasetFieldServiceApi {
             List<String> listOfIsHasParentsFalse = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesTrue = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesFalse = new ArrayList<>();
-            for (DatasetField dsf : datasetFieldService.findAllAll()) {
+            for (DatasetField dsf : datasetFieldService.findAllOrderedById()) {
                 if (dsf.isHasParent()) {
                     listOfIsHasParentsTrue.add(dsf.getName());
                     listOfIsAllowsMultiplesTrue.add(dsf.getName());
