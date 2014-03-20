@@ -144,28 +144,51 @@
                                 </div>
                             </ui:fragment>
                             <!-- Release Button -->
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode}">
                                 <div style="float:right; margin-left:1em;">
                                     <div class="btn-group">
-                                        <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> {Release} <!-- Dynamic Release State --> <span class="caret"></span>
+                                        <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
+                                            <ui:fragment rendered="#{!DataversePage.dataverse.released}">
+                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DataversePage.dataverse.released}">
+                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
+                                            </ui:fragment>
                                         </button>
-                                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                            <li>
-                                                <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
-                                                    <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
-                                                    <span style="display:block;color:#777;font-size:small;">Some message about what it means for your dataverse to be Private.</span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
-                                                    <span class="glyphicon glyphicon-eye-open" style="margin-right:.3em;"/> Public
-                                                    <span style="display:block;color:#777;font-size:small;">Some message about what it means for your dataverse to be Public.</span>
-                                                </a>
-                                            </li>
-                                        </ul>
+                                        <ui:fragment rendered="#{!DataversePage.dataverse.released}">
+                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                <li>
+                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
+                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
+                                                        <span style="display:block;color:#777;font-size:small;">This dataverse is Private. To make it public click 'Release dataverse' link</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                        <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Release Dataverse" onclick="confirmation.show()"  /></span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{DataversePage.dataverse.released}">
+                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                <li>
+                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                        <span style="display:block;color:#777;font-size:small;">This dataverse is Public. You can't change a public dataverse into a private one.</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </ui:fragment>
                                     </div>
                                 </div>
+                                <p:growl id="messages" showDetail="true" />  
+                                    <p:confirmDialog message="Are you sure you want to make your dataverse 'Public'? Once you do so it must remain 'Public'."  header="Release Dataverse"  widgetVar="confirmation">  
+                                            <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DataversePage.releaseDataverse}" >
+                                            </p:commandButton>  
+                                            <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
+                                    </p:confirmDialog>
                             </ui:fragment>
                         </div>
 
