@@ -40,6 +40,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -141,6 +143,7 @@ public class IngestServiceBean {
 
                 dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
                 dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.csv", ".tab"));
                 // A safety check, if through some sorcery the file exists already: 
                 while (Files.exists(dataFile.getFileSystemLocation())) {
                     datasetService.generateFileSystemName(dataFile);
@@ -185,6 +188,8 @@ public class IngestServiceBean {
             return "application/x-stata";
         } else if (fileName.endsWith(".RData")) {
             return "application/x-rlang-transport";
+        } else if (fileName.endsWith(".csv")) {
+            return "text/csv";
         }
 
         return null;
@@ -213,6 +218,8 @@ public class IngestServiceBean {
         if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
             return true;
         } else if (dataFile.getName() != null && dataFile.getName().endsWith(".RData")) {
+            return true;
+        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".csv")) {
             return true;
         }
 
@@ -392,6 +399,8 @@ public class IngestServiceBean {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         } else if (fileName.endsWith(".RData")) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
+        } else if (fileName.endsWith(".csv")) {
+            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
         }
 
         return ingestPlugin;
