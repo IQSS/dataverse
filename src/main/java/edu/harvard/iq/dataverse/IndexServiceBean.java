@@ -151,20 +151,15 @@ public class IndexServiceBean {
 
         if (dataset.getEditVersion() != null) {
             for (DatasetFieldValue datasetFieldValue : dataset.getEditVersion().getDatasetFieldValues()) {
+
                 DatasetField datasetField = datasetFieldValue.getDatasetField();
-                String title = datasetField.getTitle();
-                String name = datasetField.getName();
-                Long id = datasetField.getId();
-                String idDashTitle = id + "-" + title;
-                String idDashName = id + "-" + name;
-//                logger.info(idDashTitle);
-//                logger.info(name + ": " + datasetFieldValue.getStrValue());
                 String solrFieldSearchable = datasetField.getSolrField().getNameSearchable();
                 String solrFieldFacetable = datasetField.getSolrField().getNameFacetable();
-                if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrFieldSearchable != null) {
-                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+
+                if (datasetFieldValue.getValue() != null && !datasetFieldValue.getValue().isEmpty() && solrFieldSearchable != null) {
+                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     if (datasetField.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
-                        String dateAsString = datasetFieldValue.getStrValue();
+                        String dateAsString = datasetFieldValue.getValue();
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -200,14 +195,23 @@ public class IndexServiceBean {
                              * multiple value lives in the getSolrField() method
                              * of DatasetField.java
                              */
-                            solrInputDocument.addField(SearchFields.AFFILIATION, datasetFieldValue.getStrValue());
+                            solrInputDocument.addField(SearchFields.AFFILIATION, datasetFieldValue.getValue());
                         } else if (datasetFieldValue.getDatasetField().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
-                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getStrValue());
+                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getValue());
                         }
-                        solrInputDocument.addField(solrFieldSearchable, datasetFieldValue.getStrValue());
-                        if (datasetField.getSolrField().isFacetable()) {
-                            solrInputDocument.addField(solrFieldFacetable, datasetFieldValue.getStrValue());
+                        if (datasetField.isControlledVocabulary()) {
+                            for (ControlledVocabularyValue controlledVocabularyValue : datasetFieldValue.getControlledVocabularyValues()) {
+                                solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                if (datasetField.getSolrField().isFacetable()) {
+                                    solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                }
+                            }
+                        } else {
+                            solrInputDocument.addField(solrFieldSearchable, datasetFieldValue.getValue());
+                            if (datasetField.getSolrField().isFacetable()) {
+                                solrInputDocument.addField(solrFieldFacetable, datasetFieldValue.getValue());
+                            }
                         }
                     }
                 }
