@@ -16,10 +16,14 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileR
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
+import edu.harvard.iq.dataverse.util.SumStatCalculator;
+import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
@@ -35,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -84,8 +89,13 @@ public class DatasetPage implements java.io.Serializable {
     DatasetFieldServiceBean fieldService;
     @EJB
     DatasetFieldValueServiceBean fieldValueService;
+    @EJB
+    VariableServiceBean variableService; 
+    @EJB
+    IngestServiceBean ingestService; 
     @Inject
     DataverseSession session;
+    
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -96,8 +106,6 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private List<DatasetFieldValue> deleteRecords = new ArrayList();
 
-    // TODO: this constant should be provided by the Ingest Service Provder Registry;
-    private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
 
     public Dataset getDataset() {
         return dataset;
@@ -346,25 +354,26 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (UploadedFile uFile : newFiles.keySet()) {
                     DataFile dFile = newFiles.get(uFile);
+                    String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
 
                     boolean ingestedAsTabular = false;
                     boolean metadataExtracted = false;
 
                     datasetService.generateFileSystemName(dFile);
 
-                    if (ingestableAsTabular(dFile)) {
+                    if (ingestService.ingestableAsTabular(dFile)) {
 
                         try {
-                            ingestedAsTabular = ingestAsTabular(uFile, dFile);
+                            ingestedAsTabular = ingestService.ingestAsTabular(tempFileLocation, dFile);
                             dFile.setContentType("text/tab-separated-values");
                         } catch (IOException iex) {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
                             ingestedAsTabular = false;
                         }
-                    } else if (fileMetadataExtractable(dFile)) {
+                    } else if (ingestService.fileMetadataExtractable(dFile)) {
 
                         try {
-                            metadataExtracted = extractIndexableMetadata(uFile, dFile);
+                            metadataExtracted = ingestService.extractIndexableMetadata(tempFileLocation, dFile);
                             dFile.setContentType("application/fits");
                         } catch (IOException mex) {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + dFile.getName(), mex);
@@ -396,15 +405,10 @@ public class DatasetPage implements java.io.Serializable {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
                         }
                     }
-
-                    /* 
-                     * Check for the "add description" watermark - make sure it 
-                     * doesn't get saved, if the user hasn't enter a description 
-                     * of their own:
-                     */
-                    if ("add description".equals(dFile.getFileMetadata().getDescription())) {
-                        dFile.getFileMetadata().setDescription("");
-                    }
+                    
+                    // Any necessary post-processing: 
+                    
+                    ingestService.performPostProcessingTasks(dFile);
                 }
             }
         }
@@ -524,264 +528,4 @@ public class DatasetPage implements java.io.Serializable {
         return datasetVersionUI;
     }
 
-    private boolean ingestableAsTabular(DataFile dataFile) {
-        /* 
-         * Eventually we'll be using some complex technology of identifying 
-         * potentially ingestable file formats here, similar to what we had in 
-         * v.3.*; for now - just a hardcoded list of filename extensions:
-         *  -- L.A. 4.0alpha1
-         */
-        if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
-            return true;
-        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".RData")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private TabularDataFileReader getTabDataReaderByFileNameExtension(String fileName) {
-        /* 
-         * Temporary local implementation; 
-         * eventually, the Ingest Service Provider Registry will be providing
-         * the ingest plugin lookup functionality. -- L.A. 4.0 alpha 1.
-         */
-
-        if (fileName == null) {
-            return null;
-        }
-
-        TabularDataFileReader ingestPlugin = null;
-
-        if (fileName.endsWith(".dta")) {
-            ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        } else if (fileName.endsWith(".RData")) {
-            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
-        }
-
-        return ingestPlugin;
-    }
-
-    private boolean fileMetadataExtractable(DataFile dataFile) {
-        /* 
-         * Eventually we'll be consulting the Ingest Service Provider Registry
-         * to see if there is a plugin for this type of file;
-         * for now - just a hardcoded list of filename extensions:
-         *  -- L.A. 4.0alpha1
-         */
-        if (dataFile.getName() != null && dataFile.getName().endsWith(".fits")) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean ingestAsTabular(UploadedFile uFile, DataFile dataFile) throws IOException {
-        boolean ingestSuccessful = false;
-
-        // Locate ingest plugin for the file format by looking
-        // it up with the Ingest Service Provider Registry:
-        //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
-        //TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        TabularDataFileReader ingestPlugin = getTabDataReaderByFileNameExtension(dataFile.getName());
-
-        if (ingestPlugin == null) {
-            throw new IOException("Could not find ingest plugin for the file " + dataFile.getName());
-        }
-
-        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(uFile.getInputstream()), null);
-
-        if (tabDataIngest != null) {
-            File tabFile = tabDataIngest.getTabDelimitedFile();
-
-            if (tabDataIngest.getDataTable() != null
-                    && tabFile != null
-                    && tabFile.exists()) {
-
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
-                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
-
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
-
-                tabDataIngest.getDataTable().setOriginalFileFormat(determineMimeType(dataFile));
-
-                dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
-                // A safety check, if through some sorcery the file exists already: 
-                while (Files.exists(dataFile.getFileSystemLocation())) {
-                    datasetService.generateFileSystemName(dataFile);
-                }
-                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-
-                // And we want to save the original of the ingested file: 
-                try {
-                    saveIngestedOriginal(dataFile, uFile.getInputstream());
-                } catch (IOException iox) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
-                }
-
-                dataFile.setDataTable(tabDataIngest.getDataTable());
-                tabDataIngest.getDataTable().setDataFile(dataFile);
-
-                ingestSuccessful = true;
-            }
-        }
-        return ingestSuccessful;
-    }
-
-    private String determineMimeType(DataFile dataFile) {
-        /*
-         * Another placeholder method - we'll be using a new version 
-         * of the file type recognition utility instead. 
-         * -- L.A. 4.0 alpha 1
-         */
-        String fileName = dataFile.getName();
-
-        if (fileName == null) {
-            return null;
-        }
-
-        if (fileName.endsWith(".dta")) {
-            return "application/x-stata";
-        } else if (fileName.endsWith(".RData")) {
-            return "application/x-rlang-transport";
-        }
-
-        return null;
-    }
-
-    private void saveIngestedOriginal(DataFile dataFile, InputStream originalFileStream) throws IOException {
-        String ingestedFileName = dataFile.getFileSystemName();
-
-        if (ingestedFileName != null && !ingestedFileName.equals("")) {
-            Path savedOriginalPath = Paths.get(dataFile.getOwner().getFileSystemDirectory().toString(), "_" + ingestedFileName);
-            Files.copy(originalFileStream, savedOriginalPath);
-        } else {
-            throw new IOException("Ingested tabular data file: no filesystem name.");
-        }
-    }
-
-    private boolean extractIndexableMetadata(UploadedFile uFile, DataFile dataFile) throws IOException {
-        boolean ingestSuccessful = false;
-
-        // Locate metadata extraction plugin for the file format by looking
-        // it up with the Ingest Service Provider Registry:
-        //FileMetadataExtractor extractorPlugin = IngestSP.getMetadataExtractorByMIMEType(dfile.getContentType());
-        FileMetadataExtractor extractorPlugin = new FITSFileMetadataExtractor();
-
-        Map<String, Set<String>> extractedMetadata = extractorPlugin.ingest(new BufferedInputStream(uFile.getInputstream()));
-
-        // Store the fields and values we've gathered for safe-keeping:
-        // from 3.6:
-        // attempt to ingest the extracted metadata into the database; 
-        // TODO: this should throw an exception if anything goes wrong.
-        FileMetadata fileMetadata = dataFile.getFileMetadata();
-
-        if (extractedMetadata != null) {
-            //ingestFileLevelMetadata(fileLevelMetadata, file.getFileMetadata(), fileIngester.getFormatName());
-            ingestFileLevelMetadata(extractedMetadata, dataFile, fileMetadata, extractorPlugin.getFormatName());
-
-        }
-
-        ingestSuccessful = true;
-
-        return ingestSuccessful;
-    }
-
-    private void ingestFileLevelMetadata(Map<String, Set<String>> fileLevelMetadata, DataFile dataFile, FileMetadata fileMetadata, String fileFormatName) {
-        // First, add the "metadata summary" generated by the file reader/ingester
-        // to the fileMetadata object, as the "description":
-
-        Set<String> metadataSummarySet = fileLevelMetadata.get(METADATA_SUMMARY);
-        if (metadataSummarySet != null && metadataSummarySet.size() > 0) {
-            String metadataSummary = "";
-            for (String s : metadataSummarySet) {
-                metadataSummary = metadataSummary.concat(s);
-            }
-            if (!metadataSummary.equals("")) {
-                // The AddFiles page allows a user to enter file description 
-                // on ingest. We don't want to overwrite whatever they may 
-                // have entered. Rather, we'll append our metadata summary 
-                // to the existing value. 
-                String userEnteredFileDescription = fileMetadata.getDescription();
-                if (userEnteredFileDescription != null
-                        && !(userEnteredFileDescription.equals(""))) {
-
-                    metadataSummary
-                            = userEnteredFileDescription.concat("\n" + metadataSummary);
-                }
-                fileMetadata.setDescription(metadataSummary);
-            }
-
-            fileLevelMetadata.remove(METADATA_SUMMARY);
-        }
-
-        // And now we can go through the remaining key/value pairs in the 
-        // metadata maps and process the metadata elements found in the 
-        // file: 
-        for (String mKey : fileLevelMetadata.keySet()) {
-
-            Set<String> mValues = fileLevelMetadata.get(mKey);
-
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Looking up file meta field " + mKey + ", file format " + fileFormatName);
-            FileMetadataField fileMetaField = fieldService.findFileMetadataFieldByNameAndFormat(mKey, fileFormatName);
-
-            if (fileMetaField == null) {
-                //fileMetaField = studyFieldService.createFileMetadataField(mKey, fileFormatName); 
-                fileMetaField = new FileMetadataField();
-
-                if (fileMetaField == null) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to create a new File Metadata Field; skipping.");
-                    continue;
-                }
-
-                fileMetaField.setName(mKey);
-                fileMetaField.setFileFormatName(fileFormatName);
-                // TODO: provide meaningful descriptions and labels:
-                fileMetaField.setDescription(mKey);
-                fileMetaField.setTitle(mKey);
-
-                try {
-                    fieldService.saveFileMetadataField(fileMetaField);
-                } catch (Exception ex) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save new file metadata field (" + mKey + "); skipping values.");
-                    continue;
-                }
-
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Created file meta field " + mKey);
-            }
-
-            String fieldValueText = null;
-
-            if (mValues != null) {
-                for (String mValue : mValues) {
-                    if (mValue != null) {
-                        if (fieldValueText == null) {
-                            fieldValueText = mValue;
-                        } else {
-                            fieldValueText = fieldValueText.concat(" ".concat(mValue));
-                        }
-                    }
-                }
-            }
-
-            FileMetadataFieldValue fileMetaFieldValue = null;
-
-            if (!"".equals(fieldValueText)) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Attempting to create a file meta value for study file " + dataFile.getId() + ", value " + fieldValueText);
-                if (dataFile != null) {
-                    fileMetaFieldValue
-                            = new FileMetadataFieldValue(fileMetaField, dataFile, fieldValueText);
-                }
-            }
-            if (fileMetaFieldValue == null) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to create a new File Metadata Field value; skipping");
-                continue;
-            } else {
-                if (dataFile.getFileMetadataFieldValues() == null) {
-                    dataFile.setFileMetadataFieldValues(new ArrayList<FileMetadataFieldValue>());
-                }
-                dataFile.getFileMetadataFieldValues().add(fileMetaFieldValue);
-            }
-        }
-    }
 }

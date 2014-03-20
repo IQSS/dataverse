@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse.datavariable;
 
 import java.util.List;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -24,6 +25,7 @@ import javax.persistence.Query;
 @Stateless
 @Named
 public class VariableServiceBean {
+    public static final String[] summaryStatisticTypes = {"mean", "medn", "mode", "vald", "invd", "min", "max", "stdev"};
     
     private static final Logger logger = Logger.getLogger(VariableServiceBean.class.getCanonicalName());
     
@@ -82,5 +84,36 @@ public class VariableServiceBean {
         return type;
     }
     
+    public SummaryStatisticType findSummaryStatisticTypeByName(String name) {
+        String query = "SELECT t from SummaryStatisticType t where t.name = '" + name + "'";
+        SummaryStatisticType type = null;
+        try {
+            type = (SummaryStatisticType) em.createQuery(query).getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return type;
+    }
+
+    public List<SummaryStatisticType> findAllSummaryStatisticType() {
+        String query = "SELECT t from SummaryStatisticType t ";
+        return em.createQuery(query).getResultList();
+
+    }
+
+    /**
+     * Find type from prefetched, cached list
+     */
+    public SummaryStatisticType findSummaryStatisticTypeByName(List<SummaryStatisticType> typeList, String name) {
+        SummaryStatisticType type = null;
+        for (Iterator<SummaryStatisticType> it = typeList.iterator(); it.hasNext();) {
+            SummaryStatisticType elem = it.next();
+            if (elem.getName().equals(name)) {
+                type = elem;
+                break;
+            }
+        }
+        return type;
+    }
     
 }

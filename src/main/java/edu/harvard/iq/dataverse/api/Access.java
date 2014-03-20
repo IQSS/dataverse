@@ -66,7 +66,7 @@ import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
 
 @Path("access")
 public class Access {
-    private static final Logger logger = Logger.getLogger(Meta.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(Access.class.getCanonicalName());
     
     private static final String DEFAULT_FILE_ICON = "icon_file.png";
     private static final String DEFAULT_DATASET_ICON = "icon_dataset.png";
