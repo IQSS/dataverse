@@ -18,7 +18,7 @@
                             <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
                                 <!-- Single value no child -->
                                 <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.hasChildren and !fieldMap.key.hasParent and !fieldMap.key.allowMultiples}">
-                                    <ui:fragment rendered="#{!empty fieldValues.strValue}">
+                                    <ui:fragment rendered="#{!empty fieldValues.value}">
                                         <div class="form-group">
                                             <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
@@ -26,7 +26,7 @@
                                                 </a>
                                             </label>                  
                                             <div class="col-sm-9">
-                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
+                                                <h:outputText value="#{fieldValues.value}" />                                                                   
                                             </div>                                        
                                         </div>
                                     </ui:fragment>  
@@ -40,9 +40,12 @@
                                             </a>
                                         </label>  
                                         <div class="col-sm-7">
-                                            <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="loop">
+                                            <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="loop" rendered="#{!fieldMap.key.controlledVocabulary}">
                                                 <h:outputText value="#{loop.first?'':'; '}#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}" />
                                             </ui:repeat> 
+                                            <ui:repeat value="#{fieldMap.value.get(0).controlledVocabularyValues}" var="fieldValues" varStatus="loop" rendered="#{fieldMap.key.controlledVocabulary}">
+                                                <h:outputText value="#{loop.first?'':'; '}#{fieldValues.strValue}"/>
+                                            </ui:repeat>                                            
                                         </div> 
                                     </div>
                                 </ui:fragment>
@@ -65,7 +68,7 @@
                                                             <label class="control-label" for="metadata_BLANK">
                                                                 <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                             </label>
-                                                            <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                            <div><h:outputText value="#{childVal.value}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                         </div>
                                                     </ui:fragment>
                                                 </ui:repeat>                                                                                                                                  
