@@ -340,6 +340,34 @@
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                             </h:outputLink>
                                         </li>
+                                        <li>
+                                            <h:outputLink>
+                                                <h:outputText value="Release Date (Newest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateDesc? 'bold' : 'normal'}"/>
+                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                </c:forEach>
+                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
+                                            </h:outputLink>
+                                        </li>
+                                        <li>
+                                            <h:outputLink>
+                                                <h:outputText value="Release Date (Oldest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateAsc? 'bold' : 'normal'}"/>
+                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                </c:forEach>
+                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                            </h:outputLink>
+                                        </li>
                                         <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                             <li>
                                                 <h:outputLink>
