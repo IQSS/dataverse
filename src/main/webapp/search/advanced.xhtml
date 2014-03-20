@@ -20,8 +20,6 @@
                 <f:metadata>
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
                     <f:viewParam name="q" value="#{AdvancedSearchPage.query}"/>
-                    <f:viewParam name="title" value="#{AdvancedSearchPage.title}"/>
-                    <f:viewParam name="author" value="#{AdvancedSearchPage.author}"/>
                 </f:metadata>
 
                 <!-- Search Panel -->
@@ -31,7 +29,7 @@
 
                         <div style="margin-bottom:1em;">
                             <h:outputLabel value="Basic Search"/>
-                            <p:inputText size="40" disabled="true" style="margin-left:1em;"/>
+                            <p:inputText value="#{AdvancedSearchPage.query}" size="40" style="margin-left:1em;"/>
                             <!--                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>-->
                         </div>
 
