@@ -61,6 +61,7 @@ public class SearchIncludeFragment {
     private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
+    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE;
     final private String ASCENDING = "asc";
     final private String DESCENDING = "desc";
     private String typeFilterQuery;
@@ -655,6 +656,10 @@ public class SearchIncludeFragment {
         this.searchFieldNameSort = searchFieldNameSort;
     }
 
+    public String getSearchFieldReleaseDate() {
+        return searchFieldReleaseDate;
+    }
+
     public String getASCENDING() {
         return ASCENDING;
     }
@@ -706,6 +711,14 @@ public class SearchIncludeFragment {
 
     public boolean isSortedByNameDesc() {
         return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING) ? true : false;
+    }
+
+    public boolean isSortedByReleaseDateAsc() {
+        return getCurrentSort().equals(searchFieldReleaseDate + ":" + ASCENDING) ? true : false;
+    }
+
+    public boolean isSortedByReleaseDateDesc() {
+        return getCurrentSort().equals(searchFieldReleaseDate + ":" + DESCENDING) ? true : false;
     }
 
     public boolean isSortedByRelevance() {

@@ -262,6 +262,9 @@
    <!-- http://stackoverflow.com/questions/13360706/solr-4-0-alphabetical-sorting-trouble/13361226#13361226 -->
    <field name="name_sort" type="alphaOnlySort" indexed="true" stored="true"/>
 
+   <!-- Added for Dataverse 4.0: release date https://redmine.hmdc.harvard.edu/issues/3592 -->
+   <field name="releasedate" type="int" indexed="true" stored="true"/>
+
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="accessToSources" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_general" multiValued="false" stored="true" indexed="true"/>

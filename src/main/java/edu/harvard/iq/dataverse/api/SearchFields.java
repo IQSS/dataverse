@@ -58,6 +58,7 @@ public class SearchFields {
     // a dvtype can be a dataverse, a dataset, or a file
     public static final String TYPE = "dvtype";
     public static final String NAME_SORT = "name_sort";
+    public static final String RELEASE_DATE = "releasedate";
     // Used for performance. Why hit the db if solr has the data?
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
