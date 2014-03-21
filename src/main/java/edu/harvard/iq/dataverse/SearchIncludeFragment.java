@@ -184,7 +184,7 @@ public class SearchIncludeFragment {
                 sortField = searchFieldRelevance;
             }
             if (sortOrder == null) {
-                sortOrder = ASCENDING;
+                sortOrder = DESCENDING;
             }
         }
 
@@ -722,7 +722,7 @@ public class SearchIncludeFragment {
     }
 
     public boolean isSortedByRelevance() {
-        return getCurrentSort().equals(searchFieldRelevance + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING) ? true : false;
     }
 
     public int getPage() {
