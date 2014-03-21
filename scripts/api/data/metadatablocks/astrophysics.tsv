@@ -27,7 +27,7 @@
 	coverage.Redshift.MaximumValue	coverage.Redshift.MaximumValue	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	redshiftType	RedshiftType	RedshiftType string C "Redshift"; or "Optical" or "Radio" definitions of Doppler velocity used in the data object.		text	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	ucd	UCD (Unified Content Descriptors)	A list of the UCDs (Unified Content Descriptors represented in the data object		text	25	FALSE	TRUE	TRUE	FALSE	FALSE	FALSE		astrophysics
-#controlledVocabulyValue	DatasetField	Value	displayOrder											
+#controlledVocabulary	DatasetField	Value	displayOrder											
 	type	Image	0											
 	type	Mosaic	1											
 	type	EventList	2											
