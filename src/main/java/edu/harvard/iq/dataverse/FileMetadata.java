@@ -23,7 +23,7 @@ import javax.persistence.Version;
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
-
+	
     private String label = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";

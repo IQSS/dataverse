@@ -427,7 +427,7 @@ public class DatasetVersion implements Serializable {
         //retList - Return List of values
         List<DatasetFieldValue> retList = new ArrayList();
         //if the datasetversion already has values add them here
-        if (this.getDatasetFieldValues()!= null){
+        if (this.getDatasetFieldValues()!= null) {
            retList.addAll(this.getDatasetFieldValues());
         }
                

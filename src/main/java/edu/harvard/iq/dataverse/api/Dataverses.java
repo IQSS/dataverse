@@ -224,7 +224,7 @@ public class Dataverses extends AbstractApiBean {
 			return ok(json(roleAssignment));
 			
 		} catch (CommandException ex) {
-			logger.log(Level.WARNING, "Can't create assignment: " + ex.getMessage() );
+			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
 			return error(ex.getMessage());
 		}
 	}
@@ -250,7 +250,7 @@ public class Dataverses extends AbstractApiBean {
 		}
 	}
 	
-	
+	// CONTPOINT add a POST method for datasets here, and a POST method for dataset versions in the dataset part.
 	
 	
 	@GET

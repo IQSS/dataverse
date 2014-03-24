@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -118,7 +119,14 @@ public class Datasets extends AbstractApiBean {
 				? error("dataset version not found")
 				: ok( json(dsv)  );
     }
-
+	
+	@POST
+	@Path("{id}/versions")
+	public String addVersion( @PathParam("id") Long id, @QueryParam("key") String apikey, DatasetDTO dsDto ){
+		// CONTPOINT accept the dsDto and push it to the DB.
+		return null;
+	}
+	
     // used to primarily to feed data into elasticsearch
     @GET
 	@Deprecated

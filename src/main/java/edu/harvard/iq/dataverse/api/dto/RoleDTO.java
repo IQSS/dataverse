@@ -1,7 +1,3 @@
-/*
- *  (C) Michael Bar-Sinai
- */
-
 package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.DataverseRole;

@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
 import java.util.Set;
@@ -134,7 +136,41 @@ public class JsonPrinter {
 			bld.add("authors", ab);
 		}
 		
+		List<FileMetadata> fileMds = dsv.getFileMetadatas();
+		if ( ! fileMds.isEmpty() ) {
+			JsonArrayBuilder arr = Json.createArrayBuilder();
+			for (FileMetadata fmd : fileMds) {
+				arr.add( json(fmd) );
+			}
+			bld.add( "fileMetadata", arr );
+		}
+		
 		return bld;
+	}
+	
+	public static JsonObjectBuilder json( FileMetadata fmd ) {
+		return jsonObjectBuilder()
+				.add("category", fmd.getCategory())
+				.add("description", fmd.getDescription())
+				.add("label", fmd.getLabel())
+				.add("version", fmd.getVersion())
+				.add("datasetVersionId", fmd.getDatasetVersion().getId())
+				.add("datafile", json(fmd.getDataFile()))
+				;
+	}
+	
+	public static JsonObjectBuilder json( DataFile df ) {
+		return jsonObjectBuilder()
+				.add("id", df.getId() )
+				.add("name", df.getName())
+				.add("contentType", df.getContentType())
+				.add("filename", df.getFilename())
+				.add("originalFileFormat", df.getOriginalFileFormat())
+				.add("originalFormatLabel", df.getOriginalFormatLabel())
+				.add("UNF", df.getUnf())
+				.add("md5", df.getmd5())
+				.add("description", df.getDescription())
+				;
 	}
 	
 	public static JsonObjectBuilder json( DatasetAuthor da ) {
