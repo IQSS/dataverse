@@ -31,6 +31,11 @@ public abstract class DvObject implements java.io.Serializable {
 
     @ManyToOne
     private DataverseUser releaseUser;
+    
+    private Timestamp createDate;
+
+    @ManyToOne
+    private DataverseUser creator;
 
     public interface Visitor {
         public void visit(Dataverse dv);
@@ -81,6 +86,22 @@ public abstract class DvObject implements java.io.Serializable {
         return releaseDate != null;
     }
 
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public DataverseUser getCreator() {
+        return creator;
+    }
+
+    public void setCreator(DataverseUser creator) {
+        this.creator = creator;
+    }
+    
     public abstract void accept(Visitor v);
 
     @Override

@@ -475,6 +475,11 @@
 
                                 <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
 
+                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                </ui:fragment>
+
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Dataset: #{result.parent.get('name')}"/>
                                 </h:outputLink>
