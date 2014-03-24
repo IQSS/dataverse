@@ -4,9 +4,11 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import javax.persistence.EntityManager;
 
 /**
  * An interface for accessing Dataverse's resources, user info etc. Used by the
@@ -16,9 +18,8 @@ import edu.harvard.iq.dataverse.SearchServiceBean;
  */
 public interface CommandContext {
 	
-	/**
-	 * @return the service bean for datasets.
-	 */
+	public DvObjectServiceBean dvObjects();
+	
 	public DatasetServiceBean datasets();
 	
 	public DataverseServiceBean dataverses();
@@ -32,4 +33,6 @@ public interface CommandContext {
 	public SearchServiceBean search();
 	
 	public PermissionServiceBean permissions();
+	
+	public EntityManager em();
 }

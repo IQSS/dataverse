@@ -54,7 +54,8 @@ public abstract class AbstractApiBean {
 	}
 	
 	protected boolean isNumeric( String str ) { return Util.isNumeric(str); };
-	protected String error( String s ) { return Util.error(s); }
+	protected String error( String msg ) { return Util.error(msg); }
+	protected String ok( String msg ) { return Util.ok(msg); }
 	protected String ok( JsonObject jo ) { return Util.ok(jo); }
 	protected String ok( JsonArray jo ) { return Util.ok(jo); }
 	protected String ok( JsonObjectBuilder jo ) { return ok(jo.build()); }

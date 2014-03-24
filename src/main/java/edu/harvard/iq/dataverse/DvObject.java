@@ -13,7 +13,9 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findAll",
             query = "SELECT o FROM DvObject o ORDER BY o.id"),
     @NamedQuery(name = "DvObject.findById",
-            query = "SELECT o FROM DvObject o WHERE o.id=:id")
+            query = "SELECT o FROM DvObject o WHERE o.id=:id"),
+	@NamedQuery(name = "DvObject.ownedObjectsById",
+			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
 @Entity
 public abstract class DvObject implements java.io.Serializable {
@@ -31,12 +33,9 @@ public abstract class DvObject implements java.io.Serializable {
     private DataverseUser releaseUser;
 
     public interface Visitor {
-
         public void visit(Dataverse dv);
-
-        public void visit(Dataset ds);
-
-        public void visit(DataFile df);
+        public void visit(Dataset   ds);
+        public void visit(DataFile  df);
     }
 
     /**

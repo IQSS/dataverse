@@ -13,6 +13,8 @@ import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.util.EnumSet;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -47,8 +49,13 @@ public class EjbDataverseEngine {
 	@EJB
 	PermissionServiceBean permissionService;
 	
-	private CommandContext ctxt;
+	@EJB
+	DvObjectServiceBean dvObjectService;
+
+	@PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;
 	
+	private CommandContext ctxt;
 	
 	public <R> R submit(Command<R> aCommand) throws CommandException {
 		
@@ -109,6 +116,11 @@ public class EjbDataverseEngine {
 
 				@Override
 				public PermissionServiceBean permissions() { return permissionService; }
+				
+				@Override
+				public DvObjectServiceBean dvObjects() { return dvObjectService; }
+				
+				@Override public EntityManager em() { return em; }
 			};
 		}
 		

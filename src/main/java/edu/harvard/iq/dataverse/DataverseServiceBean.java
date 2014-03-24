@@ -15,6 +15,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -60,11 +61,20 @@ public class DataverseServiceBean {
     }
 
     public Dataverse findByAlias(String anAlias) {
-        return em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
-                .setParameter("alias", anAlias)
-                .getSingleResult();
+        return (anAlias.equals(":root"))
+				? findRootDataverse()
+				: em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
+					.setParameter("alias", anAlias)
+					.getSingleResult();
     }
-
+	
+	public boolean hasData( Dataverse dv ) {
+		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
+								.setParameter("id", dv.getId());
+		
+		return (amountQry.getSingleResult()>0);
+	}
+	
     public boolean isRootDataverseExists() {
         long count = em.createQuery("SELECT count(dv) FROM Dataverse dv WHERE dv.owner.id=null", Long.class).getSingleResult();
         return (count == 1);

@@ -53,6 +53,14 @@ public class Util {
 		return jsonObject2prettyString(response.build());
 	}
 	
+	static String ok( String msg ) {
+		JsonObjectBuilder response = Json.createObjectBuilder();
+		response.add("status", "OK");
+		response.add("data", Json.createObjectBuilder().add("message", msg));
+		
+		return jsonObject2prettyString(response.build());
+	}
+	
 	static String ok( JsonArray arr ) {
 		JsonObjectBuilder response = Json.createObjectBuilder();
 		response.add("status", "OK");

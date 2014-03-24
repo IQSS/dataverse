@@ -13,7 +13,6 @@ import javax.inject.Named;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

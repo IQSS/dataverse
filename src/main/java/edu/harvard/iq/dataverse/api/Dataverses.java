@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import java.util.logging.Level;
@@ -57,6 +58,24 @@ public class Dataverses extends AbstractApiBean {
 		Dataverse d = findDataverse(idtf);
 		return ( d==null) ? error("Can't find dataverse with identifier '" + idtf + "'")
 						  : ok( json(d) );
+	}
+	
+	@DELETE
+	@Path("{identifier}")
+	public String deleteDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		Dataverse d = findDataverse(idtf);
+		if ( d == null ) return error("Can't find dataverse with identifier '" + idtf + "'");
+		
+		try {
+			engineSvc.submit( new DeleteDataverseCommand(u, d) );
+			return ok( "Dataverse " + idtf  +" deleted");
+		} catch ( CommandException ex ) {
+			logger.log(Level.SEVERE, "Error deleting dataverse", ex);
+			return error("Error creating dataverse: " + ex.getMessage() );
+		}
 	}
 	
 	@POST

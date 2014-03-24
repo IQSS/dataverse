@@ -59,4 +59,6 @@ drop table filemetadatafield         cascade;
 drop table filemetadatafieldvalue    cascade;
 drop table metadatablock             cascade;
 drop table searchfacet               cascade;
+drop table datasetfieldvalue_controlledvocabularyvalue cascade;
+drop SEQUENCE filesystemname_seq cascade;
 drop table usernotification          cascade;

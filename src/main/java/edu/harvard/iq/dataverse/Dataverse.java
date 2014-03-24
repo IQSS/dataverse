@@ -13,6 +13,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.validation.constraints.Pattern;
@@ -25,6 +27,9 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author gdurand
  * @author mbarsinai
  */
+@NamedQueries({
+	@NamedQuery(name = "Dataverse.ownedObjectsById", query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
+})
 @Entity
 public class Dataverse extends DvObjectContainer {
 
@@ -49,7 +54,9 @@ public class Dataverse extends DvObjectContainer {
 
     private String affiliation;
 
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.REMOVE},
+	// Note: We can't have "Remove" here, as there are role assignments that refer
+	//       to this role. So, adding it would mean violating a forign key contstraint.
+    @OneToMany(cascade = {CascadeType.MERGE},
             fetch = FetchType.LAZY,
             mappedBy = "owner")
     private Set<DataverseRole> roles;

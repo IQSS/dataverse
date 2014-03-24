@@ -31,6 +31,11 @@ or
 Generates a new dataverse under `{{id}}`. Expects a `json` content descripting the dataverse.
 If `{{id}}` is omitted, a root dataverse is created. `{{id}}` can either be a dataverse id (long) or a dataverse alias (more robust).
 
+    GET http://{{SERVER}}/api/dvs/{{id}}
+
+View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id number of the dataverse, its alias, or the special value `:root`.
+
+
 	GET http://{{SERVER}}/api/dvs/:gv
 
 Dump the structure of the dataverse to a graphviz file. Sample usage: 

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import javax.persistence.EntityManager;
 
 /**
  * A base CommandContext for tests. Provides no-op implementations. Should probably be
@@ -43,6 +44,16 @@ public class TestCommandContext implements CommandContext {
 
 	@Override
 	public PermissionServiceBean permissions() {
+		return null;
+	}
+
+	@Override
+	public DvObjectServiceBean dvObjects() {
+		return null;
+	}
+
+	@Override
+	public EntityManager em() {
 		return null;
 	}
 	
