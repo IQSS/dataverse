@@ -76,6 +76,7 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
+        solrQuery.addFacetField(SearchFields.RELEASE_DATE);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
@@ -93,7 +94,7 @@ public class SearchServiceBean {
          */
         for (DataverseFacet dataverseFacet: dataverse.getDataverseFacets()) {
             DatasetField datasetField = dataverseFacet.getDatasetField();
-            solrQuery.addFacetField(datasetField.getSolrField());
+            solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
         }
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
@@ -150,12 +151,7 @@ public class SearchServiceBean {
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        /**
-         * @todo: switch to findAll when it finds all. Also, think about what a
-         * datasetFieldService.findBySolrField() method would look like...
-         */
-//        List<DatasetField> datasetFields = datasetFieldService.findAll();
-        List<DatasetField> datasetFields = datasetFieldService.findAllAll();
+        List<DatasetField> datasetFields = datasetFieldService.findAllOrderedById();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
@@ -166,7 +162,7 @@ public class SearchServiceBean {
         String titleSolrField = null;
         try {
             DatasetField titleDatasetField = datasetFieldService.findByName(DatasetFieldConstant.title);
-            titleSolrField = titleDatasetField.getSolrField();
+            titleSolrField = titleDatasetField.getSolrField().getNameSearchable();
         } catch (EJBTransactionRolledbackException ex) {
             logger.info("Couldn't find " + DatasetFieldConstant.title);
             if (ex.getCause() instanceof TransactionRolledbackLocalException) {
@@ -263,7 +259,7 @@ public class SearchServiceBean {
              * we'll build a hashmap
              */
             for (DatasetField datasetField : datasetFields) {
-                String solrFieldNameForDataset = datasetField.getSolrField();
+                String solrFieldNameForDataset = datasetField.getSolrField().getNameFacetable();
                 String friendlyName = datasetField.getDisplayName();
                 if (solrFieldNameForDataset != null && facetField.getName().endsWith(datasetField.getTmpNullFieldTypeIdentifier())) {
                     // give it the non-friendly name so we remember to update the reference data script for datasets
@@ -275,7 +271,7 @@ public class SearchServiceBean {
                         break;
                     }
                 }
-                datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField(), friendlyName);
+                datasetfieldFriendlyNamesBySolrField.put(datasetField.getSolrField().getNameFacetable(), friendlyName);
             }
             /**
              * @todo get rid of this crazy reflection, per todo above... or

@@ -468,6 +468,8 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+
+        
         //sort via display order on dataset field
         Collections.sort(retList, new Comparator<DatasetFieldValue>(){
            public int compare (DatasetFieldValue d1, DatasetFieldValue d2){

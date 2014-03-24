@@ -238,7 +238,7 @@ public class DataFileConverter {
 
         // check whether a requested file is actually created
 
-        if (resultInfo.get("RexecError").equals("true")){
+        if ("true".equals(resultInfo.get("RexecError"))){
             dbgLog.fine("R-runtime error trying to convert a file.");
             return  null;
         } else {

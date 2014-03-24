@@ -13,15 +13,17 @@
             <ui:fragment>
                 <h:form>
                     <p:focus/>
-                    <p:watermark for="formerAutoCompleteSearch" value="Search this dataverse..."/>
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" style="margin-right:1em;"/>
-                    <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
+                    <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
+                    <p:commandLink id="searchbutton" styleClass="btn btn-default" style="color:black;font-size:.9em;" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
                         <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                     </p:commandLink>
+                    <p:commandButton id="hiddensearchbutton" style="display: none" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
                     <h:outputLink value="/search/advanced.xhtml" style="margin-left:1em;" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
+                        <f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>
                     </h:outputLink>
                 </h:form>
             </ui:fragment>
@@ -48,6 +50,9 @@
         <ui:fragment rendered="#{!SearchIncludeFragment.solrIsDown}">
 
             <div style="width:20%;float:left;padding-right:1em;">
+                
+                <!--<div style="background:#E6F1F6;border:1px solid #DDDDDD;padding:.5em;margin-bottom:.5em;font-weight:bold;">Filter Your Results</div>-->
+                
                 <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
                 <h:outputLink styleClass="facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -192,7 +197,7 @@
                     <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery">
                         <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                         <h:outputLink styleClass="facetLink facetSelected resultsTopBlock" style="margin-right:1em;">
-                            <h:outputText value="#{friendlyNames.get(0)}:#{friendlyNames.get(1)}"/>
+                            <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/>
                             <h:outputText styleClass="glyphicon glyphicon-remove" value=""/>
                             <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -303,7 +308,7 @@
                                 </ui:fragment>
                                 <!-- SORT BY -->
                                 <div class="btn-group pull-right">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
                                         <span class="glyphicon glyphicon-sort" style="margin-right:.3em;"/> Sort <span class="caret"/>
                                     </button>
                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
@@ -335,6 +340,34 @@
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                             </h:outputLink>
                                         </li>
+                                        <li>
+                                            <h:outputLink>
+                                                <h:outputText value="Release Date (Newest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateDesc? 'bold' : 'normal'}"/>
+                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                </c:forEach>
+                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
+                                            </h:outputLink>
+                                        </li>
+                                        <li>
+                                            <h:outputLink>
+                                                <h:outputText value="Release Date (Oldest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateAsc? 'bold' : 'normal'}"/>
+                                                <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                                                <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                                <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                    <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                                </c:forEach>
+                                                <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="page" value="1"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                            </h:outputLink>
+                                        </li>
                                         <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
                                             <li>
                                                 <h:outputLink>
@@ -347,7 +380,7 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="page" value="1"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.searchFieldRelevance}"/>
-                                                    <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                                    <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                                 </h:outputLink>
                                             </li>
                                         </ui:fragment>
@@ -411,7 +444,8 @@
                                     <h:outputText value="#{result.title}" style="padding:4px 0;"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                    <img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/>
+                                    <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
+                                    <p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/>
                                 </div>
 
                                 <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;"/>
@@ -435,7 +469,8 @@
                                     <h:outputText value="#{result.name}" style="padding:4px 0;"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0">
-                                    <img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/>
+                                    <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->
+                                    <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
                                 </div>
 
                                 <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>

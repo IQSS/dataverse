@@ -31,13 +31,18 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import edu.harvard.iq.dataverse.DataFile;
+import java.util.logging.Logger;
 
 /**
  *
  * @author leonidandreev
  */
 public class ImageThumbConverter {
-    private static int DEFAULT_THUMBNAIL_SIZE = 64; 
+    public static int DEFAULT_CARDIMAGE_SIZE = 48;
+    public static int DEFAULT_THUMBNAIL_SIZE = 64; 
+    public static int DEFAULT_PREVIEW_SIZE = 400; 
+    
+    private static final Logger logger = Logger.getLogger(ImageThumbConverter.class.getCanonicalName());
     
     public ImageThumbConverter() {
     }
@@ -146,7 +151,9 @@ public class ImageThumbConverter {
 	    // better-looking thumbnails, hence the SCALE_SMOOTH flag. 
 	    // SCALE_FAST would trade quality for speed. 
 
-	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(size, thumbHeight, java.awt.Image.SCALE_SMOOTH);
+            //logger.info("Start image rescaling ("+size+" pixels), SCALE_FAST used;");
+	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(size, thumbHeight, java.awt.Image.SCALE_FAST);
+            //logger.info("Finished image rescaling.");
 
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");

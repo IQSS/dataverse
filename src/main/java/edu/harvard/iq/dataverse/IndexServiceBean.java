@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -78,6 +79,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
+        addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
         if (dataverse.getOwner() != null) {
             solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
         }
@@ -148,22 +150,19 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+        addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getEditVersion() != null) {
             for (DatasetFieldValue datasetFieldValue : dataset.getEditVersion().getDatasetFieldValues()) {
+
                 DatasetField datasetField = datasetFieldValue.getDatasetField();
-                String title = datasetField.getTitle();
-                String name = datasetField.getName();
-                Long id = datasetField.getId();
-                String idDashTitle = id + "-" + title;
-                String idDashName = id + "-" + name;
-//                logger.info(idDashTitle);
-//                logger.info(name + ": " + datasetFieldValue.getStrValue());
-                String solrField = datasetField.getSolrField();
-                if (datasetFieldValue.getStrValue() != null && !datasetFieldValue.getStrValue().isEmpty() && solrField != null) {
-                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getStrValue() + " into " + solrField);
-                    if (solrField.endsWith("_i")) {
-                        String dateAsString = datasetFieldValue.getStrValue();
+                String solrFieldSearchable = datasetField.getSolrField().getNameSearchable();
+                String solrFieldFacetable = datasetField.getSolrField().getNameFacetable();
+
+                if (datasetFieldValue.getValue() != null && !datasetFieldValue.getValue().isEmpty() && solrFieldSearchable != null) {
+                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    if (datasetField.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+                        String dateAsString = datasetFieldValue.getValue();
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -177,7 +176,10 @@ public class IndexServiceBean {
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
                                 logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
-                                solrInputDocument.addField(solrField, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                if (datasetField.getSolrField().isFacetable()) {
+                                    solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                }
                             } catch (Exception ex) {
                                 logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + datasetField.getName() + ")");
                             }
@@ -196,12 +198,24 @@ public class IndexServiceBean {
                              * multiple value lives in the getSolrField() method
                              * of DatasetField.java
                              */
-                            solrField = SearchFields.AFFILIATION;
+                            solrInputDocument.addField(SearchFields.AFFILIATION, datasetFieldValue.getValue());
                         } else if (datasetFieldValue.getDatasetField().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
-                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getStrValue());
+                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getValue());
                         }
-                        solrInputDocument.addField(solrField, datasetFieldValue.getStrValue());
+                        if (datasetField.isControlledVocabulary()) {
+                            for (ControlledVocabularyValue controlledVocabularyValue : datasetFieldValue.getControlledVocabularyValues()) {
+                                solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
+                                if (datasetField.getSolrField().isFacetable()) {
+                                    solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
+                                }
+                            }
+                        } else {
+                            solrInputDocument.addField(solrFieldSearchable, datasetFieldValue.getValue());
+                            if (datasetField.getSolrField().isFacetable()) {
+                                solrInputDocument.addField(solrFieldFacetable, datasetFieldValue.getValue());
+                            }
+                        }
                     }
                 }
                 /**
@@ -422,4 +436,23 @@ public class IndexServiceBean {
         }
         return subtrees;
     }
+
+    private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
+        if (dataverse.getReleaseDate() != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(dataverse.getReleaseDate().getTime());
+            int YYYY = calendar.get(Calendar.YEAR);
+            solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
+        }
+    }
+
+    private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataset dataset) {
+        if (dataset.getReleaseDate() != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(dataset.getReleaseDate().getTime());
+            int YYYY = calendar.get(Calendar.YEAR);
+            solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
+        }
+    }
+
 }

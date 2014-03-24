@@ -459,7 +459,7 @@ public class RemoteDataFrameService {
             
             File localDataFrameFile = transferRemoteFile(c, tempFileNameOut, RWRKSP_FILE_PREFIX,"RData", wrkspflSize);
             
-            result.put("dataFrameFileName",localDataFrameFile.getName());
+            result.put("dataFrameFileName",localDataFrameFile.getAbsolutePath());
             
             if (localDataFrameFile != null){
                 dbgLog.fine("data frame file name: "+localDataFrameFile.getAbsolutePath());

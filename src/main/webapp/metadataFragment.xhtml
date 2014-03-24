@@ -18,7 +18,7 @@
                             <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
                                 <!-- Single value no child -->
                                 <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.hasChildren and !fieldMap.key.hasParent and !fieldMap.key.allowMultiples}">
-                                    <ui:fragment rendered="#{!empty fieldValues.strValue}">
+                                    <ui:fragment rendered="#{!empty fieldValues.value}">
                                         <div class="form-group">
                                             <label for="metadata_#{fieldValues.datasetField.name}" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" title="">
@@ -26,7 +26,7 @@
                                                 </a>
                                             </label>                  
                                             <div class="col-sm-9">
-                                                <h:outputText value="#{fieldValues.strValue}" rendered="#{empty DatasetPage.editMode  and !empty fieldValues.strValue}" />                                                                   
+                                                <h:outputText value="#{fieldValues.value}" />                                                                   
                                             </div>                                        
                                         </div>
                                     </ui:fragment>  
@@ -40,9 +40,12 @@
                                             </a>
                                         </label>  
                                         <div class="col-sm-7">
-                                            <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="loop">
+                                            <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="loop" rendered="#{!fieldMap.key.controlledVocabulary}">
                                                 <h:outputText value="#{loop.first?'':'; '}#{fieldValues.strValue}" rendered="#{!empty fieldValues.strValue}" />
                                             </ui:repeat> 
+                                            <ui:repeat value="#{fieldMap.value.get(0).controlledVocabularyValues}" var="fieldValues" varStatus="loop" rendered="#{fieldMap.key.controlledVocabulary}">
+                                                <h:outputText value="#{loop.first?'':'; '}#{fieldValues.strValue}"/>
+                                            </ui:repeat>                                            
                                         </div> 
                                     </div>
                                 </ui:fragment>
@@ -65,7 +68,7 @@
                                                             <label class="control-label" for="metadata_BLANK">
                                                                 <a class="tooltiplabel right" data-original-title="#{childVal.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{childVal.datasetField.title}</a>                                                        
                                                             </label>
-                                                            <div><h:outputText value="#{childVal.strValue}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
+                                                            <div><h:outputText value="#{childVal.value}" rendered="#{childVal.parentDatasetFieldValue == fieldValues}"/> </div>
                                                         </div>
                                                     </ui:fragment>
                                                 </ui:repeat>                                                                                                                                  
@@ -95,7 +98,7 @@
                                 <ui:repeat value="#{metadataBlockVal.value.entrySet().toArray()}" var="fieldMap">
                                     <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or fieldMap.key.displayOnCreate) and !fieldMap.key.hasParent}">
                                         <!-- Everything except Select Multiple -->
-                                        <ui:repeat value="#{fieldMap.value}" var="fieldValues" rendered="#{!fieldMap.key.allowMultiples or empty fieldMap.key.controlledVocabularySelectItems}">
+                                        <ui:repeat value="#{fieldMap.value}" var="fieldValues" varStatus="valCount" rendered="#{!fieldMap.key.allowMultiples or !fieldMap.key.controlledVocabulary}">
                                             <ui:fragment rendered="#{(!fieldValues.datasetField.hasParent)}">
                                                 <div class="form-group">
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasParent}">
@@ -103,7 +106,7 @@
                                                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}">
                                                                 #{fieldValues.datasetField.title}
                                                             </a>
-                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
                                                         </label>                  
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{!fieldValues.datasetField.hasChildren and !fieldValues.datasetField.hasParent}">
@@ -134,7 +137,7 @@
                                                     </ui:fragment>
 
                                                     <!-- Add / Remove buttons -->
-                                                    <ui:fragment rendered="#{fieldValues.datasetField.allowMultiples and empty fieldValues.datasetField.controlledVocabularySelectItems}">
+                                                    <ui:fragment rendered="#{fieldValues.datasetField.allowMultiples and !fieldValues.datasetField.controlledVocabulary}">
                                                         <div class="col-xs-2">
                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{fieldValues.datasetField.hasChildren ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
@@ -142,6 +145,7 @@
                                                             </p:commandButton>
                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{fieldValues.datasetField.hasChildren ? 'margin-top:1.8em;' : ''}"  
                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" 
+                                                                             rendered="#{valCount.index gt 0}"
                                                                              escape="false" actionListener="#{DatasetPage.deleteGeneralRecord(fieldValues)}" update="@all">
                                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             </p:commandButton>
@@ -151,17 +155,17 @@
                                             </ui:fragment>
                                         </ui:repeat>
                                         <!-- For fields that Allow Multiples with Controlled Vocab -->
-                                        <ui:fragment rendered="#{fieldMap.key.allowMultiples and !empty fieldMap.key.controlledVocabularySelectItems and !fieldValues.datasetField.hasParent}">
+                                        <ui:fragment rendered="#{fieldMap.key.allowMultiples and fieldMap.key.controlledVocabulary and !fieldValues.datasetField.hasParent}">
                                             <div class="form-group">
                                                 <label for="metadata_#{fieldMap.key.name}" class="col-sm-3 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{fieldMap.key.description}" title="">
                                                         #{fieldMap.key.title}
                                                     </a>
-                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required and !empty DatasetPage.editMode}" /> 
+                                                    <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldMap.key.required}" /> 
                                                 </label>
                                                 <div class="col-sm-6">
-                                                    <h:selectManyListbox styleClass="form-control">
-                                                        <f:selectItems value="#{fieldMap.key.controlledVocabularySelectItems}"/>
+                                                    <h:selectManyListbox value="#{fieldMap.value.get(0).controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control">
+                                                        <f:selectItems value="#{fieldMap.key.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                     </h:selectManyListbox>
                                                 </div>
                                             </div>

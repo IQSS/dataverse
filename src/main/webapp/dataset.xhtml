@@ -33,7 +33,7 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" style="float:right;">
-                                    <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -56,6 +56,53 @@
                                                 </ul>
                                             </div>
                                         </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <div class="btn-group">
+                                                <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
+                                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                    <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
+                                                    </ui:fragment>
+                                                </button>
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                        <li>
+                                                            <a  style="pointer-events: none; color:red;">
+                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is Private. To make it public click 'Release dataset' link</span>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a style="pointer-events: none; color:green;">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Release Dataset" onclick="confirmation.show()"  /></span>
+                                                            </a>
+                                                        </li>                                                    
+                                                    </ul>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+
+                                                        <li>
+                                                            <a style="pointer-events: none; color:green;">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is public.  It may not be removed.</span>
+                                                            </a>
+                                                        </li>                                                    
+                                                    </ul>
+                                                </ui:fragment>
+                                            </div>
+                                        </div>
+                                        <p:growl id="messages" showDetail="true" />  
+                                        <p:confirmDialog message="Are you sure you want to make your dataset 'Public'? Once you do so it must remain 'Public'."  header="Release Dataset"  widgetVar="confirmation">  
+                                                <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DatasetPage.releaseDataset}" >
+                                                </p:commandButton>  
+                                                <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
+                                        </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
@@ -126,7 +173,7 @@
                                 <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                               fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
                                 <!-- View -->
-                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                         <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -138,33 +185,67 @@
                                     </p>-->
                                 </ui:fragment>
                                 <p:dataTable id="filesTable" value="#{DatasetPage.dataset.files}" var="file">
-                                    <p:column>
-                                        <h:outputText id="fileNameOutput" value="#{file.name}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
-                                        <p:inputText id="fileName" value="#{file.name}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:message for="fileName"/>
-                                        <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true" rendered="#{!empty file.id and file.image}"/>
-                                        <h:outputText id="imgPreview" value="preview: " rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
-                                        <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}" rendered="#{empty file.id and !empty file.fileSystemName and file.image}"/>
+                                    <p:column styleClass="col-xs-1" style="text-align:center;">
+                                        
+                                        <ui:fragment rendered="#{!empty file.id and file.image}">
+                                            <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{file.id}?imageThumb=400&#34; alt=&#34;Preview&#34; /&gt;">
+                                                <p:graphicImage value="/api/access/datafile/#{file.id}?imageThumb=true"/>
+                                            </a>
+                                        </ui:fragment>
+                                        
+                                        
+                                        <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!file.image}"/>
+                                        
+                                        <ui:fragment rendered="#{empty file.id and !empty file.fileSystemName and file.image}">
+                                            <p:graphicImage value="/api/access/imagethumb/#{file.fileSystemName}"/>
+                                            <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
+                                        </ui:fragment>
                                     </p:column>
-                                    <p:column>
-                                        <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
-                                        <h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>
-                                        <p:inputText id="fileDescription" value="#{file.description}" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:watermark for="fileDescription" value="add description" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"/>
-                                        <p:message for="fileDescription"/>
-                                        <p>
-                                            <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
-                                            <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
-                                        </p>
+                                    <p:column styleClass="col-sm-7">
+                                        <h:outputText id="fileNameOutput" value="#{file.name}" style="display:block;font-weight:bold;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                                        
+                                        <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                            <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                                File Name
+                                            </label>
+                                            <p:inputText id="fileName" value="#{file.name}" style="margin-bottom:.5em;"/>
+                                            <p:message for="fileName"/>
+                                        </ui:fragment>
+                                        
+                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}#{!empty file.md5 ? ', ' : ''}" rendered="#{!(file.tabularData)}"/>
+                                        <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
+                                        
+                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty file.unf ? ', ' : ''}" rendered="#{file.tabularData}"/>
+                                        <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
+                                        
+                                        <div class="fileDescription">
+                                            <h:outputText id="fileDescNonEmpty" value="#{file.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty file.description)}"/>
+                                            <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty file.description)}"/>-->
+
+                                            <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                                <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                                    Description
+                                                </label>
+                                                <p:inputTextarea id="fileDescription" rows="2" cols="40" value="#{file.description}" style="margin-top:.5em;"/>
+                                                <p:watermark for="fileDescription" value="Add file description..."/>
+                                                <p:message for="fileDescription"/>
+                                            </ui:fragment>
+                                        </div>
                                     </p:column>
-                                    <p:column style="overflow: auto;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                    <p:column styleClass="col-sm-4" style="overflow: auto;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                        <ui:fragment rendered="#{file.tabularData}">
+                                            <h:outputLink style="margin-right:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+                                                <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
+                                            </h:outputLink>
+                                        </ui:fragment>
+                                        
                                         <ui:fragment rendered="#{!(file.tabularData)}">
                                             <a class="btn btn-default" href="/api/access/datafile/#{file.id}" role="button" style="color:#333333;">
                                                 <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                             </a>
                                         </ui:fragment>
                                         
-                                        <p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>
+                                        <!--<p:button value="Download" disabled="#{empty file.id}" rendered="#{empty file.id}"/>-->
                                         
                                         <ui:fragment rendered="#{file.tabularData}">
                                             <div class="btn-group">
@@ -195,23 +276,13 @@
                                                 </ul>
                                             </div>
                                         </ui:fragment>
-
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputText id="fileTypeOutputTabular" value="Tabular Data" rendered="#{file.tabularData}"/>
-                                        
-                                        <h:outputLink style="margin-left:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
-                                            <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
-                                        </h:outputLink>
-
-                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}" rendered="#{!(file.tabularData)}"/>
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
 
                             <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                <ui:fragment rendered="#{permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('DatasetCreateCommand') and empty DatasetPage.editMode}">
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                         <p:commandLink style="color:black;" styleClass="btn btn-default" title="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />

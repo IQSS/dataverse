@@ -5,8 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -17,12 +16,10 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Logger;
-import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.DualListModel;
-import org.primefaces.model.TreeNode;
 
 /**
  *
@@ -40,7 +37,7 @@ public class DataversePage implements java.io.Serializable {
     };
 
     @EJB
-    DataverseServiceBean dataverseService;
+    DataverseServiceBean dataverseService;  
     @EJB
     DatasetServiceBean datasetService;
     @Inject
@@ -150,34 +147,39 @@ public class DataversePage implements java.io.Serializable {
         if (EditMode.INFO.equals(editMode)) {
 
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+            
+            // TODO: re add command call
+            dataverse = dataverseService.save(dataverse);
 
-            CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
+            editMode = null;
+            /*
+                    CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
 
             try {
                 dataverse = commandEngine.submit(cmd);
                 editMode = null;
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+                return null;
             }
+            */
         } else if (EditMode.SETUP.equals(editMode)) {
             dataverseService.save(dataverse);
             editMode = null;          
 
-        }
-        
-        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
-        if (!facetsList.isEmpty()) {
-            for (DataverseFacet dataverseFacet : facetsList) {
-                dataverseFacetService.delete(dataverseFacet);
+            List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
+            if (!facetsList.isEmpty()) {
+                for (DataverseFacet dataverseFacet : facetsList) {
+                    dataverseFacetService.delete(dataverseFacet);
+                }
             }
-        }
-        int i=1;
-        for (DatasetField df : facets.getTarget()) {
-            dataverseFacetService.create(i++, df.getId(), dataverse.getId());
+            int i=1;
+            for (DatasetField df : facets.getTarget()) {
+                dataverseFacetService.create(i++, df.getId(), dataverse.getId());
+            }           
         }
         
         return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
-
     }
 
     public void cancel(ActionEvent e) {
@@ -238,5 +240,14 @@ public class DataversePage implements java.io.Serializable {
     
     public void setFacets(DualListModel<DatasetField> facets) {
         this.facets = facets;
+    }
+    
+    public String releaseDataverse() {
+        dataverse.setReleaseDate(new Timestamp(new Date().getTime()));
+        dataverse.setReleaseUser(session.getUser());
+        dataverse = dataverseService.save(dataverse);
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
     }
 }

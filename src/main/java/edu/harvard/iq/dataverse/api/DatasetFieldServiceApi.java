@@ -39,7 +39,7 @@ public class DatasetFieldServiceApi {
             List<String> listOfIsHasParentsFalse = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesTrue = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesFalse = new ArrayList<>();
-            for (DatasetField dsf : datasetFieldService.findAllAll()) {
+            for (DatasetField dsf : datasetFieldService.findAllOrderedById()) {
                 if (dsf.isHasParent()) {
                     listOfIsHasParentsTrue.add(dsf.getName());
                     listOfIsAllowsMultiplesTrue.add(dsf.getName());
@@ -77,7 +77,9 @@ public class DatasetFieldServiceApi {
             Long id = dsf.getId();
             String title = dsf.getTitle();
             String fieldType = dsf.getFieldType();
-            String solrField = dsf.getSolrField();
+            String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
+            String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
+            String metadataBlock = dsf.getMetadataBlock().getName();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
             String parentAllowsMultiplesDisplay = "N/A (no parent)";
@@ -90,11 +92,13 @@ public class DatasetFieldServiceApi {
             return dsf.getName() + ":\n"
                     + "- id: " + id + "\n"
                     + "- title: " + title + "\n"
+                    + "- metadataBlock: " + metadataBlock + "\n"
                     + "- fieldType: " + fieldType + "\n"
                     + "- allowsMultiples: " + allowsMultiples + "\n"
                     + "- hasParent: " + hasParent + "\n"
                     + "- parentAllowsMultiples: " + parentAllowsMultiplesDisplay + "\n"
-                    + "- solrField: " + solrField + "\n"
+                    + "- solrFieldSearchable: " + solrFieldSearchable + "\n"
+                    + "- solrFieldFacetable: " + solrFieldFacetable + "\n"
                     + "";
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;

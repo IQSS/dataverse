@@ -61,6 +61,7 @@ public class SearchIncludeFragment {
     private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
+    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE;
     final private String ASCENDING = "asc";
     final private String DESCENDING = "desc";
     private String typeFilterQuery;
@@ -183,7 +184,7 @@ public class SearchIncludeFragment {
                 sortField = searchFieldRelevance;
             }
             if (sortOrder == null) {
-                sortOrder = ASCENDING;
+                sortOrder = DESCENDING;
             }
         }
 
@@ -389,9 +390,7 @@ public class SearchIncludeFragment {
         return numFacets;
     }
 
-    /**
-     * @todo why do we have to click "More" twice?
-     */
+
     public void incrementFacets(String name, int incrementNum) {
         Integer numFacets = numberOfFacets.get(name);
         if (numFacets == null) {
@@ -423,7 +422,10 @@ public class SearchIncludeFragment {
          * @todo is this the right permission to check?
          */
         // being explicit about the user, could just call permissionService.on(dataverse)
-        return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
+       
+        // TODO: decide on rules for this button and check actual permissions
+        return session.getUser() != null && !session.getUser().isGuest();
+        //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
     public String getQuery() {
@@ -654,6 +656,10 @@ public class SearchIncludeFragment {
         this.searchFieldNameSort = searchFieldNameSort;
     }
 
+    public String getSearchFieldReleaseDate() {
+        return searchFieldReleaseDate;
+    }
+
     public String getASCENDING() {
         return ASCENDING;
     }
@@ -707,8 +713,16 @@ public class SearchIncludeFragment {
         return getCurrentSort().equals(searchFieldNameSort + ":" + DESCENDING) ? true : false;
     }
 
+    public boolean isSortedByReleaseDateAsc() {
+        return getCurrentSort().equals(searchFieldReleaseDate + ":" + ASCENDING) ? true : false;
+    }
+
+    public boolean isSortedByReleaseDateDesc() {
+        return getCurrentSort().equals(searchFieldReleaseDate + ":" + DESCENDING) ? true : false;
+    }
+
     public boolean isSortedByRelevance() {
-        return getCurrentSort().equals(searchFieldRelevance + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldRelevance + ":" + DESCENDING) ? true : false;
     }
 
     public int getPage() {

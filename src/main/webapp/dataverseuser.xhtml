@@ -128,8 +128,7 @@
                                             <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
                                                 <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
                                                 <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
-                                                    <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                                                    <p:selectOneMenu value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE'}">
+                                                    <p:selectOneMenu id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                                         <f:selectItem id="student" itemLabel="Student" itemValue="Student" />
                                                         <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />
                                                         <f:selectItem id="staff" itemLabel="Staff" itemValue="Staff" />
