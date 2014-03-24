@@ -113,10 +113,12 @@ public class CSVFileReader extends TabularDataFileReader {
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
 
-        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);
+        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);        
         
-        dataTable.setCaseQuantity(new Long(lineCount));
+        dbglog.fine("CSV ingest: found "+lineCount+" data cases/observations.");
+        dbglog.fine("Tab file produced: "+tabFileDestination.getAbsolutePath());
         
+        dataTable.setUnf("UNF:6:NOTCALCULATED");
         
         ingesteddata.setTabDelimitedFile(tabFileDestination);
         ingesteddata.setDataTable(dataTable);
@@ -124,9 +126,8 @@ public class CSVFileReader extends TabularDataFileReader {
 
     }
 
-    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter pwout) throws IOException {
-        dbglog.warning("RTabFileParser: Inside R Tab file parser");
-
+    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
+        
         String line;
         String[] valueTokens;
 
@@ -170,7 +171,7 @@ public class CSVFileReader extends TabularDataFileReader {
             dv.setVariableFormatType(varService.findVariableFormatTypeByName("character"));
             dv.setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
             
-            dv.setFileOrder(varQnty);
+            dv.setFileOrder(i);
             dv.setDataTable(dataTable);
         }
         
@@ -178,8 +179,21 @@ public class CSVFileReader extends TabularDataFileReader {
         dataTable.setDataVariables(variableList);
         
         boolean[] isNumericVariable = new boolean[varQnty]; 
+        
+        for (int i = 0; i < varQnty; i++) {
+            // OK, let's assume that every variable is numeric; 
+            // but we'll go through the file and examine every value; the 
+            // moment we find a value that's not a legit numeric one, we'll 
+            // assume that it is in fact a String. 
+            isNumericVariable[i] = true; 
+        }
 
-        String[] caseRow = new String[varQnty];
+        // First, "learning" pass.
+        // (we'll save the incoming stream in another temp file:)
+        
+        File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
+        PrintWriter firstPassWriter = new PrintWriter(firstPassTempFile.getAbsolutePath());
+        
         
         while ((line = csvReader.readLine()) != null) {
             // chop the line:
@@ -196,32 +210,142 @@ public class CSVFileReader extends TabularDataFileReader {
             }
 
             for (int i = 0; i < varQnty; i++) {
-                // In this pass, assume that everything is a String. 
-                // Strings are stored in tab files quoted; 
-                // Missing values are stored as tab-delimited nothing; 
-                // Empty strings stored as "" (quoted nothing):
+                if (isNumericVariable[i]) {
+                    // If we haven't given up on the "numeric" status of this 
+                    // variable, let's perform some tests on it, and see if 
+                    // this value is still a parsable number:
+                    if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
 
-                if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
-                    String charToken = valueTokens[i];
-                    // Dealing with quotes: 
-                    // remove the leading and trailing quotes, if present:
-                    charToken = charToken.replaceFirst("^\"", "");
-                    charToken = charToken.replaceFirst("\"$", "");
-                    // escape the remaining ones:
-                    charToken = charToken.replace("\"", "\\\"");
-                    // final pair of quotes:
-                    charToken = "\"" + charToken + "\"";
-                    caseRow[i] = charToken;
-                } else {
-                    caseRow[i] = "";
-                }
+                        boolean isNumeric = false; 
+                        
+                        if (valueTokens[i].equalsIgnoreCase("NaN")
+                                || valueTokens[i].equalsIgnoreCase("NA")
+                                || valueTokens[i].equalsIgnoreCase("Inf")
+                                || valueTokens[i].equalsIgnoreCase("+Inf")
+                                || valueTokens[i].equalsIgnoreCase("-Inf")
+                                || valueTokens[i].equalsIgnoreCase("null")) {
+                            isNumeric = true;
+                        } else {
+                            try {
+                                Double testDoubleValue = new Double(valueTokens[i]);
+                                isNumeric = true; 
+                            } catch (Exception ex) {
+                                // the token failed to parse as a double number;
+                                // so we'll have to assume it's just a string variable.
+                            }
+                        }
+                        if (!isNumeric) {
+                            isNumericVariable[i] = false; 
+                        }
+                    }
+                } 
             }
-
-            pwout.println(StringUtils.join(caseRow, "\t"));
+            
+            firstPassWriter.println(line);
             lineCounter++;
         }
+        
+        firstPassWriter.close(); 
+        csvReader.close();
+        dataTable.setCaseQuantity(new Long(lineCounter));
 
-        pwout.close();
+            
+        // Re-type the variables that we've determined are numerics:
+        
+        for (int i = 0; i < varQnty; i++) {
+            if (isNumericVariable[i]) {
+                dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+            }
+        }
+                    
+        // Second, final pass.
+        
+        // Re-open the saved file and reset the line counter: 
+        
+        BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
+        lineCounter = 0;
+        String[] caseRow = new String[varQnty];
+
+        
+        while ((line = secondPassReader.readLine()) != null) {
+            // chop the line:
+            line = line.replaceFirst("[\r\n]*$", "");
+            valueTokens = line.split("" + delimiterChar, -2);
+
+            if (valueTokens == null) {
+                throw new IOException("Failed to read line " + (lineCounter + 1) + " during the second pass.");
+            }
+
+            if (valueTokens.length != varQnty) {
+                throw new IOException("Reading mismatch, line " + (lineCounter + 1) + " during the second pass: "
+                        + varQnty + " delimited values expected, " + valueTokens.length + " found.");
+            }
+        
+            for (int i = 0; i < varQnty; i++) {
+                if (isNumericVariable[i]) {
+                    if (valueTokens[i] == null || valueTokens[i].equalsIgnoreCase("") || valueTokens[i].equalsIgnoreCase("NA")) {
+                        // Missing value - represented as an empty string in 
+                        // the final tab file
+                        caseRow[i] = "";
+                    } else if (valueTokens[i].equalsIgnoreCase("NaN")) {
+                        // "Not a Number" special value: 
+                        caseRow[i] = "NaN";
+                    } else if (valueTokens[i].equalsIgnoreCase("Inf")
+                            || valueTokens[i].equalsIgnoreCase("+Inf")) {
+                        // Positive infinity:
+                        caseRow[i] = "Inf";
+                    } else if (valueTokens[i].equalsIgnoreCase("-Inf")) {
+                        // Negative infinity: 
+                        caseRow[i] = "-Inf";
+                    } else {
+                        try {
+                            Double testDoubleValue = new Double(valueTokens[i]);
+                            caseRow[i] = testDoubleValue.toString();
+                        } catch (Exception ex) {
+                            throw new IOException ("Failed to parse a value, recognized as numeric in the first pass! (?)");
+                        }
+                    }    
+                } else {
+                    // Treat as a String:
+                    // Strings are stored in tab files quoted;                                                                                   
+                    // Missing values are stored as tab-delimited nothing - 
+                    // i.e., an empty string between two tabs (or one tab and 
+                    // the new line);                                                                       
+                    // Empty strings stored as "" (quoted empty string).
+                    // For the purposes  of this CSV ingest reader, we are going
+                    // to assume that all the empty strings in the file are 
+                    // indeed empty strings, and NOT missing values:
+                    if (valueTokens[i] != null) {
+                        String charToken = valueTokens[i];
+                        // Dealing with quotes: 
+                        // remove the leading and trailing quotes, if present:
+                        charToken = charToken.replaceFirst("^\"", "");
+                        charToken = charToken.replaceFirst("\"$", "");
+                        // escape the remaining ones:
+                        charToken = charToken.replace("\"", "\\\"");
+                        // final pair of quotes:
+                        charToken = "\"" + charToken + "\"";
+                        caseRow[i] = charToken;
+                    } else {
+                        caseRow[i] = "\"\"";
+                    }
+                }
+            }
+            
+            finalOut.println(StringUtils.join(caseRow, "\t"));
+            lineCounter++;
+
+            
+        }
+
+        secondPassReader.close();
+        finalOut.close();
+        
+        if (dataTable.getCaseQuantity().intValue() != lineCounter) {
+            throw new IOException("Mismatch between line counts in first and final passes!");
+        }
+        
         return lineCounter;
     }
 

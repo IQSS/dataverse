@@ -450,11 +450,12 @@ public class RDATAFileReader extends TabularDataFileReader {
             throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
         }
   }
+  
   /**
    * Read the Given RData File
    * @param stream a <code>BufferedInputStream</code>.
    * @param ignored
-   * @return an <code>SDIOData</code> object
+   * @return an <code>TabularDataIngest</code> object
    * @throws java.io.IOException if a reading error occurs.
    */
     @Override
@@ -496,6 +497,8 @@ public class RDATAFileReader extends TabularDataFileReader {
         int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
 
         LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
+        
+        dataTable.setUnf("UNF:6:NOTCALCULATED");
         
         ingesteddata.setTabDelimitedFile(tabFileDestination);
         ingesteddata.setDataTable(dataTable);
