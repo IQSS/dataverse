@@ -35,6 +35,9 @@ If `{{id}}` is omitted, a root dataverse is created. `{{id}}` can either be a da
 
 View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id number of the dataverse, its alias, or the special value `:root`.
 
+    DELETE http://{{SERVER}}/api/dvs/{{id}}
+
+Deletes the dataverse whose ID is given.
 
 	GET http://{{SERVER}}/api/dvs/:gv
 
