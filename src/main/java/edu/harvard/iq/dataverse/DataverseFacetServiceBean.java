@@ -37,6 +37,12 @@ public class DataverseFacetServiceBean {
         em.remove(em.merge(dataverseFacet));
     }
     
+	public void deleteFacetsFor( Dataverse d ) {
+		em.createNamedQuery("DataverseFacet.removeByOwnerId")
+			.setParameter("ownerId", d.getId())
+				.executeUpdate();
+	}
+	
     public void create(int diplayOrder, Long datasetFieldId, Long dataverseId) {
         DataverseFacet dataverseFacet = new DataverseFacet();
         

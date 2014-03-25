@@ -51,6 +51,9 @@ public class EjbDataverseEngine {
 	
 	@EJB
 	DvObjectServiceBean dvObjectService;
+	
+	@EJB
+	DataverseFacetServiceBean dataverseFacetService; 
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -121,6 +124,11 @@ public class EjbDataverseEngine {
 				public DvObjectServiceBean dvObjects() { return dvObjectService; }
 				
 				@Override public EntityManager em() { return em; }
+
+				@Override
+				public DataverseFacetServiceBean facets() {
+					return dataverseFacetService;
+				}
 			};
 		}
 		

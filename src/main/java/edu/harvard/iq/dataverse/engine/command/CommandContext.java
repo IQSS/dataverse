@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
@@ -18,6 +19,8 @@ import javax.persistence.EntityManager;
  */
 public interface CommandContext {
 	
+	public EntityManager em();
+	
 	public DvObjectServiceBean dvObjects();
 	
 	public DatasetServiceBean datasets();
@@ -34,5 +37,6 @@ public interface CommandContext {
 	
 	public PermissionServiceBean permissions();
 	
-	public EntityManager em();
+	public DataverseFacetServiceBean facets(); 
+	
 }

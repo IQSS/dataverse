@@ -5,6 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.EJB;
@@ -32,9 +37,8 @@ public class DataversePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
     public enum EditMode {
-
         CREATE, INFO, PERMISSIONS, SETUP
-    };
+    }
 
     @EJB
     DataverseServiceBean dataverseService;  
@@ -113,8 +117,8 @@ public class DataversePage implements java.io.Serializable {
             }
         }
         
-        List<DatasetField> facetsSource = new ArrayList<DatasetField>();
-        List<DatasetField> facetsTarget = new ArrayList<DatasetField>();
+        List<DatasetField> facetsSource = new ArrayList<>();
+        List<DatasetField> facetsTarget = new ArrayList<>();
         
         facetsSource.addAll(datasetFieldService.findAllFacetableFields());
 
@@ -124,7 +128,7 @@ public class DataversePage implements java.io.Serializable {
             facetsTarget.add(df);
             facetsSource.remove(df);
         }
-        facets = new DualListModel<DatasetField>(facetsSource, facetsTarget);
+        facets = new DualListModel<>(facetsSource, facetsTarget);
     }
 
     public List getContents() {
@@ -143,44 +147,26 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String save() {
-        // TODO; needs to use actual command model for all saves
-        if (EditMode.INFO.equals(editMode)) {
-
+		Command<Dataverse> cmd = null;
+        
+		if ( editMode == EditMode.INFO ) {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             dataverse.setCreateDate(new Timestamp(new Date().getTime()));
             dataverse.setCreator(session.getUser());
-            
-            // TODO: re add command call
-            dataverse = dataverseService.save(dataverse);
-
-            editMode = null;
-            /*
-                    CreateDataverseCommand cmd = new CreateDataverseCommand(dataverse, session.getUser());
-
-            try {
-                dataverse = commandEngine.submit(cmd);
-                editMode = null;
-            } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
-                return null;
-            }
-            */
-        } else if (EditMode.SETUP.equals(editMode)) {
-            dataverseService.save(dataverse);
-            editMode = null;          
-
-            List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
-            if (!facetsList.isEmpty()) {
-                for (DataverseFacet dataverseFacet : facetsList) {
-                    dataverseFacetService.delete(dataverseFacet);
-                }
-            }
-            int i=1;
-            for (DatasetField df : facets.getTarget()) {
-                dataverseFacetService.create(i++, df.getId(), dataverse.getId());
-            }           
+			cmd = new CreateDataverseCommand(dataverse, session.getUser());
+        
+		} else if ( editMode == EditMode.SETUP ) {
+			cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
         }
         
+		try {
+			dataverse = commandEngine.submit(cmd);
+			editMode = null;
+		} catch (CommandException ex) {
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+			return null;
+		}
+		
         return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
     }
 
@@ -192,11 +178,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public boolean isRootDataverse() {
-        if (this.dataverse.equals(dataverseService.findRootDataverse())) {
-            return true;
-        } else {
-            return false;
-        }
+        return dataverse.getOwner() == null;
     }
 
     public Dataverse getOwner() {

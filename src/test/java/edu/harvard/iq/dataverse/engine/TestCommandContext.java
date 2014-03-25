@@ -56,5 +56,10 @@ public class TestCommandContext implements CommandContext {
 	public EntityManager em() {
 		return null;
 	}
+
+	@Override
+	public DataverseFacetServiceBean facets() {
+		return null;
+	}
 	
 }
