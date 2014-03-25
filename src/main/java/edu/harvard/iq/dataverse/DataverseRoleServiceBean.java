@@ -92,6 +92,30 @@ public class DataverseRoleServiceBean {
 		return retVal;
 	}
 	
+	public UserRoleAssignments assignmentsFor( final DataverseUser u, final DvObject d ) {
+		return d.accept( new DvObject.Visitor<UserRoleAssignments>() {
+
+			@Override
+			public UserRoleAssignments visit(Dataverse dv) {
+				return roleAssignments(u, (Dataverse)d);
+			}
+
+			@Override
+			public UserRoleAssignments visit(Dataset ds) {
+				UserRoleAssignments asgn = ds.getOwner().accept(this);
+				asgn.add( directRoleAssignments(u, d) );
+				return asgn;
+			}
+
+			@Override
+			public UserRoleAssignments visit(DataFile df) {
+				UserRoleAssignments asgn = df.getOwner().accept(this);
+				asgn.add( directRoleAssignments(u, d) );
+				return asgn;
+			}
+		});
+	}
+	
 	public Set<RoleAssignment> rolesAssignments( Dataverse dv ) {
 		Set<RoleAssignment> ras = new HashSet<>();
 		while ( ! dv.isEffectivlyPermissionRoot() ) {
@@ -116,11 +140,11 @@ public class DataverseRoleServiceBean {
 	 */
 	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
 		if ( user==null ) throw new IllegalArgumentException("User cannot be null");
-		TypedQuery<RoleAssignment> query = em.createQuery(
-				"SELECT r FROM RoleAssignment r WHERE r.user.id=:userId AND r.definitionPoint.id=:dvoId",
+		TypedQuery<RoleAssignment> query = em.createNamedQuery(
+				"RoleAssignment.listByUserIdDefinitionPointId",
 				RoleAssignment.class);
 		query.setParameter("userId", user.getId());
-		query.setParameter("dvoId", dvo.getId());
+		query.setParameter("definitionPointId", dvo.getId());
 		return query.getResultList();
 	}
 	

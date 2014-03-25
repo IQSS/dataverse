@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -121,6 +122,24 @@ public class Dataverses extends AbstractApiBean {
 	}
 	
 	@GET
+	@Path("{identifier}/metadatablocks")
+	public String listMetadataBlocks( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) {
+			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+		
+		JsonArrayBuilder jab = Json.createArrayBuilder();
+		for ( MetadataBlock blk : dataverse.getMetadataBlocks()){
+			jab.add( json(blk) );
+		}
+		return ok(jab);
+	}
+	
+	@GET
 	@Path("{identifier}/contents")
 	public String listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
@@ -132,22 +151,24 @@ public class Dataverses extends AbstractApiBean {
 		}
 		
 		final JsonArrayBuilder jab = Json.createArrayBuilder();
-		DvObject.Visitor ser = new DvObject.Visitor() {
+		DvObject.Visitor<Void> ser = new DvObject.Visitor<Void>() {
 
 			@Override
-			public void visit(Dataverse dv) {
+			public Void visit(Dataverse dv) {
 				jab.add( Json.createObjectBuilder().add("type", "dataverse")
 						.add("id", dv.getId())
 						.add("title",dv.getName() ));
+				return null;
 			}
 
 			@Override
-			public void visit(Dataset ds) {
+			public Void visit(Dataset ds) {
 				jab.add( json(ds).add("type", "dataset") );
+				return null;
 			}
 
 			@Override
-			public void visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
+			public Void visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
 		};
 		try {
 			for ( DvObject o : engineSvc.submit( new ListDataverseContentCommand(u, dataverse)) ) {

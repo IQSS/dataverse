@@ -27,7 +27,7 @@ import javax.persistence.UniqueConstraint;
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByUserRoleIdDefinitionPointId",
-				 query = "DELETE FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId")
+				 query = "DELETE FROM RoleAssignment r WHERE r.user.id=:userId AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
 })
 public class RoleAssignment implements java.io.Serializable {
 	@Id

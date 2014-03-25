@@ -3,11 +3,14 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
 import java.util.Set;
@@ -21,7 +24,10 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Convert objects to Json.
@@ -118,6 +124,7 @@ public class JsonPrinter {
 				.add("productionDate", dsv.getProductionDate())
 				.add("UNF", dsv.getUNF())
 				.add("archiveTime", format(dsv.getArchiveTime()) )
+				
 				;
 				
 		// Add authors
@@ -136,16 +143,91 @@ public class JsonPrinter {
 			bld.add("authors", ab);
 		}
 		
-		List<FileMetadata> fileMds = dsv.getFileMetadatas();
-		if ( ! fileMds.isEmpty() ) {
-			JsonArrayBuilder arr = Json.createArrayBuilder();
-			for (FileMetadata fmd : fileMds) {
-				arr.add( json(fmd) );
+		// Arrange the dataset field values in metadata blocks.
+		JsonObjectBuilder blocksBld = jsonObjectBuilder();
+		List<MetadataBlock> metadataBlocks = dsv.getDataset().getOwner().getMetadataBlocks();
+		List<DatasetFieldValue> fieldValues = dsv.getDatasetFieldValues();
+		
+		for ( MetadataBlock block : metadataBlocks ) {
+			JsonObjectBuilder blockBld = jsonObjectBuilder();
+		
+			blockBld.add("block", json(block) );
+			
+			Set<DatasetField> blockFields = new TreeSet<>(block.getDatasetFields());
+			
+			JsonObjectBuilder valuesBld = jsonObjectBuilder();
+
+			for ( DatasetFieldValue val : new TreeSet<>(fieldValues) ) {
+				if ( blockFields.contains(val.getDatasetField()) ) {
+					valuesBld.add( val.getDatasetField().getName(), json(val) );
+				}
 			}
-			bld.add( "fileMetadata", arr );
+			
+			blockBld.add( "values", valuesBld );
+			
+			blocksBld.add(block.getName(), blockBld);
+		}
+		
+		bld.add("metadataBlocks", blocksBld);
+
+		
+		return bld;
+	}
+	
+	public static JsonObjectBuilder json( DatasetFieldValue dfv ) {
+		JsonObjectBuilder bld = jsonObjectBuilder();
+		bld.add( "id", dfv.getId() );
+		bld.add( "displayOrder", dfv.getDisplayOrder() );
+		if ( dfv.isEmpty() ) {
+			bld.addNull("value");
+		} else {
+			if ( dfv.isChildEmpty() ) {
+				bld.add( "value", dfv.getValue());
+			} else {
+				JsonObjectBuilder childBld = jsonObjectBuilder();
+				for ( DatasetFieldValue childVal : dfv.getChildDatasetFieldValues() ) {
+					childBld.add(childVal.getDatasetField().getName(), json(childVal) );
+				}
+				bld.add( "value", childBld );
+			}
 		}
 		
 		return bld;
+	}
+	
+	public static JsonObjectBuilder json( MetadataBlock blk ) {
+		JsonObjectBuilder bld = jsonObjectBuilder();
+		bld.add("id", blk.getId());
+		bld.add("name", blk.getName());
+		bld.add("displayName", blk.getDisplayName());
+		
+		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
+		for ( DatasetField df : new TreeSet<>(blk.getDatasetFields()) ) {
+			fieldsBld.add( df.getName(), json(df) );
+		}
+		
+		bld.add("fields", fieldsBld );
+		
+		return bld;
+	}
+	
+	public static JsonObjectBuilder json( DatasetField fld ) {
+		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
+		fieldsBld.add( "name", fld.getName() );
+		fieldsBld.add( "displayName", fld.getDisplayName());
+		fieldsBld.add( "title", fld.getTitle());
+		fieldsBld.add( "type", fld.getFieldType());
+		fieldsBld.add( "watermark", fld.getWatermark());
+		fieldsBld.add( "description", fld.getDescription());
+		if ( ! fld.getChildDatasetFields().isEmpty() ) {
+			JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
+			for ( DatasetField subFld : fld.getChildDatasetFields() ) {
+				subFieldsBld.add( subFld.getName(), json(subFld) );
+			}
+			fieldsBld.add("childFields", subFieldsBld);
+		}
+		
+		return fieldsBld;
 	}
 	
 	public static JsonObjectBuilder json( FileMetadata fmd ) {

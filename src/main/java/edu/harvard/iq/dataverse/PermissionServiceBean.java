@@ -90,9 +90,18 @@ public class PermissionServiceBean {
 	
     public Set<Permission> permissionsFor( DataverseUser u, DvObject d ) {
 		Set<Permission> retVal = EnumSet.noneOf(Permission.class);
-		for ( RoleAssignment asmnt : assignmentsFor(u, d) ) {
+		for ( RoleAssignment asmnt : roleService.assignmentsFor(u, d) ) {
 			retVal.addAll( asmnt.getRole().permissions() );
 		}
+		
+		// special root case
+		if ( (d.getOwner() == null) && (!u.isGuest()) )  {
+			retVal.add( Permission.UndoableEdit );
+		}
+		logger.info("Permissions: " + retVal);
+		logger.info("d:" + d + " owner:" + d.getOwner());
+		logger.info("u:" + u + " isGuest:" + u.isGuest() );
+		
 		return retVal;
 	}
 	

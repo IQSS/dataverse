@@ -80,7 +80,9 @@ public class EjbDataverseEngine {
 				throw new RuntimeException("Command instance " + aCommand + " does not have a DvObject named '" + dvName +"'" );
 			}
 			Dataverse dvo = affectedDataverses.get(dvName);
-			Set<Permission> granted = (dvo!=null) ? roleService.roleAssignments(user, dvo).getPermissions() : EnumSet.allOf(Permission.class);
+			
+			Set<Permission> granted = (dvo!=null) ? permissionService.permissionsFor(user, dvo)
+												  : EnumSet.allOf(Permission.class);
 			Set<Permission> required = requiredMap.get(dvName);
 			if ( ! granted.containsAll(required) ) {
 				required.removeAll(granted);

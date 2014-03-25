@@ -62,6 +62,25 @@ List all the role assignments at the given dataverse.
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
 
+### Datasets
+
+	GET http://{{SERVER}}/api/datasets/?key={{apikey}}
+
+List all datasets the apikey is allowed to see.
+
+	GET http://{{SERVER}}/api/datasets/{{id}}/?key={{apikey}}
+
+Show the dataset whose id is passed.
+
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions?key={{apikey}}
+
+List versions of the dataset. 
+	
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}?key={{apikey}}
+
+Show a version of the dataset. The `versionId` can be a number, or the values `:edit` for the edit version, and `:latest` for the latest one.
+
+
 ### permissions
 
 	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}

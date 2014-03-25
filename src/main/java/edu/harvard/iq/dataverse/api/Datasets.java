@@ -120,6 +120,14 @@ public class Datasets extends AbstractApiBean {
 				: ok( json(dsv)  );
     }
 	
+	@GET
+	@Path("{id}/versions/{versionId}/files/")
+	public String listFiles() {
+		// TODO implement
+		return error("Not implemented yet");
+	}
+	
+	
 	@POST
 	@Path("{id}/versions")
 	public String addVersion( @PathParam("id") Long id, @QueryParam("key") String apikey, DatasetDTO dsDto ){

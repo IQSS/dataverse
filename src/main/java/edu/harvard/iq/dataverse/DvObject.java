@@ -37,10 +37,10 @@ public abstract class DvObject implements java.io.Serializable {
     @ManyToOne
     private DataverseUser creator;
 
-    public interface Visitor {
-        public void visit(Dataverse dv);
-        public void visit(Dataset   ds);
-        public void visit(DataFile  df);
+    public interface Visitor<T> {
+        public T visit(Dataverse dv);
+        public T visit(Dataset   ds);
+        public T visit(DataFile  df);
     }
 
     /**
@@ -102,7 +102,7 @@ public abstract class DvObject implements java.io.Serializable {
         this.creator = creator;
     }
     
-    public abstract void accept(Visitor v);
+    public abstract <T> T accept(Visitor<T> v);
 
     @Override
     public int hashCode() {
