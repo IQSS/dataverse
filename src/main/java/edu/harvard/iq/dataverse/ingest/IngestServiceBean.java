@@ -362,7 +362,7 @@ public class IngestServiceBean {
     public void performPostProcessingTasks(DataFile dataFile) {
         /*
          * At this point (4.0 alpha 1) the only ingest "post-processing task" performed 
-         * is pre-generation of thumbnails in some popular sizes for image files. 
+         * is pre-generation of image thumbnails in a couple of popular sizes. 
          * -- L.A. 
          */
         if (dataFile != null && dataFile.isImage()) {

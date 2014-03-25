@@ -457,9 +457,9 @@ public class DDIExportServiceBean {
         }
 
         // various notes:
-        // "unf" is not a valid DDI field. but we are using it as a reserved
-        // tag to specify a specially formatted <note> used to store the UNF:
-        if (checkField("unf", excludedFieldSet, includedFieldSet)) {
+        // this specially formatted note section is used to store the UNF
+        // (Universal Numeric Fingerprint) signature:
+        if (checkField("unf", excludedFieldSet, includedFieldSet) && dt.getUnf() != null && !dt.getUnf().equals("")) {
             xmlw.writeStartElement("notes");
             writeAttribute(xmlw, "level", LEVEL_FILE);
             writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
