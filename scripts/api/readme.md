@@ -16,6 +16,7 @@ Generate the infamous _Pete_,_Uma_ and _Gabbi_.
 Generates root dataverse and some other dataverses for Pete and Uma.
 
 ## Endpoints
+
 ### dvs (will be dataverses)
 
 	GET http://{{SERVER}}/api/dvs
@@ -61,6 +62,10 @@ List all the role assignments at the given dataverse.
 
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
+
+	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks?key={{username}}
+
+Get the metadata blocks defined on the passed dataverse.
 
 ### Datasets
 
