@@ -90,6 +90,11 @@ public class Access {
          * Throw a meaningful exception if file not found!
          * -- L.A. 4.0alpha1
          */
+        if (df == null) {
+            logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return null; 
+        }
+        
         
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -184,6 +189,12 @@ public class Access {
         
         
         DataFile df = dataFileService.find(fileId);
+        
+        if (df == null) {
+            logger.warning("Preview: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return null; 
+        }
+        
         String imageThumbFileName = null; 
         if (df != null && df.isImage()) {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
@@ -219,6 +230,12 @@ public class Access {
         
         
         Dataset dataset = datasetService.find(datasetId);
+        
+        if (dataset != null) {
+            logger.warning("Preview: dataset service could not locate a Dataset object for id "+datasetId+"!");
+            return null; 
+        }
+        
         String imageThumbFileName = null; 
         
         List<DataFile> dataFiles = dataset.getFiles();
