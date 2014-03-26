@@ -115,7 +115,8 @@
             <artifactId>fits</artifactId>
             <version>2012-10-25-generated</version>
         </dependency>
-       <!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty --> 
+       <!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
+       <!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
        <dependency>
 	 <groupId>org.nuiton.thirdparty</groupId>
 	 <artifactId>REngine</artifactId>
@@ -125,6 +126,12 @@
 	 <groupId>org.nuiton.thirdparty</groupId>
 	 <artifactId>Rserve</artifactId>
 	 <version>0.6-1</version>
+       </dependency>
+       <!-- Apache POI - used by ingest to parse MS Excel xslx files -->
+       <dependency>
+	 <groupId>org.apache.poi</groupId>
+	 <artifactId>poi</artifactId>
+	 <version>3.10-FINAL</version>
        </dependency>
     </dependencies>
 

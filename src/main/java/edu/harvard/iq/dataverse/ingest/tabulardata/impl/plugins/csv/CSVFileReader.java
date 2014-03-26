@@ -298,12 +298,16 @@ public class CSVFileReader extends TabularDataFileReader {
                     } else if (valueTokens[i].equalsIgnoreCase("-Inf")) {
                         // Negative infinity: 
                         caseRow[i] = "-Inf";
+                    } else if (valueTokens[i].equalsIgnoreCase("null")) {
+                        // By request from Gus - "NULL" is recognized as a 
+                        // numeric zero: 
+                        caseRow[i] = "0";
                     } else {
                         try {
                             Double testDoubleValue = new Double(valueTokens[i]);
                             caseRow[i] = testDoubleValue.toString();
                         } catch (Exception ex) {
-                            throw new IOException ("Failed to parse a value, recognized as numeric in the first pass! (?)");
+                            throw new IOException ("Failed to parse a value recognized as numeric in the first pass! (?)");
                         }
                     }    
                 } else {

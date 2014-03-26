@@ -185,7 +185,7 @@ public class Access {
         
         DataFile df = dataFileService.find(fileId);
         String imageThumbFileName = null; 
-        if (df.isImage()) {
+        if (df != null && df.isImage()) {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
         } else {
             imageThumbFileName = getWebappImageResource (DEFAULT_FILE_ICON);
