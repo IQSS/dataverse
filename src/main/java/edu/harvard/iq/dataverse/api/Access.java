@@ -231,7 +231,7 @@ public class Access {
         
         Dataset dataset = datasetService.find(datasetId);
         
-        if (dataset != null) {
+        if (dataset == null) {
             logger.warning("Preview: dataset service could not locate a Dataset object for id "+datasetId+"!");
             return null; 
         }
