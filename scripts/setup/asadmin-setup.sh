@@ -106,8 +106,7 @@ fi
 # 
 # location of the datafiles directory: 
 # (defaults to dataverse/files in the users home directory)
-asadmin create-jvm-options -Ddataverse.files.directory=~/dataverse/files
-
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${HOME}/dataverse/files"
 
 ###
 # Restart
