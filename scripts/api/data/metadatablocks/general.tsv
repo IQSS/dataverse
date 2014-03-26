@@ -1,8 +1,8 @@
 #metadataBlock	name	displayName												
-	citation	Citation												
+	citation	Citation Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	title	Title	Full title by which the Dataset is known.	Enter title...	text	0	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
-	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.	FamilyName, GivenName or Organization	text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	authorName	Name	Enter the author's Family Name, Given Name, or the name of the organization responsible for this dataset.		text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
 	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset.		text	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
