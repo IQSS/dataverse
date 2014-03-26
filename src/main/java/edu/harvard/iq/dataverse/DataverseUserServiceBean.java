@@ -35,7 +35,6 @@ public class DataverseUserServiceBean {
     
 	public DataverseUser findGuestUser() {
 		DataverseUser theGuest = findByUserName(GUEST_USERNAME);
-		theGuest.setGuest(true);
 		return theGuest;
 	}
 	

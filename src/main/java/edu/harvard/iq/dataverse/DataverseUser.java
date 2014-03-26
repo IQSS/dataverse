@@ -47,9 +47,6 @@ public class DataverseUser implements Serializable {
     private String position;
     private String phone;
 	
-	@Transient
-	private boolean guest;
-
     public Long getId() {
         return id;
     }
@@ -123,11 +120,7 @@ public class DataverseUser implements Serializable {
     }
 
 	public boolean isGuest() {
-		return guest;
-	}
-
-	public void setGuest(boolean guest) {
-		this.guest = guest;
+		return "__GUEST__".equals( getUserName() );
 	}
 	
     @Override
