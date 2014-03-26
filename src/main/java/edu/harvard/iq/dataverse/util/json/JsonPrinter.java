@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.api;
+package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
@@ -17,17 +17,15 @@ import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-
-import static edu.harvard.iq.dataverse.api.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 /**
  * Convert objects to Json.
@@ -36,6 +34,8 @@ import java.util.TreeSet;
 public class JsonPrinter {
 	
 	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss X");
+	
+	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
 	public static JsonObjectBuilder json( RoleAssignment ra ) {
 		return Json.createObjectBuilder()
@@ -68,30 +68,37 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( Dataverse dv ) {
-		JsonObjectBuilder bld = Json.createObjectBuilder()
+		JsonObjectBuilder bld = jsonObjectBuilder()
 						.add("id", dv.getId() )
 						.add("alias", nullFill(dv.getAlias()) )
 						.add("name", nullFill(dv.getName()))
 						.add("affiliation", dv.getAffiliation())
 						.add("contactEmail", dv.getContactEmail())
 						.add("permissionRoot", dv.isPermissionRoot())
-						.add("description", nullFill(dv.getDescription()));
+						.add("creator", brief.json(dv.getCreator()))
+						.add("description", dv.getDescription());
 		if ( dv.getOwner() != null ) {
 			bld.add("ownerId", dv.getOwner().getId());
 		}
+		if ( dv.getCreateDate() != null ) {
+			bld.add("creationDate", dateFormat.format(dv.getCreateDate()));
+		}
+		
 		return bld;
 	}
 	
 	public static JsonObjectBuilder json( DataverseUser user ) {
-		return Json.createObjectBuilder()
-				.add( "id", user.getId() )
-				.add( "firstName", nullFill(user.getFirstName()))
-				.add( "lastName",  nullFill(user.getLastName()))
-				.add( "userName",  nullFill(user.getUserName()))
-				.add( "affiliation", nullFill(user.getAffiliation()))
-				.add( "position",  nullFill(user.getPosition()))
-				.add( "email",     nullFill(user.getEmail()))
-				.add( "phone",     nullFill(user.getPhone()));
+		return (user == null ) 
+				? null 
+				: jsonObjectBuilder()
+					.add( "id", user.getId() )
+					.add( "firstName", user.getFirstName())
+					.add( "lastName",  user.getLastName())
+					.add( "userName",  user.getUserName())
+					.add( "affiliation", user.getAffiliation())
+					.add( "position",  user.getPosition())
+					.add( "email",     user.getEmail())
+					.add( "phone",     user.getPhone());
 	}
 	
 	public static JsonObjectBuilder json( Dataset ds ) {
@@ -104,8 +111,8 @@ public class JsonPrinter {
 				.add( "authority", ds.getAuthority() )
 				.add( "versions", jsonObjectBuilder()
 									.add("count", versionCount)
-									.add("latest", jsonBrief(ds.getLatestVersion()))
-									.add("edit", jsonBrief(ds.getEditVersion()))
+									.add("latest", brief.json(ds.getLatestVersion()))
+									.add("edit", brief.json(ds.getEditVersion()))
 				);
 		
 	}
@@ -265,14 +272,6 @@ public class JsonPrinter {
 				;
 	}
 	
-	public static JsonObjectBuilder jsonBrief( DatasetVersion dsv ) {
-		return ( dsv==null ) 
-				? null
-				: jsonObjectBuilder().add("id", dsv.getId())
-					.add("version", dsv.getVersion() )
-					.add("versionState", dsv.getVersionState().name() )
-					.add("title", dsv.getTitle());
-	}
 	
 	public static String nullFill( String s ) {
 		return s==null ? "" : s;

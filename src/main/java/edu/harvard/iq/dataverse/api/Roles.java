@@ -20,7 +20,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import static edu.harvard.iq.dataverse.api.JsonPrinter.*;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;

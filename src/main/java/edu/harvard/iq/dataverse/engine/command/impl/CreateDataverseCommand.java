@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.EnumSet;
 
 /**
@@ -32,6 +34,14 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 			if ( ctxt.dataverses().isRootDataverseExists() ) {
 				throw new CommandException("Root Dataverse already exists. Cannot create another one", this);
 			}
+		}
+		
+		if ( created.getCreateDate() == null )  {
+			created.setCreateDate( new Timestamp(new Date().getTime()) );
+		}
+		
+		if ( created.getCreator() == null ) {
+			created.setCreator(getUser());
 		}
 		
 		// Save the dataverse

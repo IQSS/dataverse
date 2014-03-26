@@ -151,8 +151,6 @@ public class DataversePage implements java.io.Serializable {
         
 		if ( editMode == EditMode.INFO ) {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-            dataverse.setCreateDate(new Timestamp(new Date().getTime()));
-            dataverse.setCreator(session.getUser());
 			cmd = new CreateDataverseCommand(dataverse, session.getUser());
         
 		} else if ( editMode == EditMode.SETUP ) {

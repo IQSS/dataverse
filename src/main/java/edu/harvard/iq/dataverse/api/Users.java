@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseUser;
-import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;

@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.api.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -53,6 +53,29 @@ public class Dataverses extends AbstractApiBean {
 		return addDataverse(d, "", apiKey);
 	}
 	
+	@POST
+	@Path("{identifier}")
+	public String addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+		if ( ! parentIdtf.isEmpty() ) {
+			Dataverse owner = findDataverse(parentIdtf);
+			if ( owner == null ) {
+				return error( "Can't find dataverse with identifier='" + parentIdtf + "'");
+			}
+			d.setOwner(owner);
+		}
+		
+		try {
+			d = engineSvc.submit( new CreateDataverseCommand(d, u) );
+			return ok( json(d) );
+		} catch (CommandException ex) {
+			logger.log(Level.SEVERE, "Error creating dataverse", ex);
+			return error("Error creating dataverse: " + ex.getMessage() );
+		}
+	}
+	
 	@GET
 	@Path("{identifier}")
 	public String viewDataverse( @PathParam("identifier") String idtf ) {
@@ -75,30 +98,6 @@ public class Dataverses extends AbstractApiBean {
 			return ok( "Dataverse " + idtf  +" deleted");
 		} catch ( CommandException ex ) {
 			logger.log(Level.SEVERE, "Error deleting dataverse", ex);
-			return error("Error creating dataverse: " + ex.getMessage() );
-		}
-	}
-	
-	@POST
-	@Path("{identifier}")
-	public String addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
-		
-		if ( ! parentIdtf.isEmpty() ) {
-			Dataverse owner = isNumeric(parentIdtf) ? dataverseSvc.find( Long.parseLong(parentIdtf))
-													: dataverseSvc.findByAlias( parentIdtf );
-			if ( owner == null ) {
-				return error( "Can't find dataverse with identifier='" + parentIdtf + "'");
-			}
-			d.setOwner(owner);
-		}
-		
-		try {
-			d = engineSvc.submit( new CreateDataverseCommand(d, u) );
-			return ok( json(d) );
-		} catch (CommandException ex) {
-			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
 		}
 	}
