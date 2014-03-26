@@ -1,5 +1,5 @@
 #metadataBlock	name	displayName												
-	socialscience	Social Science and Humanities												
+	socialscience	Social Science and Humanities Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  			0	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	topicClassValue	Topic Classification	Topic or Subject term.		text	1	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	socialscience
