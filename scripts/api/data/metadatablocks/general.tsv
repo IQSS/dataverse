@@ -4,16 +4,16 @@
 	title	Title	Full title by which the Dataset is known.	Enter title...	text	0	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.	FamilyName, GivenName or Organization	text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	authorName	Name	Enter the author's Family Name, Given Name, or the name of the organization responsible for this dataset.		text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
-	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	author	citation
 	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset.		text	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	description	Description	A summary describing the purpose, nature, and scope of the Dataset.		textbox	5	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	keyword	Keyword	Free-form text that describe important aspects of the Dataset.		text	6	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
-	subject	Subject	Select any Subject(s) that are relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
+	subject	Subject	Select any domain-specific Subject(s) that are relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
 	notesText	Notes	Additional important information about the Dataset		textbox	8	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	otherId	Other ID	Another unique identifier that identifies this dataset (e.g., producer's or archive's number).			9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	10	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdAgency	Agency	Name of agency which generated this identifier.		text	11	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	publication	Related Publication	Publications that use the data from this Dataset.			12	FALSE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
+	publication	Related Publication	Publications that use the data from this Dataset.			12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	publicationCitation	Publication Citation	Provide the full bibliographic citation for this related publication.		textbox	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	14	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	publicationIDNumber	ID Number	The actual identifier for the selected ID type.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
