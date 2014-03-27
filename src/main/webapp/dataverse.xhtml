@@ -101,7 +101,8 @@
                     <div class="clearfix" style="border-bottom:1px solid #DDDDDD;">
                         <div id="actionButtonBlock" style="float:right;">
                             <!-- Edit Button -->
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode}">
+                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
+                                                     (!empty DataversePage.dataverse.owner or (empty DataversePage.dataverse.owner and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')))}">
                                 <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -144,15 +145,16 @@
                                 </div>
                             </ui:fragment>
                             <!-- Release Button -->
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode}">
+                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
+                                                     (!empty DataversePage.dataverse.owner or (empty DataversePage.dataverse.owner and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')))}">
                                 <div style="float:right; margin-left:1em;">
                                     <div class="btn-group">
                                         <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
                                             <ui:fragment rendered="#{!DataversePage.dataverse.released}">
-                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DataversePage.dataverse.released}">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
                                             </ui:fragment>
                                         </button>
                                         <ui:fragment rendered="#{!DataversePage.dataverse.released}">
@@ -184,11 +186,11 @@
                                     </div>
                                 </div>
                                 <p:growl id="messages" showDetail="true" />  
-                                    <p:confirmDialog message="Are you sure you want to make your dataverse 'Public'? Once you do so it must remain 'Public'."  header="Release Dataverse"  widgetVar="confirmation">  
-                                            <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DataversePage.releaseDataverse}" >
-                                            </p:commandButton>  
-                                            <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
-                                    </p:confirmDialog>
+                                <p:confirmDialog message="Are you sure you want to make your dataverse 'Public'? Once you do so it must remain 'Public'."  header="Release Dataverse"  widgetVar="confirmation">  
+                                    <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DataversePage.releaseDataverse}" >
+                                    </p:commandButton>  
+                                    <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
+                                </p:confirmDialog>
                             </ui:fragment>
                         </div>
 
