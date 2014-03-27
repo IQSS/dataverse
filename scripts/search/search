@@ -1,6 +1,7 @@
 #!/bin/sh
 if [ -z "$1" ]; then
     curl -s 'http://localhost:8080/api/search?q=*'
+    #curl -s 'http://localhost:8080/api/search?q=*&key=pete'
 else
     # i.e. ./search 'q=*&fq=filetype_s:"image"&fq=dvtype:files'
     # i.e. ./search 'q=*&start=10'

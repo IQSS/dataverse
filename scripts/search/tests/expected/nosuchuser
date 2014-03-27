@@ -1,0 +1,5 @@
+
+{
+    "status":"ERROR",
+    "message":"Couldn't find username: nosuchuser"
+}

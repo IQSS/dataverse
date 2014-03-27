@@ -54,7 +54,7 @@ public class SolrSearchResult {
     public JsonObject toJsonObject() {
         JsonObjectBuilder parentBuilder = Json.createObjectBuilder();
         for (String key : parent.keySet()) {
-            parentBuilder.add(key, parent.get(key) != null ? parent.get(key) : "NONE-ROOT-DATAVERSE-OR-EMPTY-STRING-DATASET-TITLE");
+            parentBuilder.add(key, parent.get(key) != null ? parent.get(key) : "NONE-ROOT-DATAVERSE-OR-EMPTY-STRING-DATASET-TITLE-OR-GROUP");
         }
         JsonObjectBuilder typeSpecificFields = Json.createObjectBuilder();
         if (this.type.equals("dataverses")) {

@@ -255,10 +255,8 @@ public class SearchIncludeFragment {
             logger.info("query from user:   " + query);
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
             logger.info("sort by: " + sortField);
-            filterQueriesDebug = filterQueriesFinal;
-//            SolrQuery.SortClause sortClause = new SolrQuery.SortClause(sort, SolrQuery.ORDER.asc);
-            solrQueryResponse = searchService.search(dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart);
-            solrQueryResponseAllTypes = searchService.search(dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -278,6 +276,7 @@ public class SearchIncludeFragment {
             this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
             this.datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
             this.staticSolrFieldFriendlyNamesBySolrField = solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField();
+            this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();

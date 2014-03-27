@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
+import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -20,7 +24,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 
 @Path("search")
-public class Search {
+public class Search extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Search.class.getCanonicalName());
 
@@ -28,14 +32,16 @@ public class Search {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DataverseUserServiceBean dataverseUserService;
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("sort") String sortField, @QueryParam("order") String sortOrder, @QueryParam("start") final int paginationStart) {
+    public String search(@QueryParam("key") String apiKey, @QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("sort") String sortField, @QueryParam("order") String sortOrder, @QueryParam("start") final int paginationStart) {
         if (query != null) {
             if (sortField == null) {
-                // sane, performant default
-                sortField = SearchFields.RELEVANCE;
+                // predictable default
+                sortField = SearchFields.ID;
             }
             if (sortOrder == null) {
                 // asc for alphabetical by default despite GitHub using desc by default: "The sort order if sort parameter is provided. One of asc or desc. Default: desc" -- http://developer.github.com/v3/search/
@@ -43,8 +49,15 @@ public class Search {
             }
             SolrQueryResponse solrQueryResponse;
             try {
-//                SolrQuery.SortClause sortClause = new SolrQuery.SortClause(sortField, sortOrder);
-                solrQueryResponse = searchService.search(dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
+                DataverseUser dataverseUser = null;
+                if (apiKey != null) {
+                    String usernameProvided = apiKey;
+                    dataverseUser = dataverseUserService.findByUserName(usernameProvided);
+                    if (dataverseUser == null) {
+                        return error("Couldn't find username: " + usernameProvided);
+                    }
+                }
+                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
             } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -59,10 +72,10 @@ public class Search {
                 return Util.message2ApiError(message);
             }
 
-            JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+//            JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-                filesArrayBuilder.add(solrSearchResult.toJsonObject());
+//                filesArrayBuilder.add(solrSearchResult.toJsonObject());
 
             }
 
@@ -94,13 +107,17 @@ public class Search {
 //                logger.info(string + ":" + string1);
             }
 
+            List filterQueriesActual = solrQueryResponse.getFilterQueriesActual();
             JsonObject value = Json.createObjectBuilder()
+                    .add("q", query)
+                    .add("fq_provided", filterQueries.toString())
+                    .add("fq_actual", filterQueriesActual.toString() )
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("count_in_response", solrSearchResults.size())
                     .add("items", solrSearchResults.toString())
 //                    .add("spelling_alternatives", spelling_alternatives)
-                    .add("itemsJson", filesArrayBuilder.build())
+//                    .add("itemsJson", filesArrayBuilder.build())
 //                    .add("facets", facets)
                     .build();
 //            logger.info("value: " + value);

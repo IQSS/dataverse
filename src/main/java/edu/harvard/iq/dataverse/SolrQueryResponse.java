@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class SolrQueryResponse {
     private List<FacetCategory> facetCategoryList;
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
+    private List<String> filterQueriesActual = new ArrayList<String>();
 
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -71,6 +73,14 @@ public class SolrQueryResponse {
 
     void setStaticSolrFieldFriendlyNamesBySolrField(Map<String, String> staticSolrFieldFriendlyNamesBySolrField) {
         this.staticSolrFieldFriendlyNamesBySolrField = staticSolrFieldFriendlyNamesBySolrField;
+    }
+
+    public List<String> getFilterQueriesActual() {
+        return filterQueriesActual;
+    }
+
+    public void setFilterQueriesActual(List<String> filterQueriesActual) {
+        this.filterQueriesActual = filterQueriesActual;
     }
 
 }

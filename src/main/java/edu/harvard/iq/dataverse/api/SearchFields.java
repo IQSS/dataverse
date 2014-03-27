@@ -59,6 +59,8 @@ public class SearchFields {
     public static final String TYPE = "dvtype";
     public static final String NAME_SORT = "name_sort";
     public static final String RELEASE_DATE = "releasedate";
+    public static final String GROUPS = "groups_s";
+    public static final String PERMS = "perms_ss";
     // Used for performance. Why hit the db if solr has the data?
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";

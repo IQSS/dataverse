@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.api.SearchFields;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,11 +44,12 @@ public class SearchServiceBean {
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-    
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DataverseUserServiceBean dataverseUserService;
 
-    public SolrQueryResponse search(Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
+    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -73,6 +75,44 @@ public class SearchServiceBean {
         for (String filterQuery : filterQueries) {
             solrQuery.addFilterQuery(filterQuery);
         }
+
+        String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
+        // initialize to public only to be safe
+        String permissionFilterQuery = publicOnly;
+        if (dataverseUser != null) {
+            if (dataverseUser.isGuest()) {
+                permissionFilterQuery = publicOnly;
+            } else {
+                /**
+                 * Non-guests might get more than public stuff with an OR or
+                 * two.
+                 *
+                 * Unless you're part of some special group, you get the "User
+                 * Private Group" (UGP) that corresponds to your username:
+                 * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
+                 */
+                String publicPlusUserPrivateGroup = "("
+                        + publicOnly
+                        + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId() + ")";
+                /**
+                 * @todo: replace this with a real group... look up the user's
+                 * groups (once you can)
+                 */
+                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
+                    String publicPlusUserPrivateGroupPlusNSA = "("
+                            + publicOnly
+                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
+                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
+                            + ")";
+                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
+                } else {
+                    // not part of any particular group 
+                    permissionFilterQuery = publicPlusUserPrivateGroup;
+                }
+            }
+        }
+        solrQuery.addFilterQuery(permissionFilterQuery);
+
         solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
@@ -350,6 +390,7 @@ public class SearchServiceBean {
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);
         solrQueryResponse.setStaticSolrFieldFriendlyNamesBySolrField(staticSolrFieldFriendlyNamesBySolrField);
+        solrQueryResponse.setFilterQueriesActual(Arrays.asList(solrQuery.getFilterQueries()));
         return solrQueryResponse;
     }
 

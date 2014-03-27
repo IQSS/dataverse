@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -29,9 +31,18 @@ public class IndexServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataverseUserServiceBean dataverseUserServiceBean;
 
-//    List<String> advancedSearchFields = new ArrayList<>();
-//    List<String> notAdvancedSearchFields = new ArrayList<>();
+    private static final String npeGetCreator = "creatorNPE";
+    private static final String groupPrefix = "group_";
+    private static final String groupPerUserPrefix = "group_user";
+    private static final Long publicGroupId = 1L;
+    private static final String publicGroupString = groupPrefix + "public";
+    /**
+     * @todo: remove this fake "has access to all data" group
+     */
+    private static final Long tmpNsaGroupId = 2L;
 
     public String indexAll() {
         /**
@@ -67,7 +78,28 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
-        return dataverseIndexCount + " dataverses" + " and " + datasetIndexCount + " datasets indexed\n";
+        /**
+         * @todo: replace hard-coded groups with real groups
+         */
+        Map<Long, String> groups = new HashMap<>();
+        groups.put(publicGroupId, publicGroupString);
+        groups.put(tmpNsaGroupId, "nsa");
+        groups.put(tmpNsaGroupId + 1, "flappybird");
+        groups.put(tmpNsaGroupId + 2, "2048");
+
+        int groupIndexCount = 0;
+        for (Map.Entry<Long, String> group : groups.entrySet()) {
+            groupIndexCount++;
+            logger.info("indexing group " + datasetIndexCount + " of " + groups.size() + ": " + indexGroup(group));
+        }
+
+        int userIndexCount = 0;
+        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
+            userIndexCount++;
+            logger.info("indexing user " + userIndexCount + " of several: " + indexUser(user));
+        }
+
+        return dataverseIndexCount + " dataverses, " + datasetIndexCount + " datasets, " + groupIndexCount + " groups, and " + userIndexCount + " users indexed\n";
     }
 
     public String indexDataverse(Dataverse dataverse) {
@@ -79,6 +111,35 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
+        if (dataverse.isReleased()) {
+            solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+        } else if (dataverse.getCreator() != null) {
+            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
+            /**
+             * @todo: replace this fake version of granting users access to
+             * dataverses with the real thing, when it's available in the app
+             */
+            if (dataverse.getCreator().getUserName().equals("pete")) {
+                // figure out if cathy is around
+                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                if (cathy != null) {
+                    // let cathy see all of pete's dataverses
+                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                }
+            }
+        } else {
+            /**
+             * @todo: remove this once everyone has dropped their database and
+             * won't get NPE's from dataverse.getCreator
+             */
+            solrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
+        }
+
+        /**
+         * @todo: remove this fake "has access to all data" group
+         */
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
         if (dataverse.getOwner() != null) {
             solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
@@ -150,6 +211,10 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+        /**
+         * @todo: make datasets undiscoverable... what are the rules?
+         */
+        solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getEditVersion() != null) {
@@ -312,6 +377,10 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
+            /**
+             * @todo: make files undiscoverable... what are the rules?
+             */
+            datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getContentType());
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType().split("/")[0]);
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
@@ -408,6 +477,79 @@ public class IndexServiceBean {
         return "indexed dataset " + dataset.getId(); // + ":" + dataset.getTitle();
     }
 
+    public String indexGroup(Map.Entry<Long, String> group) {
+
+        Collection<SolrInputDocument> docs = new ArrayList<>();
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+
+        String id = groupPrefix + group.getKey();
+
+        solrInputDocument.addField(SearchFields.TYPE, "groups");
+        solrInputDocument.addField(SearchFields.ID, id);
+        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
+        solrInputDocument.addField(SearchFields.NAME_SORT, group.getValue());
+        solrInputDocument.addField(SearchFields.GROUPS, id);
+
+        docs.add(solrInputDocument);
+        /**
+         * @todo allow for configuration of hostname and port
+         */
+        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+
+        try {
+            server.add(docs);
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            server.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+
+        return "indexed group " + group;
+    }
+
+    /**
+     * @todo: call this when users are created (and added?) what if users are
+     * deleted? Can users be deleted??
+     */
+    public String indexUser(DataverseUser user) {
+
+        Collection<SolrInputDocument> docs = new ArrayList<>();
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+
+        String userid = groupPerUserPrefix + user.getId();
+        if (user.isGuest()) {
+            userid = publicGroupString;
+        }
+
+        solrInputDocument.addField(SearchFields.TYPE, "groups");
+        solrInputDocument.addField(SearchFields.ID, userid);
+        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getId());
+        solrInputDocument.addField(SearchFields.NAME_SORT, user.getUserName());
+        solrInputDocument.addField(SearchFields.GROUPS, userid);
+
+        docs.add(solrInputDocument);
+        /**
+         * @todo allow for configuration of hostname and port
+         */
+        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+
+        try {
+            server.add(docs);
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            server.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+
+        return "indexed user " + user.getId() + ":" + user.getUserName();
+    }
+
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
         if (!dataverseService.findRootDataverse().equals(dataverse)) {
             // important when creating root dataverse
@@ -453,6 +595,22 @@ public class IndexServiceBean {
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
         }
+    }
+
+    public static String getGroupPrefix() {
+        return groupPrefix;
+    }
+
+    public static String getGroupPerUserPrefix() {
+        return groupPerUserPrefix;
+    }
+
+    public static String getPublicGroupString() {
+        return publicGroupString;
+    }
+
+    public static Long getTmpNsaGroupId() {
+        return tmpNsaGroupId;
     }
 
 }

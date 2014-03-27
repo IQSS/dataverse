@@ -77,7 +77,7 @@ public class SearchPage implements java.io.Serializable {
         }
         SolrQueryResponse solrQueryResponse = null;
         try {
-            solrQueryResponse = searchService.search(dataverseService.findRootDataverse(), query, filterQueries, "score", "asc", paginationStart);
+            solrQueryResponse = searchService.search(null, dataverseService.findRootDataverse(), query, filterQueries, "score", "asc", paginationStart);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

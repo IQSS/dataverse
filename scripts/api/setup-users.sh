@@ -6,3 +6,7 @@ echo
 curl -H "Content-type:application/json" -X POST -d @data/userGabbi.json "http://localhost:8080/api/users?password=gabbi"
 echo
 curl http://localhost:8080/api/users/:guest
+echo
+curl -H "Content-type:application/json" -X POST -d @data/userCathy.json "http://localhost:8080/api/users?password=cathy"
+echo
+curl -H "Content-type:application/json" -X POST -d @data/userNick.json "http://localhost:8080/api/users?password=nick"
