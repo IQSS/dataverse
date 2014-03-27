@@ -76,7 +76,7 @@ public class Access {
     @EJB 
     DatasetServiceBean datasetService; 
 
-    @EJB
+    //@EJB
     
     @Path("datafile/{fileId}")
     @GET

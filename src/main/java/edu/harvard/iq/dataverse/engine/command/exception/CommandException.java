@@ -21,4 +21,8 @@ public class CommandException extends Exception {
 		failedCommand = aCommand;
 	}
 
+	public Command getFailedCommand() {
+		return failedCommand;
+	}
+	
 }

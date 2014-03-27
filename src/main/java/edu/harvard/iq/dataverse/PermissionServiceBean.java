@@ -98,9 +98,6 @@ public class PermissionServiceBean {
 		if ( (d.getOwner() == null) && (!u.isGuest()) )  {
 			retVal.add( Permission.UndoableEdit );
 		}
-		logger.info("Permissions: " + retVal);
-		logger.info("d:" + d + " owner:" + d.getOwner());
-		logger.info("u:" + u + " isGuest:" + u.isGuest() );
 		
 		return retVal;
 	}

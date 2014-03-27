@@ -73,9 +73,13 @@ Get the metadata blocks defined on the passed dataverse.
 
 List all datasets the apikey is allowed to see.
 
-	GET http://{{SERVER}}/api/datasets/{{id}}/?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
 
 Show the dataset whose id is passed.
+
+	DELETE http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
+
+Delete the dataset whose id is passed.
 
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions?key={{apikey}}
 

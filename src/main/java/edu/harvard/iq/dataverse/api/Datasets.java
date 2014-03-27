@@ -8,7 +8,11 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -16,6 +20,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -62,6 +67,30 @@ public class Datasets extends AbstractApiBean {
 		
         
     }
+	
+	@DELETE
+	@Path("{id}")
+	public String deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+		DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		
+        Dataset ds = datasetService.find(id);
+        if (ds == null) return error("dataset not found");
+		
+		try {
+			engineSvc.submit( new DeleteDatasetCommand(ds, u));
+			return ok("Dataset " + id + " deleted");
+			
+		} catch (CommandExecutionException ex) {
+			// internal error
+			logger.log( Level.SEVERE, "Error deleting dataset " + id + ":  " + ex.getMessage(), ex );
+			return error( "Can't delete dataset: " + ex.getMessage() );
+			
+		} catch (CommandException ex) {
+			return error( "Can't delete dataset: " + ex.getMessage() );
+		}
+		
+	}
 	
 	@GET
 	@Path("{id}/versions")

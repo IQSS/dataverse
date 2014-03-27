@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import javax.persistence.EntityManager;
 
 /**
@@ -20,6 +21,8 @@ import javax.persistence.EntityManager;
 public interface CommandContext {
 	
 	public EntityManager em();
+	
+	public DataverseEngine engine();
 	
 	public DvObjectServiceBean dvObjects();
 	

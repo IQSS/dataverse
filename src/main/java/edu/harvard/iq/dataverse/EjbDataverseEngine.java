@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -130,6 +131,16 @@ public class EjbDataverseEngine {
 				@Override
 				public DataverseFacetServiceBean facets() {
 					return dataverseFacetService;
+				}
+				
+				@Override
+				public DataverseEngine engine() { 
+					return new DataverseEngine() {
+						@Override
+						public <R> R submit(Command<R> aCommand) throws CommandException {
+							return EjbDataverseEngine.this.submit(aCommand);
+						}
+					};
 				}
 			};
 		}

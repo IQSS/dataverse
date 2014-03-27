@@ -77,6 +77,7 @@ public class DatasetVersion implements Serializable {
 
     @ManyToOne
     private Dataset dataset;
+	
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("category") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
     private List<FileMetadata> fileMetadatas;
@@ -262,7 +263,7 @@ public class DatasetVersion implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse[id=" + id + "]";
+        return "[DatasetVersion id:" + getId() + "]";
     }
 
     public boolean isLatestVersion() {

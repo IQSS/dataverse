@@ -43,7 +43,9 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
 		}
 		
-		// TODO see that published dataverses can't be deleted
+		if ( doomed.isReleased() ) {
+			throw new IllegalCommandException("Cannot delete a released dataverse", this);
+		}
 		
 		// if we got here, we can delete
 		
