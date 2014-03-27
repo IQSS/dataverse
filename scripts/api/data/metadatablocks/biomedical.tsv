@@ -1,5 +1,5 @@
 #metadataBlock	name	displayName												
-	biomedical	Biomedical												
+	biomedical	Biomedical Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	studyDesignType	Study Design	Study Design Descriptors			1	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		biomedical
 	studyDesignTypeValue	Type	A term allowing the classification of the study based on the overall experimental design (e.g. crossover design; parallel group design). The term can be free text or from, for example, a controlled  vocabulary or an ontology. If the latter source is used the Term Accession Number and Term Source  REF fields below are required.		text	2	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	studyDesignType	biomedical
@@ -34,7 +34,7 @@
 	studyProtocolComponentsType	Components Type	Study Protocol Components Type		text	31	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
 	studyProtocolComponentsTypeTermAccessionNumber	Components Type Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	32	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
 	studyProtocolComponentsTypeTermSourceREF	Components Type Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	33	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-#controlledVocabulyValue	DatasetField	Value	displayOrder											
+#controlledVocabulary	DatasetField	Value	displayOrder											
 	studyDesignTypeValue	all pairs design	0											
 	studyDesignTypeValue	array platform variation design	1											
 	studyDesignTypeValue	cell component comparison design	2											

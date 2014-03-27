@@ -1,0 +1,23 @@
+User-agent: *
+Disallow: /
+User-agent: Googlebot
+Disallow: /
+#Crawl-delay: 120
+#Disallow: /dvn/faces/javax.faces.resource
+#Disallow: /dvn/OAIHandler
+#Disallow: /dvn/faces/ContactUsPage.xhtml
+#Disallow: /dvn/dv/*/faces/ContactUsPage.xhtml
+#Disallow: /dvn/faces/study/TermsOfUsePage.xhtml
+#Disallow: /dvn/faces/subsetting/SubsettingPage.xhtml
+#Disallow: /dvn/dv/*/faces/subsetting/SubsettingPage.xhtml
+#Disallow: /dvn/FileDownload/
+#Disallow: /FileDownload/
+#Disallow: /dvn/dv/*/FileDownload/
+#Disallow: /dvn/resources/
+#Disallow: /dvn/api/
+#
+
+
+# Created initially using: http://www.mcanerin.com/EN/search-engine/robots-txt.asp
+# Verified using: http://tool.motoricerca.info/robots-checker.phtml
+

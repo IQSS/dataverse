@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse Network Guides
+Dataverse Network Guides (Testing for 4.0)
 =======================================================
 
 Contents:
@@ -18,7 +18,7 @@ Contents:
   API/index
 
 How the Guides Are Organized
-=========================
+=============================
 
 The Guides are reference documents that explain how to use
 the Dataverse Network, which are divided into the following sections: Installers Guide, Developers Guide, API Guide, and Users

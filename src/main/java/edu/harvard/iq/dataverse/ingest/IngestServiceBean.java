@@ -42,6 +42,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileR
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -144,6 +146,7 @@ public class IngestServiceBean {
                 dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
                 dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
                 dataFile.setName(dataFile.getName().replaceAll("\\.csv", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.xlsx", ".tab"));
                 // A safety check, if through some sorcery the file exists already: 
                 while (Files.exists(dataFile.getFileSystemLocation())) {
                     datasetService.generateFileSystemName(dataFile);
@@ -190,6 +193,11 @@ public class IngestServiceBean {
             return "application/x-rlang-transport";
         } else if (fileName.endsWith(".csv")) {
             return "text/csv";
+        } else if (fileName.endsWith(".xlsx")) {
+            return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            // Yep, that's the official mime type for .xlsx spreadsheets!\n" +
+            // It's ok, we'll replace it with something user-friendly, when presenting it 
+            // to the user. 
         }
 
         return null;
@@ -220,6 +228,8 @@ public class IngestServiceBean {
         } else if (dataFile.getName() != null && dataFile.getName().endsWith(".RData")) {
             return true;
         } else if (dataFile.getName() != null && dataFile.getName().endsWith(".csv")) {
+            return true;
+        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".xlsx")) {
             return true;
         }
 
@@ -401,6 +411,8 @@ public class IngestServiceBean {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (fileName.endsWith(".csv")) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
+        } else if (fileName.endsWith(".xlsx")) {
+            ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
         }
 
         return ingestPlugin;
