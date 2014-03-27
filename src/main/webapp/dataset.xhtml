@@ -212,7 +212,7 @@
                                             <p:message for="fileName"/>
                                         </ui:fragment>
                                         
-                                        <h:outputText id="fileTypeOutputRegular" value="#{file.contentType}#{!empty file.md5 ? ', ' : ''}" rendered="#{!(file.tabularData)}"/>
+                                        <h:outputText id="fileTypeOutputRegular" value="#{file.friendlyType}#{!empty file.md5 ? ', ' : ''}" rendered="#{!(file.tabularData)}"/>
                                         <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
                                         
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty file.unf ? ', ' : ''}" rendered="#{file.tabularData}"/>

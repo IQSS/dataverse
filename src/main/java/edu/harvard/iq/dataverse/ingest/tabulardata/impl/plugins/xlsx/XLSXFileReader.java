@@ -266,7 +266,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         // in some weird conflict in the app; the default XMLReader obtained 
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
         // just fine. however, 
-        // TODO: verify why the app gest built with xml-apis-1.0.b2.jar; it's 
+        // TODO: verify why the app gets built with xml-apis-1.0.b2.jar; it's 
         // an old version - 1.4 seems to be the current release, and 2.0.2
         // (a new development?) appears to be available. We don't specifically
         // request this 1.0.* version, so another package must have it defined

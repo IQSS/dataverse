@@ -20,10 +20,13 @@
 
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -79,5 +82,48 @@ public class FileUtil implements java.io.Serializable  {
         } else {
             return originalName +"."+newExtension ;
         }
+    }
+    
+    public static String getUserFriendlyFileType(DataFile dataFile) {
+        String fileType = dataFile.getContentType();
+         
+        if (fileType != null) {
+            if (fileType.indexOf(";") != -1) {
+                fileType = fileType.substring(0, fileType.indexOf(";"));
+            }
+
+            try {
+                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+            } catch (MissingResourceException e) {
+                return fileType;
+            }
+        }
+
+        return fileType;
+    }
+    
+    public static String getFacetFileType(DataFile dataFile) {
+        String fileType = dataFile.getContentType();
+        
+        if (fileType != null) {
+            if (fileType.indexOf(";") != -1) {
+                fileType = fileType.substring(0, fileType.indexOf(";"));
+            }
+
+            try {
+                return ResourceBundle.getBundle("MimeTypeFacets").getString(fileType);
+            } catch (MissingResourceException e) {
+                // if there's no defined "facet-friendly" form of this mime type
+                // we'll truncate the available type by "/", e.g., all the 
+                // unknown image/* types will become "image"; many other, quite
+                // different types will all become "application" this way - 
+                // but it is probably still better than to tag them all as 
+                // "uknown". 
+                // -- L.A. 4.0 alpha 1
+                return fileType.split("/")[0];
+            }
+        }
+        
+        return "unknown"; 
     }
 }

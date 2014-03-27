@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -381,8 +382,14 @@ public class IndexServiceBean {
              * @todo: make files undiscoverable... what are the rules?
              */
             datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getContentType());
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, dataFile.getContentType().split("/")[0]);
+            // For the mime type, we are going to index the "friendly" version, e.g., 
+            // "PDF File" instead of "application/pdf", "MS Excel" instead of 
+            // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (!), etc., 
+            // if available:
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getFriendlyType());
+            // For the file type facets, we have a property file that maps mime types 
+            // to facet-friendly names; "application/fits" should become "FITS", etc.:
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(dataFile));
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
             datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());

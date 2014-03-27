@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -139,6 +140,10 @@ public class DataFile extends DvObject {
         this.contentType = contentType;
     }
 
+    public String getFriendlyType() {
+        return FileUtil.getUserFriendlyFileType(this);
+    }
+    
     @Override
     public Dataset getOwner() {
         return (Dataset) super.getOwner();
