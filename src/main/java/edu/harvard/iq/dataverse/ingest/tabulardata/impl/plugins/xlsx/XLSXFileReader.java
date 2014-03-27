@@ -52,14 +52,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 
 /**
  * New (4.0) ingest plugin for Excel/XLSX (XML) spreadsheeets.
  *
- * It utilizes Apache POI framework for reading XLSX data; and uses the
+ * It utilizes Apache POI framework for reading XLSX data; and uses an
  * event-based, SAX model for parsing the extracted XML. This way spreadsheets
- * of any size could be converted into tab-delimited data with a fairly small 
+ * of any size can be converted into tab-delimited data with a fairly small 
  * memory footprint.
  * 
  * @author Leonid Andreev
@@ -240,18 +242,8 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
     
     public void processSheet(String filename, DataTable dataTable, PrintWriter tempOut) throws Exception {
-        OPCPackage pkg = OPCPackage.open(filename);
-        XSSFReader r = new XSSFReader(pkg);
-        SharedStringsTable sst = r.getSharedStringsTable();
-
-        XMLReader parser = fetchSheetParser(sst, dataTable, tempOut);
-
-        // rId2 found by processing the Workbook
-        // Seems to either be rId# or rSheet#
-        InputStream sheet1 = r.getSheet("rId1");
-        InputSource sheetSource = new InputSource(sheet1);
-        parser.parse(sheetSource);
-        sheet1.close();
+        BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(filename)));
+        processSheet(xlsxInputStream, dataTable, tempOut);
     }
 
     public void processSheet(InputStream inputStream, DataTable dataTable, PrintWriter tempOut) throws Exception {
@@ -270,13 +262,23 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
     
     public XMLReader fetchSheetParser(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
-        XMLReader parser
-                = XMLReaderFactory.createXMLReader(
-                        "org.apache.xerces.parsers.SAXParser"
-                );
+        // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
+        // in some weird conflict in the app; the default XMLReader obtained 
+        // from the XMLReaderFactory (from xml-apis.jar) appears to be working
+        // just fine. however, 
+        // TODO: verify why the app gest built with xml-apis-1.0.b2.jar; it's 
+        // an old version - 1.4 seems to be the current release, and 2.0.2
+        // (a new development?) appears to be available. We don't specifically
+        // request this 1.0.* version, so another package must have it defined
+        // as a dependency. We need to verify our dependencies, we most likely 
+        // have some hard-coded versions in our pom.xml that are both old and 
+        // unnecessary.
+        // -- L.A. 4.0 alpha 1
+ 
+        XMLReader xReader = XMLReaderFactory.createXMLReader();
         ContentHandler handler = new SheetHandler(sst, dataTable, varService, tempOut);
-        parser.setContentHandler(handler);
-        return parser;
+        xReader.setContentHandler(handler);
+        return xReader;
     }
 
     private static class SheetHandler extends DefaultHandler {
@@ -462,9 +464,9 @@ public class XLSXFileReader extends TabularDataFileReader {
         XLSXFileReader testReader = new XLSXFileReader(new XLSXFileReaderSpi());
         DataTable dataTable;
         
-        BufferedInputStream xlsxInputStreawm = new BufferedInputStream(new FileInputStream(new File(args[0])));
+        BufferedInputStream xlsxInputStream = new BufferedInputStream(new FileInputStream(new File(args[0])));
         
-        TabularDataIngest dataIngest = testReader.read(xlsxInputStreawm, null);
+        TabularDataIngest dataIngest = testReader.read(xlsxInputStream, null);
         
         dataTable = dataIngest.getDataTable();
         
