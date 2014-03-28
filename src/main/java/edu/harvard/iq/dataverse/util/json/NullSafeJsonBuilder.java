@@ -102,7 +102,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 	
 	public NullSafeJsonBuilder addStrValue( String name, DatasetFieldValue field ) {
 		if ( field != null ) {
-			delegate.add( name, field.getStrValue() );
+			delegate.add( name, field.getValue() );
 		}
 		return this;
 	}
