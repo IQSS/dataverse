@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
 
 /**
@@ -12,12 +11,8 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,108 +22,173 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-
 @Entity
-public class DatasetFieldValue implements Serializable,   Comparable<DatasetFieldValue> {
+public class DatasetFieldValue implements Serializable {
 
-    public DatasetFieldValue () {
+    public DatasetFieldValue() {
     }
-    
-    public DatasetFieldValue(DatasetField sf, DatasetVersion dsv, String val) {
+
+    public DatasetFieldValue(DatasetField sf, DatasetVersion dsv) {
         setDatasetField(sf);
         setDatasetVersion(dsv);
-        setStrValue(val);    
-    }    
-    
-    
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DatasetField datasetField;
+
     public DatasetField getDatasetField() {
         return datasetField;
     }
+    
+    public DatasetField getDatasetFieldType() {
+        return datasetField;
+    }    
+
     public void setDatasetField(DatasetField datasetField) {
         this.datasetField = datasetField;
     }
-    
+
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
+
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
     }
-    
 
-    @OneToMany(mappedBy = "parentDatasetFieldValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("displayOrder ASC")
-    private List<DatasetFieldValue> childDatasetFieldValues= new ArrayList();
-
-    public List<DatasetFieldValue> getChildDatasetFieldValues() {
-        if (this.childDatasetFieldValues != null) {
-            Collections.sort(this.childDatasetFieldValues, new Comparator<DatasetFieldValue>() {
-                public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-                    int a = d1.getDatasetField().getDisplayOrder();
-                    int b = d2.getDatasetField().getDisplayOrder();
-                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-                }
-            });
-        }
-        return this.childDatasetFieldValues;
-    }
-    public void setChildDatasetFieldValues(List<DatasetFieldValue> childDatasetFieldValues) {
-        this.childDatasetFieldValues = childDatasetFieldValues;
-    }
-    
-    public boolean isChildEmpty(){
-        //check all child values for empty...        
-        for (DatasetFieldValue dsfvc: this.childDatasetFieldValues){
-            if(dsfvc.getStrValue()!= null && !dsfvc.getStrValue().isEmpty()){
-                return false;
-            }
-        }
-        return true;
-    }
-    
     @ManyToOne(cascade = CascadeType.MERGE)
-    private DatasetFieldValue parentDatasetFieldValue;
-    public DatasetFieldValue getParentDatasetFieldValue() {
-        return parentDatasetFieldValue;
-    }
-    public void setParentDatasetFieldValue(DatasetFieldValue parentDatasetFieldValue) {
-        this.parentDatasetFieldValue = parentDatasetFieldValue;
-    }
-    
-    @Column(columnDefinition="TEXT") 
-    private String strValue;
+    private DatasetFieldCompoundValue parentDatasetFieldCompoundValue;
 
-    public String getStrValue() {
-        return strValue;
+    public DatasetFieldCompoundValue getParentDatasetFieldCompoundValue() {
+        return parentDatasetFieldCompoundValue;
     }
 
-    public void setStrValue(String strValue) {
-        this.strValue = strValue;
-        
-    }    
+    public void setParentDatasetFieldCompoundValue(DatasetFieldCompoundValue parentDatasetFieldCompoundValue) {
+        this.parentDatasetFieldCompoundValue = parentDatasetFieldCompoundValue;
+    }
+
+    @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("displayOrder ASC")
+    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
+
+    public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
+        return datasetFieldCompoundValues;
+    }
+
+    public void setDatasetFieldCompoundValues(List<DatasetFieldCompoundValue> datasetFieldCompoundValues) {
+        this.datasetFieldCompoundValues = datasetFieldCompoundValues;
+    }
+
+    @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("displayOrder ASC")
+    private List<DatasetFieldValueValue> datasetFieldValues = new ArrayList();
+
+    public List<DatasetFieldValueValue> getDatasetFieldValues() {
+        return this.datasetFieldValues;
+    }
+
+    public void setDatasetFieldValues(List<DatasetFieldValueValue> datasetFieldValues) {
+        this.datasetFieldValues = datasetFieldValues;
+    }
+
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
+
+    public List<ControlledVocabularyValue> getControlledVocabularyValues() {
+        return controlledVocabularyValues;
+    }
+
+    public void setControlledVocabularyValues(List<ControlledVocabularyValue> controlledVocabularyValues) {
+        this.controlledVocabularyValues = controlledVocabularyValues;
+    }
+
     
-    public String getValue() {
-        if (controlledVocabularyValues.isEmpty()) {
-            return strValue;
+    // HELPER METHODS
+    public DatasetFieldValueValue getSingleValue() {
+        if (!datasetFieldValues.isEmpty()) {
+            return datasetFieldValues.get(0);
         } else {
+            return new DatasetFieldValueValue(this,null);
+        }
+    }
+    
+    public ControlledVocabularyValue getSingleControlledVocabularyValue() {
+        if (!controlledVocabularyValues.isEmpty()) {
+            return controlledVocabularyValues.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void setSingleControlledVocabularyValue(ControlledVocabularyValue cvv) {
+        if (!controlledVocabularyValues.isEmpty()) {
+            controlledVocabularyValues.set(0, cvv);
+        } else {
+            controlledVocabularyValues.add(cvv);
+        }
+    }
+    
+   
+
+    public String getValue() {
+        if (!datasetFieldValues.isEmpty()) {
+            return datasetFieldValues.get(0).getValue();
+        } else if (!controlledVocabularyValues.isEmpty()) {
             return controlledVocabularyValues.get(0).getStrValue();
         }
+        return null;
+    }
+
+    public List<String> getValues() {
+        List returnList = new ArrayList();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValueValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                returnList.add(cvv.getStrValue());
+            }
+        }
+        return returnList;
+    }
+    
+    public boolean isEmpty() {
+        if (!datasetField.isHasChildren()) { // primitive
+            for (String value : getValues()) {
+                if (value != null && value.trim() != "") {
+                    return false;
+                }             
+            }
+        } else { // compound
+            for (DatasetFieldCompoundValue cv : datasetFieldCompoundValues) {
+                for (DatasetFieldValue subField : cv.getChildDatasetFields()) {
+                    if (!subField.isEmpty()) {
+                        return false;
+                    }
+                }
+                
+            }
+        }
+        
+        return true;
     }
 
     @Override
@@ -156,43 +216,25 @@ public class DatasetFieldValue implements Serializable,   Comparable<DatasetFiel
         return "edu.harvard.iq.dataverse.DatasetFieldValue[ id=" + id + " ]";
     }
     
-     public boolean isEmpty() {
-        return ((strValue==null || strValue.trim().equals("")));
+    public DatasetFieldValue copy() {
+        return copy(null);
     }
     
-    private int displayOrder;
-    public int getDisplayOrder() { return this.displayOrder;}
-    public void setDisplayOrder(int displayOrder) {this.displayOrder = displayOrder;} 
-
-    @Override
-    public int compareTo(DatasetFieldValue o) {
-        return Integer.compare(this.getDatasetField().getDisplayOrder(),(o.getDatasetField().getDisplayOrder())); 
-    }
-    
-    @OneToMany(cascade = {CascadeType.MERGE})    
-    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
-
-    public List<ControlledVocabularyValue> getControlledVocabularyValues() {
-        return controlledVocabularyValues;
-    }
-
-    public void setControlledVocabularyValues(List<ControlledVocabularyValue> controlledVocabularyValues) {
-        this.controlledVocabularyValues = controlledVocabularyValues;
-    }    
-    
-    public ControlledVocabularyValue getSingleControlledVocabularyValue() {
-        if (!controlledVocabularyValues.isEmpty()) {
-            return controlledVocabularyValues.get(0);
-        } else {
-            return null;
-        }    
-    }
-    
-    public void setSingleControlledVocabularyValue(ControlledVocabularyValue cvv) {
-         if (!controlledVocabularyValues.isEmpty()) {
-            controlledVocabularyValues.set(0, cvv);
-        } else {
-            controlledVocabularyValues.add(cvv);
-        }       
+    public DatasetFieldValue copy(DatasetFieldCompoundValue parent) {
+        DatasetFieldValue dsf = new DatasetFieldValue();
+        dsf.setDatasetField(datasetField);
+        dsf.setDatasetVersion(datasetVersion);
+        dsf.setParentDatasetFieldCompoundValue(parent);        
+        dsf.setControlledVocabularyValues(controlledVocabularyValues);
+        
+        for (DatasetFieldValueValue dsfv : datasetFieldValues) {
+            dsf.getDatasetFieldValues().add(dsfv.copy(this));
+        }
+        
+        for (DatasetFieldCompoundValue compoundValue : datasetFieldCompoundValues) {
+            dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(this));
+        }        
+                
+        return dsf;
     }
 }
