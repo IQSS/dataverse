@@ -65,7 +65,7 @@
                                                     <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public  <span class="caret"></span>
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
                                                     </ui:fragment>
                                                 </button>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released}">
@@ -73,13 +73,13 @@
                                                         <li>
                                                             <a  style="pointer-events: none; color:red;">
                                                                 <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is Private. To make it public click 'Release dataset' link</span>
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is Private. To publish it click 'Publish dataset' link</span>
                                                             </a>
                                                         </li>
                                                         <li>
                                                             <a style="pointer-events: none; color:green;">
                                                                 <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Release Dataset" onclick="confirmation.show()"  /></span>
+                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataset" onclick="confirmation.show()"  /></span>
                                                             </a>
                                                         </li>                                                    
                                                     </ul>
@@ -90,7 +90,7 @@
                                                         <li>
                                                             <a style="pointer-events: none; color:green;">
                                                                 <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is public.  It may not be removed.</span>
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset has been published.</span>
                                                             </a>
                                                         </li>                                                    
                                                     </ul>
@@ -98,7 +98,7 @@
                                             </div>
                                         </div>
                                         <p:growl id="messages" showDetail="true" />  
-                                        <p:confirmDialog message="Are you sure you want to make your dataset 'Public'? Once you do so it must remain 'Public'."  header="Release Dataset"  widgetVar="confirmation">  
+                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Public'."  header="Publish Dataset"  widgetVar="confirmation">  
                                                 <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DatasetPage.releaseDataset}" >
                                                 </p:commandButton>  
                                                 <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
@@ -113,16 +113,16 @@
                                     </ui:fragment>
                                 </div>
                                 <div id="datasetVersionBlock">
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.strValue}">
-                                        <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.strValue}</span>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                                        <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.value}</span>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.citation}">
                                         <div id="citation">
                                             <span>#{DatasetPage.datasetVersionUI.citation}</span>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.strValue}">
-                                        <span id="description">#{DatasetPage.datasetVersionUI.description.strValue}</span>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
+                                        <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordsStr}">
                                         <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
@@ -305,7 +305,7 @@
                                         <h:outputText id="versionTitleOutput" value="#{version.title}" />
                                     </p:column>
                                     <p:column>
-                                        <h:outputText id="versionDateOutput" value="#{version.lastUpdateTime}" />
+                                        <h:outputText id="versionDateOutput" value="#{version.createTime}" />
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
