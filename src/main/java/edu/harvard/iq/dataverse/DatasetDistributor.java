@@ -78,11 +78,11 @@ public class DatasetDistributor {
     }
     
       public boolean isEmpty() {
-        return ((abbreviation==null || abbreviation.getStrValue().trim().equals(""))
-            && (affiliation==null || affiliation.getStrValue().trim().equals(""))
-            && (logo==null || logo.getStrValue().trim().equals(""))
-            && (name==null || name.getStrValue().trim().equals(""))
-            && (url==null || url.getStrValue().trim().equals("")));
+        return ((abbreviation==null || abbreviation.getValue().trim().equals(""))
+            && (affiliation==null || affiliation.getValue().trim().equals(""))
+            && (logo==null || logo.getValue().trim().equals(""))
+            && (name==null || name.getValue().trim().equals(""))
+            && (url==null || url.getValue().trim().equals("")));
     }
       
     
