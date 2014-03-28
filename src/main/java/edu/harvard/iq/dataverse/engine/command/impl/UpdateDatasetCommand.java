@@ -30,7 +30,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        return ctxt.datasets().UpdateDatasetCommand(theDataset);
+        return ctxt.datasets().save(theDataset);
        
     }
     

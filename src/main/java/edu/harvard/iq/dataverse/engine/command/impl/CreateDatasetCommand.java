@@ -25,7 +25,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 	
 	@Override
 	public Dataset execute(CommandContext ctxt) throws CommandException {
-		return ctxt.datasets().CreateDatasetCommand(theDataset);
+		return ctxt.datasets().save(theDataset);
 	}
 
 	@Override
