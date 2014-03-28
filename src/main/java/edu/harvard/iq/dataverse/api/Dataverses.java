@@ -20,11 +20,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
@@ -73,7 +76,22 @@ public class Dataverses extends AbstractApiBean {
 		} catch (CommandException ex) {
 			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
-		}
+            } catch (EJBException ex) {
+                Throwable cause = ex;
+                StringBuilder sb = new StringBuilder();
+                sb.append("Error creating dataverse.");
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof ConstraintViolationException) {
+                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                            sb.append(" Invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage());
+                        }
+                    }
+                }
+                logger.log(Level.SEVERE, sb.toString());
+                return error(sb.toString());
+            }
 	}
 	
 	@GET
