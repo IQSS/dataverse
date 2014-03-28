@@ -14,18 +14,18 @@ import java.util.Objects;
  * @author michael
  */
 @RequiredPermissions(Permission.UndoableEdit)
-public class DatasetCreateCommand extends AbstractCommand<Dataset> {
+public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 	
 	private final Dataset theDataset;
 
-	public DatasetCreateCommand(DataverseUser user, Dataset theDataset) {
+	public CreateDatasetCommand(Dataset theDataset, DataverseUser user ) {
 		super( user, theDataset.getOwner() );
 		this.theDataset = theDataset;
 	}
 	
 	@Override
 	public Dataset execute(CommandContext ctxt) throws CommandException {
-		return ctxt.datasets().save(theDataset);
+		return ctxt.datasets().CreateDatasetCommand(theDataset);
 	}
 
 	@Override
@@ -40,10 +40,10 @@ public class DatasetCreateCommand extends AbstractCommand<Dataset> {
 		if (obj == null) {
 			return false;
 		}
-		if ( ! (obj instanceof DatasetCreateCommand) ) {
+		if ( ! (obj instanceof CreateDatasetCommand) ) {
 			return false;
 		}
-		final DatasetCreateCommand other = (DatasetCreateCommand) obj;
+		final CreateDatasetCommand other = (CreateDatasetCommand) obj;
 		return Objects.equals(this.theDataset, other.theDataset);
 	}
 	
