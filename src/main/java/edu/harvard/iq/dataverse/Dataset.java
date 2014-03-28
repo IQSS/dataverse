@@ -28,23 +28,23 @@ import org.hibernate.validator.constraints.NotBlank;
 public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
-    
+
     // #VALIDATION: page defines maxlength in input:textarea component
     @Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
-    
-    @OneToMany (mappedBy = "owner", cascade = CascadeType.MERGE)
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
 
-    
     private String protocol;
     private String authority;
     @NotBlank(message = "Please enter an identifier for your dataset.")
     private String identifier;
-    
+
     public String getProtocol() {
         return protocol;
     }
+
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
@@ -52,6 +52,7 @@ public class Dataset extends DvObjectContainer {
     public String getAuthority() {
         return authority;
     }
+
     public void setAuthority(String authority) {
         this.authority = authority;
     }
@@ -59,6 +60,7 @@ public class Dataset extends DvObjectContainer {
     public String getIdentifier() {
         return identifier;
     }
+
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
@@ -66,58 +68,59 @@ public class Dataset extends DvObjectContainer {
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
- 
-    
-   public String getPersistentURL() {       
-        if (this.getProtocol().equals("hdl")){
+
+    public String getPersistentURL() {
+        if (this.getProtocol().equals("hdl")) {
             return getHandleURL();
-        } else if (this.getProtocol().equals("doi")){
+        } else if (this.getProtocol().equals("doi")) {
             return getEZIdURL();
         } else {
             return "";
         }
     }
-    
+
     private String getHandleURL() {
-         return "http://hdl.handle.net/"+authority+"/"+getId();
+        return "http://hdl.handle.net/" + authority + "/" + getId();
     }
-    
-    private String getEZIdURL() {        
-        return "http://dx.doi.org/"+authority+"/"+getId();
+
+    private String getEZIdURL() {
+        return "http://dx.doi.org/" + authority + "/" + getId();
     }
 
     public List<DataFile> getFiles() {
         return files;
     }
+
     public void setFiles(List<DataFile> files) {
         this.files = files;
     }
 
-
-    @OneToMany (mappedBy = "dataset")
+    @OneToMany(mappedBy = "dataset")
     @OrderBy("versionNumber DESC")
     private List<DatasetVersion> versions = new ArrayList();
-    
-    public DatasetVersion getLatestVersion(){
-        if (versions.isEmpty()){
+
+    public DatasetVersion getLatestVersion() {
+        if (versions.isEmpty()) {
             DatasetVersion datasetVersion = new DatasetVersion();
             //datasetVersion.setMetadata(new Metadata());
             datasetVersion.setDataset(this);
             datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            datasetVersion.setVersionNumber(new Long (1));
+            datasetVersion.setVersionNumber(new Long(1));
             this.versions.add(datasetVersion);
             return datasetVersion;
         } else {
             return versions.get(0);
         }
     }
-    
+
     public List<DatasetVersion> getVersions() {
         return versions;
     }
+
     public void setVersions(List<DatasetVersion> versions) {
         this.versions = versions;
     }
@@ -127,28 +130,31 @@ public class Dataset extends DvObjectContainer {
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
         DatasetVersion latestVersion = getLatestVersion();
-        //dsv.setMetadata(new Metadata());
+        //if the latest version has values get them copied over
+        if (latestVersion.getDatasetFieldValues() != null && !latestVersion.getDatasetFieldValues().isEmpty()) {
+            dsv.setDatasetFieldValues(dsv.copyDatasetFieldValues(latestVersion.getDatasetFieldValues()));
+        }
         dsv.setFileMetadatas(new ArrayList());
         //dsv.getMetadata().setDatasetVersion(dsv);
 
-       for(FileMetadata fm : latestVersion.getFileMetadatas()) {
-           FileMetadata newFm = new FileMetadata();
-           newFm.setCategory(fm.getCategory());
-           newFm.setDescription(fm.getDescription());
-           newFm.setLabel(fm.getLabel());
-           newFm.setDataFile(fm.getDataFile());
-           newFm.setDatasetVersion(dsv);
-           dsv.getFileMetadatas().add(newFm);
-       }
+        for (FileMetadata fm : latestVersion.getFileMetadatas()) {
+            FileMetadata newFm = new FileMetadata();
+            newFm.setCategory(fm.getCategory());
+            newFm.setDescription(fm.getDescription());
+            newFm.setLabel(fm.getLabel());
+            newFm.setDataFile(fm.getDataFile());
+            newFm.setDatasetVersion(dsv);
+            dsv.getFileMetadatas().add(newFm);
+        }
 
-        dsv.setVersionNumber(latestVersion.getVersionNumber()+1);
+        dsv.setVersionNumber(latestVersion.getVersionNumber() + 1);
         // I'm adding the version to the list so it will be persisted when
         // the study object is persisted.
         getVersions().add(0, dsv);
         dsv.setDataset(this);
         return dsv;
     }
-    
+
     public DatasetVersion getEditVersion() {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy()) {
@@ -157,23 +163,22 @@ public class Dataset extends DvObjectContainer {
         } else {
             // else, edit existing working copy
             return latestVersion;
-        } 
+        }
     }
 
     public Path getFileSystemDirectory() {
         Path studyDir = null;
-                
-        
+
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
         }
-        
+
         if (this.getAuthority() != null && this.getIdentifier() != null) {
-            studyDir = Paths.get(filesRootDirectory, this.getAuthority().toString(), this.getIdentifier().toString());        
-        } 
-        
-        return studyDir; 
+            studyDir = Paths.get(filesRootDirectory, this.getAuthority().toString(), this.getIdentifier().toString());
+        }
+
+        return studyDir;
     }
 
     @Override
@@ -187,9 +192,8 @@ public class Dataset extends DvObjectContainer {
     }
 
     @Override
-	public <T> T accept( Visitor<T> v ) {
-		return v.visit(this);
-	}
-	
-	
+    public <T> T accept(Visitor<T> v) {
+        return v.visit(this);
+    }
+
 }
