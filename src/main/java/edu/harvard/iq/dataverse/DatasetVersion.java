@@ -33,7 +33,7 @@ import javax.persistence.Version;
 @Entity
 public class DatasetVersion implements Serializable {
 
-  // TODO: Determine the UI implications of various version states
+    // TODO: Determine the UI implications of various version states
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
@@ -77,7 +77,7 @@ public class DatasetVersion implements Serializable {
 
     @ManyToOne
     private Dataset dataset;
-	
+
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("category") // this is not our preferred ordering, which is with the AlphaNumericComparator, but does allow the files to be grouped by category
     private List<FileMetadata> fileMetadatas;
@@ -91,15 +91,17 @@ public class DatasetVersion implements Serializable {
     }
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("datasetField.displayOrder") 
+    //@OrderBy("datasetField.displayOrder") 
     private List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
+
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return datasetFieldValues;
     }
+
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
     }
-   
+
     /*
      @OneToMany(mappedBy="studyVersion", cascade={CascadeType.REMOVE, CascadeType.PERSIST})
      private List<VersionContributor> versionContributors;
@@ -267,15 +269,14 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isLatestVersion() {
-        return true;
-        //return this.equals( this.getDataset().getLatestVersion() );
+        return this.equals(this.getDataset().getLatestVersion());
     }
 
     public String getTitle() {
         String retVal = "Dataset Title";
-        for (DatasetFieldValue dsfv: this.getDatasetFieldValues()){
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.title)){
-                retVal = dsfv.getStrValue();
+        for (DatasetFieldValue dsfv : this.getDatasetFieldValues()) {
+            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.title)) {
+                retVal = dsfv.getValue();
             }
         }
         return retVal;
@@ -411,10 +412,10 @@ public class DatasetVersion implements Serializable {
             if (str.trim().length() > 1) {
                 str += "; ";
             }
-            str += sa.getName().getStrValue();
+            str += sa.getName().getValue();
             if (affiliation) {
-                if (!StringUtil.isEmpty(sa.getAffiliation().getStrValue())) {
-                    str += " (" + sa.getAffiliation().getStrValue() + ")";
+                if (!StringUtil.isEmpty(sa.getAffiliation().getValue())) {
+                    str += " (" + sa.getAffiliation().getValue() + ")";
                 }
             }
         }
@@ -425,10 +426,10 @@ public class DatasetVersion implements Serializable {
         //retList - Return List of values
         List<DatasetFieldValue> retList = new ArrayList();
         //if the datasetversion already has values add them here
-        if (this.getDatasetFieldValues()!= null) {
-           retList.addAll(this.getDatasetFieldValues());
+        if (this.getDatasetFieldValues() != null) {
+            retList.addAll(this.getDatasetFieldValues());
         }
-               
+
         //Test to see that there are values for 
         // all fields in this dataset via metadata blocks
         //only add if not added above
@@ -439,44 +440,67 @@ public class DatasetVersion implements Serializable {
                 for (DatasetFieldValue dsfv : retList) {
                     if (dsf.equals(dsfv.getDatasetField())) {
                         add = false;
+                        break;
                     }
                 }
-                //don't add if it has a parent - it will be added as a child
-                if (dsf.isHasParent()){
-                    add = false;
-                }
-                if (add) {
+
+                if (add && !dsf.isHasParent()) {
                     DatasetFieldValue addDsfv = new DatasetFieldValue();
                     addDsfv.setDatasetField(dsf);
-                    addDsfv.setDatasetVersion(this);  
-                    dsf.getDatasetFieldValues().add(addDsfv);
-                    //if there are children create link here
+                    addDsfv.setDatasetVersion(this);
+                    dsf.getDatasetFieldValues().add(addDsfv); // WHY THIS LINE?
+
+                    //if there are sub fields, add a compound value, and those fields
                     if (dsf.isHasChildren()) {
-                        addDsfv.setChildDatasetFieldValues(new ArrayList());
-                        for (DatasetField dsfc : dsf.getChildDatasetFields()) {
-                            DatasetFieldValue dsfvc = new DatasetFieldValue();
-                            dsfvc.setDatasetField(dsfc);
-                            dsfvc.setParentDatasetFieldValue(addDsfv);
-                            dsfvc.setDatasetVersion(this);
-                            addDsfv.getChildDatasetFieldValues().add(dsfvc);
-                            retList.add(dsfvc);
+                        DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
+                        cv.setParentDatasetField(addDsfv);
+                        addDsfv.getDatasetFieldCompoundValues().add(cv);
+                        for (DatasetField subType : dsf.getChildDatasetFields()) {
+                            DatasetFieldValue subField = new DatasetFieldValue();
+                            subField.setParentDatasetFieldCompoundValue(cv);
+                            subField.setDatasetField(subType);
+                            cv.getChildDatasetFields().add(subField);
                         }
                     }
+
                     retList.add(addDsfv);
                 }
             }
         }
 
-        
         //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetFieldValue>(){
-           public int compare (DatasetFieldValue d1, DatasetFieldValue d2){
-               int a = d1.getDatasetField().getDisplayOrder();
-               int b = d2.getDatasetField().getDisplayOrder();
-               return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-           }
-       });
-        
+        Collections.sort(retList, new Comparator<DatasetFieldValue>() {
+            public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+                int a = d1.getDatasetField().getDisplayOrder();
+                int b = d2.getDatasetField().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+
         return retList;
     }
+
+    public List<DatasetFieldValue> copyDatasetFieldValues(List<DatasetFieldValue> copyFromList) {
+        //retList - Return List of values
+        List<DatasetFieldValue> retList = new ArrayList();
+
+        for (DatasetFieldValue sourceDsf : copyFromList) {
+
+            DatasetFieldValue addDsfv = sourceDsf.copy();
+
+            retList.add(addDsfv);
+
+        }
+        //sort via display order on dataset field
+        Collections.sort(retList, new Comparator<DatasetFieldValue>() {
+            public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
+                int a = d1.getDatasetField().getDisplayOrder();
+                int b = d2.getDatasetField().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+
+        return retList;
+    }
+
 }
