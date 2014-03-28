@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -66,12 +67,12 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetFieldValueServiceBean fieldValueService;
     @EJB
-    VariableServiceBean variableService; 
+    VariableServiceBean variableService;
     @EJB
-    IngestServiceBean ingestService; 
+    IngestServiceBean ingestService;
     @Inject
     DataverseSession session;
-    
+
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -200,37 +201,41 @@ public class DatasetPage implements java.io.Serializable {
         datasetVersionUI = new DatasetVersionUI(editVersion);
     }
 
-    private DatasetFieldValue addChildren(DatasetFieldValue dsfvIn) {
-        dsfvIn.setChildDatasetFieldValues(new ArrayList());
-        for (DatasetField dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
-            DatasetFieldValue cv = new DatasetFieldValue();
-            cv.setParentDatasetFieldValue(dsfvIn);
-            cv.setDatasetField(dsfc);
-            cv.setDatasetVersion(editVersion);
-            dsfvIn.getChildDatasetFieldValues().add(cv);
-            editVersion.getDatasetFieldValues().add(cv);
-        }
+    private DatasetFieldValue addChildren(DatasetFieldValue dsfvIn) {/*
+         dsfvIn.setChildDatasetFieldValues(new ArrayList());
+         for (DatasetField dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
+         DatasetFieldValue cv = new DatasetFieldValue();
+         cv.setParentDatasetFieldValue(dsfvIn);
+         cv.setDatasetField(dsfc);
+         cv.setDatasetVersion(editVersion);
+         dsfvIn.getChildDatasetFieldValues().add(cv);
+         editVersion.getDatasetFieldValues().add(cv);
+         }*/
+
         return dsfvIn;
     }
 
-    public void deleteGeneralRecord(Object toDeleteIn) {
-        DatasetFieldValue toDelete = (DatasetFieldValue) toDeleteIn;
-        //Delete children if any
-        if (toDelete.getChildDatasetFieldValues() != null && !toDelete.getChildDatasetFieldValues().isEmpty()) {
-            for (DatasetFieldValue dsfvDelete : toDelete.getChildDatasetFieldValues()) {
-                editVersion.getDatasetFieldValues().remove(dsfvDelete);
-                this.deleteRecords.add(dsfvDelete);
-            }
-        }
-        editVersion.getDatasetFieldValues().remove(toDelete);
-        this.deleteRecords.add(toDelete);
-        datasetVersionUI = new DatasetVersionUI(editVersion);
+    public void deleteGeneralRecord(Object toDeleteIn) {/*
+         DatasetFieldValue toDelete = (DatasetFieldValue) toDeleteIn;
+         //Delete children if any
+         if (toDelete.getChildDatasetFieldValues() != null && !toDelete.getChildDatasetFieldValues().isEmpty()) {
+         for (DatasetFieldValue dsfvDelete : toDelete.getChildDatasetFieldValues()) {
+         editVersion.getDatasetFieldValues().remove(dsfvDelete);
+         this.deleteRecords.add(dsfvDelete);
+         }
+         }
+         editVersion.getDatasetFieldValues().remove(toDelete);
+         this.deleteRecords.add(toDelete);
+         datasetVersionUI = new DatasetVersionUI(editVersion);*/
     }
 
-    public String releaseDataset() {
+     public String releaseDataset() {
+        dataset = datasetService.find(dataset.getId());
         dataset.setReleaseDate(new Timestamp(new Date().getTime()));
         dataset.setReleaseUser(session.getUser());
-        dataset = datasetService.save(dataset);
+        dataset.getEditVersion().setReleaseTime(new Timestamp(new Date().getTime()));
+        dataset.getEditVersion().setVersionState(VersionState.RELEASED);
+        dataset = datasetService.CreateDatasetCommand(dataset);
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
@@ -244,40 +249,52 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setIdentifier("5555");
         //Todo pre populate deposit date
 
+        // iterate and remove empty DatasetFields
+        // TODO: Handle compound better (ie remove individual empty compound values)
+        Iterator<DatasetFieldValue> it = dataset.getEditVersion().getDatasetFieldValues().iterator();
+        while (it.hasNext()) {
+            DatasetFieldValue dsf = it.next();
+            if (dsf.isEmpty()) {
+                it.remove();
+            }
+        }
+
         //Trim spaces from any input values
         //add any blank records to a "to Remove" list"
-        List<Integer> toRemoveIndex = new ArrayList();
-        int index = 0;
-        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
-            if (dsfv.getStrValue() != null) {
-                dsfv.setStrValue(dsfv.getStrValue().trim());
-            }
+        /*
+         List<Integer> toRemoveIndex = new ArrayList();
+         int index = 0;
+         for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
+         if (dsfv.getStrValue() != null) {
+         dsfv.setStrValue(dsfv.getStrValue().trim());
+         }
             
-            //Single recs and child recs (with no controlled vocab)
-            if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty())) {
-                toRemoveIndex.add(index);
-            }
-            //parent recs where all kids are empty.
-            if (dsfv.getDatasetField().isHasChildren() && dsfv.isChildEmpty()) {
-                toRemoveIndex.add(index);
-            }
-            //controlled vocab recs where all kids are empty.
-            if (dsfv.getDatasetField().isControlledVocabulary() && (dsfv.getControlledVocabularyValues() == null || dsfv.getControlledVocabularyValues().isEmpty())) {
-                toRemoveIndex.add(index);
-            }
+         //Single recs and child recs (with no controlled vocab)
+         if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty())) {
+         toRemoveIndex.add(index);
+         }
+         //parent recs where all kids are empty.
+         if (dsfv.getDatasetField().isHasChildren() && dsfv.isChildEmpty()) {
+         toRemoveIndex.add(index);
+         }
+         //controlled vocab recs where all kids are empty.
+         if (dsfv.getDatasetField().isControlledVocabulary() && (dsfv.getControlledVocabularyValues() == null || dsfv.getControlledVocabularyValues().isEmpty())) {
+         toRemoveIndex.add(index);
+         }
 
-            index++;
-        }
-        //Actually do the remove here
-        // the adjustment takes into account the prior 
-        //blank fields which have been removed.
-        int adjustment = 0;
-        if (!toRemoveIndex.isEmpty()) {
-            for (Integer dsfvRI : toRemoveIndex) {
-                editVersion.getDatasetFieldValues().remove(dsfvRI.intValue() - adjustment);
-                adjustment++;
-            }
-        }
+         index++;
+         }
+         //Actually do the remove here
+         // the adjustment takes into account the prior 
+         //blank fields which have been removed.
+         int adjustment = 0;
+         if (!toRemoveIndex.isEmpty()) {
+         for (Integer dsfvRI : toRemoveIndex) {
+         editVersion.getDatasetFieldValues().remove(dsfvRI.intValue() - adjustment);
+         adjustment++;
+         }
+         }
+         */
         // need to save multi select CVs
         /*
          for (String subjectVal: datasetVersionUI.getSubjects()){
@@ -297,7 +314,6 @@ public class DatasetPage implements java.io.Serializable {
          editVersion.getDatasetFieldValues().add(toAdd);
          }
          }*/
-
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -381,7 +397,7 @@ public class DatasetPage implements java.io.Serializable {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
                         }
                     }
-                    
+
                     // Any necessary post-processing: 
                     
                     ingestService.performPostProcessingTasks(dFile);
@@ -475,33 +491,19 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
-    public DataModel getDatasetFieldsDataModel() {
-        List values = new ArrayList();
-        int i = 0;
-        for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
-            DatasetField datasetField = dsfv.getDatasetField();
-            Object[] row = new Object[4];
-            row[0] = datasetField;
-            row[1] = getValuesDataModel(dsfv);
-            row[2] = new Integer(i);
-            row[3] = datasetField;
-            values.add(row);
-            i++;
-        }
-        return new ListDataModel(values);
-    }
-
-    private DataModel getValuesDataModel(DatasetFieldValue datasetFieldValue) {
-        List values = new ArrayList();
-        Object[] row = new Object[2];
-        row[0] = datasetFieldValue;
-        row[1] = datasetFieldValue.getDatasetField().getDatasetFieldValues(); // used by the remove method
-        values.add(row);
-        return new ListDataModel(values);
-    }
-
     public DatasetVersionUI getDatasetVersionUI() {
         return datasetVersionUI;
     }
 
+    //boolean for adding "Replication for" to title
+    private boolean replicationFor;
+
+    public boolean isReplicationFor() {
+        return replicationFor;
+    }
+
+    public void setReplicationFor(boolean replicationFor) {
+        this.replicationFor = replicationFor;
+    }    
+    
 }
