@@ -5,32 +5,27 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
 
-    class="#{fieldValues.datasetField.hasParent and (fieldValues.datasetField.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+    class="#{fieldValues.datasetField.datasetFieldType.hasParent and (fieldValues.datasetField.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
 
     <ui:fragment rendered="#{includeTitle}">
         <label class="control-label" for="metadata_BLANK">
-            <a class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.title}</a>
-            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.required}" /> 
+            <a class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.datasetFieldType.title}</a>
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.datasetFieldType.required}" /> 
         </label>   
     </ui:fragment>
-    <p:inputText value="#{fieldValues.strValue}" id="inputText" styleClass="form-control"
-                 rendered="#{!fieldValues.datasetField.controlledVocabulary        
-                             and (fieldValues.datasetField.fieldType == 'text'
-                             or fieldValues.datasetField.fieldType == 'int'
-                             or fieldValues.datasetField.fieldType == 'float'
-                             or fieldValues.datasetField.fieldType == 'url'
-                             or fieldValues.datasetField.fieldType == 'date'
-                             or fieldValues.datasetField.fieldType == '')}"/>
-    <p:watermark for="inputText" value="#{fieldValues.datasetField.watermark}"></p:watermark>
+    <p:inputText value="#{fieldValues.value}" id="inputText" styleClass="form-control"
+                 rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary        
+                             and (fieldValues.datasetField.datasetFieldType.fieldType == 'text'
+                             or fieldValues.datasetField.datasetFieldType.fieldType == 'int'
+                             or fieldValues.datasetField.datasetFieldType.fieldType == 'float'
+                             or fieldValues.datasetField.datasetFieldType.fieldType == 'url'
+                             or fieldValues.datasetField.datasetFieldType.fieldType == 'date'
+                             or fieldValues.datasetField.datasetFieldType.fieldType == '')}"/>
+    <p:watermark for="inputText" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <p:inputTextarea value="#{fieldValues.strValue}" rows="5" cols="60" id="description" styleClass="form-control" 
-                     rendered="#{fieldValues.datasetField.fieldType == 'textbox'}" />
-    <p:watermark for="description" value="#{fieldValues.datasetField.watermark}"></p:watermark>
+    <p:inputTextarea value="#{fieldValues.value}" rows="5" cols="60" id="description" styleClass="form-control" 
+                     rendered="#{fieldValues.datasetField.datasetFieldType.fieldType == 'textbox'}" />
+    <p:watermark for="description" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <p:selectOneMenu  value="#{fieldValues.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
-                     rendered="#{fieldValues.datasetField.controlledVocabulary and !fieldValues.datasetField.allowMultiples }">
-        <f:selectItems value="#{fieldValues.datasetField.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-
-    </p:selectOneMenu>
 
 </div>
