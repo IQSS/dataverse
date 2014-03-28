@@ -184,6 +184,7 @@ public class JsonPrinter {
 	public static JsonObjectBuilder json( DatasetFieldValue dfv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder();
 		bld.add( "id", dfv.getId() );
+                /*
 		bld.add( "displayOrder", dfv.getDisplayOrder() );
 		if ( dfv.isEmpty() ) {
 			bld.addNull("value");
@@ -197,7 +198,7 @@ public class JsonPrinter {
 				}
 				bld.add( "value", childBld );
 			}
-		}
+		}*/
 		
 		return bld;
 	}
