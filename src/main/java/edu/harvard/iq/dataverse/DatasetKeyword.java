@@ -73,9 +73,10 @@ public class DatasetKeyword  {
 
 
      public boolean isEmpty() {
-        return ((value==null || value.getStrValue().trim().equals(""))
-            && (vocab==null || vocab.getStrValue().trim().equals(""))
-            && (vocabURI==null || vocabURI.getStrValue().trim().equals("")));
+        /*return ((value==null || value.getValue().trim().equals(""))
+            && (vocab==null || vocab.getValue().trim().equals(""))
+            && (vocabURI==null || vocabURI.getValue().trim().equals("")));*/
+         return false;
     }
      
 
