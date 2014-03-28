@@ -1408,7 +1408,7 @@ public class Metadata implements Serializable {
         for (DatasetField datasetField : this.getDatasetFields()) {
             i = 0;
             for (DatasetFieldValue elem : datasetField.getDatasetFieldValues()) {
-                elem.setDisplayOrder(i++);
+                //elem.setDisplayOrder(i++);
             }
         }
         
