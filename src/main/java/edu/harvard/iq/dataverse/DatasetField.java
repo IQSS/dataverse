@@ -329,7 +329,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
         this.datasetFieldDefaultValues = datasetFieldDefaultValues;
     }
 
-    // helper methods for getting the internal string values
+    /* helper methods for getting the internal string values
     public List<String> getDatasetFieldValueStrings() {
         List<String> retString = new ArrayList();
         for (DatasetFieldValue sfv : datasetFieldValues) {
@@ -349,7 +349,7 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
     }
 
     public void setDatasetFieldValueSingleString(String newVal) {
-    }
+    }*/
 
     @Override
     public int compareTo(DatasetField o) {
