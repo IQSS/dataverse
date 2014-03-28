@@ -47,7 +47,8 @@ public class DatasetServiceBean {
     }
 
     public Dataset save(Dataset dataset) {
-        em.merge(removeBlankRows(dataset.getVersions().get(0)));
+        //em.merge(removeBlankRows(dataset.getVersions().get(0)));
+        em.merge(dataset.getVersions().get(0));
         Dataset savedDataset = em.merge(dataset);
         //TODO - Commented out indexing because 
         //Release dataset fails
@@ -60,7 +61,7 @@ public class DatasetServiceBean {
     private DatasetVersion removeBlankRows(DatasetVersion version) {
         //Trim spaces from any input values
         //add any blank records to a "to Remove" list"
-
+        /* TODO - remove needs to be redone
         List<Integer> toRemoveIndex = new ArrayList();
         int index = 0;
 
@@ -68,12 +69,12 @@ public class DatasetServiceBean {
             //Only want to drop if never saved previously
             // if in DB the blank will blank out the existing value
             if (dsfv.getId() == null) {
-                if (dsfv.getStrValue() != null) {
-                    dsfv.setStrValue(dsfv.getStrValue().trim());
+                if (dsfv.getValue() != null) {
+                    dsfv.setStrValue(dsfv.getValue().trim());
                 }
 
                 //Single recs and child recs (with no controlled vocab)
-                if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty())) {
+                if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getValue() == null || dsfv.getValue().trim().isEmpty())) {
                     toRemoveIndex.add(index);
                 }
                 //parent recs where all kids are empty.
@@ -98,6 +99,7 @@ public class DatasetServiceBean {
                 adjustment++;
             }
         }
+                */
         return version;
     }
 
