@@ -25,6 +25,19 @@ import javax.persistence.OrderBy;
 @Entity
 public class DatasetFieldCompoundValue implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetFieldValue dsf) {
+        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
+        compoundValue.setParentDatasetField(dsf);
+        System.out.println("dsf" + dsf);
+        System.out.println("dsfType" + dsf.getDatasetFieldType());
+        for (DatasetField dsfType : dsf.getDatasetFieldType().getChildDatasetFields()) {
+            compoundValue.getChildDatasetFields().add( DatasetFieldValue.createNewEmptyDatasetField(dsfType, compoundValue));
+        }
+        
+        return compoundValue;
+    }    
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
