@@ -29,8 +29,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetFieldValue dsf) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(dsf);
-        System.out.println("dsf" + dsf);
-        System.out.println("dsfType" + dsf.getDatasetFieldType());
+
         for (DatasetField dsfType : dsf.getDatasetFieldType().getChildDatasetFields()) {
             compoundValue.getChildDatasetFields().add( DatasetFieldValue.createNewEmptyDatasetField(dsfType, compoundValue));
         }
