@@ -409,17 +409,28 @@ public class DatasetVersionUI {
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
+        metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            List<DatasetFieldValue> datasetFields = new ArrayList();
-            for (DatasetFieldValue dsf : datasetVersion.getDatasetFieldValues()) {
+            List<DatasetFieldValue> datasetFieldsForView = new ArrayList();
+            List<DatasetFieldValue> datasetFieldsForEdit = new ArrayList();
+            for (DatasetFieldValue dsf : datasetVersion.getDatasetFields()) {
                 if (dsf.getDatasetField().getMetadataBlock().equals(mdb)) {
-                    datasetFields.add(dsf);
+                    datasetFieldsForEdit.add(dsf);
+                    if (!dsf.isEmpty()) {
+                        datasetFieldsForView.add(dsf);
+                    }
                 }
             }
-            if (!datasetFields.isEmpty()) {
-                metadataBlocksForView.put(mdb, datasetFields);
+            
+            if (!datasetFieldsForView.isEmpty()) {
+                metadataBlocksForView.put(mdb, datasetFieldsForView);
             }
+            if (!datasetFieldsForEdit.isEmpty()) {
+                metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
+            }            
         }
+
+
         /*
          for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
          Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
@@ -452,20 +463,6 @@ public class DatasetVersionUI {
          }
          }
          */
-
-        metadataBlocksForEdit.clear();
-        for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            List<DatasetFieldValue> datasetFields = new ArrayList();
-            for (DatasetFieldValue dsf : datasetVersion.getDatasetFieldValues()) {
-                if (dsf.getDatasetField().getMetadataBlock().equals(mdb)) {
-                    datasetFields.add(dsf);
-                }
-            }
-            if (!datasetFields.isEmpty()) {
-                metadataBlocksForEdit.put(mdb, datasetFields);
-            }
-        }
-
         /*
          for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
          Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
