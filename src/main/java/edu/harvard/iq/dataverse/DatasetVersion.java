@@ -98,6 +98,10 @@ public class DatasetVersion implements Serializable {
         return datasetFieldValues;
     }
 
+    public List<DatasetFieldValue> getDatasetFields() {
+        return datasetFieldValues;
+    }
+
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
     }
@@ -434,36 +438,21 @@ public class DatasetVersion implements Serializable {
         // all fields in this dataset via metadata blocks
         //only add if not added above
         for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
-            for (DatasetField dsf : mdb.getDatasetFields()) {
-                boolean add = true;
-                //don't add if already added as a val
-                for (DatasetFieldValue dsfv : retList) {
-                    if (dsf.equals(dsfv.getDatasetField())) {
-                        add = false;
-                        break;
-                    }
-                }
-
-                if (add && !dsf.isHasParent()) {
-                    DatasetFieldValue addDsfv = new DatasetFieldValue();
-                    addDsfv.setDatasetField(dsf);
-                    addDsfv.setDatasetVersion(this);
-                    dsf.getDatasetFieldValues().add(addDsfv); // WHY THIS LINE?
-
-                    //if there are sub fields, add a compound value, and those fields
-                    if (dsf.isHasChildren()) {
-                        DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
-                        cv.setParentDatasetField(addDsfv);
-                        addDsfv.getDatasetFieldCompoundValues().add(cv);
-                        for (DatasetField subType : dsf.getChildDatasetFields()) {
-                            DatasetFieldValue subField = new DatasetFieldValue();
-                            subField.setParentDatasetFieldCompoundValue(cv);
-                            subField.setDatasetField(subType);
-                            cv.getChildDatasetFields().add(subField);
+            for (DatasetField dsfType : mdb.getDatasetFields()) {
+                if (!dsfType.isSubField()) {
+                    boolean add = true;
+                    //don't add if already added as a val
+                    for (DatasetFieldValue dsfv : retList) {
+                        if (dsfType.equals(dsfv.getDatasetField())) {
+                            add = false;
+                            break;
                         }
                     }
 
-                    retList.add(addDsfv);
+                    if (add) {
+                        DatasetFieldValue addDsfv = DatasetFieldValue.createNewEmptyDatasetField(dsfType, this);
+                        retList.add(addDsfv);
+                    }
                 }
             }
         }
@@ -485,20 +474,8 @@ public class DatasetVersion implements Serializable {
         List<DatasetFieldValue> retList = new ArrayList();
 
         for (DatasetFieldValue sourceDsf : copyFromList) {
-
-            DatasetFieldValue addDsfv = sourceDsf.copy();
-
-            retList.add(addDsfv);
-
+            retList.add(sourceDsf.copy());
         }
-        //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetFieldValue>() {
-            public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-                int a = d1.getDatasetField().getDisplayOrder();
-                int b = d2.getDatasetField().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
-        });
 
         return retList;
     }
