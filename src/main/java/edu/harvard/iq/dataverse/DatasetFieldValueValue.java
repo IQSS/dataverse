@@ -24,11 +24,13 @@ public class DatasetFieldValueValue implements Serializable {
     
     public DatasetFieldValueValue() {
     }
+    
+    public DatasetFieldValueValue(DatasetFieldValue dsf) {
+        setDatasetField(dsf); 
+    }    
 
-    public DatasetFieldValueValue(DatasetFieldValue dsf, String value) {
-        setDatasetField(dsf);
-        dsf.getDatasetFieldValues().add(this);
-        
+    public DatasetFieldValueValue(DatasetFieldValue dsf, String value) {  
+        setDatasetField(dsf);        
         setValue(value);
     }
     
