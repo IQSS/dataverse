@@ -24,14 +24,36 @@ import javax.persistence.OrderBy;
 
 @Entity
 public class DatasetFieldValue implements Serializable {
+    private static final long serialVersionUID = 1L;    
 
-    public DatasetFieldValue() {
+    public static DatasetFieldValue createNewEmptyDatasetField(DatasetField dsfType, DatasetVersion dsv) {
+        DatasetFieldValue dsfv =  createNewEmptyDatasetField(dsfType);
+        dsfv.setDatasetVersion(dsv);
+        return dsfv;
     }
-
-    public DatasetFieldValue(DatasetField sf, DatasetVersion dsv) {
-        setDatasetField(sf);
-        setDatasetVersion(dsv);
+    
+    public static DatasetFieldValue createNewEmptyDatasetField(DatasetField dsfType, DatasetFieldCompoundValue compoundValue) {
+        DatasetFieldValue dsfv =  createNewEmptyDatasetField(dsfType);
+        dsfv.setParentDatasetFieldCompoundValue(compoundValue);
+        return dsfv;
+    }    
+    
+    public static DatasetFieldValue createNewEmptyDatasetField(DatasetField dsfType) {
+        DatasetFieldValue dsfv = new DatasetFieldValue();
+        dsfv.setDatasetField(dsfType);
+      
+        if (dsfType.isPrimitive()) {
+            if (!dsfType.isControlledVocabulary()) {
+                dsfv.getDatasetFieldValues().add(new DatasetFieldValueValue(dsfv));
+            }
+        } else { // compound field
+            dsfv.getDatasetFieldCompoundValues().add(DatasetFieldCompoundValue.createNewEmptyDatasetFieldCompoundValue(dsfv));
+        } 
+        
+        return dsfv;
+        
     }
+    
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -183,8 +205,7 @@ public class DatasetFieldValue implements Serializable {
                     if (!subField.isEmpty()) {
                         return false;
                     }
-                }
-                
+                }              
             }
         }
         
