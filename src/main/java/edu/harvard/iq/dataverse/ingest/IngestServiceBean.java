@@ -20,19 +20,25 @@
 
 package edu.harvard.iq.dataverse.ingest;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FileMetadataField;
 import edu.harvard.iq.dataverse.FileMetadataFieldValue;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
+import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITSFileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -56,6 +62,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -236,7 +243,7 @@ public class IngestServiceBean {
         return false;
     }
     
-    public boolean extractIndexableMetadata(String tempFileLocation, DataFile dataFile) throws IOException {
+    public boolean extractIndexableMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;
 
         FileInputStream tempFileInputStream = null; 
@@ -252,7 +259,8 @@ public class IngestServiceBean {
         //FileMetadataExtractor extractorPlugin = IngestSP.getMetadataExtractorByMIMEType(dfile.getContentType());
         FileMetadataExtractor extractorPlugin = new FITSFileMetadataExtractor();
 
-        Map<String, Set<String>> extractedMetadata = extractorPlugin.ingest(new BufferedInputStream(tempFileInputStream));
+        FileMetadataIngest extractedMetadata = extractorPlugin.ingest(new BufferedInputStream(tempFileInputStream));
+        Map<String, Set<String>> extractedMetadataMap = extractedMetadata.getMetadataMap();
 
         // Store the fields and values we've gathered for safe-keeping:
         // from 3.6:
@@ -260,8 +268,13 @@ public class IngestServiceBean {
         // TODO: this should throw an exception if anything goes wrong.
         FileMetadata fileMetadata = dataFile.getFileMetadata();
 
-        if (extractedMetadata != null) {
-            //ingestFileLevelMetadata(fileLevelMetadata, file.getFileMetadata(), fileIngester.getFormatName());
+        if (extractedMetadataMap != null) {
+            logger.fine("Ingest Service: Processing extracted metadata;");
+            if (extractedMetadata.getMetadataBlockName() != null) {
+                logger.fine("Ingest Service: This metadata belongs to the "+extractedMetadata.getMetadataBlockName()+" metadata block."); 
+                ingestDatasetMetadata(extractedMetadata, editVersion);
+            }
+            
             ingestFileLevelMetadata(extractedMetadata, dataFile, fileMetadata, extractorPlugin.getFormatName());
 
         }
@@ -271,16 +284,58 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private void ingestFileLevelMetadata(Map<String, Set<String>> fileLevelMetadata, DataFile dataFile, FileMetadata fileMetadata, String fileFormatName) {
+    private void ingestDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
+        for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
+            if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
+                logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
+                List<DatasetFieldValue> existingValues = editVersion.getDatasetFieldValues();
+                Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
+                for (DatasetField dsf : mdb.getDatasetFields()) {
+                    String dsName = dsf.getName();
+                    if (fileMetadataMap.get(dsName) != null && !fileMetadataMap.get(dsName).isEmpty()) {
+                        logger.fine("Ingest Service: found extracted metadata for field "+dsName);
+                        Set<String> mValues = fileMetadataMap.get(dsName);
+                        for (String fValue : mValues) {
+                            // Need to only add the values not yet present!
+                            // (the method below may be inefficient - ?)
+                            boolean valueExists = false; 
+                            for (DatasetFieldValue dsfv : existingValues) {
+                                    if (dsf.equals(dsfv.getDatasetField())
+                                            && fValue.equals(dsfv.getStrValue())) {
+                                        valueExists = true;
+                                        break;
+                                    }
+                                }
+                            if (!valueExists) {
+                                DatasetFieldValue newDsfv = new DatasetFieldValue();
+                        
+                                newDsfv.setDatasetField(dsf);
+                                if (dsf.isControlledVocabulary()) {
+                                    Collection<ControlledVocabularyValue> cvValues = dsf.getControlledVocabularyValues();
+                                    for (ControlledVocabularyValue cvv : cvValues) {
+                                        if (fValue.equals(cvv.getStrValue())) {
+                                            newDsfv.setSingleControlledVocabularyValue(cvv);
+                                            //newDsfv.getControlledVocabularyValues().add(cvv);
+                                        }
+                                    }
+                                } else {
+                                    newDsfv.setStrValue(fValue);
+                                }
+                                newDsfv.setDatasetVersion(editVersion);
+                                dsf.getDatasetFieldValues().add(newDsfv);
+                            }
+                        }
+                    }
+                }
+            }
+        }  
+    }
+    
+    private void ingestFileLevelMetadata(FileMetadataIngest fileLevelMetadata, DataFile dataFile, FileMetadata fileMetadata, String fileFormatName) {
         // First, add the "metadata summary" generated by the file reader/ingester
         // to the fileMetadata object, as the "description":
-
-        Set<String> metadataSummarySet = fileLevelMetadata.get(METADATA_SUMMARY);
-        if (metadataSummarySet != null && metadataSummarySet.size() > 0) {
-            String metadataSummary = "";
-            for (String s : metadataSummarySet) {
-                metadataSummary = metadataSummary.concat(s);
-            }
+        String metadataSummary = fileLevelMetadata.getMetadataSummary();
+        if (metadataSummary != null) {
             if (!metadataSummary.equals("")) {
                 // The AddFiles page allows a user to enter file description 
                 // on ingest. We don't want to overwrite whatever they may 
@@ -290,21 +345,20 @@ public class IngestServiceBean {
                 if (userEnteredFileDescription != null
                         && !(userEnteredFileDescription.equals(""))) {
 
-                    metadataSummary
-                            = userEnteredFileDescription.concat("\n" + metadataSummary);
+                    metadataSummary = userEnteredFileDescription.concat("\n" + metadataSummary);
                 }
                 fileMetadata.setDescription(metadataSummary);
             }
-
-            fileLevelMetadata.remove(METADATA_SUMMARY);
         }
 
-        // And now we can go through the remaining key/value pairs in the 
-        // metadata maps and process the metadata elements found in the 
-        // file: 
-        for (String mKey : fileLevelMetadata.keySet()) {
+        Map<String, Set<String>> fileMetadataMap = fileLevelMetadata.getMetadataMap();
 
-            Set<String> mValues = fileLevelMetadata.get(mKey);
+        // And now we can go through the remaining key/value pairs in the 
+        // metadata maps and process the metadata elements that were found in the 
+        // file: 
+        for (String mKey : fileMetadataMap.keySet()) {
+
+            Set<String> mValues = fileMetadataMap.get(mKey);
 
             Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Looking up file meta field " + mKey + ", file format " + fileFormatName);
             FileMetadataField fileMetaField = fieldService.findFileMetadataFieldByNameAndFormat(mKey, fileFormatName);

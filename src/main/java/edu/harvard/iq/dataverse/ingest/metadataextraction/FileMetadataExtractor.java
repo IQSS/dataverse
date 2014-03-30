@@ -39,7 +39,8 @@ public abstract class FileMetadataExtractor {
     }
     
     
-    public abstract Map<String, Set<String>> ingest(BufferedInputStream stream)
+    //public abstract Map<String, Set<String>> ingest(BufferedInputStream stream)
+    public abstract FileMetadataIngest ingest(BufferedInputStream stream)
         throws IOException;
 
     
