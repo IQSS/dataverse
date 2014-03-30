@@ -281,6 +281,19 @@ public class DatasetField implements Serializable, Comparable<DatasetField> {
         this.searchResultField = searchResultField;
     }
 
+    public boolean isPrimitive() {
+        return this.childDatasetFields.isEmpty();
+    }
+    
+    public boolean isCompound() {
+         return !this.childDatasetFields.isEmpty();       
+    }
+    
+    public boolean isSubField() {
+        return this.parentDatasetField != null;        
+    }
+    
+    
     public boolean isHasChildren() {
         return !this.childDatasetFields.isEmpty();
     }
