@@ -131,8 +131,8 @@ public class Dataset extends DvObjectContainer {
 
         DatasetVersion latestVersion = getLatestVersion();
         //if the latest version has values get them copied over
-        if (latestVersion.getDatasetFieldValues() != null && !latestVersion.getDatasetFieldValues().isEmpty()) {
-            dsv.setDatasetFieldValues(dsv.copyDatasetFieldValues(latestVersion.getDatasetFieldValues()));
+        if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
+            dsv.setDatasetFields(dsv.copyDatasetFieldValues(latestVersion.getDatasetFields()));
         }
         dsv.setFileMetadatas(new ArrayList());
         //dsv.getMetadata().setDatasetVersion(dsv);
