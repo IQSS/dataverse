@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class Config extends AbstractApiBean {
 
         StringBuilder sb = new StringBuilder();
 
-        for (DatasetField datasetField : datasetFieldService.findAllOrderedByName()) {
+        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
             String nameSearchable = datasetField.getSolrField().getNameSearchable();
             String type = datasetField.getSolrField().getSolrType().getType();
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
@@ -53,7 +53,7 @@ public class Config extends AbstractApiBean {
 
         sb.append("---\n");
 
-        for (DatasetField datasetField : datasetFieldService.findAllOrderedByName()) {
+        for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
             String nameSearchable = datasetField.getSolrField().getNameSearchable();
             String nameFacetable = datasetField.getSolrField().getNameFacetable();
 
