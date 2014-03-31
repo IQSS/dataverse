@@ -17,28 +17,28 @@
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                 <!-- Primitive datasetFields -->
-                                <ui:fragment rendered="#{!dsf.datasetField.hasChildren}">
+                                <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                     <div class="form-group">
-                                        <label for="metadata_#{dsf.datasetField.name}" class="col-sm-3 control-label">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetField.description}" title="">
-                                                #{dsf.datasetField.title}
+                                        <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}" title="">
+                                                #{dsf.datasetFieldType.title}
                                             </a>
                                         </label>                  
                                         <div class="col-sm-9">
-                                            <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetField.allowMultiples}"/>
-                                            <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetField.allowMultiples}">
+                                            <h:outputText value="#{dsf.value}" rendered="#{!dsf.datasetFieldType.allowMultiples}"/>
+                                            <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                 <h:outputText value="#{loop.first?'':'; '}#{value}"/>
                                             </ui:repeat>                                                 
                                         </div>                                        
                                     </div>
                                 </ui:fragment>  
                                 <!-- Compound datasetFields -->
-                                <ui:fragment rendered="#{dsf.datasetField.hasChildren}">
+                                <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
                                     <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValues">
                                         <div class="form-group">
-                                            <label for="metadata_#{dsf.datasetField.name}" class="col-sm-3 control-label">
-                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetField.description}" title="">
-                                                    #{dsf.datasetField.title}
+                                            <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}" title="">
+                                                    #{dsf.datasetFieldType.title}
                                                 </a>
                                             </label>                  
                                             <div class="col-sm-9">
@@ -46,11 +46,11 @@
                                                 <ui:repeat value="#{compoundValues.childDatasetFields}" var="subdsf">                                                              
                                                     <div class="col-sm-6">
                                                         <label class="control-label" for="metadata_BLANK">
-                                                            <a class="tooltiplabel right" data-original-title="#{subdsf.datasetField.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetField.title}</a>                                                        
+                                                            <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>                                                        
                                                         </label>
                                                         <div>
-                                                            <h:outputText value="#{subdsf.value}" rendered="#{!subdsf.datasetField.allowMultiples}"/>
-                                                            <ui:repeat value="#{subdsf.values}" var="value" varStatus="loop" rendered="#{subdsf.datasetField.allowMultiples}">
+                                                            <h:outputText value="#{subdsf.value}" rendered="#{!subdsf.datasetFieldType.allowMultiples}"/>
+                                                            <ui:repeat value="#{subdsf.values}" var="value" varStatus="loop" rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                 <h:outputText value="#{loop.first?'':'; '}#{value}"/>
                                                             </ui:repeat>
                                                         </div>
@@ -83,7 +83,7 @@
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                     <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate)}">
                                         <!-- Primitive, Single value field -->    
-                                        <ui:fragment rendered="#{!dsf.datasetFieldType.hasChildren and !dsf.datasetFieldType.allowMultiples}">
+                                        <ui:fragment rendered="#{dsf.datasetFieldType.primitive and !dsf.datasetFieldType.allowMultiples}">
                                             <div class="form-group">
                                                 <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
@@ -97,7 +97,7 @@
                                             </div>
                                         </ui:fragment>
                                         <!-- Primitive, Multiple value field -->    
-                                        <ui:fragment rendered="#{!dsf.datasetFieldType.hasChildren and dsf.datasetFieldType.allowMultiples}">
+                                        <ui:fragment rendered="#{dsf.datasetFieldType.primitive and dsf.datasetFieldType.allowMultiples}">
                                             <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >    
                                                 <div class="form-group">
                                                     <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
@@ -114,7 +114,7 @@
                                         </ui:fragment>
 
                                         <!-- Compound fields -->
-                                        <ui:fragment rendered="#{dsf.datasetFieldType.hasChildren}">
+                                        <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
                                                 <div class="form-group">
                                                     <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
