@@ -47,17 +47,17 @@ public class MetadataBlock implements Serializable {
     }
     
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Collection<DatasetField> datasetFields;
-    public Collection<DatasetField> getDatasetFields() {
-        return datasetFields;
+    private Collection<DatasetFieldType> datasetFieldTypes;
+    public Collection<DatasetFieldType> getDatasetFieldTypes() {
+        return datasetFieldTypes;
     }
-    public void setDatasetFields(Collection<DatasetField> datasetFields) {
-        this.datasetFields = datasetFields;
+    public void setDatasetFieldTypes(Collection<DatasetFieldType> datasetFieldTypes) {
+        this.datasetFieldTypes = datasetFieldTypes;
     }
     
     public boolean isDisplayOnCreate() {
-        for (DatasetField datasetField : datasetFields) {
-            if (datasetField.isDisplayOnCreate()) {
+        for (DatasetFieldType dsfType : datasetFieldTypes) {
+            if (dsfType.isDisplayOnCreate()) {
                 return true;
             }
         }
