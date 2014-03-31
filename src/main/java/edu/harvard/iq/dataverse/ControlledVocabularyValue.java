@@ -54,12 +54,12 @@ public class ControlledVocabularyValue implements Serializable  {
     
     @ManyToOne
     @JoinColumn(nullable=false)
-    private DatasetField datasetField;
-    public DatasetField getDatasetField() {
-        return datasetField;
+    private DatasetFieldType datasetFieldType;
+    public DatasetFieldType getDatasetFieldType() {
+        return datasetFieldType;
     }
-    public void setDatasetField(DatasetField datasetField) {
-        this.datasetField = datasetField;
+    public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
+        this.datasetFieldType = datasetFieldType;
     }
 
 
