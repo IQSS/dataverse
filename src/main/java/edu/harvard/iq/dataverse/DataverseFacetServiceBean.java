@@ -49,7 +49,7 @@ public class DataverseFacetServiceBean {
         dataverseFacet.setDisplayOrder(diplayOrder);
         
         DatasetFieldType dsfType = (DatasetFieldType)em.find(DatasetFieldType.class,datasetFieldId);
-        dataverseFacet.setDatasetField(dsfType);
+        dataverseFacet.setDatasetFieldType(dsfType);
         
         Dataverse dataverse = (Dataverse)em.find(Dataverse.class,dataverseId);
         dataverseFacet.setDataverse(dataverse);
