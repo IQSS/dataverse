@@ -63,7 +63,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		
 		ctxt.roles().save(new RoleAssignment(manager, getUser(), managedDv));
 		
-		ctxt.indexing().indexDataverse(managedDv);
+		ctxt.index().indexDataverse(managedDv);
 		
 		return managedDv;
 	}

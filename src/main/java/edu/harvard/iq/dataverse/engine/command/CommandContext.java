@@ -34,7 +34,7 @@ public interface CommandContext {
 	
 	public DataverseUserServiceBean users();
 	
-	public IndexServiceBean indexing();
+	public IndexServiceBean index();
 	
 	public SearchServiceBean search();
 	

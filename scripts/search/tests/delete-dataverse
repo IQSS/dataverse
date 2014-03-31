@@ -1,0 +1,19 @@
+#!/bin/bash
+# We'll create a dataverse and then delete it
+cd scripts/api
+ID_TO_DELETE=`curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-deletable.json "http://localhost:8080/api/dvs/umaTop?key=uma" | jq '.data.id'`
+cd ../..
+# Show the dataverse we just created
+curl -s -X GET http://localhost:8080/api/dvs/$ID_TO_DELETE
+
+# We'll delete the dataverse we just created
+curl -s -X DELETE "http://localhost:8080/api/dvs/$ID_TO_DELETE?key=uma"
+# should yield:
+#{
+#    "status":"OK",
+#    "data":{
+#        "message":"Dataverse 8 deleted"
+#}
+
+# nick, who should be able to see everything, should no longer see it
+diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nick') scripts/search/tests/expected/nick

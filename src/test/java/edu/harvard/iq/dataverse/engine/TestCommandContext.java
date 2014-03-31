@@ -33,7 +33,7 @@ public class TestCommandContext implements CommandContext {
 	}
 
 	@Override
-	public IndexServiceBean indexing() {
+	public IndexServiceBean index() {
 		return null;
 	}
 

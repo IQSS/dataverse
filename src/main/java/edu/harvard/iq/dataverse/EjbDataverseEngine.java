@@ -115,7 +115,7 @@ public class EjbDataverseEngine {
 				public DataverseUserServiceBean users() { return usersService; }
 
 				@Override
-				public IndexServiceBean indexing() { return indexService; }
+				public IndexServiceBean index() { return indexService; }
 
 				@Override
 				public SearchServiceBean search() { return searchService; }

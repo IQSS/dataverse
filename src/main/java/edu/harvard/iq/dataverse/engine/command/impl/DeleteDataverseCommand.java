@@ -66,6 +66,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			ctxt.em().remove(facet);
 		}
 		// DATAVERSE
+            /**
+             * @todo: Do something with the result. Log it? Throw
+             * IllegalCommandException, depending on the result?
+             */
+            String result = ctxt.index().delete(doomed);
 		ctxt.em().remove(doomed);
 		
 		

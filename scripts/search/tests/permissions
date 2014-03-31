@@ -1,4 +1,7 @@
 #!/bin/bash
+# After dropping your datbase and getting set up again per the dev guide,
+# You should see no output from this script. Silence is golden.
+# If you start creating dataverses and datasets, you should expect to see output.
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nosuchuser') scripts/search/tests/expected/nosuchuser
 diff <(curl -s 'http://localhost:8080/api/search?q=*') scripts/search/tests/expected/anon
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=__GUEST__') scripts/search/tests/expected/__GUEST__

@@ -20,6 +20,7 @@ import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
 @Stateless
@@ -35,6 +36,7 @@ public class IndexServiceBean {
     @EJB
     DataverseUserServiceBean dataverseUserServiceBean;
 
+    private final String solrDocIdentifierDataverse = "dataverse_";
     private static final String npeGetCreator = "creatorNPE";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
@@ -107,7 +109,7 @@ public class IndexServiceBean {
         Dataverse rootDataverse = dataverseService.findRootDataverse();
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField(SearchFields.ID, "dataverse_" + dataverse.getId());
+        solrInputDocument.addField(SearchFields.ID, solrDocIdentifierDataverse + dataverse.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataverse.getId());
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
@@ -618,6 +620,28 @@ public class IndexServiceBean {
 
     public static Long getTmpNsaGroupId() {
         return tmpNsaGroupId;
+    }
+
+    public String delete(Dataverse doomed) {
+        /**
+         * @todo allow for configuration of hostname and port
+         */
+        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        logger.info("deleting Solr document for dataverse " + doomed.getId());
+        UpdateResponse updateResponse;
+        try {
+            updateResponse = server.deleteById(solrDocIdentifierDataverse + doomed.getId());
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            server.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
+        logger.info(response);
+        return response;
     }
 
 }
