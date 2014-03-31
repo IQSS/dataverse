@@ -1,32 +1,32 @@
 #metadataBlock	name	displayName												
 	astrophysics	Astronomy and Astrophysics Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	type	Type	The nature or genre of the content of the files in the dataset.		text	0	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		astrophysics
-	facility	Facility	The observatory or facility where the data was obtained. 		text	1	TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		astrophysics
-	instrument	Instrument	The instrument used to collect the data		text	2	TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		astrophysics
-	resolution	Resolution	The resolution of the data object contents		float	3	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		astrophysics
-	resolution.Spatial	Spatial Resolution	The spatial (angular) resolution that is typical of the observations, in decimal degrees		float	4	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	resolution	astrophysics
+	type	Type	The nature or genre of the content of the files in the dataset.		text	0	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
+	facility	Facility	The observatory or facility where the data was obtained. 		text	1	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
+	instrument	Instrument	The instrument used to collect the data.		text	2	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
+	resolution	Resolution	The resolution of the data object contents.		float	3	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	resolution.Spatial	Spatial Resolution	The spatial (angular) resolution that is typical of the observations, in decimal degrees.		float	4	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	resolution	astrophysics
 	resolution.Spectral	Spectral Resolution	The spectral resolution that is typical of the observations, given as the ratio λ/Δλ.		float	5	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	resolution	astrophysics
-	resolution.Temporal	Time Resolution	The temporal resolution that is typical of the observations, given in seconds		float	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	resolution	astrophysics
-	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s in the data object		float	7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	resolution	astrophysics
-	coverage	Coverage	The extent of scope of the content of the data object		text	8	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	resolution.Temporal	Time Resolution	The temporal resolution that is typical of the observations, given in seconds.		float	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	resolution	astrophysics
+	resolution.Redshift	Redshift Resolution	The resolution in redshift (unitless) or Doppler velocity (km/s) in the data object.		float	7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	resolution	astrophysics
+	coverage	Coverage	The extent of scope of the content of the data object.		text	8	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	9	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
-	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
-	coverage.Spectral.MinimumWavelength 	Minimum Wavelength (m)	The minimum wavelength of the spectral bandpass, in meters		float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
-	coverage.Spectral.MaximumWavelength	Maximum Wavelength (m)	The maximum wavelength of the spectral bandpass, in meters		float	12	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
+	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
+	coverage.Spectral.MinimumWavelength 	Minimum Wavelength (m)	The minimum wavelength of the spectral bandpass, in meters.		float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
+	coverage.Spectral.MaximumWavelength	Maximum Wavelength (m)	The maximum wavelength of the spectral bandpass, in meters.		float	12	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
 	coverage.Temporal.StartTime	Dataset Start Date	Dataset Start Date		date	13	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
 	coverage.Temporal.StopTime	Dataset End Date	Dataset End Date		date	14	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage	astrophysics
-	coverage.Spectral	Spectral Coverage	The spectral coverage of the data object		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
+	coverage.Spectral	Spectral Coverage	The spectral coverage of the data object.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	coverage.Depth	Depth Coverage	The (typical) depth coverage, or sensitivity, of the data object in Jy.		float	17	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
-	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree		float	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
-	coverage.ObjectCount	Object Count	The total number of objects, catalog entries, etc., in the data object		int	19	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
-	coverage.SkyFraction	Fraction of Sky	The fraction of the sky represented in the observations, ranging from 0 to 1		float	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
+	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree.		float	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
+	coverage.ObjectCount	Object Count	The total number of objects, catalog entries, etc., in the data object.		int	19	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
+	coverage.SkyFraction	Fraction of Sky	The fraction of the sky represented in the observations, ranging from 0 to 1.		float	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	coverage.Polarization	Polarization	The polarization coverage		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	coverage.Redshift.MinimumValue	coverage.Redshift.MinimumValue	The minimum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	coverage.Redshift.MaximumValue	coverage.Redshift.MaximumValue	The maximum value of the redshift (unitless) or Doppler velocity (km/s in the data object.		float	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	coverage	astrophysics
 	redshiftType	RedshiftType	RedshiftType string C "Redshift"; or "Optical" or "Radio" definitions of Doppler velocity used in the data object.		text	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
-	ucd	UCD (Unified Content Descriptors)	A list of the UCDs (Unified Content Descriptors represented in the data object		text	25	FALSE	TRUE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	ucd	UCD (Unified Content Descriptors)	A list of the UCDs (Unified Content Descriptors) represented in the data object.		text	25	FALSE	TRUE	TRUE	FALSE	FALSE	FALSE		astrophysics
 #controlledVocabulary	DatasetField	Value	displayOrder											
 	type	Image	0											
 	type	Mosaic	1											
