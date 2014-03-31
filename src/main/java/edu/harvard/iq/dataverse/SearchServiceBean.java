@@ -133,7 +133,7 @@ public class SearchServiceBean {
          *
          */
         for (DataverseFacet dataverseFacet: dataverse.getDataverseFacets()) {
-            DatasetField datasetField = dataverseFacet.getDatasetField();
+            DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
             solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
         }
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
@@ -191,7 +191,7 @@ public class SearchServiceBean {
         List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        List<DatasetField> datasetFields = datasetFieldService.findAllOrderedById();
+        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
@@ -201,7 +201,7 @@ public class SearchServiceBean {
         Field[] staticSearchFields = searchFieldsObject.getClass().getDeclaredFields();
         String titleSolrField = null;
         try {
-            DatasetField titleDatasetField = datasetFieldService.findByName(DatasetFieldConstant.title);
+            DatasetFieldType titleDatasetField = datasetFieldService.findByName(DatasetFieldConstant.title);
             titleSolrField = titleDatasetField.getSolrField().getNameSearchable();
         } catch (EJBTransactionRolledbackException ex) {
             logger.info("Couldn't find " + DatasetFieldConstant.title);
@@ -298,7 +298,7 @@ public class SearchServiceBean {
              * the todo above but we need a way to lookup by Solr field, so
              * we'll build a hashmap
              */
-            for (DatasetField datasetField : datasetFields) {
+            for (DatasetFieldType datasetField : datasetFields) {
                 String solrFieldNameForDataset = datasetField.getSolrField().getNameFacetable();
                 String friendlyName = datasetField.getDisplayName();
                 if (solrFieldNameForDataset != null && facetField.getName().endsWith(datasetField.getTmpNullFieldTypeIdentifier())) {
