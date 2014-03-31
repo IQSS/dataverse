@@ -224,7 +224,7 @@ public class DatasetFieldServiceApi {
 
     private String parseControlledVocabulary(String[] values) {
         ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-        cvv.setDatasetField(datasetFieldService.findByName(values[1]));
+        cvv.setDatasetFieldType(datasetFieldService.findByName(values[1]));
         cvv.setStrValue(values[2]);
         cvv.setDisplayOrder(new Integer(values[3]).intValue());
 
