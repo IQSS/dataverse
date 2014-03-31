@@ -128,7 +128,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             editVersion = dataset.getLatestVersion();
             ownerId = dataset.getOwner().getId();
-            editVersion.setDatasetFields(editVersion.initDatasetFieldValues());
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
             datasetVersionUI = new DatasetVersionUI(editVersion);
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -139,7 +139,7 @@ public class DatasetPage implements java.io.Serializable {
             editVersion.setFileMetadatas(new ArrayList());
             editVersion.setDatasetFields(null);
             editVersion.setVersionState(VersionState.DRAFT);
-            editVersion.setDatasetFields(editVersion.initDatasetFieldValues());
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
             editVersion.setVersionNumber(new Long(1));
             datasetVersionUI = new DatasetVersionUI(editVersion);
             //TODO add call to initDepositFields if it's decided that they are indeed metadata
