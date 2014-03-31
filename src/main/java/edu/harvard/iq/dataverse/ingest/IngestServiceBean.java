@@ -24,9 +24,9 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -292,7 +292,7 @@ public class IngestServiceBean {
                 logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
                 List<DatasetFieldValue> existingValues = editVersion.getDatasetFieldValues();
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
-                for (DatasetField dsf : mdb.getDatasetFields()) {
+                for (DatasetFieldType dsf : mdb.getDatasetFields()) {
                     String dsName = dsf.getName();
                     if (fileMetadataMap.get(dsName) != null && !fileMetadataMap.get(dsName).isEmpty()) {
                         logger.fine("Ingest Service: found extracted metadata for field "+dsName);
