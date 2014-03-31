@@ -162,7 +162,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.metadataBlock = metadataBlock;
     }
     
-   @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+   @OneToMany(mappedBy = "datasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
    @OrderBy("displayOrder ASC")
     private Collection<ControlledVocabularyValue> controlledVocabularyValues;
 
