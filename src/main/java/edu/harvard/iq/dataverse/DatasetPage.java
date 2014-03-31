@@ -65,8 +65,6 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetFieldServiceBean fieldService;
     @EJB
-    DatasetFieldValueServiceBean fieldValueService;
-    @EJB
     VariableServiceBean variableService;
     @EJB
     IngestServiceBean ingestService;
@@ -81,7 +79,7 @@ public class DatasetPage implements java.io.Serializable {
     private Map<UploadedFile, DataFile> newFiles = new HashMap();
     private DatasetVersion editVersion = new DatasetVersion();
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
-    private List<DatasetFieldValue> deleteRecords = new ArrayList();
+    private List<DatasetField> deleteRecords = new ArrayList();
 
 
     public Dataset getDataset() {
@@ -130,7 +128,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             editVersion = dataset.getLatestVersion();
             ownerId = dataset.getOwner().getId();
-            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues());
+            editVersion.setDatasetFields(editVersion.initDatasetFieldValues());
             datasetVersionUI = new DatasetVersionUI(editVersion);
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -139,9 +137,9 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setVersions(new ArrayList());
             editVersion.setDataset(dataset);
             editVersion.setFileMetadatas(new ArrayList());
-            editVersion.setDatasetFieldValues(null);
+            editVersion.setDatasetFields(null);
             editVersion.setVersionState(VersionState.DRAFT);
-            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues());
+            editVersion.setDatasetFields(editVersion.initDatasetFieldValues());
             editVersion.setVersionNumber(new Long(1));
             datasetVersionUI = new DatasetVersionUI(editVersion);
             //TODO add call to initDepositFields if it's decided that they are indeed metadata
@@ -187,23 +185,23 @@ public class DatasetPage implements java.io.Serializable {
 
     public void addGeneralRecord(Object recordType) {
         //The page provides the value record to be added        
-        DatasetFieldValue dfvType = (DatasetFieldValue) recordType;
-        DatasetFieldValue addNew = new DatasetFieldValue();
+        DatasetField dfvType = (DatasetField) recordType;
+        DatasetField addNew = new DatasetField();
         addNew.setDatasetVersion(editVersion);
-        addNew.setDatasetField(dfvType.getDatasetField());
+        addNew.setDatasetFieldType(dfvType.getDatasetFieldType());
         //If there are children create them and add to map list        
-        if (dfvType.getDatasetField().isHasChildren()) {
+        if (dfvType.getDatasetFieldType().isHasChildren()) {
             addNew = addChildren(addNew);
         }
         // add parent value
-        editVersion.getDatasetFieldValues().add(addNew);
+        editVersion.getDatasetFields().add(addNew);
         //Refresh the UI to add the new fields to the blocks
         datasetVersionUI = new DatasetVersionUI(editVersion);
     }
 
-    private DatasetFieldValue addChildren(DatasetFieldValue dsfvIn) {/*
+    private DatasetField addChildren(DatasetField dsfvIn) {/*
          dsfvIn.setChildDatasetFieldValues(new ArrayList());
-         for (DatasetField dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
+         for (DatasetFieldType dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
          DatasetFieldValue cv = new DatasetFieldValue();
          cv.setParentDatasetFieldValue(dsfvIn);
          cv.setDatasetField(dsfc);
@@ -251,9 +249,9 @@ public class DatasetPage implements java.io.Serializable {
 
         // iterate and remove empty DatasetFields
         // TODO: Handle compound better (ie remove individual empty compound values)
-        Iterator<DatasetFieldValue> it = dataset.getEditVersion().getDatasetFieldValues().iterator();
+        Iterator<DatasetField> it = dataset.getEditVersion().getDatasetFields().iterator();
         while (it.hasNext()) {
-            DatasetFieldValue dsf = it.next();
+            DatasetField dsf = it.next();
             if (dsf.isEmpty()) {
                 it.remove();
             }
