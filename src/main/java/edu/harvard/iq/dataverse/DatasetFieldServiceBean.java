@@ -24,33 +24,33 @@ public class DatasetFieldServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    private static final String NAME_QUERY = "SELECT dsf from DatasetField dsf where dsf.name= :fieldName ";
+    private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName ";
     private static final String FILEMETA_NAME_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName ";
     private static final String FILEMETA_NAME_FORMAT_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName and fmf.fileFormatName= :fileFormatName ";
  
-    public List<DatasetField> findAllAdvancedSearchFields() {
-        return em.createQuery("select object(o) from DatasetField as o where o.advancedSearchField = true and o.title != '' order by o.id").getResultList();
+    public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id").getResultList();
     }
     
-    public List<DatasetField> findAllFacetableFields() {
-        return em.createQuery("select object(o) from DatasetField as o where o.facetable = true and o.title != '' order by o.id").getResultList();
+    public List<DatasetFieldType> findAllFacetableFieldTypes() {
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.facetable = true and o.title != '' order by o.id").getResultList();
     } 
 
-    public List<DatasetField> findAllOrderedById() {
-        return em.createQuery("select object(o) from DatasetField as o order by o.id").getResultList();
+    public List<DatasetFieldType> findAllOrderedById() {
+        return em.createQuery("select object(o) from DatasetFieldType as o order by o.id").getResultList();
     }
 
-    public List<DatasetField> findAllOrderedByName() {
-        return em.createQuery("select object(o) from DatasetField as o order by o.name").getResultList();
+    public List<DatasetFieldType> findAllOrderedByName() {
+        return em.createQuery("select object(o) from DatasetFieldType as o order by o.name").getResultList();
     }
 
-    public DatasetField find(Object pk) {
-        return (DatasetField) em.find(DatasetField.class, pk);
+    public DatasetFieldType find(Object pk) {
+        return (DatasetFieldType) em.find(DatasetFieldType.class, pk);
     } 
     
-    public DatasetField findByName(String name) {
-        DatasetField dsf = (DatasetField) em.createQuery(NAME_QUERY).setParameter("fieldName",name).getSingleResult();
-        return dsf;
+    public DatasetFieldType findByName(String name) {
+        DatasetFieldType dsfType = (DatasetFieldType) em.createQuery(NAME_QUERY).setParameter("fieldName",name).getSingleResult();
+        return dsfType;
     }
     
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
@@ -109,8 +109,8 @@ public class DatasetFieldServiceBean {
         
     }
 
-    public DatasetField save(DatasetField dsf) {
-       return em.merge(dsf);
+    public DatasetFieldType save(DatasetFieldType dsfType) {
+       return em.merge(dsfType);
     }
     
     public MetadataBlock save(MetadataBlock mdb) {
