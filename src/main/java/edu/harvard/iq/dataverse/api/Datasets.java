@@ -208,7 +208,7 @@ public class Datasets extends AbstractApiBean {
             editVersion.setDataset(dataset);
             Dataverse owningDataverse = dataverseService.findByAlias(owner);
             dataset.setOwner(owningDataverse);
-            editVersion.setDatasetFieldValues(editVersion.initDatasetFieldValues());
+            editVersion.setDatasetFields(editVersion.initDatasetFields());
             dataset.getVersions().add(editVersion);
             dataset.setIdentifier("myIdentifier");
             dataset.setProtocol("myProtocol");
