@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetField;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.json.Json;
@@ -100,7 +100,7 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		return this;
 	}
 	
-	public NullSafeJsonBuilder addStrValue( String name, DatasetFieldValue field ) {
+	public NullSafeJsonBuilder addStrValue( String name, DatasetField field ) {
 		if ( field != null ) {
 			delegate.add( name, field.getValue() );
 		}
