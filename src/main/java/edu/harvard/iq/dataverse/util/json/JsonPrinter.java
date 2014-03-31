@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
@@ -153,20 +153,20 @@ public class JsonPrinter {
 		// Arrange the dataset field values in metadata blocks.
 		JsonObjectBuilder blocksBld = jsonObjectBuilder();
 		List<MetadataBlock> metadataBlocks = dsv.getDataset().getOwner().getMetadataBlocks();
-		List<DatasetFieldValue> fieldValues = dsv.getDatasetFieldValues();
+		List<DatasetField> fieldValues = dsv.getDatasetFields();
 		
 		for ( MetadataBlock block : metadataBlocks ) {
 			JsonObjectBuilder blockBld = jsonObjectBuilder();
 		
 			blockBld.add("block", json(block) );
 			
-			Set<DatasetField> blockFields = new TreeSet<>(block.getDatasetFields());
+			Set<DatasetFieldType> blockFields = new TreeSet<>(block.getDatasetFieldTypes());
 			
 			JsonObjectBuilder valuesBld = jsonObjectBuilder();
 
-			for ( DatasetFieldValue val : new TreeSet<>(fieldValues) ) {
-				if ( blockFields.contains(val.getDatasetField()) ) {
-					valuesBld.add( val.getDatasetField().getName(), json(val) );
+			for ( DatasetField val : new TreeSet<>(fieldValues) ) {
+				if ( blockFields.contains(val.getDatasetFieldType()) ) {
+					valuesBld.add( val.getDatasetFieldType().getName(), json(val) );
 				}
 			}
 			
@@ -181,7 +181,7 @@ public class JsonPrinter {
 		return bld;
 	}
 	
-	public static JsonObjectBuilder json( DatasetFieldValue dfv ) {
+	public static JsonObjectBuilder json( DatasetField dfv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder();
 		bld.add( "id", dfv.getId() );
                 /*
@@ -210,7 +210,7 @@ public class JsonPrinter {
 		bld.add("displayName", blk.getDisplayName());
 		
 		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
-		for ( DatasetField df : new TreeSet<>(blk.getDatasetFields()) ) {
+		for ( DatasetFieldType df : new TreeSet<>(blk.getDatasetFieldTypes()) ) {
 			fieldsBld.add( df.getName(), json(df) );
 		}
 		
@@ -219,7 +219,7 @@ public class JsonPrinter {
 		return bld;
 	}
 	
-	public static JsonObjectBuilder json( DatasetField fld ) {
+	public static JsonObjectBuilder json( DatasetFieldType fld ) {
 		JsonObjectBuilder fieldsBld = jsonObjectBuilder();
 		fieldsBld.add( "name", fld.getName() );
 		fieldsBld.add( "displayName", fld.getDisplayName());
@@ -227,9 +227,9 @@ public class JsonPrinter {
 		fieldsBld.add( "type", fld.getFieldType());
 		fieldsBld.add( "watermark", fld.getWatermark());
 		fieldsBld.add( "description", fld.getDescription());
-		if ( ! fld.getChildDatasetFields().isEmpty() ) {
+		if ( ! fld.getChildDatasetFieldTypes().isEmpty() ) {
 			JsonObjectBuilder subFieldsBld = jsonObjectBuilder();
-			for ( DatasetField subFld : fld.getChildDatasetFields() ) {
+			for ( DatasetFieldType subFld : fld.getChildDatasetFieldTypes() ) {
 				subFieldsBld.add( subFld.getName(), json(subFld) );
 			}
 			fieldsBld.add("childFields", subFieldsBld);
