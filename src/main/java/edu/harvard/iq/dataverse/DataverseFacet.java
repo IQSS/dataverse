@@ -46,8 +46,8 @@ public class DataverseFacet implements Serializable {
   private Dataverse dataverse;
 
   @ManyToOne
-  @JoinColumn(name="datasetfield_id")
-  private DatasetField datasetField;
+  @JoinColumn(name="datasetfieldtype_id")
+  private DatasetFieldType datasetFieldType;
 
 
   private int displayOrder;
@@ -60,12 +60,12 @@ public class DataverseFacet implements Serializable {
         this.dataverse = dataverse;
     }
 
-    public DatasetField getDatasetField() {
-        return datasetField;
+    public DatasetFieldType getDatasetFieldType() {
+        return datasetFieldType;
     }
 
-    public void setDatasetField(DatasetField datasetField) {
-        this.datasetField = datasetField;
+    public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
+        this.datasetFieldType = datasetFieldType;
     }
 
     public int getDisplayOrder() {
@@ -84,7 +84,7 @@ public class DataverseFacet implements Serializable {
 
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetField)) {
+        if (!(object instanceof DatasetFieldType)) {
             return false;
         }
         DataverseFacet other = (DataverseFacet) object;
