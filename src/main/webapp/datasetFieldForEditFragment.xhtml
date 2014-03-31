@@ -5,7 +5,7 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
 
-    class="#{fieldValues.datasetField.datasetFieldType.hasParent and (fieldValues.datasetField.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+    class="#{fieldValues.datasetField.datasetFieldType.child and (fieldValues.datasetField.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
 
     <ui:fragment rendered="#{includeTitle}">
         <label class="control-label" for="metadata_BLANK">
