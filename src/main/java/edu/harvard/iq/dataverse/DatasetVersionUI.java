@@ -26,22 +26,22 @@ public class DatasetVersionUI {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetFieldValue>> metadataBlocksForView = new HashMap();
-    private Map<MetadataBlock, List<DatasetFieldValue>> metadataBlocksForEdit = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap();
 
-    public Map<MetadataBlock, List<DatasetFieldValue>> getMetadataBlocksForView() {
+    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
     }
 
-    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetFieldValue>> metadataBlocksForView) {
+    public void setMetadataBlocksForView(Map<MetadataBlock, List<DatasetField>> metadataBlocksForView) {
         this.metadataBlocksForView = metadataBlocksForView;
     }
 
-    public Map<MetadataBlock, List<DatasetFieldValue>> getMetadataBlocksForEdit() {
+    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
-    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetFieldValue>> metadataBlocksForEdit) {
+    public void setMetadataBlocksForEdit(Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit) {
         this.metadataBlocksForEdit = metadataBlocksForEdit;
     }
 
@@ -53,37 +53,34 @@ public class DatasetVersionUI {
         setDatasetVersion(datasetVersion);
         this.setDatasetAuthors(new ArrayList());
         this.setDatasetRelPublications(new ArrayList());
-        this.setSubjects(new ArrayList());
-        this.setDisplaysAboveTabs(new ArrayList());
 
         // loop through vaues to get fields for view mode
-        for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
+        for (DatasetField dsf : datasetVersion.getDatasetFields()) {
             //Special Handling for various fields displayed above tabs in dataset page view.
-            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                setTitle(dsfv);
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {
-                setDescription(dsfv);
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsfv.getDatasetFieldCompoundValues()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
+                setTitle(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {
+                setDescription(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
+                setKeyword(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                setSubject(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
+                this.setNotes(dsf);                
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                     DatasetAuthor datasetAuthor = new DatasetAuthor();
-                    for (DatasetFieldValue subField : authorValue.getChildDatasetFields()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
                             datasetAuthor.setName(subField);
                         }
-                        if (subField.getDatasetField().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                             datasetAuthor.setAffiliation(subField);
                         }
                     }
                     this.getDatasetAuthors().add(datasetAuthor);
-                }
-
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
-                setDatasetKeywords(dsfv);
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
-                for (ControlledVocabularyValue cvv : dsfv.getControlledVocabularyValues()) {
-                    this.getSubjects().add(cvv.getStrValue());
-                }
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+                }                
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
                 if (this.datasetRelPublications.isEmpty()) {/*
@@ -114,20 +111,7 @@ public class DatasetVersionUI {
 
                 }
 
-            } else if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
-                this.setNotesText(dsfv.getValue());
-            }/* else if (dsfv.getDatasetField().isDisplayOnCreate()
-             && ((!dsfv.getDatasetField().isHasParent() && !dsfv.getDatasetField().isHasChildren() && dsfv.getValue() != null && !dsfv.getValue().isEmpty())
-             || (dsfv.getDatasetField().isHasChildren() && !dsfv.isChildEmpty()))) {
-             //any fields designated as show on create
-
-             this.getDisplaysAboveTabs().add(dsfv);
-             if (dsfv.getChildDatasetFieldValues() != null && !dsfv.getChildDatasetFieldValues().isEmpty()) {
-             for (DatasetFieldValue dsfvChild : dsfv.getChildDatasetFieldValues()) {
-             this.getDisplaysAboveTabs().add(dsfvChild);
-             }
-             }
-             }*/
+            }
 
         }
         setMetadataValueBlocks(datasetVersion);
@@ -147,27 +131,55 @@ public class DatasetVersionUI {
         this.datasetVersion = datasetVersion;
     }
 
-    private DatasetFieldValue title;
+    private DatasetField title;
+    private DatasetField description;
+    private DatasetField keyword;
+    private DatasetField subject;
+    private DatasetField notes;    
+            
+    private List<DatasetAuthor> datasetAuthors = new ArrayList();    
+    private List<DatasetRelPublication> datasetRelPublications;    
 
-    public DatasetFieldValue getTitle() {
+    public DatasetField getTitle() {
         return title;
     }
 
-    public void setTitle(DatasetFieldValue title) {
+    public void setTitle(DatasetField title) {
         this.title = title;
     }
-
-    private List<String> subjects = new ArrayList();
-
-    public List<String> getSubjects() {
-        return subjects;
+    
+    public DatasetField getDescription() {
+        return description;
     }
 
-    public void setSubjects(List<String> subjects) {
-        this.subjects = subjects;
+    public void setDescription(DatasetField description) {
+        this.description = description;
+    }    
+
+    public DatasetField getKeyword() {
+        return keyword;
     }
 
-    private List<DatasetAuthor> datasetAuthors = new ArrayList();
+    public void setKeyword(DatasetField keyword) {
+        this.keyword = keyword;
+    }
+
+    public DatasetField getSubject() {
+        return subject;
+    }
+
+    public void setSubject(DatasetField subject) {
+        this.subject = subject;
+    }
+
+    public DatasetField getNotes() {
+        return notes;
+    }
+
+    public void setNotes(DatasetField notes) {
+        this.notes = notes;
+    }
+
 
     public List<DatasetAuthor> getDatasetAuthors() {
         return datasetAuthors;
@@ -177,37 +189,6 @@ public class DatasetVersionUI {
         this.datasetAuthors = datasetAuthors;
     }
 
-    private DatasetFieldValue description;
-
-    public DatasetFieldValue getDescription() {
-        return description;
-    }
-
-    public void setDescription(DatasetFieldValue description) {
-        this.description = description;
-    }
-
-    private DatasetFieldValue datasetKeywords;
-
-    public DatasetFieldValue getDatasetKeywords() {
-        return datasetKeywords;
-    }
-
-    public void setDatasetKeywords(DatasetFieldValue datasetKeywords) {
-        this.datasetKeywords = datasetKeywords;
-    }
-
-    private List<DatasetFieldValue> displaysAboveTabs = new ArrayList();
-
-    public List<DatasetFieldValue> getDisplaysAboveTabs() {
-        return displaysAboveTabs;
-    }
-
-    public void setDisplaysAboveTabs(List<DatasetFieldValue> displaysAboveTabs) {
-        this.displaysAboveTabs = displaysAboveTabs;
-    }
-
-    private List<DatasetRelPublication> datasetRelPublications;
 
     public List<DatasetRelPublication> getDatasetRelPublications() {
         return datasetRelPublications;
@@ -217,15 +198,7 @@ public class DatasetVersionUI {
         this.datasetRelPublications = datasetRelPublications;
     }
 
-    private String notesText;
 
-    public String getNotesText() {
-        return notesText;
-    }
-
-    public void setNotesText(String notesText) {
-        this.notesText = notesText;
-    }
 
     public String getRelPublicationCitation() {
         if (!this.datasetRelPublications.isEmpty()) {
@@ -367,30 +340,10 @@ public class DatasetVersionUI {
         return str;
     }
 
-    public String getKeywordsStr() {
-        String str = "";
-        for (String keyword : this.getDatasetKeywords().getValues()) {
-            str += (str.length() > 1 ? "; " : " ") + keyword;
-        }
-        return str;
-    }
-
-    public String getSubjectStr() {
-        String str = "";
-        for (String sa : this.getSubjects()) {
-            if (str.trim().length() > 1) {
-                str += "; ";
-            }
-            if (sa != null && sa.toString() != null && !sa.toString().trim().isEmpty()) {
-                str += sa.toString().trim();
-            }
-        }
-        return str;
-    }
 
     public String getProductionDate() {
-        for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.productionDate)) {
+        for (DatasetField dsfv : datasetVersion.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.productionDate)) {
                 return dsfv.getValue();
             }
         }
@@ -398,8 +351,8 @@ public class DatasetVersionUI {
     }
 
     public String getDistributionDate() {
-        for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.distributionDate)) {
+        for (DatasetField dsfv : datasetVersion.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributionDate)) {
                 return dsfv.getValue();
             }
         }
@@ -411,10 +364,10 @@ public class DatasetVersionUI {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            List<DatasetFieldValue> datasetFieldsForView = new ArrayList();
-            List<DatasetFieldValue> datasetFieldsForEdit = new ArrayList();
-            for (DatasetFieldValue dsf : datasetVersion.getDatasetFields()) {
-                if (dsf.getDatasetField().getMetadataBlock().equals(mdb)) {
+            List<DatasetField> datasetFieldsForView = new ArrayList();
+            List<DatasetField> datasetFieldsForEdit = new ArrayList();
+            for (DatasetField dsf : datasetVersion.getDatasetFields()) {
+                if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
                     if (!dsf.isEmpty()) {
                         datasetFieldsForView.add(dsf);
@@ -429,65 +382,6 @@ public class DatasetVersionUI {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
             }            
         }
-
-
-        /*
-         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-         Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
-         new Comparator<DatasetField>() {
-         public int compare(DatasetField d1, DatasetField d2) {
-         int a = d1.getDisplayOrder();
-         int b = d2.getDisplayOrder();
-         return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-         }
-         });
-         boolean addBlock = false;
-         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
-         if (dsfv.getDatasetField().isHasChildren() || !StringUtil.isEmpty(dsfv.getValue())) {
-         if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
-         List<DatasetFieldValue> dsfvValues = mdbMap.get(dsfv.getDatasetField());
-         if (dsfvValues == null) {
-         dsfvValues = new ArrayList();
-         }
-         dsfvValues.add(dsfv);
-         mdbMap.put(dsfv.getDatasetField(), dsfvValues);
-         if (!dsfv.getDatasetField().isHasChildren()) {
-         addBlock = true;
-         }
-         }
-         }
-         }
-
-         if (addBlock) {
-         //metadataBlocksForView.put(mdb, mdbMap);
-         }
-         }
-         */
-        /*
-         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-         Map<DatasetField, List<DatasetFieldValue>> mdbMap = new TreeMap(
-         new Comparator<DatasetField>() {
-         public int compare(DatasetField d1, DatasetField d2) {
-         int a = d1.getDisplayOrder();
-         int b = d2.getDisplayOrder();
-         return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-         }
-         });
-
-         for (DatasetFieldValue dsfv : datasetVersion.getDatasetFieldValues()) {
-         if (dsfv.getDatasetField().getMetadataBlock().equals(mdb)) {
-         List<DatasetFieldValue> dsfvValues = mdbMap.get(dsfv.getDatasetField());
-         if (dsfvValues == null) {
-         dsfvValues = new ArrayList();
-         }
-         dsfvValues.add(dsfv);
-         mdbMap.put(dsfv.getDatasetField(), dsfvValues);
-         }
-         }
-
-         //metadataBlocksForEdit.put(mdb, mdbMap);
-         }
-         */
     }
 
 }
