@@ -124,17 +124,17 @@
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
                                         <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keywordsStr}">
-                                        <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keywordsStr}</span>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
+                                        <span id="keywords">Keyword(s): #{DatasetPage.datasetVersionUI.keyword.displayValue}</span>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subjectStr}">
-                                        <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subjectStr}</span>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
+                                        <span id="subject">Subject(s): #{DatasetPage.datasetVersionUI.subject.displayValue}</span>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
                                         <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationUrl}</a></span>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notesText}">
-                                        <span id="note">Notes: #{DatasetPage.datasetVersionUI.notesText}</span>
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
+                                        <span id="note">Notes: #{DatasetPage.datasetVersionUI.notes.value}</span>
                                     </ui:fragment>
                                 </div>
                             </div>
