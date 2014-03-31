@@ -5,440 +5,260 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.Collection;
-
+/**
+ *
+ * @author skraffmiller
+ */
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-import javax.faces.model.SelectItem;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-/**
- *
- * @author Stephen Kraffmiller
- */
 @Entity
-public class DatasetField implements Serializable, Comparable<DatasetField> {
+public class DatasetField implements Serializable {
+    private static final long serialVersionUID = 1L;    
 
-    private static final Logger logger = Logger.getLogger(DatasetField.class.getCanonicalName());
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
+        DatasetField dsfv =  createNewEmptyDatasetField(dsfType);
+        dsfv.setDatasetVersion(dsv);
+        return dsfv;
+    }
+    
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetFieldCompoundValue compoundValue) {
+        DatasetField dsfv =  createNewEmptyDatasetField(dsfType);
+        dsfv.setParentDatasetFieldCompoundValue(compoundValue);
+        return dsfv;
+    }    
+    
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {
+        DatasetField dsfv = new DatasetField();
+        dsfv.setDatasetFieldType(dsfType);
+      
+        if (dsfType.isPrimitive()) {
+            if (!dsfType.isControlledVocabulary()) {
+                dsfv.getDatasetFieldValues().add(new DatasetFieldValue(dsfv));
+            }
+        } else { // compound field
+            dsfv.getDatasetFieldCompoundValues().add(DatasetFieldCompoundValue.createNewEmptyDatasetFieldCompoundValue(dsfv));
+        } 
+        
+        return dsfv;
+        
+    }
+    
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    @Column(name = "name", columnDefinition = "TEXT")
-    private String name;    // This is the internal, DDI-like name, no spaces, etc.
-    @Column(name = "title", columnDefinition = "TEXT")
-    private String title;   // A longer, human-friendlier name - punctuation allowed
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description; // A user-friendly Description; will be used for 
-    // mouse-overs, etc. 
-    private String fieldType;
-    private boolean allowControlledVocabulary;
-    private String watermark;
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private DatasetFieldType datasetFieldType;
 
-    @OneToMany(mappedBy = "datasetField")
-    private Set<DataverseFacet> dataverseFacets;
-    
-
-    @Transient
-    private String searchValue;
-    
-    @Transient
-    private List<String> listValues;
-
-    public DatasetField() {
+    public DatasetFieldType getDatasetFieldType() {
+        return datasetFieldType;
     }
 
-    private int displayOrder;
-
-    public int getDisplayOrder() {
-        return this.displayOrder;
+    public void setDatasetFieldType(DatasetFieldType datasetField) {
+        this.datasetFieldType = datasetField;
     }
 
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
+    @ManyToOne
+    private DatasetVersion datasetVersion;
+
+    public DatasetVersion getDatasetVersion() {
+        return datasetVersion;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public boolean isAllowControlledVocabulary() {
-        return allowControlledVocabulary;
-    }
-
-    public void setAllowControlledVocabulary(boolean allowControlledVocabulary) {
-        this.allowControlledVocabulary = allowControlledVocabulary;
-    }
-
-    private boolean allowMultiples;
-
-    public boolean isAllowMultiples() {
-        return this.allowMultiples;
-    }
-
-    public void setAllowMultiples(boolean allowMultiples) {
-        this.allowMultiples = allowMultiples;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public void setFieldType(String fieldType) {
-        this.fieldType = fieldType;
-    }
-    
-    public String getWatermark() {
-        return watermark;
-    }
-
-    public void setWatermark(String watermark) {
-        this.watermark = watermark;
-    }
-    private boolean facetable;
-
-    public boolean isFacetable() {
-        return facetable;
-    }
-
-    public void setFacetable(boolean facetable) {
-        this.facetable = facetable;
-    }
-
-    private boolean showAboveFold;
-
-    public boolean isShowAboveFold() {
-        return showAboveFold;
-    }
-    
-    public boolean isDisplayOnCreate() {
-        return showAboveFold;
-    }
-
-    public void setShowAboveFold(boolean showAboveFold) {
-        this.showAboveFold = showAboveFold;
-    }
-    
-    public boolean isControlledVocabulary() {
-        return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
+    public void setDatasetVersion(DatasetVersion datasetVersion) {
+        this.datasetVersion = datasetVersion;
     }
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    private MetadataBlock metadataBlock;
+    private DatasetFieldCompoundValue parentDatasetFieldCompoundValue;
 
-    public MetadataBlock getMetadataBlock() {
-        return metadataBlock;
+    public DatasetFieldCompoundValue getParentDatasetFieldCompoundValue() {
+        return parentDatasetFieldCompoundValue;
     }
 
-    public void setMetadataBlock(MetadataBlock metadataBlock) {
-        this.metadataBlock = metadataBlock;
+    public void setParentDatasetFieldCompoundValue(DatasetFieldCompoundValue parentDatasetFieldCompoundValue) {
+        this.parentDatasetFieldCompoundValue = parentDatasetFieldCompoundValue;
     }
-    
-   @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-   @OrderBy("displayOrder ASC")
-    private Collection<ControlledVocabularyValue> controlledVocabularyValues;
-
-    public Collection<ControlledVocabularyValue> getControlledVocabularyValues() {
-        return this.controlledVocabularyValues;
-    }
-
-    public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
-        this.controlledVocabularyValues = controlledVocabularyValues;
-    }
-       
 
     @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private Collection<DatasetField> childDatasetFields;
+    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
 
-    public Collection<DatasetField> getChildDatasetFields() {
-        return this.childDatasetFields;
+    public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
+        return datasetFieldCompoundValues;
     }
 
-    public void setChildDatasetFields(Collection<DatasetField> childDatasetFields) {
-        this.childDatasetFields = childDatasetFields;
-    }
-
-    @ManyToOne(cascade = CascadeType.MERGE)
-    private DatasetField parentDatasetField;
-
-    public DatasetField getParentDatasetField() {
-        return parentDatasetField;
-    }
-
-    public void setParentDatasetField(DatasetField parentDatasetField) {
-        this.parentDatasetField = parentDatasetField;
-    }
-
-    /**
-     * Holds value of property studies.
-     */
-    /*
-    @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
-    private Collection<Study> studies;
-    @ManyToMany(mappedBy="advSearchFields",cascade={CascadeType.REMOVE })
-    private Collection<VDC> advSearchFieldVDCs;
-    @ManyToMany(mappedBy="searchResultFields",cascade={CascadeType.REMOVE })
-    private Collection<VDC> searchResultFieldVDCs;
-    @ManyToMany(mappedBy="anySearchFields",cascade={CascadeType.REMOVE })
-    private Collection<VDC> anySearchFieldVDCs;
-    @ManyToMany(mappedBy="summaryFields",cascade={CascadeType.REMOVE })
-    private Collection<VDC> summaryFieldVDCs;
-     */
-    public Set<DataverseFacet> getDataverseFacets() {
-        return dataverseFacets;
-    }
-
-    public void setDataverseFacets(Set<DataverseFacet> dataverseFacets) {
-        this.dataverseFacets = dataverseFacets;
-    }
-
-    public String getSearchValue() {
-        return searchValue;
-    }
-
-    public void setSearchValue(String searchValue) {
-        this.searchValue = searchValue;
-    }
-
-    public List<String> getListValues() {
-        return listValues;
-    }
-
-    public void setListValues(List<String> listValues) {
-        this.listValues = listValues;
-    }
-    
-    private boolean required;
-
-    public boolean isRequired() {
-        return this.required;
-    }
-
-    public void setRequired(boolean required) {
-        this.required = required;
-    }
-
-    private boolean basicSearchField;
-
-    public boolean isBasicSearchField() {
-        return this.basicSearchField;
-    }
-
-    public void setBasicSearchField(boolean basicSearchField) {
-        this.basicSearchField = basicSearchField;
-    }
-
-    private boolean advancedSearchField;
-
-    public boolean isAdvancedSearchField() {
-        return this.advancedSearchField;
-    }
-
-    public void setAdvancedSearchField(boolean advancedSearchField) {
-        this.advancedSearchField = advancedSearchField;
-    }
-
-    private boolean searchResultField;
-
-    public boolean isSearchResultField() {
-        return this.searchResultField;
-    }
-
-    public void setSearchResultField(boolean searchResultField) {
-        this.searchResultField = searchResultField;
-    }
-
-    public boolean isPrimitive() {
-        return this.childDatasetFields.isEmpty();
-    }
-    
-    public boolean isCompound() {
-         return !this.childDatasetFields.isEmpty();       
-    }
-    
-    public boolean isSubField() {
-        return this.parentDatasetField != null;        
-    }
-    
-    
-    public boolean isHasChildren() {
-        return !this.childDatasetFields.isEmpty();
-    }
-
-    public boolean isHasParent() {
-        return this.parentDatasetField != null;
-    }
-
-    public int hashCode() {
-        int hash = 0;
-        hash += (this.id != null ? this.id.hashCode() : 0);
-        return hash;
-    }
-
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetField)) {
-            return false;
-        }
-        DatasetField other = (DatasetField) object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+    public void setDatasetFieldCompoundValues(List<DatasetFieldCompoundValue> datasetFieldCompoundValues) {
+        this.datasetFieldCompoundValues = datasetFieldCompoundValues;
     }
 
     @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetFieldValue> datasetFieldValues;
+    @OrderBy("displayOrder ASC")
+    private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
 
     public List<DatasetFieldValue> getDatasetFieldValues() {
-        return datasetFieldValues;
+        return this.datasetFieldValues;
     }
 
     public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
         this.datasetFieldValues = datasetFieldValues;
     }
 
-    @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetFieldDefaultValue> datasetFieldDefaultValues;
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
 
-    public List<DatasetFieldDefaultValue> getDatasetFieldDefaultValues() {
-        return datasetFieldDefaultValues;
+    public List<ControlledVocabularyValue> getControlledVocabularyValues() {
+        return controlledVocabularyValues;
     }
 
-    public void setDatasetFieldDefaultValues(List<DatasetFieldDefaultValue> datasetFieldDefaultValues) {
-        this.datasetFieldDefaultValues = datasetFieldDefaultValues;
+    public void setControlledVocabularyValues(List<ControlledVocabularyValue> controlledVocabularyValues) {
+        this.controlledVocabularyValues = controlledVocabularyValues;
     }
 
-    /* helper methods for getting the internal string values
-    public List<String> getDatasetFieldValueStrings() {
-        List<String> retString = new ArrayList();
-        for (DatasetFieldValue sfv : datasetFieldValues) {
-            String testString = sfv.getStrValue();
-            if (!testString.isEmpty()) {
-                retString.add(sfv.getStrValue());
-            }
+    
+    // HELPER METHODS
+    public DatasetFieldValue getSingleValue() {
+        if (!datasetFieldValues.isEmpty()) {
+            return datasetFieldValues.get(0);
+        } else {
+            return new DatasetFieldValue(this);
         }
-        return retString;
-    }
-
-    public String getDatasetFieldValueSingleString() {
-        return datasetFieldValues.size() > 0 ? datasetFieldValues.get(0).getStrValue() : "";
-    }
-
-    public void setDatasetFieldValueStrings(List<String> newValList) {
-    }
-
-    public void setDatasetFieldValueSingleString(String newVal) {
-    }*/
-
-    @Override
-    public int compareTo(DatasetField o) {
-        return Integer.compare(this.getDisplayOrder(), (o.getDisplayOrder()));
     }
     
-    public String getDisplayName() {
-        if (isHasParent() && !parentDatasetField.getTitle().equals(title)) {
-        return parentDatasetField.getTitle() + " " + title;
+    public ControlledVocabularyValue getSingleControlledVocabularyValue() {
+        if (!controlledVocabularyValues.isEmpty()) {
+            return controlledVocabularyValues.get(0);
         } else {
-            return title;
+            return null;
         }
     }
 
-    public SolrField getSolrField() {
-        SolrField.SolrType solrType2 = SolrField.SolrType.TEXT_GENERAL;
-        if (fieldType != null) {
-            /**
-             * @todo: make this an enum
-             */
-            if (fieldType.equals("textBox")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("text")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("date")) {
-                solrType2 = SolrField.SolrType.INTEGER;
-            } else if (fieldType.equals("email")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("url")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else {
-                /**
-                 * @todo: what should we do with types we don't expect?
-                 */
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            }
-
-            Boolean parentAllowsMultiplesBoolean = false;
-            if (isHasParent()) {
-                if (getParentDatasetField() != null) {
-                    DatasetField parent = getParentDatasetField();
-                    parentAllowsMultiplesBoolean = parent.isAllowMultiples();
-                }
-            }
-
-            // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            boolean makeSolrFieldMultivalued = false;
-
-            if (solrType2 == SolrField.SolrType.TEXT_GENERAL) {
-                if (allowMultiples || parentAllowsMultiplesBoolean) {
-                    makeSolrFieldMultivalued = true;
-//                    logger.info(name + " allows multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
-                } else {
-                    makeSolrFieldMultivalued = false;
-//                    logger.info(name + " does not allow multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
-                }
-            } else {
-                makeSolrFieldMultivalued = false;
-//                logger.info(name + " only converting _s (String) fields to multiple, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
-            }
-
-            return new SolrField(name, solrType2, makeSolrFieldMultivalued, facetable);
-
+    public void setSingleControlledVocabularyValue(ControlledVocabularyValue cvv) {
+        if (!controlledVocabularyValues.isEmpty()) {
+            controlledVocabularyValues.set(0, cvv);
         } else {
-            /**
-             * @todo: clean this up
-             */
-            String oddValue = name + getTmpNullFieldTypeIdentifier();
-            boolean makeSolrFieldMultivalued = false;
-            SolrField solrField2 = new SolrField(oddValue, solrType2, makeSolrFieldMultivalued, facetable);
-            return solrField2;
+            controlledVocabularyValues.add(cvv);
         }
     }
+    
+   
 
-    // help us identify fields that have null fieldType values
-    public String getTmpNullFieldTypeIdentifier() {
-        return "NullFieldType_s";
+    public String getValue() {
+        if (!datasetFieldValues.isEmpty()) {
+            return datasetFieldValues.get(0).getValue();
+        } else if (!controlledVocabularyValues.isEmpty()) {
+            return controlledVocabularyValues.get(0).getStrValue();
+        }
+        return null;
+    }
+    
+    public String getDisplayValue() {
+        String returnString = "";
+        for (String value : getValues()) {
+            returnString += (returnString.equals("") ? "" : "; ") + value;
+        }
+        return returnString;
+    }
+
+    public List<String> getValues() {
+        List returnList = new ArrayList();
+        if (!datasetFieldValues.isEmpty()) {
+            for (DatasetFieldValue dsfv : datasetFieldValues) {
+                returnList.add(dsfv.getValue());
+            }
+        } else {
+            for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
+                returnList.add(cvv.getStrValue());
+            }
+        }
+        return returnList;
+    }
+    
+    public boolean isEmpty() {
+        if (!datasetFieldType.isHasChildren()) { // primitive
+            for (String value : getValues()) {
+                if (value != null && value.trim() != "") {
+                    return false;
+                }             
+            }
+        } else { // compound
+            for (DatasetFieldCompoundValue cv : datasetFieldCompoundValues) {
+                for (DatasetField subField : cv.getChildDatasetFields()) {
+                    if (!subField.isEmpty()) {
+                        return false;
+                    }
+                }              
+            }
+        }
+        
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof DatasetField)) {
+            return false;
+        }
+        DatasetField other = (DatasetField) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "edu.harvard.iq.dataverse.DatasetFieldValue[ id=" + id + " ]";
+    }
+    
+    public DatasetField copy() {
+        return copy(null);
+    }
+    
+    public DatasetField copy(DatasetFieldCompoundValue parent) {
+        DatasetField dsf = new DatasetField();
+        dsf.setDatasetFieldType(datasetFieldType);
+        dsf.setDatasetVersion(datasetVersion);
+        dsf.setParentDatasetFieldCompoundValue(parent);        
+        dsf.setControlledVocabularyValues(controlledVocabularyValues);
+        
+        for (DatasetFieldValue dsfv : datasetFieldValues) {
+            dsf.getDatasetFieldValues().add(dsfv.copy(this));
+        }
+        
+        for (DatasetFieldCompoundValue compoundValue : datasetFieldCompoundValues) {
+            dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(this));
+        }        
+                
+        return dsf;
     }
 }
