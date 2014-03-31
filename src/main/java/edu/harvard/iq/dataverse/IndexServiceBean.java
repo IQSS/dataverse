@@ -221,16 +221,16 @@ public class IndexServiceBean {
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getEditVersion() != null) {
-            for (DatasetFieldValue datasetFieldValue : dataset.getEditVersion().getDatasetFieldValues()) {
+            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
 
-                DatasetField datasetField = datasetFieldValue.getDatasetField();
-                String solrFieldSearchable = datasetField.getSolrField().getNameSearchable();
-                String solrFieldFacetable = datasetField.getSolrField().getNameFacetable();
+                DatasetFieldType dsfType = dsf.getDatasetFieldType();
+                String solrFieldSearchable = dsfType.getSolrField().getNameSearchable();
+                String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
-                if (datasetFieldValue.getValue() != null && !datasetFieldValue.getValue().isEmpty() && solrFieldSearchable != null) {
-                    logger.info("indexing " + datasetFieldValue.getDatasetField().getName() + ":" + datasetFieldValue.getValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
-                    if (datasetField.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
-                        String dateAsString = datasetFieldValue.getValue();
+                if (dsf.getValue() != null && !dsf.getValue().isEmpty() && solrFieldSearchable != null) {
+                    logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+                        String dateAsString = dsf.getValue();
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -245,17 +245,17 @@ public class IndexServiceBean {
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
                                 logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
                                 solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
-                                if (datasetField.getSolrField().isFacetable()) {
+                                if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
                                 }
                             } catch (Exception ex) {
-                                logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + datasetField.getName() + ")");
+                                logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
                             }
                         }
                     } else {
                         // _s (dynamic string) and all other Solr fields
 
-                        if (datasetFieldValue.getDatasetField().getName().equals("authorAffiliation")) {
+                        if (dsf.getDatasetFieldType().getName().equals("authorAffiliation")) {
                             /**
                              * @todo think about how to tie the fact that this
                              * needs to be multivalued (_ss) because a
@@ -266,22 +266,22 @@ public class IndexServiceBean {
                              * multiple value lives in the getSolrField() method
                              * of DatasetField.java
                              */
-                            solrInputDocument.addField(SearchFields.AFFILIATION, datasetFieldValue.getValue());
-                        } else if (datasetFieldValue.getDatasetField().getName().equals("title")) {
+                            solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValue());
+                        } else if (dsf.getDatasetFieldType().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
-                            solrInputDocument.addField(SearchFields.NAME_SORT, datasetFieldValue.getValue());
+                            solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValue());
                         }
-                        if (datasetField.isControlledVocabulary()) {
-                            for (ControlledVocabularyValue controlledVocabularyValue : datasetFieldValue.getControlledVocabularyValues()) {
+                        if (dsfType.isControlledVocabulary()) {
+                            for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
                                 solrInputDocument.addField(solrFieldSearchable, controlledVocabularyValue.getStrValue());
-                                if (datasetField.getSolrField().isFacetable()) {
+                                if (dsfType.getSolrField().isFacetable()) {
                                     solrInputDocument.addField(solrFieldFacetable, controlledVocabularyValue.getStrValue());
                                 }
                             }
                         } else {
-                            solrInputDocument.addField(solrFieldSearchable, datasetFieldValue.getValue());
-                            if (datasetField.getSolrField().isFacetable()) {
-                                solrInputDocument.addField(solrFieldFacetable, datasetFieldValue.getValue());
+                            solrInputDocument.addField(solrFieldSearchable, dsf.getValue());
+                            if (dsfType.getSolrField().isFacetable()) {
+                                solrInputDocument.addField(solrFieldFacetable, dsf.getValue());
                             }
                         }
                     }
