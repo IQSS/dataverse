@@ -30,7 +30,7 @@ public class FacetConverter implements Converter {
         if (value == null || value.equals("")) {
             return "";
         } else {
-            return ((DatasetField) value).getId().toString();
+            return ((DatasetFieldType) value).getId().toString();
         }
     }
 }
