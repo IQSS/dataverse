@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
@@ -19,9 +19,9 @@ import java.util.List;
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse editedDv;
-	private final List<DatasetField> facetList;
+	private final List<DatasetFieldType> facetList;
 
-	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetField> facetList, DataverseUser aUser) {
+	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, DataverseUser aUser) {
 		super(aUser, editedDv);
 		this.editedDv = editedDv;
 		this.facetList = new ArrayList<>(facetList);
@@ -36,7 +36,7 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 		
 		ctxt.facets().deleteFacetsFor(result);
 		int i=0;
-		for ( DatasetField df : facetList ) {
+		for ( DatasetFieldType df : facetList ) {
 			ctxt.facets().create(i++, df.getId(), result.getId());
 		}
 		
