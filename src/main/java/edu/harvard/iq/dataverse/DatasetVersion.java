@@ -423,7 +423,7 @@ public class DatasetVersion implements Serializable {
         return str;
     }
 
-    public List<DatasetField> initDatasetFieldValues() {
+    public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
         //if the datasetversion already has values add them here
@@ -466,7 +466,7 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
 
-    public List<DatasetField> copyDatasetFieldValues(List<DatasetField> copyFromList) {
+    public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
 
