@@ -84,7 +84,6 @@ public class DatasetFieldValue implements Serializable {
     }
 
     @ManyToOne
-    @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
 
     public DatasetVersion getDatasetVersion() {
@@ -177,7 +176,7 @@ public class DatasetFieldValue implements Serializable {
         }
         return null;
     }
-
+    
     public List<String> getValues() {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {
