@@ -126,13 +126,13 @@ public class TemplateField implements java.io.Serializable {
      */
     @ManyToOne
     @JoinColumn(nullable=false, insertable = true)
-    private DatasetField datasetField;
+    private DatasetFieldType datasetField;
 
-    public DatasetField getDatasetField() {
+    public DatasetFieldType getDatasetField() {
         return this.datasetField;
     }
 
-    public void setDatasetField(DatasetField datasetField) {
+    public void setDatasetField(DatasetFieldType datasetField) {
         this.datasetField = datasetField;
     }
 

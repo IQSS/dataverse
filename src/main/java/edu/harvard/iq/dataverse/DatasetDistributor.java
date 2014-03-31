@@ -27,11 +27,11 @@ public class DatasetDistributor {
         this.displayOrder = displayOrder;
     }
 
-    private DatasetFieldValue name;
-    public DatasetFieldValue getName() {
+    private DatasetField name;
+    public DatasetField getName() {
         return this.name;
     }
-    public void setName(DatasetFieldValue name) {
+    public void setName(DatasetField name) {
         this.name = name;
     }
 
@@ -45,35 +45,35 @@ public class DatasetDistributor {
         this.version = version;
     }    
 
-    private DatasetFieldValue url;
-    public DatasetFieldValue getUrl() {
+    private DatasetField url;
+    public DatasetField getUrl() {
         return this.url;
     }
-    public void setUrl(DatasetFieldValue url) {
+    public void setUrl(DatasetField url) {
         this.url = url;
     }
     
-    private DatasetFieldValue logo;
-    public DatasetFieldValue getLogo() {
+    private DatasetField logo;
+    public DatasetField getLogo() {
         return this.logo;
     }
-    public void setLogo(DatasetFieldValue logo) {
+    public void setLogo(DatasetField logo) {
         this.logo = logo;
     }
     
-    private DatasetFieldValue affiliation;
-    public DatasetFieldValue getAffiliation() {
+    private DatasetField affiliation;
+    public DatasetField getAffiliation() {
         return this.affiliation;
     }
-    public void setAffiliation(DatasetFieldValue affiliation) {
+    public void setAffiliation(DatasetField affiliation) {
         this.affiliation = affiliation;
     }
 
-    private DatasetFieldValue abbreviation;
-    public DatasetFieldValue getAbbreviation() {
+    private DatasetField abbreviation;
+    public DatasetField getAbbreviation() {
         return this.abbreviation;
     }
-    public void setAbbreviation(DatasetFieldValue abbreviation) {
+    public void setAbbreviation(DatasetField abbreviation) {
         this.abbreviation = abbreviation;
     }
     

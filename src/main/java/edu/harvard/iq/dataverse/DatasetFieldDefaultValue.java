@@ -40,7 +40,7 @@ public class DatasetFieldDefaultValue implements Serializable {
    
     }
     
-    public DatasetFieldDefaultValue(DatasetField sf, DefaultValueSet dvs, String val) {
+    public DatasetFieldDefaultValue(DatasetFieldType sf, DefaultValueSet dvs, String val) {
         setDatasetField(sf);
         setDefaultValueSet(dvs);
         setStrValue(val);    
@@ -48,11 +48,11 @@ public class DatasetFieldDefaultValue implements Serializable {
     
     @ManyToOne
     @JoinColumn(nullable=false)
-    private DatasetField datasetField;
-    public DatasetField getDatasetField() {
+    private DatasetFieldType datasetField;
+    public DatasetFieldType getDatasetField() {
         return datasetField;
     }
-    public void setDatasetField(DatasetField datasetField) {
+    public void setDatasetField(DatasetFieldType datasetField) {
         this.datasetField = datasetField;
     }
     
@@ -108,7 +108,7 @@ public class DatasetFieldDefaultValue implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DatasetFieldValue)) {
+        if (!(object instanceof DatasetField)) {
             return false;
         }
         DatasetFieldDefaultValue other = (DatasetFieldDefaultValue) object;

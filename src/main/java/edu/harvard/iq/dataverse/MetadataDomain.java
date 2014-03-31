@@ -43,13 +43,13 @@ public class MetadataDomain implements Serializable {
         this.name = name;
     }
     @ManyToMany(cascade={CascadeType.PERSIST } )
-    private Collection<DatasetField> datasetFields;
+    private Collection<DatasetFieldType> datasetFields;
     
-    public Collection<DatasetField> getDatasetFields() {
+    public Collection<DatasetFieldType> getDatasetFields() {
         return datasetFields;
     }
 
-    public void setDatasetFields(Collection<DatasetField> datasetFields) {
+    public void setDatasetFields(Collection<DatasetFieldType> datasetFields) {
         this.datasetFields = datasetFields;
     }
     

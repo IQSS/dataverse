@@ -1325,14 +1325,14 @@ public class Metadata implements Serializable {
 
         
         // custom fields
-        for (DatasetField sf : this.getDatasetFields()) {
-            if (sf.getDatasetFieldValues()==null || sf.getDatasetFieldValues().size()==0) {
+        for (DatasetFieldType sf : this.getDatasetFields()) {
+            if (sf.getDatasetFields()==null || sf.getDatasetFields().size()==0) {
                 List list = new ArrayList();
-                DatasetFieldValue elem = new DatasetFieldValue();
-                elem.setDatasetField(sf);
+                DatasetField elem = new DatasetField();
+                elem.setDatasetFieldType(sf);
                // elem.setMetadata(this);
                 list.add(elem);
-                sf.setDatasetFieldValues(list);
+                sf.setDatasetFields(list);
             }            
         }
                
@@ -1405,9 +1405,9 @@ public class Metadata implements Serializable {
             elem.setDisplayOrder(i++);
         }
         
-        for (DatasetField datasetField : this.getDatasetFields()) {
+        for (DatasetFieldType datasetField : this.getDatasetFields()) {
             i = 0;
-            for (DatasetFieldValue elem : datasetField.getDatasetFieldValues()) {
+            for (DatasetField elem : datasetField.getDatasetFields()) {
                 //elem.setDisplayOrder(i++);
             }
         }
@@ -1428,16 +1428,16 @@ public class Metadata implements Serializable {
     
     // this is a transient list of the study fields, so we can initialize it on the first get and then store it here
     @Transient
-    List<DatasetField> datasetFields;
+    List<DatasetFieldType> datasetFields;
 
-    public List<DatasetField> getDatasetFields() {
+    public List<DatasetFieldType> getDatasetFields() {
         if (datasetFields == null || datasetFields.size() == 0) {
             datasetFields = new ArrayList();
             
            // Template  templateIn = this.getTemplate();// this.getDatasetVersion().getDataset().getTemplate();
            /* 
             for (TemplateField tf : templateIn.getTemplateFields()) {
-                DatasetField sf = tf.getDatasetField();
+                DatasetFieldType sf = tf.getDatasetField();
                 if (sf.isCustomField()) {
                     List sfvList = new ArrayList();
                     // now iterate through values and map accordingly

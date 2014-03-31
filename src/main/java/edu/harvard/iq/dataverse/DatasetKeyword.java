@@ -30,11 +30,11 @@ public class DatasetKeyword  {
         this.displayOrder = displayOrder;
     }
 
-    private DatasetFieldValue value;
-    public DatasetFieldValue getValue() {
+    private DatasetField value;
+    public DatasetField getValue() {
         return this.value;
     }
-    public void setValue(DatasetFieldValue value) {
+    public void setValue(DatasetField value) {
         this.value = value;
     }
     
@@ -55,19 +55,19 @@ public class DatasetKeyword  {
         this.version = version;
     }  */  
 
-    private DatasetFieldValue vocab;
-    public DatasetFieldValue getVocab() {
+    private DatasetField vocab;
+    public DatasetField getVocab() {
         return this.vocab;
     }
-    public void setVocab(DatasetFieldValue vocab) {
+    public void setVocab(DatasetField vocab) {
         this.vocab = vocab;
     }
 
-    private DatasetFieldValue vocabURI;
-    public DatasetFieldValue getVocabURI() {
+    private DatasetField vocabURI;
+    public DatasetField getVocabURI() {
         return this.vocabURI;
     }
-    public void setVocabURI(DatasetFieldValue vocabURI) {
+    public void setVocabURI(DatasetField vocabURI) {
         this.vocabURI = vocabURI;
     }
 
