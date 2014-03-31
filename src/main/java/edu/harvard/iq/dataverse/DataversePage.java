@@ -58,7 +58,7 @@ public class DataversePage implements java.io.Serializable {
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
-    private DualListModel<DatasetField> facets; 
+    private DualListModel<DatasetFieldType> facets; 
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
@@ -117,16 +117,16 @@ public class DataversePage implements java.io.Serializable {
             }
         }
         
-        List<DatasetField> facetsSource = new ArrayList<>();
-        List<DatasetField> facetsTarget = new ArrayList<>();
+        List<DatasetFieldType> facetsSource = new ArrayList<>();
+        List<DatasetFieldType> facetsTarget = new ArrayList<>();
         
-        facetsSource.addAll(datasetFieldService.findAllFacetableFields());
+        facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
 
         List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
         for (DataverseFacet dvFacet : facetsList) {
-            DatasetField df = dvFacet.getDatasetField();
-            facetsTarget.add(df);
-            facetsSource.remove(df);
+            DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
+            facetsTarget.add(dsfType);
+            facetsSource.remove(dsfType);
         }
         facets = new DualListModel<>(facetsSource, facetsTarget);
     }
@@ -216,11 +216,11 @@ public class DataversePage implements java.io.Serializable {
         }
     }
     
-    public DualListModel<DatasetField> getFacets() {
+    public DualListModel<DatasetFieldType> getFacets() {
         return facets;
     }
     
-    public void setFacets(DualListModel<DatasetField> facets) {
+    public void setFacets(DualListModel<DatasetFieldType> facets) {
         this.facets = facets;
     }
     
