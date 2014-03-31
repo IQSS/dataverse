@@ -90,34 +90,6 @@ public class DataverseServiceBean {
         return dataversePath.toString();
     }
 
-    public List<DatasetField> findCitationDatasetFieldsByDataverseId(Long ownerId) {
-        return findDatasetFieldsByDataverseId(ownerId, true);
-    }
-
-    public List<DatasetField> findOtherMetadataDatasetFieldsByDataverseId(Long ownerId) {
-        return findDatasetFieldsByDataverseId(ownerId, false);
-    }
-
-    public List<DatasetField> findDatasetFieldsByDataverseId(Long ownerId, boolean showOnCreate) {
-        List retlist = new <DatasetField> ArrayList();
-        String queryString = "select m.id from MetadataBlock m  join DvObject_MetadataBlock j on j.metadataBlocks_id = m.id "
-                + " join DvObject d on d.id = j.dataverse_id "
-                + " where d.id = " + ownerId
-                + " and showoncreate = " + showOnCreate
-                + " ;";
-        List blockList = new ArrayList();
-
-        Query query = em.createNativeQuery(queryString);
-        for (Object currentResult : query.getResultList()) {
-            blockList.add(new Long(((Integer) currentResult).longValue()));
-            MetadataBlock mdb = this.findMDB(new Long(((Integer) currentResult).longValue()));
-            for (DatasetField dsf : mdb.getDatasetFields()) {
-                retlist.add(dsf);
-            }
-        }
-        return retlist;
-    }
-
     public MetadataBlock findMDB(Long id) {
         return (MetadataBlock) em.find(MetadataBlock.class, id);
     }
