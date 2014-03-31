@@ -47,7 +47,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private boolean allowControlledVocabulary;
     private String watermark;
 
-    @OneToMany(mappedBy = "datasetField")
+    @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFacet> dataverseFacets;
     
 
