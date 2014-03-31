@@ -103,16 +103,16 @@ public class DatasetServiceBean {
         return version;
     }
 
-    public Dataset removeRecs(Dataset dataset, List<DatasetFieldValue> toDelete) {
-        for (DatasetFieldValue dsfv : toDelete) {
+    public Dataset removeRecs(Dataset dataset, List<DatasetField> toDelete) {
+        for (DatasetField dsfv : toDelete) {
             deleteVal(dsfv);
         }
         return null;
     }
 
-    private void deleteVal(DatasetFieldValue dsfv) {
+    private void deleteVal(DatasetField dsfv) {
         if (dsfv.getId() != null) {
-            DatasetFieldValue p = em.find(DatasetFieldValue.class, dsfv.getId());
+            DatasetField p = em.find(DatasetField.class, dsfv.getId());
             em.remove(p);
         }
     }
