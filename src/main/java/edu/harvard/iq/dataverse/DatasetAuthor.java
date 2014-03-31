@@ -23,12 +23,12 @@ public class DatasetAuthor {
     }
 
     //@NotBlank(message = "Please enter an Author Name for your dataset.")
-    private DatasetFieldValue name;
+    private DatasetField name;
 
-    public DatasetFieldValue getName() {
+    public DatasetField getName() {
         return this.name;
     }
-    public void setName(DatasetFieldValue name) {
+    public void setName(DatasetField name) {
         this.name = name;
     }
 
@@ -40,11 +40,11 @@ public class DatasetAuthor {
         this.displayOrder = displayOrder;
     }
 
-    private DatasetFieldValue affiliation;
-    public DatasetFieldValue getAffiliation() {
+    private DatasetField affiliation;
+    public DatasetField getAffiliation() {
         return this.affiliation;
     }
-    public void setAffiliation(DatasetFieldValue affiliation) {
+    public void setAffiliation(DatasetField affiliation) {
         this.affiliation = affiliation;
     }
     
