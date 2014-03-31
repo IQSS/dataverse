@@ -26,12 +26,12 @@ import javax.persistence.OrderBy;
 public class DatasetFieldCompoundValue implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetFieldValue dsf) {
+    public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetField dsf) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(dsf);
 
-        for (DatasetField dsfType : dsf.getDatasetFieldType().getChildDatasetFields()) {
-            compoundValue.getChildDatasetFields().add( DatasetFieldValue.createNewEmptyDatasetField(dsfType, compoundValue));
+        for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+            compoundValue.getChildDatasetFields().add( DatasetField.createNewEmptyDatasetField(dsfType, compoundValue));
         }
         
         return compoundValue;
@@ -44,10 +44,10 @@ public class DatasetFieldCompoundValue implements Serializable {
     private int displayOrder;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    private DatasetFieldValue parentDatasetField;    
+    private DatasetField parentDatasetField;    
 
     @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetFieldValue> childDatasetFields = new ArrayList();    
+    private List<DatasetField> childDatasetFields = new ArrayList();    
     
     public Long getId() {
         return id;
@@ -65,19 +65,19 @@ public class DatasetFieldCompoundValue implements Serializable {
         this.displayOrder = displayOrder;
     }
     
-    public DatasetFieldValue getParentDatasetField() {
+    public DatasetField getParentDatasetField() {
         return parentDatasetField;
     }
 
-    public void setParentDatasetField(DatasetFieldValue parentDatasetField) {
+    public void setParentDatasetField(DatasetField parentDatasetField) {
         this.parentDatasetField = parentDatasetField;
     }
 
-    public List<DatasetFieldValue> getChildDatasetFields() {
+    public List<DatasetField> getChildDatasetFields() {
         return childDatasetFields;
     }
 
-    public void setChildDatasetFields(List<DatasetFieldValue> childDatasetFields) {
+    public void setChildDatasetFields(List<DatasetField> childDatasetFields) {
         this.childDatasetFields = childDatasetFields;
     }
     
@@ -109,12 +109,12 @@ public class DatasetFieldCompoundValue implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetFieldCompoundValue[ id=" + id + " ]";
     }
     
-    public DatasetFieldCompoundValue copy(DatasetFieldValue parent) {
+    public DatasetFieldCompoundValue copy(DatasetField parent) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
         compoundValue.setParentDatasetField(parent);
         compoundValue.setDisplayOrder(displayOrder);
 
-        for (DatasetFieldValue subField : childDatasetFields) {
+        for (DatasetField subField : childDatasetFields) {
             compoundValue.getChildDatasetFields().add(subField.copy(this));
         }
                      
