@@ -26,8 +26,8 @@ public class AdvancedSearchPage {
     private Dataverse dataverse;
     private String query;
     private List<MetadataBlock> metadataBlocks;
-    private Map<Long,List<DatasetField>> metadataFieldMap = new HashMap();
-    private List<DatasetField> metadataFieldList;    
+    private Map<Long,List<DatasetFieldType>> metadataFieldMap = new HashMap();
+    private List<DatasetFieldType> metadataFieldList;    
 
 
     public void init() {
@@ -37,17 +37,17 @@ public class AdvancedSearchPage {
          */
         this.dataverse = dataverseServiceBean.findRootDataverse();
         this.metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
-        this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFields();
+        this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
 
         for (MetadataBlock mdb : metadataBlocks) {
            
-            List datasetFields = new ArrayList();
-            for (DatasetField datasetField : metadataFieldList) {
-                if (datasetField.getMetadataBlock().getId().equals(mdb.getId())) {
-                    datasetFields.add(datasetField);
+            List dsfTypes = new ArrayList();
+            for (DatasetFieldType dsfType : metadataFieldList) {
+                if (dsfType.getMetadataBlock().getId().equals(mdb.getId())) {
+                    dsfTypes.add(dsfType);
                 }
             }
-            metadataFieldMap.put(mdb.getId(), datasetFields);
+            metadataFieldMap.put(mdb.getId(), dsfTypes);
         }       
         
     }
@@ -70,25 +70,25 @@ public class AdvancedSearchPage {
          logger.info("query: " + query); */
         List<String> queryStrings = new ArrayList();
         String delimiter = "[\"]+";
-        for (DatasetField datasetField : metadataFieldList) {
-            if (datasetField.getSearchValue() != null && !datasetField.getSearchValue().equals("")) {
-                String myString = datasetField.getSearchValue();
+        for (DatasetFieldType dsfType : metadataFieldList) {
+            if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
+                String myString = dsfType.getSearchValue();
                 if (myString.contains("\"")) {
-                    String [] tempString = datasetField.getSearchValue().split(delimiter);
+                    String [] tempString = dsfType.getSearchValue().split(delimiter);
                     for (int i = 1; i < tempString.length; i++) {
                         if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
-                            queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + "\"" + tempString[i].trim() + "\"");
+                            queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + tempString[i].trim() + "\"");
                         }
                     }
                 } else {
-                    StringTokenizer st = new StringTokenizer(datasetField.getSearchValue());
+                    StringTokenizer st = new StringTokenizer(dsfType.getSearchValue());
                     while (st.hasMoreElements()) {
-                        queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + st.nextElement());
+                        queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + st.nextElement());
                     }
                 } 
-            } else if (datasetField.getListValues() != null && !datasetField.getListValues().isEmpty()){
-                for (String value : datasetField.getListValues()) {
-                    queryStrings.add(datasetField.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
+            } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()){
+                for (String value : dsfType.getListValues()) {
+                    queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
                 }
             }
         }
@@ -125,11 +125,11 @@ public class AdvancedSearchPage {
         this.metadataBlocks = metadataBlocks;
     }
 
-    public Map<Long, List<DatasetField>> getMetadataFieldMap() {
+    public Map<Long, List<DatasetFieldType>> getMetadataFieldMap() {
         return metadataFieldMap;
     }
 
-    public void setMetadataFieldMap(Map<Long, List<DatasetField>> metadataFieldMap) {
+    public void setMetadataFieldMap(Map<Long, List<DatasetFieldType>> metadataFieldMap) {
         this.metadataFieldMap = metadataFieldMap;
     }
 }
