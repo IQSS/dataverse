@@ -92,18 +92,15 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
+    private List<DatasetField> datasetFields = new ArrayList<>();
 
-    public List<DatasetFieldValue> getDatasetFieldValues() {
-        return datasetFieldValues;
+    public List<DatasetField> getDatasetFields() {
+        return datasetFields;
     }
 
-    public List<DatasetFieldValue> getDatasetFields() {
-        return datasetFieldValues;
-    }
 
-    public void setDatasetFieldValues(List<DatasetFieldValue> datasetFieldValues) {
-        this.datasetFieldValues = datasetFieldValues;
+    public void setDatasetFields(List<DatasetField> datasetFields) {
+        this.datasetFields = datasetFields;
     }
 
     /*
@@ -278,8 +275,8 @@ public class DatasetVersion implements Serializable {
 
     public String getTitle() {
         String retVal = "Dataset Title";
-        for (DatasetFieldValue dsfv : this.getDatasetFieldValues()) {
-            if (dsfv.getDatasetField().getName().equals(DatasetFieldConstant.title)) {
+        for (DatasetField dsfv : this.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
                 retVal = dsfv.getValue();
             }
         }
@@ -426,31 +423,31 @@ public class DatasetVersion implements Serializable {
         return str;
     }
 
-    public List<DatasetFieldValue> initDatasetFieldValues() {
+    public List<DatasetField> initDatasetFieldValues() {
         //retList - Return List of values
-        List<DatasetFieldValue> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList();
         //if the datasetversion already has values add them here
-        if (this.getDatasetFieldValues() != null) {
-            retList.addAll(this.getDatasetFieldValues());
+        if (this.getDatasetFields() != null) {
+            retList.addAll(this.getDatasetFields());
         }
 
         //Test to see that there are values for 
         // all fields in this dataset via metadata blocks
         //only add if not added above
         for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
-            for (DatasetField dsfType : mdb.getDatasetFields()) {
+            for (DatasetFieldType dsfType : mdb.getDatasetFields()) {
                 if (!dsfType.isSubField()) {
                     boolean add = true;
                     //don't add if already added as a val
-                    for (DatasetFieldValue dsfv : retList) {
-                        if (dsfType.equals(dsfv.getDatasetField())) {
+                    for (DatasetField dsfv : retList) {
+                        if (dsfType.equals(dsfv.getDatasetFieldType())) {
                             add = false;
                             break;
                         }
                     }
 
                     if (add) {
-                        DatasetFieldValue addDsfv = DatasetFieldValue.createNewEmptyDatasetField(dsfType, this);
+                        DatasetField addDsfv = DatasetField.createNewEmptyDatasetField(dsfType, this);
                         retList.add(addDsfv);
                     }
                 }
@@ -458,10 +455,10 @@ public class DatasetVersion implements Serializable {
         }
 
         //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetFieldValue>() {
-            public int compare(DatasetFieldValue d1, DatasetFieldValue d2) {
-                int a = d1.getDatasetField().getDisplayOrder();
-                int b = d2.getDatasetField().getDisplayOrder();
+        Collections.sort(retList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
                 return Integer.valueOf(a).compareTo(Integer.valueOf(b));
             }
         });
@@ -469,11 +466,11 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
 
-    public List<DatasetFieldValue> copyDatasetFieldValues(List<DatasetFieldValue> copyFromList) {
+    public List<DatasetField> copyDatasetFieldValues(List<DatasetField> copyFromList) {
         //retList - Return List of values
-        List<DatasetFieldValue> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList();
 
-        for (DatasetFieldValue sourceDsf : copyFromList) {
+        for (DatasetField sourceDsf : copyFromList) {
             retList.add(sourceDsf.copy());
         }
 
