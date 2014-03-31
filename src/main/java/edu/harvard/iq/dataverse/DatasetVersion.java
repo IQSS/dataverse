@@ -435,7 +435,7 @@ public class DatasetVersion implements Serializable {
         // all fields in this dataset via metadata blocks
         //only add if not added above
         for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
-            for (DatasetFieldType dsfType : mdb.getDatasetFields()) {
+            for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
                 if (!dsfType.isSubField()) {
                     boolean add = true;
                     //don't add if already added as a val
