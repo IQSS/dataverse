@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -39,7 +39,7 @@ public class DatasetFieldServiceApi {
             List<String> listOfIsHasParentsFalse = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesTrue = new ArrayList<>();
             List<String> listOfIsAllowsMultiplesFalse = new ArrayList<>();
-            for (DatasetField dsf : datasetFieldService.findAllOrderedById()) {
+            for (DatasetFieldType dsf : datasetFieldService.findAllOrderedById()) {
                 if (dsf.isHasParent()) {
                     listOfIsHasParentsTrue.add(dsf.getName());
                     listOfIsAllowsMultiplesTrue.add(dsf.getName());
@@ -73,7 +73,7 @@ public class DatasetFieldServiceApi {
     @Path("{name}")
     public String getByName(@PathParam("name") String name) {
         try {
-            DatasetField dsf = datasetFieldService.findByName(name);
+            DatasetFieldType dsf = datasetFieldService.findByName(name);
             Long id = dsf.getId();
             String title = dsf.getTitle();
             String fieldType = dsf.getFieldType();
@@ -85,7 +85,7 @@ public class DatasetFieldServiceApi {
             String parentAllowsMultiplesDisplay = "N/A (no parent)";
             Boolean parentAllowsMultiplesBoolean = false;
             if (hasParent) {
-                DatasetField parent = dsf.getParentDatasetField();
+                DatasetFieldType parent = dsf.getParentDatasetFieldType();
                 parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 parentAllowsMultiplesDisplay = parentAllowsMultiplesBoolean.toString();
             }
@@ -200,21 +200,21 @@ public class DatasetFieldServiceApi {
     }
 
     private String parseDatasetField(String[] values) {
-        DatasetField dsf = new DatasetField();
+        DatasetFieldType dsf = new DatasetFieldType();
         dsf.setName(values[1]);
         dsf.setTitle(values[2]);
         dsf.setDescription(values[3]);
         dsf.setWatermark(values[4]);
         dsf.setFieldType(values[5]);
         dsf.setDisplayOrder(new Integer(values[6]).intValue());
-        dsf.setAdvancedSearchField(new Boolean(values[7]).booleanValue());
+        dsf.setAdvancedSearchFieldType(new Boolean(values[7]).booleanValue());
         dsf.setAllowControlledVocabulary(new Boolean(values[8]).booleanValue());
         dsf.setAllowMultiples(new Boolean(values[9]).booleanValue());
         dsf.setFacetable(new Boolean(values[10]).booleanValue());
-        dsf.setShowAboveFold(new Boolean(values[11]).booleanValue());
+        dsf.setDisplayOnCreate(new Boolean(values[11]).booleanValue());
         dsf.setRequired(new Boolean(values[12]).booleanValue());
         if (!StringUtils.isEmpty(values[13])) {
-            dsf.setParentDatasetField(datasetFieldService.findByName(values[13]));
+            dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[13]));
         }
         dsf.setMetadataBlock(dataverseService.findMDBByName(values[14]));
 
