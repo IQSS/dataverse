@@ -54,6 +54,8 @@ public class DataversePage implements java.io.Serializable {
     DatasetFieldServiceBean datasetFieldService; 
     @EJB
     DataverseFacetServiceBean dataverseFacetService; 
+    @EJB
+    UserNotificationServiceBean userNotificationService;
     
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -159,6 +161,9 @@ public class DataversePage implements java.io.Serializable {
         
 		try {
 			dataverse = commandEngine.submit(cmd);
+                        String notification = "Your Dataverse, " + dataverse.getName() + 
+                                ", has been created in the " + dataverse.getOwner().getName() + ". Remember to release it. ";                        
+                        userNotificationService.sendNotification(notification, session.getUser(), dataverse.getCreateDate());
 			editMode = null;
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
