@@ -7,7 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.Transient;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -45,7 +44,6 @@ public class DataverseUser implements Serializable {
     private String encryptedPassword;
     private String affiliation;
     private String position;
-    private String phone;
 	
     public Long getId() {
         return id;
@@ -109,14 +107,6 @@ public class DataverseUser implements Serializable {
 
     public void setPosition(String position) {
         this.position = position;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
 	public boolean isGuest() {
