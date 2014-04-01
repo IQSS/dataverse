@@ -97,8 +97,7 @@ public class JsonPrinter {
 					.add( "userName",  user.getUserName())
 					.add( "affiliation", user.getAffiliation())
 					.add( "position",  user.getPosition())
-					.add( "email",     user.getEmail())
-					.add( "phone",     user.getPhone());
+					.add( "email",     user.getEmail());
 	}
 	
 	public static JsonObjectBuilder json( Dataset ds ) {
