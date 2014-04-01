@@ -1,6 +1,6 @@
  {
     "alias":"root",
-    "name":"Root dataverse",
+    "name":"Root",
     "affiliation":"Affiliation value",
     "contactEmail":"root@mailinator.com",
     "permissionRoot":false,
