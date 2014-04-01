@@ -115,7 +115,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         compoundValue.setDisplayOrder(displayOrder);
 
         for (DatasetField subField : childDatasetFields) {
-            compoundValue.getChildDatasetFields().add(subField.copy(this));
+            compoundValue.getChildDatasetFields().add(subField.copy(parent.getDatasetVersion(), this));
         }
                      
         return compoundValue;

@@ -179,6 +179,7 @@ public class DatasetPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             editVersion = dataset.getEditVersion();
+            datasetVersionUI = new DatasetVersionUI(editVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }

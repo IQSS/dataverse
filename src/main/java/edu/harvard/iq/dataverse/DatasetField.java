@@ -237,26 +237,27 @@ public class DatasetField implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.DatasetFieldValue[ id=" + id + " ]";
+        return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
     
-    public DatasetField copy() {
-        return copy(null);
+    public DatasetField copy(DatasetVersion version) {
+        return copy(version, null);
     }
     
-    public DatasetField copy(DatasetFieldCompoundValue parent) {
+    public DatasetField copy(DatasetVersion version, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
-        dsf.setDatasetVersion(datasetVersion);
+        
+        dsf.setDatasetVersion(version);
         dsf.setParentDatasetFieldCompoundValue(parent);        
         dsf.setControlledVocabularyValues(controlledVocabularyValues);
         
         for (DatasetFieldValue dsfv : datasetFieldValues) {
-            dsf.getDatasetFieldValues().add(dsfv.copy(this));
+            dsf.getDatasetFieldValues().add(dsfv.copy(dsf));
         }
         
         for (DatasetFieldCompoundValue compoundValue : datasetFieldCompoundValues) {
-            dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(this));
+            dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(dsf));
         }        
                 
         return dsf;

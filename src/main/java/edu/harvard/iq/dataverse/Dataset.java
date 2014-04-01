@@ -135,7 +135,6 @@ public class Dataset extends DvObjectContainer {
             dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
         }
         dsv.setFileMetadatas(new ArrayList());
-        //dsv.getMetadata().setDatasetVersion(dsv);
 
         for (FileMetadata fm : latestVersion.getFileMetadatas()) {
             FileMetadata newFm = new FileMetadata();

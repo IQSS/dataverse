@@ -471,9 +471,10 @@ public class DatasetVersion implements Serializable {
         List<DatasetField> retList = new ArrayList();
 
         for (DatasetField sourceDsf : copyFromList) {
-            retList.add(sourceDsf.copy());
+            //the copy needs to have the current version
+            retList.add(sourceDsf.copy(this));
         }
-
+        
         return retList;
     }
 
