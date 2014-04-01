@@ -49,7 +49,11 @@ public class SolrSearchResult {
 
     @Override
     public String toString() {
-        return this.id + ":" + this.name + ":" + this.entityId;
+        if (this.name != null) {
+            return this.id + ":" + this.name + ":" + this.entityId;
+        } else {
+            return this.id + ":" + this.title + ":" + this.entityId;
+        }
     }
 
     public JsonObject toJsonObject() {

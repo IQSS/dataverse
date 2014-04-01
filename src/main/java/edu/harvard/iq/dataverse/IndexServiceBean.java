@@ -214,10 +214,35 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+        if (dataset.isReleased()) {
+            solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+        } else if (dataset.getOwner().getCreator() != null) {
+            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
+            /**
+             * @todo: replace this fake version of granting users access to
+             * dataverses with the real thing, when it's available in the app
+             */
+            if (dataset.getOwner().getCreator().getUserName().equals("pete")) {
+                // figure out if cathy is around
+                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                if (cathy != null) {
+                    // let cathy see all of pete's dataverses
+                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                }
+            }
+        } else {
+            /**
+             * @todo: remove this once everyone has dropped their database and
+             * won't get NPE's from dataverse.getCreator
+             */
+            solrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
+        }
+
         /**
-         * @todo: make datasets undiscoverable... what are the rules?
+         * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getLatestVersion() != null) {
@@ -380,10 +405,36 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
+            if (dataset.isReleased()) {
+                datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+            } else if (dataset.getOwner().getCreator() != null) {
+                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
+                /**
+                 * @todo: replace this fake version of granting users access to
+                 * dataverses with the real thing, when it's available in the
+                 * app
+                 */
+                if (dataset.getOwner().getCreator().getUserName().equals("pete")) {
+                    // figure out if cathy is around
+                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                    if (cathy != null) {
+                        // let cathy see all of pete's dataverses
+                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                    }
+                }
+            } else {
+                /**
+                 * @todo: remove this once everyone has dropped their database
+                 * and won't get NPE's from dataverse.getCreator
+                 */
+                datafileSolrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
+            }
+
             /**
-             * @todo: make files undiscoverable... what are the rules?
+             * @todo: remove this fake "has access to all data" group
              */
-            datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+
             // For the mime type, we are going to index the "friendly" version, e.g., 
             // "PDF File" instead of "application/pdf", "MS Excel" instead of 
             // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (!), etc., 
