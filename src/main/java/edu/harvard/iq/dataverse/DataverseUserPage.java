@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
+import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -27,15 +27,18 @@ import org.hibernate.validator.constraints.NotBlank;
 @Named("DataverseUserPage")
 public class DataverseUserPage implements java.io.Serializable {
 
-    public enum EditMode {CREATE, INFO, EDIT, CHANGE, FORGOT};
+    public enum EditMode {
 
-    @Inject 
-    DataverseSession session; 
-    @EJB 
+        CREATE, INFO, EDIT, CHANGE, FORGOT
+    };
+
+    @Inject
+    DataverseSession session;
+    @EJB
     DataverseServiceBean dataverseService;
-    @EJB 
-    UserNotificationServiceBean userNotificationService; 
-    @EJB 
+    @EJB
+    UserNotificationServiceBean userNotificationService;
+    @EJB
     DatasetServiceBean datasetService;
     @EJB
     PermissionServiceBean permissionService;
@@ -44,16 +47,17 @@ public class DataverseUserPage implements java.io.Serializable {
 
     private DataverseUser dataverseUser;
     private EditMode editMode;
-    
-    @NotBlank(message = "Please enter a password for your account.")    
+
+    @NotBlank(message = "Please enter a password for your account.")
     private String inputPassword;
-    
-    @NotBlank(message = "Please enter a password for your account.")    
+
+    @NotBlank(message = "Please enter a password for your account.")
     private String currentPassword;
     private Long dataverseId;
     private String permissionType;
     private List dataIdList;
-           
+    private List<UserNotification> notificationsList;
+
     public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
             dataverseUser = new DataverseUser();
@@ -90,13 +94,13 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public Long getDataverseId() {
-        
+
         if (dataverseId == null) {
             dataverseId = dataverseService.findRootDataverse().getId();
         }
         return dataverseId;
     }
-    
+
     public void setDataverseId(Long dataverseId) {
         this.dataverseId = dataverseId;
     }
@@ -116,20 +120,24 @@ public class DataverseUserPage implements java.io.Serializable {
     public void setDataIdList(List dataIdList) {
         this.dataIdList = dataIdList;
     }
-    
-    public List getNotifications() { 
-        List  notificationsList = userNotificationService.findByUser(dataverseUser.getId());
+
+    public List getNotificationsList() {
         return notificationsList;
     }
-    
+
+    public void setNotificationsList(List notificationsList) {
+        this.notificationsList = notificationsList;
+    }
+
     public void init() {
-        if (dataverseUser == null) {  
+        if (dataverseUser == null) {
             dataverseUser = (session.getUser().isGuest() ? new DataverseUser() : session.getUser());
         }
+        notificationsList = userNotificationService.findByUser(dataverseUser.getId());
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
     }
-        
+
     public void edit(ActionEvent e) {
         editMode = EditMode.EDIT;
     }
@@ -141,83 +149,83 @@ public class DataverseUserPage implements java.io.Serializable {
     public void changePassword(ActionEvent e) {
         editMode = EditMode.CHANGE;
     }
-    
+
     public void forgotPassword(ActionEvent e) {
         editMode = EditMode.FORGOT;
     }
-    
+
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (editMode == EditMode.CREATE) {
-            if (user!=null) {
+            if (user != null) {
                 userNameFound = true;
             }
         } else {
-            if (user!=null && !user.getId().equals(dataverseUser.getId())) {
+            if (user != null && !user.getId().equals(dataverseUser.getId())) {
                 userNameFound = true;
             }
         }
         if (userNameFound) {
-            ((UIInput)toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage("This Username is already taken.");
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
-    
+
     public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
         DataverseUser user = dataverseUserService.findByUserName(userName);
-        if (user!=null) {
-                userNameFound = true;
+        if (user != null) {
+            userNameFound = true;
         } else {
             DataverseUser user2 = dataverseUserService.findByEmail(userName);
-            if (user2!=null) {
+            if (user2 != null) {
                 userNameFound = true;
             }
         }
         if (!userNameFound) {
-            ((UIInput)toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage("Username or Email is incorrect.");
             context.addMessage(toValidate.getClientId(context), message);
         }
-    }    
+    }
 
     public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         if (!encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
-            ((UIInput)toValidate).setValid(false);
+            ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage("Password is incorrect.");
-            context.addMessage(toValidate.getClientId(context), message);        
-        }    
+            context.addMessage(toValidate.getClientId(context), message);
+        }
     }
-    
-    public void updatePassword(String userName){
+
+    public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
         DataverseUser user = dataverseUserService.findByUserName(userName);
-        if (user==null) {
+        if (user == null) {
             user = dataverseUserService.findByEmail(userName);
         }
         user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
         dataverseUserService.save(user);
     }
-    
+
     public String save() {
-        if (editMode == EditMode.CREATE|| editMode == EditMode.CHANGE) {
-            if (inputPassword!=null) {
+        if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE) {
+            if (inputPassword != null) {
                 dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
             }
         }
-        dataverseUser = dataverseUserService.save(dataverseUser); 
-        
+        dataverseUser = dataverseUserService.save(dataverseUser);
+
         if (editMode == EditMode.CREATE) {
             session.setUser(dataverseUser);
             return "/dataverse.xhtml?faces-redirect=true;";
-        }   
-        
+        }
+
         editMode = EditMode.INFO;
         return null;
     }
@@ -225,15 +233,38 @@ public class DataverseUserPage implements java.io.Serializable {
     public String cancel() {
         if (editMode == EditMode.CREATE) {
             return "/dataverse.xhtml?faces-redirect=true;";
-        }   
-        
-        
+        }
+
         editMode = EditMode.INFO;
         return null;
     }
-    
+
     public void submit(ActionEvent e) {
         updatePassword(dataverseUser.getUserName());
         editMode = EditMode.INFO;
+    }
+
+    public String remove(Long notificationId) {
+        UserNotification userNotification = userNotificationService.find(notificationId);
+        userNotificationService.delete(userNotification);
+        for (UserNotification uNotification : notificationsList) {
+            if (uNotification.getId() == userNotification.getId()) {
+                notificationsList.remove(uNotification);
+                break;
+            }
+        }
+        return null;
+    }
+
+    public void onTabChange(TabChangeEvent event) {
+        if (event.getTab().getId().equals("notifications")) {
+            for (UserNotification userNotification : notificationsList) {
+                userNotification.setDisplayAsRead(userNotification.isReadNotification());
+                if (userNotification.isReadNotification() == false) {
+                    userNotification.setReadNotification(true);
+                    userNotificationService.save(userNotification);
+                }
+            }
+        }
     }
 }
