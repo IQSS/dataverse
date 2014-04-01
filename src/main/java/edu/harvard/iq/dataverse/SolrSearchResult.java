@@ -15,6 +15,7 @@ public class SolrSearchResult {
     private String query;
     private String name;
     private String nameSort;
+    private String status;
 
     public String getNameSort() {
         return nameSort;
@@ -183,6 +184,14 @@ public class SolrSearchResult {
 
     public void setFiletype(String filetype) {
         this.filetype = filetype;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    void setStatus(String status) {
+        this.status = status;
     }
 
 }

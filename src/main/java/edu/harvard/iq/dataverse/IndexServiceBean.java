@@ -220,8 +220,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
 
-        if (dataset.getEditVersion() != null) {
-            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+        if (dataset.getLatestVersion() != null) {
+            for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
                 String solrFieldSearchable = dsfType.getSolrField().getNameSearchable();

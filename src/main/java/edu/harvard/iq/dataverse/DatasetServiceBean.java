@@ -50,9 +50,7 @@ public class DatasetServiceBean {
         //em.merge(removeBlankRows(dataset.getVersions().get(0)));
         em.merge(dataset.getVersions().get(0));
         Dataset savedDataset = em.merge(dataset);
-        //TODO - Commented out indexing because 
-        //Release dataset fails
-        //String indexingResult = indexService.indexDataset(savedDataset);
+        String indexingResult = indexService.indexDataset(savedDataset);
         System.out.print("after indexing saved...");
         //logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;

@@ -320,6 +320,7 @@ public class SearchIncludeFragment {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
+                                solrSearchResult.setStatus("released:" + dataset.isReleased());
                             }
                         }
                     } else {

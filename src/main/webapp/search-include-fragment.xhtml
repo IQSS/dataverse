@@ -442,6 +442,7 @@
                             <ui:fragment rendered="#{result.type == 'datasets'}">
                                 <h:outputLink value="/dataset.xhtml?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                     <h:outputText value="#{result.title}" style="padding:4px 0;"/>
+                                    <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                     <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
