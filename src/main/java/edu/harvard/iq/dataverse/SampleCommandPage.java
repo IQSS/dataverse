@@ -194,7 +194,6 @@ public class SampleCommandPage {
 			dvu.setEmail(names[0] + "." + names[1] + "@malinator.com");
 			dvu.setEncryptedPassword( userService.encryptPassword(names[0]) );
 			dvu.setAffiliation("Sample");
-			dvu.setPhone("(888) 888-8888");
 			dvu.setPosition( "Other" );
 			
 			dvu = userService.save(dvu);
