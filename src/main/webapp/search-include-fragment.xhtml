@@ -67,7 +67,7 @@
                     <f:param name="page" value="1"/>
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'icon_dataverse_dark.png' : 'icon_dataverse.png'}) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Dataverses" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'bolder' : 'normal'}"/>
-                    <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})"/>
+                    <h:outputText value=" (#{SearchIncludeFragment.facetCountDataverses})" style="color: #428BCA"/>
                     <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('dataverses')}"/>-->
                 </h:outputLink>
                 <br/>
@@ -84,7 +84,7 @@
                     <f:param name="page" value="1"/>
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'icon_dataset_dark.png' : 'icon_dataset.png'}) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Datasets" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'bolder' : 'normal'}"/>
-                    <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})"/>
+                    <h:outputText value=" (#{SearchIncludeFragment.facetCountDatasets})" style="color: #428BCA"/>
                     <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('datasets')}"/>-->
                 </h:outputLink>
                 <br/>
@@ -102,7 +102,7 @@
                     <f:param name="page" value="1"/>
                     <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('files') ? 'icon_file_dark.png' : 'icon_file.png'}) no-repeat 4px 50% / 18px;"/>
                     <h:outputText value="Files" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'bolder' : 'normal'}"/>
-                    <h:outputText value=" (#{SearchIncludeFragment.facetCountFiles})"/>
+                    <h:outputText value=" (#{SearchIncludeFragment.facetCountFiles})" style="color: #428BCA"/>
                     <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('files')}"/>-->
                 </h:outputLink>
                 <p/>
