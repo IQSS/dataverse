@@ -248,71 +248,7 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setIdentifier("5555");
         //Todo pre populate deposit date
 
-        // iterate and remove empty DatasetFields
-        // TODO: Handle compound better (ie remove individual empty compound values)
-        Iterator<DatasetField> it = dataset.getEditVersion().getDatasetFields().iterator();
-        while (it.hasNext()) {
-            DatasetField dsf = it.next();
-            if (dsf.isEmpty()) {
-                it.remove();
-            }
-        }
 
-        //Trim spaces from any input values
-        //add any blank records to a "to Remove" list"
-        /*
-         List<Integer> toRemoveIndex = new ArrayList();
-         int index = 0;
-         for (DatasetFieldValue dsfv : editVersion.getDatasetFieldValues()) {
-         if (dsfv.getStrValue() != null) {
-         dsfv.setStrValue(dsfv.getStrValue().trim());
-         }
-            
-         //Single recs and child recs (with no controlled vocab)
-         if ((!dsfv.getDatasetField().isHasChildren() && !dsfv.getDatasetField().isControlledVocabulary()) && (dsfv.getStrValue() == null || dsfv.getStrValue().trim().isEmpty())) {
-         toRemoveIndex.add(index);
-         }
-         //parent recs where all kids are empty.
-         if (dsfv.getDatasetField().isHasChildren() && dsfv.isChildEmpty()) {
-         toRemoveIndex.add(index);
-         }
-         //controlled vocab recs where all kids are empty.
-         if (dsfv.getDatasetField().isControlledVocabulary() && (dsfv.getControlledVocabularyValues() == null || dsfv.getControlledVocabularyValues().isEmpty())) {
-         toRemoveIndex.add(index);
-         }
-
-         index++;
-         }
-         //Actually do the remove here
-         // the adjustment takes into account the prior 
-         //blank fields which have been removed.
-         int adjustment = 0;
-         if (!toRemoveIndex.isEmpty()) {
-         for (Integer dsfvRI : toRemoveIndex) {
-         editVersion.getDatasetFieldValues().remove(dsfvRI.intValue() - adjustment);
-         adjustment++;
-         }
-         }
-         */
-        // need to save multi select CVs
-        /*
-         for (String subjectVal: datasetVersionUI.getSubjects()){
-         boolean add = true;
-         for (DatasetFieldValue dsfv: editVersion.getDatasetFieldValues() ){
-         if(dsfv.getDatasetField().getName().equals(DatasetFieldConstant.subject)){
-         if(dsfv.getStrValue() != null && dsfv.getStrValue().equals(subjectVal)){
-         add = false;
-         }
-         }
-         }
-         if (add){
-         DatasetFieldValue toAdd = new DatasetFieldValue();
-         toAdd.setDatasetField(fieldService.findByName(DatasetFieldConstant.subject));
-         toAdd.setStrValue(subjectVal);
-         toAdd.setDatasetVersion(editVersion);
-         editVersion.getDatasetFieldValues().add(toAdd);
-         }
-         }*/
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -405,7 +341,6 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         try {
-            datasetService.removeRecs(dataset, deleteRecords);
             dataset = datasetService.save(dataset);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
