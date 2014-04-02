@@ -90,14 +90,13 @@ public class DatasetVersion implements Serializable {
         this.fileMetadatas = fileMetadatas;
     }
 
-    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
     private List<DatasetField> datasetFields = new ArrayList<>();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
-
 
     public void setDatasetFields(List<DatasetField> datasetFields) {
         this.datasetFields = datasetFields;
@@ -423,12 +422,36 @@ public class DatasetVersion implements Serializable {
         return str;
     }
 
+    // TODO: clean up init methods and get them to work, cascading all the way down.
+    // right now, only work for one level of compound objects
+    private DatasetField initDatasetField(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isCompound()) {
+            for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
+                // for each compound value; check the datasetfieldTypes associated with its type
+                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                    boolean add = true;
+                    for (DatasetField subfield : cv.getChildDatasetFields()) {
+                        if (dsfType.equals(subfield.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                    }
+                }
+            }
+        }
+
+        return dsf;
+    }
+
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
-        //if the datasetversion already has values add them here
-        if (this.getDatasetFields() != null) {
-            retList.addAll(this.getDatasetFields());
+        for (DatasetField dsf : this.getDatasetFields()) {
+            retList.add(initDatasetField(dsf));
         }
 
         //Test to see that there are values for 
@@ -439,16 +462,15 @@ public class DatasetVersion implements Serializable {
                 if (!dsfType.isSubField()) {
                     boolean add = true;
                     //don't add if already added as a val
-                    for (DatasetField dsfv : retList) {
-                        if (dsfType.equals(dsfv.getDatasetFieldType())) {
+                    for (DatasetField dsf : retList) {
+                        if (dsfType.equals(dsf.getDatasetFieldType())) {
                             add = false;
                             break;
                         }
                     }
 
                     if (add) {
-                        DatasetField addDsfv = DatasetField.createNewEmptyDatasetField(dsfType, this);
-                        retList.add(addDsfv);
+                        retList.add(DatasetField.createNewEmptyDatasetField(dsfType, this));
                     }
                 }
             }
@@ -474,7 +496,7 @@ public class DatasetVersion implements Serializable {
             //the copy needs to have the current version
             retList.add(sourceDsf.copy(this));
         }
-        
+
         return retList;
     }
 
