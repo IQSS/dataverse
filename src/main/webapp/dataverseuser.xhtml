@@ -19,6 +19,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
+                    <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                 </f:metadata>
                 
@@ -154,7 +155,7 @@
                             </div>
                         </p:tab>
                     </p:tabView>
-                    <p:tabView id="tabView2" dynamic="true" rendered="#{DataverseUserPage.editMode == 'INFO'}">
+                    <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{DataverseUserPage.editMode == 'INFO'}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
                         <p:tab id="somedata" title="Data Related To Me">
                           <!--  <p:panel>
