@@ -99,7 +99,7 @@ public class Dataset extends DvObjectContainer {
         this.files = files;
     }
 
-    @OneToMany(mappedBy = "dataset")
+    @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("versionNumber DESC")
     private List<DatasetVersion> versions = new ArrayList();
 
