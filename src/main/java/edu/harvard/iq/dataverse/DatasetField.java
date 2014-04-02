@@ -101,7 +101,7 @@ public class DatasetField implements Serializable {
         this.parentDatasetFieldCompoundValue = parentDatasetFieldCompoundValue;
     }
 
-    @OneToMany(mappedBy = "parentDatasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetField", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
 
@@ -113,7 +113,7 @@ public class DatasetField implements Serializable {
         this.datasetFieldCompoundValues = datasetFieldCompoundValues;
     }
 
-    @OneToMany(mappedBy = "datasetField", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetField", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
 
@@ -196,7 +196,7 @@ public class DatasetField implements Serializable {
     }
     
     public boolean isEmpty() {
-        if (!datasetFieldType.isHasChildren()) { // primitive
+        if (datasetFieldType.isPrimitive()) { // primitive
             for (String value : getValues()) {
                 if (value != null && value.trim() != "") {
                     return false;
@@ -262,4 +262,21 @@ public class DatasetField implements Serializable {
                 
         return dsf;
     }
+    
+    public void addDatasetFieldValue(int index) {
+        datasetFieldValues.add(index, new DatasetFieldValue(this));
+    }
+    
+    public void removeDatasetFieldValue(int index) {
+        datasetFieldValues.remove(index);
+    }
+
+    public void addDatasetFieldCompoundValue(int index) {
+        datasetFieldCompoundValues.add(index, DatasetFieldCompoundValue.createNewEmptyDatasetFieldCompoundValue(this));
+    }
+    
+    public void removeDatasetFieldCompoundValue(int index) {
+        datasetFieldCompoundValues.remove(index);
+    }     
+    
 }
