@@ -17,7 +17,7 @@
                     <span class="icon-bar"></span>
                 </button>
                 <h:outputLink value="/">
-                    <h:outputText styleClass="navbar-brand" value="Dataverse App" style="color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;"/>
+                    <h:outputText styleClass="navbar-brand" value="Dataverse" style="color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;"/>
                 </h:outputLink>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
@@ -44,12 +44,27 @@
                     <form class="navbar-form navbar-left" role="search" style="display:none;">
                         <div class="form-group">
                             <label class="sr-only" for="navbarsearch">Search</label>
-                            <input id="navbarsearch" type="text" class="form-control ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="40" value="" placeholder="Search all Dataverses..." style="font-size:1em;margin-right:1em;" />
+                            <input id="navbarsearch" type="text" class="form-control ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="Search all Dataverses..." style="font-size:1em;margin-right:1em;" />
                         </div>
                         <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
                             <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                         </button>
                     </form>
+                    <li>
+                        <h:outputLink value="http://thedata.org/about-testing" target="_blank">
+                            About
+                        </h:outputLink>
+                    </li>
+                    <li>
+                        <h:outputLink value="https://github.com/IQSS/dataverse_temp" target="_blank">
+                            Software
+                        </h:outputLink>
+                    </li>
+                    <li>
+                        <h:outputLink value="http://thedata.org/resources-testing" target="_blank">
+                            Resources
+                        </h:outputLink>
+                    </li>
                     <li class="dropdown">
                         <a value="#" class="dropdown-toggle" data-toggle="dropdown">
                             Support <b class="caret"></b>
