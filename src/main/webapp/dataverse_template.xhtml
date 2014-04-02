@@ -69,6 +69,15 @@
                     $(this).hasClass('keep-open'),
                     e.stopPropagation();
                 });
+                
+                // Collapse Header Icons
+                $('div[id^="collapse"]').on('shown.bs.collapse', function () {
+                    $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
+                });
+
+                $('div[id^="collapse"]').on('hidden.bs.collapse', function () {
+                    $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
+                });
 
                 // Permissions + Dataset Tooltips/Popovers
                 $("a[data-toggle='tooltip']").tooltip({container: 'body'});

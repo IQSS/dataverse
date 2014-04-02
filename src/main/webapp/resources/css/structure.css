@@ -135,6 +135,9 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
+#contentTabs div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+#contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
+
 .btn-sm.ui-button {padding: 5px 10px;}
 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
