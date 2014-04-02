@@ -46,7 +46,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetField parentDatasetField;    
 
-    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> childDatasetFields = new ArrayList();    
     
     public Long getId() {
