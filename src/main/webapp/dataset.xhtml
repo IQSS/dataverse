@@ -284,9 +284,9 @@
 
                                 <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                     <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                        <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Metadata
+                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
                                         </p:commandLink>
                                     </div>
                                     <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
