@@ -115,8 +115,10 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         if (dataverse.isReleased()) {
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getReleaseDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataverse.getCreator() != null) {
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
              * @todo: replace this fake version of granting users access to
@@ -131,6 +133,7 @@ public class IndexServiceBean {
                 }
             }
         } else {
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             /**
              * @todo: remove this once everyone has dropped their database and
              * won't get NPE's from dataverse.getCreator
@@ -215,8 +218,15 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
         if (dataset.isReleased()) {
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getReleaseDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataset.getOwner().getCreator() != null) {
+            /**
+             * todo why is dataset.getCreateDate() null? For now I guess we'll
+             * use the createDate of it's parent dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
+             */
+//            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getCreateDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getOwner().getCreateDate());
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
             /**
              * @todo: replace this fake version of granting users access to
@@ -232,6 +242,12 @@ public class IndexServiceBean {
             }
         } else {
             /**
+             * todo why is dataset.getCreateDate() null? For now I guess we'll
+             * use the createDate of it's parent dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
+             */
+//            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getCreateDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getOwner().getCreateDate());
+            /**
              * @todo: remove this once everyone has dropped their database and
              * won't get NPE's from dataverse.getCreator
              */
@@ -243,7 +259,7 @@ public class IndexServiceBean {
          */
         solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
 
-        addDataverseReleaseDateToSolrDoc(solrInputDocument, dataset);
+        addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getLatestVersion() != null) {
             for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
@@ -405,9 +421,21 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
-            if (dataset.isReleased()) {
+            if (dataFile.isReleased()) {
+                /**
+                 * @todo: are datafiles supposed to have release dates? It's
+                 * null. For now just set something: https://redmine.hmdc.harvard.edu/issues/3806
+                 */
+//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getReleaseDate());
+                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
             } else if (dataset.getOwner().getCreator() != null) {
+                /**
+                 * todo why is dataFile.getCreateDate() null? For now I guess
+                 * we'll use the createDate of its parent datase's dataverset?! https://redmine.hmdc.harvard.edu/issues/3806
+                 */
+//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getCreateDate());
+                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
                 /**
                  * @todo: replace this fake version of granting users access to
@@ -427,6 +455,12 @@ public class IndexServiceBean {
                  * @todo: remove this once everyone has dropped their database
                  * and won't get NPE's from dataverse.getCreator
                  */
+                /**
+                 * todo why is dataFile.getCreateDate() null? For now I guess
+                 * we'll use the createDate of its parent dataset's dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
+                 */
+//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getCreateDate());
+                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
             }
 
@@ -648,7 +682,7 @@ public class IndexServiceBean {
         }
     }
 
-    private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataset dataset) {
+    private void addDatasetReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataset dataset) {
         if (dataset.getReleaseDate() != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataset.getReleaseDate().getTime());

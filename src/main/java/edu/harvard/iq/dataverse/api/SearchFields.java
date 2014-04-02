@@ -2,6 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 public class SearchFields {
 
+    /**
+     * @todo: consider making various dynamic fields (_s) static in schema.xml
+     * instead. Should they be stored in the database?
+     */
     // standard fields from example/solr/collection1/conf/schema.xml
     // (but we are getting away from these...)
     public static final String ID = "id";
@@ -59,6 +63,7 @@ public class SearchFields {
     public static final String TYPE = "dvtype";
     public static final String NAME_SORT = "name_sort";
     public static final String RELEASE_DATE = "releasedate";
+    public static final String RELEASE_OR_CREATE_DATE = "release_or_create_date_dt";
     public static final String GROUPS = "groups_s";
     public static final String PERMS = "perms_ss";
     // Used for performance. Why hit the db if solr has the data?

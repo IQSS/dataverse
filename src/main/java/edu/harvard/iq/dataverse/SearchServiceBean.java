@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -226,6 +227,7 @@ public class SearchServiceBean {
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
+            Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             if (queryResponse.getHighlighting().get(id) != null) {
                 highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
 //                logger.info("highlight snippets: " + highlightSnippets);
@@ -240,6 +242,7 @@ public class SearchServiceBean {
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
+            solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);

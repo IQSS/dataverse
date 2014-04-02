@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.json.Json;
@@ -16,14 +17,8 @@ public class SolrSearchResult {
     private String name;
     private String nameSort;
     private String status;
+    private Date releaseOrCreateDate;
 
-    public String getNameSort() {
-        return nameSort;
-    }
-
-    public void setNameSort(String nameSort) {
-        this.nameSort = nameSort;
-    }
     /**
      * @todo: how important is it to differentiate between name and title?
      */
@@ -189,6 +184,13 @@ public class SolrSearchResult {
     public void setFiletype(String filetype) {
         this.filetype = filetype;
     }
+    public String getNameSort() {
+        return nameSort;
+    }
+
+    public void setNameSort(String nameSort) {
+        this.nameSort = nameSort;
+    }
 
     public String getStatus() {
         return status;
@@ -198,4 +200,11 @@ public class SolrSearchResult {
         this.status = status;
     }
 
+    public Date getReleaseOrCreateDate() {
+        return releaseOrCreateDate;
+    }
+
+    public void setReleaseOrCreateDate(Date releaseOrCreateDate) {
+        this.releaseOrCreateDate = releaseOrCreateDate;
+    }
 }

@@ -350,7 +350,7 @@
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                 <f:param name="page" value="1"/>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
                                             </h:outputLink>
                                         </li>
@@ -364,7 +364,7 @@
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                 <f:param name="page" value="1"/>
-                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseDate}"/>
+                                                <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
                                             </h:outputLink>
                                         </li>
@@ -395,6 +395,7 @@
                             <ui:fragment rendered="#{result.type == 'dataverses'}">
                                 <h:outputLink value="#{dataversePage}?id=#{result.entityId}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                     <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;"/>
+                                    <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                     <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
@@ -468,6 +469,7 @@
                                 <!--FIXME: have a landing page for each file?-->
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
                                     <h:outputText value="#{result.name}" style="padding:4px 0;"/>
+                                    <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                 </h:outputLink>
                                 <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                     <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->

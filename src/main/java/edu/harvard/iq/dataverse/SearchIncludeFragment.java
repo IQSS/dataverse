@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.engine.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ public class SearchIncludeFragment {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
     @Inject
@@ -61,7 +64,8 @@ public class SearchIncludeFragment {
     private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
-    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE;
+//    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
+    private String searchFieldReleaseOrCreateDate = SearchFields.RELEASE_OR_CREATE_DATE;
     final private String ASCENDING = "asc";
     final private String DESCENDING = "desc";
     private String typeFilterQuery;
@@ -173,10 +177,10 @@ public class SearchIncludeFragment {
         if (mode.equals(browseModeString)) {
             queryToPassToSolr = "*";
             if (sortField == null) {
-                sortField = searchFieldNameSort;
+                sortField = searchFieldReleaseOrCreateDate;
             }
             if (sortOrder == null) {
-                sortOrder = ASCENDING;
+                sortOrder = DESCENDING;
             }
         } else if (mode.equals(searchModeString)) {
             queryToPassToSolr = query;
@@ -300,6 +304,7 @@ public class SearchIncludeFragment {
                         List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId());
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
+                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
@@ -320,13 +325,17 @@ public class SearchIncludeFragment {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
-                                solrSearchResult.setStatus("released:" + dataset.isReleased());
+                                solrSearchResult.setStatus(getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
                             }
                         }
                     } else {
                         logger.info("couldn't find dataset id " + solrSearchResult.getEntityId() + ". Stale Solr data? Time to re-index?");
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
+                    DataFile dataFile = dataFileService.find(solrSearchResult.getEntityId());
+                    if (dataFile != null) {
+                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataFile, solrSearchResult.getReleaseOrCreateDate()));
+                    }
                     /**
                      * @todo: show DataTable variables
                      */
@@ -426,6 +435,25 @@ public class SearchIncludeFragment {
         // TODO: decide on rules for this button and check actual permissions
         return session.getUser() != null && !session.getUser().isGuest();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
+    }
+
+    private String getCreatedOrReleasedDate(DvObject dvObject, Date date) {
+        // the hedge is for https://redmine.hmdc.harvard.edu/issues/3806
+        String hedge = "";
+        if (dvObject instanceof Dataverse) {
+            hedge = "";
+        } else if (dvObject instanceof Dataset) {
+            hedge = " maybe";
+        } else if (dvObject instanceof DataFile) {
+            hedge = " maybe";
+        } else {
+            hedge = " what object is this?";
+        }
+        if (dvObject.isReleased()) {
+            return date + " released" + hedge;
+        } else {
+            return date + " created" + hedge;
+        }
     }
 
     public String getQuery() {
@@ -656,8 +684,8 @@ public class SearchIncludeFragment {
         this.searchFieldNameSort = searchFieldNameSort;
     }
 
-    public String getSearchFieldReleaseDate() {
-        return searchFieldReleaseDate;
+    public String getSearchFieldReleaseOrCreateDate() {
+        return searchFieldReleaseOrCreateDate;
     }
 
     public String getASCENDING() {
@@ -714,11 +742,11 @@ public class SearchIncludeFragment {
     }
 
     public boolean isSortedByReleaseDateAsc() {
-        return getCurrentSort().equals(searchFieldReleaseDate + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING) ? true : false;
     }
 
     public boolean isSortedByReleaseDateDesc() {
-        return getCurrentSort().equals(searchFieldReleaseDate + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING) ? true : false;
     }
 
     public boolean isSortedByRelevance() {
