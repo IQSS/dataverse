@@ -105,8 +105,10 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
-                                        <h:outputText value="Notifications" />
+                                    <h:outputLink value="/dataverseuser.xhtml" >
+                                        <f:param name="editMode" value="INFO" />                                    
+                                        <f:param name="selectTab" value="notifications" />
+                                    <h:outputText value="Notifications" />
                                     </h:outputLink>
                                 </li>
                                 <li>
