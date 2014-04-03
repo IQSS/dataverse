@@ -92,7 +92,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList<>();
+    private List<DatasetField> datasetFields = new ArrayList();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
