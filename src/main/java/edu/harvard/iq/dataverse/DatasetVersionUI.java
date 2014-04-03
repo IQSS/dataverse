@@ -83,36 +83,27 @@ public class DatasetVersionUI {
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
-                if (this.datasetRelPublications.isEmpty()) {/*
-                     Collection childVals = dsfv.getChildDatasetFieldValues();
-                     DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                     if (childVals != null) {
-                     for (Object cv : childVals) {
-                     DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                     datasetRelPublication.setText(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                     datasetRelPublication.setIdNumber(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                     datasetRelPublication.setIdType(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
-                     datasetRelPublication.setUrl(cvo.getStrValue());
-                     }
-                     //if no pub URL is available get distributor url
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL) && datasetRelPublication.getUrl().isEmpty()) {
-                     datasetRelPublication.setUrl(cvo.getStrValue());
-                     }
-                     }
-                     }
-                     this.getDatasetRelPublications().add(datasetRelPublication);*/
-
+                if (this.datasetRelPublications.isEmpty()) {
+                    for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
+                        DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
+                        for (DatasetField subField : relPubVal.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                                datasetRelPublication.setText(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                                datasetRelPublication.setIdNumber(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                                datasetRelPublication.setIdType(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                                datasetRelPublication.setUrl(subField.getValue());
+                            }
+                        }
+                        this.getDatasetRelPublications().add(datasetRelPublication);
+                    }
                 }
-
             }
-
         }
         setMetadataValueBlocks(datasetVersion);
     }

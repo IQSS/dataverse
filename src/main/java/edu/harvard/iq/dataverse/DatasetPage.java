@@ -71,7 +71,6 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     DataverseSession session;
 
-
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -80,7 +79,9 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetVersion editVersion = new DatasetVersion();
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private List<DatasetField> deleteRecords = new ArrayList();
-
+    private int releaseRadio = 1;
+    private String datasetNextMajorVersion = "1.0";
+    private String datasetNextMinorVersion = "";
 
     public Dataset getDataset() {
         return dataset;
@@ -122,28 +123,52 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedTabIndex = selectedTabIndex;
     }
 
-    public void init() {
+    public int getReleaseRadio() {
+        return releaseRadio;
+    }
 
+    public void setReleaseRadio(int releaseRadio) {
+        this.releaseRadio = releaseRadio;
+    }
+
+    public String getDatasetNextMajorVersion() {
+        return datasetNextMajorVersion;
+    }
+
+    public void setDatasetNextMajorVersion(String datasetNextMajorVersion) {
+        this.datasetNextMajorVersion = datasetNextMajorVersion;
+    }
+
+    public String getDatasetNextMinorVersion() {
+        return datasetNextMinorVersion;
+    }
+
+    public void setDatasetNextMinorVersion(String datasetNextMinorVersion) {
+        this.datasetNextMinorVersion = datasetNextMinorVersion;
+    }
+
+    public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             editVersion = dataset.getLatestVersion();
             ownerId = dataset.getOwner().getId();
             editVersion.setDatasetFields(editVersion.initDatasetFields());
+            if (dataset.getReleasedVersion() != null) {
+                datasetNextMajorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue() + 1).toString() + ".0";
+                datasetNextMinorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue()).toString() + "."
+                        + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
+            }
             datasetVersionUI = new DatasetVersionUI(editVersion);
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
+            editVersion = dataset.getLatestVersion();
             dataset.setOwner(dataverseService.find(ownerId));
-            dataset.setVersions(new ArrayList());
-            editVersion.setDataset(dataset);
-            editVersion.setFileMetadatas(new ArrayList());
-            editVersion.setVersionState(VersionState.DRAFT);
             editVersion.setDatasetFields(editVersion.initDatasetFields());
-            editVersion.setVersionNumber(new Long(1));
             datasetVersionUI = new DatasetVersionUI(editVersion);
+
             //TODO add call to initDepositFields if it's decided that they are indeed metadata
             //initDepositFields();
-            dataset.getVersions().add(editVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -183,14 +208,29 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public String releaseDraft() {
+        if (releaseRadio == 1) {
+            dataset.getEditVersion().setVersionNumber(new Long(dataset.getReleasedVersion().getVersionNumber().intValue() + 1));
+            dataset.getEditVersion().setMinorVersionNumber(new Long(0));
+        } else {
+            dataset.getEditVersion().setVersionNumber(new Long(dataset.getReleasedVersion().getVersionNumber().intValue()));
+            dataset.getEditVersion().setMinorVersionNumber(new Long(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1));
+        }
+        return releaseDataset(false);
+    }
+    
+    public String releaseDataset(){
+        return releaseDataset(true);
+    }
 
-     public String releaseDataset() {
-        dataset = datasetService.find(dataset.getId());
-        dataset.setReleaseDate(new Timestamp(new Date().getTime()));
-        dataset.setReleaseUser(session.getUser());
+    private String releaseDataset(boolean firstRelease) {
+        if (firstRelease){
+            dataset.setReleaseDate(new Timestamp(new Date().getTime()));
+            dataset.setReleaseUser(session.getUser());
+        }
         dataset.getEditVersion().setReleaseTime(new Timestamp(new Date().getTime()));
         dataset.getEditVersion().setVersionState(VersionState.RELEASED);
-        dataset = datasetService.CreateDatasetCommand(dataset);
+        dataset = datasetService.release(dataset);
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
@@ -202,9 +242,17 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
+        //TODO add replication for logic if necessary
+        if (replicationFor){
+            //dataset.getVersions().get(0).getDatasetFields().
+        }
         //Todo pre populate deposit date
-
-
+        
+        //If new ds get create date user
+        if (dataset.getId() == null){
+            dataset.setCreator(session.getUser());
+            dataset.setCreateDate(new Timestamp(new Date().getTime()));
+        }
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -290,7 +338,6 @@ public class DatasetPage implements java.io.Serializable {
                     }
 
                     // Any necessary post-processing: 
-                    
                     ingestService.performPostProcessingTasks(dFile);
                 }
             }
@@ -394,6 +441,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setReplicationFor(boolean replicationFor) {
         this.replicationFor = replicationFor;
-    }    
-    
+    }
+
 }

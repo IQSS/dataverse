@@ -92,7 +92,12 @@
                                                                 <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
                                                                 <span style="display:block;color:#777;font-size:small;">This dataset has been published.</span>
                                                             </a>
-                                                        </li>                                                    
+                                                        </li>   
+                                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
+                                                            <li>
+                                                            <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Current Draft" onclick="releaseDraft.show()"  /></span>
+                                                            </li>
+                                                        </ui:fragment>
                                                     </ul>
                                                 </ui:fragment>
                                             </div>
@@ -102,6 +107,21 @@
                                                 <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DatasetPage.releaseDataset}" >
                                                 </p:commandButton>  
                                                 <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
+                                        </p:confirmDialog>
+                                        <p:confirmDialog message="Are you sure you want to republish your dataset?"  header="Publish Dataset"  widgetVar="releaseDraft">  
+                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
+                                                Select version number:
+                                                        <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">  
+                                                            <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion}) " itemValue="1" />  
+                                                            <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />   
+                                                        </p:selectOneRadio>  
+                                             </ui:fragment> 
+                                             <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
+                                                Due to the nature of changes to the current draft this will be a major release (#{DatasetPage.datasetNextMajorVersion})
+                                             </ui:fragment> 
+                                                <p:commandButton value="Continue"  onclick="releaseDraft.hide()"  action="#{DatasetPage.releaseDraft}" >
+                                                </p:commandButton>  
+                                                <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
@@ -305,7 +325,7 @@
                                         <h:outputText id="versionTitleOutput" value="#{version.title}" />
                                     </p:column>
                                     <p:column>
-                                        <h:outputText id="versionDateOutput" value="#{version.createTime}" />
+                                          <h:outputText id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />
                                     </p:column>
                                     <p:column>
                                         <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
