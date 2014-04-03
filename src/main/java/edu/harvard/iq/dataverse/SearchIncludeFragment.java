@@ -298,6 +298,11 @@ public class SearchIncludeFragment {
              * the UI (currently) shows this "citation" field.
              */
             for (SolrSearchResult solrSearchResult : searchResults) {
+                if (solrSearchResult.getEntityId() == null) {
+                    // avoiding EJBException a la https://redmine.hmdc.harvard.edu/issues/3809
+                    logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
+                    break;
+                }
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     if (dataverseInCard != null) {
