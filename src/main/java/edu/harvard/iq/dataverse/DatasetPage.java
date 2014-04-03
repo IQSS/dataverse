@@ -183,49 +183,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public void addGeneralRecord(Object recordType) {
-        //The page provides the value record to be added        
-        DatasetField dfvType = (DatasetField) recordType;
-        DatasetField addNew = new DatasetField();
-        addNew.setDatasetVersion(editVersion);
-        addNew.setDatasetFieldType(dfvType.getDatasetFieldType());
-        //If there are children create them and add to map list        
-        if (dfvType.getDatasetFieldType().isHasChildren()) {
-            addNew = addChildren(addNew);
-        }
-        // add parent value
-        editVersion.getDatasetFields().add(addNew);
-        //Refresh the UI to add the new fields to the blocks
-        datasetVersionUI = new DatasetVersionUI(editVersion);
-    }
-
-    private DatasetField addChildren(DatasetField dsfvIn) {/*
-         dsfvIn.setChildDatasetFieldValues(new ArrayList());
-         for (DatasetFieldType dsfc : dsfvIn.getDatasetField().getChildDatasetFields()) {
-         DatasetFieldValue cv = new DatasetFieldValue();
-         cv.setParentDatasetFieldValue(dsfvIn);
-         cv.setDatasetField(dsfc);
-         cv.setDatasetVersion(editVersion);
-         dsfvIn.getChildDatasetFieldValues().add(cv);
-         editVersion.getDatasetFieldValues().add(cv);
-         }*/
-
-        return dsfvIn;
-    }
-
-    public void deleteGeneralRecord(Object toDeleteIn) {/*
-         DatasetFieldValue toDelete = (DatasetFieldValue) toDeleteIn;
-         //Delete children if any
-         if (toDelete.getChildDatasetFieldValues() != null && !toDelete.getChildDatasetFieldValues().isEmpty()) {
-         for (DatasetFieldValue dsfvDelete : toDelete.getChildDatasetFieldValues()) {
-         editVersion.getDatasetFieldValues().remove(dsfvDelete);
-         this.deleteRecords.add(dsfvDelete);
-         }
-         }
-         editVersion.getDatasetFieldValues().remove(toDelete);
-         this.deleteRecords.add(toDelete);
-         datasetVersionUI = new DatasetVersionUI(editVersion);*/
-    }
 
      public String releaseDataset() {
         dataset = datasetService.find(dataset.getId());
