@@ -41,6 +41,17 @@ public class Dataset extends DvObjectContainer {
     @NotBlank(message = "Please enter an identifier for your dataset.")
     private String identifier;
 
+    public Dataset() {
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(this);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        datasetVersion.setFileMetadatas(new ArrayList());
+        datasetVersion.setDatasetFields(null);
+        datasetVersion.setVersionNumber(new Long(1));
+        datasetVersion.setMinorVersionNumber(new Long(0));
+        versions.add(datasetVersion);
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -100,21 +111,11 @@ public class Dataset extends DvObjectContainer {
     }
 
     @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("versionNumber DESC")
+    @OrderBy("id DESC")
     private List<DatasetVersion> versions = new ArrayList();
 
     public DatasetVersion getLatestVersion() {
-        if (versions.isEmpty()) {
-            DatasetVersion datasetVersion = new DatasetVersion();
-            //datasetVersion.setMetadata(new Metadata());
-            datasetVersion.setDataset(this);
-            datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            datasetVersion.setVersionNumber(new Long(1));
-            this.versions.add(datasetVersion);
-            return datasetVersion;
-        } else {
             return versions.get(0);
-        }
     }
 
     public List<DatasetVersion> getVersions() {
@@ -145,8 +146,6 @@ public class Dataset extends DvObjectContainer {
             newFm.setDatasetVersion(dsv);
             dsv.getFileMetadatas().add(newFm);
         }
-
-        dsv.setVersionNumber(latestVersion.getVersionNumber() + 1);
         // I'm adding the version to the list so it will be persisted when
         // the study object is persisted.
         getVersions().add(0, dsv);
@@ -163,6 +162,15 @@ public class Dataset extends DvObjectContainer {
             // else, edit existing working copy
             return latestVersion;
         }
+    }
+    
+    public DatasetVersion getReleasedVersion() {
+        for (DatasetVersion version : this.getVersions()){
+            if (!version.isWorkingCopy()){
+                return version;               
+            }
+        }
+        return null;
     }
 
     public Path getFileSystemDirectory() {

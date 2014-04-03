@@ -21,6 +21,11 @@
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'url'
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'date'
                              or fieldValues.datasetField.datasetFieldType.fieldType == '')}"/>
+    <ui:fragment rendered="false">
+    <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }"  >
+    <h:outputText value="Replication for: " /> <p:selectBooleanCheckbox value="#{DatasetPage.replicationFor}" /> 
+    </ui:fragment>
+    </ui:fragment>
     <p:watermark for="inputText" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <p:inputTextarea value="#{fieldValues.value}" rows="5" cols="60" id="description" styleClass="form-control" 

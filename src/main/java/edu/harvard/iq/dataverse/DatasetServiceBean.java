@@ -45,6 +45,14 @@ public class DatasetServiceBean {
         //Should put into command?
         save(dataset);
     }
+    
+    public Dataset release(Dataset dataset){        
+        Dataset savedDataset = em.merge(dataset);
+        String indexingResult = indexService.indexDataset(savedDataset);
+
+        logger.info("during dataset save, indexing result was: " + indexingResult);
+        return savedDataset;
+    }
 
     public Dataset save(Dataset dataset) {
 

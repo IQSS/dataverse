@@ -42,7 +42,7 @@ public class DatasetVersion implements Serializable {
     };
 
     public DatasetVersion() {
-
+        
     }
 
     @Id
@@ -68,6 +68,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private Long versionNumber;
+    private Long minorVersionNumber;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
@@ -196,6 +197,14 @@ public class DatasetVersion implements Serializable {
 
     public void setVersionNumber(Long versionNumber) {
         this.versionNumber = versionNumber;
+    }   
+
+    public Long getMinorVersionNumber() {
+        return minorVersionNumber;
+    }
+
+    public void setMinorVersionNumber(Long minorVersionNumber) {
+        this.minorVersionNumber = minorVersionNumber;
     }
 
     public VersionState getVersionState() {
@@ -233,6 +242,16 @@ public class DatasetVersion implements Serializable {
 
     public boolean isRetiredCopy() {
         return (versionState.equals(VersionState.ARCHIVED) || versionState.equals(VersionState.DEACCESSIONED));
+    }
+
+    public boolean isMinorUpdate(){
+        /*
+        For now we will say that if there are the same number of files then it can be a minor release
+        */
+        if (this.getDataset().getReleasedVersion() != null){
+            return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
+        }
+        return true;
     }
 
     public Dataset getDataset() {
@@ -450,8 +469,11 @@ public class DatasetVersion implements Serializable {
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
-        for (DatasetField dsf : this.getDatasetFields()) {
-            retList.add(initDatasetField(dsf));
+        //Running into null on create new dataset
+        if (this.getDatasetFields() != null) {
+            for (DatasetField dsf : this.getDatasetFields()) {
+                retList.add(initDatasetField(dsf));
+            }
         }
 
         //Test to see that there are values for 
