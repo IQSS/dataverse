@@ -132,13 +132,29 @@
 
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
-        <div class="container" style="background:#97E1C6; margin:0 auto .5em auto; padding:2em 1em;">
+        <div class="container" style="background:#B5E5F5; margin:0 auto .5em auto; padding:2em 1em;">
+            <div style="display:table-row;">
             <ui:fragment rendered="#{!empty dataverse.name}">
-                <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                <div style="height:100px;width:100px;background:#EEE;display:table-cell;text-align:center;">
+                    <span style="text-decoration:line-through;line-height:100px;">(Logo)</span>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{!empty dataverse.name}">
+                <div style="display:table-cell; padding-left:1em;">
+                    <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                </div>
             </ui:fragment>
             <ui:fragment rendered="#{empty dataverse.name}">
-                <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
-            </ui:fragment>  
+                <div style="display:table-cell;">
+                    <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{!empty dataverse.name}">
+                <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
+                    <span style="color:#777;">This, Right-Here, Is A Static Tagline For This Dataverse, Y'All</span>
+                </div>
+            </ui:fragment>
+            </div>
         </div>
     </ui:fragment>
 
@@ -149,34 +165,32 @@
             <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
 
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
-
-
+                
                 <div style="float:left; position:relative;">
-                    <div class="dropdown#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? ' keep-on' : ''}">
-
-                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}"  rendered="#{dataverse.id == dv.id and dataset == null}"/>
+                    
+                    <div class="dropdown #{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown-toggle keep-on' : ''}" data-toggle="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-delay="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '800' : ''}" data-hover="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-target="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '#' : ''}" data-close-others="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'true' : ''}">
+                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                         <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?id=#{dv.id}">
                                 <h:outputText value="#{dv.name} Dataverse"/>
                             </a>
                         </ui:fragment>
 
-                        <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}" >
-                            <a id="breadcrumbLnkTree#{status.index}" title="Browse child items" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" role="button" data-toggle="dropdown" data-target="#">
+                        <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                            <a id="breadcrumbLnkTree#{status.index}" title="Browse #{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}; cursor: pointer; cursor: hand;" role="button">
                                 <span class="glyphicon glyphicon-chevron-down" style="vertical-align:middle;padding-bottom:2px;"></span>
                             </a>
                         </ui:fragment>
-
-                        <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                            <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
-                                <p:treeNode>
-                                    <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
-                                    <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
-                                        <h:outputText value="#{node.name} Dataverse"/>
-                                    </h:outputLink>
-                                </p:treeNode>
-                            </p:tree>
-                        </div>
+                    </div>
+                    <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
+                        <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
+                            <p:treeNode>
+                                <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
+                                <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
+                                    <h:outputText value="#{node.name} Dataverse"/>
+                                </h:outputLink>
+                            </p:treeNode>
+                        </p:tree>
                     </div>
                 </div>
 
