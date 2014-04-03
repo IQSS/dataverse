@@ -67,9 +67,7 @@ public class DatasetServiceBean {
             Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
             while (dsfvIt.hasNext()) {
                 DatasetFieldValue dsfv = dsfvIt.next();
-                System.out.println("VALUE: " + dsfv.getValue());
                 if (StringUtils.isBlank(dsfv.getValue())) {
-                    System.out.println("Remove value for type: " + dsfv.getDatasetField().getDatasetFieldType().getName());
                     dsfvIt.remove();
                 }
             }
