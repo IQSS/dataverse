@@ -1874,7 +1874,7 @@ public class DTAFileReader extends TabularDataFileReader{
                     case -3:
                         // stata-Long (= java's int: 4 byte) case
                         // note: 4-byte singed, not java's long
-                        dbgLog.fine("DATreader: stata long");
+                        //dbgLog.fine("DATreader: stata long");
 
                         ByteBuffer long_buffer
                                 = ByteBuffer.wrap(dataRowBytes, byte_offset, 4);
@@ -1885,13 +1885,13 @@ public class DTAFileReader extends TabularDataFileReader{
                         int int_datum = long_buffer.getInt();
 
                         if (dbgLog.isLoggable(Level.FINE)) {
-                            dbgLog.fine(i + "-th row " + columnCounter
-                                    + "=th column stata long =" + int_datum);
+                            //dbgLog.fine(i + "-th row " + columnCounter
+                            //        + "=th column stata long =" + int_datum);
                         }
                         if (int_datum >= LONG_MISSING_VALUE) {
                             if (dbgLog.isLoggable(Level.FINE)) {
-                                dbgLog.fine(i + "-th row " + columnCounter
-                                        + "=th column stata long missing value=" + int_datum);
+                                //dbgLog.fine(i + "-th row " + columnCounter
+                                //        + "=th column stata long missing value=" + int_datum);
                             }
                             /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
                             // 4.0 if (isDateTimeDatum) {
@@ -2062,7 +2062,7 @@ public class DTAFileReader extends TabularDataFileReader{
             pwout.println(StringUtils.join(dataRow, "\t"));
 
             if (dbgLog.isLoggable(Level.FINE)) {
-                dbgLog.fine(i + "-th row's data={" + StringUtils.join(dataRow, ",") + "};");
+                //dbgLog.fine(i + "-th row's data={" + StringUtils.join(dataRow, ",") + "};");
             }
 
         }  // for- i (row)
@@ -2081,53 +2081,10 @@ public class DTAFileReader extends TabularDataFileReader{
             // dbgLog.fine("variableTypesFinal:\n" + Arrays.deepToString(variableTypesFinal));
         }
 
-        /* UNF - commentinng out; unf calculation will be removed from the 
-         ingest subsystem. -- L.A.
-         ing[] unfValues = new String[nvar];
-
-         for (int j=0;j<nvar; j++){
-         String variableType_j =  variableTypesFinal[j];
-           
-         unfValues[j] = getUNF(dataTable2[j], dateFormat[j], variableType_j,
-         unfVersionNumber, j);
-         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(j+"th unf value"+unfValues[j]);
-
-           
-         }
-        
-        
-         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("unf set:\n"+Arrays.deepToString(unfValues));
-        
-        
-         fileUnfValue = UNF5Util.calculateUNF(unfValues);
-        
-       
-
-         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("file-unf="+fileUnfValue);
-        
-         stataDataSection.setUnf(unfValues);
-
-         stataDataSection.setFileUnf(fileUnfValue);
-
-         smd.setVariableUNF(unfValues);
-        
-         smd.getFileInformation().put("fileUNF", fileUnfValue);
-         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("unf values:\n"+unfValues);
-         */
-        /* REMOVE stataDataSection.setData(dataTable2); */
-        // close the stream
-        dbgLog.fine("***** decodeData(): end *****\n\n");
+        dbgLog.fine("DTA Ingest: decodeData(): end.");
 
     }
 
-/*
-    void print2Darray(Object[][] datatable, String title){
-        dbgLog.fine(title);
-        for (int i=0; i< datatable.length; i++){
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(StringUtils.join(datatable[i], "|"));
-        }
-    }
-*/
 
     private class DecodedDateTime {
         String format;
