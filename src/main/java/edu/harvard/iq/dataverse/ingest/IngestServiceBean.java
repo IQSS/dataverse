@@ -24,9 +24,10 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -77,6 +78,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.primefaces.model.UploadedFile;
+import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
+import javax.annotation.Resource;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Message;
+import javax.faces.bean.ManagedBean;
+import org.primefaces.push.PushContext;
+import org.primefaces.push.PushContextFactory;
+import javax.faces.application.FacesMessage;
 
 /**
  *
@@ -85,6 +98,7 @@ import org.primefaces.model.UploadedFile;
  * New service for handling ingest tasks
  * 
  */
+@ManagedBean
 @Stateless
 @Named
 public class IngestServiceBean {
@@ -95,6 +109,14 @@ public class IngestServiceBean {
     DatasetServiceBean datasetService;
     @EJB
     DatasetFieldServiceBean fieldService;
+    @EJB
+    DataFileServiceBean fileService; 
+
+    @Resource(mappedName = "jms/DataverseIngest")
+    Queue queue;
+    @Resource(mappedName = "jms/IngestQueueConnectionFactory")
+    QueueConnectionFactory factory;
+    
     
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
@@ -111,6 +133,58 @@ public class IngestServiceBean {
 
         calculateContinuousSummaryStatistics(dataFile, variableVectors);
 
+    }
+    
+    public boolean asyncIngestAsTabular(DataFile dataFile) {
+        boolean ingestSuccessful = true;
+
+        QueueConnection conn = null;
+        QueueSession session = null;
+        QueueSender sender = null;
+        try {
+            conn = factory.createQueueConnection();
+            session = conn.createQueueSession(false, 0);
+            sender = session.createSender(queue);
+
+            IngestMessage ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
+            //ingestMessage.addFile(new File(tempFileLocation));
+            ingestMessage.addFile(dataFile);
+
+            Message message = session.createObjectMessage(ingestMessage);
+
+            try {
+                sender.send(message);
+            } catch (Exception ex) {
+                ingestSuccessful = false; 
+                ex.printStackTrace();
+            }
+
+        } catch (JMSException ex) {
+            ingestSuccessful = false;
+            ex.printStackTrace();
+        } finally {
+            try {
+
+                if (sender != null) {
+                    sender.close();
+                }
+                if (session != null) {
+                    session.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (JMSException ex) {
+                ingestSuccessful = false;
+                ex.printStackTrace();
+            }
+        }
+
+        return ingestSuccessful;
+    }
+    
+    public boolean ingestAsTabular(DataFile dataFile) throws IOException {
+        return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
     }
     
     public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) throws IOException {
@@ -149,26 +223,29 @@ public class IngestServiceBean {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
                 tabDataIngest.getDataTable().setOriginalFileFormat(determineMimeType(dataFile));
-
-                dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.csv", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.xlsx", ".tab"));
-                // A safety check, if through some sorcery the file exists already: 
-                while (Files.exists(dataFile.getFileSystemLocation())) {
-                    datasetService.generateFileSystemName(dataFile);
-                }
-                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-
-                // And we want to save the original of the ingested file: 
+                
+                // and we want to save the original of the ingested file: 
                 try {
                     saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
                 } catch (IOException iox) {
                     Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
                 }
+                
+                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                
+                dataFile.setContentType("text/tab-separated-values");
+                
+                dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.csv", ".tab"));
+                dataFile.setName(dataFile.getName().replaceAll("\\.xlsx", ".tab"));
+                
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
+                
+                dataFile.setIngestDone();
+                dataFile = fileService.save(dataFile);
                 
                 try {
                     produceSummaryStatistics(dataFile);
@@ -177,6 +254,21 @@ public class IngestServiceBean {
                 }
                 
                 ingestSuccessful = true;
+                PushContext pushContext = PushContextFactory.getDefault().getPushContext();
+                if (pushContext != null ) {
+                     Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Ingest: Obtained push context "
+                        + pushContext.toString());
+                } else {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Warning! Could not obtain push context.");
+                }
+        
+        
+        
+                
+                FacesMessage facesMessage = new FacesMessage("ingest done");
+                pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest: Sent push notification to the page.");
+
             }
         }
         return ingestSuccessful;
@@ -285,46 +377,119 @@ public class IngestServiceBean {
 
         return ingestSuccessful;
     }
-/*
+
+    /*
     private void ingestDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
             if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
                 logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
-                List<DatasetFieldValue> existingValues = editVersion.getDatasetFieldValues();
+                List<DatasetFieldValue> existingValues; 
+                if (editVersion.getDataset().getId() != null) { // if this is an existing study, that had been saved before...
+                    existingValues = editVersion.getDatasetFieldValues();
+                } else {
+                    existingValues = new ArrayList();
+                }
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
-                for (DatasetFieldType dsf : mdb.getDatasetFields()) {
+                for (DatasetField dsf : mdb.getDatasetFields()) {
                     String dsName = dsf.getName();
                     if (fileMetadataMap.get(dsName) != null && !fileMetadataMap.get(dsName).isEmpty()) {
                         logger.fine("Ingest Service: found extracted metadata for field "+dsName);
-                        Set<String> mValues = fileMetadataMap.get(dsName);
-                        for (String fValue : mValues) {
-                            // Need to only add the values not yet present!
-                            // (the method below may be inefficient - ?)
-                            boolean valueExists = false; 
-                            for (DatasetFieldValue dsfv : existingValues) {
+                        if (!dsf.isControlledVocabulary()) {
+                            Set<String> mValues = fileMetadataMap.get(dsName);
+                            for (String fValue : mValues) {
+                                // Need to only add the values not yet present!
+                                // (the method below may be inefficient - ?)
+                                boolean valueExists = false; 
+                                for (DatasetFieldValue dsfv : existingValues) {
                                     if (dsf.equals(dsfv.getDatasetField())
                                             && fValue.equals(dsfv.getStrValue())) {
                                         valueExists = true;
                                         break;
                                     }
                                 }
-                            if (!valueExists) {
-                                DatasetFieldValue newDsfv = new DatasetFieldValue();
+                                if (!valueExists) {
+                                    DatasetFieldValue newDsfv = new DatasetFieldValue();
                         
-                                newDsfv.setDatasetField(dsf);
-                                if (dsf.isControlledVocabulary()) {
+                                    newDsfv.setDatasetField(dsf);
+                                    newDsfv.setStrValue(fValue);
+                                    newDsfv.setDatasetVersion(editVersion);
+                                    //dsf.getDatasetFieldValues().add(newDsfv);
+                                    editVersion.getDatasetFieldValues().add(newDsfv);
+                                    
+                                    if (dsf.isHasParent()) {
+                                        DatasetField parentField = dsf.getParentDatasetField();
+                                        boolean parentExists = false;
+                                        DatasetFieldValue parentFieldValue = null;
+                                        for (DatasetFieldValue dsfv : existingValues) {
+                                            if (parentField.equals(dsfv.getDatasetField())) {
+                                                parentExists = true;
+                                                parentFieldValue = dsfv;
+                                                break;
+                                            }
+                                        }
+                                        if (!parentExists) {
+                                            parentFieldValue = new DatasetFieldValue();
+                                            parentFieldValue.setDatasetField(parentField);
+                                            parentFieldValue.setDatasetVersion(editVersion);
+                                            editVersion.getDatasetFieldValues().add(parentFieldValue);
+                                        }
+                                        
+                                        parentFieldValue.getChildDatasetFieldValues().add(newDsfv);
+                                        newDsfv.setParentDatasetFieldValue(parentFieldValue);
+                                    }
+                                    
+                                    
+                                }
+                            }
+                        } else { // controlled vocabulary
+                            // First, check if the dataset already has this field populated: 
+                            Set<String> mValues = fileMetadataMap.get(dsName);
+                            boolean addNew = true; 
+                            for (DatasetFieldValue dsfv : existingValues) {
+                                if(dsf.equals(dsfv.getDatasetField())) {
+                                    // add the new values, unless already exist:
                                     Collection<ControlledVocabularyValue> cvValues = dsf.getControlledVocabularyValues();
-                                    for (ControlledVocabularyValue cvv : cvValues) {
-                                        if (fValue.equals(cvv.getStrValue())) {
-                                            newDsfv.setSingleControlledVocabularyValue(cvv);
-                                            //newDsfv.getControlledVocabularyValues().add(cvv);
+                                    for (String fValue : mValues) {
+                                        // is this a legit controlled vocab. entry?
+
+                                        for (ControlledVocabularyValue cvv : cvValues) {
+                                            if (fValue.equals(cvv.getStrValue())) {
+                                                // yes, it is;
+                                                boolean valueExists = false;
+                                                for (ControlledVocabularyValue exCvv : dsfv.getControlledVocabularyValues()) {
+                                                    if (exCvv.getStrValue().equals(fValue)) {
+                                                        valueExists = true;
+                                                    }
+                                                }
+                                                if (!valueExists) {
+                                                    dsfv.getControlledVocabularyValues().add(cvv);
+                                                }
+                                            }
                                         }
                                     }
-                                } else {
-                                    newDsfv.setStrValue(fValue);
+                                    addNew = false; 
+                                    break; 
                                 }
+                            }
+                            
+                            if (addNew) {
+                                DatasetFieldValue newDsfv = new DatasetFieldValue();
+                                newDsfv.setDatasetField(dsf);
                                 newDsfv.setDatasetVersion(editVersion);
-                                dsf.getDatasetFieldValues().add(newDsfv);
+                                //dsf.getDatasetFieldValues().add(newDsfv);
+                                editVersion.getDatasetFieldValues().add(newDsfv);
+                                
+                                // Populate the fields, if matching controlled 
+                                // vocab. fields actually exist:
+                                
+                                Collection<ControlledVocabularyValue> cvValues = dsf.getControlledVocabularyValues();
+                                for (String fValue : mValues) {
+                                    for (ControlledVocabularyValue cvv : cvValues) {
+                                        if (fValue.equals(cvv.getStrValue())) {
+                                            newDsfv.getControlledVocabularyValues().add(cvv);
+                                        }
+                                    }
+                                } 
                             }
                         }
                     }
@@ -333,6 +498,7 @@ public class IngestServiceBean {
         }  
     }
     */
+    
     private void ingestFileLevelMetadata(FileMetadataIngest fileLevelMetadata, DataFile dataFile, FileMetadata fileMetadata, String fileFormatName) {
         // First, add the "metadata summary" generated by the file reader/ingester
         // to the fileMetadata object, as the "description":

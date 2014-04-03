@@ -19,6 +19,11 @@ import org.hibernate.validator.constraints.NotBlank;
 public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
     
+    private static final char INGEST_STATUS_NONE = 65;
+    private static final char INGEST_STATUS_SCHEDULED = 66;
+    private static final char INGEST_STATUS_INPROGRESS = 67;
+    private static final char INGEST_STATUS_ERROR = 68; 
+    
     @NotBlank
     private String name;
     
@@ -42,6 +47,8 @@ public class DataFile extends DvObject {
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadataFieldValue> fileMetadataFieldValues;
+    
+    private char ingestStatus = INGEST_STATUS_NONE; 
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -194,9 +201,7 @@ public class DataFile extends DvObject {
         FileMetadata fmd = null;
 
         for (FileMetadata fileMetadata : fileMetadatas) {
-            //if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
-            //since we're now creating drafts with blank version number, must rely on version ids
-            if (fmd == null || fileMetadata.getDatasetVersion().getId().compareTo( fmd.getDatasetVersion().getId() ) > 0 ) {
+            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
                 fmd = fileMetadata;
             }                       
         }
@@ -243,9 +248,48 @@ public class DataFile extends DvObject {
     }
     
     public boolean isImage() {
+        // Some browsers (Chrome?) seem to identify FITS files as mime
+        // type "image/fits" on upload; this is both incorrect (the official
+        // mime type for FITS is "application/fits", and problematic: then
+        // the file is identified as an image, and the page will attempt to 
+        // generate a preview - which of course is going to fail...
+        if ("image/fits".equalsIgnoreCase(contentType)) {
+            return false;
+        }
         return (contentType != null && contentType.startsWith("image/"));
     }
+   
+    public boolean isIngestScheduled() {
+        return (ingestStatus == INGEST_STATUS_SCHEDULED);
+    }
     
+    public boolean isIngestInProgress() {
+        return ((ingestStatus == INGEST_STATUS_SCHEDULED) || (ingestStatus == INGEST_STATUS_INPROGRESS));
+    }
+    
+    public boolean isIngestProblem() {
+        return (ingestStatus == INGEST_STATUS_ERROR);
+    }
+    
+    public void SetIngestScheduled() {
+        ingestStatus = INGEST_STATUS_SCHEDULED;
+    }
+    
+    public void SetIngestInProgress() {
+        ingestStatus = INGEST_STATUS_INPROGRESS;
+    }
+    
+    public void SetIngestProblem() {
+        ingestStatus = INGEST_STATUS_ERROR;
+    }
+    
+    public void setIngestDone() {
+        ingestStatus = INGEST_STATUS_NONE;
+    }
+    
+    public int getIngestStatus() {
+        return ingestStatus; 
+    }
     /* 
      * If this is tabular data, the corresponding dataTable may have a UNF -
      * "numeric fingerprint" signature - generated:
