@@ -10,8 +10,8 @@
         <div class="panel-group">
             <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default">
-                    <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading  text-info">
-                        #{metadataBlockVal.key.displayName}
+                    <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
+                        #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
                     </div>
                     <div id="collapse#{block.index}" class="collapse #{block.first?'in':''}">
                         <div class="panel-body">
@@ -75,8 +75,8 @@
             <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
                 <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate)}">
                     <div class="panel panel-default">
-                        <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading  text-info">
-                            #{metadataBlockVal.key.displayName}
+                        <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
+                            #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
                         </div>
                         <div id="collapse#{block.index}" class="collapse #{block.first || DatasetPage.editMode == 'CREATE'?'in':''}">
                             <div class="panel-body">
