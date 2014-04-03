@@ -421,7 +421,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
-            if (dataFile.isReleased()) {
+            if (dataset.isReleased()) {
                 /**
                  * @todo: are datafiles supposed to have release dates? It's
                  * null. For now just set something: https://redmine.hmdc.harvard.edu/issues/3806
