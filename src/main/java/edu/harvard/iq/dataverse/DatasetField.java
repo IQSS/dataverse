@@ -244,7 +244,11 @@ public class DatasetField implements Serializable {
         return copy(version, null);
     }
     
-    public DatasetField copy(DatasetVersion version, DatasetFieldCompoundValue parent) {
+    public DatasetField copy(DatasetFieldCompoundValue parent) {
+        return copy(null, parent);
+    }    
+    
+    private DatasetField copy(DatasetVersion version, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
         
