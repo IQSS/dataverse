@@ -50,7 +50,7 @@ public class DatasetServiceBean {
 
         Iterator<DatasetField> dsfIt = dataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
-            if (removeDatasetFieldValues(dsfIt.next())) {
+            if (removeBlankDatasetFieldValues(dsfIt.next())) {
                 dsfIt.remove();
             }
         }
@@ -62,7 +62,7 @@ public class DatasetServiceBean {
         return savedDataset;
     }
 
-    private boolean removeDatasetFieldValues(DatasetField dsf) {
+    private boolean removeBlankDatasetFieldValues(DatasetField dsf) {
         if (dsf.getDatasetFieldType().isPrimitive() && !dsf.getDatasetFieldType().isControlledVocabulary()) {
             Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
             while (dsfvIt.hasNext()) {
@@ -82,7 +82,7 @@ public class DatasetServiceBean {
                 DatasetFieldCompoundValue cv = cvIt.next();
                 Iterator<DatasetField> dsfIt = cv.getChildDatasetFields().iterator();
                 while (dsfIt.hasNext()) {
-                    if (removeDatasetFieldValues(dsfIt.next())) {
+                    if (removeBlankDatasetFieldValues(dsfIt.next())) {
                         dsfIt.remove();
                     }
                 }
