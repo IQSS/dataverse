@@ -137,7 +137,6 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setVersions(new ArrayList());
             editVersion.setDataset(dataset);
             editVersion.setFileMetadatas(new ArrayList());
-            editVersion.setDatasetFields(null);
             editVersion.setVersionState(VersionState.DRAFT);
             editVersion.setDatasetFields(editVersion.initDatasetFields());
             editVersion.setVersionNumber(new Long(1));
