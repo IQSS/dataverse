@@ -181,6 +181,17 @@
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
                         <div id="contentTabs">
+                        <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                            <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="tabView:filesTable" style="display:none"/>
+                            <script type="text/javascript">
+                                function updateFilesTable(facesmessage) {
+                                    $('button[id$="refreshButton"]').trigger('click');
+                                }
+                            </script>
+                            <p:socket channel="/ingest#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
+                                <p:ajax event="message" update="tabView:filesTable" />
+                            </p:socket>
+                        </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
                             <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                 <!-- Upload -->
@@ -233,7 +244,7 @@
                                         </ui:fragment>
                                         
                                         <h:outputText id="fileTypeOutputRegular" value="#{file.friendlyType}#{!empty file.md5 ? ', ' : ''}" rendered="#{!(file.tabularData)}"/>
-                                        <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!empty file.md5}"/>
+                                        <h:outputText id="fileMD5" value="MD5: #{file.md5}" rendered="#{!(empty file.md5) and !(file.tabularData)}"/>
                                         
                                         <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty file.unf ? ', ' : ''}" rendered="#{file.tabularData}"/>
                                         <h:outputText id="fileUNF" value="#{file.unf}" rendered="#{!empty file.unf}"/>
@@ -252,11 +263,16 @@
                                             </ui:fragment>
                                         </div>
                                     </p:column>
+                                    
                                     <p:column styleClass="col-sm-4" style="overflow: auto;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                         <ui:fragment rendered="#{file.tabularData}">
                                             <h:outputLink style="margin-right:1em;color:black;font-size:1em;" styleClass="btn btn-default" title="Explore" value="/dataexplore/gui.html?dfId=#{file.id}" target="_blank" rendered="#{file.tabularData and !(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                                 <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> Explore
                                             </h:outputLink>
+                                        </ui:fragment>
+                                        
+                                        <ui:fragment rendered="#{file.ingestInProgress}">
+                                            <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                         </ui:fragment>
                                         
                                         <ui:fragment rendered="#{!(file.tabularData)}">
@@ -296,6 +312,11 @@
                                                 </ul>
                                             </div>
                                         </ui:fragment>
+                                        
+                                        <ui:fragment rendered="#{file.ingestInProgress}">
+                                            <h:outputText id="txtInprogess" value="Ingest in progress..." styleClass="bg-info text-info" style="display:block;text-align:center;"/>
+                                        </ui:fragment>
+                                        
                                     </p:column>
                                 </p:dataTable>
                             </p:tab>
