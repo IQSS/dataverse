@@ -21,7 +21,7 @@
 	contributor	Contributor	The institution or person  responsible for collecting,  managing, distributing, or  otherwise contributing to the  development of the resource.			17	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	contributorType	Type	The type of contributor of the  resource.  		text	18	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
 	contributorName	Name	The name of the contributor.		text	19	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorAffiliation	Affilitation	If applicable, the organization with which the contributor is affiliated.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
+	contributorAffiliation	Affiliation	If applicable, the organization with which the contributor is affiliated.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
 	contributorAbbreviation	Abbreviation	If applicable, the abbreviation by which the contributor is commonly known. (ex. IQSS, ICPSR)		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
 	contributorURL	URL	This URL points to the conributor's web presence, if appropriate. Enter an absolute URL where the contributor's web site is found, e.g., http://www.my.org.		url	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
 	contributorLogo	Logo URL	If applicable, the logo url that points to this contributor's web accessible logo image. Enter an absolute URL where the contributor's logo image is found, e.g., http://www.my.org/images/logo.gif.		url	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
