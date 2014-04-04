@@ -96,9 +96,11 @@
                                                 <div class="form-group col-sm-7">
                                                     <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
                                                         <div class="form-group">
-                                                            <ui:include src="datasetFieldForEditFragment.xhtml">
-                                                                <ui:param name="fieldValues" value="#{dsfv}"/>
-                                                            </ui:include>
+                                                            <div class="col-sm-6">
+                                                                <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                                    <ui:param name="fieldValues" value="#{dsfv}"/>
+                                                                </ui:include>
+                                                            </div>
                                                             <!-- Add / Remove buttons -->
                                                             <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                                 <div class="col-xs-3">
@@ -143,33 +145,32 @@
                                                     <div class="col-sm-7">
                                                         <!-- Sub Fields -->
                                                         <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
-                                                            
+                                                            <div class="#{(subdsf.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+                                                                <ui:fragment>
+                                                                    <label class="control-label" for="metadata_BLANK">
+                                                                        <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
+                                                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required}" /> 
+                                                                    </label>   
+                                                                </ui:fragment>
+
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml" rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary}">
                                                                     <ui:param name="fieldValues" value="#{subdsf.singleValue}"/>
-                                                                    <ui:param name="includeTitle" value="true"/>
                                                                 </ui:include>
 
                                                                 <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                 <ui:fragment rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-                                                                    <div class="col-sm-6">
-                                                                        
-                                                                        <ui:fragment>
-                                                                            <label class="control-label" for="metadata_BLANK">
-                                                                                <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
-                                                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required}" /> 
-                                                                            </label>   
-                                                                        </ui:fragment>
-                                                                        
-                                                                        <p:selectOneMenu  value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
-                                                                                          rendered="#{!subdsf.datasetFieldType.allowMultiples}">
-                                                                            <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                                        </p:selectOneMenu>
-                                                                        <h:selectManyListbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                             rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                            <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                                        </h:selectManyListbox>
-                                                                    </div>
+
+                                                                    <p:selectOneMenu  value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
+                                                                                      rendered="#{!subdsf.datasetFieldType.allowMultiples}">
+                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+                                                                    </p:selectOneMenu>
+                                                                    <h:selectManyListbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
+                                                                                         rendered="#{subdsf.datasetFieldType.allowMultiples}">
+                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+                                                                    </h:selectManyListbox>
+
                                                                 </ui:fragment>
+                                                            </div>
                                                         </ui:repeat>
                                                     </div>
                                                     <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
@@ -197,5 +198,5 @@
             </ui:repeat>
         </div>    
     </ui:fragment>
-    
+
 </div>
