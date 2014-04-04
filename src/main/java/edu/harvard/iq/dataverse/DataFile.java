@@ -201,7 +201,7 @@ public class DataFile extends DvObject {
         FileMetadata fmd = null;
 
         for (FileMetadata fileMetadata : fileMetadatas) {
-            if (fmd == null || fileMetadata.getDatasetVersion().getVersionNumber().compareTo( fmd.getDatasetVersion().getVersionNumber() ) > 0 ) {
+            if (fmd == null || fileMetadata.getDatasetVersion().getId().compareTo( fmd.getDatasetVersion().getId() ) > 0 ) {
                 fmd = fileMetadata;
             }                       
         }
