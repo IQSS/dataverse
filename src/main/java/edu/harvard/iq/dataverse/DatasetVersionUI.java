@@ -5,9 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -237,17 +239,16 @@ public class DatasetVersionUI {
             str += authors;
         }
 
-        if (!StringUtil.isEmpty(getDistributionDate())) {
+        if (!StringUtil.isEmpty(getReleaseDate())) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += getReleaseDate();
+        } else if (!StringUtil.isEmpty(getDistributionDate())) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
             str += getYearForCitation(getDistributionDate());
-        } else if (!StringUtil.isEmpty(getProductionDate())) {
-
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getYearForCitation(getProductionDate());
 //getting 2014 for citation 
 //while still possible that prod date and deposit date are empty               
         } else {
@@ -331,6 +332,25 @@ public class DatasetVersionUI {
         return str;
     }
 
+    public String getReleaseDate() {
+        if (datasetVersion.getReleaseTime() != null) {
+            Date relDate = datasetVersion.getReleaseTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(relDate);
+            return new Integer(calendar.get(Calendar.YEAR)).toString();
+        }
+        return "";
+    }
+    
+    public String getCreateDate() {
+        if (datasetVersion.getCreateTime() != null) {
+            Date relDate = datasetVersion.getCreateTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(relDate);
+            return new Integer(calendar.get(Calendar.YEAR)).toString();
+        }
+        return "";
+    }
 
     public String getProductionDate() {
         for (DatasetField dsfv : datasetVersion.getDatasetFields()) {

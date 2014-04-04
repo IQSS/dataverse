@@ -21,6 +21,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                    <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewAction action="#{DatasetPage.init}" />
                 </f:metadata>
 
@@ -359,7 +360,11 @@
                             <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                 <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
                                     <p:column>
-                                        <h:outputText id="versionTitleOutput" value="#{version.title}" />
+                                         <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="dataset">
+                                                    <h:outputText value="#{version.title}" />
+                                                    <f:param name="id" value="#{version.dataset.id}" />
+                                                    <f:param name="versionId" value="#{version.id}" />
+                                        </h:link>
                                     </p:column>
                                     <p:column>
                                           <h:outputText id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />

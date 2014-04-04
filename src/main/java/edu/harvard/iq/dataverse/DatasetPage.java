@@ -58,6 +58,8 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     DataFileServiceBean datafileService;
     @EJB
     DataverseServiceBean dataverseService;
@@ -75,6 +77,7 @@ public class DatasetPage implements java.io.Serializable {
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
+    private Long versionId;
     private int selectedTabIndex;
     private Map<UploadedFile, DataFile> newFiles = new HashMap();
     private DatasetVersion editVersion = new DatasetVersion();
@@ -115,7 +118,14 @@ public class DatasetPage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
+    
+    public Long getVersionId() {
+        return versionId;
+    }
 
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
     public int getSelectedTabIndex() {
         return selectedTabIndex;
     }
@@ -151,7 +161,11 @@ public class DatasetPage implements java.io.Serializable {
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
-            editVersion = dataset.getLatestVersion();
+            if (versionId == null){
+                editVersion = dataset.getLatestVersion(); 
+            } else {
+                editVersion = datasetVersionService.find(versionId);
+            }
             ownerId = dataset.getOwner().getId();
             editVersion.setDatasetFields(editVersion.initDatasetFields());
             if (dataset.getReleasedVersion() != null) {
@@ -163,7 +177,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            editVersion = dataset.getLatestVersion();
+            editVersion = dataset.getLatestVersion(); 
             dataset.setOwner(dataverseService.find(ownerId));
             editVersion.setDatasetFields(editVersion.initDatasetFields());
             datasetVersionUI = new DatasetVersionUI(editVersion);
@@ -264,9 +278,9 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
-        //TODO add replication for logic if necessary
+        //TODO update title in page itself
         if (replicationFor){
-            //dataset.getVersions().get(0).getDatasetFields().
+            updateTitle();
         }
         //Todo pre populate deposit date
         
@@ -475,6 +489,32 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setReplicationFor(boolean replicationFor) {
         this.replicationFor = replicationFor;
+    }
+    
+    private void updateTitle(){
+        System.out.print(replicationFor);
+        
+        Iterator<DatasetField> dsfIt = dataset.getEditVersion().getDatasetFields().iterator();
+        while (dsfIt.hasNext()) {
+
+             DatasetField toUpdate =   dsfIt.next();
+             if(toUpdate.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
+                    //dsfIt.s
+             }
+
+        }
+        int i = 0;
+        for (DatasetField dsf : editVersion.getDatasetFields()){
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)){
+                ArrayList <DatasetFieldValue> valList = new ArrayList();
+                DatasetFieldValue dsfv = new DatasetFieldValue (dsf);
+                String origVal = dsf.getValue();
+                dsfv.setValue("Replication for: " + origVal);
+                valList.add(dsfv);
+                editVersion.getDatasetFields().get(i).setDatasetFieldValues(valList);
+            }
+            i++;
+        }
     }
 
 }
