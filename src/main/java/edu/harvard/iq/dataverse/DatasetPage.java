@@ -26,6 +26,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.view.ViewScoped;
@@ -236,6 +237,27 @@ public class DatasetPage implements java.io.Serializable {
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
+    public void refresh(ActionEvent e) {
+        int i = 0; 
+        // Go through the list of the files on the page...
+        for (DataFile dataFile : dataset.getFiles()) {
+            // and see if any are marked as "ingest-in-progress":
+            if (dataFile.isIngestInProgress()) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Refreshing the status of the file " + dataFile.getName() + "...");
+                // and if so, reload the file object from the database...
+                dataFile = datafileService.find(dataFile.getId());
+                if (!dataFile.isIngestInProgress()) {
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File " + dataFile.getName() + " finished ingesting.");
+                    // and, if the status has changed - i.e., if the ingest has 
+                    // completed, or failed, update the object in the list of 
+                    // files visible to the page:
+                    dataset.getFiles().set(i, dataFile);
+                }
+            }
+            i++;
+        }
+    }
+    
     public String save() {
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
@@ -293,7 +315,7 @@ public class DatasetPage implements java.io.Serializable {
                     datasetService.generateFileSystemName(dFile);
 
                     if (ingestService.ingestableAsTabular(dFile)) {
-
+                        /*
                         try {
                             ingestedAsTabular = ingestService.ingestAsTabular(tempFileLocation, dFile);
                             dFile.setContentType("text/tab-separated-values");
@@ -301,6 +323,8 @@ public class DatasetPage implements java.io.Serializable {
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
                             ingestedAsTabular = false;
                         }
+                        */
+                        dFile.SetIngestScheduled();
                     } else if (ingestService.fileMetadataExtractable(dFile)) {
 
                         try {
@@ -361,6 +385,16 @@ public class DatasetPage implements java.io.Serializable {
         }
         newFiles.clear();
         editMode = null;
+        
+        // Queue the ingest jobs for asynchronous execution: 
+        
+        for (DataFile dataFile : dataset.getFiles()) {
+            if (dataFile.isIngestScheduled()) {
+                dataFile.SetIngestInProgress();
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Attempting to queue the file " + dataFile.getName() + " for ingest.");
+                ingestService.asyncIngestAsTabular(dataFile);
+            }
+        }
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
