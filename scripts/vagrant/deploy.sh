@@ -10,8 +10,9 @@ su $GLASSFISH_USER -s /bin/sh -c "cp /conf/solr/4.6.0/schema.xml $SOLR_HOME/solr
 su $GLASSFISH_USER -s /bin/sh -c "cd $SOLR_HOME/solr-4.6.0/example && java -jar start.jar &"
 
 #su $GLASSFISH_USER -s /bin/sh -c "cp /builds/dataverse-4.0.war /home/glassfish/glassfish4/glassfish/domains/domain1/autodeploy"
-#cp /builds/dataverse-4.0.war /home/glassfish/glassfish4/glassfish/domains/domain1/autodeploy
-#cd /scripts/api
-#./datasetfields.sh
-#./setup-users.sh
-#./setup-dvs.sh
+cp /builds/dataverse-4.0.war /home/glassfish/glassfish4/glassfish/domains/domain1/autodeploy
+sleep 60
+cd /scripts/api
+./datasetfields.sh
+./setup-users.sh
+./setup-dvs.sh

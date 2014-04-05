@@ -21,6 +21,29 @@ DB_NAME=dvndb
 DB_USER=dvnapp
 DB_PASS=dvnAppPass
 
+# "${VAR+xxx}" for unset vs. empty per http://stackoverflow.com/questions/228544/how-to-tell-if-a-string-is-not-defined-in-a-bash-shell-script/230593#230593
+
+if [ "${DB_NAME_CUSTOM+xxx}" ]
+ then
+  echo "Default DB_NAME ($DB_NAME) overridden: $DB_NAME_CUSTOM"
+  DB_NAME=$DB_NAME_CUSTOM
+fi
+
+if [ "${DB_USER_CUSTOM+xxx}" ]
+ then
+  echo "Default DB_USER ($DB_USER) overridden: $DB_USER_CUSTOM"
+  DB_USER=$DB_USER_CUSTOM
+fi
+
+if [ "${DB_PASS_CUSTOM+xxx}" ]
+ then
+  echo "Default DB_PASS ($DB_PASS) overridden: $DB_PASS_CUSTOM"
+  DB_PASS=$DB_PASS_CUSTOM
+fi
+
+#echo "end"
+#exit
+
 ## 
 # External dependencies
 PGSQL_DRIVER_URL=http://jdbc.postgresql.org/download/postgresql-9.3-1100.jdbc41.jar
@@ -152,6 +175,26 @@ fi
 # location of the datafiles directory: 
 # (defaults to dataverse/files in the users home directory)
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${HOME}/dataverse/files"
+
+# enable comet support
+./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
+
+./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
+
+# cascade delete takes care of it
+#./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
+
+# http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
+./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
+
+# http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
+./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
+
+# http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
+./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
+
+
+#./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
 
 ###
 # Restart
