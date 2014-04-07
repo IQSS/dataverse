@@ -100,8 +100,12 @@
                         <li class="dropdown">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}"/>
-                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName} (#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()})" 
-                                              rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}"/> <b class="caret"></b>                                
+                                <ui:fragment rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}">
+                                    <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName} (" />
+                                    <h:outputText value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" style="color: red" />
+                                    <h:outputText value=")" />
+                                </ui:fragment>
+                                <b class="caret"></b>                                
                             </a>
                             <ul class="dropdown-menu">
                                 <li>

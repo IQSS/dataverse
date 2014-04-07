@@ -1,0 +1,5 @@
+
+{
+    "message":"Exception running search for [:] with filterQueries [] and paginationStart [0]: javax.ejb.EJBException org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException org.apache.solr.client.solrj.impl.HttpSolrServer$RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':': Encountered \" \":\" \": \"\" at line 1, column 0.\nWas expecting one of:\n    <NOT> ...\n    \"+\" ...\n    \"-\" ...\n    <BAREOPER> ...\n    \"(\" ...\n    \"*\" ...\n    <QUOTED> ...\n    <TERM> ...\n    <PREFIXTERM> ...\n    <WILDTERM> ...\n    <REGEXPTERM> ...\n    \"[\" ...\n    \"{\" ...\n    <LPARAMS> ...\n    <NUMBER> ...\n    <TERM> ...\n    \"*\" ...\n     ",
+    "documentation_url":"http://thedata.org"
+}

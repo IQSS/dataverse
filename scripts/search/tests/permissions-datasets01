@@ -9,10 +9,10 @@
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nosuchuser') scripts/search/tests/expected/nosuchuser
 diff <(curl -s 'http://localhost:8080/api/search?q=*') scripts/search/tests/expected/anon
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=__GUEST__') scripts/search/tests/expected/__GUEST__
-diff <(curl -s 'http://localhost:8080/api/search?q=*&key=pete') scripts/search/tests/expected/pete-datasets
+diff <(curl -s 'http://localhost:8080/api/search?q=*&key=pete') scripts/search/tests/expected/pete-datasets01
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=uma') scripts/search/tests/expected/uma
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=gabbi') scripts/search/tests/expected/gabbi
 # cathy should be able to see pete's stuff too
-diff <(curl -s 'http://localhost:8080/api/search?q=*&key=cathy') scripts/search/tests/expected/cathy-datasets
+diff <(curl -s 'http://localhost:8080/api/search?q=*&key=cathy') scripts/search/tests/expected/cathy-datasets01
 # nick should be able to see everything
-diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nick') scripts/search/tests/expected/nick-datasets
+diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nick') scripts/search/tests/expected/nick-datasets01

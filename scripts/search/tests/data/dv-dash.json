@@ -1,0 +1,8 @@
+ {
+    "alias":"dash",
+    "name":"Titanic - 1999",
+    "affiliation":"Affiliation value",
+    "contactEmail":"pete@mailinator.com",
+    "permissionRoot":false,
+    "description":"A dataverse with a - (a dash) in the description"
+}

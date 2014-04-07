@@ -5,11 +5,9 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -66,6 +64,7 @@ public class Search extends AbstractApiBean {
                     cause = cause.getCause();
                     sb.append(cause.getClass().getCanonicalName() + " ");
                     sb.append(cause + " ");
+                    // if you search for a colon you see RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':'
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);

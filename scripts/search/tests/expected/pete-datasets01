@@ -1,0 +1,10 @@
+
+{
+    "q":"*",
+    "fq_provided":"[]",
+    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user1)]",
+    "total_count":6,
+    "start":0,
+    "count_in_response":6,
+    "items":"[dataset_10:Pete's Unreleased Dataset:10, dataverse_2:Top dataverse of Pete:2, dataverse_3:Pete's public place:3, dataverse_4:Pete's restricted data:4, dataverse_5:Pete's secrets:5, dataverse_6:Top dataverse of Uma:6]"
+}
