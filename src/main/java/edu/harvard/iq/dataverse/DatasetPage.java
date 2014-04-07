@@ -9,7 +9,11 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Paths;
@@ -34,6 +38,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonArray; 
+import javax.json.JsonReader; 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 
 /**
  *
@@ -79,13 +89,22 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
-    private Map<UploadedFile, DataFile> newFiles = new HashMap();
+    private List<DataFile> newFiles = new ArrayList();
     private DatasetVersion editVersion = new DatasetVersion();
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private List<DatasetField> deleteRecords = new ArrayList();
     private int releaseRadio = 1;
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
+    private String dropBoxSelection = "";
+    
+    public String getDropBoxSelection () {
+        return dropBoxSelection; 
+    }
+    
+    public void setDropBoxSelection (String dropBoxSelection) {
+        this.dropBoxSelection = dropBoxSelection; 
+    }
 
     public Dataset getDataset() {
         return dataset;
@@ -319,8 +338,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
-                for (UploadedFile uFile : newFiles.keySet()) {
-                    DataFile dFile = newFiles.get(uFile);
+                for (DataFile dFile : newFiles) {
                     String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
 
                     boolean ingestedAsTabular = false;
@@ -361,7 +379,7 @@ public class DatasetPage implements java.io.Serializable {
                         try {
 
                             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                            Files.copy(uFile.getInputstream(), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(new FileInputStream(new File(tempFileLocation)), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
 
                             MD5Checksum md5Checksum = new MD5Checksum();
                             try {
@@ -443,7 +461,85 @@ public class DatasetPage implements java.io.Serializable {
         newFiles.clear();
         editMode = null;
     }
+    
+    private HttpClient getClient() {
+        // TODO: 
+        // cache the http client? -- L.A. 4.0 alpha
+	return new HttpClient();
+    }
+    
+    public void handleDropBoxUpload(ActionEvent e) {
+        // Read JSON object from the output of the DropBox Chooser: 
+        JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
+        JsonArray dbArray = dbJsonReader.readArray();
+        dbJsonReader.close();
+        
+        for (int i = 0; i < dbArray.size(); i++) {
+            JsonObject dbObject = dbArray.getJsonObject(i);
+        
+            // Extract the payload:
+            String fileLink = dbObject.getString("link");
+            String fileName = dbObject.getString("name");
+            int fileSize = dbObject.getInt("bytes");
+            
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "DropBox url: " + fileLink+", filename: "+fileName+", size: "+fileSize);
+        
+            DataFile dFile = null; 
 
+            // Make http call, download the file: 
+            
+            GetMethod dropBoxMethod = new GetMethod(fileLink);
+            int status = 0; 
+            InputStream dropBoxStream = null; 
+            try {
+                status = getClient().executeMethod(dropBoxMethod);
+                if (status == 200) {
+                    dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
+                     dFile = new DataFile(fileName, "application/octet-stream");
+                     dFile.setOwner(dataset);
+                    
+                    // save the file, in the temporary location for now: 
+                    datasetService.generateFileSystemName(dFile);
+                    if (getFilesTempDirectory() != null) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the DropBox file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
+                        Files.copy(dropBoxStream, Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
+                        long writtenBytes = dFile.getFileSystemLocation().toFile().length(); 
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File size, expected: " + fileSize + ", written: " + writtenBytes);
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to access DropBox url: " + fileLink+"!");
+                continue; 
+            } finally {
+                if (dropBoxMethod != null) { 
+                    dropBoxMethod.releaseConnection(); 
+                }
+                if (dropBoxStream != null) {
+                    try {dropBoxStream.close();}catch(Exception ex){} 
+                }
+            }
+        
+            // If we've made it this far, we must have downloaded the file
+            // successfully, so let's finish processing it as a new DataFile
+            // object: 
+            
+            FileMetadata fmd = new FileMetadata();
+            fmd.setDataFile(dFile);
+            dFile.getFileMetadatas().add(fmd);
+            fmd.setLabel(dFile.getName());
+            fmd.setCategory(dFile.getContentType());
+            if (editVersion.getFileMetadatas() == null) {
+                editVersion.setFileMetadatas(new ArrayList());
+            }
+            editVersion.getFileMetadatas().add(fmd);
+            fmd.setDatasetVersion(editVersion);
+            dataset.getFiles().add(dFile);
+
+
+            newFiles.add(dFile);
+        }        
+    }
+    
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile(uFile.getFileName(), uFile.getContentType());
@@ -472,7 +568,7 @@ public class DatasetPage implements java.io.Serializable {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemName());
             }
         }
-        newFiles.put(uFile, dFile);
+        newFiles.add(dFile);
 
     }
 

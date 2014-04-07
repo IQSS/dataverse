@@ -9,7 +9,7 @@
     <h:head>
     </h:head>
 
-    <h:body>
+    <h:body> 
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DatasetPage.dataset.latestVersion.title ? 'Add New Dataset' : DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
@@ -17,6 +17,28 @@
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
+                <script type="text/javascript">                    
+                    function openDropboxChooser() {
+                        options = {
+                            // Required. Called when a user selects an item in the Chooser.
+                            success: function(files) {
+                                // Pass the JSON-ized output of the Chooser to the backing bean,
+                                // via a hidden input field: 
+                                $('input[id$="dropBoxSelectionInput"]').val(JSON.stringify(files));
+                                //alert(JSON.stringify(files));
+                                // Trigger the upload processing method in the backing
+                                // bean, via an invisible commandButton: 
+                                $('button[id$="dropBoxButton"]').trigger('click');
+                                
+                            },
+                            linkType: "direct",
+                            multiselect: true,
+
+                        };
+                        Dropbox.choose(options);
+                    }
+                </script>
 
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
@@ -213,13 +235,21 @@
                                 <p:tab id="dataFilesTab" title="Files" rendered="#{(empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                     <!-- Upload -->
                                     <!--<p:message for="fileUpload" showDetail="true"/>-->
-                                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                                        <div class="alert alert-info">
-                                            Tip: You can drag and drop your files from your desktop, directly into the upload widget.
-                                        </div>
+                                    <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
+                                        <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                            <div class="alert alert-info">
+                                                Tip: You can drag and drop your files from your desktop, directly into the upload widget.
+                                            </div>
+                                        </ui:fragment>
+                                        <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                                  fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> 
+                                                                   
+                                        <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
+                                        <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="tabView:filesTable" style="display:none">
+                                        </p:commandButton>
+                                
+                                        <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" />
                                     </ui:fragment>
-                                    <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                  fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> <!-- style="margin-top:.5em;"/ -->
                                     <!-- View -->
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
@@ -269,7 +299,7 @@
                                             <div class="fileDescription">
                                                 <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.dataFile.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.dataFile.description)}"/>
                                                 <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.dataFile.description)}"/>-->
-
+                                                
                                                 <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                                     <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                         Description
