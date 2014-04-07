@@ -155,7 +155,7 @@ public class SearchIncludeFragment {
             if (!dataverse.getId().equals(dataverseService.findRootDataverse().getId())) {
                 optionalDataverseScope = "&id=" + dataverse.getId();
             }
-            return "dataverse.xhtml?faces-redirect=true&q=" + query + "&types=dataverses:datasets:files" + optionalDataverseScope ;
+            return "dataverse.xhtml?faces-redirect=true&q=" + query + optionalDataverseScope ;
         } else {
             return "FIXME";
         }
@@ -182,6 +182,9 @@ public class SearchIncludeFragment {
             if (sortOrder == null) {
                 sortOrder = DESCENDING;
             }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets";
+            }
         } else if (mode.equals(searchModeString)) {
             queryToPassToSolr = query;
             if (sortField == null) {
@@ -189,6 +192,9 @@ public class SearchIncludeFragment {
             }
             if (sortOrder == null) {
                 sortOrder = DESCENDING;
+            }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets:files";
             }
         }
 
@@ -217,17 +223,6 @@ public class SearchIncludeFragment {
 //            this.dataverseSubtreeContext = "all";
         }
 
-        if (selectedTypesString == null || selectedTypesString.isEmpty()) {
-            /**
-             *
-             * "When you browse to a dataverse, we show dataverses OR datasets.
-             * The moment you type a term and search, we show all types
-             * (dataverses, datasets, files)."
-             *
-             * -- https://redmine.hmdc.harvard.edu/issues/3573
-             */
-            selectedTypesString = "dataverses:datasets";
-        }
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
 //        int count = 0;
