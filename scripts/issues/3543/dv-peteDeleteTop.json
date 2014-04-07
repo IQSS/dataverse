@@ -1,0 +1,8 @@
+ {
+    "alias":"peteDeleteTop",
+    "name":"A dataverse for testing",
+    "affiliation":"Affiliation value",
+    "contactEmail":"pete@mailinator.com",
+    "permissionRoot":false,
+    "description":"A dataverse that's added for testing purposes."
+}

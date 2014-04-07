@@ -54,7 +54,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			ctxt.em().remove(block);
 		}
 		// ASSIGNMENTS
-		for ( RoleAssignment ra : ctxt.roles().rolesAssignments(doomed) ) {
+		for ( RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed) ) {
 			ctxt.em().remove(ra);
 		}
 		// ROLES
@@ -65,12 +65,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 		for ( DataverseFacet facet : doomed.getDataverseFacets(true) ) {
 			ctxt.em().remove(facet);
 		}
-		// DATAVERSE
-            /**
-             * @todo: Do something with the result. Log it? Throw
-             * IllegalCommandException, depending on the result?
-             */
-            String result = ctxt.index().delete(doomed);
+        
+        // Remove from index
+        ctxt.index().delete(doomed);
+		
+        // DATAVERSE
 		ctxt.em().remove(doomed);
 		
 		
