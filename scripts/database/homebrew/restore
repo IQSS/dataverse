@@ -1,2 +1,2 @@
 #!/bin/sh
-~/.homebrew/bin/psql dataverseDb -f /tmp/dataverseDb.sql
+~/.homebrew/bin/psql dataverse_db -f /tmp/dataverse_db.sql

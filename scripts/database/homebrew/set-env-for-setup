@@ -1,0 +1,22 @@
+#!/bin/bash
+# put these variables into your env with `source path/to/script`
+
+export GLASSFISH_ROOT='/Applications/NetBeans/glassfish4'
+export -n GLASSFISH_ROOT
+unset GLASSFISH_ROOT
+echo $GLASSFISH_ROOT
+
+export DB_NAME_CUSTOM='dataverse_db'
+#export -n DB_NAME_CUSTOM
+#unset DB_NAME_CUSTOM
+echo $DB_NAME_CUSTOM
+
+export DB_USER_CUSTOM='dataverse_app'
+#export -n DB_USER_CUSTOM
+#unset DB_USER_CUSTOM
+echo $DB_USER_CUSTOM
+
+export DB_PASS_CUSTOM='secret'
+#export -n DB_PASS_CUSTOM
+#unset DB_PASS_CUSTOM
+echo $DB_PASS_CUSTOM

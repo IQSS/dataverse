@@ -3,16 +3,9 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
+    xmlns:p="http://primefaces.org/ui">
 
-    class="#{fieldValues.datasetField.datasetFieldType.child and (fieldValues.datasetField.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
 
-    <ui:fragment rendered="#{includeTitle}">
-        <label class="control-label" for="metadata_BLANK">
-            <a class="tooltiplabel right" data-original-title="#{fieldValues.datasetField.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{fieldValues.datasetField.datasetFieldType.title}</a>
-            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldValues.datasetField.datasetFieldType.required}" /> 
-        </label>   
-    </ui:fragment>
     <p:inputText value="#{fieldValues.value}" id="inputText" styleClass="form-control"
                  rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary        
                              and (fieldValues.datasetField.datasetFieldType.fieldType == 'text'
@@ -21,16 +14,15 @@
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'url'
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'date'
                              or fieldValues.datasetField.datasetFieldType.fieldType == '')}"/>
-    <ui:fragment rendered="false">
-    <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }"  >
-    <h:outputText value="Replication for: " /> <p:selectBooleanCheckbox value="#{DatasetPage.replicationFor}" /> 
-    </ui:fragment>
-    </ui:fragment>
+
+        <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
+            <h:outputText value="Replication for: " /> <p:selectBooleanCheckbox value="#{DatasetPage.replicationFor}"/>
+        </ui:fragment>
+
     <p:watermark for="inputText" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <p:inputTextarea value="#{fieldValues.value}" rows="5" cols="60" id="description" styleClass="form-control" 
                      rendered="#{fieldValues.datasetField.datasetFieldType.fieldType == 'textbox'}" />
     <p:watermark for="description" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
-
 
 </div>

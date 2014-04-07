@@ -1,2 +1,2 @@
 #!/bin/sh
-~/.homebrew/bin/psql -c 'DROP DATABASE "dataverseDb"' template1
+~/.homebrew/bin/psql -c 'DROP DATABASE "dataverse_db"' template1

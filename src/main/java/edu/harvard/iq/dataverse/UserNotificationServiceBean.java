@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -48,11 +49,13 @@ public class UserNotificationServiceBean {
         em.remove(em.merge(userNotification));
     }
     
-    public void sendNotification(String notification, DataverseUser dataverseUser, Timestamp sendDate) {
+    public void sendNotification(DataverseUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        
         UserNotification userNotification = new UserNotification();
-        userNotification.setNotification(notification);
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
+        userNotification.setType(type);
+        userNotification.setObjectId(objectId);
         save(userNotification);
     }
 }

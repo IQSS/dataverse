@@ -68,7 +68,6 @@
         </div>
     </ui:fragment>
 
-
     <!-- Edit Mode -->
     <ui:fragment rendered="${!empty DatasetPage.editMode}">
         <div class="panel-group">
@@ -94,25 +93,29 @@
                                                         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" /> 
                                                     </label> 
                                                 </div>
-                                                <div class="col-sm-7">
-                                                    <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >    
-                                                        <ui:include src="datasetFieldForEditFragment.xhtml">
-                                                            <ui:param name="fieldValues" value="#{dsfv}"/>
-                                                        </ui:include>
-                                                        <!-- Add / Remove buttons -->
-                                                        <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
-                                                            <div class="col-xs-2">
-                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
-                                                                                 title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                 actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}" update="@all">
-                                                                </p:commandButton>
-                                                                <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
-                                                                                 title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                 rendered="#{dsf.datasetFieldValues.size() > 1}"
-                                                                                 actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}" update="@all">
-                                                                </p:commandButton>
+                                                <div class="form-group col-sm-7">
+                                                    <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
+                                                        <div class="form-group">
+                                                            <div class="col-sm-6">
+                                                                <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                                    <ui:param name="fieldValues" value="#{dsfv}"/>
+                                                                </ui:include>
                                                             </div>
-                                                        </ui:fragment>
+                                                            <!-- Add / Remove buttons -->
+                                                            <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
+                                                                <div class="col-xs-3">
+                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
+                                                                                     title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
+                                                                                     actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}" update="@all">
+                                                                    </p:commandButton>
+                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
+                                                                                     title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" 
+                                                                                     rendered="#{dsf.datasetFieldValues.size() > 1}"
+                                                                                     actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}" update="@all">
+                                                                    </p:commandButton>
+                                                                </div>
+                                                            </ui:fragment>
+                                                        </div>
                                                     </ui:repeat>
                                                     <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
                                                         <p:selectOneMenu  value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
@@ -129,7 +132,7 @@
                                         </ui:fragment>
 
                                         <!-- Compound fields -->
-                                        <ui:fragment rendered="#{dsf.datasetFieldType.compound}">
+                                        <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.compound}">
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
                                                 <div class="form-group">
                                                     <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
@@ -139,17 +142,24 @@
                                                         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" /> 
                                                     </label>                  
 
-                                                    <div class="form-group col-sm-7">
+                                                    <div class="col-sm-7">
                                                         <!-- Sub Fields -->
-                                                        <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">                                                              
-                                                            <div class="col-sm-6">
+                                                        <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
+                                                            <div class="#{(subdsf.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
+                                                                <ui:fragment>
+                                                                    <label class="control-label" for="metadata_BLANK">
+                                                                        <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
+                                                                        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required}" /> 
+                                                                    </label>   
+                                                                </ui:fragment>
 
-                                                                <ui:include src="datasetFieldForEditFragment.xhtml">
+                                                                <ui:include src="datasetFieldForEditFragment.xhtml" rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary}">
                                                                     <ui:param name="fieldValues" value="#{subdsf.singleValue}"/>
-                                                                    <ui:param name="includeTitle" value="true"/>
                                                                 </ui:include>
 
+                                                                <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                 <ui:fragment rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
+
                                                                     <p:selectOneMenu  value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
                                                                                       rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
@@ -157,28 +167,28 @@
                                                                     <h:selectManyListbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                                    </h:selectManyListbox>                                                          
-                                                                </ui:fragment> 
-                                                            </div>                                                                
-                                                        </ui:repeat>
+                                                                    </h:selectManyListbox>
 
+                                                                </ui:fragment>
+                                                            </div>
+                                                        </ui:repeat>
                                                     </div>
                                                     <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                         <div class="col-xs-2">
                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                             actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}" update="@all">
+                                                                             actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}">
                                                             </p:commandButton>
                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" 
                                                                              rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
-                                                                             actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}" update="@all">
+                                                                             actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}">
                                                             </p:commandButton>
                                                         </div>
                                                     </ui:fragment>                                                    
                                                 </div>
                                             </ui:repeat>
-                                        </ui:fragment>                                        
+                                        </p:fragment>                                        
                                     </ui:fragment>
                                 </ui:repeat>
                             </div>
@@ -188,8 +198,5 @@
             </ui:repeat>
         </div>    
     </ui:fragment>
-
-
-
 
 </div>

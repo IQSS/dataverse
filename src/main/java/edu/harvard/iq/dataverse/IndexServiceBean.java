@@ -107,6 +107,9 @@ public class IndexServiceBean {
 
     public String indexDataverse(Dataverse dataverse) {
         Dataverse rootDataverse = dataverseService.findRootDataverse();
+        if (dataverse.getId() == rootDataverse.getId()) {
+            return "The root dataverse shoud not be indexed, returning early.";
+        }
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         solrInputDocument.addField(SearchFields.ID, solrDocIdentifierDataverse + dataverse.getId());

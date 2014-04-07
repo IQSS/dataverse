@@ -1,0 +1,2 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "DROP ROLE dataverse_app" template1

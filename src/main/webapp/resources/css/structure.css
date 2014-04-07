@@ -127,11 +127,13 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
-#keywords {margin-top:1em;}
+#keywords {}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
 #datasetForm .form-group .col-sm-7 .col-sm-6, #datasetForm .form-group .col-sm-9 .col-sm-6, #datasetForm .form-group .col-sm-7 .col-sm-12 {padding-left:0;}
+
+#datasetForm div.ui-selectonemenu.form-control {padding:1px;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 

@@ -1,2 +1,2 @@
 #!/bin/sh
-~/.homebrew/bin/psql -c 'CREATE DATABASE "dataverseDb" WITH OWNER = "dataverseApp"' template1
+~/.homebrew/bin/psql -c 'CREATE DATABASE "dataverse_db" WITH OWNER = "dataverse_app"' template1

@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -161,10 +162,8 @@ public class DataversePage implements java.io.Serializable {
         
 		try {
 			dataverse = commandEngine.submit(cmd);
-                        String notification = "Your Dataverse, " + dataverse.getName() + 
-                                ", has been created in the " + dataverse.getOwner().getName() + ". Remember to release it. ";                        
-                        userNotificationService.sendNotification(notification, session.getUser(), dataverse.getCreateDate());
-			editMode = null;
+                        userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+                        editMode = null;
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
 			return null;
