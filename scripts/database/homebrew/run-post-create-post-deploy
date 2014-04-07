@@ -6,5 +6,3 @@ cd scripts/api
 ./setup-users.sh
 ./setup-dvs.sh
 cd ../..
-curl -s http://localhost:8080/api/index
-scripts/search/tests/permissions

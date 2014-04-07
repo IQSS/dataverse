@@ -1,0 +1,14 @@
+#!/bin/sh
+/Applications/NetBeans/glassfish4/glassfish/bin/asadmin stop-domain
+scripts/database/homebrew/drop-database
+scripts/database/homebrew/create-database
+mvn package
+/Applications/NetBeans/glassfish4/glassfish/bin/asadmin start-domain
+# should probably use this instead: https://maven-glassfish-plugin.java.net/deploy-mojo.html
+cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
+sleep 15
+scripts/database/homebrew/run-post-create-post-deploy
+# FIXME: obviate need for "index all" https://redmine.hmdc.harvard.edu/issues/3800
+curl -s http://localhost:8080/api/index
+scripts/search/tests/permissions
+scripts/search/tests/delete-dataverse
