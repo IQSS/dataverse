@@ -76,7 +76,7 @@ public class Dataverses extends AbstractApiBean {
 		} catch (CommandException ex) {
 			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
-            } catch (EJBException ex) {
+        } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
                 sb.append("Error creating dataverse.");

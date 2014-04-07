@@ -38,13 +38,9 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			throw new IllegalCommandException("Cannot delete the root dataverse", this);
 		}
 		
-		// make sure the dataverse is empty
+		// make sure the dataverse is emptyw
 		if ( ctxt.dvObjects().hasData(doomed) ) {
 			throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
-		}
-		
-		if ( doomed.isReleased() ) {
-			throw new IllegalCommandException("Cannot delete a released dataverse", this);
 		}
 		
 		// if we got here, we can delete
