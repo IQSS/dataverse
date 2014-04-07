@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -90,6 +91,7 @@ import javax.faces.bean.ManagedBean;
 import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -364,9 +366,7 @@ public class IngestServiceBean {
             logger.fine("Ingest Service: Processing extracted metadata;");
             if (extractedMetadata.getMetadataBlockName() != null) {
                 logger.fine("Ingest Service: This metadata belongs to the "+extractedMetadata.getMetadataBlockName()+" metadata block."); 
-                /*
                 ingestDatasetMetadata(extractedMetadata, editVersion);
-                */
             }
             
             ingestFileLevelMetadata(extractedMetadata, dataFile, fileMetadata, extractorPlugin.getFormatName());
@@ -378,118 +378,109 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    /*
+    
     private void ingestDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
+        
+        
+        
+        
+        
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
             if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
                 logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
-                List<DatasetFieldValue> existingValues; 
+                /*List<DatasetFieldValue> existingValues; // ?
+                List<DatasetField> existingFields;
                 if (editVersion.getDataset().getId() != null) { // if this is an existing study, that had been saved before...
-                    existingValues = editVersion.getDatasetFieldValues();
+                    //existingValues = editVersion.getDatasetFieldValues();
+                    existingFields = editVersion.getDatasetFields();
                 } else {
-                    existingValues = new ArrayList();
-                }
+                    //existingValues = new ArrayList();
+                    existingFields = new ArrayList();
+                }*/
+                
+                editVersion.setDatasetFields(editVersion.initDatasetFields());
+                
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
-                for (DatasetField dsf : mdb.getDatasetFields()) {
-                    String dsName = dsf.getName();
-                    if (fileMetadataMap.get(dsName) != null && !fileMetadataMap.get(dsName).isEmpty()) {
-                        logger.fine("Ingest Service: found extracted metadata for field "+dsName);
-                        if (!dsf.isControlledVocabulary()) {
-                            Set<String> mValues = fileMetadataMap.get(dsName);
-                            for (String fValue : mValues) {
-                                // Need to only add the values not yet present!
-                                // (the method below may be inefficient - ?)
-                                boolean valueExists = false; 
-                                for (DatasetFieldValue dsfv : existingValues) {
-                                    if (dsf.equals(dsfv.getDatasetField())
-                                            && fValue.equals(dsfv.getStrValue())) {
-                                        valueExists = true;
-                                        break;
-                                    }
-                                }
-                                if (!valueExists) {
-                                    DatasetFieldValue newDsfv = new DatasetFieldValue();
-                        
-                                    newDsfv.setDatasetField(dsf);
-                                    newDsfv.setStrValue(fValue);
-                                    newDsfv.setDatasetVersion(editVersion);
-                                    //dsf.getDatasetFieldValues().add(newDsfv);
-                                    editVersion.getDatasetFieldValues().add(newDsfv);
-                                    
-                                    if (dsf.isHasParent()) {
-                                        DatasetField parentField = dsf.getParentDatasetField();
-                                        boolean parentExists = false;
-                                        DatasetFieldValue parentFieldValue = null;
-                                        for (DatasetFieldValue dsfv : existingValues) {
-                                            if (parentField.equals(dsfv.getDatasetField())) {
-                                                parentExists = true;
-                                                parentFieldValue = dsfv;
-                                                break;
-                                            }
-                                        }
-                                        if (!parentExists) {
-                                            parentFieldValue = new DatasetFieldValue();
-                                            parentFieldValue.setDatasetField(parentField);
-                                            parentFieldValue.setDatasetVersion(editVersion);
-                                            editVersion.getDatasetFieldValues().add(parentFieldValue);
-                                        }
-                                        
-                                        parentFieldValue.getChildDatasetFieldValues().add(newDsfv);
-                                        newDsfv.setParentDatasetFieldValue(parentFieldValue);
-                                    }
-                                    
-                                    
-                                }
-                            }
-                        } else { // controlled vocabulary
-                            // First, check if the dataset already has this field populated: 
-                            Set<String> mValues = fileMetadataMap.get(dsName);
-                            boolean addNew = true; 
-                            for (DatasetFieldValue dsfv : existingValues) {
-                                if(dsf.equals(dsfv.getDatasetField())) {
-                                    // add the new values, unless already exist:
-                                    Collection<ControlledVocabularyValue> cvValues = dsf.getControlledVocabularyValues();
+                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+                    String dsfName = dsft.getName();
+                    if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                        logger.fine("Ingest Service: found extracted metadata for field "+dsfName);
+                        // go through the existing fields:
+                        for (DatasetField dsf : editVersion.getDatasetFields()) {
+                            if (dsf.getDatasetFieldType().equals(dsft)) {
+                                // yep, this is our field!
+                                if (dsft.isPrimitive()) {
+                                    // let's go through the values that the ingest 
+                                    // plugin found in the file for this field: 
+                                    Set<String> mValues = fileMetadataMap.get(dsfName);
                                     for (String fValue : mValues) {
-                                        // is this a legit controlled vocab. entry?
-
-                                        for (ControlledVocabularyValue cvv : cvValues) {
-                                            if (fValue.equals(cvv.getStrValue())) {
-                                                // yes, it is;
-                                                boolean valueExists = false;
-                                                for (ControlledVocabularyValue exCvv : dsfv.getControlledVocabularyValues()) {
-                                                    if (exCvv.getStrValue().equals(fValue)) {
-                                                        valueExists = true;
+                                        if (!dsft.isControlledVocabulary()) {
+                                            // Need to only add the values not yet present!
+                                            // (the method below may be inefficient - ?)
+                                            boolean valueExists = false; 
+                                
+                                            Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
+                                            
+                                            while (dsfvIt.hasNext()) {
+                                                DatasetFieldValue dsfv = dsfvIt.next();
+                                                if (fValue.equals(dsfv.getValue())) {
+                                                    logger.fine("Value "+fValue+" already exists for field "+dsfName); 
+                                                    valueExists = true; 
+                                                    break; 
+                                                }
+                                            }
+                                        
+                                            if (!valueExists) {
+                                                logger.fine("Creating a new value for field "+dsfName+": "+fValue);
+                                                DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
+                                                newDsfv.setValue(fValue);
+                                                dsf.getDatasetFieldValues().add(newDsfv);
+                                            }
+                                        } else {
+                                            // A controlled vocabulary entry: 
+                                            // first, let's see if it's a legit control vocab. entry: 
+                                            ControlledVocabularyValue legitControlledVocabularyValue = null; 
+                                            Collection<ControlledVocabularyValue> definedVocabularyValues = dsft.getControlledVocabularyValues();
+                                            if (definedVocabularyValues != null) {
+                                                for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
+                                                    if (fValue.equals(definedVocabValue.getStrValue())) {
+                                                        logger.fine("Yes, "+fValue+" is a valid controlled vocabulary value for the field "+dsfName);
+                                                        legitControlledVocabularyValue = definedVocabValue; 
+                                                        break; 
                                                     }
                                                 }
+                                            }
+                                            if (legitControlledVocabularyValue != null) {
+                                                // Only need to add the value if it is new, 
+                                                // i.e. if it does not exist yet: 
+                                                boolean valueExists = false;
+                                                
+                                                List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues(); 
+                                                if (existingControlledVocabValues != null) {
+                                                    Iterator<ControlledVocabularyValue> cvvIt = existingControlledVocabValues.iterator();
+                                                    while (cvvIt.hasNext()) {
+                                                        ControlledVocabularyValue cvv = cvvIt.next();
+                                                        if (fValue.equals(cvv.getStrValue())) {
+                                                        // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
+                                                            logger.fine("Controlled vocab. value "+fValue+" already exists for field "+dsfName); 
+                                                            valueExists = true; 
+                                                            break; 
+                                                        }
+                                                    }
+                                                }
+                                                
                                                 if (!valueExists) {
-                                                    dsfv.getControlledVocabularyValues().add(cvv);
+                                                    logger.fine("Adding controlled vocabulary value "+fValue+" to field "+dsfName);
+                                                    dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
                                                 }
                                             }
                                         }
                                     }
-                                    addNew = false; 
-                                    break; 
+                                } else {
+                                    // A compound field: 
+                                    // - but that's not going to happen!
+                                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
                                 }
-                            }
-                            
-                            if (addNew) {
-                                DatasetFieldValue newDsfv = new DatasetFieldValue();
-                                newDsfv.setDatasetField(dsf);
-                                newDsfv.setDatasetVersion(editVersion);
-                                //dsf.getDatasetFieldValues().add(newDsfv);
-                                editVersion.getDatasetFieldValues().add(newDsfv);
-                                
-                                // Populate the fields, if matching controlled 
-                                // vocab. fields actually exist:
-                                
-                                Collection<ControlledVocabularyValue> cvValues = dsf.getControlledVocabularyValues();
-                                for (String fValue : mValues) {
-                                    for (ControlledVocabularyValue cvv : cvValues) {
-                                        if (fValue.equals(cvv.getStrValue())) {
-                                            newDsfv.getControlledVocabularyValues().add(cvv);
-                                        }
-                                    }
-                                } 
                             }
                         }
                     }
@@ -497,7 +488,7 @@ public class IngestServiceBean {
             }
         }  
     }
-    */
+    
     
     private void ingestFileLevelMetadata(FileMetadataIngest fileLevelMetadata, DataFile dataFile, FileMetadata fileMetadata, String fileFormatName) {
         // First, add the "metadata summary" generated by the file reader/ingester
