@@ -83,7 +83,7 @@
                                     <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate)}">
 
                                         <!-- Primitive fields -->    
-                                        <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                        <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.primitive}">
                                             <div class="form-group">
                                                 <div class="col-sm-3 ">
                                                     <label for="metadata_#{dsf.datasetFieldType.name}" class="control-label">
@@ -106,12 +106,12 @@
                                                                 <div class="col-xs-3">
                                                                     <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
                                                                                      title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                     actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}" update="@all">
+                                                                                     actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}">
                                                                     </p:commandButton>
                                                                     <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
                                                                                      title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" 
                                                                                      rendered="#{dsf.datasetFieldValues.size() > 1}"
-                                                                                     actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}" update="@all">
+                                                                                     actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}">
                                                                     </p:commandButton>
                                                                 </div>
                                                             </ui:fragment>
@@ -129,7 +129,7 @@
                                                     </ui:fragment>                     
                                                 </div>
                                             </div>                                                    
-                                        </ui:fragment>
+                                        </p:fragment>
 
                                         <!-- Compound fields -->
                                         <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.compound}">

@@ -168,7 +168,7 @@
                 
                 <div style="float:left; position:relative;">
                     
-                    <div class="dropdown #{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown-toggle keep-on' : ''}" data-toggle="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-delay="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '800' : ''}" data-hover="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-target="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '#' : ''}" data-close-others="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'true' : ''}">
+                    <div class="dropdown #{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '800' : ''}" data-hover="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-target="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '#' : ''}" data-close-others="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'true' : ''}">
                         <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                         <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?id=#{dv.id}">
