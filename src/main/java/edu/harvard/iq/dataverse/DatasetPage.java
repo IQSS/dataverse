@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil; 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -535,7 +536,23 @@ public class DatasetPage implements java.io.Serializable {
             fmd.setDatasetVersion(editVersion);
             dataset.getFiles().add(dFile);
 
-
+            // When downloading files from dropBox, we don't get the benefit of 
+            // having the browser recognize the mime type of the file. So we'll 
+            // have to rely on our own utilities (Jhove, etc.) to try and determine
+            // what it is. 
+        
+            String fileType = null; 
+            try {
+                fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as "+fileType);
+                if (fileType != null && !fileType.equals("")) {
+                    dFile.setContentType(fileType);
+                }
+            }
+            catch (IOException ex) {
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
+            }
+            
             newFiles.add(dFile);
         }        
     }
@@ -562,12 +579,36 @@ public class DatasetPage implements java.io.Serializable {
         if (getFilesTempDirectory() != null) {
             try {
 
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Will attempt to save the file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
                 Files.copy(uFile.getInputstream(), Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException ioex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemName());
+                return;
             }
         }
+        
+        // Let's try our own utilities (Jhove, etc.) to determine the file type 
+        // of the uploaded file. (we may or may not do better than the browser,
+        // which may have already recognized the type correctly...)
+        
+        String fileType = null; 
+        try {
+            fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as "+fileType);
+            if (fileType != null && !fileType.equals("")) {
+                // let's look at the browser's guess regarding the mime type
+                // of the file: 
+                String bgType = dFile.getContentType();
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Browser recognized the file as "+bgType);
+                
+                if (bgType == null || bgType.equals("") || bgType.equalsIgnoreCase("application/octet-stream")) {
+                    dFile.setContentType(fileType);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
+        }
+        
         newFiles.add(dFile);
 
     }

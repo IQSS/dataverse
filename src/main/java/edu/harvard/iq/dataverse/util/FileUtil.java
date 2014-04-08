@@ -21,14 +21,25 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+import javax.activation.MimetypesFileTypeMap;
+import javax.ejb.EJBException;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -38,6 +49,20 @@ import java.nio.channels.WritableByteChannel;
  * @author Leonid Andreev
  */
 public class FileUtil implements java.io.Serializable  {
+    private static final Logger logger = Logger.getLogger(FileUtil.class.getCanonicalName());
+    
+    private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
+    
+    private static Map<String, String> STATISTICAL_SYNTAX_FILE_EXTENSION = new HashMap<String, String>();
+    
+    static {
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("do",  "x-stata-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sas", "x-sas-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sps", "x-spss-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("rdat", "x-rdata-syntax");
+    }
+    
+    private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
 
     public FileUtil() {
     }
@@ -126,4 +151,149 @@ public class FileUtil implements java.io.Serializable  {
         
         return "unknown"; 
     }
+    
+    public static String determineFileType(File f, String fileName) throws IOException{
+        String fileType = null;
+        String fileExtension = getFileExtension(fileName);
+
+        
+        
+        // step 1: 
+        // Apply our custom methods to try and recognize data files that can be 
+        // converted to tabular data, or can be parsed for extra metadata 
+        // (such as FITS).
+        logger.fine("Attempting to identify potential tabular data files;");
+        IngestableDataChecker tabChk = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
+        
+        fileType = tabChk.detectTabularDataFormat(f);
+        
+        logger.fine("determineFileType: tabular data checker found "+fileType);
+                
+        // step 2: If not found, check if graphml or FITS
+        if (fileType==null) {
+            if (isGraphMLFile(f))  {
+                fileType = "text/xml-graphml";
+            } else // Check for FITS:
+            // our check is fairly weak (it appears to be hard to really
+            // really recognize a FITS file without reading the entire 
+            // stream...), so in version 3.* we used to nsist on *both* 
+            // the ".fits" extension and the header check;
+            // in 4.0, we'll accept either the extension, or the valid 
+            // magic header:
+            if (isFITSFile(f) || (fileExtension != null
+                    && fileExtension.equalsIgnoreCase("fits"))) {
+                fileType = "application/fits";
+            }
+        }
+       
+        // step 3: check the mime type of this file with Jhove
+        if (fileType == null){
+            JhoveFileType jw = new JhoveFileType();
+            fileType = jw.getFileMimeType(f);
+        }
+        
+        // step 4: 
+        // Additional processing; if we haven't gotten much useful information 
+        // back from Jhove, we'll try and make an educated guess based on 
+        // the file extension:
+        
+        if ( fileExtension != null) {
+            logger.fine("fileExtension="+fileExtension);
+
+            if (fileType != null && fileType.startsWith("text/plain")){
+                if (( fileExtension != null) && (STATISTICAL_SYNTAX_FILE_EXTENSION.containsKey(fileExtension))) {
+                    // replace the mime type with the value of the HashMap
+                    fileType = STATISTICAL_SYNTAX_FILE_EXTENSION.get(fileExtension);
+                }
+            } else if ("application/octet-stream".equals(fileType)) {
+                fileType = determineFileType(fileName);
+                logger.fine("mime type recognized by extension: "+fileType);
+            }
+        } else {
+            logger.fine("fileExtension is null");
+        }
+
+        logger.fine("returning fileType "+fileType);
+        return fileType;
+    }
+    
+    public static String determineFileType(String fileName) {
+        return MIME_TYPE_MAP.getContentType(fileName);
+    }
+    
+    /* 
+     * Custom method for identifying FITS files: 
+     * TODO: 
+     * the existing check for the "magic header" is very weak (see below); 
+     * it should probably be replaced by attempting to parse and read at 
+     * least the primary HDU, using the NOM fits parser. 
+     * -- L.A. 4.0 alpha
+    */
+    private static boolean isFITSFile(File file) {
+        boolean isFITS = false;
+
+        // number of header bytes read for identification: 
+        int magicWordLength = 6;
+        String magicWord = "SIMPLE";
+
+        BufferedInputStream ins = null;
+
+        try {
+            ins = new BufferedInputStream(new FileInputStream(file));
+
+            byte[] b = new byte[magicWordLength];
+
+            if (ins.read(b, 0, magicWordLength) != magicWordLength) {
+                throw new IOException();
+            }
+
+            if (magicWord.equals(new String(b))) {
+                isFITS = true;
+            }
+        } catch (IOException ex) {
+            isFITS = false;
+        } finally {
+            if (ins != null) {
+                try {
+                    ins.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return isFITS;
+    }
+    
+    private static boolean isGraphMLFile(File file) {
+        boolean isGraphML = false;
+        logger.fine("begin isGraphMLFile()");
+        try{
+            FileReader fileReader = new FileReader(file);
+            javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
+            xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
+
+            XMLStreamReader xmlr = xmlif.createXMLStreamReader(fileReader);
+            for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+                if (event == XMLStreamConstants.START_ELEMENT) {
+                    if (xmlr.getLocalName().equals("graphml")) {
+                        String schema = xmlr.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
+                        logger.fine("schema = "+schema);
+                        if (schema!=null && schema.indexOf("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")!=-1){
+                            logger.fine("graphML is true");
+                            isGraphML = true;
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch(XMLStreamException e) {
+            logger.fine("XML error - this is not a valid graphML file.");
+            isGraphML = false;
+        } catch(IOException e) {
+            throw new EJBException(e);
+        }
+        logger.fine("end isGraphML()");
+        return isGraphML;
+    }
+    
 }
