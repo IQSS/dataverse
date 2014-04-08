@@ -40,7 +40,6 @@
 	studyAssayMeasurementType	Transcription Profiling (Microarray)	5											
 	studyAssayMeasurementType	Transcription Profiling (RNA-Seq)	6											
 	studyAssayMeasurementType	TRAP Translational Profiling	7											
-	studyAssayMeasurementType	Variations	8											
 	studyAssayOrganism	Danio rerio	0											
 	studyAssayOrganism	Homo sapiens	1											
 	studyAssayOrganism	Mus musculus	2											
