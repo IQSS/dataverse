@@ -93,7 +93,7 @@ public class IndexServiceBean {
         int groupIndexCount = 0;
         for (Map.Entry<Long, String> group : groups.entrySet()) {
             groupIndexCount++;
-            logger.info("indexing group " + datasetIndexCount + " of " + groups.size() + ": " + indexGroup(group));
+            logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
         }
 
         int userIndexCount = 0;
@@ -108,7 +108,21 @@ public class IndexServiceBean {
     public String indexDataverse(Dataverse dataverse) {
         Dataverse rootDataverse = dataverseService.findRootDataverse();
         if (dataverse.getId() == rootDataverse.getId()) {
-            return "The root dataverse shoud not be indexed, returning early.";
+            /**
+             * @todo: replace hard-coded groups with real groups
+             */
+            Map<Long, String> groups = new HashMap<>();
+            groups.put(publicGroupId, publicGroupString);
+            groups.put(tmpNsaGroupId, "nsa");
+            groups.put(tmpNsaGroupId + 1, "flappybird");
+            groups.put(tmpNsaGroupId + 2, "2048");
+
+            int groupIndexCount = 0;
+            for (Map.Entry<Long, String> group : groups.entrySet()) {
+                groupIndexCount++;
+                logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
+            }
+            return "The root dataverse shoud not be indexed. Indexed temporary groups instead.";
         }
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -607,10 +621,6 @@ public class IndexServiceBean {
         return "indexed group " + group;
     }
 
-    /**
-     * @todo: call this when users are created (and added?) what if users are
-     * deleted? Can users be deleted??
-     */
     public String indexUser(DataverseUser user) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();

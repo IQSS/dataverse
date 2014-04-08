@@ -3,6 +3,7 @@ GLASSFISH_HOME=$HOME/tools/devguide-gf4/glassfish4
 ASADMIN=$GLASSFISH_HOME/glassfish/bin/asadmin
 $ASADMIN stop-domain
 psql -U postgres -c 'DROP DATABASE "dvnDb"'
+scripts/search/clear
 psql -U postgres -c 'CREATE DATABASE "dvnDb" WITH OWNER = "dvnApp"'
 mvn package
 $ASADMIN start-domain
@@ -15,7 +16,5 @@ cd scripts/api
 ./setup-users.sh
 ./setup-dvs.sh
 cd ../..
-# FIXME: obviate need for "index all" https://redmine.hmdc.harvard.edu/issues/3800
-curl -s http://localhost:8080/api/index
 scripts/search/tests/permissions
 scripts/search/tests/delete-dataverse
