@@ -7,7 +7,6 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -40,7 +39,7 @@ public class DataverseUserServiceBean {
         DataverseUser savedUser = em.merge(dataverseUser);
         em.flush();
         String indexingResult = indexService.indexUser(savedUser);
-        logger.info("during user save, indexing results was: " + indexingResult);
+        logger.info("during user save, indexing result was: " + indexingResult);
         return savedUser;
     }
     

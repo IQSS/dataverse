@@ -1,6 +1,7 @@
 #!/bin/sh
 /Applications/NetBeans/glassfish4/glassfish/bin/asadmin stop-domain
 scripts/database/homebrew/drop-database
+scripts/search/clear
 scripts/database/homebrew/create-database
 mvn package
 /Applications/NetBeans/glassfish4/glassfish/bin/asadmin start-domain
