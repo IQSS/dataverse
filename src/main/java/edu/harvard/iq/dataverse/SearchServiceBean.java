@@ -66,7 +66,9 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
-        solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
+        String highlightField01 = SearchFields.DESCRIPTION;
+        String highlightField02 = SearchFields.NAME;
+        solrQuery.setParam("hl.fl", highlightField01 + "," + highlightField02);
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         /**
@@ -189,7 +191,8 @@ public class SearchServiceBean {
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        List<String> highlightSnippets = null;
+        List<String> highlightSnippets01 = null;
+        List<String> highlightSnippets02 = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
@@ -228,11 +231,23 @@ public class SearchServiceBean {
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
+            List<String> matchedFields = new ArrayList<>();
             if (queryResponse.getHighlighting().get(id) != null) {
-                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
-//                logger.info("highlight snippets: " + highlightSnippets);
+//                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
+                highlightSnippets01 = queryResponse.getHighlighting().get(id).get(highlightField01);
+                logger.info("highlightSnippets01: " + highlightSnippets01);
+                if (highlightSnippets01 != null) {
+                    matchedFields.add(highlightField01);
+                }
+
+                highlightSnippets02 = queryResponse.getHighlighting().get(id).get(highlightField02);
+                logger.info("highlightSnippets02: " + highlightSnippets02);
+                if (highlightSnippets02 != null) {
+                    matchedFields.add(highlightField02);
+                }
+
             }
-            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets, name);
+            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets01, name);
             /**
              * @todo put all this in the constructor?
              */
@@ -243,6 +258,10 @@ public class SearchServiceBean {
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
+            solrSearchResult.setHighlightField01(highlightField01);
+            solrSearchResult.setHighlightField02(highlightField02);
+            solrSearchResult.setHighlightSnippets02(highlightSnippets02);
+            solrSearchResult.setMatchedFields(matchedFields);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);

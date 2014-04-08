@@ -408,10 +408,17 @@
 
                                 <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
 
-                                <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </p:outputPanel>
+                                <ui:fragment rendered="#{result.matchedFields.size() > 0}">
+                                    <h:outputText value="Metadata fields that search matched: "/>
+                                    <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                        <h:outputText value="#{field}"/>
+                                        <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
 
                                 <ui:fragment rendered="#{result.datasets.size() > 0}">
                                     <div style="clear:left;">
@@ -461,9 +468,9 @@
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
                                 </h:outputLink>
 
-                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <ui:fragment rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </ui:fragment>
 
                                 <!--<div style="clear: left">
@@ -483,9 +490,9 @@
 
                                 <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
 
-                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <ui:fragment rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </ui:fragment>
 
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block;">
