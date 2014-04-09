@@ -13,7 +13,6 @@
 # Affiliation: Trees Inc.
 # Contact E-mail: tony@trees.com
 # Description: Trees have rings. Trees can be tall.
-# FIXME: why is only "rings" stored in Solr and not the other two keywords?
 # Keyword: trees
 # Keyword: rings
 # Keyword: tall
