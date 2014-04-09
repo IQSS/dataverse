@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +86,14 @@ public class SolrSearchResult {
         } else {
             return this.id + ":" + this.title + ":" + this.entityId;
         }
+    }
+
+    public JsonObject getRelevance() {
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add(SearchFields.ID, this.id)
+                .add("matched_fields", this.matchedFields.toString())
+                .build();
+        return jsonObject;
     }
 
     public JsonObject toJsonObject() {

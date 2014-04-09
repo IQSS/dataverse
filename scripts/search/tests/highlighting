@@ -1,0 +1,4 @@
+#!/bin/bash
+#cd scripts/search
+#./create
+diff <(curl -s 'http://localhost:8080/api/search?key=nick&q=trees&showrelevance=true') scripts/search/tests/expected/highlighting-nick-trees

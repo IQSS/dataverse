@@ -1,0 +1,24 @@
+
+{
+    "q":"trees",
+    "fq_provided":"[]",
+    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user6 OR {!join from=groups_s to=perms_ss}id:group_2)]",
+    "total_count":3,
+    "start":0,
+    "count_in_response":3,
+    "items":"[dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
+    "relevance":[
+        {
+            "id":"dataverse_10",
+            "matched_fields":"[description]"
+        },
+        {
+            "id":"dataverse_11",
+            "matched_fields":"[name]"
+        },
+        {
+            "id":"dataverse_16",
+            "matched_fields":"[description, name]"
+        }
+    ]
+}
