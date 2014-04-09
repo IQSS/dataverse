@@ -80,7 +80,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             dbgLog.fine("FITS plugin: loading the default configuration values;");
             
             defaultRecognizedFitsMetadataKeys.put("DATE", 0);
-            defaultRecognizedFitsMetadataKeys.put("DATE-OBS", 0);
+            //defaultRecognizedFitsMetadataKeys.put("DATE-OBS", 0);
             defaultRecognizedFitsMetadataKeys.put("ORIGIN", 0);
             defaultRecognizedFitsMetadataKeys.put("AUTHOR", 0);
             defaultRecognizedFitsMetadataKeys.put("REFERENC", 0);
@@ -91,13 +91,20 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             //defaultRecognizedFitsMetadataKeys.put("INSTRUME", 0);
             defaultRecognizedFitsMetadataKeys.put("EQUINOX", 0);
             defaultRecognizedFitsMetadataKeys.put("EXTNAME", 0);
-
             defaultRecognizedFitsColumnKeys.put("TTYPE", 1);
             //defaultRecognizedFitsColumnKeys.put("TCOMM", 0);
             //defaultRecognizedFitsColumnKeys.put("TUCD", 0);
+            defaultRecognizedFitsMetadataKeys.put("FILTER", 0);
+            defaultRecognizedFitsMetadataKeys.put("OBJECT", 0);
+            defaultRecognizedFitsMetadataKeys.put("NAXIS", 0);
+            defaultRecognizedFitsMetadataKeys.put("CD1_1", 0);
+            defaultRecognizedFitsMetadataKeys.put("CDELT", 0);
+            defaultRecognizedFitsMetadataKeys.put("CUNIT", 0);
+            
+            
 
             defaultIndexableFitsMetaKeys.put("DATE", "Date");
-            defaultIndexableFitsMetaKeys.put("DATE-OBS", "Observation-Date");
+            //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
             defaultIndexableFitsMetaKeys.put("ORIGIN", "Origin");
             defaultIndexableFitsMetaKeys.put("AUTHOR", "Author");
             defaultIndexableFitsMetaKeys.put("REFERENC", "Reference");
@@ -111,19 +118,34 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("TTYPE", "Column-Label");
             //defaultIndexableFitsMetaKeys.put("TCOMM", "Column-Comment");
             //defaultIndexableFitsMetaKeys.put("TUCD", "Column-UCD");
+            defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
+            defaultIndexableFitsMetaKeys.put("OBJECT", "object");
+            defaultIndexableFitsMetaKeys.put("NAXIS", "naxis");
+            defaultIndexableFitsMetaKeys.put("CD1_1", "cd1_1");
+            defaultIndexableFitsMetaKeys.put("CUNIT", "cunit");
       
     }
     
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
     private static final String OPTION_PREFIX_SEARCHABLE = "PREFIXSEARCH";
     
-    private static final String HDU_TYPE_IMAGE="Image";
-    private static final String HDU_TYPE_IMAGE_CUBE="Cube";
-    private static final String FILE_TYPE_MOSAIC="Mosaic";
-    private static final String FILE_TYPE_SPECTRUM="Spectrum";
-    private static final String HDU_TYPE_TABLE="Table";
-    private static final String HDU_TYPE_UNDEF="Undefined";
-    private static final String HDU_TYPE_UNKNOWN="Unknown";
+    private static final String HDU_TYPE_IMAGE = "Image";
+    private static final String HDU_TYPE_IMAGE_CUBE = "Cube";
+    private static final String HDU_TYPE_TABLE = "Table";
+    private static final String HDU_TYPE_UNDEF = "Undefined";
+    private static final String HDU_TYPE_UNKNOWN = "Unknown";
+    
+    private static final String FILE_TYPE_IMAGE = "Image";
+    private static final String FILE_TYPE_MOSAIC = "Mosaic";
+    private static final String FILE_TYPE_CUBE = "Cube";
+    private static final String FILE_TYPE_TABLE = "Table";
+    private static final String FILE_TYPE_SPECTRUM = "Spectrum";
+    
+    
+    private static final String ATTRIBUTE_FACILITY = "facility";
+    private static final String ATTRIBUTE_INSTRUMENT = "instrument";
+    private static final String ATTRIBUTE_START_TIME = "coverage.Temporal.StartTime";
+    private static final String ATTRIBUTE_STOP_TIME = "coverage.Temporal.StopTime";
     
     /**
      * Constructs a <code>FITSFileMetadataExtractor</code> instance with a 
@@ -137,6 +159,249 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     
     public FITSFileMetadataExtractor() {
         super(null); 
+    }
+    
+    public FileMetadataIngest ingest (BufferedInputStream stream) throws IOException{
+        dbgLog.fine("Attempting to read FITS file;");
+        
+        Map<String, Set<String>> fitsMetaMap = new HashMap<String, Set<String>>();
+        
+        FileMetadataIngest ingest = new FileMetadataIngest();
+        ingest.setMetadataBlockName(ASTROPHYSICS_BLOCK_NAME);
+        
+        Fits fitsFile = null; 
+        try {
+            fitsFile = new Fits (stream);
+        } catch (FitsException fEx) {
+            throw new IOException ("Failed to open FITS stream; "+fEx.getMessage());
+        }
+        
+        if (fitsFile == null) {
+            throw new IOException ("Failed to open FITS stream; null Fits object");
+        }
+        
+        readConfig(); 
+
+        BasicHDU hdu = null;
+        int i = 0; 
+                
+        int nTableHDUs = 0; 
+        int nImageHDUs = 0; 
+        int nUndefHDUs = 0; 
+        
+        int nAxis = 0; 
+        
+        Set<String> metadataKeys = new HashSet<String>(); 
+        Set<String> columnKeys = new HashSet<String>(); 
+        List<String> hduTypes = new ArrayList<String>();
+        List<String> hduNames = new ArrayList<String>(); 
+        
+        try {
+            fitsMetaMap.put("type", new HashSet<String>());
+
+            while ((hdu = fitsFile.readHDU()) != null) {
+                dbgLog.fine("reading HDU number " + i);
+                hduNames.add("[UNNAMED]");
+                
+                Header hduHeader = hdu.getHeader();
+
+                
+                if (hdu instanceof ImageHDU) {
+                    dbgLog.fine("this is an image HDU");
+                    
+                    nAxis = hduHeader.getIntValue("NAXIS");
+                    dbgLog.fine("NAXIS (directly from header): "+nAxis);
+                    
+                    if (nAxis > 1) {
+                        nImageHDUs++;
+                        if (nAxis > 2) {
+                            hduTypes.add(HDU_TYPE_IMAGE_CUBE);
+                             
+                        } else {
+                            // Check for type Spectrum: 
+                            
+                            hduTypes.add(HDU_TYPE_IMAGE);
+                        }
+                    } else {
+                        hduTypes.add(HDU_TYPE_UNKNOWN);
+                    }
+                } else if (hdu instanceof TableHDU) {
+                    dbgLog.fine("this is a table HDU");
+                    nTableHDUs++;
+                    hduTypes.add(HDU_TYPE_TABLE);
+                } else if (hdu instanceof UndefinedHDU) {
+                    dbgLog.fine("this is an undefined HDU");
+                    nUndefHDUs++;
+                    hduTypes.add(HDU_TYPE_UNDEF);
+
+                } else {
+                    dbgLog.fine("this is an UKNOWN HDU");
+                    hduTypes.add(HDU_TYPE_UNKNOWN);
+                }
+                               
+                i++;
+
+                // Standard HDU attributes that we always check: 
+                
+                if (fitsMetaMap.get(ATTRIBUTE_FACILITY) == null) {
+                    String hduTelescope = hdu.getTelescope();
+                    if (hduTelescope != null) {
+                        fitsMetaMap.put(ATTRIBUTE_FACILITY, new HashSet<String>());
+                        fitsMetaMap.get(ATTRIBUTE_FACILITY).add(hduTelescope);
+                        metadataKeys.add("TELESCOP");
+                    }
+                }
+                
+                if (fitsMetaMap.get(ATTRIBUTE_INSTRUMENT) == null) {
+                    String hduInstrument = hdu.getInstrument();
+                    if (hduInstrument != null) {
+                        fitsMetaMap.put(ATTRIBUTE_INSTRUMENT, new HashSet<String>());
+                        fitsMetaMap.get(ATTRIBUTE_INSTRUMENT).add(hduInstrument);
+                        metadataKeys.add("TELESCOP");
+                    }
+                }
+                
+                if (fitsMetaMap.get(ATTRIBUTE_START_TIME) == null) {
+                    String obsDate = hduHeader.getStringValue("DATE-OBS"); 
+                    if (obsDate != null) {
+                        fitsMetaMap.put(ATTRIBUTE_START_TIME, new HashSet<String>());
+                        fitsMetaMap.get(ATTRIBUTE_START_TIME).add(obsDate);
+                        fitsMetaMap.put(ATTRIBUTE_STOP_TIME, new HashSet<String>());
+                        fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(obsDate);
+                        metadataKeys.add("DATE-OBS");
+                    }
+                }
+                
+                
+                /* TODO: 
+                 * use the Axes values for determining if this is a spectrum:
+                */
+                for (int j = 0; j < hdu.getAxes().length; j++) {
+                    int nAxisN = hdu.getAxes()[j];
+                    dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
+                }
+                
+                // Process individual header cards:
+                
+                HeaderCard headerCard = null;
+
+                int j = 0;
+                while ((headerCard = hduHeader.nextCard()) != null) {
+
+                    String headerKey = headerCard.getKey();
+                    String headerValue = headerCard.getValue();
+                    String headerComment = headerCard.getComment();
+
+                    dbgLog.fine("Processing header key: "+headerKey);
+                    dbgLog.fine("Value: "+headerValue);
+                    boolean recognized = false; 
+                    
+                    if (headerKey != null) {
+                        /*
+                        if (i > 1 && headerKey.equals("EXTNAME")) {
+                            hduNames.set(i-2, headerValue);
+                        } */
+                        if (isRecognizedKey(headerKey)) {
+                            dbgLog.fine("recognized key: " + headerKey);
+                            recognized = true; 
+                            metadataKeys.add(headerKey);
+                        } else if (isRecognizedColumnKey(headerKey)) {
+                            dbgLog.fine("recognized column key: " + headerKey);
+                            recognized = true;
+                            //columnKeys.add(getTrimmedColumnKey(headerKey));
+                            columnKeys.add(headerKey);
+                        }
+                    } 
+                    
+                    if (recognized) {
+
+                        String indexableKey = 
+                                getIndexableMetaKey(headerKey) != null ? 
+                                getIndexableMetaKey(headerKey) : 
+                                headerKey; 
+                        
+                        if (headerValue != null) {
+                            dbgLog.fine("value: " + headerValue);
+                            if (fitsMetaMap.get(indexableKey) == null) {
+                                fitsMetaMap.put(indexableKey, new HashSet<String>());
+                            } 
+                            fitsMetaMap.get(indexableKey).add(headerValue); 
+
+                        } else if (headerKey.equals("COMMENT") && headerComment != null) {
+                            dbgLog.fine("comment: " + headerComment);
+                            if (fitsMetaMap.get(indexableKey) == null) {
+                                fitsMetaMap.put(indexableKey, new HashSet<String>());
+                            } 
+                            fitsMetaMap.get(indexableKey).add(headerComment);
+                        } else {
+                            dbgLog.fine("value is null");
+                        }
+
+                        /*
+                         * TODO:
+                         * decide what to do with regular key comments:
+                         
+                        if (headerComment != null) {
+                            dbgLog.fine("comment: " + headerComment);
+                        } else {
+                            dbgLog.fine("comment is null");
+                        }
+                        * */
+                    }
+                    j++;
+                }
+                dbgLog.fine ("processed "+j+" cards total;");
+                
+                Data fitsData = hdu.getData(); 
+                
+                dbgLog.fine ("data size: "+fitsData.getSize());
+                dbgLog.fine("total size of the HDU is "+hdu.getSize());
+                               
+            }
+
+        } catch (FitsException fEx) {
+            throw new IOException("Failed to read HDU number " + i);
+        }
+            
+        dbgLog.fine ("processed "+i+" HDUs total;");
+        
+        int n = fitsFile.getNumberOfHDUs(); 
+        
+        if (n != i) {
+            dbgLog.fine("WARNING: mismatch between the number of cards processed and reported!");
+        }
+        dbgLog.fine("Total (current) number of HDUs: "+n);
+        
+        // Make final decisions on the "type(s)" of the file we have just
+        // processed: 
+        
+        String imageFileType = determineImageFileType (nImageHDUs, hduTypes);
+        if (imageFileType != null) {
+            fitsMetaMap.get("type").add(imageFileType);
+        }
+        
+        if (fitsMetaMap.get("type").isEmpty()) {
+            String tableFileType = determineTableFileType (nTableHDUs, hduTypes);
+            if (tableFileType != null) {
+                fitsMetaMap.get("type").add(tableFileType);
+            }
+        }
+        
+        if (n == 1 && fitsMetaMap.get("type").isEmpty()) {
+            // If there's only 1 (primary) HDU in the file, we'll make sure 
+            // the file type is set to (at least) "image" - even if we skipped 
+            // that HDU because it looked empty:
+            fitsMetaMap.get("type").add(FILE_TYPE_IMAGE);
+        }
+        
+
+        String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
+        
+        ingest.setMetadataMap(fitsMetaMap);
+        ingest.setMetadataSummary(metadataSummary);
+        
+        //return fitsMetaMap; 
+        return ingest; 
     }
     
     private void readConfig () {
@@ -283,229 +548,33 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         }
     }
     
-    //public Map<String, Set<String>> ingest (BufferedInputStream stream) throws IOException{
-    public FileMetadataIngest ingest (BufferedInputStream stream) throws IOException{
-        dbgLog.fine("Attempting to read FITS file;");
-        
-        Map<String, Set<String>> fitsMetaMap = new HashMap<String, Set<String>>();
-        
-        FileMetadataIngest ingest = new FileMetadataIngest();
-        ingest.setMetadataBlockName(ASTROPHYSICS_BLOCK_NAME);
-        
-        Fits fitsFile = null; 
-        try {
-            fitsFile = new Fits (stream);
-        } catch (FitsException fEx) {
-            throw new IOException ("Failed to open FITS stream; "+fEx.getMessage());
-        }
-        
-        if (fitsFile == null) {
-            throw new IOException ("Failed to open FITS stream; null Fits object");
-        }
-        
-        readConfig(); 
-
-        BasicHDU hdu = null;
-        int i = 0; 
-                
-        int nTableHDUs = 0; 
-        int nImageHDUs = 0; 
-        int nUndefHDUs = 0; 
-        
-        int nAxis = 0; 
-        
-        Set<String> metadataKeys = new HashSet<String>(); 
-        Set<String> columnKeys = new HashSet<String>(); 
-        List<String> hduTypes = new ArrayList<String>();
-        List<String> hduNames = new ArrayList<String>(); 
-        
-        try {
-            fitsMetaMap.put("type", new HashSet<String>());
-
-            while ((hdu = fitsFile.readHDU()) != null) {
-                dbgLog.fine("reading HDU number " + i);
-                
-                Header hduHeader = hdu.getHeader();
-
-                
-                if (hdu instanceof ImageHDU) {
-                    dbgLog.fine("this is an image HDU");
-                    
-                    nAxis = hduHeader.getIntValue("NAXIS");
-                    dbgLog.fine("NAXIS (directly from header): "+nAxis);
-                    
-                    if (nAxis > 1) {
-                        nImageHDUs++;
-                        if (nAxis > 2) {
-                            fitsMetaMap.get("type").add(HDU_TYPE_IMAGE_CUBE);
-                            hduTypes.add(HDU_TYPE_IMAGE_CUBE);
-                            hduNames.add("[UNNAMED]"); 
-                        } else {
-                            fitsMetaMap.get("type").add(HDU_TYPE_IMAGE);
-                            hduTypes.add(HDU_TYPE_IMAGE);
-                            hduNames.add("[UNNAMED]");
-                        }
-                    } else {
-                        hduTypes.add(HDU_TYPE_UNKNOWN);
-                    }
-                } else if (hdu instanceof TableHDU) {
-                    dbgLog.fine("this is a table HDU");
-                    nTableHDUs++;
-                    fitsMetaMap.get("type").add(HDU_TYPE_TABLE);
-                    hduTypes.add(HDU_TYPE_TABLE);
-                    hduNames.add("[UNNAMED]");
-                } else if (hdu instanceof UndefinedHDU) {
-                    dbgLog.fine("this is an undefined HDU");
-                    nUndefHDUs++;
-                    hduTypes.add(HDU_TYPE_UNDEF);
-                    hduNames.add("[UNNAMED]");
-
-                } else {
-                    dbgLog.fine("this is an UKNOWN HDU");
-                    hduTypes.add(HDU_TYPE_UNKNOWN);
-                }
-                               
-                i++;
-
-                // Standard HDU attributes that we always check: 
-                
-                if (fitsMetaMap.get("facility") == null) {
-                    String hduTelescope = hdu.getTelescope();
-                    if (hduTelescope != null) {
-                        fitsMetaMap.put("facility", new HashSet<String>());
-                        fitsMetaMap.get("facility").add(hduTelescope);
-                    }
-                }
-                
-                if (fitsMetaMap.get("instrument") == null) {
-                    String hduInstrument = hdu.getInstrument();
-                    if (hduInstrument != null) {
-                        fitsMetaMap.put("instrument", new HashSet<String>());
-                        fitsMetaMap.get("instrument").add(hduInstrument);
-                    }
-                }
-                
-                for (int j = 0; j < hdu.getAxes().length; j++) {
-                    int nAxisN = hdu.getAxes()[j];
-                    dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
-                }
-                
-                // Process individual header cards:
-                
-                HeaderCard headerCard = null;
-
-                int j = 0;
-                while ((headerCard = hduHeader.nextCard()) != null) {
-
-                    String headerKey = headerCard.getKey();
-                    String headerValue = headerCard.getValue();
-                    String headerComment = headerCard.getComment();
-
-                    dbgLog.fine("Processing header key: "+headerKey);
-                    dbgLog.fine("Value: "+headerValue);
-                    boolean recognized = false; 
-                    
-                    if (headerKey != null) {
-                        /*
-                        if (i > 1 && headerKey.equals("EXTNAME")) {
-                            hduNames.set(i-2, headerValue);
-                        } */
-                        if (isRecognizedKey(headerKey)) {
-                            dbgLog.fine("recognized key: " + headerKey);
-                            recognized = true; 
-                            metadataKeys.add(headerKey);
-                        } else if (isRecognizedColumnKey(headerKey)) {
-                            dbgLog.fine("recognized column key: " + headerKey);
-                            recognized = true;
-                            //columnKeys.add(getTrimmedColumnKey(headerKey));
-                            columnKeys.add(headerKey);
-                        }
-                    } 
-                    
-                    if (recognized) {
-
-                        String indexableKey = 
-                                getIndexableMetaKey(headerKey) != null ? 
-                                getIndexableMetaKey(headerKey) : 
-                                headerKey; 
-                        
-                        if (headerValue != null) {
-                            dbgLog.fine("value: " + headerValue);
-                            if (fitsMetaMap.get(indexableKey) == null) {
-                                fitsMetaMap.put(indexableKey, new HashSet<String>());
-                            } 
-                            fitsMetaMap.get(indexableKey).add(headerValue); 
-
-                        } else if (headerKey.equals("COMMENT") && headerComment != null) {
-                            dbgLog.fine("comment: " + headerComment);
-                            if (fitsMetaMap.get(indexableKey) == null) {
-                                fitsMetaMap.put(indexableKey, new HashSet<String>());
-                            } 
-                            fitsMetaMap.get(indexableKey).add(headerComment);
-                        } else {
-                            dbgLog.fine("value is null");
-                        }
-
-                        /*
-                         * TODO:
-                         * decide what to do with regular key comments:
-                         
-                        if (headerComment != null) {
-                            dbgLog.fine("comment: " + headerComment);
-                        } else {
-                            dbgLog.fine("comment is null");
-                        }
-                        * */
-                    }
-                    j++;
-                }
-                dbgLog.fine ("processed "+j+" cards total;");
-                
-                Data fitsData = hdu.getData(); 
-                
-                dbgLog.fine ("data size: "+fitsData.getSize());
-                dbgLog.fine("total size of the HDU is "+hdu.getSize());
-                               
+    private String determineImageFileType (int nImageHDUs, List<String> hduTypes) {
+        if (nImageHDUs > 0) {
+            // At least one HDU is an image; so the whole file gets to be typed
+            // as image - unless it qualifies as one of the Image sub-types:
+            for (int j = 0; j < hduTypes.size(); j++) {
+                if (hduTypes.get(j).equals(HDU_TYPE_IMAGE_CUBE)) {
+                    return FILE_TYPE_CUBE;
+                } 
             }
-
-        } catch (FitsException fEx) {
-            throw new IOException("Failed to read HDU number " + i);
-        }
             
-        dbgLog.fine ("processed "+i+" HDUs total;");
-        
-        int n = fitsFile.getNumberOfHDUs(); 
-        
-        if (n != i) {
-            dbgLog.fine("WARNING: mismatch between the number of cards processed and reported!");
-        }
-        dbgLog.fine("Total (current) number of HDUs: "+n);
-        
-        // Make final decisions on the "type(s)" of the file we have just
-        // processed: 
-        
-        if (n == 1) {
-            // If there's only 1 (primary) HDU in the file, we'll make sure 
-            // the file type is set to (at least) "image" - even if we skipped 
-            // that HDU because it looked empty:
-            if (fitsMetaMap.get("type").isEmpty()) {
-                fitsMetaMap.get("type").add(HDU_TYPE_IMAGE);
-            }
+            if (nImageHDUs > 1) {
+                return FILE_TYPE_MOSAIC;
+            } 
+            
+            return FILE_TYPE_IMAGE;
         }
         
-
-        String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
-        
-        fitsMetaMap.put(METADATA_SUMMARY, new HashSet<String>());
-        fitsMetaMap.get(METADATA_SUMMARY).add(metadataSummary); 
-        
-        ingest.setMetadataMap(fitsMetaMap);
-        ingest.setMetadataSummary(metadataSummary);
-        
-        //return fitsMetaMap; 
-        return ingest; 
+        return null; 
     }
     
+    private String determineTableFileType (int nTableHDUs, List<String> hduTypes) {
+        if (nTableHDUs > 0) {
+            return FILE_TYPE_TABLE;
+        }
+        
+        return null; 
+    }
     private boolean isRecognizedKey (String key) {
         if (recognizedFitsMetadataKeys.containsKey(key)) {
             return true;
