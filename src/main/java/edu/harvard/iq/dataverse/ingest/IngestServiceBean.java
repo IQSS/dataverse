@@ -405,14 +405,16 @@ public class IngestServiceBean {
                 
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    String dsfName = dsft.getName();
-                    if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
-                        logger.fine("Ingest Service: found extracted metadata for field "+dsfName);
-                        // go through the existing fields:
-                        for (DatasetField dsf : editVersion.getDatasetFields()) {
-                            if (dsf.getDatasetFieldType().equals(dsft)) {
-                                // yep, this is our field!
-                                if (dsft.isPrimitive()) {
+                    if (dsft.isPrimitive()) {
+                        String dsfName = dsft.getName();
+                        // See if the plugin has found anything for this field: 
+                        if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                            logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
+                            // go through the existing fields:
+                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                                String fName = dsf.getDatasetFieldType().getName();
+                                if (dsf.getDatasetFieldType().equals(dsft)) {
+                                    // yep, this is our field!
                                     // let's go through the values that the ingest 
                                     // plugin found in the file for this field: 
                                     Set<String> mValues = fileMetadataMap.get(dsfName);
@@ -420,21 +422,21 @@ public class IngestServiceBean {
                                         if (!dsft.isControlledVocabulary()) {
                                             // Need to only add the values not yet present!
                                             // (the method below may be inefficient - ?)
-                                            boolean valueExists = false; 
-                                
+                                            boolean valueExists = false;
+
                                             Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
-                                            
+
                                             while (dsfvIt.hasNext()) {
                                                 DatasetFieldValue dsfv = dsfvIt.next();
                                                 if (fValue.equals(dsfv.getValue())) {
-                                                    logger.fine("Value "+fValue+" already exists for field "+dsfName); 
-                                                    valueExists = true; 
-                                                    break; 
+                                                    logger.fine("Value " + fValue + " already exists for field " + dsfName);
+                                                    valueExists = true;
+                                                    break;
                                                 }
                                             }
-                                        
+
                                             if (!valueExists) {
-                                                logger.fine("Creating a new value for field "+dsfName+": "+fValue);
+                                                logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
                                                 DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                                                 newDsfv.setValue(fValue);
                                                 dsf.getDatasetFieldValues().add(newDsfv);
@@ -442,14 +444,14 @@ public class IngestServiceBean {
                                         } else {
                                             // A controlled vocabulary entry: 
                                             // first, let's see if it's a legit control vocab. entry: 
-                                            ControlledVocabularyValue legitControlledVocabularyValue = null; 
+                                            ControlledVocabularyValue legitControlledVocabularyValue = null;
                                             Collection<ControlledVocabularyValue> definedVocabularyValues = dsft.getControlledVocabularyValues();
                                             if (definedVocabularyValues != null) {
                                                 for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
                                                     if (fValue.equals(definedVocabValue.getStrValue())) {
-                                                        logger.fine("Yes, "+fValue+" is a valid controlled vocabulary value for the field "+dsfName);
-                                                        legitControlledVocabularyValue = definedVocabValue; 
-                                                        break; 
+                                                        logger.fine("Yes, " + fValue + " is a valid controlled vocabulary value for the field " + dsfName);
+                                                        legitControlledVocabularyValue = definedVocabValue;
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -457,37 +459,38 @@ public class IngestServiceBean {
                                                 // Only need to add the value if it is new, 
                                                 // i.e. if it does not exist yet: 
                                                 boolean valueExists = false;
-                                                
-                                                List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues(); 
+
+                                                List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues();
                                                 if (existingControlledVocabValues != null) {
                                                     Iterator<ControlledVocabularyValue> cvvIt = existingControlledVocabValues.iterator();
                                                     while (cvvIt.hasNext()) {
                                                         ControlledVocabularyValue cvv = cvvIt.next();
                                                         if (fValue.equals(cvv.getStrValue())) {
-                                                        // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
-                                                            logger.fine("Controlled vocab. value "+fValue+" already exists for field "+dsfName); 
-                                                            valueExists = true; 
-                                                            break; 
+                                                            // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
+                                                            logger.fine("Controlled vocab. value " + fValue + " already exists for field " + dsfName);
+                                                            valueExists = true;
+                                                            break;
                                                         }
                                                     }
                                                 }
-                                                
+
                                                 if (!valueExists) {
-                                                    logger.fine("Adding controlled vocabulary value "+fValue+" to field "+dsfName);
+                                                    logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
                                                     dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
                                                 }
                                             }
                                         }
                                     }
-                                } else {
-                                    // A compound field: 
-                                    // - but that's not going to happen!
-                                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
+
                                 }
                             }
                         }
                     }
-                }
+                } //else {
+                    // A compound field: 
+                    // - but that's not going to happen!
+                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
+                //}
             }
         }  
     }
