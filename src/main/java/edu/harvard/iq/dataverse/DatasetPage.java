@@ -349,14 +349,14 @@ public class DatasetPage implements java.io.Serializable {
 
                     if (ingestService.ingestableAsTabular(dFile)) {
                         /*
-                        try {
-                            ingestedAsTabular = ingestService.ingestAsTabular(tempFileLocation, dFile);
-                            dFile.setContentType("text/tab-separated-values");
-                        } catch (IOException iex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, iex);
-                            ingestedAsTabular = false;
-                        }
-                        */
+                         * Note that we don't try to ingest the file right away - 
+                         * instead we mark it as "scheduled for ingest", then at 
+                         * the end of the save process it will be queued for async. 
+                         * ingest in the background. In the meantime, the file 
+                         * will be ingested as a regular, non-tabular file, and 
+                         * appear as such to the user, until the ingest job is
+                         * finished with the Ingest Service.
+                         */
                         dFile.SetIngestScheduled();
                     } else if (ingestService.fileMetadataExtractable(dFile)) {
 
@@ -536,7 +536,7 @@ public class DatasetPage implements java.io.Serializable {
             fmd.setDatasetVersion(editVersion);
             dataset.getFiles().add(dFile);
 
-            // When downloading files from dropBox, we don't get the benefit of 
+            // When uploading files from dropBox, we don't get the benefit of 
             // having the browser recognize the mime type of the file. So we'll 
             // have to rely on our own utilities (Jhove, etc.) to try and determine
             // what it is. 
