@@ -279,11 +279,7 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getLatestVersion() != null) {
-            /**
-             * @todo consider using this new method instead:
-             * dataset.getLatestVersion().getFlatDatasetFields()
-             */
-            for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
+            for (DatasetField dsf : dataset.getLatestVersion().getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
                 String solrFieldSearchable = dsfType.getSolrField().getNameSearchable();
@@ -347,35 +343,6 @@ public class IndexServiceBean {
                             }
                         }
                     }
-                } else {
-                    // these are the non-primitives fields, the compound fields (author, publication, contributor, etc.)
-                    StringBuilder sb = new StringBuilder();
-                    String msg = dsfType.getId() + ":" + dsfType.getName() + " is a compound field. Indexing";
-                    sb.append(msg);
-                    /**
-                     * @todo: make this recursive? children of children of
-                     * children?
-                     */
-                    for (DatasetFieldType compoundField : dsfType.getChildDatasetFieldTypes()) {
-                        String compoundSearchable = compoundField.getSolrField().getNameSearchable();
-                        String compoundFacetable = compoundField.getSolrField().getNameFacetable();
-                        String info = " " + compoundSearchable + "/" + compoundFacetable + ":";
-                        sb.append(info);
-                        for (DatasetField datasetFieldInner : compoundField.getDatasetFields()) {
-                            sb.append(datasetFieldInner.getValues());
-                            if (compoundField.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
-                                /**
-                                 * @todo: handle integer types
-                                 */
-                            } else {
-                                solrInputDocument.addField(compoundSearchable, datasetFieldInner.getValues());
-                                if (compoundField.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(compoundFacetable, datasetFieldInner.getValues());
-                                }
-                            }
-                        }
-                    }
-                    logger.info(sb.toString());
                 }
                 /**
                  * @todo: review all code below... commented out old indexing of
