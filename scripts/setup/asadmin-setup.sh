@@ -154,6 +154,14 @@ if [  $(echo $DOMAIN_DOWN|wc -c) -ne 1  ];
     echo domain running
 fi
 
+# avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
+#./asadmin $ASADMIN_OPTS list-jvm-options
+./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
+./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
+./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=512m"
+./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
+./asadmin $ASADMIN_OPTS create-jvm-options -Xmx1024m
+
 ###
 # JDBC connection pool
 ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
