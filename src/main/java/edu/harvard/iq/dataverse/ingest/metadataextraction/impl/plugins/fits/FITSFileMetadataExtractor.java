@@ -334,7 +334,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     nAxis = hduHeader.getIntValue("NAXIS");
                     dbgLog.fine("NAXIS (directly from header): "+nAxis);
                     
-                    if (nAxis > 0) {
+                    if (nAxis > 1) {
                         nImageHDUs++;
                         if (nAxis > 2) {
                             fitsMetaMap.get("type").add(HDU_TYPE_IMAGE_CUBE);
