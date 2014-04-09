@@ -23,7 +23,6 @@
 # We assume you edit the metadata of this dataset at
 # http://localhost:8080/dataset.xhtml?id=17
 # and add the following
-# FIXME: why isn't this being stored in Solr?
 # Contributor:
 #   Type: Data Collector
 #   Name: Edward Trees Jr.

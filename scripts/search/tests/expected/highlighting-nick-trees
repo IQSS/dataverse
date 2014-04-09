@@ -10,7 +10,7 @@
     "relevance":[
         {
             "id":"dataset_17",
-            "matched_fields":"[title, description, notesText]"
+            "matched_fields":"[title, authorAffiliation, description, notesText, contributorName]"
         },
         {
             "id":"dataverse_10",
