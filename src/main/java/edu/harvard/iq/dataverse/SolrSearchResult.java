@@ -60,6 +60,10 @@ public class SolrSearchResult {
     private String dataverseAffiliation;
     private String citation;
     private String filetype;
+    /**
+     * @todo: show the "friendly" version with maybe the actual/Solr field as a
+     * tooltip
+     */
     private List<String> matchedFields;
 
     public List<String> getMatchedFields() {

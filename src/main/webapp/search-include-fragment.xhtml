@@ -413,7 +413,7 @@
                                     <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </p:outputPanel>
                                 <ui:fragment rendered="#{result.matchedFields.size() > 0}">
-                                    <h:outputText value="Metadata fields that search matched: "/>
+                                    <h:outputText value="Found in Metadata Fields: "/>
                                     <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                         <h:outputText value="#{field}"/>
                                         <h:outputText value=", " rendered="#{varStatus.last != true}"/>
@@ -476,6 +476,14 @@
                                 <!--<div style="clear: left">
                                     <h:outputText value="### downloads + analysis"/>
                                 </div>-->
+                                <ui:fragment rendered="#{result.matchedFields.size() > 0}">
+                                    <br/>
+                                    <h:outputText value="Found in Metadata Fields: "/>
+                                    <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                        <h:outputText value="#{field}"/>
+                                        <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
                             </ui:fragment>
                             <ui:fragment rendered="#{result.type == 'files'}">
                                 <!--FIXME: have a landing page for each file?-->
