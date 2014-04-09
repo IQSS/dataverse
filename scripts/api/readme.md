@@ -133,3 +133,16 @@ Shows the role with `id`.
 	DELETE http://{{SERVER}}/api/roles/{{id}}
 
 Deletes the role with `id`.
+
+
+### Metadata Blocks
+
+	GET http://{{SERVER}}/api/metadatablocks
+
+Lists brief info about all metadata blocks registered in the system.
+
+	GET http://{{SERVER}}/api/metadatablocks/{{idtf}}
+
+Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
+
+	

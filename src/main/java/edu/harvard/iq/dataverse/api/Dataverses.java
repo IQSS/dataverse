@@ -26,12 +26,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.persistence.PostPersist;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response;
 
 /**
  * A REST API for dataverses. To be unified with {@link Dataverses}.
@@ -85,7 +88,10 @@ public class Dataverses extends AbstractApiBean {
                     if (cause instanceof ConstraintViolationException) {
                         ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                         for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                            sb.append(" Invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage());
+                            sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                    .append(violation.getPropertyPath()).append(" at ")
+                                    .append(violation.getLeafBean()).append(" - ")
+                                    .append(violation.getMessage());
                         }
                     }
                 }
@@ -153,9 +159,12 @@ public class Dataverses extends AbstractApiBean {
 		for ( MetadataBlock blk : dataverse.getMetadataBlocks()){
 			jab.add( json(blk) );
 		}
+        
 		return ok(jab);
 	}
 	
+    // TODO add metadata blocks
+    
 	@GET
 	@Path("{identifier}/contents")
 	public String listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {

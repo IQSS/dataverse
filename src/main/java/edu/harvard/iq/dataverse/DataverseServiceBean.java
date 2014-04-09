@@ -13,6 +13,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -61,11 +62,15 @@ public class DataverseServiceBean {
     }
 
     public Dataverse findByAlias(String anAlias) {
-        return (anAlias.equals(":root"))
+        try {
+            return (anAlias.equals(":root"))
 				? findRootDataverse()
 				: em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
 					.setParameter("alias", anAlias)
 					.getSingleResult();
+        } catch ( NoResultException nre ) {
+            return null;
+        }
     }
 	
 	public boolean hasData( Dataverse dv ) {
