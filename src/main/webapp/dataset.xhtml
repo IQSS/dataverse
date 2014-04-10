@@ -56,7 +56,7 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" style="float:right;">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                   <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -80,7 +80,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
@@ -182,7 +182,7 @@
                                                     </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
-                                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationUrl}</a></span>
+                                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation} #{DatasetPage.datasetVersionUI.relPublicationId}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationUrl}</a></span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
                                                     <span id="note">
@@ -251,7 +251,7 @@
                                         <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" />
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -370,7 +370,7 @@
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />

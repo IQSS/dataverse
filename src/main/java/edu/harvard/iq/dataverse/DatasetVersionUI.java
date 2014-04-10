@@ -201,6 +201,18 @@ public class DatasetVersionUI {
         }
     }
 
+    public String getRelPublicationId() {
+        if (!this.datasetRelPublications.isEmpty()) {
+            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null)  && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()){
+                            return this.getDatasetRelPublications().get(0).getIdType() + ": " + this.getDatasetRelPublications().get(0).getIdNumber();
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+    
     public String getRelPublicationUrl() {
         if (!this.datasetRelPublications.isEmpty()) {
             return this.getDatasetRelPublications().get(0).getUrl();
@@ -244,20 +256,12 @@ public class DatasetVersionUI {
                 str += ", ";
             }
             str += getReleaseDate();
-        } else if (!StringUtil.isEmpty(getDistributionDate())) {
+        } else if (!StringUtil.isEmpty(getCreateDate())) {
             if (!StringUtil.isEmpty(str)) {
-                str += ", ";
+                str += ", <";
             }
-            str += getYearForCitation(getDistributionDate());
-//getting 2014 for citation 
-//while still possible that prod date and deposit date are empty               
-        } else {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += "2014";
-
-        }
+            str += getYearForCitation(getCreateDate()) + ">";             
+        } 
 
         if (!StringUtil.isEmpty(getTitle().getValue())) {
             if (!StringUtil.isEmpty(str)) {
