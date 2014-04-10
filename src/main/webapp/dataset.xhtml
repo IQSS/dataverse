@@ -247,8 +247,10 @@
                                         <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
                                         <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="tabView:filesTable" style="display:none">
                                         </p:commandButton>
-                                
-                                        <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" />
+                                        <div style="margin:1em 0;">
+                                            <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                            <p class="help-block">You can also upload your files directly from your Dropbox.</p>
+                                        </div>
                                     </ui:fragment>
                                     <!-- View -->
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode}">
