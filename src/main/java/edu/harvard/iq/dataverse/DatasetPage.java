@@ -257,7 +257,12 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         int i = 0; 
         // Go through the list of the files on the page...
-        for (DataFile dataFile : dataset.getFiles()) {
+        // (I've had to switch from going through the files via dataset.getFiles(), to 
+        // .getLatestVersion().getFileMetadatas() - because that's how the page is
+        // accessing them. -- L.A.)
+        //for (DataFile dataFile : dataset.getFiles()) {
+        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
             // and see if any are marked as "ingest-in-progress":
             if (dataFile.isIngestInProgress()) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Refreshing the status of the file " + dataFile.getName() + "...");
@@ -268,7 +273,8 @@ public class DatasetPage implements java.io.Serializable {
                     // and, if the status has changed - i.e., if the ingest has 
                     // completed, or failed, update the object in the list of 
                     // files visible to the page:
-                    dataset.getFiles().set(i, dataFile);
+                    //dataset.getFiles().set(i, dataFile);
+                    fileMetadata.setDataFile(dataFile);
                 }
             }
             i++;
@@ -552,6 +558,7 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile(uFile.getFileName(), uFile.getContentType());
+        
         FileMetadata fmd = new FileMetadata();
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);

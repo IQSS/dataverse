@@ -248,7 +248,7 @@ public class IngestServiceBean {
                 // and replace (or add) the extension ".tab" to the filename: 
                 
                 dataFile.setContentType(MIME_TYPE_TAB);
-                dataFile.setName(FileUtil.replaceExtension(dataFile.getName(), ".tab"));  
+                dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(dataFile.getName(), "tab"));  
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
