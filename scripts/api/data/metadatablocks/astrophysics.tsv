@@ -41,7 +41,7 @@
 	type	Artwork	10											
 	type	Animation	11											
 	type	PrettyPicture	12											
-	type	Documentation 	13											
+	type	Documentation	13											
 	type	Other	14											
 	type	Library	15											
 	type	Press Release	16											
