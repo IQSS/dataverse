@@ -8,5 +8,5 @@ setting up backups and data replication as needed. For more general information 
 
 The Dataverse code is *open-source* and *free*. 
 
-Installation packages in Sourceforge, for installers. [Download the latest production stable 
+Installation packages in Sourceforge for installers. [Download the latest production stable 
 version of the Dataverse application] (http://sourceforge.net/projects/dvn/files/dvn/).
