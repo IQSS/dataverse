@@ -75,7 +75,7 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 #resultsCountPaginatorBlock div.results-sort-pagination {width:70%; text-align:right;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
-em {background-color: yellow;}
+span.search-term-match {font-weight: bold;}
 
 form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
 form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}

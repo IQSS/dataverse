@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.Highlight;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -26,32 +29,8 @@ public class SolrSearchResult {
     private String descriptionNoSnippet;
     private String highlightField01;
     private String highlightField02;
-
-    public String getHighlightField01() {
-        return highlightField01;
-    }
-
-    public void setHighlightField01(String highlightField01) {
-        this.highlightField01 = highlightField01;
-    }
-
-    public String getHighlightField02() {
-        return highlightField02;
-    }
-
-    public void setHighlightField02(String highlightField02) {
-        this.highlightField02 = highlightField02;
-    }
-
+    private List<Highlight> highlights = new ArrayList<>();
     private List<String> highlightSnippets01;
-
-    public List<String> getHighlightSnippets02() {
-        return highlightSnippets02;
-    }
-
-    public void setHighlightSnippets02(List<String> highlightSnippets02) {
-        this.highlightSnippets02 = highlightSnippets02;
-    }
     private List<String> highlightSnippets02;
     // parent can be dataverse or dataset, store the name and id
     private Map<String, String> parent;
@@ -93,9 +72,20 @@ public class SolrSearchResult {
     }
 
     public JsonObject getRelevance() {
+        JsonArrayBuilder detailsArrayBuilder = Json.createArrayBuilder();
+        for (Highlight highlight : highlights) {
+            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
+            for (String snippet : highlight.getSnippets()) {
+                snippetArrayBuilder.add(snippet);
+            }
+            JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+            detailsObjectBuilder.add(highlight.getSolrField().getNameSearchable(), snippetArrayBuilder);
+            detailsArrayBuilder.add(detailsObjectBuilder);
+        }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add(SearchFields.ID, this.id)
                 .add("matched_fields", this.matchedFields.toString())
+                .add("details", detailsArrayBuilder)
                 .build();
         return jsonObject;
     }
@@ -195,6 +185,38 @@ public class SolrSearchResult {
         this.highlightSnippets01 = highlightSnippets01;
     }
 
+    public String getHighlightField01() {
+        return highlightField01;
+    }
+
+    public void setHighlightField01(String highlightField01) {
+        this.highlightField01 = highlightField01;
+    }
+
+    public String getHighlightField02() {
+        return highlightField02;
+    }
+
+    public void setHighlightField02(String highlightField02) {
+        this.highlightField02 = highlightField02;
+    }
+
+    public List<Highlight> getHighlights() {
+        return highlights;
+    }
+
+    public void setHighlights(List<Highlight> highlights) {
+        this.highlights = highlights;
+    }
+
+    public List<String> getHighlightSnippets02() {
+        return highlightSnippets02;
+    }
+
+    public void setHighlightSnippets02(List<String> highlightSnippets02) {
+        this.highlightSnippets02 = highlightSnippets02;
+    }
+
     public Map<String, String> getParent() {
         return parent;
     }
@@ -234,6 +256,7 @@ public class SolrSearchResult {
     public void setFiletype(String filetype) {
         this.filetype = filetype;
     }
+
     public String getNameSort() {
         return nameSort;
     }

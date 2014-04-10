@@ -10,19 +10,77 @@
     "relevance":[
         {
             "id":"dataset_17",
-            "matched_fields":"[title, authorAffiliation, description, keyword, notesText, contributorName]"
+            "matched_fields":"[title, authorAffiliation, description, keyword, notesText, contributorName]",
+            "details":[
+                {
+                    "title":[
+                        "Rings of <span class=\"search-term-match\">Trees</span> and Other Observations"
+                    ]
+                },
+                {
+                    "authorAffiliation":[
+                        "<span class=\"search-term-match\">Trees</span> Inc."
+                    ]
+                },
+                {
+                    "description":[
+                        "<span class=\"search-term-match\">Trees</span> have rings. <span class=\"search-term-match\">Trees</span> can be tall."
+                    ]
+                },
+                {
+                    "keyword":[
+                        "<span class=\"search-term-match\">trees</span>"
+                    ]
+                },
+                {
+                    "notesText":[
+                        "Many notes have been taken about <span class=\"search-term-match\">trees</span> over the years."
+                    ]
+                },
+                {
+                    "contributorName":[
+                        "Edward <span class=\"search-term-match\">Trees</span> Jr."
+                    ]
+                }
+            ]
         },
         {
             "id":"dataverse_10",
-            "matched_fields":"[description]"
+            "matched_fields":"[description]",
+            "details":[
+                {
+                    "description":[
+                        "A bird dataverse with some <span class=\"search-term-match\">trees</span>"
+                    ]
+                }
+            ]
         },
         {
             "id":"dataverse_11",
-            "matched_fields":"[name]"
+            "matched_fields":"[name]",
+            "details":[
+                {
+                    "name":[
+                        "<span class=\"search-term-match\">Trees</span>"
+                    ]
+                }
+            ]
         },
         {
             "id":"dataverse_16",
-            "matched_fields":"[name, description]"
+            "matched_fields":"[name, description]",
+            "details":[
+                {
+                    "name":[
+                        "Chestnut <span class=\"search-term-match\">Trees</span>"
+                    ]
+                },
+                {
+                    "description":[
+                        "A dataverse with chestnut <span class=\"search-term-match\">trees</span> and an oriole"
+                    ]
+                }
+            ]
         }
     ]
 }

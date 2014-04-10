@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +67,8 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
+        solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
+        solrQuery.setHighlightSimplePost("</span>");
         List<String> solrFieldsToHighlightOn = new ArrayList<>();
         String highlightField01 = SearchFields.DESCRIPTION;
         String highlightField02 = SearchFields.NAME;
@@ -240,6 +243,7 @@ public class SearchServiceBean {
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             List<String> matchedFields = new ArrayList<>();
+            List<Highlight> highlights = new ArrayList<>();
             if (queryResponse.getHighlighting().get(id) != null) {
 //                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
                 highlightSnippets01 = queryResponse.getHighlighting().get(id).get(highlightField01);
@@ -252,6 +256,7 @@ public class SearchServiceBean {
                     List<String> highlightSnippets = queryResponse.getHighlighting().get(id).get(field);
                     if (highlightSnippets != null) {
                         matchedFields.add(field);
+                        highlights.add(new Highlight(new SolrField(field, SolrField.SolrType.STRING, true, true), highlightSnippets));
                     }
                 }
 
@@ -271,6 +276,7 @@ public class SearchServiceBean {
             solrSearchResult.setHighlightField02(highlightField02);
             solrSearchResult.setHighlightSnippets02(highlightSnippets02);
             solrSearchResult.setMatchedFields(matchedFields);
+            solrSearchResult.setHighlights(highlights);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);

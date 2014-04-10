@@ -412,11 +412,23 @@
                                     <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
                                     <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </p:outputPanel>
-                                <ui:fragment rendered="#{result.matchedFields.size() > 0}">
+                                <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
                                     <h:outputText value="Found in Metadata Fields: "/>
                                     <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                         <h:outputText value="#{field}"/>
                                         <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{result.highlights.size() > 0}">
+                                    <ui:repeat value="#{result.highlights}" var="highlight">
+                                        <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                            <br/>
+                                            <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
+                                            <h:outputText value="#{highlight.solrField.nameSearchable}: "/>
+                                            <h:outputText value="#{snippet}" escape="false"/>
+                                        </ui:repeat>
                                     </ui:repeat>
                                 </ui:fragment>
 
@@ -476,15 +488,26 @@
                                 <!--<div style="clear: left">
                                     <h:outputText value="### downloads + analysis"/>
                                 </div>-->
-                                <ui:fragment rendered="#{result.matchedFields.size() > 0}">
-                                    <br/>
+                                <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
                                     <h:outputText value="Found in Metadata Fields: "/>
                                     <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                         <h:outputText value="#{field}"/>
                                         <h:outputText value=", " rendered="#{varStatus.last != true}"/>
                                     </ui:repeat>
                                 </ui:fragment>
+                                <ui:fragment rendered="#{result.highlights.size() > 0}">
+                                    <ui:repeat value="#{result.highlights}" var="highlight">
+                                        <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                            <br/>
+                                            <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                            <h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>
+                                            <h:outputText value="#{snippet}" escape="false"/>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </ui:fragment>
                             </ui:fragment>
+
                             <ui:fragment rendered="#{result.type == 'files'}">
                                 <!--FIXME: have a landing page for each file?-->
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
