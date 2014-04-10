@@ -32,9 +32,9 @@ public class MetadataBlocks extends AbstractApiBean {
     @Path("{identifier}")
     @GET
     public Response getBlock( @PathParam("identifier") String idtf ) {
-        MetadataBlock b = ( isNumeric(idtf) ? metadataBlockSvc.findById(Long.parseLong(idtf))
-                                            : metadataBlockSvc.findByName(idtf) );
+        MetadataBlock b = findMetadataBlock(idtf);
         
         return  (b != null ) ? okResponse(json(b)) : notFound("Can't find metadata block '" + idtf + "'");
     }
+    
 }
