@@ -408,10 +408,29 @@
 
                                 <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
 
-                                <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <p:outputPanel style="margin-bottom: .5em;" rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </p:outputPanel>
+                                <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                                    <h:outputText value="Found in Metadata Fields: "/>
+                                    <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                        <h:outputText value="#{field}"/>
+                                        <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{result.highlights.size() > 0}">
+                                    <ui:repeat value="#{result.highlights}" var="highlight">
+                                        <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                            <br/>
+                                            <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>-->
+                                            <h:outputText value="#{highlight.solrField.nameSearchable}: "/>
+                                            <h:outputText value="#{snippet}" escape="false"/>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </ui:fragment>
 
                                 <ui:fragment rendered="#{result.datasets.size() > 0}">
                                     <div style="clear:left;">
@@ -461,15 +480,34 @@
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
                                 </h:outputLink>
 
-                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <ui:fragment rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </ui:fragment>
 
                                 <!--<div style="clear: left">
                                     <h:outputText value="### downloads + analysis"/>
                                 </div>-->
+                                <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                                    <h:outputText value="Found in Metadata Fields: "/>
+                                    <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                        <h:outputText value="#{field}"/>
+                                        <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{result.highlights.size() > 0}">
+                                    <ui:repeat value="#{result.highlights}" var="highlight">
+                                        <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                            <br/>
+                                            <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                            <!--<h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery('name:intentional').get(0)}"/>-->
+                                            <h:outputText value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(unfriendly).get(0)}: "/>
+                                            <h:outputText value="#{snippet}" escape="false"/>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </ui:fragment>
                             </ui:fragment>
+
                             <ui:fragment rendered="#{result.type == 'files'}">
                                 <!--FIXME: have a landing page for each file?-->
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block; font-weight:bold; clear:left; margin-bottom: .5em;">
@@ -483,9 +521,9 @@
 
                                 <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
 
-                                <ui:fragment rendered="#{(result.highlightSnippets == null) or result.highlightSnippets.size() != null}">
-                                    <h:outputText value="#{result.highlightSnippets}" rendered="#{result.highlightSnippets.size() != null}" escape="false"/>
-                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets == null}"/>
+                                <ui:fragment rendered="#{(result.highlightSnippets01 == null) or result.highlightSnippets01.size() != null}">
+                                    <h:outputText value="#{result.highlightSnippets01}" rendered="#{result.highlightSnippets01.size() != null}" escape="false"/>
+                                    <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.highlightSnippets01 == null}"/>
                                 </ui:fragment>
 
                                 <h:outputLink value="/dataset.xhtml?id=#{result.parent.get('id')}" style="display:block;">

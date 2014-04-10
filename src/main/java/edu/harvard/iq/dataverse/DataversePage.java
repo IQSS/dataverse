@@ -151,15 +151,14 @@ public class DataversePage implements java.io.Serializable {
 
     public String save() {
 		Command<Dataverse> cmd = null;
-        
-		if ( editMode == EditMode.INFO ) {
-            dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-			cmd = new CreateDataverseCommand(dataverse, session.getUser());
-        
-		} else if ( editMode == EditMode.SETUP ) {
-			cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
-        }
-        
+                //TODO change to Create - for now the page is expecting INFO instead.
+                if (dataverse.getId() == null){
+                    dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+                    cmd = new CreateDataverseCommand(dataverse, session.getUser());
+                } else {
+                    cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
+                }
+
 		try {
 			dataverse = commandEngine.submit(cmd);
                         userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());

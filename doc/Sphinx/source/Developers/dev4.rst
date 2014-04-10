@@ -5,7 +5,7 @@ DVN Developers Guide
 Solr
 ++++
 
-Dataverse 4.0 depends on Solr, which you should run on localhost during development. The Dataverse-specific ``schema.xml`` configuration file described below is required.
+Dataverse 4.0 depends on Solr, which you should run on localhost during development. The Dataverse-specific ``schema.xml`` configuration file described below is required. Solr must be running with this custom schema in place during setup.
 
 Installing and Running Solr
 ===========================
@@ -58,9 +58,10 @@ JVM options can be configured throught the admin console, with the asadmin comma
 Rebuilding your dev environment
 +++++++++++++++++++++++++++++++
 
-If you have an old copy of the database and want to start fresh, here are the recommended steps:
+If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps:
 
 - drop your old database
+- clear out your existing Solr index: ``curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type: application/json' -X POST -d '{"delete": { "query":"*:*" }}'``
 - create a new database
 - deploy the app
 - run the reference data script: ``scripts/database/reference_data.sql`` (NOTE: run the script as user ``postgres``; i.e., do not attempt to run it as your application database user, for example, ``dvnApp``!)
@@ -71,7 +72,6 @@ If you have an old copy of the database and want to start fresh, here are the re
 - ``./setup-dvs.sh`` 
 - confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
 - confirm http://localhost:8080 is up
-- run "index all" by browsing to http://localhost:8080/api/index
 - via web browser, go to the Root Dataverse / Edit Dataverse Setup. Add the Citation block and any others. You may also choose to select some  dataset-specific facets. (**)
 
 (*) This script calls a curl command for each of the (current) metadata blocks. If you want to exclude a block, just modify the file and remove that block.

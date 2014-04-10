@@ -1,0 +1,41 @@
+# Common document formats
+application/pdf pdf PDF
+application/msword doc DOC
+application/vnd.ms-excel xls XLS xlc XLC xll XLL xlm XLM xlw XLW
+text/plain txt TXT
+# Common statistical data formats
+text/tab-separated-values tab TAB tsv TSV
+text/xml xml XML
+text/csv csv CSV
+text/x-fixed-field dat DAT asc ASC
+application/x-rlang-transport Rdata RData rdata RDATA
+type/x-r-syntax r R
+application/x-stata dta DTA
+text/x-stata-syntax do DO
+application/x-spss-sav sav SAV
+application/x-spss-por por POR
+text/x-spss-syntax sps SPS
+application/x-sas-transport xpt XPT cport CPORT v5x V5X v6x V6X v7x V7X
+application/x-sas-system sas7bdat SAS7BDAT sd1 SD1 sd2 SD2 sd7 SD7 ssd01 SSD01 ssd SSD ssd04 SSD04
+text/x-sas-syntax sas SAS
+# Common image formats
+image/gif gif GIF
+image/jpeg jpeg JPEG jpg JPG jpe JPE
+image/bmp bmp BMP
+image/x-portable-bitmap pbm PBM
+image/x-portable-graymap pgm PGM
+image/png png PNG
+image/x-portable-anymap pnm PNM
+image/x-portable-pixmap ppm PPM
+image/cmu-raster ras RAS
+image/x-rgb rgb RGB
+image/tiff tif TIF tiff TIFF
+image/x-xbitmap xbm XBM
+image/x-xpixmap xpm XPM
+image/x-xwindowdump xwd XWD
+# Common archive formats
+application/zip zip ZIP
+application/x-gzip gz GZ
+application/x-tar tar TAR
+# Rdata
+application/octet-stream

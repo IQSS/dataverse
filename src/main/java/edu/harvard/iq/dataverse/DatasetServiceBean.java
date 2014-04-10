@@ -32,45 +32,31 @@ public class DatasetServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    public Dataset CreateDatasetCommand(Dataset dataset) {
-        return save(dataset);
+
+
+ 
+    public Dataset find(Object pk) {
+        return (Dataset) em.find(Dataset.class, pk);
     }
 
-    public Dataset UpdateDatasetCommand(Dataset dataset) {
-        return save(dataset);
+    public List<Dataset> findByOwnerId(Long ownerId) {
+        Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
     }
 
-    public void saveDatasetAPI(Dataset dataset) {
-        //Called by depricated method on API
-        //Should put into command?
-        save(dataset);
+    public List<Dataset> findAll() {
+        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
+    }
+
+    public void generateFileSystemName(DataFile dataFile) {
+        String fileSystemName = null;
+        Long result = (Long) em.createNativeQuery("select nextval('filesystemname_seq')").getSingleResult();
+        dataFile.setFileSystemName(result.toString());
+
     }
     
-    public Dataset release(Dataset dataset){        
-        Dataset savedDataset = em.merge(dataset);
-        String indexingResult = indexService.indexDataset(savedDataset);
-
-        logger.info("during dataset save, indexing result was: " + indexingResult);
-        return savedDataset;
-    }
-
-    public Dataset save(Dataset dataset) {
-
-        Iterator<DatasetField> dsfIt = dataset.getEditVersion().getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (removeBlankDatasetFieldValues(dsfIt.next())) {
-                dsfIt.remove();
-            }
-        }
-
-        Dataset savedDataset = em.merge(dataset);
-        String indexingResult = indexService.indexDataset(savedDataset);
-
-        logger.info("during dataset save, indexing result was: " + indexingResult);
-        return savedDataset;
-    }
-
-    private boolean removeBlankDatasetFieldValues(DatasetField dsf) {
+    public boolean removeBlankDatasetFieldValues(DatasetField dsf) {
         if (dsf.getDatasetFieldType().isPrimitive() && !dsf.getDatasetFieldType().isControlledVocabulary()) {
             Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
             while (dsfvIt.hasNext()) {
@@ -106,27 +92,6 @@ public class DatasetServiceBean {
 
         }
         return false;
-    }
-
-    public Dataset find(Object pk) {
-        return (Dataset) em.find(Dataset.class, pk);
-    }
-
-    public List<Dataset> findByOwnerId(Long ownerId) {
-        Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
-        query.setParameter("ownerId", ownerId);
-        return query.getResultList();
-    }
-
-    public List<Dataset> findAll() {
-        return em.createQuery("select object(o) from Dataset as o order by o.id").getResultList();
-    }
-
-    public void generateFileSystemName(DataFile dataFile) {
-        String fileSystemName = null;
-        Long result = (Long) em.createNativeQuery("select nextval('filesystemname_seq')").getSingleResult();
-        dataFile.setFileSystemName(result.toString());
-
     }
 
 }

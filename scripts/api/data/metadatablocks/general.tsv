@@ -69,9 +69,9 @@
 	publicationIDType	upc	15											
 	publicationIDType	url	16											
 	publicationIDType	urn	17											
-	contributorType	Data Collector 	0											
+	contributorType	Data Collector	0											
 	contributorType	Data Manager	1											
-	contributorType	Distributor 	2											
+	contributorType	Distributor	2											
 	contributorType	Editor	3											
 	contributorType	Funder	4											
 	contributorType	Hosting Institution	5											

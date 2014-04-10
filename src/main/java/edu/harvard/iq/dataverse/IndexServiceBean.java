@@ -279,16 +279,16 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getLatestVersion() != null) {
-            for (DatasetField dsf : dataset.getLatestVersion().getDatasetFields()) {
+            for (DatasetField dsf : dataset.getLatestVersion().getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
                 String solrFieldSearchable = dsfType.getSolrField().getNameSearchable();
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
-                if (dsf.getValue() != null && !dsf.getValue().isEmpty() && solrFieldSearchable != null) {
-                    logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValue() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
+                    logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
-                        String dateAsString = dsf.getValue();
+                        String dateAsString = dsf.getValues().get(0);
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
@@ -324,10 +324,10 @@ public class IndexServiceBean {
                              * multiple value lives in the getSolrField() method
                              * of DatasetField.java
                              */
-                            solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValue());
+                            solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValues());
                         } else if (dsf.getDatasetFieldType().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
-                            solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValue());
+                            solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValues());
                         }
                         if (dsfType.isControlledVocabulary()) {
                             for (ControlledVocabularyValue controlledVocabularyValue : dsf.getControlledVocabularyValues()) {
@@ -337,9 +337,9 @@ public class IndexServiceBean {
                                 }
                             }
                         } else {
-                            solrInputDocument.addField(solrFieldSearchable, dsf.getValue());
+                            solrInputDocument.addField(solrFieldSearchable, dsf.getValues());
                             if (dsfType.getSolrField().isFacetable()) {
-                                solrInputDocument.addField(solrFieldFacetable, dsf.getValue());
+                                solrInputDocument.addField(solrFieldFacetable, dsf.getValues());
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,20 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
-        solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
+        solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
+        solrQuery.setHighlightSimplePost("</span>");
+        List<String> solrFieldsToHighlightOn = new ArrayList<>();
+        String highlightField01 = SearchFields.DESCRIPTION;
+        String highlightField02 = SearchFields.NAME;
+        solrFieldsToHighlightOn.add(highlightField02);
+        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        for (DatasetFieldType datasetFieldType: datasetFields) {
+            String solrField = datasetFieldType.getSolrField().getNameSearchable();
+            solrFieldsToHighlightOn.add(solrField);
+        }
+        for (String solrField : solrFieldsToHighlightOn) {
+            solrQuery.addHighlightField(solrField);
+        }
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         /**
@@ -189,10 +203,10 @@ public class SearchServiceBean {
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        List<String> highlightSnippets = null;
+        List<String> highlightSnippets01 = null;
+        List<String> highlightSnippets02 = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
@@ -228,11 +242,26 @@ public class SearchServiceBean {
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
+            List<String> matchedFields = new ArrayList<>();
+            List<Highlight> highlights = new ArrayList<>();
             if (queryResponse.getHighlighting().get(id) != null) {
-                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
-//                logger.info("highlight snippets: " + highlightSnippets);
+//                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
+                highlightSnippets01 = queryResponse.getHighlighting().get(id).get(highlightField01);
+                logger.info("highlightSnippets01: " + highlightSnippets01);
+
+                highlightSnippets02 = queryResponse.getHighlighting().get(id).get(highlightField02);
+                logger.info("highlightSnippets02: " + highlightSnippets02);
+
+                for (String field : solrFieldsToHighlightOn) {
+                    List<String> highlightSnippets = queryResponse.getHighlighting().get(id).get(field);
+                    if (highlightSnippets != null) {
+                        matchedFields.add(field);
+                        highlights.add(new Highlight(new SolrField(field, SolrField.SolrType.STRING, true, true), highlightSnippets));
+                    }
+                }
+
             }
-            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets, name);
+            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets01, name);
             /**
              * @todo put all this in the constructor?
              */
@@ -243,6 +272,11 @@ public class SearchServiceBean {
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
+            solrSearchResult.setHighlightField01(highlightField01);
+            solrSearchResult.setHighlightField02(highlightField02);
+            solrSearchResult.setHighlightSnippets02(highlightSnippets02);
+            solrSearchResult.setMatchedFields(matchedFields);
+            solrSearchResult.setHighlights(highlights);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);

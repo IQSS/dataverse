@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +32,9 @@ public class DatasetFieldServiceApi {
 
     @EJB
     DataverseServiceBean dataverseService;
+    
+    @EJB
+    MetadataBlockServiceBean metadataBlockService;
 
     @GET
     public String getAll() {
@@ -195,7 +199,7 @@ public class DatasetFieldServiceApi {
         mdb.setName(values[1]);
         mdb.setDisplayName(values[2]);
 
-        datasetFieldService.save(mdb);
+        metadataBlockService.save(mdb);
         return mdb.getName();
     }
 

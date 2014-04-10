@@ -62,10 +62,18 @@ List all the role assignments at the given dataverse.
 
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
-
 	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks?key={{username}}
 
 Get the metadata blocks defined on the passed dataverse.
+
+	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+
+Get whether the dataverse is a metadata block root, or does it uses its parent blocks.
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+
+Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
+values are `true` and `false` (both are valid JSON expressions).
 
 ### Datasets
 
@@ -133,3 +141,16 @@ Shows the role with `id`.
 	DELETE http://{{SERVER}}/api/roles/{{id}}
 
 Deletes the role with `id`.
+
+
+### Metadata Blocks
+
+	GET http://{{SERVER}}/api/metadatablocks
+
+Lists brief info about all metadata blocks registered in the system.
+
+	GET http://{{SERVER}}/api/metadatablocks/{{idtf}}
+
+Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
+
+	

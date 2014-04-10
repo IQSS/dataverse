@@ -42,7 +42,7 @@ public class DatasetVersion implements Serializable {
     };
 
     public DatasetVersion() {
-        
+
     }
 
     @Id
@@ -197,7 +197,7 @@ public class DatasetVersion implements Serializable {
 
     public void setVersionNumber(Long versionNumber) {
         this.versionNumber = versionNumber;
-    }   
+    }
 
     public Long getMinorVersionNumber() {
         return minorVersionNumber;
@@ -244,11 +244,11 @@ public class DatasetVersion implements Serializable {
         return (versionState.equals(VersionState.ARCHIVED) || versionState.equals(VersionState.DEACCESSIONED));
     }
 
-    public boolean isMinorUpdate(){
+    public boolean isMinorUpdate() {
         /*
-        For now we will say that if there are the same number of files then it can be a minor release
-        */
-        if (this.getDataset().getReleasedVersion() != null){
+         For now we will say that if there are the same number of files then it can be a minor release
+         */
+        if (this.getDataset().getReleasedVersion() != null) {
             return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
         }
         return true;
@@ -511,7 +511,6 @@ public class DatasetVersion implements Serializable {
     }
 
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
 
         for (DatasetField sourceDsf : copyFromList) {
@@ -519,6 +518,24 @@ public class DatasetVersion implements Serializable {
             retList.add(sourceDsf.copy(this));
         }
 
+        return retList;
+    }
+
+    public List<DatasetField> getFlatDatasetFields() {
+        return getFlatDatasetFields(getDatasetFields());
+    }
+
+    private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
+        List<DatasetField> retList = new ArrayList();
+        for (DatasetField dsf : dsfList) {
+            retList.add(dsf);
+            if (dsf.getDatasetFieldType().isCompound()) {
+                for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                    retList.addAll(getFlatDatasetFields(compoundValue.getChildDatasetFields()));
+                }
+
+            }
+        }
         return retList;
     }
 

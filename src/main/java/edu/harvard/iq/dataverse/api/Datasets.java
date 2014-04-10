@@ -10,6 +10,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import java.util.List;
 import java.util.logging.Level;
@@ -201,7 +202,7 @@ public class Datasets extends AbstractApiBean {
 	@Path("deprecated/")
     @POST
 	@Deprecated
-    public String add(Dataset dataset, @QueryParam("owner") String owner) {
+    public String add(Dataset dataset, @QueryParam("owner") String owner, @QueryParam("key") String apiKey) {
         try {
             DatasetVersion editVersion = new DatasetVersion();
             editVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -212,7 +213,9 @@ public class Datasets extends AbstractApiBean {
             dataset.getVersions().add(editVersion);
             dataset.setIdentifier("myIdentifier");
             dataset.setProtocol("myProtocol");
-            datasetService.save(dataset);
+            DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+            engineSvc.submit( new CreateDatasetCommand(dataset, u));
             return "dataset " + dataset.getId() + " created/updated (and probably indexed, check server.log)\n";
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -246,6 +249,8 @@ public class Datasets extends AbstractApiBean {
             } else {
                 return Util.message2ApiError(sb.toString());
             }
-        }
+        } catch (CommandException ex) {
+			return error( "Can't add dataset: " + ex.getMessage() );
+		}
     }
 }

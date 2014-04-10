@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import javax.json.JsonObjectBuilder;
 
@@ -30,5 +31,14 @@ public class BriefJsonPrinter {
 					.add("version", dsv.getVersion() )
 					.add("versionState", dsv.getVersionState().name() )
 					.add("title", dsv.getTitle());
+	}
+    
+    public JsonObjectBuilder json( MetadataBlock blk ) {
+		return ( blk==null ) 
+				? null
+				: jsonObjectBuilder().add("id", blk.getId())
+					.add("displayName", blk.getDisplayName())
+					.add("name", blk.getName())
+					;
 	}
 }
