@@ -52,6 +52,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -119,7 +120,15 @@ public class IngestServiceBean {
     @Resource(mappedName = "jms/IngestQueueConnectionFactory")
     QueueConnectionFactory factory;
     
+    private static final String MIME_TYPE_STATA = "application/x-stata";
+    private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
+    private static final String MIME_TYPE_CSV   = "text/csv";
+    private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     
+    private static final String MIME_TYPE_TAB   = "text/tab-separated-values";
+    
+    private static final String MIME_TYPE_FITS  = "application/fits";
+      
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
     
@@ -196,7 +205,7 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
         //TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        TabularDataFileReader ingestPlugin = getTabDataReaderByFileNameExtension(dataFile.getName());
+        TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile);
 
         if (ingestPlugin == null) {
             throw new IOException("Could not find ingest plugin for the file " + dataFile.getName());
@@ -224,7 +233,7 @@ public class IngestServiceBean {
 
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                tabDataIngest.getDataTable().setOriginalFileFormat(determineMimeType(dataFile));
+                tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
                 
                 // and we want to save the original of the ingested file: 
                 try {
@@ -235,13 +244,11 @@ public class IngestServiceBean {
                 
                 Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                 
-                dataFile.setContentType("text/tab-separated-values");
+                // and change the mime type to "tabular" on the final datafile, 
+                // and replace (or add) the extension ".tab" to the filename: 
                 
-                dataFile.setName(dataFile.getName().replaceAll("\\.dta$", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.RData", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.csv", ".tab"));
-                dataFile.setName(dataFile.getName().replaceAll("\\.xlsx", ".tab"));
-                
+                dataFile.setContentType(MIME_TYPE_TAB);
+                dataFile.setName(FileUtil.replaceExtension(dataFile.getName(), ".tab"));  
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
@@ -276,64 +283,72 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private String determineMimeType(DataFile dataFile) {
-        /*
-         * Another placeholder method - we'll be using a new version 
-         * of the file type recognition utility instead. 
-         * -- L.A. 4.0 alpha 1
+    public boolean ingestableAsTabular(DataFile dataFile) {
+        /* 
+         * In the final 4.0 we'll be doing real-time checks, going through the 
+         * available plugins and verifying the lists of mime types that they 
+         * can handle. In 4.0 beta, the ingest plugins are still built into the 
+         * main code base, so we can just go through a hard-coded list of mime 
+         * types. -- L.A. 
          */
-        String fileName = dataFile.getName();
+        
+        String mimeType = dataFile.getContentType();
+        
+        if (mimeType == null) {
+            return false;
+        }
+        
+        if (mimeType.equals(MIME_TYPE_STATA)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_CSV)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
+            return true;
+        }
 
-        if (fileName == null) {
+        return false;
+    }
+    
+    private TabularDataFileReader getTabDataReaderByMimeType(DataFile dataFile) {
+        /* 
+         * Same as the comment above; since we don't have any ingest plugins loadable 
+         * in real times yet, we can select them by a fixed list of mime types. 
+         * -- L.A. 4.0 beta.
+         */
+
+        String mimeType = dataFile.getContentType();
+        
+        if (mimeType == null) {
             return null;
         }
 
-        if (fileName.endsWith(".dta")) {
-            return "application/x-stata";
-        } else if (fileName.endsWith(".RData")) {
-            return "application/x-rlang-transport";
-        } else if (fileName.endsWith(".csv")) {
-            return "text/csv";
-        } else if (fileName.endsWith(".xlsx")) {
-            return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            // Yep, that's the official mime type for .xlsx spreadsheets!\n" +
-            // It's ok, we'll replace it with something user-friendly, when presenting it 
-            // to the user. 
+        TabularDataFileReader ingestPlugin = null;
+
+        if (mimeType.equals(MIME_TYPE_STATA)) {
+            ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_RDATA)) {
+            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_CSV)) {
+            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_XLSX)) {
+            ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
         }
 
-        return null;
+        return ingestPlugin;
     }
     
     public boolean fileMetadataExtractable(DataFile dataFile) {
         /* 
          * Eventually we'll be consulting the Ingest Service Provider Registry
          * to see if there is a plugin for this type of file;
-         * for now - just a hardcoded list of filename extensions:
-         *  -- L.A. 4.0alpha1
+         * for now - just a hardcoded list of mime types:
+         *  -- L.A. 4.0 beta
          */
-        if (dataFile.getName() != null && dataFile.getName().endsWith(".fits")) {
+        if (dataFile.getContentType() != null && dataFile.getContentType().equals(MIME_TYPE_FITS)) {
             return true;
         }
-        return false;
-    }
-
-    public boolean ingestableAsTabular(DataFile dataFile) {
-        /* 
-         * Eventually we'll be using some complex technology of identifying 
-         * potentially ingestable file formats here, similar to what we had in 
-         * v.3.*; for now - just a hardcoded list of filename extensions:
-         *  -- L.A. 4.0alpha1
-         */
-        if (dataFile.getName() != null && dataFile.getName().endsWith(".dta")) {
-            return true;
-        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".RData")) {
-            return true;
-        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".csv")) {
-            return true;
-        } else if (dataFile.getName() != null && dataFile.getName().endsWith(".xlsx")) {
-            return true;
-        }
-
         return false;
     }
     
@@ -382,34 +397,24 @@ public class IngestServiceBean {
     private void ingestDatasetMetadata(FileMetadataIngest fileMetadataIngest, DatasetVersion editVersion) throws IOException {
         
         
-        
-        
-        
         for (MetadataBlock mdb : editVersion.getDataset().getOwner().getMetadataBlocks()) {  
             if (mdb.getName().equals(fileMetadataIngest.getMetadataBlockName())) {
                 logger.fine("Ingest Service: dataset version has "+mdb.getName()+" metadata block enabled.");
-                /*List<DatasetFieldValue> existingValues; // ?
-                List<DatasetField> existingFields;
-                if (editVersion.getDataset().getId() != null) { // if this is an existing study, that had been saved before...
-                    //existingValues = editVersion.getDatasetFieldValues();
-                    existingFields = editVersion.getDatasetFields();
-                } else {
-                    //existingValues = new ArrayList();
-                    existingFields = new ArrayList();
-                }*/
                 
                 editVersion.setDatasetFields(editVersion.initDatasetFields());
                 
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    String dsfName = dsft.getName();
-                    if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
-                        logger.fine("Ingest Service: found extracted metadata for field "+dsfName);
-                        // go through the existing fields:
-                        for (DatasetField dsf : editVersion.getDatasetFields()) {
-                            if (dsf.getDatasetFieldType().equals(dsft)) {
-                                // yep, this is our field!
-                                if (dsft.isPrimitive()) {
+                    if (dsft.isPrimitive()) {
+                        String dsfName = dsft.getName();
+                        // See if the plugin has found anything for this field: 
+                        if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                            logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
+                            // go through the existing fields:
+                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                                String fName = dsf.getDatasetFieldType().getName();
+                                if (dsf.getDatasetFieldType().equals(dsft)) {
+                                    // yep, this is our field!
                                     // let's go through the values that the ingest 
                                     // plugin found in the file for this field: 
                                     Set<String> mValues = fileMetadataMap.get(dsfName);
@@ -417,21 +422,21 @@ public class IngestServiceBean {
                                         if (!dsft.isControlledVocabulary()) {
                                             // Need to only add the values not yet present!
                                             // (the method below may be inefficient - ?)
-                                            boolean valueExists = false; 
-                                
+                                            boolean valueExists = false;
+
                                             Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
-                                            
+
                                             while (dsfvIt.hasNext()) {
                                                 DatasetFieldValue dsfv = dsfvIt.next();
                                                 if (fValue.equals(dsfv.getValue())) {
-                                                    logger.fine("Value "+fValue+" already exists for field "+dsfName); 
-                                                    valueExists = true; 
-                                                    break; 
+                                                    logger.fine("Value " + fValue + " already exists for field " + dsfName);
+                                                    valueExists = true;
+                                                    break;
                                                 }
                                             }
-                                        
+
                                             if (!valueExists) {
-                                                logger.fine("Creating a new value for field "+dsfName+": "+fValue);
+                                                logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
                                                 DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                                                 newDsfv.setValue(fValue);
                                                 dsf.getDatasetFieldValues().add(newDsfv);
@@ -439,14 +444,14 @@ public class IngestServiceBean {
                                         } else {
                                             // A controlled vocabulary entry: 
                                             // first, let's see if it's a legit control vocab. entry: 
-                                            ControlledVocabularyValue legitControlledVocabularyValue = null; 
+                                            ControlledVocabularyValue legitControlledVocabularyValue = null;
                                             Collection<ControlledVocabularyValue> definedVocabularyValues = dsft.getControlledVocabularyValues();
                                             if (definedVocabularyValues != null) {
                                                 for (ControlledVocabularyValue definedVocabValue : definedVocabularyValues) {
                                                     if (fValue.equals(definedVocabValue.getStrValue())) {
-                                                        logger.fine("Yes, "+fValue+" is a valid controlled vocabulary value for the field "+dsfName);
-                                                        legitControlledVocabularyValue = definedVocabValue; 
-                                                        break; 
+                                                        logger.fine("Yes, " + fValue + " is a valid controlled vocabulary value for the field " + dsfName);
+                                                        legitControlledVocabularyValue = definedVocabValue;
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -454,37 +459,38 @@ public class IngestServiceBean {
                                                 // Only need to add the value if it is new, 
                                                 // i.e. if it does not exist yet: 
                                                 boolean valueExists = false;
-                                                
-                                                List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues(); 
+
+                                                List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues();
                                                 if (existingControlledVocabValues != null) {
                                                     Iterator<ControlledVocabularyValue> cvvIt = existingControlledVocabValues.iterator();
                                                     while (cvvIt.hasNext()) {
                                                         ControlledVocabularyValue cvv = cvvIt.next();
                                                         if (fValue.equals(cvv.getStrValue())) {
-                                                        // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
-                                                            logger.fine("Controlled vocab. value "+fValue+" already exists for field "+dsfName); 
-                                                            valueExists = true; 
-                                                            break; 
+                                                            // or should I use if (legitControlledVocabularyValue.equals(cvv)) ?
+                                                            logger.fine("Controlled vocab. value " + fValue + " already exists for field " + dsfName);
+                                                            valueExists = true;
+                                                            break;
                                                         }
                                                     }
                                                 }
-                                                
+
                                                 if (!valueExists) {
-                                                    logger.fine("Adding controlled vocabulary value "+fValue+" to field "+dsfName);
+                                                    logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
                                                     dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
                                                 }
                                             }
                                         }
                                     }
-                                } else {
-                                    // A compound field: 
-                                    // - but that's not going to happen!
-                                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
+
                                 }
                             }
                         }
                     }
-                }
+                } //else {
+                    // A compound field: 
+                    // - but that's not going to happen!
+                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
+                //}
             }
         }  
     }
@@ -604,34 +610,7 @@ public class IngestServiceBean {
             throw new IOException("Ingested tabular data file: no filesystem name.");
         }
     }
-    
-    private TabularDataFileReader getTabDataReaderByFileNameExtension(String fileName) {
-        /* 
-         * Temporary local implementation; 
-         * eventually, the Ingest Service Provider Registry will be providing
-         * the ingest plugin lookup functionality. -- L.A. 4.0 alpha 1.
-         */
-
-        if (fileName == null) {
-            return null;
-        }
-
-        TabularDataFileReader ingestPlugin = null;
-
-        if (fileName.endsWith(".dta")) {
-            ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
-        } else if (fileName.endsWith(".RData")) {
-            ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
-        } else if (fileName.endsWith(".csv")) {
-            ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
-        } else if (fileName.endsWith(".xlsx")) {
-            ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
-        }
-
-        return ingestPlugin;
-    }
-    
-
+ 
     private Set<Integer> selectContinuousVariableColumns(DataFile dataFile) {
         Set<Integer> contVarFields = new LinkedHashSet<Integer>();
 

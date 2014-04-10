@@ -3,11 +3,15 @@
     "q":"trees",
     "fq_provided":"[]",
     "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user6 OR {!join from=groups_s to=perms_ss}id:group_2)]",
-    "total_count":3,
+    "total_count":4,
     "start":0,
-    "count_in_response":3,
-    "items":"[dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
+    "count_in_response":4,
+    "items":"[dataset_17:Rings of Trees and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
     "relevance":[
+        {
+            "id":"dataset_17",
+            "matched_fields":"[title, authorAffiliation, description, keyword, notesText, contributorName]"
+        },
         {
             "id":"dataverse_10",
             "matched_fields":"[description]"
@@ -18,7 +22,7 @@
         },
         {
             "id":"dataverse_16",
-            "matched_fields":"[description, name]"
+            "matched_fields":"[name, description]"
         }
     ]
 }

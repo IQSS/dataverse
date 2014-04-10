@@ -66,9 +66,18 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
+        List<String> solrFieldsToHighlightOn = new ArrayList<>();
         String highlightField01 = SearchFields.DESCRIPTION;
         String highlightField02 = SearchFields.NAME;
-        solrQuery.setParam("hl.fl", highlightField01 + "," + highlightField02);
+        solrFieldsToHighlightOn.add(highlightField02);
+        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        for (DatasetFieldType datasetFieldType: datasetFields) {
+            String solrField = datasetFieldType.getSolrField().getNameSearchable();
+            solrFieldsToHighlightOn.add(solrField);
+        }
+        for (String solrField : solrFieldsToHighlightOn) {
+            solrQuery.addHighlightField(solrField);
+        }
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         /**
@@ -195,7 +204,6 @@ public class SearchServiceBean {
         List<String> highlightSnippets02 = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
@@ -236,14 +244,15 @@ public class SearchServiceBean {
 //                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
                 highlightSnippets01 = queryResponse.getHighlighting().get(id).get(highlightField01);
                 logger.info("highlightSnippets01: " + highlightSnippets01);
-                if (highlightSnippets01 != null) {
-                    matchedFields.add(highlightField01);
-                }
 
                 highlightSnippets02 = queryResponse.getHighlighting().get(id).get(highlightField02);
                 logger.info("highlightSnippets02: " + highlightSnippets02);
-                if (highlightSnippets02 != null) {
-                    matchedFields.add(highlightField02);
+
+                for (String field : solrFieldsToHighlightOn) {
+                    List<String> highlightSnippets = queryResponse.getHighlighting().get(id).get(field);
+                    if (highlightSnippets != null) {
+                        matchedFields.add(field);
+                    }
                 }
 
             }
