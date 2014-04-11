@@ -273,7 +273,6 @@ public class DatasetPage implements java.io.Serializable {
                     // and, if the status has changed - i.e., if the ingest has 
                     // completed, or failed, update the object in the list of 
                     // files visible to the page:
-                    //dataset.getFiles().set(i, dataFile);
                     fileMetadata.setDataFile(dataFile);
                 }
             }

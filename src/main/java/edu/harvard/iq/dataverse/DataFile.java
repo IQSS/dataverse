@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
@@ -235,6 +236,25 @@ public class DataFile extends DvObject {
             return Paths.get(studyDirectory, this.name);
         }
         return Paths.get(studyDirectory, this.fileSystemName);
+    }
+    
+    public Path getSavedOriginalFile() {
+       
+        if (!this.isTabularData() || this.fileSystemName == null) {
+            return null; 
+        }
+        
+        Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
+        if (studyDirectoryPath == null) {
+            return null;
+        }
+        String studyDirectory = studyDirectoryPath.toString();
+ 
+        Path savedOriginal = Paths.get(studyDirectory, "_" + this.fileSystemName);
+        if (Files.exists(savedOriginal)) {
+            return savedOriginal;
+        }
+        return null; 
     }
     
     public String getFilename() {
