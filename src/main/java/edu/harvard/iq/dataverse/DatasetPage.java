@@ -190,7 +190,7 @@ public class DatasetPage implements java.io.Serializable {
                 displayVersion = datasetVersionService.find(versionId);
             }
             ownerId = dataset.getOwner().getId();
-            displayVersion.setDatasetFields(displayVersion.initDatasetFields());
+            //displayVersion.setDatasetFields(displayVersion.initDatasetFields());
             if (dataset.getReleasedVersion() != null) {
                 datasetNextMajorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue() + 1).toString() + ".0";
                 datasetNextMinorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue()).toString() + "."
@@ -202,7 +202,7 @@ public class DatasetPage implements java.io.Serializable {
             editMode = EditMode.CREATE;
             editVersion = dataset.getLatestVersion(); 
             dataset.setOwner(dataverseService.find(ownerId));
-            editVersion.setDatasetFields(editVersion.initDatasetFields());
+            //editVersion.setDatasetFields(editVersion.initDatasetFields());
             datasetVersionUI = new DatasetVersionUI(editVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
