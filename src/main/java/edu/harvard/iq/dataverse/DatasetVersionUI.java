@@ -5,19 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import javax.ejb.EJB;
 
 /**
  *
@@ -107,6 +102,8 @@ public class DatasetVersionUI {
                 }
             }
         }
+        
+        datasetVersion.setDatasetFields(initDatasetFields());
         setMetadataValueBlocks(datasetVersion);
     }
 
@@ -373,6 +370,86 @@ public class DatasetVersionUI {
         }
         return "";
     }
+    
+ // TODO: clean up init methods and get them to work, cascading all the way down.
+    // right now, only work for one level of compound objects
+    private DatasetField initDatasetField(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isCompound()) {
+            for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
+                // for each compound value; check the datasetfieldTypes associated with its type
+                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                    boolean add = true;
+                    for (DatasetField subfield : cv.getChildDatasetFields()) {
+                        if (dsfType.equals(subfield.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                    }
+                }
+                
+                sortDatasetFields(cv.getChildDatasetFields());
+            }
+        }
+
+        return dsf;
+    }
+
+    private List<DatasetField> initDatasetFields() {
+        //retList - Return List of values
+        List<DatasetField> retList = new ArrayList();
+        for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
+            retList.add(initDatasetField(dsf));
+        }
+     
+
+        //Test to see that there are values for 
+        // all fields in this dataset via metadata blocks
+        //only add if not added above
+        for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
+            for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
+                if (!dsfType.isSubField()) {
+                    boolean add = true;
+                    //don't add if already added as a val
+                    for (DatasetField dsf : retList) {
+                        if (dsfType.equals(dsf.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        retList.add(DatasetField.createNewEmptyDatasetField(dsfType, this.datasetVersion));
+                    }
+                }
+            }
+        }
+
+        //sort via display order on dataset field
+        Collections.sort(retList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+
+        return sortDatasetFields(retList);
+    }  
+    
+    private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
+        Collections.sort(dsfList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+        return dsfList;
+    }    
 
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method
