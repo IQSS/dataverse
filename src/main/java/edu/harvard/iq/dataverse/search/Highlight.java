@@ -9,18 +9,24 @@ public class Highlight {
 
     SolrField solrField;
     List<String> snippets;
+    String displayName;
 
-    public Highlight(SolrField solrField, List<String> snippets) {
+    public Highlight(SolrField solrField, List<String> snippets, String displayName) {
         this.solrField = solrField;
         this.snippets = snippets;
+        this.displayName = displayName;
+    }
+
+    public SolrField getSolrField() {
+        return solrField;
     }
 
     public List<String> getSnippets() {
         return snippets;
     }
 
-    public SolrField getSolrField() {
-        return solrField;
+    public String getDisplayName() {
+        return displayName;
     }
 
 }

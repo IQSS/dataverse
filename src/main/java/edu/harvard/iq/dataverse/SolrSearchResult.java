@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class SolrSearchResult {
+
+    private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
     private String id;
     private Long entityId;
@@ -27,11 +30,10 @@ public class SolrSearchResult {
      */
     private String title;
     private String descriptionNoSnippet;
-    private String highlightField01;
-    private String highlightField02;
-    private List<Highlight> highlights = new ArrayList<>();
-    private List<String> highlightSnippets01;
-    private List<String> highlightSnippets02;
+    private List<Highlight> highlightsAsList = new ArrayList<>();
+    private Map<SolrField, Highlight> highlightsMap;
+    private Map<String, Highlight> highlightsAsMap;
+
     // parent can be dataverse or dataset, store the name and id
     private Map<String, String> parent;
     // used on the SearchPage but not the search API
@@ -40,10 +42,78 @@ public class SolrSearchResult {
     private String citation;
     private String filetype;
     /**
-     * @todo: show the "friendly" version with maybe the actual/Solr field as a
-     * tooltip
+     * @todo: used? remove
      */
     private List<String> matchedFields;
+
+    /**
+     * @todo: remove name?
+     */
+    SolrSearchResult(String queryFromUser, String name) {
+        this.query = queryFromUser;
+//        this.name = name;
+    }
+
+    public Map<String, Highlight> getHighlightsAsMap() {
+        return highlightsAsMap;
+    }
+
+    public void setHighlightsAsMap(Map<String, Highlight> highlightsAsMap) {
+        this.highlightsAsMap = highlightsAsMap;
+    }
+
+    public String getNameHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.NAME);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public String getTitleHighlightSnippet() {
+        /**
+         * @todo: don't hard-code title, look it up properly... or start
+         * indexing titles as names:
+         * https://redmine.hmdc.harvard.edu/issues/3798#note-2
+         */
+        Highlight highlight = highlightsAsMap.get("title");
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getDescriptionSnippets() {
+        for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
+            SolrField solrField = entry.getKey();
+            Highlight highlight = entry.getValue();
+            logger.info("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
+        }
+
+        /**
+         * @todo: use SearchFields.DESCRIPTION
+         */
+        Highlight highlight = highlightsAsMap.get("description");
+        if (highlight != null) {
+            return highlight.getSnippets();
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public Map<SolrField, Highlight> getHighlightsMap() {
+        return highlightsMap;
+    }
+
+    public void setHighlightsMap(Map<SolrField, Highlight> highlightsMap) {
+        this.highlightsMap = highlightsMap;
+    }
 
     public List<String> getMatchedFields() {
         return matchedFields;
@@ -51,15 +121,6 @@ public class SolrSearchResult {
 
     public void setMatchedFields(List<String> matchedFields) {
         this.matchedFields = matchedFields;
-    }
-
-    /**
-     * @todo: remove name?
-     */
-    SolrSearchResult(String queryFromUser, List<String> highlightSnippets01, String name) {
-        this.query = queryFromUser;
-//        this.name = name;
-        this.highlightSnippets01 = highlightSnippets01;
     }
 
     @Override
@@ -73,7 +134,7 @@ public class SolrSearchResult {
 
     public JsonObject getRelevance() {
         JsonArrayBuilder detailsArrayBuilder = Json.createArrayBuilder();
-        for (Highlight highlight : highlights) {
+        for (Highlight highlight : highlightsAsList) {
             JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
             for (String snippet : highlight.getSnippets()) {
                 snippetArrayBuilder.add(snippet);
@@ -82,10 +143,22 @@ public class SolrSearchResult {
             detailsObjectBuilder.add(highlight.getSolrField().getNameSearchable(), snippetArrayBuilder);
             detailsArrayBuilder.add(detailsObjectBuilder);
         }
+
+        JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
+            SolrField solrField = entry.getKey();
+            Highlight snippets = entry.getValue();
+            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
+            for (String highlight : snippets.getSnippets()) {
+                snippetArrayBuilder.add(highlight);
+                detailsObjectBuilder.add(solrField.getNameSearchable(), snippetArrayBuilder);
+            }
+        }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add(SearchFields.ID, this.id)
                 .add("matched_fields", this.matchedFields.toString())
-                .add("details", detailsArrayBuilder)
+                .add("detailsArray", detailsArrayBuilder)
+                //                .add("detailsObject", detailsObjectBuilder)
                 .build();
         return jsonObject;
     }
@@ -177,44 +250,23 @@ public class SolrSearchResult {
         this.descriptionNoSnippet = descriptionNoSnippet;
     }
 
-    public List<String> getHighlightSnippets01() {
-        return highlightSnippets01;
+    public List<Highlight> getHighlightsAsListOrig() {
+        return highlightsAsList;
     }
 
-    public void setHighlightSnippets01(List<String> highlightSnippets01) {
-        this.highlightSnippets01 = highlightSnippets01;
+    public List<Highlight> getHighlightsAsList() {
+        List<Highlight> filtered = new ArrayList<>();
+        for (Highlight highlight : highlightsAsList) {
+            String field = highlight.getSolrField().getNameSearchable();
+            if (!field.equals(SearchFields.NAME) && !field.equals(SearchFields.DESCRIPTION)) {
+                filtered.add(highlight);
+            }
+        }
+        return filtered;
     }
 
-    public String getHighlightField01() {
-        return highlightField01;
-    }
-
-    public void setHighlightField01(String highlightField01) {
-        this.highlightField01 = highlightField01;
-    }
-
-    public String getHighlightField02() {
-        return highlightField02;
-    }
-
-    public void setHighlightField02(String highlightField02) {
-        this.highlightField02 = highlightField02;
-    }
-
-    public List<Highlight> getHighlights() {
-        return highlights;
-    }
-
-    public void setHighlights(List<Highlight> highlights) {
-        this.highlights = highlights;
-    }
-
-    public List<String> getHighlightSnippets02() {
-        return highlightSnippets02;
-    }
-
-    public void setHighlightSnippets02(List<String> highlightSnippets02) {
-        this.highlightSnippets02 = highlightSnippets02;
+    public void setHighlightsAsList(List<Highlight> highlightsAsList) {
+        this.highlightsAsList = highlightsAsList;
     }
 
     public Map<String, String> getParent() {

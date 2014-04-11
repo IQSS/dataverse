@@ -4,6 +4,7 @@
 #
 #cd scripts/search
 #./create
+#exit
 #
 # We assume you've created a dataset as pete in the "Trees" dataverse at
 # http://localhost:8080/dataverse.xhtml?id=11
@@ -25,4 +26,7 @@
 # Contributor:
 #   Type: Data Collector
 #   Name: Edward Trees Jr.
+#
+# We assume you add a file called "trees.png" to this dataset
+# with a description of "Trees are lovely."
 diff <(curl -s 'http://localhost:8080/api/search?key=nick&q=trees&showrelevance=true') scripts/search/tests/expected/highlighting-nick-trees
