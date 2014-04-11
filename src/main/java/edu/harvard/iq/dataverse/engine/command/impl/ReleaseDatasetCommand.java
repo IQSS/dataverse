@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,7 +28,7 @@ import java.util.Date;
     @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
 })
 public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
-
+   private static final Logger logger = Logger.getLogger(ReleaseDatasetCommand.class.getCanonicalName());
     boolean minorRelease = false;
     Dataset theDataset;
 
@@ -68,7 +69,8 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
-
+        String indexingResult = ctxt.index().indexDataset(savedDataset);
+        logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 

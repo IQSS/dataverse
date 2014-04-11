@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,7 +26,7 @@ import java.util.Iterator;
     @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
 })
 public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
-
+   private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final Dataset theDataset;
 
     public UpdateDatasetCommand(Dataset theDataset, DataverseUser user) {
@@ -42,11 +43,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         save(ctxt);
     }
 
-    public Dataset release(CommandContext ctxt) {
-        Dataset savedDataset = ctxt.em().merge(theDataset);
-        //String indexingResult = indexService.indexDataset(savedDataset);
-        return savedDataset;
-    }
 
     public Dataset save(CommandContext ctxt) {
 
@@ -56,7 +52,8 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 dsfIt.remove();
             }
         }
-
+        String indexingResult = ctxt.index().indexDataset(theDataset);
+        logger.info("during dataset save, indexing result was: " + indexingResult);
         Dataset savedDataset = ctxt.em().merge(theDataset);
 
         return savedDataset;

@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -14,10 +13,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Creates a {@link Dataset} in the passed {@link CommandContext}.
@@ -29,7 +28,8 @@ import java.util.Objects;
     @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
 })
 public class CreateDatasetCommand extends AbstractCommand<Dataset> {
-
+   private static final Logger logger = Logger.getLogger(CreateDatasetCommand.class.getCanonicalName());
+ 
     private final Dataset theDataset;
 
     public CreateDatasetCommand(Dataset theDataset, DataverseUser user) {
@@ -68,6 +68,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     public Dataset save(CommandContext ctxt) {
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
+        String indexingResult = ctxt.index().indexDataset(savedDataset);
+        logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 
