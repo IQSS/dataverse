@@ -19,7 +19,7 @@ import java.util.EnumSet;
  * 
  * @author michael
  */
-@RequiredPermissions( Permission.UndoableEdit )
+@RequiredPermissions( Permission.AddDataverse )
 public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse created;

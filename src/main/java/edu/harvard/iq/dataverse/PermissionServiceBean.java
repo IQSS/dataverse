@@ -10,12 +10,11 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import java.util.HashSet;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which objects (TM).
@@ -42,9 +41,9 @@ public class PermissionServiceBean {
 	
 	public class PermissionQuery {
 		final DataverseUser user;
-		final Dataverse subject;
+		final DvObject subject;
 
-		public PermissionQuery(DataverseUser user, Dataverse subject) {
+		public PermissionQuery(DataverseUser user, DvObject subject) {
 			this.user = user;
 			this.subject = subject;
 		}
@@ -121,22 +120,22 @@ public class PermissionServiceBean {
 	 * a user can issue the command on the dataverse or not.
 	 * @param u
 	 * @param commandClass
-	 * @param d
+	 * @param dvo
 	 * @return 
 	 */
-	public boolean isUserAllowedOn( DataverseUser u, Class<? extends Command> commandClass, Dataverse d ) {
+	public boolean isUserAllowedOn( DataverseUser u, Class<? extends Command> commandClass, DvObject dvo ) {
 		Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
 		if ( required.isEmpty() || required.get("")==null ) {
             logger.info("IsUserAllowedOn: empty-true");
 			return true;
 		} else {
-			Set<Permission> grantedUserPermissions = permissionsFor(u, d);
+			Set<Permission> grantedUserPermissions = permissionsFor(u, dvo);
 			Set<Permission> requiredPermissionSet = required.get("");
 			return grantedUserPermissions.containsAll(requiredPermissionSet);
 		}
 	}
 	
-	public PermissionQuery userOn( DataverseUser u, Dataverse d ) {
+	public PermissionQuery userOn( DataverseUser u, DvObject d ) {
 		if ( u==null ) {
 			// get guest user for dataverse d
 			u = userService.findByUserName("GabbiGuest");
@@ -144,7 +143,7 @@ public class PermissionServiceBean {
 		return new PermissionQuery(u, d);
 	}
 
-	public PermissionQuery on(  Dataverse d ) {
+	public PermissionQuery on( DvObject d ) {
 		if ( d == null ) {
 			throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
 		}

@@ -4,7 +4,6 @@
 
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
@@ -29,14 +28,14 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 	/**
 	 * @param aUser The user being granted the role
 	 * @param aRole the role being granted to the user
-	 * @param anAffectedDataverse the dataverse on which the role is granted.
+	 * @param assignmentPoint the dataverse on which the role is granted.
 	 * @param issuingUser the user issuing the command.
 	 */
-	public AssignRoleCommand(DataverseUser aUser, DataverseRole aRole, Dataverse anAffectedDataverse, DataverseUser issuingUser) {
-		super(issuingUser, anAffectedDataverse);
+	public AssignRoleCommand(DataverseUser aUser, DataverseRole aRole, DvObject assignmentPoint, DataverseUser issuingUser) {
+		super(issuingUser, assignmentPoint);
 		role = aRole;
 		grantedUser = aUser;
-		defPoint = anAffectedDataverse;
+		defPoint = assignmentPoint;
 	}
 
 	@Override

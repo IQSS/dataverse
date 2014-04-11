@@ -4,17 +4,14 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
@@ -24,10 +21,7 @@ import java.util.Objects;
  *
  * @author michael
  */
-@RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.UndoableEdit),
-    @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
-})
+@RequiredPermissions(Permission.AddDataset)
 public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;

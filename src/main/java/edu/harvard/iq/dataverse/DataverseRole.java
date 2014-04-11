@@ -17,7 +17,6 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * A role is an annotated set of permissions. A role belongs
@@ -57,15 +56,14 @@ public class DataverseRole implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @NotBlank
+    @Pattern(regexp=".+", message="A Role must ahve a name.")
     private String name;
     
 	@Size(max = 1000, message = "Description must be at most 1000 characters.")
     private String description;
     
-	@NotBlank(message = "Please enter an alias.")
     @Size(max = 16, message = "Alias must be at most 16 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "Alias cannot be empty. Valid characters are a-Z, 0-9, '_', and '-'.")
     private String alias;
 	
 	/** Stores the permissions in a bit set.  */
@@ -161,7 +159,4 @@ public class DataverseRole implements Serializable  {
 		}
 		return true;
 	}
-	
-	
-	
 }
