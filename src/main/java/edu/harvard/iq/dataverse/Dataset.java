@@ -47,7 +47,6 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         datasetVersion.setFileMetadatas(new ArrayList());
-        datasetVersion.setDatasetFields(null);
         datasetVersion.setVersionNumber(new Long(1));
         datasetVersion.setMinorVersionNumber(new Long(0));
         versions.add(datasetVersion);
