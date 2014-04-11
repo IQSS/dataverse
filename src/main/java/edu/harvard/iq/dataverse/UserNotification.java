@@ -40,6 +40,7 @@ public class UserNotification implements Serializable {
 
     @Transient
     private boolean displayAsRead;
+    private boolean emailed;
 
     public Long getId() {
         return id;
@@ -96,4 +97,12 @@ public class UserNotification implements Serializable {
     public void setDisplayAsRead(boolean displayAsRead) {
         this.displayAsRead = displayAsRead;
     }
+
+    public boolean isEmailed() {
+        return emailed;
+    }
+
+    public void setEmailed(boolean emailed) {
+        this.emailed = emailed;
+    }        
 }
