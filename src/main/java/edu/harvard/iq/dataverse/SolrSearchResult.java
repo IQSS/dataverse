@@ -73,6 +73,17 @@ public class SolrSearchResult {
         return null;
     }
 
+    public String getCitationHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.CITATION);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
     public String getDataverseAffiliationHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.AFFILIATION);
         if (highlight != null) {
@@ -287,6 +298,7 @@ public class SolrSearchResult {
             if (!field.equals(SearchFields.NAME)
                     && !field.equals(SearchFields.DESCRIPTION)
                     && !field.equals(SearchFields.AFFILIATION)
+                    && !field.equals(SearchFields.CITATION)
                     && !field.equals("title")) {
                 filtered.add(highlight);
             }

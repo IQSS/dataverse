@@ -279,6 +279,26 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         if (dataset.getLatestVersion() != null) {
+
+            DatasetVersionUI datasetVersionUI = null;
+            try {
+                datasetVersionUI = new DatasetVersionUI(dataset.getLatestVersion());
+            } catch (NullPointerException ex) {
+                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
+            }
+            if (datasetVersionUI != null) {
+                String citation = null;
+                try {
+                    citation = datasetVersionUI.getCitation();
+                    if (citation != null) {
+                        solrInputDocument.addField(SearchFields.CITATION, citation);
+                    }
+
+                } catch (NullPointerException ex) {
+                    logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
+                }
+            }
+
             for (DatasetField dsf : dataset.getLatestVersion().getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();

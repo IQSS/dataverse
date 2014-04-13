@@ -407,8 +407,8 @@
                                     <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                 </div>
 
-                                <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null and result.dataverseAffiliation == null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
-                                <h:outputText value="#{result.dataverseAffiliationHighlightSnippet}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;" escape="false"/>
+                                <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null and result.dataverseAffiliationHighlightSnippet == null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                <h:outputText value="#{result.dataverseAffiliationHighlightSnippet}" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" style="display:block; margin-bottom: .5em; color:#999999;" escape="false"/>
 
                                 <ui:fragment rendered="#{result.descriptionSnippets.size() > 0}">
                                     <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
@@ -479,7 +479,8 @@
                                     <p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/>
                                 </div>
 
-                                <h:outputText value="#{result.citation}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;"/>
+                                <h:outputText value="#{result.citation}" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;" rendered="#{result.citationHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.citationHighlightSnippet}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;" rendered="#{result.citationHighlightSnippet != null}"/>
 
                                 <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>

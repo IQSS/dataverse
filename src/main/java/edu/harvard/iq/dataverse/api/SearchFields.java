@@ -30,6 +30,7 @@ public class SearchFields {
      * lives in the getSolrField() method of DatasetField.java
      */
     public static final String AFFILIATION = "affiliation_ss";
+    public static final String CITATION = "citation_t";
     /**
      * @todo: use a field called "author" instead. Solr default has "author" as
      * "text_general" so the field is tokenized ("Foo Bar" becomes "foo" "bar"

@@ -72,6 +72,7 @@ public class SearchServiceBean {
         Map<String,String> solrFieldsToHightlightOnMap = new HashMap<>();
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
+        solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType: datasetFields) {
