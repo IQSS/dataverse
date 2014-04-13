@@ -258,7 +258,11 @@ public class SolrSearchResult {
         List<Highlight> filtered = new ArrayList<>();
         for (Highlight highlight : highlightsAsList) {
             String field = highlight.getSolrField().getNameSearchable();
-            if (!field.equals(SearchFields.NAME) && !field.equals(SearchFields.DESCRIPTION)) {
+            /**
+             * @todo don't hard code "title" here. And should we collapse name
+             * and title together anyway?
+             */
+            if (!field.equals(SearchFields.NAME) && !field.equals(SearchFields.DESCRIPTION) && !field.equals("title")) {
                 filtered.add(highlight);
             }
         }
