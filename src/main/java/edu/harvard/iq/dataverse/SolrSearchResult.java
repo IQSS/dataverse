@@ -73,6 +73,17 @@ public class SolrSearchResult {
         return null;
     }
 
+    public String getDataverseAffiliationHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.AFFILIATION);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
     public String getFileTypeHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_MIME);
         if (highlight != null) {
@@ -273,7 +284,10 @@ public class SolrSearchResult {
              * @todo don't hard code "title" here. And should we collapse name
              * and title together anyway?
              */
-            if (!field.equals(SearchFields.NAME) && !field.equals(SearchFields.DESCRIPTION) && !field.equals("title")) {
+            if (!field.equals(SearchFields.NAME)
+                    && !field.equals(SearchFields.DESCRIPTION)
+                    && !field.equals(SearchFields.AFFILIATION)
+                    && !field.equals("title")) {
                 filtered.add(highlight);
             }
         }

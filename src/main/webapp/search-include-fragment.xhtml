@@ -407,7 +407,8 @@
                                     <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                 </div>
 
-                                <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null and result.dataverseAffiliation == null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                <h:outputText value="#{result.dataverseAffiliationHighlightSnippet}" rendered="#{result.dataverseAffiliation != null}" style="display:block; margin-bottom: .5em; color:#999999;" escape="false"/>
 
                                 <ui:fragment rendered="#{result.descriptionSnippets.size() > 0}">
                                     <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
