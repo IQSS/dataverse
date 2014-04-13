@@ -41,8 +41,8 @@ public class SearchFields {
 //    public static final String KEYWORD = DatasetFieldConstant.keywordValue + "_s";
 //    public static final String DISTRIBUTOR = DatasetFieldConstant.distributorName + "_s";
     /**
-     * @todo: if you search for "pdf" should you get all pdfs? do we need a
-     * copyField to the catchall?
+     * @todo: if you search for "pdf" we probably want to return all PDFs...
+     * Could fix this with a copyField in schema.xml (and rename to just "filetype").
      */
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";

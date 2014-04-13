@@ -70,8 +70,8 @@ public class SearchServiceBean {
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
         Map<String,String> solrFieldsToHightlightOnMap = new HashMap<>();
-        String nameField = SearchFields.NAME;
-        solrFieldsToHightlightOnMap.put(nameField, "Name");
+        solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType: datasetFields) {
             String solrField = datasetFieldType.getSolrField().getNameSearchable();

@@ -73,6 +73,17 @@ public class SolrSearchResult {
         return null;
     }
 
+    public String getFileTypeHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_MIME);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
     public String getTitleHighlightSnippet() {
         /**
          * @todo: don't hard-code title, look it up properly... or start

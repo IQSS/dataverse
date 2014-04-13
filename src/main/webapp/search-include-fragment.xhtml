@@ -520,7 +520,8 @@
                                     <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
                                 </div>
 
-                                <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;"/>
+                                <h:outputText value="#{result.filetype}" style="display:block; margin-bottom: .5em; color:#999999;" rendered="#{result.fileTypeHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.fileTypeHighlightSnippet}" style="display:block; margin-bottom: .5em; color:#999999;" rendered="#{result.fileTypeHighlightSnippet != null}" escape="false"/>
 
                                 <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                 <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
