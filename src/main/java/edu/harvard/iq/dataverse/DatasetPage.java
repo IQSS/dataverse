@@ -117,6 +117,10 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
+    
+    public DatasetVersion getDisplayVersion(){
+        return displayVersion;
+    }
 
     public EditMode getEditMode() {
         return editMode;

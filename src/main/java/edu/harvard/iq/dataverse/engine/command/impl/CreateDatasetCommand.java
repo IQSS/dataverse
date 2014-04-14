@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -13,6 +15,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -66,6 +69,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         Dataset savedDataset = ctxt.em().merge(theDataset);
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
+        	DataverseRole manager = new DataverseRole();
+		manager.addPermissions( EnumSet.allOf(Permission.class) );		
+		manager.setAlias("manager");
+		manager.setName("Dataset Manager");
+		manager.setDescription("Auto-generated role for the creator of this dataverse");
+		manager.setOwner(savedDataset);		
+		ctxt.roles().save(manager);		
+		ctxt.roles().save(new RoleAssignment(manager, getUser(), savedDataset));
         return savedDataset;
     }
 

@@ -132,7 +132,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         if (dataverse.isReleased()) {
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getReleaseDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataverse.getCreator() != null) {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
@@ -235,7 +235,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
         if (dataset.isReleased()) {
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getReleaseDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataset.getOwner().getCreator() != null) {
             /**
@@ -707,18 +707,18 @@ public class IndexServiceBean {
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
-        if (dataverse.getReleaseDate() != null) {
+        if (dataverse.getPublicationDate() != null) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(dataverse.getReleaseDate().getTime());
+            calendar.setTimeInMillis(dataverse.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
         }
     }
 
     private void addDatasetReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataset dataset) {
-        if (dataset.getReleaseDate() != null) {
+        if (dataset.getPublicationDate() != null) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(dataset.getReleaseDate().getTime());
+            calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
         }

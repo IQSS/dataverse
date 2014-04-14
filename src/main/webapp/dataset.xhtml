@@ -56,7 +56,9 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" style="float:right;">
-                                   <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
+                                   <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                                            and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                            and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -80,7 +82,16 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('ReleaseDatasetCommand')}">
+                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion}">
+                                            <li>
+                                                <h:outputLink value="/dataset.xhtml?id=#{DatasetPage.dataset.id}"  >
+                                                                <h:outputText value="Current Version"/>
+                                                            </h:outputLink>
+                                            </li>
+                                    </ui:fragment> 
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
@@ -253,7 +264,9 @@
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -372,7 +385,9 @@
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -392,7 +407,7 @@
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
                                         <p:column>
-                                            <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="dataset">
+                                            <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText value="#{version.title}" />
                                                 <f:param name="id" value="#{version.dataset.id}" />
                                                 <f:param name="versionId" value="#{version.id}" />

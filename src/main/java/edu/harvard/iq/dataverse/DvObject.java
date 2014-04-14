@@ -45,7 +45,7 @@ public abstract class DvObject implements java.io.Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     private DvObjectContainer owner;
 
-    private Timestamp releaseDate;
+    private Timestamp publicationDate;
 
     @ManyToOne
     private DataverseUser releaseUser;
@@ -84,12 +84,12 @@ public abstract class DvObject implements java.io.Serializable {
         this.id = id;
     }
 
-    public Timestamp getReleaseDate() {
-        return releaseDate;
+    public Timestamp getPublicationDate() {
+        return publicationDate;
     }
 
-    public void setReleaseDate(Timestamp releaseDate) {
-        this.releaseDate = releaseDate;
+    public void setPublicationDate(Timestamp publicationDate) {
+        this.publicationDate = publicationDate;
     }
 
     public DataverseUser getReleaseUser() {
@@ -101,7 +101,7 @@ public abstract class DvObject implements java.io.Serializable {
     }
 
     public boolean isReleased() {
-        return releaseDate != null;
+        return publicationDate != null;
     }
 
     public Timestamp getCreateDate() {

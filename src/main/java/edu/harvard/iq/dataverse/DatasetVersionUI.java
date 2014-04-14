@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -253,11 +255,12 @@ public class DatasetVersionUI {
                 str += ", ";
             }
             str += getReleaseDate();
-        } else if (!StringUtil.isEmpty(getCreateDate())) {
+        } else  {
+            //if not released use current year
             if (!StringUtil.isEmpty(str)) {
                 str += ", <";
             }
-            str += getYearForCitation(getCreateDate()) + ">";             
+            str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) + ">";             
         } 
 
         if ( getTitle() != null ) {

@@ -46,7 +46,7 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         if (theDataset.getReleasedVersion() == null) {
-            theDataset.setReleaseDate(new Timestamp(new Date().getTime()));
+            theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.setReleaseUser(getUser());
             if (!minorRelease) {
                 theDataset.getEditVersion().setVersionNumber(new Long(1));
