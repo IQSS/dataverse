@@ -1,9 +1,9 @@
-.. Harvard Dataverse Network Documentation master file, created by
+.. Dataverse Documentation master file, created by
    sphinx-quickstart on Mon Jan 13 15:30:58 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse Network Guides (Testing for 4.0)
+Dataverse Guides (Testing for 4.0)
 =======================================================
 
 Contents:
@@ -17,6 +17,7 @@ Contents:
   Developers/index
   Installers/index
   API/index
+  Data_Exploration/index
 
 How the Guides Are Organized
 =============================
