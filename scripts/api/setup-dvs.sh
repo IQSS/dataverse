@@ -28,3 +28,6 @@ echo
 echo Assign sensible role for the guest on root
 curl -H "Content-type:application/json" -X POST -d @data/role-guest.json "http://localhost:8080/api/dvs/root/roles?key=pete"
 curl -H "Content-type:application/json" -X POST -d"{\"userName\":\"__GUEST__\",\"roleAlias\":\"guest-role\"}" http://localhost:8080/api/dvs/root/assignments/?key=pete
+
+echo Set the metadata block for Root
+curl -X POST -H "Content-type:application/json" -d "[\"citation\"]" http://localhost:8080/api/dvs/:root/metadatablocks/?key=pete

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
@@ -63,6 +65,12 @@ public class Util {
 
     }
 	
+    static JsonArray asJsonArray( String str ) {
+        try ( JsonReader rdr = Json.createReader(new StringReader(str)) ) {
+            return rdr.readArray();
+        }
+    }
+    
 	static String ok( JsonObject obj ) {
 		JsonObjectBuilder response = Json.createObjectBuilder();
 		response.add("status", "OK");

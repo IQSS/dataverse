@@ -72,7 +72,7 @@ If you have an old copy of the database and old Solr data and want to start fres
 - ``./setup-dvs.sh`` 
 - confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
 - confirm http://localhost:8080 is up
-- via web browser, go to the Root Dataverse / Edit Dataverse Setup. Add the Citation block and any others. You may also choose to select some  dataset-specific facets. (**)
+- If you want to set some dataset-specific facets, go to the Root Dataverse / Edit Dataverse Setup via web browser.
 
 (*) This script calls a curl command for each of the (current) metadata blocks. If you want to exclude a block, just modify the file and remove that block.
 

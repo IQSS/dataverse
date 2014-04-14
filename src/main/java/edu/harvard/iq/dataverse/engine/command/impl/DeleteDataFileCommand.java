@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -23,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
  * Deletes a data file, both DB entity and filesystem object.
  * @author michael
  */
+@RequiredPermissions( Permission.DestructiveEdit )
 public class DeleteDataFileCommand extends AbstractVoidCommand {
 	
 	private final DataFile doomed;
@@ -39,57 +42,59 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 		}
 		                
 		// We need to delete a bunch of files from the file system;
-                // First we try to delete the data file itself; if that 
-                // fails, we throw an exception and abort the command without
-                // trying to remove the object from the database:
-                
-                Path filePath = Paths.get(doomed.getFileSystemName());
-                if (Files.exists(filePath)) {
-                    try {
-                        Files.delete(filePath);
-                    } catch (IOException ex) {
-                        throw new CommandExecutionException("Error deleting physical file '" + doomed.getFileSystemLocation() + "' while deleting DataFile " + doomed.getName(), ex, this );
-                    }
-                    
-                }                
-                                
-                // We may also have a few extra files associated with this object - 
-                // preserved original that was used in the tabular data ingest, 
-                // cached R data frames, image thumbnails, etc.
-                // We need to delete these too; failures however are less 
-                // important with these. If we fail to delete any of these 
-                // auxiliary files, we'll just leave an error message in the 
-                // log file and proceed deleting the database object.
-                
-                List<Path> victims = new ArrayList<>(); 
+        // First we try to delete the data file itself; if that 
+        // fails, we throw an exception and abort the command without
+        // trying to remove the object from the database:
 
-                // 1. preserved original: 
-                filePath = doomed.getSavedOriginalFile();
-                if (filePath != null) {
-                    victims.add(filePath);
+        String fileSystemName = doomed.getFileSystemName();
+        if ( fileSystemName != null ) {
+            Path filePath = Paths.get(fileSystemName);
+            if (Files.exists(filePath)) {
+                try {
+                    Files.delete(filePath);
+                } catch (IOException ex) {
+                    throw new CommandExecutionException("Error deleting physical file '" + doomed.getFileSystemLocation() + "' while deleting DataFile " + doomed.getName(), ex, this );
                 }
-                
-                // 2. Cached files: 
-                victims.addAll(listCachedFiles(doomed));
-                
-                // Delete them all: 
-                List<String> failures = new ArrayList<>(); 
-                for (Path deadFile : victims) {
-                    try {
-                        Files.delete(deadFile);
-                    } catch (IOException ex) {
-                        failures.add(deadFile.toString());
-                    }
+            }                
+
+
+            // We may also have a few extra files associated with this object - 
+            // preserved original that was used in the tabular data ingest, 
+            // cached R data frames, image thumbnails, etc.
+            // We need to delete these too; failures however are less 
+            // important with these. If we fail to delete any of these 
+            // auxiliary files, we'll just leave an error message in the 
+            // log file and proceed deleting the database object.
+
+            List<Path> victims = new ArrayList<>(); 
+
+            // 1. preserved original: 
+            filePath = doomed.getSavedOriginalFile();
+            if (filePath != null) {
+                victims.add(filePath);
+            }
+
+            // 2. Cached files: 
+            victims.addAll(listCachedFiles(doomed));
+
+            // Delete them all: 
+            List<String> failures = new ArrayList<>(); 
+            for (Path deadFile : victims) {
+                try {
+                    Files.delete(deadFile);
+                } catch (IOException ex) {
+                    failures.add(deadFile.toString());
                 }
-		
-		if (!failures.isEmpty()) {
-                    String failedFiles = StringUtils.join(failures, ",");
-                    Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE,"Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
-                }
-                
-                // Finally, delete the file from the DB.
-		ctxt.em().remove(doomed);
-                
+            }
+
+            if (!failures.isEmpty()) {
+                String failedFiles = StringUtils.join(failures, ",");
+                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE,"Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
+            }
+
+            // Finally, delete the file from the DB.
+            ctxt.em().remove(doomed);
+        }
 	}
         
         private List<Path> listCachedFiles(DataFile dataFile) {

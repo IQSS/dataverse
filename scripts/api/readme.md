@@ -66,6 +66,10 @@ Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}
 
 Get the metadata blocks defined on the passed dataverse.
 
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks?key={{username}}
+
+Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name).
+
 	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks.

@@ -11,6 +11,7 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -25,7 +26,14 @@ import javax.persistence.OrderBy;
 @Entity
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;    
-
+    
+    public static final Comparator<DatasetField> orderByTypeName = new Comparator<DatasetField>() {
+        @Override
+        public int compare(DatasetField o1, DatasetField o2) {
+            return o1.getDatasetFieldType().getDisplayOrder()-o2.getDatasetFieldType().getDisplayOrder();
+        }
+    };
+    
     public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         DatasetField dsfv =  createNewEmptyDatasetField(dsfType);
         dsfv.setDatasetVersion(dsv);
@@ -53,7 +61,6 @@ public class DatasetField implements Serializable {
         return dsfv;
         
     }
-    
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -260,13 +260,14 @@ public class DatasetVersionUI {
             str += getYearForCitation(getCreateDate()) + ">";             
         } 
 
-        if (!StringUtil.isEmpty(getTitle().getValue())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
+        if ( getTitle() != null ) {
+            if (!StringUtil.isEmpty(getTitle().getValue())) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += "\"" + getTitle().getValue() + "\"";
             }
-            str += "\"" + getTitle().getValue() + "\"";
         }
-
         if (!StringUtil.isEmpty(dataset.getIdentifier())) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";

@@ -30,11 +30,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonString;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -171,8 +170,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/metadatablocks")
     @Produces("application/json")
-    @Consumes("application/json")
-    public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, List<String> blockIds ) {
+    public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String blockIds ) {
         DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 
@@ -182,8 +180,9 @@ public class Dataverses extends AbstractApiBean {
 		}
         
         List<MetadataBlock> blocks = new LinkedList<>();
-        for ( String blockId : blockIds ) {
-            MetadataBlock blk = findMetadataBlock(blockId);
+        
+        for ( JsonString blockId : Util.asJsonArray(blockIds).getValuesAs(JsonString.class) ) {
+            MetadataBlock blk = findMetadataBlock(blockId.getString());
             if ( blk == null ) {
                 return errorResponse(Response.Status.BAD_REQUEST, "Can't find metadata block '"+ blockId + "'");
             }

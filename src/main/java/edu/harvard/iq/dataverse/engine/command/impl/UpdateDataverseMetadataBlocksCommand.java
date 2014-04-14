@@ -53,6 +53,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
 
         @Override
         protected void executeImpl(CommandContext ctxt) throws CommandException {
+            ctxt.engine().submit( new UpdateDataverseMetadataBlocksCommand.SetRoot(getUser(), updatedDv, true) );
             updatedDv.setMetadataBlocks(blocks);
             ctxt.em().merge(updatedDv);
         }

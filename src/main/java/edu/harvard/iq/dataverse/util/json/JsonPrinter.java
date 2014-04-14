@@ -162,8 +162,10 @@ public class JsonPrinter {
 			Set<DatasetFieldType> blockFields = new TreeSet<>(block.getDatasetFieldTypes());
 			
 			JsonObjectBuilder valuesBld = jsonObjectBuilder();
-
-			for ( DatasetField val : new TreeSet<>(fieldValues) ) {
+            TreeSet<DatasetField> orderedFields = new TreeSet<>(DatasetField.orderByTypeName );
+            orderedFields.addAll(fieldValues);
+             
+			for ( DatasetField val : orderedFields ) {
 				if ( blockFields.contains(val.getDatasetFieldType()) ) {
 					valuesBld.add( val.getDatasetFieldType().getName(), json(val) );
 				}
@@ -183,21 +185,12 @@ public class JsonPrinter {
 	public static JsonObjectBuilder json( DatasetField dfv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder();
 		bld.add( "id", dfv.getId() );
-                /*
-		bld.add( "displayOrder", dfv.getDisplayOrder() );
 		if ( dfv.isEmpty() ) {
 			bld.addNull("value");
 		} else {
-			if ( dfv.isChildEmpty() ) {
-				bld.add( "value", dfv.getValue());
-			} else {
-				JsonObjectBuilder childBld = jsonObjectBuilder();
-				for ( DatasetFieldValue childVal : dfv.getChildDatasetFieldValues() ) {
-					childBld.add(childVal.getDatasetField().getName(), json(childVal) );
-				}
-				bld.add( "value", childBld );
-			}
-		}*/
+            // TODO traverse the fields
+            bld.add( "value", dfv.getDisplayValue() );
+		}
 		
 		return bld;
 	}
