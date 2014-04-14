@@ -410,7 +410,8 @@
                                 <h:outputText value="#{result.dataverseAffiliation}" rendered="#{result.dataverseAffiliation != null and result.dataverseAffiliationHighlightSnippet == null}" style="display:block; margin-bottom: .5em; color:#999999;"/>
                                 <h:outputText value="#{result.dataverseAffiliationHighlightSnippet}" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" style="display:block; margin-bottom: .5em; color:#999999;" escape="false"/>
 
-                                <ui:fragment rendered="#{result.descriptionSnippets.size() > 0}">
+                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                                <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
                                     <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
                                         <h:outputText value="#{snippet}" escape="false"/>
                                         <h:outputText value="... " rendered="#{varStatus.last != true}"/>
