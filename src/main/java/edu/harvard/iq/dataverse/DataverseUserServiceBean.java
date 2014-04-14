@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -39,7 +40,7 @@ public class DataverseUserServiceBean {
         DataverseUser savedUser = em.merge(dataverseUser);
         em.flush();
         String indexingResult = indexService.indexUser(savedUser);
-        logger.info("during user save, indexing result was: " + indexingResult);
+        logger.log(Level.INFO, "during user save, indexing result was: {0}", indexingResult);
         return savedUser;
     }
     
@@ -87,11 +88,7 @@ public class DataverseUserServiceBean {
         return user;
     }
     
-    public DataverseUser findDataverseUser() {
-        return (DataverseUser) em.createQuery("select object(o) from DataverseUser as o where o.id = 1").getSingleResult();
-    }
-	
-	public List<DataverseUser> findAll() {
+    public List<DataverseUser> findAll() {
 		return em.createNamedQuery("DataverseUser.findAll", DataverseUser.class).getResultList();
 	}
 }

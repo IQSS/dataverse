@@ -95,7 +95,10 @@ public class PermissionServiceBean {
 		
 		// special root case
 		if ( (d.getOwner() == null) && (!u.isGuest()) )  {
+            // TODO when groups arrive, this has to go.
 			retVal.add( Permission.UndoableEdit );
+			retVal.add( Permission.AddDataset );
+			retVal.add( Permission.AddDataverse );
 		}
 		
 		return retVal;
