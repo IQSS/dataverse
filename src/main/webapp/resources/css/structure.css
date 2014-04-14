@@ -76,6 +76,8 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
+div[id$="resultsTable"] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+div[id$="resultsTable"] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
 form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
 form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}

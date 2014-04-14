@@ -480,8 +480,8 @@
                                     <p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/>
                                 </div>
 
-                                <h:outputText value="#{result.citation}" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;" rendered="#{result.citationHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.citationHighlightSnippet}" escape="false" style="display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;" rendered="#{result.citationHighlightSnippet != null}"/>
+                                <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.citationHighlightSnippet}" escape="false" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet != null}"/>
 
                                 <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
