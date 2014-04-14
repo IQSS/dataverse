@@ -39,7 +39,7 @@
                         Dropbox.choose(options);
                     }
                 </script>
-
+                
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -239,7 +239,7 @@
                                     }
                                 </script>
                                 <p:socket channel="/ingest#{dataset.id}" onMessage="updateFilesTable" autoConnect="true">
-                                    <p:ajax event="message" update="tabView:filesTable" />
+                                    <p:ajax event="message" update="@all" />
                                 </p:socket>
                             </ui:fragment>
                             <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
@@ -253,7 +253,7 @@
                                             </div>
                                         </ui:fragment>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                  fileUploadListener="#{DatasetPage.handleFileUpload}" update="@all" label="Select Files to Add"/> 
+                                                  fileUploadListener="#{DatasetPage.handleFileUpload}" update="filesTable" label="Select Files to Add"/> 
                                                                    
                                         <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
                                         <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
