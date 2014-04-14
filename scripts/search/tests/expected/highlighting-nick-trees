@@ -21,11 +21,16 @@
         },
         {
             "id":"dataset_17",
-            "matched_fields":"[title, description, notesText, authorAffiliation, keyword, contributorName]",
+            "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, keyword, contributorName]",
             "detailsArray":[
                 {
                     "title":[
                         "Rings of <span class=\"search-term-match\">Trees</span> and Other Observations"
+                    ]
+                },
+                {
+                    "citation_t":[
+                        "Tree, Tony, 2014, \"Rings of <span class=\"search-term-match\">Trees</span> and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
                     ]
                 },
                 {
