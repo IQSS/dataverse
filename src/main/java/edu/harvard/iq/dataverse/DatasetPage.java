@@ -75,8 +75,6 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
-    TemplateServiceBean templateService;
-    @EJB
     DatasetFieldServiceBean fieldService;
     @EJB
     VariableServiceBean variableService;
