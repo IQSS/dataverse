@@ -164,9 +164,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
-        if (dataverse.getOwner() != null) {
-            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
-        }
+//        if (dataverse.getOwner() != null) {
+//            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
+//        }
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
@@ -444,7 +444,7 @@ public class IndexServiceBean {
         }
 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
+//        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
@@ -516,7 +516,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(dataFile));
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
+//            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
             if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {

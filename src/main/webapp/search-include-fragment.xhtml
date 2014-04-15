@@ -119,7 +119,7 @@
                             <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}" rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}">
 
                                 <h:outputLink rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ? 'facetSelected' : ''}">
-                                    <h:outputText value="#{facetLabel.name}#{facetCategory.name == SearchIncludeFragment.searchFieldHostDataverse ? ' Dataverse' : ''}"/>
+                                    <h:outputText value="#{facetLabel.name}"/>
                                     <h:outputText value=" (#{facetLabel.count})"/>
                                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
@@ -133,7 +133,7 @@
                                 </h:outputLink>
 
                                 <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ?  'facetSelected' : ''}">
-                                    <h:outputText value="#{facetLabel.name}#{facetCategory.name == SearchIncludeFragment.searchFieldHostDataverse ? ' Dataverse' : ''}" style="font-weight: bolder"/>
+                                    <h:outputText value="#{facetLabel.name}" style="font-weight: bolder"/>
                                     <h:outputText value=" (#{facetLabel.count})"/>
 
                                     <h:outputText styleClass="glyphicon glyphicon-remove" value="" style="margin-left:.25em;"/>

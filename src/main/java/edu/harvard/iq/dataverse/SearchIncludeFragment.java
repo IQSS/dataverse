@@ -61,7 +61,7 @@ public class SearchIncludeFragment {
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
-    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
+//    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
 //    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
@@ -640,13 +640,13 @@ public class SearchIncludeFragment {
         this.searchFieldSubtree = searchFieldSubtree;
     }
 
-    public String getSearchFieldHostDataverse() {
-        return searchFieldHostDataverse;
-    }
-
-    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
-        this.searchFieldHostDataverse = searchFieldHostDataverse;
-    }
+//    public String getSearchFieldHostDataverse() {
+//        return searchFieldHostDataverse;
+//    }
+//
+//    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
+//        this.searchFieldHostDataverse = searchFieldHostDataverse;
+//    }
 
     public String getTypeFilterQuery() {
         return typeFilterQuery;

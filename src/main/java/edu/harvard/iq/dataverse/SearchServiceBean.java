@@ -132,7 +132,7 @@ public class SearchServiceBean {
         }
         solrQuery.addFilterQuery(permissionFilterQuery);
 
-        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
+//        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.RELEASE_DATE);
