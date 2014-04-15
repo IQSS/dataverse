@@ -1,9 +1,5 @@
-====================================
-Data Exploration Guide
-====================================
-
-Sola Fide
-++++++++++
+Data Exploration Guide Sola Fide
+++++++++++++++++++++++++++++++++++
 
 Exploring and Analyzing Tabular files in Dataverse
 ===================================================
