@@ -258,9 +258,9 @@ public class DatasetVersionUI {
         } else  {
             //if not released use current year
             if (!StringUtil.isEmpty(str)) {
-                str += ", <";
+                str += ", ";
             }
-            str += new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) + ">";             
+            str += "<" + new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) + ">";             
         } 
 
         if ( getTitle() != null ) {
