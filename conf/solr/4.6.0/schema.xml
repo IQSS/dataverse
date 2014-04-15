@@ -278,10 +278,8 @@
    <field name="contributor" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="contributorAbbreviation" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="contributorAffiliation" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="contributorLogo" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="contributorName" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="contributorType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="contributorURL" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="controlOperations" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="country" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="coverage" type="text_general" multiValued="true" stored="true" indexed="true"/>
@@ -303,10 +301,7 @@
    <field name="dataCollectionSituation" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="dataCollector" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="dataSources" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="datasetLevelErrorNotes" type="text_general" multiValued="false" stored="true" indexed="true"/>
-   <field name="datasetVersion" type="text_general" multiValued="false" stored="true" indexed="true"/>
-   <field name="datasetVersionValue" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="dateOfCollectionEnd" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="dateOfCollectionStart" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="dateOfDeposit" type="int" multiValued="false" stored="true" indexed="true"/>
@@ -361,39 +356,11 @@
    <field name="softwareName" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="softwareVersion" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="southLongitude" type="text_general" multiValued="false" stored="true" indexed="true"/>
-   <field name="studyAssay" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayFileName" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayMeasurementTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayMeasurementTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
+   <field name="studyAssayCellType" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="studyAssayMeasurementType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayTechnologyPlatform" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayTechnologyType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayTechnologyTypeTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyAssayTechnologyTypeTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
+   <field name="studyAssayOrganism" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="studyDesignType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyDesignTypeValue" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyFactor" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyFactorName" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyFactorTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyFactorTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="studyFactorType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolComponentsName" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolComponentsType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolComponentsTypeTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolComponentsTypeTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolDescription" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolName" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolParametersName" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolParametersNameTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolParametersNameTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolType" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolTypeTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolTypeTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolURI" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocolVersion" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyProtocols" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyTermAccessionNumber" type="text_general" multiValued="true" stored="true" indexed="true"/>
-   <field name="studyTermSourceREF" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="subject" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="targetSampleSize" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="timeMethod" type="text_general" multiValued="false" stored="true" indexed="true"/>
@@ -408,7 +375,6 @@
    <field name="ucd" type="text_general" multiValued="true" stored="true" indexed="true"/>
    <field name="unitOfAnalysis" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="universe" type="text_general" multiValued="false" stored="true" indexed="true"/>
-   <field name="versionDate" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="weighting" type="text_general" multiValued="false" stored="true" indexed="true"/>
    <field name="westLongitude" type="text_general" multiValued="false" stored="true" indexed="true"/>
  </fields>
@@ -488,10 +454,8 @@
    <copyField source="contributor" dest="text" maxChars="3000"/>
    <copyField source="contributorAbbreviation" dest="text" maxChars="3000"/>
    <copyField source="contributorAffiliation" dest="text" maxChars="3000"/>
-   <copyField source="contributorLogo" dest="text" maxChars="3000"/>
    <copyField source="contributorName" dest="text" maxChars="3000"/>
    <copyField source="contributorType" dest="text" maxChars="3000"/>
-   <copyField source="contributorURL" dest="text" maxChars="3000"/>
    <copyField source="controlOperations" dest="text" maxChars="3000"/>
    <copyField source="country" dest="text" maxChars="3000"/>
    <copyField source="coverage" dest="text" maxChars="3000"/>
@@ -513,10 +477,7 @@
    <copyField source="dataCollectionSituation" dest="text" maxChars="3000"/>
    <copyField source="dataCollector" dest="text" maxChars="3000"/>
    <copyField source="dataSources" dest="text" maxChars="3000"/>
-   <copyField source="datasetId" dest="text" maxChars="3000"/>
    <copyField source="datasetLevelErrorNotes" dest="text" maxChars="3000"/>
-   <copyField source="datasetVersion" dest="text" maxChars="3000"/>
-   <copyField source="datasetVersionValue" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionEnd" dest="text" maxChars="3000"/>
    <copyField source="dateOfCollectionStart" dest="text" maxChars="3000"/>
    <copyField source="dateOfDeposit" dest="text" maxChars="3000"/>
@@ -571,39 +532,11 @@
    <copyField source="softwareName" dest="text" maxChars="3000"/>
    <copyField source="softwareVersion" dest="text" maxChars="3000"/>
    <copyField source="southLongitude" dest="text" maxChars="3000"/>
-   <copyField source="studyAssay" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayFileName" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayMeasurementTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayMeasurementTermSourceREF" dest="text" maxChars="3000"/>
+   <copyField source="studyAssayCellType" dest="text" maxChars="3000"/>
    <copyField source="studyAssayMeasurementType" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayTechnologyPlatform" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayTechnologyType" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayTechnologyTypeTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyAssayTechnologyTypeTermSourceREF" dest="text" maxChars="3000"/>
+   <copyField source="studyAssayOrganism" dest="text" maxChars="3000"/>
    <copyField source="studyDesignType" dest="text" maxChars="3000"/>
-   <copyField source="studyDesignTypeValue" dest="text" maxChars="3000"/>
-   <copyField source="studyFactor" dest="text" maxChars="3000"/>
-   <copyField source="studyFactorName" dest="text" maxChars="3000"/>
-   <copyField source="studyFactorTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyFactorTermSourceREF" dest="text" maxChars="3000"/>
    <copyField source="studyFactorType" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolComponentsName" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolComponentsType" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolComponentsTypeTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolComponentsTypeTermSourceREF" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolDescription" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolName" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolParametersName" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolParametersNameTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolParametersNameTermSourceREF" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolType" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolTypeTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolTypeTermSourceREF" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolURI" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocolVersion" dest="text" maxChars="3000"/>
-   <copyField source="studyProtocols" dest="text" maxChars="3000"/>
-   <copyField source="studyTermAccessionNumber" dest="text" maxChars="3000"/>
-   <copyField source="studyTermSourceREF" dest="text" maxChars="3000"/>
    <copyField source="subject" dest="text" maxChars="3000"/>
    <copyField source="targetSampleSize" dest="text" maxChars="3000"/>
    <copyField source="timeMethod" dest="text" maxChars="3000"/>
@@ -618,7 +551,6 @@
    <copyField source="ucd" dest="text" maxChars="3000"/>
    <copyField source="unitOfAnalysis" dest="text" maxChars="3000"/>
    <copyField source="universe" dest="text" maxChars="3000"/>
-   <copyField source="versionDate" dest="text" maxChars="3000"/>
    <copyField source="weighting" dest="text" maxChars="3000"/>
    <copyField source="westLongitude" dest="text" maxChars="3000"/>
 
