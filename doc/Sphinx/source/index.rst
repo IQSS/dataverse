@@ -35,9 +35,9 @@ Developers that work on other applications and are interested in connecting with
 Other Resources
 =========================
 
-**Dataverse Network Project Site**
+**Dataverse Project Site**
 
-Additional information about the Dataverse Network project itself
+Additional information about the Dataverse Project itself
 including presentations, information about upcoming releases, data
 management and citation, and announcements can be found at
 `http://thedata.org <http://thedata.org/>`__
