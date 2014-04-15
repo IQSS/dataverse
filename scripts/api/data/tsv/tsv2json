@@ -19,5 +19,17 @@ reader = csv.DictReader(csv_file, delimiter="\t")
 rows = [row for row in reader]
 for row in rows:
     row["permissionRoot"] = "false"
-    print json.dumps(row)
+    parent = row["parent"]
+    parts = parent.split("/")
+    if parts[1]:
+        target = parts[-1]
+    else:
+        target = "root"
+    del row["parent"]
+    creator = row["creator"]
+    del row["creator"]
+    jsondata = "%s%s%s" % ("'",json.dumps(row),"'")
+    start = 'curl -H "Content-type:application/json" -X POST "http://localhost:8080/api/dvs/'
+    print "%s%s%s%s%s%s" % (start, target, "?key=",creator, "\" -d ", jsondata)
+    print
 csv_file.close()
