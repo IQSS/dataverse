@@ -357,12 +357,12 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?fileFormat=RData"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="As RData"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?fileFormat=original"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="Saved Original (#{fileMetadata.dataFile.originalFormatLabel})"/>
                                                             </h:outputLink>
                                                         </li>

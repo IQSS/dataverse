@@ -209,50 +209,56 @@ public class DataFileConverter {
             return tabFile;
         }
 
-        List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
-        RJobRequest sro = null;
-        Map<String, Map<String, String>> vls = null;
-        
-        vls = getValueTableForRequestedVariables(dataVariables);
-        dbgLog.fine("format conversion: variables(getDataVariableForRequest())="+dataVariables+"\n");
-        dbgLog.fine("format conversion: variables(dataVariables)="+dataVariables+"\n");
-        dbgLog.fine("format conversion: value table(vls)="+vls+"\n");
-
-
         File formatConvertedFile = null;
-        
-        sro = new RJobRequest(dataVariables, vls);
-        
-        sro.setTabularDataFileName(tabFile.getAbsolutePath());
-        sro.setRequestType(SERVICE_REQUEST_CONVERT);
-        sro.setFormatRequested(FILE_TYPE_RDATA);
-        
         // create the service instance
         RemoteDataFrameService dfs = new RemoteDataFrameService();
+        
+        if ("RData".equals(formatRequested)) {
+            List<DataVariable> dataVariables = file.getDataTable().getDataVariables();
+            Map<String, Map<String, String>> vls = null;
 
-        // execute the service
-        Map<String, String> resultInfo = dfs.execute(sro);
+            vls = getValueTableForRequestedVariables(dataVariables);
+            dbgLog.fine("format conversion: variables(getDataVariableForRequest())=" + dataVariables + "\n");
+            dbgLog.fine("format conversion: variables(dataVariables)=" + dataVariables + "\n");
+            dbgLog.fine("format conversion: value table(vls)=" + vls + "\n");
+            RJobRequest sro = new RJobRequest(dataVariables, vls);
 
-        //resultInfo.put("offlineCitation", citation);
-        dbgLog.fine("resultInfo="+resultInfo+"\n");
+            sro.setTabularDataFileName(tabFile.getAbsolutePath());
+            sro.setRequestType(SERVICE_REQUEST_CONVERT);
+            sro.setFormatRequested(FILE_TYPE_RDATA);
 
-        // check whether a requested file is actually created
+        
 
-        if ("true".equals(resultInfo.get("RexecError"))){
-            dbgLog.fine("R-runtime error trying to convert a file.");
-            return  null;
-        } else {
-            String dataFrameFileName = resultInfo.get("dataFrameFileName");
-            dbgLog.fine("data frame file name: "+dataFrameFileName);
+            // execute the service
+            Map<String, String> resultInfo = dfs.execute(sro);
 
-            formatConvertedFile = new File(dataFrameFileName);
+            //resultInfo.put("offlineCitation", citation);
+            dbgLog.fine("resultInfo="+resultInfo+"\n");
 
-            if (formatConvertedFile.exists()){
-                dbgLog.fine("frmtCnvrtdFile:length="+formatConvertedFile.length());
+            // check whether a requested file is actually created
+
+            if ("true".equals(resultInfo.get("RexecError"))){
+                dbgLog.fine("R-runtime error trying to convert a file.");
+                return  null;
             } else {
-                dbgLog.warning("Format-converted file was not properly created.");
-                return null;
+                String dataFrameFileName = resultInfo.get("dataFrameFileName");
+                dbgLog.fine("data frame file name: "+dataFrameFileName);
+
+                formatConvertedFile = new File(dataFrameFileName);
             }
+        } else if ("preprocessed".equals(formatRequested)) {
+            formatConvertedFile = dfs.runDataPreprocessing(file);
+        } else {
+            dbgLog.warning("Unsupported file format requested: "+formatRequested);
+            return null; 
+        }
+            
+
+        if (formatConvertedFile.exists()) {
+            dbgLog.fine("frmtCnvrtdFile:length=" + formatConvertedFile.length());
+        } else {
+            dbgLog.warning("Format-converted file was not properly created.");
+            return null;
         }
 
         return formatConvertedFile;

@@ -7,12 +7,19 @@
 package edu.harvard.iq.dataverse.api;
 
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
+import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
+import java.io.BufferedInputStream;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -51,6 +58,9 @@ public class Meta {
     
     @EJB
     DDIExportServiceBean ddiExportService;
+    
+    @EJB
+    DataFileServiceBean datafileService; 
 
     @Path("variable/{varId}")
     @GET
@@ -83,30 +93,31 @@ public class Meta {
     
     @Path("datafile/{fileId}")
     @GET
-    @Produces({ "application/xml" })
+    @Produces({"application/xml"})
     public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
-        
-        ByteArrayOutputStream outStream = null;
-        try {
-            outStream = new ByteArrayOutputStream();
 
+        ByteArrayOutputStream outStream = null;
+        outStream = new ByteArrayOutputStream();
+
+        try {
             ddiExportService.exportDataFile(
                     fileId,
                     outStream,
                     exclude,
                     include);
+
+            retValue = outStream.toString();
+
         } catch (Exception e) {
             // For whatever reason we've failed to generate a partial 
             // metadata record requested. We simply return an empty string.
             return retValue;
         }
 
-        retValue = outStream.toString();
-        
         response.setHeader("Access-Control-Allow-Origin", "*");
-                
-        return retValue; 
+
+        return retValue;
     }
     
 }
