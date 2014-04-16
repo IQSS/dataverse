@@ -206,6 +206,11 @@ fi
 
 #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
 
+# created mail configuration: 
+# (yes, the mail server is hard-coded; the top-level installer script will be taking care of this)
+
+./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost mail.hmdc.harvard.edu --mailuser "dataversenotify" --fromaddress "do-not-reply@hmdc.harvard.edu" mail/notifyMailSession
+
 ###
 # Restart
 echo Updates done. Restarting...
