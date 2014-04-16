@@ -15,10 +15,12 @@ DEFAULT_ASADMIN_OPTS=" "
 
 ###
 # Database values. Update as needed.
+# Note: DB_USER "dvnApp" is case-sensitive and later used in "scripts/database/reference_data.sql"
+#
 DB_PORT=5432
 DB_HOST=localhost
 DB_NAME=dvndb
-DB_USER=dvnapp
+DB_USER=dvnApp
 DB_PASS=dvnAppPass
 
 # "${VAR+xxx}" for unset vs. empty per http://stackoverflow.com/questions/228544/how-to-tell-if-a-string-is-not-defined-in-a-bash-shell-script/230593#230593
