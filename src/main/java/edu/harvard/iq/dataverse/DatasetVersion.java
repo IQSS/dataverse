@@ -539,4 +539,15 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
 
+    public String getSemanticVersion() {
+        /**
+         * Not prepending a "v" like "v1.1" or "v2.0" because while SemVerTag
+         * was in http://semver.org/spec/v1.0.0.html but later removed in
+         * http://semver.org/spec/v2.0.0.html
+         *
+         * See also to v or not to v · Issue #1 · mojombo/semver -
+         * https://github.com/mojombo/semver/issues/1#issuecomment-2605236
+         */
+        return versionNumber + "." + minorVersionNumber;
+    }
 }

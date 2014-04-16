@@ -221,6 +221,87 @@ public class IndexServiceBean {
 
     public String indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());
+        String solrIdDraftStudy = "dataset_" + dataset.getId() + "_draft";
+        String solrIdPublishedStudy = "dataset_" + dataset.getId();
+        StringBuilder sb = new StringBuilder();
+        sb.append("rationale:\n");
+        List<DatasetVersion> versions = dataset.getVersions();
+        for (DatasetVersion datasetVersion : versions) {
+            Long versionDatabaseId = datasetVersion.getId();
+            String versionTitle = datasetVersion.getTitle();
+            String semanticVersion = datasetVersion.getSemanticVersion();
+            String versionState = datasetVersion.getVersionState().name();
+            boolean versionIsReleased = datasetVersion.isReleased();
+            boolean versionIsWorkingCopy = datasetVersion.isWorkingCopy();
+            sb.append("version found with database id " + versionDatabaseId + "\n");
+            sb.append("- title: " + versionTitle + "\n");
+            sb.append("- semanticVersion-STATE: " + semanticVersion + "-" + versionState + "\n");
+            sb.append("- isWorkingCopy: " + versionIsWorkingCopy + "\n");
+            sb.append("- isReleased: " + versionIsReleased + "\n");
+        }
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        String latestVersionState = latestVersion.getVersionState().name();
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (latestVersion.isWorkingCopy()) {
+            sb.append("The latest version is a working copy (latestVersionState: " + latestVersionState + ") and will be indexed as " + solrIdDraftStudy + " (only visible by creator)\n");
+            if (releasedVersion != null) {
+                String releasedVersionState = releasedVersion.getVersionState().name();
+                String semanticVersion = releasedVersion.getSemanticVersion();
+                sb.append("The released version is " + semanticVersion + " (releasedVersionState: " + releasedVersionState + ") and will be indexed as " + solrIdPublishedStudy + " (visible by anonymous)");
+                /**
+                 * The latest version is a working copy (latestVersionState:
+                 * DRAFT) and will be indexed as dataset_17_draft (only visible
+                 * by creator)
+                 *
+                 * The released version is 1.0 (releasedVersionState: RELEASED)
+                 * and will be indexed as dataset_17 (visible by anonymous)
+                 */
+                logger.info(sb.toString());
+                String indexDraftResult = indexDatasetAddOrUpdate(dataset);
+                String indexReleasedVersionResult = indexDatasetAddOrUpdate(dataset);
+                return "indexDraftResult:" + indexDraftResult + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
+            } else {
+                sb.append("There is no released version yet so nothing will be indexed as " + solrIdPublishedStudy);
+                /**
+                 * The latest version is a working copy (latestVersionState:
+                 * DRAFT) and will be indexed as dataset_33_draft (only visible
+                 * by creator)
+                 *
+                 * There is no released version yet so nothing will be indexed
+                 * as dataset_33
+                 */
+                logger.info(sb.toString());
+                String indexDraftResult = indexDatasetAddOrUpdate(dataset);
+                return "indexDraftResult:" + indexDraftResult + ", " + sb.toString();
+            }
+        } else {
+            sb.append("The latest version is not a working copy (latestVersionState: " + latestVersionState + ") and will be indexed as " + solrIdPublishedStudy + " (visible by anonymous) and we will be deleting " + solrIdDraftStudy + "\n");
+            if (releasedVersion != null) {
+                String releasedVersionState = releasedVersion.getVersionState().name();
+                String semanticVersion = releasedVersion.getSemanticVersion();
+                sb.append("The released version is " + semanticVersion + " (releasedVersionState: " + releasedVersionState + ") and will be (again) indexed as " + solrIdPublishedStudy + " (visible by anonymous)");
+                /**
+                 * The latest version is not a working copy (latestVersionState:
+                 * RELEASED) and will be indexed as dataset_34 (visible by
+                 * anonymous) and we will be deleting dataset_34_draft
+                 *
+                 * The released version is 1.0 (releasedVersionState: RELEASED)
+                 * and will be  (again) indexed as dataset_34 (visible by anonymous)
+                 */
+                logger.info(sb.toString());
+                String deleteDraftVersionResult = removeDatasetDraftFromIndex(solrIdDraftStudy);
+                String indexReleasedVersionResult = indexDatasetAddOrUpdate(dataset);
+                return "deleteDraftVersionResult: " + deleteDraftVersionResult + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
+            } else {
+                sb.append("We don't ever expect to ever get here. Why is there no released version if the latest version is not a working copy? The latestVersionState is " + latestVersionState + " and we don't know what to do with it. Nothing will be added or deleted from the index.");
+                logger.info(sb.toString());
+                return sb.toString();
+            }
+        }
+    }
+
+    public String indexDatasetAddOrUpdate(Dataset dataset) {
+        logger.info("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
@@ -758,6 +839,31 @@ public class IndexServiceBean {
             return ex.toString();
         }
         String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
+        logger.info(response);
+        return response;
+    }
+
+    public String removeDatasetDraftFromIndex(String doomed) {
+        if (true) {
+            return "FIXME: remove this 'if true' to actually delete dataset draft " + doomed;
+        }
+        /**
+         * @todo allow for configuration of hostname and port
+         */
+        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        logger.info("deleting Solr document for dataset draft: " + doomed);
+        UpdateResponse updateResponse;
+        try {
+            updateResponse = server.deleteById(doomed);
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            server.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        String response = "Successfully deleted dataset draft " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.info(response);
         return response;
     }

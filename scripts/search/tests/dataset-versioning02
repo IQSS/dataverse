@@ -1,0 +1,10 @@
+#!/bin/bash
+# We assume you've done everything in scripts/search/tests/dataset-versioning01
+# 
+# We assume you just released your dataset for the first time.
+# raw version
+diff <(curl -s 'http://localhost:8080/api/datasets/17/versions/1?key=pete') scripts/search/tests/expected/dataset-versioning02raw
+# anon can now see the dataset and file
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning02anon
+# here's the solr doc for the dataset
+diff -u scripts/search/tests/expected/dataset-versioning02dataset_17solr <(curl -s 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=id:dataset_17') | egrep -v '_version_|release_or_create_date_dt'
