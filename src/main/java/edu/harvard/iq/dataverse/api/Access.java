@@ -113,7 +113,7 @@ public class Access {
             dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original","Saved original (" + originalMimeType + ")"));
             
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
-            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=preprocessed", "Preprocessed data in JSON"));
+            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
         }
         DownloadInstance downloadInstance = new DownloadInstance(dInfo);
         

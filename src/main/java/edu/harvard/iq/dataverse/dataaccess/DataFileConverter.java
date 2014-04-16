@@ -246,7 +246,7 @@ public class DataFileConverter {
 
                 formatConvertedFile = new File(dataFrameFileName);
             }
-        } else if ("preprocessed".equals(formatRequested)) {
+        } else if ("prep".equals(formatRequested)) {
             formatConvertedFile = dfs.runDataPreprocessing(file);
         } else {
             dbgLog.warning("Unsupported file format requested: "+formatRequested);
