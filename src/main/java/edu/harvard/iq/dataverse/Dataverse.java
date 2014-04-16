@@ -70,11 +70,11 @@ public class Dataverse extends DvObjectContainer {
     private boolean facetRoot;
 
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<MetadataBlock> metadataBlocks;
+    private List<MetadataBlock> metadataBlocks = new ArrayList();
 
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
-    private List<DataverseFacet> dataverseFacets;
+    private List<DataverseFacet> dataverseFacets = new ArrayList();
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
