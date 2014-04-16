@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.search.IndexableDataset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -325,7 +326,8 @@ public class SearchIncludeFragment {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
-                                solrSearchResult.setStatus(getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
+                                String solrId = solrSearchResult.getId();
+                                solrSearchResult.setStatus(solrId + " " + getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
                             }
                         }
                     } else {

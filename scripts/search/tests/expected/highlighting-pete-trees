@@ -2,7 +2,7 @@
 {
     "q":"trees",
     "fq_provided":"[]",
-    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user6 OR {!join from=groups_s to=perms_ss}id:group_2)]",
+    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user1)]",
     "total_count":5,
     "start":0,
     "count_in_response":5,

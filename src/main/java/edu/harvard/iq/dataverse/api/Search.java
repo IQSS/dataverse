@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
+import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
@@ -35,7 +36,15 @@ public class Search extends AbstractApiBean {
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("key") String apiKey, @QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("sort") String sortField, @QueryParam("order") String sortOrder, @QueryParam("start") final int paginationStart, @QueryParam("showrelevance") boolean showRelevance) {
+    public String search(@QueryParam("key") String apiKey,
+            @QueryParam("q") String query,
+            @QueryParam("fq") final List<String> filterQueries,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder,
+            @QueryParam("start") final int paginationStart,
+            @QueryParam("published") boolean publishedOnly,
+            @QueryParam("unpublished") boolean unpublishedOnly,
+            @QueryParam("showrelevance") boolean showRelevance) {
         if (query != null) {
             if (sortField == null) {
                 // predictable default
@@ -54,6 +63,12 @@ public class Search extends AbstractApiBean {
                     if (dataverseUser == null) {
                         return error("Couldn't find username: " + usernameProvided);
                     }
+                }
+                if (publishedOnly) {
+                    filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+                }
+                if (unpublishedOnly) {
+                    filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
                 }
                 solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
             } catch (EJBException ex) {
