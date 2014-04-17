@@ -821,6 +821,39 @@ public class SearchIncludeFragment {
         return filterQueriesDebug;
     }
 
+    public boolean userLoggedIn() {
+        DataverseUser dataverseUser =session.getUser();
+        if (dataverseUser != null) {
+            if (dataverseUser.isGuest()) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean publishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
+        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
+    }
+
+    public boolean unpublishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
+        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
+    }
+
+    public String getPUBLISHED() {
+        return IndexServiceBean.getPUBLISHED_STRING();
+    }
+
+    public String getUNPUBLISHED() {
+        return IndexServiceBean.getUNPUBLISHED_STRING();
+    }
+
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         String[] parts = filterQuery.split(":");
         String key = parts[0];

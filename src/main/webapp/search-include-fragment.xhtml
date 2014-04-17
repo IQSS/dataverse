@@ -223,6 +223,17 @@
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount} "/>
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount == 1 ? 'result' : 'results'}"/>
                             </div>
+                            <!--PUBLISHED/UNPUBLISHED TOGGLE-->
+                            <ui:fragment rendered="#{SearchIncludeFragment.userLoggedIn()}">
+                                <h:form>
+                                    <h:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+                                        <p:selectOneButton value="#{SearchIncludeFragment.PUBLISHED}">
+                                            <f:selectItem itemLabel="#{SearchIncludeFragment.PUBLISHED}" itemValue="#{SearchIncludeFragment.PUBLISHED}"/>
+                                            <f:selectItem itemLabel="#{SearchIncludeFragment.UNPUBLISHED}" itemValue="#{SearchIncludeFragment.UNPUBLISHED}" />
+                                        </p:selectOneButton>
+                                    </h:panelGrid>
+                                </h:form>
+                            </ui:fragment>
                             <!-- SORT + PAGINATOR -->
                             <div class="results-sort-pagination pull-right">
                                 <!-- PAGINATOR -->
