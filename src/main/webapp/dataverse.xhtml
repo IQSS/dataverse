@@ -218,17 +218,17 @@
 
 
                     <!-- Metadata blocks -->
-                    <ui:fragment id="metadataBlocks" rendered="#{DataversePage.editMode == 'INFO'}">
+                    <ui:fragment  rendered="#{DataversePage.editMode == 'INFO'}">
                         <h:outputText value="Choose the sets of Metadata Elements for datasets in this Dataverse" />
                         <br/>
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">                            
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Use Metadata Elements from Host Dataverse" > 
-                                <p:ajax update="@parent:@parent:@parent" listener="#{DataversePage.editMetadataBlocks}"/>  
+                                <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>  
                             </p:selectBooleanCheckbox> 
                         </ui:fragment> 
 
                         <p:selectManyCheckbox id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
-                                          layout="pageDirection" style="width:400px;">  
+                                              widgetVar="metadataBlocks" layout="pageDirection" style="width:400px;">  
                             <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
                                            itemLabel="#{mdb.displayName}" itemValue="#{mdb}" 
                                            itemDisabled="#{DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent}"/>
