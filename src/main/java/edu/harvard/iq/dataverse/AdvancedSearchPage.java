@@ -68,9 +68,12 @@ public class AdvancedSearchPage {
          query += string + " ";
          }
          logger.info("query: " + query); */
-        List<String> queryStrings = new ArrayList();
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append(query);
+        
         String delimiter = "[\"]+";
         for (DatasetFieldType dsfType : metadataFieldList) {
+            List<String> queryStrings = new ArrayList();            
             if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
                 String myString = dsfType.getSearchValue();
                 if (myString.contains("\"")) {
@@ -91,13 +94,31 @@ public class AdvancedSearchPage {
                     queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
                 }
             }
+
+            if (queryStrings.size() > 0 && queryBuilder.length() > 0 ) {
+                queryBuilder.append(" AND");
+            }            
+            
+            if (queryStrings.size() > 1) {
+                queryBuilder.append(" (");
+            }
+            
+            for (String string : queryStrings) {
+                if ( queryBuilder.length() > 0 ) {
+                    queryBuilder.append(" ");
+                }                 
+                queryBuilder.append(string);
+            }
+            
+            if (queryStrings.size() > 1) {
+                queryBuilder.append(")");
+            }            
+        
         }
 
-        for (String string : queryStrings) {
-            query += " " + string;
-        }
-        return "/dataverse.xhtml?q=" + query.trim() + "faces-redirect=true";
+        return "/dataverse.xhtml?q=" + queryBuilder.toString().trim() + "faces-redirect=true";
     }
+    
 
     public Dataverse getDataverse() {
         return dataverse;
