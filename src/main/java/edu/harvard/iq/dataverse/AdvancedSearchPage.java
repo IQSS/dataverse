@@ -96,11 +96,11 @@ public class AdvancedSearchPage {
             }
 
             if (queryStrings.size() > 0 && queryBuilder.length() > 0 ) {
-                queryBuilder.append(" AND");
+                queryBuilder.append(" AND ");
             }            
             
             if (queryStrings.size() > 1) {
-                queryBuilder.append(" (");
+                queryBuilder.append("(");
             }
             
             for (int i = 0; i < queryStrings.size(); i++) {
