@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.search.IndexableDataset;
+import edu.harvard.iq.dataverse.search.IndexableObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -37,7 +39,6 @@ public class IndexServiceBean {
     DataverseUserServiceBean dataverseUserServiceBean;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
-    private static final String npeGetCreator = "creatorNPE";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
     private static final Long publicGroupId = 1L;
@@ -46,6 +47,8 @@ public class IndexServiceBean {
      * @todo: remove this fake "has access to all data" group
      */
     private static final Long tmpNsaGroupId = 2L;
+    private static final String PUBLISHED_STRING = "Published";
+    private static final String UNPUBLISHED_STRING = "Unpublished";
 
     public String indexAll() {
         /**
@@ -132,9 +135,11 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         if (dataverse.isReleased()) {
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getReleaseDate());
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataverse.getCreator() != null) {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
@@ -149,13 +154,6 @@ public class IndexServiceBean {
                     solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
                 }
             }
-        } else {
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
-            /**
-             * @todo: remove this once everyone has dropped their database and
-             * won't get NPE's from dataverse.getCreator
-             */
-            solrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
         }
 
         /**
@@ -164,9 +162,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
-        if (dataverse.getOwner() != null) {
-            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
-        }
+//        if (dataverse.getOwner() != null) {
+//            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
+//        }
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
@@ -221,6 +219,95 @@ public class IndexServiceBean {
 
     public String indexDataset(Dataset dataset) {
         logger.info("indexing dataset " + dataset.getId());
+        String solrIdDraftStudy = IndexableObject.IndexableTypes.DATASET.getName() + "_" + dataset.getId() + IndexableDataset.DatasetState.WORKING_COPY.getSuffix();
+        /**
+         * remove solrIdPublishedStudy, use new IndexableDataset instead
+         */
+        String solrIdPublishedStudy = "dataset_" + dataset.getId();
+        StringBuilder sb = new StringBuilder();
+        sb.append("rationale:\n");
+        List<DatasetVersion> versions = dataset.getVersions();
+        for (DatasetVersion datasetVersion : versions) {
+            Long versionDatabaseId = datasetVersion.getId();
+            String versionTitle = datasetVersion.getTitle();
+            String semanticVersion = datasetVersion.getSemanticVersion();
+            String versionState = datasetVersion.getVersionState().name();
+            boolean versionIsReleased = datasetVersion.isReleased();
+            boolean versionIsWorkingCopy = datasetVersion.isWorkingCopy();
+            sb.append("version found with database id " + versionDatabaseId + "\n");
+            sb.append("- title: " + versionTitle + "\n");
+            sb.append("- semanticVersion-STATE: " + semanticVersion + "-" + versionState + "\n");
+            sb.append("- isWorkingCopy: " + versionIsWorkingCopy + "\n");
+            sb.append("- isReleased: " + versionIsReleased + "\n");
+        }
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        String latestVersionState = latestVersion.getVersionState().name();
+        DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (latestVersion.isWorkingCopy()) {
+            IndexableDataset indexableDraftVersion = new IndexableDataset(latestVersion);
+            sb.append("The latest version is a working copy (latestVersionState: " + latestVersionState + ") and will be indexed as " + solrIdDraftStudy + " (only visible by creator)\n");
+            if (releasedVersion != null) {
+                IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
+                String releasedVersionState = releasedVersion.getVersionState().name();
+                String semanticVersion = releasedVersion.getSemanticVersion();
+                sb.append("The released version is " + semanticVersion + " (releasedVersionState: " + releasedVersionState + ") and will be indexed as " + solrIdPublishedStudy + " (visible by anonymous)");
+                /**
+                 * The latest version is a working copy (latestVersionState:
+                 * DRAFT) and will be indexed as dataset_17_draft (only visible
+                 * by creator)
+                 *
+                 * The released version is 1.0 (releasedVersionState: RELEASED)
+                 * and will be indexed as dataset_17 (visible by anonymous)
+                 */
+                logger.info(sb.toString());
+                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
+                String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion);
+                return "indexDraftResult:" + indexDraftResult + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
+            } else {
+                sb.append("There is no released version yet so nothing will be indexed as " + solrIdPublishedStudy);
+                /**
+                 * The latest version is a working copy (latestVersionState:
+                 * DRAFT) and will be indexed as dataset_33_draft (only visible
+                 * by creator)
+                 *
+                 * There is no released version yet so nothing will be indexed
+                 * as dataset_33
+                 */
+                logger.info(sb.toString());
+                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
+                return "indexDraftResult:" + indexDraftResult + ", " + sb.toString();
+            }
+        } else {
+            sb.append("The latest version is not a working copy (latestVersionState: " + latestVersionState + ") and will be indexed as " + solrIdPublishedStudy + " (visible by anonymous) and we will be deleting " + solrIdDraftStudy + "\n");
+            if (releasedVersion != null) {
+                IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
+                String releasedVersionState = releasedVersion.getVersionState().name();
+                String semanticVersion = releasedVersion.getSemanticVersion();
+                sb.append("The released version is " + semanticVersion + " (releasedVersionState: " + releasedVersionState + ") and will be (again) indexed as " + solrIdPublishedStudy + " (visible by anonymous)");
+                /**
+                 * The latest version is not a working copy (latestVersionState:
+                 * RELEASED) and will be indexed as dataset_34 (visible by
+                 * anonymous) and we will be deleting dataset_34_draft
+                 *
+                 * The released version is 1.0 (releasedVersionState: RELEASED)
+                 * and will be  (again) indexed as dataset_34 (visible by anonymous)
+                 */
+                logger.info(sb.toString());
+                String deleteDraftVersionResult = removeDatasetDraftFromIndex(solrIdDraftStudy);
+                String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion);
+                return "deleteDraftVersionResult: " + deleteDraftVersionResult + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
+            } else {
+                sb.append("We don't ever expect to ever get here. Why is there no released version if the latest version is not a working copy? The latestVersionState is " + latestVersionState + " and we don't know what to do with it. Nothing will be added or deleted from the index.");
+                logger.info(sb.toString());
+                return sb.toString();
+            }
+        }
+    }
+
+    private String addOrUpdateDataset(IndexableDataset indexableDataset) {
+        IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
+        Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
+        logger.info("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
@@ -231,44 +318,40 @@ public class IndexServiceBean {
         }
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        solrInputDocument.addField(SearchFields.ID, "dataset_" + dataset.getId());
+        String solrDocId = indexableDataset.getSolrDocId();
+        solrInputDocument.addField(SearchFields.ID, solrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
-        if (dataset.isReleased()) {
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getReleaseDate());
+        if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-        } else if (dataset.getOwner().getCreator() != null) {
+        } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             /**
              * todo why is dataset.getCreateDate() null? For now I guess we'll
-             * use the createDate of it's parent dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
+             * use the createDate of it's parent dataverse?!
+             * https://redmine.hmdc.harvard.edu/issues/3806
              */
 //            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getOwner().getCreateDate());
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
-            /**
-             * @todo: replace this fake version of granting users access to
-             * dataverses with the real thing, when it's available in the app
-             */
-            if (dataset.getOwner().getCreator().getUserName().equals("pete")) {
-                // figure out if cathy is around
-                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                if (cathy != null) {
-                    // let cathy see all of pete's dataverses
-                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+            DataverseUser creator = dataset.getCreator();
+            if (creator != null) {
+                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+                /**
+                 * @todo: replace this fake version of granting users access to
+                 * dataverses with the real thing, when it's available in the
+                 * app
+                 */
+                if (creator.getUserName().equals("pete")) {
+                    // figure out if cathy is around
+                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                    if (cathy != null) {
+                        // let cathy see all of pete's dataverses
+                        solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                    }
                 }
             }
-        } else {
-            /**
-             * todo why is dataset.getCreateDate() null? For now I guess we'll
-             * use the createDate of it's parent dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
-             */
-//            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getCreateDate());
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getOwner().getCreateDate());
-            /**
-             * @todo: remove this once everyone has dropped their database and
-             * won't get NPE's from dataverse.getCreator
-             */
-            solrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
         }
 
         /**
@@ -278,18 +361,13 @@ public class IndexServiceBean {
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
-        if (dataset.getLatestVersion() != null) {
+        DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
+        if (datasetVersion != null) {
 
-            DatasetVersionUI datasetVersionUI = null;
-            try {
-                datasetVersionUI = new DatasetVersionUI(dataset.getLatestVersion());
-            } catch (NullPointerException ex) {
-                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
-            }
-            if (datasetVersionUI != null) {
+
                 String citation = null;
                 try {
-                    citation = datasetVersionUI.getCitation();
+                    citation = dataset.getCitation(false, datasetVersion);
                     if (citation != null) {
                         solrInputDocument.addField(SearchFields.CITATION, citation);
                     }
@@ -297,9 +375,9 @@ public class IndexServiceBean {
                 } catch (NullPointerException ex) {
                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                 }
-            }
 
-            for (DatasetField dsf : dataset.getLatestVersion().getFlatDatasetFields()) {
+
+            for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
                 String solrFieldSearchable = dsfType.getSolrField().getNameSearchable();
@@ -444,7 +522,7 @@ public class IndexServiceBean {
         }
 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
+//        solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataset.getOwner().getName());
         solrInputDocument.addField(SearchFields.PARENT_ID, dataset.getOwner().getId());
         solrInputDocument.addField(SearchFields.PARENT_NAME, dataset.getOwner().getName());
 
@@ -458,7 +536,8 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
-            if (dataset.isReleased()) {
+            if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
+                datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 /**
                  * @todo: are datafiles supposed to have release dates? It's
                  * null. For now just set something: https://redmine.hmdc.harvard.edu/issues/3806
@@ -466,39 +545,31 @@ public class IndexServiceBean {
 //                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getReleaseDate());
                 datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-            } else if (dataset.getOwner().getCreator() != null) {
+            } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+                datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                 /**
                  * todo why is dataFile.getCreateDate() null? For now I guess
                  * we'll use the createDate of its parent datase's dataverset?! https://redmine.hmdc.harvard.edu/issues/3806
                  */
 //                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
-                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataset.getOwner().getCreator().getId());
-                /**
-                 * @todo: replace this fake version of granting users access to
-                 * dataverses with the real thing, when it's available in the
-                 * app
-                 */
-                if (dataset.getOwner().getCreator().getUserName().equals("pete")) {
-                    // figure out if cathy is around
-                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                    if (cathy != null) {
-                        // let cathy see all of pete's dataverses
-                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                DataverseUser creator = dataFile.getOwner().getCreator();
+                if (creator != null) {
+                    datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+                    /**
+                     * @todo: replace this fake version of granting users access
+                     * to dataverses with the real thing, when it's available in
+                     * the app
+                     */
+                    if (creator.getUserName().equals("pete")) {
+                        // figure out if cathy is around
+                        DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                        if (cathy != null) {
+                            // let cathy see all of pete's dataverses
+                            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
+                        }
                     }
                 }
-            } else {
-                /**
-                 * @todo: remove this once everyone has dropped their database
-                 * and won't get NPE's from dataverse.getCreator
-                 */
-                /**
-                 * todo why is dataFile.getCreateDate() null? For now I guess
-                 * we'll use the createDate of its parent dataset's dataverse?! https://redmine.hmdc.harvard.edu/issues/3806
-                 */
-//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getCreateDate());
-                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
-                datafileSolrInputDocument.addField(SearchFields.PERMS, npeGetCreator);
             }
 
             /**
@@ -516,7 +587,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(dataFile));
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
-            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
+//            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
             if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {
@@ -605,7 +676,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed dataset " + dataset.getId(); // + ":" + dataset.getTitle();
+        return "indexed dataset " + dataset.getId() + " as " + solrDocId; // + ":" + dataset.getTitle();
     }
 
     public String indexGroup(Map.Entry<Long, String> group) {
@@ -707,18 +778,18 @@ public class IndexServiceBean {
     }
 
     private void addDataverseReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataverse dataverse) {
-        if (dataverse.getReleaseDate() != null) {
+        if (dataverse.getPublicationDate() != null) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(dataverse.getReleaseDate().getTime());
+            calendar.setTimeInMillis(dataverse.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
         }
     }
 
     private void addDatasetReleaseDateToSolrDoc(SolrInputDocument solrInputDocument, Dataset dataset) {
-        if (dataset.getReleaseDate() != null) {
+        if (dataset.getPublicationDate() != null) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(dataset.getReleaseDate().getTime());
+            calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
         }
@@ -740,6 +811,14 @@ public class IndexServiceBean {
         return tmpNsaGroupId;
     }
 
+    public static String getPUBLISHED_STRING() {
+        return PUBLISHED_STRING;
+    }
+
+    public static String getUNPUBLISHED_STRING() {
+        return UNPUBLISHED_STRING;
+    }
+
     public String delete(Dataverse doomed) {
         /**
          * @todo allow for configuration of hostname and port
@@ -758,6 +837,28 @@ public class IndexServiceBean {
             return ex.toString();
         }
         String response = "Successfully deleted dataverse " + doomed.getId() + " from Solr index. updateReponse was: " + updateResponse.toString();
+        logger.info(response);
+        return response;
+    }
+
+    public String removeDatasetDraftFromIndex(String doomed) {
+        /**
+         * @todo allow for configuration of hostname and port
+         */
+        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        logger.info("deleting Solr document for dataset draft: " + doomed);
+        UpdateResponse updateResponse;
+        try {
+            updateResponse = server.deleteById(doomed);
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        try {
+            server.commit();
+        } catch (SolrServerException | IOException ex) {
+            return ex.toString();
+        }
+        String response = "Successfully deleted dataset draft " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.info(response);
         return response;
     }

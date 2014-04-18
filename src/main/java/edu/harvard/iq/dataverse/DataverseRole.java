@@ -41,7 +41,7 @@ public class DataverseRole implements Serializable  {
 		public int compare(DataverseRole o1, DataverseRole o2) {
 			int cmp = o1.getName().compareTo(o2.getName());
 			if ( cmp != 0 ) return cmp;
-			return o1.getOwner().getName().compareTo( o2.getOwner().getName() );
+			return o1.getOwner().getId().compareTo( o2.getOwner().getId() );
 		}
 	};
 	public static Set<Permission> permissionSet( Iterable<DataverseRole> roles ) {
@@ -71,7 +71,7 @@ public class DataverseRole implements Serializable  {
 	
 	@ManyToOne
     @JoinColumn(nullable=false)     
-    private Dataverse owner;
+    private DvObject owner;
 	
 	public Long getId() {
 		return id;
@@ -105,11 +105,11 @@ public class DataverseRole implements Serializable  {
 		this.alias = alias;
 	}
 
-	public Dataverse getOwner() {
+	public DvObject getOwner() {
 		return owner;
 	}
 
-	public void setOwner(Dataverse owner) {
+	public void setOwner(DvObject owner) {
 		this.owner = owner;
 	}
 	

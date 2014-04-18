@@ -56,42 +56,6 @@ public class DatasetServiceBean {
 
     }
     
-    public boolean removeBlankDatasetFieldValues(DatasetField dsf) {
-        if (dsf.getDatasetFieldType().isPrimitive() && !dsf.getDatasetFieldType().isControlledVocabulary()) {
-            Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
-            while (dsfvIt.hasNext()) {
-                DatasetFieldValue dsfv = dsfvIt.next();
-                if (StringUtils.isBlank(dsfv.getValue())) {
-                    dsfvIt.remove();
-                }
-            }
-
-            if (dsf.getDatasetFieldValues().isEmpty()) {
-                return true;
-            }
-
-        } else if (dsf.getDatasetFieldType().isCompound()) {
-            Iterator<DatasetFieldCompoundValue> cvIt = dsf.getDatasetFieldCompoundValues().iterator();
-            while (cvIt.hasNext()) {
-                DatasetFieldCompoundValue cv = cvIt.next();
-                Iterator<DatasetField> dsfIt = cv.getChildDatasetFields().iterator();
-                while (dsfIt.hasNext()) {
-                    if (removeBlankDatasetFieldValues(dsfIt.next())) {
-                        dsfIt.remove();
-                    }
-                }
-
-                if (cv.getChildDatasetFields().isEmpty()) {
-                    cvIt.remove();
-                }
-            }
-
-            if (dsf.getDatasetFieldCompoundValues().isEmpty()) {
-                return true;
-            }
-
-        }
-        return false;
-    }
+    
 
 }

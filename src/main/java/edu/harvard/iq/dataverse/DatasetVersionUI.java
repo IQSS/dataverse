@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -232,84 +234,6 @@ public class DatasetVersionUI {
         return dateString;
     }
 
-    public String getCitation() {
-        return getCitation(false);
-    }
-
-    public String getCitation(boolean isOnlineVersion) {
-
-        Dataset dataset = getDataset();
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        }
-
-        if (!StringUtil.isEmpty(getReleaseDate())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getReleaseDate();
-        } else if (!StringUtil.isEmpty(getCreateDate())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", <";
-            }
-            str += getYearForCitation(getCreateDate()) + ">";             
-        } 
-
-        if ( getTitle() != null ) {
-            if (!StringUtil.isEmpty(getTitle().getValue())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += "\"" + getTitle().getValue() + "\"";
-            }
-        }
-        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getIdentifier() + "</a>";
-            } else {
-                str += dataset.getPersistentURL();
-            }
-        }
-
-        //Get root dataverse name for Citation
-        Dataverse root = getDatasetVersion().getDataset().getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += " " + rootDataverseName + " [Publisher] ";
-        }
-
-        if (this.getDatasetVersion().getVersionNumber() != null) {
-            str += " V" + this.getDatasetVersion().getVersionNumber();
-            str += " [Version]";
-        }
-        /*UNF is not calculated yet
-         if (!StringUtil.isEmpty(getUNF())) {
-         if (!StringUtil.isEmpty(str)) {
-         str += " ";
-         }
-         str += getUNF();
-         }
-         String distributorNames = getDistributorNames();
-         if (distributorNames.trim().length() > 0) {
-         str += " " + distributorNames;
-         str += " [Distributor]";
-         }*/
-        return str;
-    }
 
     public String getAuthorsStr() {
         return getAuthorsStr(true);

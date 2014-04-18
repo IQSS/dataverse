@@ -25,38 +25,36 @@ import org.apache.commons.lang.StringUtils;
  * Deletes a data file, both DB entity and filesystem object.
  * @author michael
  */
-@RequiredPermissions( Permission.DestructiveEdit )
+@RequiredPermissions(Permission.DestructiveEdit)
 public class DeleteDataFileCommand extends AbstractVoidCommand {
-	
-	private final DataFile doomed;
 
-	public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser, Dataverse anAffectedDataverse) {
-		super(aUser, anAffectedDataverse);
-		this.doomed = doomed;
-	}
-	
-	@Override
-	protected void executeImpl(CommandContext ctxt) throws CommandException {
-		if ( doomed.isReleased() ) {
-			throw new IllegalCommandException("Cannot delete a released file", this);
-		}
-		                
+    private final DataFile doomed;
+
+    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser, Dataverse anAffectedDataverse) {
+        super(aUser, anAffectedDataverse);
+        this.doomed = doomed;
+    }
+
+    @Override
+    protected void executeImpl(CommandContext ctxt) throws CommandException {
+        if (doomed.isReleased()) {
+            throw new IllegalCommandException("Cannot delete a released file", this);
+        }
+
 		// We need to delete a bunch of files from the file system;
         // First we try to delete the data file itself; if that 
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
-
         String fileSystemName = doomed.getFileSystemName();
-        if ( fileSystemName != null ) {
+        if (fileSystemName != null) {
             Path filePath = Paths.get(fileSystemName);
             if (Files.exists(filePath)) {
                 try {
                     Files.delete(filePath);
                 } catch (IOException ex) {
-                    throw new CommandExecutionException("Error deleting physical file '" + doomed.getFileSystemLocation() + "' while deleting DataFile " + doomed.getName(), ex, this );
+                    throw new CommandExecutionException("Error deleting physical file '" + doomed.getFileSystemLocation() + "' while deleting DataFile " + doomed.getName(), ex, this);
                 }
-            }                
-
+            }
 
             // We may also have a few extra files associated with this object - 
             // preserved original that was used in the tabular data ingest, 
@@ -65,8 +63,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             // important with these. If we fail to delete any of these 
             // auxiliary files, we'll just leave an error message in the 
             // log file and proceed deleting the database object.
-
-            List<Path> victims = new ArrayList<>(); 
+            List<Path> victims = new ArrayList<>();
 
             // 1. preserved original: 
             filePath = doomed.getSavedOriginalFile();
@@ -78,7 +75,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             victims.addAll(listCachedFiles(doomed));
 
             // Delete them all: 
-            List<String> failures = new ArrayList<>(); 
+            List<String> failures = new ArrayList<>();
             for (Path deadFile : victims) {
                 try {
                     Files.delete(deadFile);
@@ -89,44 +86,44 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
             if (!failures.isEmpty()) {
                 String failedFiles = StringUtils.join(failures, ",");
-                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE,"Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
+                Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
             }
 
             // Finally, delete the file from the DB.
             ctxt.em().remove(doomed);
         }
-	}
-        
-        private List<Path> listCachedFiles(DataFile dataFile) {
-            List<Path> victims = new ArrayList<>(); 
-            
-            // cached files for a given datafiles are stored on the filesystem
-            // as <filesystemname>.*; for example, <filename>.thumb64 or 
-            // <filename>.RData.
-            
-            final String baseName = dataFile.getFileSystemName();
+    }
 
-            if (baseName == null || baseName.equals("")) {
-                return null; 
-            }
-            
-            Path datasetDirectory = dataFile.getOwner().getFileSystemDirectory();
-            
-            DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
-                @Override
-                public boolean accept(Path file) throws IOException {
-                    return (file.getFileName() != null &&
-                            file.getFileName().toString().startsWith(baseName+"."));
-                }
-            };
-            
-            try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(datasetDirectory, filter)) {
-                for (Path filePath : dirStream) {
-                    victims.add(filePath);
-                }
-            } catch (IOException ex) {}
-            
-            return victims; 
+    private List<Path> listCachedFiles(DataFile dataFile) {
+        List<Path> victims = new ArrayList<>();
+
+            // cached files for a given datafiles are stored on the filesystem
+        // as <filesystemname>.*; for example, <filename>.thumb64 or 
+        // <filename>.RData.
+        final String baseName = dataFile.getFileSystemName();
+
+        if (baseName == null || baseName.equals("")) {
+            return null;
         }
+
+        Path datasetDirectory = dataFile.getOwner().getFileSystemDirectory();
+
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path file) throws IOException {
+                return (file.getFileName() != null
+                        && file.getFileName().toString().startsWith(baseName + "."));
+            }
+        };
+
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(datasetDirectory, filter)) {
+            for (Path filePath : dirStream) {
+                victims.add(filePath);
+            }
+        } catch (IOException ex) {
+        }
+
+        return victims;
+    }
 	
 }

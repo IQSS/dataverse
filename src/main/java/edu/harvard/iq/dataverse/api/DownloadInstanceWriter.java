@@ -105,7 +105,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (di.getConversionParam().equals("noVarHeader")) {
                             accessObject.setNoVarHeader(Boolean.TRUE);
                             accessObject.setVarHeader(null);
-                        } else if (di.getConversionParam().equals("fileFormat")) {
+                        } else if (di.getConversionParam().equals("format")) {
                             
                             if ("original".equals(di.getConversionParamValue())) {
                                 accessObject = StoredOriginalFile.retrieve(sf, (FileAccessObject)accessObject);

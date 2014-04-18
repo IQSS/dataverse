@@ -12,6 +12,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -22,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import org.apache.commons.lang.StringUtils;
 
 @Entity
 public class DatasetField implements Serializable {
@@ -35,35 +37,35 @@ public class DatasetField implements Serializable {
         public int compare(DatasetField o1, DatasetField o2) {
             return Integer.compare( o1.getDatasetFieldType().getDisplayOrder(),
                                     o2.getDatasetFieldType().getDisplayOrder() );
-        }
-    };
+    }};
+
     
     public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
-        DatasetField dsfv =  createNewEmptyDatasetField(dsfType);
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
         dsfv.setDatasetVersion(dsv);
         return dsfv;
     }
-    
+
     public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetFieldCompoundValue compoundValue) {
-        DatasetField dsfv =  createNewEmptyDatasetField(dsfType);
+        DatasetField dsfv = createNewEmptyDatasetField(dsfType);
         dsfv.setParentDatasetFieldCompoundValue(compoundValue);
         return dsfv;
-    }    
-    
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {
+    }
+
+    private static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {
         DatasetField dsfv = new DatasetField();
         dsfv.setDatasetFieldType(dsfType);
-      
+
         if (dsfType.isPrimitive()) {
             if (!dsfType.isControlledVocabulary()) {
                 dsfv.getDatasetFieldValues().add(new DatasetFieldValue(dsfv));
             }
         } else { // compound field
             dsfv.getDatasetFieldCompoundValues().add(DatasetFieldCompoundValue.createNewEmptyDatasetFieldCompoundValue(dsfv));
-        } 
-        
+        }
+
         return dsfv;
-        
+
     }
 
     @Id
@@ -112,7 +114,7 @@ public class DatasetField implements Serializable {
         this.parentDatasetFieldCompoundValue = parentDatasetFieldCompoundValue;
     }
 
-    @OneToMany(mappedBy = "parentDatasetField", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
 
@@ -124,7 +126,7 @@ public class DatasetField implements Serializable {
         this.datasetFieldCompoundValues = datasetFieldCompoundValues;
     }
 
-    @OneToMany(mappedBy = "datasetField", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
     private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
 
@@ -147,7 +149,6 @@ public class DatasetField implements Serializable {
         this.controlledVocabularyValues = controlledVocabularyValues;
     }
 
-    
     // HELPER METHODS
     public DatasetFieldValue getSingleValue() {
         if (!datasetFieldValues.isEmpty()) {
@@ -156,7 +157,7 @@ public class DatasetField implements Serializable {
             return new DatasetFieldValue(this);
         }
     }
-    
+
     public ControlledVocabularyValue getSingleControlledVocabularyValue() {
         if (!controlledVocabularyValues.isEmpty()) {
             return controlledVocabularyValues.get(0);
@@ -172,8 +173,6 @@ public class DatasetField implements Serializable {
             controlledVocabularyValues.add(cvv);
         }
     }
-    
-   
 
     public String getValue() {
         if (!datasetFieldValues.isEmpty()) {
@@ -183,7 +182,7 @@ public class DatasetField implements Serializable {
         }
         return null;
     }
-    
+
     public String getDisplayValue() {
         String returnString = "";
         for (String value : getValues()) {
@@ -205,13 +204,13 @@ public class DatasetField implements Serializable {
         }
         return returnList;
     }
-    
+
     public boolean isEmpty() {
         if (datasetFieldType.isPrimitive()) { // primitive
             for (String value : getValues()) {
                 if (value != null && value.trim() != "") {
                     return false;
-                }             
+                }
             }
         } else { // compound
             for (DatasetFieldCompoundValue cv : datasetFieldCompoundValues) {
@@ -219,10 +218,10 @@ public class DatasetField implements Serializable {
                     if (!subField.isEmpty()) {
                         return false;
                     }
-                }              
+                }
             }
         }
-        
+
         return true;
     }
 
@@ -250,38 +249,88 @@ public class DatasetField implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
-    
+
     public DatasetField copy(DatasetVersion version) {
         return copy(version, null);
     }
-    
+
     public DatasetField copy(DatasetFieldCompoundValue parent) {
         return copy(null, parent);
-    }    
-    
+    }
+
     private DatasetField copy(DatasetVersion version, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
-        
+
         dsf.setDatasetVersion(version);
-        dsf.setParentDatasetFieldCompoundValue(parent);        
+        dsf.setParentDatasetFieldCompoundValue(parent);
         dsf.setControlledVocabularyValues(controlledVocabularyValues);
-        
+
         for (DatasetFieldValue dsfv : datasetFieldValues) {
             dsf.getDatasetFieldValues().add(dsfv.copy(dsf));
         }
-        
+
         for (DatasetFieldCompoundValue compoundValue : datasetFieldCompoundValues) {
             dsf.getDatasetFieldCompoundValues().add(compoundValue.copy(dsf));
-        }        
-                
+        }
+
         return dsf;
     }
-    
+
+    public boolean removeBlankDatasetFieldValues() {
+        if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
+            Iterator<DatasetFieldValue> dsfvIt = this.getDatasetFieldValues().iterator();
+            while (dsfvIt.hasNext()) {
+                DatasetFieldValue dsfv = dsfvIt.next();
+                if (StringUtils.isBlank(dsfv.getValue())) {
+                    dsfvIt.remove();
+                }
+            }
+            if (this.getDatasetFieldValues().isEmpty()) {
+                return true;
+            }
+        } else if (this.getDatasetFieldType().isCompound()) {
+            Iterator<DatasetFieldCompoundValue> cvIt = this.getDatasetFieldCompoundValues().iterator();
+            while (cvIt.hasNext()) {
+                DatasetFieldCompoundValue cv = cvIt.next();
+                Iterator<DatasetField> dsfIt = cv.getChildDatasetFields().iterator();
+                while (dsfIt.hasNext()) {
+                    if (dsfIt.next().removeBlankDatasetFieldValues()) {
+                        dsfIt.remove();
+                    }
+                }
+                if (cv.getChildDatasetFields().isEmpty()) {
+                    cvIt.remove();
+                }
+            }
+            if (this.getDatasetFieldCompoundValues().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setValueDisplayOrder() {
+        if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
+            for (int i = 0; i < datasetFieldValues.size(); i++) {
+                datasetFieldValues.get(i).setDisplayOrder(i);
+            }
+
+        } else if (this.getDatasetFieldType().isCompound()) {
+            for (int i = 0; i < datasetFieldCompoundValues.size(); i++) {
+                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);
+                compoundValue.setDisplayOrder(i);
+                for (DatasetField dsf : compoundValue.getChildDatasetFields()) {
+                    dsf.setValueDisplayOrder();
+                }
+            }
+        }
+    }
+
     public void addDatasetFieldValue(int index) {
         datasetFieldValues.add(index, new DatasetFieldValue(this));
     }
-    
+
     public void removeDatasetFieldValue(int index) {
         datasetFieldValues.remove(index);
     }
@@ -289,9 +338,9 @@ public class DatasetField implements Serializable {
     public void addDatasetFieldCompoundValue(int index) {
         datasetFieldCompoundValues.add(index, DatasetFieldCompoundValue.createNewEmptyDatasetFieldCompoundValue(this));
     }
-    
+
     public void removeDatasetFieldCompoundValue(int index) {
         datasetFieldCompoundValues.remove(index);
-    }     
-    
+    }
+
 }

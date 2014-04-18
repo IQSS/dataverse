@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.search.IndexableDataset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -61,7 +62,7 @@ public class SearchIncludeFragment {
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
-    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
+//    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
 //    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
@@ -309,25 +310,15 @@ public class SearchIncludeFragment {
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                     if (dataset != null) {
-                        DatasetVersion datasetVersion = dataset.getLatestVersion();
-                        if (datasetVersion != null) {
-                            DatasetVersionUI datasetVersionUI = null;
-                            try {
-                                datasetVersionUI = new DatasetVersionUI(datasetVersion);
-                            } catch (NullPointerException ex) {
-                                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
-                            }
-                            if (datasetVersionUI != null) {
                                 String citation = null;
                                 try {
-                                    citation = datasetVersionUI.getCitation();
+                                    citation = dataset.getCitation();
                                 } catch (NullPointerException ex) {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
-                                solrSearchResult.setStatus(getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
-                            }
-                        }
+                                String solrId = solrSearchResult.getId();
+                                solrSearchResult.setStatus(solrId + " " + getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
                     } else {
                         logger.info("couldn't find dataset id " + solrSearchResult.getEntityId() + ". Stale Solr data? Time to re-index?");
                     }
@@ -640,13 +631,13 @@ public class SearchIncludeFragment {
         this.searchFieldSubtree = searchFieldSubtree;
     }
 
-    public String getSearchFieldHostDataverse() {
-        return searchFieldHostDataverse;
-    }
-
-    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
-        this.searchFieldHostDataverse = searchFieldHostDataverse;
-    }
+//    public String getSearchFieldHostDataverse() {
+//        return searchFieldHostDataverse;
+//    }
+//
+//    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
+//        this.searchFieldHostDataverse = searchFieldHostDataverse;
+//    }
 
     public String getTypeFilterQuery() {
         return typeFilterQuery;
@@ -817,6 +808,39 @@ public class SearchIncludeFragment {
 
     public List<String> getFilterQueriesDebug() {
         return filterQueriesDebug;
+    }
+
+    public boolean userLoggedIn() {
+        DataverseUser dataverseUser =session.getUser();
+        if (dataverseUser != null) {
+            if (dataverseUser.isGuest()) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean publishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
+        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
+    }
+
+    public boolean unpublishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
+        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
+    }
+
+    public String getPUBLISHED() {
+        return IndexServiceBean.getPUBLISHED_STRING();
+    }
+
+    public String getUNPUBLISHED() {
+        return IndexServiceBean.getUNPUBLISHED_STRING();
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {

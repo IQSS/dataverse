@@ -102,6 +102,7 @@ public class SearchServiceBean {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
             } else {
+                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
@@ -132,7 +133,7 @@ public class SearchServiceBean {
         }
         solrQuery.addFilterQuery(permissionFilterQuery);
 
-        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
+//        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.RELEASE_DATE);

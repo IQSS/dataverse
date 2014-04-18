@@ -2,11 +2,11 @@
 {
     "q":"trees",
     "fq_provided":"[]",
-    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user6 OR {!join from=groups_s to=perms_ss}id:group_2)]",
-    "total_count":5,
+    "fq_actual":"[{!join from=groups_s to=perms_ss}id:group_public]",
+    "total_count":2,
     "start":0,
-    "count_in_response":5,
-    "items":"[datafile_18:trees.png:18, dataset_17_draft:Rings of Trees and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
+    "count_in_response":2,
+    "items":"[datafile_18:trees.png:18, dataset_17:Rings of Trees and Other Observations:17]",
     "relevance":[
         {
             "id":"datafile_18",
@@ -20,7 +20,7 @@
             ]
         },
         {
-            "id":"dataset_17_draft",
+            "id":"dataset_17",
             "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, keyword, contributorName]",
             "detailsArray":[
                 {
@@ -30,7 +30,7 @@
                 },
                 {
                     "citation_t":[
-                        "Tree, Tony, <2014>, \"Rings of <span class=\"search-term-match\">Trees</span> and Other Observations\", http://dx.doi.org/10.5072/FK2/17"
+                        "Tree, Tony, 2014, \"Rings of <span class=\"search-term-match\">Trees</span> and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
                     ]
                 },
                 {
@@ -56,44 +56,6 @@
                 {
                     "contributorName":[
                         "Edward <span class=\"search-term-match\">Trees</span> Jr."
-                    ]
-                }
-            ]
-        },
-        {
-            "id":"dataverse_10",
-            "matched_fields":"[description]",
-            "detailsArray":[
-                {
-                    "description":[
-                        "A bird dataverse with some <span class=\"search-term-match\">trees</span>"
-                    ]
-                }
-            ]
-        },
-        {
-            "id":"dataverse_11",
-            "matched_fields":"[name]",
-            "detailsArray":[
-                {
-                    "name":[
-                        "<span class=\"search-term-match\">Trees</span>"
-                    ]
-                }
-            ]
-        },
-        {
-            "id":"dataverse_16",
-            "matched_fields":"[description, name]",
-            "detailsArray":[
-                {
-                    "description":[
-                        "A dataverse with chestnut <span class=\"search-term-match\">trees</span> and an oriole"
-                    ]
-                },
-                {
-                    "name":[
-                        "Chestnut <span class=\"search-term-match\">Trees</span>"
                     ]
                 }
             ]

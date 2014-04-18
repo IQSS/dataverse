@@ -15,10 +15,12 @@ DEFAULT_ASADMIN_OPTS=" "
 
 ###
 # Database values. Update as needed.
+# Note: DB_USER "dvnApp" is case-sensitive and later used in "scripts/database/reference_data.sql"
+#
 DB_PORT=5432
 DB_HOST=localhost
 DB_NAME=dvndb
-DB_USER=dvnapp
+DB_USER=dvnApp
 DB_PASS=dvnAppPass
 
 # "${VAR+xxx}" for unset vs. empty per http://stackoverflow.com/questions/228544/how-to-tell-if-a-string-is-not-defined-in-a-bash-shell-script/230593#230593
@@ -203,6 +205,11 @@ fi
 
 
 #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
+
+# created mail configuration: 
+# (yes, the mail server is hard-coded; the top-level installer script will be taking care of this)
+
+./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost mail.hmdc.harvard.edu --mailuser "dataversenotify" --fromaddress "do-not-reply@hmdc.harvard.edu" mail/notifyMailSession
 
 ###
 # Restart

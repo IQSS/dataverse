@@ -228,7 +228,7 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public String releaseDataverse() {
-        dataverse.setReleaseDate(new Timestamp(new Date().getTime()));
+        dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser(session.getUser());
         dataverse = dataverseService.save(dataverse);
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
