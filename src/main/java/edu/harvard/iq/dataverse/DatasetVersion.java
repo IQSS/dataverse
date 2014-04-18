@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -253,6 +255,34 @@ public class DatasetVersion implements Serializable {
         }
         return true;
     }
+    
+    public DatasetVersion getMostRecentlyReleasedVersion(){
+        if (this.isReleased()) { 
+            return this;
+        } else {
+            if (this.getDataset().isReleased()){
+                for (DatasetVersion testVersion : this.dataset.getVersions()){
+                    if(testVersion.isReleased()){
+                        return testVersion; 
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public DatasetVersion getLargestMinorRelease(){
+
+            if (this.getDataset().isReleased()){
+                for (DatasetVersion testVersion : this.dataset.getVersions()){
+                    if(testVersion.getVersionNumber().equals(this.getVersionNumber())){
+                        return testVersion; 
+                    }
+                }
+            }
+
+        return this;
+    }  
 
     public Dataset getDataset() {
         return dataset;
@@ -327,6 +357,85 @@ public class DatasetVersion implements Serializable {
         }
         return retList;
     }
+    
+     public String getCitation(boolean isOnlineVersion) {
+
+
+        String str = "";
+
+        boolean includeAffiliation = false;
+        String authors = this.getAuthorsStr(includeAffiliation);
+        if (!StringUtil.isEmpty(authors)) {
+            str += authors;
+        }
+
+        if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
+            //if not released use current year
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str +=  new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) ;
+        } else  {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));             
+        } 
+
+        if ( this.getTitle() != null ) {
+            if (!StringUtil.isEmpty(this.getTitle())) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += "\"" + this.getTitle() + "\"";
+            }
+        }
+        if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            if (isOnlineVersion) {
+                str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getIdentifier() + "</a>";
+            } else {
+                str += this.getDataset().getPersistentURL();
+            }
+        }
+
+        //Get root dataverse name for Citation
+        Dataverse root = this.getDataset().getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " " + rootDataverseName + " ";
+        }
+
+        if (this.getVersionNumber() != null) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " V" + this.getVersionNumber();
+
+        }
+        /*UNF is not calculated yet
+         if (!StringUtil.isEmpty(getUNF())) {
+         if (!StringUtil.isEmpty(str)) {
+         str += " ";
+         }
+         str += getUNF();
+         }
+         String distributorNames = getDistributorNames();
+         if (distributorNames.trim().length() > 0) {
+         str += " " + distributorNames;
+         str += " [Distributor]";
+         }*/
+        return str;
+    }
+
 
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table

@@ -211,7 +211,16 @@ public class DatasetPage implements java.io.Serializable {
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
             datasetVersionUI = new DatasetVersionUI(displayVersion);
-            displayCitation = dataset.getCitation(false, displayVersion);
+            if(!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion())) ){
+                displayCitation = dataset.getCitation(false, displayVersion);
+            } else if (dataset.isReleased() && displayVersion.isDraft()) {
+                displayCitation = dataset.getCitation(false, displayVersion.getMostRecentlyReleasedVersion());
+            } else if (dataset.isReleased() && !displayVersion.equals(dataset.getLatestVersion())) {
+                displayCitation = dataset.getCitation(false, displayVersion.getLargestMinorRelease());
+            } else {
+                displayCitation = "";
+            }
+            
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;

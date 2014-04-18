@@ -96,7 +96,7 @@
                                             <div class="btn-group">
                                                 <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private <span class="caret"></span>
+                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{DatasetPage.dataset.released}">
                                                         <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
@@ -106,8 +106,8 @@
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
                                                         <li>
                                                             <a  style="pointer-events: none; color:red;">
-                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Private
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is Private. To publish it click 'Publish dataset' link</span>
+                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. To publish it click 'Publish dataset' link</span>
                                                             </a>
                                                         </li>
                                                         <li>
@@ -129,7 +129,7 @@
                                                         </li>   
                                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
                                                             <li>
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Current Draft" onclick="releaseDraft.show()"  /></span>
+                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Draft" onclick="releaseDraft.show()"  /></span>
                                                             </li>
                                                         </ui:fragment>
                                                     </ul>
@@ -175,7 +175,7 @@
                                             <span>#{DatasetPage.displayCitation}</span>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!DatasetPage.displayVersion.released}">
+                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                         <div id="disclaimer">            
                                             <span>
                                                 <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="This is what your citation would look like when it's published." title="" style="margin-right:1em;">In Draft</a>                                                
