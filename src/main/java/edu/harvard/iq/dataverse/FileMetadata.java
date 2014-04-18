@@ -132,11 +132,16 @@ public class FileMetadata implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
+        // (Also, note that it returns "true" when comparing 2 filemetadatas 
+        // with id == null; in other words, 2 not-yet-saved filemetadatas 
+        // always compare as equal! -- L.A. 4.0 alpha)
         if (!(object instanceof FileMetadata)) {
             return false;
         }
         FileMetadata other = (FileMetadata) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        // Something like this would seem like a better choice:
+        //if ((this.id == null) || (!this.id.equals(other.id))) {
             return false;
         }
         return true;

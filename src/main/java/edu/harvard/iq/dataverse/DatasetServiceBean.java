@@ -38,7 +38,7 @@ public class DatasetServiceBean {
     public Dataset find(Object pk) {
         return (Dataset) em.find(Dataset.class, pk);
     }
-
+    
     public List<Dataset> findByOwnerId(Long ownerId) {
         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
         query.setParameter("ownerId", ownerId);

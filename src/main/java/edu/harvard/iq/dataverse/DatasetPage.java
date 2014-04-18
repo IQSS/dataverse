@@ -337,7 +337,10 @@ public class DatasetPage implements java.io.Serializable {
         if (replicationFor) {
             updateTitle();
         }
-        
+        /* 
+         * The code below was likely added before real versioning has been 
+         * added to the application. It shouldn't be necessary anymore. 
+         * -- L.A. 
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -349,6 +352,7 @@ public class DatasetPage implements java.io.Serializable {
                 fmdIndex++;
             }
         }
+        */
 
         /*
          * Save and/or ingest files, if there are any:
@@ -371,7 +375,7 @@ public class DatasetPage implements java.io.Serializable {
                 for (DataFile dFile : newFiles) {
                     String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
 
-                    boolean ingestedAsTabular = false;
+                    //boolean ingestedAsTabular = false;
                     boolean metadataExtracted = false;
 
                     datasetService.generateFileSystemName(dFile);
@@ -402,26 +406,24 @@ public class DatasetPage implements java.io.Serializable {
                         }
                     }
 
-                    /* Try to save the file in its permanent location: 
-                     * (unless it was already ingested and saved as tabular data) 
-                     */
-                    if (!ingestedAsTabular) {
+                    // Try to save the file in its permanent location: 
+                    //if (!ingestedAsTabular) {
+                    try {
+
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
+                        Files.copy(new FileInputStream(new File(tempFileLocation)), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+
+                        MD5Checksum md5Checksum = new MD5Checksum();
                         try {
-
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                            Files.copy(new FileInputStream(new File(tempFileLocation)), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-
-                            MD5Checksum md5Checksum = new MD5Checksum();
-                            try {
-                                dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
-                            } catch (Exception md5ex) {
-                                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + dFile.getName());
-                            }
-
-                        } catch (IOException ioex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
+                            dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
+                        } catch (Exception md5ex) {
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + dFile.getName());
                         }
+
+                    } catch (IOException ioex) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
                     }
+                    //}
 
                     // Any necessary post-processing: 
                     ingestService.performPostProcessingTasks(dFile);
@@ -600,15 +602,17 @@ public class DatasetPage implements java.io.Serializable {
         FileMetadata fmd = new FileMetadata();
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
+        
         dFile.getFileMetadatas().add(fmd);
         fmd.setLabel(dFile.getName());
         fmd.setCategory(dFile.getContentType());
+        
         if (editVersion.getFileMetadatas() == null) {
             editVersion.setFileMetadatas(new ArrayList());
         }
         editVersion.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(editVersion);
-        dataset.getFiles().add(dFile);
+        //dataset.getFiles().add(dFile);
 
         datasetService.generateFileSystemName(dFile);
 
