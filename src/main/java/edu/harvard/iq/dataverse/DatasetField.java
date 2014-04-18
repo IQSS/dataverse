@@ -49,7 +49,7 @@ public class DatasetField implements Serializable {
         return dsfv;
     }
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {
+    private static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {
         DatasetField dsfv = new DatasetField();
         dsfv.setDatasetFieldType(dsfType);
 
@@ -308,22 +308,18 @@ public class DatasetField implements Serializable {
     }
 
     public void setValueDisplayOrder() {
-        int displayOrder = 0;
         if (this.getDatasetFieldType().isPrimitive() && !this.getDatasetFieldType().isControlledVocabulary()) {
-            Iterator<DatasetFieldValue> dsfvIt = this.getDatasetFieldValues().iterator();
-            displayOrder = 0;
-            while (dsfvIt.hasNext()) {
-                DatasetFieldValue dsfv = dsfvIt.next();
-                dsfv.setDisplayOrder(displayOrder);
-                displayOrder++;
+            for (int i = 0; i < datasetFieldValues.size(); i++) {
+                datasetFieldValues.get(i).setDisplayOrder(i);
             }
+
         } else if (this.getDatasetFieldType().isCompound()) {
-            Iterator<DatasetFieldCompoundValue> cvIt = this.getDatasetFieldCompoundValues().iterator();
-            displayOrder = 0;
-            while (cvIt.hasNext()) {
-                DatasetFieldCompoundValue cv = cvIt.next();
-                cv.setDisplayOrder(displayOrder);
-                displayOrder++;
+            for (int i = 0; i < datasetFieldCompoundValues.size(); i++) {
+                DatasetFieldCompoundValue compoundValue = datasetFieldCompoundValues.get(i);
+                compoundValue.setDisplayOrder(i);
+                for (DatasetField dsf : compoundValue.getChildDatasetFields()) {
+                    dsf.setValueDisplayOrder();
+                }
             }
         }
     }
