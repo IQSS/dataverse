@@ -364,16 +364,10 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         if (datasetVersion != null) {
 
-            DatasetVersionUI datasetVersionUI = null;
-            try {
-                datasetVersionUI = new DatasetVersionUI(datasetVersion);
-            } catch (NullPointerException ex) {
-                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
-            }
-            if (datasetVersionUI != null) {
+
                 String citation = null;
                 try {
-                    citation = datasetVersionUI.getCitation();
+                    citation = dataset.getCitation(false, datasetVersion);
                     if (citation != null) {
                         solrInputDocument.addField(SearchFields.CITATION, citation);
                     }
@@ -381,7 +375,7 @@ public class IndexServiceBean {
                 } catch (NullPointerException ex) {
                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                 }
-            }
+
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -198,6 +199,91 @@ public class Dataset extends DvObjectContainer {
 
         return studyDir;
     }
+    
+    
+   public String getCitation() {
+        return getCitation(false, getLatestVersion());
+    }
+
+    public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
+
+
+        String str = "";
+
+        boolean includeAffiliation = false;
+        String authors = version.getAuthorsStr(includeAffiliation);
+        if (!StringUtil.isEmpty(authors)) {
+            str += authors;
+        }
+
+        if (this.getPublicationDate() == null || StringUtil.isEmpty(this.getPublicationDate().toString())) {
+            //if not released use current year
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str +=  new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) ;
+        } else  {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getPublicationDate().getTime()));             
+        } 
+
+        if ( version.getTitle() != null ) {
+            if (!StringUtil.isEmpty(version.getTitle())) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += "\"" + version.getTitle() + "\"";
+            }
+        }
+        if (!StringUtil.isEmpty(this.getIdentifier())) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            if (isOnlineVersion) {
+                str += "<a href=\"" + this.getPersistentURL() + "\">" + this.getIdentifier() + "</a>";
+            } else {
+                str += this.getPersistentURL();
+            }
+        }
+
+        //Get root dataverse name for Citation
+        Dataverse root = this.getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " " + rootDataverseName + " ";
+        }
+
+        if (version.getVersionNumber() != null) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " V" + version.getVersionNumber();
+            str += " [Version]";
+        }
+        /*UNF is not calculated yet
+         if (!StringUtil.isEmpty(getUNF())) {
+         if (!StringUtil.isEmpty(str)) {
+         str += " ";
+         }
+         str += getUNF();
+         }
+         String distributorNames = getDistributorNames();
+         if (distributorNames.trim().length() > 0) {
+         str += " " + distributorNames;
+         str += " [Distributor]";
+         }*/
+        return str;
+    }
+
+    
 
     @Override
     public boolean equals(Object object) {

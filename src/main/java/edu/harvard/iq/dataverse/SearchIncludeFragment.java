@@ -310,26 +310,15 @@ public class SearchIncludeFragment {
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                     if (dataset != null) {
-                        DatasetVersion datasetVersion = dataset.getLatestVersion();
-                        if (datasetVersion != null) {
-                            DatasetVersionUI datasetVersionUI = null;
-                            try {
-                                datasetVersionUI = new DatasetVersionUI(datasetVersion);
-                            } catch (NullPointerException ex) {
-                                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
-                            }
-                            if (datasetVersionUI != null) {
                                 String citation = null;
                                 try {
-                                    citation = datasetVersionUI.getCitation();
+                                    citation = dataset.getCitation();
                                 } catch (NullPointerException ex) {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
                                 String solrId = solrSearchResult.getId();
                                 solrSearchResult.setStatus(solrId + " " + getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
-                            }
-                        }
                     } else {
                         logger.info("couldn't find dataset id " + solrSearchResult.getEntityId() + ". Stale Solr data? Time to re-index?");
                     }

@@ -308,7 +308,24 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        return new ArrayList();
+        List retList = new ArrayList();
+        for (DatasetField dsf : this.getDatasetFields()) {
+             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    DatasetAuthor datasetAuthor = new DatasetAuthor();
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                            datasetAuthor.setName(subField);
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                            datasetAuthor.setAffiliation(subField);
+                        }
+                    }
+                    retList.add(datasetAuthor);
+                }                
+             } 
+        }
+        return retList;
     }
 
     public String getDistributionDate() {
@@ -319,90 +336,6 @@ public class DatasetVersion implements Serializable {
     public String getUNF() {
         //todo get dist date from datasetfieldvalue table
         return "UNF";
-    }
-
-    //TODO - make sure getCitation works
-    private String getYearForCitation(String dateString) {
-        //get date to first dash only
-        if (dateString.indexOf("-") > -1) {
-            return dateString.substring(0, dateString.indexOf("-"));
-        }
-        return dateString;
-    }
-
-    /**
-     * @todo: delete this method? It seems to have been replaced by the version
-     * in DatasetVersionUI
-     */
-    public String getCitation() {
-        return getCitation(true);
-    }
-
-    /**
-     * @todo: delete this method? It seems to have been replaced by the version
-     * in DatasetVersionUI
-     */
-    public String getCitation(boolean isOnlineVersion) {
-
-        Dataset dataset = getDataset();
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        }
-
-        if (!StringUtil.isEmpty(getDistributionDate())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getYearForCitation(getDistributionDate());
-        } else {
-            if (!StringUtil.isEmpty(getProductionDate())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += getYearForCitation(getProductionDate());
-            }
-        }
-        if (!StringUtil.isEmpty(getTitle())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += "\"" + getTitle() + "\"";
-        }
-        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getIdentifier() + "</a>";
-            } else {
-                str += dataset.getPersistentURL();
-            }
-
-        }
-
-        if (!StringUtil.isEmpty(getUNF())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += " ";
-            }
-            str += getUNF();
-        }
-        String distributorNames = getDistributorNames();
-        if (distributorNames.length() > 0) {
-            str += " " + distributorNames;
-            str += " [Distributor]";
-        }
-
-        if (this.getVersionNumber() != null) {
-            str += " V" + this.getVersionNumber();
-            str += " [Version]";
-        }
-
-        return str;
     }
 
     public List<DatasetDistributor> getDatasetDistributors() {

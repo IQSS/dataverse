@@ -170,9 +170,16 @@
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.value}</span>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.citation}">
+                                    <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation">
-                                            <span>#{DatasetPage.datasetVersionUI.citation}</span>
+                                            <span>#{DatasetPage.displayCitation}</span>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{!DatasetPage.displayVersion.released}">
+                                        <div id="disclaimer">            
+                                            <span>
+                                                <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="This is what your citation would look like when it's published." title="" style="margin-right:1em;">In Draft</a>                                                
+                                            </span>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
@@ -414,10 +421,11 @@
                                             </h:link>
                                         </p:column>
                                         <p:column>
-                                            <h:outputText id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />
+                                            <h:outputText rendered="#{!version.released}" id="versionStatusOutput" value="#{version.versionState}" />
+                                            <h:outputText rendered="#{version.released}" id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />
                                         </p:column>
                                         <p:column>
-                                            <h:outputText id="versionStatusOutput" value="#{version.versionState}" />
+                                            
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>

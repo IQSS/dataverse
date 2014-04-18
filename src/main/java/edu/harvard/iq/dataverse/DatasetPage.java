@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil; 
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -41,8 +42,8 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonArray; 
-import javax.json.JsonReader; 
+import javax.json.JsonArray;
+import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 
@@ -99,13 +100,23 @@ public class DatasetPage implements java.io.Serializable {
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
     private String dropBoxSelection = "";
-    
-    public String getDropBoxSelection () {
-        return dropBoxSelection; 
+
+    private String displayCitation;
+
+    public String getDisplayCitation() {
+        return displayCitation;
     }
-    
-    public void setDropBoxSelection (String dropBoxSelection) {
-        this.dropBoxSelection = dropBoxSelection; 
+
+    public void setDisplayCitation(String displayCitation) {
+        this.displayCitation = displayCitation;
+    }
+
+    public String getDropBoxSelection() {
+        return dropBoxSelection;
+    }
+
+    public void setDropBoxSelection(String dropBoxSelection) {
+        this.dropBoxSelection = dropBoxSelection;
     }
 
     public Dataset getDataset() {
@@ -115,8 +126,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setDataset(Dataset dataset) {
         this.dataset = dataset;
     }
-    
-    public DatasetVersion getDisplayVersion(){
+
+    public DatasetVersion getDisplayVersion() {
         return displayVersion;
     }
 
@@ -143,7 +154,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
-    
+
     public Long getVersionId() {
         return versionId;
     }
@@ -151,6 +162,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setVersionId(Long versionId) {
         this.versionId = versionId;
     }
+
     public int getSelectedTabIndex() {
         return selectedTabIndex;
     }
@@ -187,7 +199,7 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (versionId == null){
-                displayVersion = dataset.getLatestVersion(); 
+                displayVersion = dataset.getLatestVersion();
             } else {
                 displayVersion = datasetVersionService.find(versionId);
             }
@@ -199,13 +211,37 @@ public class DatasetPage implements java.io.Serializable {
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
             datasetVersionUI = new DatasetVersionUI(displayVersion);
+            displayCitation = dataset.getCitation(false, displayVersion);
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            editVersion = dataset.getLatestVersion(); 
+            editVersion = dataset.getLatestVersion();
             dataset.setOwner(dataverseService.find(ownerId));
-            //editVersion.setDatasetFields(editVersion.initDatasetFields());
             datasetVersionUI = new DatasetVersionUI(editVersion);
+            //On create set pre-populated fields
+            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorContact)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                    for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
+                            }
+                        }
+                    }
+                }
+            }
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -228,12 +264,12 @@ public class DatasetPage implements java.io.Serializable {
 
     public String releaseDraft() {
         if (releaseRadio == 1) {
-           return releaseDataset(false);
+            return releaseDataset(false);
         } else {
-             return releaseDataset(true);  
-        }       
+            return releaseDataset(true);
+        }
     }
-    
+
     public String releaseDataset(){
         return releaseDataset(false);
     }
@@ -246,7 +282,7 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
             }
-           dataset = commandEngine.submit(cmd);
+            dataset = commandEngine.submit(cmd);
         }  catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -257,7 +293,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void refresh(ActionEvent e) {
-        int i = 0; 
+        int i = 0;
         // Go through the list of the files on the page...
         // (I've had to switch from going through the files via dataset.getFiles(), to 
         // .getLatestVersion().getFileMetadatas() - because that's how the page is
@@ -281,7 +317,7 @@ public class DatasetPage implements java.io.Serializable {
             i++;
         }
     }
-    
+
     public String save() {
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
@@ -289,16 +325,10 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
         //TODO update title in page itself
-        if (replicationFor){
+        if (replicationFor) {
             updateTitle();
         }
-        //Todo pre populate deposit date
         
-        //If new ds get create date user
-        if (dataset.getId() == null){
-            dataset.setCreator(session.getUser());
-            dataset.setCreateDate(new Timestamp(new Date().getTime()));
-        }
         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
             int fmdIndex = 0;
             for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
@@ -390,14 +420,14 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-	Command<Dataset> cmd;
+        Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE){
                 cmd = new CreateDatasetCommand(dataset, session.getUser());
             } else {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
             }
-           dataset = commandEngine.submit(cmd);
+            dataset = commandEngine.submit(cmd);
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
@@ -414,12 +444,11 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+        }
         newFiles.clear();
         editMode = null;
-        
+
         // Queue the ingest jobs for asynchronous execution: 
-        
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
@@ -461,68 +490,69 @@ public class DatasetPage implements java.io.Serializable {
         newFiles.clear();
         editMode = null;
     }
-    
+
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
-	return new HttpClient();
+        return new HttpClient();
     }
-    
+
     public void handleDropBoxUpload(ActionEvent e) {
         // Read JSON object from the output of the DropBox Chooser: 
         JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
         JsonArray dbArray = dbJsonReader.readArray();
         dbJsonReader.close();
-        
+
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
-        
+
             // Extract the payload:
             String fileLink = dbObject.getString("link");
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
-            
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "DropBox url: " + fileLink+", filename: "+fileName+", size: "+fileSize);
-        
-            DataFile dFile = null; 
+
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+
+            DataFile dFile = null;
 
             // Make http call, download the file: 
-            
             GetMethod dropBoxMethod = new GetMethod(fileLink);
-            int status = 0; 
-            InputStream dropBoxStream = null; 
+            int status = 0;
+            InputStream dropBoxStream = null;
             try {
                 status = getClient().executeMethod(dropBoxMethod);
                 if (status == 200) {
                     dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-                     dFile = new DataFile(fileName, "application/octet-stream");
-                     dFile.setOwner(dataset);
-                    
+                    dFile = new DataFile(fileName, "application/octet-stream");
+                    dFile.setOwner(dataset);
+
                     // save the file, in the temporary location for now: 
                     datasetService.generateFileSystemName(dFile);
                     if (getFilesTempDirectory() != null) {
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the DropBox file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
                         Files.copy(dropBoxStream, Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                        long writtenBytes = dFile.getFileSystemLocation().toFile().length(); 
+                        long writtenBytes = dFile.getFileSystemLocation().toFile().length();
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File size, expected: " + fileSize + ", written: " + writtenBytes);
                     }
                 }
             } catch (IOException ex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to access DropBox url: " + fileLink+"!");
-                continue; 
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to access DropBox url: " + fileLink + "!");
+                continue;
             } finally {
-                if (dropBoxMethod != null) { 
-                    dropBoxMethod.releaseConnection(); 
+                if (dropBoxMethod != null) {
+                    dropBoxMethod.releaseConnection();
                 }
                 if (dropBoxStream != null) {
-                    try {dropBoxStream.close();}catch(Exception ex){} 
+                    try {
+                        dropBoxStream.close();
+                    } catch (Exception ex) {
+                    }
                 }
             }
-        
+
             // If we've made it this far, we must have downloaded the file
             // successfully, so let's finish processing it as a new DataFile
             // object: 
-            
             FileMetadata fmd = new FileMetadata();
             fmd.setDataFile(dFile);
             dFile.getFileMetadatas().add(fmd);
@@ -539,27 +569,25 @@ public class DatasetPage implements java.io.Serializable {
             // having the browser recognize the mime type of the file. So we'll 
             // have to rely on our own utilities (Jhove, etc.) to try and determine
             // what it is. 
-        
-            String fileType = null; 
+            String fileType = null;
             try {
                 fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as "+fileType);
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
                 if (fileType != null && !fileType.equals("")) {
                     dFile.setContentType(fileType);
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
             }
-            
+
             newFiles.add(dFile);
-        }        
+        }
     }
-    
+
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = new DataFile(uFile.getFileName(), uFile.getContentType());
-        
+
         FileMetadata fmd = new FileMetadata();
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
@@ -586,21 +614,20 @@ public class DatasetPage implements java.io.Serializable {
                 return;
             }
         }
-        
+
         // Let's try our own utilities (Jhove, etc.) to determine the file type 
         // of the uploaded file. (we may or may not do better than the browser,
         // which may have already recognized the type correctly...)
-        
-        String fileType = null; 
+        String fileType = null;
         try {
             fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as "+fileType);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
             if (fileType != null && !fileType.equals("")) {
                 // let's look at the browser's guess regarding the mime type
                 // of the file: 
                 String bgType = dFile.getContentType();
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Browser recognized the file as "+bgType);
-                
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Browser recognized the file as " + bgType);
+
                 if (bgType == null || bgType.equals("") || bgType.equalsIgnoreCase("application/octet-stream")) {
                     dFile.setContentType(fileType);
                 }
@@ -608,7 +635,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException ex) {
             Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
         }
-        
+
         newFiles.add(dFile);
 
     }
@@ -627,24 +654,24 @@ public class DatasetPage implements java.io.Serializable {
     public void setReplicationFor(boolean replicationFor) {
         this.replicationFor = replicationFor;
     }
-    
-    private void updateTitle(){
+
+    private void updateTitle() {
         System.out.print(replicationFor);
-        
+
         Iterator<DatasetField> dsfIt = dataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
 
-             DatasetField toUpdate =   dsfIt.next();
-             if(toUpdate.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                    //dsfIt.s
-             }
+            DatasetField toUpdate = dsfIt.next();
+            if (toUpdate.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
+                //dsfIt.s
+            }
 
         }
         int i = 0;
-        for (DatasetField dsf : editVersion.getDatasetFields()){
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)){
-                ArrayList <DatasetFieldValue> valList = new ArrayList();
-                DatasetFieldValue dsfv = new DatasetFieldValue (dsf);
+        for (DatasetField dsf : editVersion.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
+                ArrayList<DatasetFieldValue> valList = new ArrayList();
+                DatasetFieldValue dsfv = new DatasetFieldValue(dsf);
                 String origVal = dsf.getValue();
                 dsfv.setValue("Replication for: " + origVal);
                 valList.add(dsfv);

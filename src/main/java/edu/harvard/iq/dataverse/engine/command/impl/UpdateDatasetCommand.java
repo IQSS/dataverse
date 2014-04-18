@@ -45,17 +45,19 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
 
     public Dataset save(CommandContext ctxt) {
-
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
-            if (ctxt.datasets().removeBlankDatasetFieldValues(dsfIt.next())) {
+            if (dsfIt.next().removeBlankDatasetFieldValues()) {
                 dsfIt.remove();
             }
+        }        
+        Iterator<DatasetField> dsfItSort = theDataset.getEditVersion().getDatasetFields().iterator();
+        while (dsfItSort.hasNext()) {
+           dsfItSort.next().setValueDisplayOrder();
         }
         String indexingResult = ctxt.index().indexDataset(theDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
         Dataset savedDataset = ctxt.em().merge(theDataset);
-
         return savedDataset;
     }
 
