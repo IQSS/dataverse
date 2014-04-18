@@ -107,7 +107,7 @@ public class AdvancedSearchPage {
                 if ( i > 0 ) {
                     queryBuilder.append(" ");
                 }                 
-                queryBuilder.append(" ").append(queryStrings.get(i));
+                queryBuilder.append(queryStrings.get(i));
             }
             
             if (queryStrings.size() > 1) {
