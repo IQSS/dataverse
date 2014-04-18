@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 
 /**
  *
@@ -23,6 +23,12 @@ import javax.persistence.OneToOne;
  */
 @Entity
 public class ControlledVocabularyValue implements Serializable  {
+    
+    public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
+        @Override
+        public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
+            return Integer.compare( o1.getDisplayOrder(), o2.getDisplayOrder() );
+    }};
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,22 +69,21 @@ public class ControlledVocabularyValue implements Serializable  {
     }
 
 
+    @Override
     public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
 
+    @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof ControlledVocabularyValue)) {
             return false;
         }
         ControlledVocabularyValue other = (ControlledVocabularyValue) object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(getId(), other.getId());
     }    
     
     @Override

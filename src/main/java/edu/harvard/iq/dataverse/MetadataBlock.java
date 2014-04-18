@@ -55,6 +55,7 @@ public class MetadataBlock implements Serializable {
     public Collection<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
     }
+    
     public void setDatasetFieldTypes(Collection<DatasetFieldType> datasetFieldTypes) {
         this.datasetFieldTypes = datasetFieldTypes;
     }

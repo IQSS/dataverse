@@ -162,7 +162,7 @@ public class JsonPrinter {
 			Set<DatasetFieldType> blockFields = new TreeSet<>(block.getDatasetFieldTypes());
 			
 			JsonObjectBuilder valuesBld = jsonObjectBuilder();
-            TreeSet<DatasetField> orderedFields = new TreeSet<>(DatasetField.orderByTypeName );
+            TreeSet<DatasetField> orderedFields = new TreeSet<>(DatasetField.DisplayOrder );
             orderedFields.addAll(fieldValues);
              
 			for ( DatasetField val : orderedFields ) {

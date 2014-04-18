@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -25,6 +26,13 @@ import javax.persistence.OrderBy;
 @Entity
 public class DatasetFieldCompoundValue implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
+        @Override
+        public int compare(DatasetFieldCompoundValue o1, DatasetFieldCompoundValue o2) {
+            return Integer.compare( o1.getDisplayOrder(),
+                                    o2.getDisplayOrder() );
+    }};
     
     public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetField dsf) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();

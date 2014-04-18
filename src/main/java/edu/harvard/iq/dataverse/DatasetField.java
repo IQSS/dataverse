@@ -27,10 +27,14 @@ import javax.persistence.OrderBy;
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;    
     
-    public static final Comparator<DatasetField> orderByTypeName = new Comparator<DatasetField>() {
+    /**
+     * Orders dataset fields by their display order.
+     */
+    public static final Comparator<DatasetField> DisplayOrder = new Comparator<DatasetField>() {
         @Override
         public int compare(DatasetField o1, DatasetField o2) {
-            return o1.getDatasetFieldType().getDisplayOrder()-o2.getDatasetFieldType().getDisplayOrder();
+            return Integer.compare( o1.getDatasetFieldType().getDisplayOrder(),
+                                    o2.getDatasetFieldType().getDisplayOrder() );
         }
     };
     

@@ -8,8 +8,8 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -497,15 +497,9 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-
+        
         //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
-        });
+        Collections.sort(retList, DatasetField.DisplayOrder);
 
         return retList;
     }
@@ -526,7 +520,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new LinkedList();
         for (DatasetField dsf : dsfList) {
             retList.add(dsf);
             if (dsf.getDatasetFieldType().isCompound()) {
