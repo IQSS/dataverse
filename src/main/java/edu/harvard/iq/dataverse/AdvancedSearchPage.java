@@ -69,7 +69,7 @@ public class AdvancedSearchPage {
          }
          logger.info("query: " + query); */
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(query);
+        queryBuilder.append(query.trim());
         
         String delimiter = "[\"]+";
         for (DatasetFieldType dsfType : metadataFieldList) {
@@ -103,11 +103,11 @@ public class AdvancedSearchPage {
                 queryBuilder.append(" (");
             }
             
-            for (String string : queryStrings) {
-                if ( queryBuilder.length() > 0 ) {
+            for (int i = 0; i < queryStrings.size(); i++) {
+                if ( i > 0 ) {
                     queryBuilder.append(" ");
                 }                 
-                queryBuilder.append(string);
+                queryBuilder.append(" ").append(queryStrings.get(i));
             }
             
             if (queryStrings.size() > 1) {
