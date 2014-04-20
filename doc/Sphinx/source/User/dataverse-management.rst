@@ -20,7 +20,7 @@ Creating a dataverse is easy but first you must be a registered user (see Create
     * Enter the name of your Dataverse.
     * **Host Dataverse**: select which dataverse you would like this new dataverse to belong to. By default it will be a child dataverse of the parent you clicked from.
     * **Dataverse Alias**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse Alias field, the URL for your Dataverse changes (http//.../dv/'alias'), which affects links to this page.
-    * **Contact E-mail**: This is the email address you will receive notifications for this particular Dataverse... [wouldn't it be your account email address by default?]
+    * **E-mail**: This is the email address you will receive notifications for this particular Dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc).
     * **Description**: Provide a description of this dataverse (max. 1000 characters). This will display on the home page of your dataverse and in the search result list.
     * **Choose the sets of Metadata Elements for datasets in this Dataverse**: by default the metadata elements will be from the host dataverse that this new dataverse is created in.
