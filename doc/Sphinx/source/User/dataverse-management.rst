@@ -1,8 +1,8 @@
 Dataverse Administration
 ++++++++++++++++++++++++++++
 
-A dataverse is a container for Datasets and dataverses, and is the home for an individual
-scholar's, project's, journal's or organization's data.
+A dataverse is a container for Datasets (research data, code, documentation, and metadata) and other dataverses, 
+which can be setup for individual researchers, departments, journals and organizations.
 
 |image1|
 
