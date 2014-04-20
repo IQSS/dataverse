@@ -48,6 +48,7 @@ Citation Metadata:
 -  Subject - Domain-specific Subjects that are relevant to the Dataset.
 -  Contributor Name - The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.
 -  Production Date - Date when the data collection/other material(s) were produced (not distributed, released or archived).
+
 Social Science and Humanities Metadata:
 -  Topic Classification - The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  
 -  Time Period Covered (Start) - Time period to which the data refer. This item reflects the time period covered by the data, not the dates of  coding or making documents machine-readable or the dates the data were collected. Also known as span. The ISO standard for dates (YYYY-MM-DD) is recommended.
@@ -57,6 +58,7 @@ Social Science and Humanities Metadata:
 -  Geographic Unit - Information on the geographic coverage of the data. Inclusion of this element in the codebook is recommended.
 -  Universe - Description of the population covered by the data in the file; the group of people or other elements that are the object of the study and to which the study results refer. Age, nationality, and residence commonly help to  delineate a given universe, but any number of other factors may be used, such as age limits, sex, marital status, race, ethnic group, nationality, income, veteran status, criminal convictions, and more. The universe may consist of elements other than persons, such as housing units, court cases, deaths, countries, and so on. In general, it should be possible to tell from the description of the universe whether a given individual or element is a member of the population under study. Also known as the universe of interest, population of interest, and target population.
 -  Kind of Data - Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.
+
 Astronomy and Astrophysics Metadata:
 -  Type - The nature or genre of the content of the files in the dataset.
 -  Facility - The observatory or facility where the data was obtained. 
@@ -69,6 +71,7 @@ Astronomy and Astrophysics Metadata:
 -  Coverage Maximum Wavelength (m) - The maximum wavelength of the spectral bandpass, in meters.
 -  Coverage Dataset Start Date - 
 -  Coverage Dataset End Date
+
 Biomedical Metadata:
 -  Design Type - Select the design types that are based on the overall experimental design.
 -  Factor Type - Factors used in the Study. 
