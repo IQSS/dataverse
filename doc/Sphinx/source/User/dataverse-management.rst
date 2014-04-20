@@ -33,9 +33,9 @@ Edit Dataverse
 
 To edit your Dataverse, navigate to your Dataverse homepage and select the "Edit Dataverse" button. 
 
-- *General Information*: edit name, host dataverse, alias, email, description, and affilitation for your dataverse.
-- *Roles + Permissions* for this particular dataverse
-- Setup: Edit the Metadata elements and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list.
+- **General Information**: edit name, host dataverse, alias, email, description, and affilitation for your dataverse.
+- **Roles + Permissions** for this particular dataverse
+- **Setup**: Edit the Metadata elements and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list.
 
 
 Publish Your Dataverse
@@ -44,7 +44,8 @@ Publish Your Dataverse
 Once your dataverse is ready to go public, go to your dataverse page, click on the "Private" button on the right 
 hand side of the page which should indicate: 
 "This dataverse is Private. To make it public click 'Publish dataverse' link."
-*Important Note*: Once this dataverse is made public it can no longer be un-published.
+
+**Important Note**: Once a dataverse is made public it can no longer be un-published.
 
 
 .. |image1| image:: ./img/Dataverses-Datasets.png
