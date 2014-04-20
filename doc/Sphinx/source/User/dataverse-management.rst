@@ -3,7 +3,8 @@ Dataverse Administration
 
 A dataverse is a container for Datasets and dataverses, and is the home for an individual
 scholar's, project's, journal's or organization's data.
-[insert diagram]
+
+|image1|
 
 Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
@@ -30,36 +31,23 @@ Creating a dataverse is easy but first you must be a registered user (see Create
 Edit Dataverse 
 =================
 
-Use "Edit Dataverse" to change the name, description, contact email and alias of your
-dataverse. 
-
 To edit your Dataverse, navigate to your Dataverse homepage and select the "Edit Dataverse" button. 
 
-In *Edit Info* you can modify:
+- *General Information*: edit name, host dataverse, alias, email, description, and affilitation for your dataverse.
+- *Roles + Permissions* for this particular dataverse
+- Setup: Edit the Metadata elements and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list.
 
--  Host Dataverse - Edit under which Host Dataverse this dataverse will belong to.
--  Affiliation - Edit your institutional identity.
--  Dataverse Name - Edit the title for your dataverse, which appears on
-   your dataverse home page. There are no naming restrictions.
--  Dataverse Alias - Edit your dataverse's URL. Special characters
-   (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed.
-   **Note**: if you change the Dataverse Alias field, the URL for your
-   Dataverse changes (http//.../dv/'alias'), which affects links to this
-   page.
--  Description - Edit the text that appears beside the
-   name of your dataverse on the homepage.
-   
 
 Publish Your Dataverse
 =================================================================
 
-To publish your dataverse:
+Once your dataverse is ready to go public, go to your dataverse page, click on the "Private" button on the right 
+hand side of the page which should indicate: 
+"This dataverse is Private. To make it public click 'Publish dataverse' link."
+*Important Note*: Once this dataverse is made public it can no longer be un-published.
 
-Select *Publish* from the drop-down list when your dataverse is ready
-to go public. *Please note that once you publish your dataverse you cannot un-publish it.*
 
-
-
+.. |image1| image:: ./img/Dataverses-Datasets.png
 
 
 
