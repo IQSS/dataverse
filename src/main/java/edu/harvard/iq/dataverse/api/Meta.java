@@ -120,4 +120,33 @@ public class Meta {
         return retValue;
     }
     
+    @Path("dataset/{datasetId}")
+    @GET
+    @Produces({"application/xml"})
+    public String dataset(@PathParam("datasetId") Long datasetId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        String retValue = "";
+
+        ByteArrayOutputStream outStream = null;
+        outStream = new ByteArrayOutputStream();
+
+        try {
+            ddiExportService.exportDataset(
+                    datasetId,
+                    outStream,
+                    exclude,
+                    include);
+
+            retValue = outStream.toString();
+
+        } catch (Exception e) {
+            // For whatever reason we've failed to generate a partial 
+            // metadata record requested. We simply return an empty string.
+            return retValue;
+        }
+
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        return retValue;
+    }
+    
 }
