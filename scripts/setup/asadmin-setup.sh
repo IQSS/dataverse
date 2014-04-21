@@ -1,4 +1,17 @@
 #!/bin/bash
+# STOP!
+# DO NOT ADD MORE ASADMIN COMMANDS TO THIS SCRIPT!
+# IF YOU NEED TO ADD MORE GLASSFISH CONFIG SETTINGS, ADD THEM 
+# TO THE ../installer/glassfish-setup.sh SCRIPT. 
+# I'M ASSUMING THAT WE'LL WANT TO CONTINUE MAINTAINING THIS SCRIPT, 
+# (FOR VAGRANT SETUPS, etc.?); IT SHOULD STILL BE WORKING, BY 
+# CALLING THE NEW SCRIPT ABOVE - SO NO NEED TO DUPLICATE THE ASADMIN 
+# COMMANDS HERE. 
+# FROM NOW ON, ONLY NON-ASADMIN CONFIGURATION SHOULD GO INTO THIS 
+# SCRIPT. (which makes the name especially misleading - but I didn't 
+# want to change it, in case other scripts are calling it by name!)
+#     -Leonid 4.0 beta
+
 # This is a setup script for setting up Glassfish 4 to run Dataverse
 # The script was tested on Mac OS X.9
 # ASSUMPTIONS
@@ -6,22 +19,36 @@
 # * Internet connectivity is assumed, in order to get the postgresql driver.
 
 ##
-# Default values - Change to suit your machine, or override by providing 
-# environment variables.
+# Default values - Change to suit your machine.
 DEFAULT_GLASSFISH_ROOT=/Applications/NetBeans/glassfish4
 DEFAULT_DOMAIN=domain1
 DEFAULT_ASADMIN_OPTS=" "
-
 
 ###
 # Database values. Update as needed.
 # Note: DB_USER "dvnApp" is case-sensitive and later used in "scripts/database/reference_data.sql"
 #
-DB_PORT=5432
-DB_HOST=localhost
-DB_NAME=dvndb
-DB_USER=dvnApp
-DB_PASS=dvnAppPass
+DB_PORT=5432; export DB_PORT
+DB_HOST=localhost; export DB_HOST
+DB_NAME=dvndb; export DB_NAME
+DB_USER=dvnApp; export DB_USER
+DB_PASS=dvnAppPass; export DB_PASS
+
+###
+# Rserve configuration: 
+RSERVE_HOST=localhost; export RSERVE_HOST
+RSERVE_PORT=6311; export RSERVE_PORT
+RSERVE_USER=rserve; export RSERVE_USER
+RSERVE_PASS=rserve; export RSERVE_PASS
+
+###
+# Other configuration values: 
+MEM_HEAP_SIZE=1024; export MEM_HEAP_SIZE
+HOST_ADDRESS=localhost; export HOST_ADDRESS
+SMTP_SERVER=mail.hmdc.harvard.edu; export SMTP_SERVER
+FILES_DIR=${HOME}/dataverse/files; export FILES_DIR
+
+### End of default configuration values.
 
 # "${VAR+xxx}" for unset vs. empty per http://stackoverflow.com/questions/228544/how-to-tell-if-a-string-is-not-defined-in-a-bash-shell-script/230593#230593
 
@@ -100,7 +127,7 @@ fi
 if [ -z "${GLASSFISH_ROOT+xxx}" ]
  then
   echo setting GLASSFISH_ROOT to $DEFAULT_GLASSFISH_ROOT
-  GLASSFISH_ROOT=$DEFAULT_GLASSFISH_ROOT
+  GLASSFISH_ROOT=$DEFAULT_GLASSFISH_ROOT; export GLASSFISH_ROOT
 fi
 if [ ! -d "$GLASSFISH_ROOT" ]
   then
@@ -113,6 +140,10 @@ if [ -z "${DOMAIN+xxx}" ]
   then
     echo setting DOMAIN to $DEFAULT_DOMAIN
     DOMAIN=$DEFAULT_DOMAIN
+    # setting the environmental variable GLASSFISH_DOMAIN, 
+    # for the ../installer/glassfish-setup.sh script, that runs 
+    # all the required asadmin comands
+    GLASSFISH_DOMAIN=$DOMAIN; export GLASSFISH_DOMAIN
 fi
 DOMAIN_DIR=$GLASSFISH_ROOT/glassfish/domains/$DOMAIN
 if [ ! -d "$DOMAIN_DIR" ]
@@ -122,7 +153,7 @@ if [ ! -d "$DOMAIN_DIR" ]
 fi
 if [ -z "$ASADMIN_OPTS" ]
  then
-  ASADMIN_OPTS=$DEFAULT_ASADMIN_OPTS
+  ASADMIN_OPTS=$DEFAULT_ASADMIN_OPTS; export ASADMIN_OPTS
 fi
 
 echo "Setting up your glassfish4 to support Dataverse"
@@ -156,65 +187,11 @@ if [  $(echo $DOMAIN_DOWN|wc -c) -ne 1  ];
     echo domain running
 fi
 
-# avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
-#./asadmin $ASADMIN_OPTS list-jvm-options
-./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
-./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
-./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=512m"
-./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
-./asadmin $ASADMIN_OPTS create-jvm-options -Xmx1024m
+# ONCE AGAIN, ASADMIN COMMANDS BELOW HAVE ALL BEEN MOVED INTO THIS SCRIPT:
 
-###
-# JDBC connection pool
-./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
-                                      --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                      --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:password=$DB_PASS:ServerName=$DB_HOST \
-                                      dvnDbPool
+../installer/glassfish-setup.sh
 
-###
-# Create data sources
-./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
-
-###
-# Set up the data source for the timers
-./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
-
-###
-# Add the necessary JVM options: 
-# 
-# location of the datafiles directory: 
-# (defaults to dataverse/files in the users home directory)
-./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${HOME}/dataverse/files"
-
-# enable comet support
-./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
-
-./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
-
-# cascade delete takes care of it
-#./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
-
-# http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
-./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
-
-# http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
-./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
-
-# http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
-./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
-
-
-#./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
-
-# created mail configuration: 
-# (yes, the mail server is hard-coded; the top-level installer script will be taking care of this)
-
-./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost mail.hmdc.harvard.edu --mailuser "dataversenotify" --fromaddress "do-not-reply@hmdc.harvard.edu" mail/notifyMailSession
-
-###
-# Restart
-echo Updates done. Restarting...
-./asadmin $ASADMIN_OPTS restart-domain $DOMAIN
+# TODO: diagnostics
 
 ###
 # Clean up

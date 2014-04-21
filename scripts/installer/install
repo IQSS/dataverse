@@ -95,7 +95,8 @@ my %CONFIG_PROMPTS =
 # doesn't get paranoid)
 
 my %POSTGRES_DRIVERS = (
-    "8_4", "postgresql-8.3-603.jdbc4.jar",
+#    "8_4", "postgresql-8.3-603.jdbc4.jar",
+    "8_4", "postgresql-8.4-703.jdbc4.jar",
     "9_0", "postgresql-9.0-802.jdbc4.jar",
     "9_1", "postgresql-9.1-902.jdbc4.jar",
     "9_2", "postgresql-9.1-902.jdbc4.jar",
@@ -407,8 +408,12 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' )
 
 	    print "\n\nFound Postgres psql command, version $postgresVersion.\n\n";
 
-	    $psql_major_version = $postgres_version_tokens[0];
-	    $psql_minor_version = $postgres_version_tokens[1];
+	    $psql_major_version = $psql_version_tokens[0];
+	    $psql_minor_version = $psql_version_tokens[1];
+
+	    $pg_major_version = $psql_major_version; 
+	    $pg_minor_version = $psql_minor_version; 
+
 	}
     }
 
@@ -465,7 +470,9 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' )
 	exit 1; 
     }
 
-    
+    if ($pg_major_version == 0)
+    {
+    }
 
 
     # 4. CONFIGURE POSTGRES: 
@@ -769,7 +776,7 @@ if ( $sys_mem_total > 0 )
     print "You may need to adjust this setting to better suit \n";
     print "your system.\n\n";
 
-    $gf_heap_default .= "m";
+    #$gf_heap_default .= "m";
 
 }
 else 
@@ -787,6 +794,26 @@ $CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
 # be run with the 64 bit flag set explicitly (at least that was the case
 # with the MacOS glassfish build...). Verify, and if still the case, 
 # add a check. 
+
+print "\nInstalling the Glassfish PostgresQL driver... ";
+
+my $install_driver_jar = "";
+
+$install_driver_jar = $POSTGRES_DRIVERS{$pg_major_version . "_"  . $pg_minor_version};
+
+unless ( $install_driver_jar && -e "pgdriver/" . $install_driver_jar ) 
+{
+    die "Installer could not find POSTGRES JDBC driver for your version of PostgresQL!\n(" . 
+	$pg_major_version . "." . $pg_minor_version . ")";
+    
+} 
+
+system ( "/bin/cp", "pgdriver/" . $install_driver_jar, $glassfish_dir."/glassfish/lib" ); 
+# more diagnostics needed?
+
+print "done!\n";
+
+
 
 print "\nPress any key to continue...\n\n";
 
@@ -810,7 +837,16 @@ unless ($success)
     exit 1; 
 }
 
-unless ( -f "config/logging.properties" )
+# Additional config files: 
+
+my $JHOVE_CONFIG = "../../conf/jhove/jhove.conf";
+
+unless ( -f $JHOVE_CONFIG ) 
+{
+    $JHOVE_CONFIG = "./config/jhove.conf";
+}
+                                      
+unless ( -f $JHOVE_CONFIG )
 {
     print "\nERROR! Configuration files not found in config dir!\n";
     print "(are you running the installer in the right directory?\n";
@@ -825,44 +861,9 @@ system ( "/bin/cp -Rf config/* ".$glassfish_dir."/glassfish/domains/domain1/conf
 
 # install the DVN guides (HTML) into the application docroot: 
 # (if the built docs exist?)
+# TODO: add documentation build/installation to the installer.
 #system ( "/bin/cp -Rf doc/guides/* ".$glassfish_dir."/glassfish/domains/domain1/docroot/guides"); 
 
-
-print "done!\n";
-
-print "\nInstalling the Glassfish PostgresQL driver... ";
-
-my $install_driver_jar = "";
-
-$install_driver_jar = $POSTGRES_DRIVERS{$pg_major_version . "_"  . $pg_minor_version};
-
-unless ( $install_driver_jar && -e "pgdriver/" . $install_driver_jar ) 
-{
-    die "Installer could not find POSTGRES JDBC driver for your version of PostgresQL!\n";
-} 
-
-system ( "/bin/cp", "pgdriver/" . $install_driver_jar, $glassfish_dir."/glassfish/lib" ); 
-# more diagnostics needed?
-
-print "done!\n";
-
-# 5d. STOP GLASSFISH (OK IF NOT RUNNING):
-print "\nStopping glassfish...\n";
-
-unless ( ($exit_code=system ($glassfish_dir."/bin/asadmin stop-domain domain1")) == 0 )
-{
-    print STDERR "(that's OK!)\n";
-}
-
-# 5e. START GLASSFISH:
-print "\nStarting glassfish.\n";
-
-unless ( ($exit_code=system ($glassfish_dir."/bin/asadmin start-domain domain1")) == 0 )
-{
-	print STDERR "Could not start glassfish!\n";
-	print STDERR "(exit code: " . $exitcode . ")\n";
-	exit 1; 
-}
 
 print "done!\n";
 
@@ -872,74 +873,20 @@ print "done!\n";
 
 # 6. DEPLOY APPLICATION:
 
-# 6b. TRY TO DEPLOY:
+# 6b. TRY TO (AUTO-)DEPLOY:
 
-print "\nAttempting to deploy the application:\n\n";
 
-$CONFIG_DEFAULTS{'GLASSFISH_ADMIN_PASSWORD'} = 'adminadmin'; 
-# TODO: ask for password! -- in case they have already changed it
-# (update: chances are we don't even need the password anymore, as 
-# long as we are deploying locally (?))
 
-my $glassfish_password = $CONFIG_DEFAULTS{'GLASSFISH_ADMIN_PASSWORD'}; 
-
-# Create the .asadminpass file, or replace it, if exists:
-# TODO: is this still necessary??
-
-$asadminpass_file = $ENV{'HOME'} . "/.asadminpass";
-
-if ( -e $asadminpass_file )
+unless ( ($exit_code = system ("cp -f ".$WARFILE_LOCATION." ".$glassfish_dir."/glassfish/domains/domain1/autodeploy")) == 0 )
 {
-    system ("/bin/mv -f " . $asadminpass_file . " " . $asadminpass_file . ".PRESERVED");
-}
-
-system ("echo 'asadmin://admin@localhost:4848 ' > " . $asadminpass_file); 
-
-$deploy_command = $glassfish_dir."/bin/asadmin deploy --force=true --name=DVN-web dist/DVN-web.war";
-
-unless ( ($exit_code = system ("cd appdeploy; " . $deploy_command)) == 0 )
-{
-	print STDERR "Could not deploy DVN application!\n";
+	print STDERR "Could copy the application into the auto-deploy directory!\n";
 	print STDERR "(exit code: " . $exitcode . ")\n";
 	exit 1; 
 }
 
-if ( $pg_local_connection )
-{
-    print "\nOK; now we are going to stop glassfish and populate the database with\n";
-    print "some initial content, then start glassfish again.\n";
-}
-else
-{
-    print "\nOK; stopping glassfish.\n";
-}
+print "Waiting for the dataverse application to start...\n";
+sleep 60; 
 
-
-# 6c. SHUT DOWN:
-
-$gf_stop_command = $glassfish_dir."/bin/asadmin stop-domain domain1"; 
-
-unless ( ($exit_code = system ($gf_stop_command)) == 0 )
-{
-	print STDERR "Could not stop glassfish!\n";
-	print STDERR "(command line: " . $gf_stop_command . ")\n";
-	print STDERR "(exit code: " . $exitcode . ")\n";
-	print STDERR "\nPlease finish the installation process manually: \n";
-	print STDERR "stop/kill glassfish; then populate the database with \n";
-	print STDERR "the supplied initial content, by executing the following \n";
-	print STDERR "command, *as Unix user postgres*: \n\n";
-
-	$psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f " . $SQL_REFERENCE_DATA;
-
-	print STDERR $psql_command . "\n\n";
-	print STDERR "Then start glassfish again... Voila, you should then have \n";
-	print STDERR "a running DVN instance at the following URL:\n\n";
-	print STDERR "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "/dvn\n";
-
-	print STDERR "\naborting the installer... (sorry!)\n";
-
-	exit 1; 
-}
 
 # 7. POPULATE DATABASE:
 
@@ -953,9 +900,9 @@ if ( $pg_local_connection )
 
     copy($SQL_REFERENCE_DATA,"/tmp") or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
 
+    chdir ("/tmp"); 
     $< = $POSTGRES_SYS_UID; 
     $> = $POSTGRES_SYS_UID; 
-    chdir ("/tmp"); 
     $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
     unless ( ($exitcode = system("$psql_command")) == 0 ) 
@@ -969,9 +916,6 @@ if ( $pg_local_connection )
 	exit 1; 
 	
     }
-
-    chdir ($cwd); 
-    print "\nOK, done!\n";
 
 }
 else 
@@ -989,9 +933,6 @@ else
     print "then start glassfish again on this server with \n\n";
     print "   " . $glassfish_dir."/bin/asadmin start-domain domain1\n\n";
 
-    $> = 0; 
-    $< = 0; 
-
     exit 0; 
     
 }
@@ -1000,28 +941,62 @@ else
 
 $> = 0; 
 $< = 0; 
+chdir ($cwd); 
+print "\nOK, done!\n";
 
-# 8. START GLASSFISH AGAIN:
-print "\nStarting glassfish, again:\n\n";
+# Populate the metadata block field values, create users 
+# and dataverses: 
 
-$gf_start_command = $glassfish_dir."/bin/asadmin start-domain domain1"; 
-
-unless ( ($exit_code = system ($gf_start_command)) == 0 )
+unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" )
 {
-	print STDERR "Could not start glassfish!\n";
-	print STDERR "(command line: " . $gf_start_command . ")\n";
-	print STDERR "(exit code: " . $exit_code . ")\n";
-	exit 1; 
+    chdir ("../api"); 
 }
 
 
-print "\nYou should now have a running DVN instance;\n";
+unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" )
+{
+    print "\nERROR: Can't find the metadata and user/dataverse setup scripts!\n";
+    print "\tAre you running the installer in the right directory?\n";
+    exit 1; 
+}
+
+for $script ( "datasetfields.sh", "setup-users.sh", "setup-dvs.sh" )
+{
+    print "Executing script ".$script."...\n";
+
+    $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
+
+    if ($my_hostname ne "localhost")
+    {
+	system ("sed 's/localhost:8080/$my_hostname/g' < ".$script." > tmpscript.sh; chmod +x tmpscript.sh");
+	$run_script="tmpscript.sh"
+    }
+    else
+    {
+	$run_script=$script;
+    }
+
+    unless ($exit_code = system ("./".$run_script) == 0 )
+    {
+	print "\nERROR executing script ".$script."!\n";
+	exit 1; 
+    }
+    print "ok!\n";
+}
+
+chdir($cwd);
+
+print "\n\nYou should now have a running DVN instance;\n";
 print "Please go to the application at the following URL:\n\n";
 print "  http://" . $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} . "/dvn\n";
 print "\nand log in by using \"networkAdmin\" as both the user name\n";
 print "and password. Click the \"networkAdmin\" link on the right side\n";
 print "Of the main screen, then click \"Update Account\". Change this\n";
 print "default password and default e-mail address.\n";
+
+# (going to skip the Rserve check, for now)
+
+exit 0; 
 
 # 9. FINALLY, CHECK IF RSERVE IS RUNNING: 
 print "\n\nFinally, checking if Rserve is running and accessible...\n";
@@ -1069,8 +1044,6 @@ unless ( socket(SOCK, PF_INET, SOCK_STREAM, $rserve_proto) &&
 
 close (SOCK); 
 print "\nOK!\n";
-
-exit 0; 
 
 sub setup_glassfish {
     my $success = 1; 
