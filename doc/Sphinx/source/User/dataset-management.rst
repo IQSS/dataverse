@@ -16,15 +16,19 @@ Note: You can add additional metadata once you have completed the initial Datase
 Edit Dataset
 ==================
 
-To view and edit Datasets:
+Go to your Dataset page and click on the "Edit Dataset" button. There you will have two options where you can either edit:
 
-
-To delete or deaccession studies that you uploaded:
+- Filed (Upload or Edit Data)
+- Metadata: now able to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
 
 
 Publish Dataset
 ====================
 
 When you publish a Dataset, you make it available to the public. Users can
-browse it or search for it.
+browse it or search for it. Once your Dataset is ready to go public, go to your Dataset page, 
+click on the "Unpublished" button on the right hand side of the page which should indicate: 
+"This Dataset is unpublished. To publish it click 'Publish Dataset' link."
+
+Important Note: Once a Dataset is published it cannot be unpublished.
 
