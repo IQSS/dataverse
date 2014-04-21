@@ -7,7 +7,7 @@ Add Dataset
 #. Navigate to the dataverse in which you want to add a Dataset (or in the "root" dataverse). 
 #. Click on the "Add Data" button and select "Add Dataset" in the dropdown menu.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, Description)
-#. Scroll down to "Files" tab to add all the relevant files to your Dataset. Tip: You can drag and drop your files from your desktop, directly into the upload widget.
+#. Scroll down to "Files" tab and click on "Select Files to Add" to add all the relevant files to your Dataset. Tip: You can drag and drop your files from your desktop, directly into the upload widget. Your file will appear below the "Select Files to Add" button where you can add a description of the file.
 #. Click the "Create Dataset" button when you are done. Your unpublished Dataset is now created. 
 
 Note: You can add additional metadata once you have completed the initial Dataset creation by going to Edit Dataset. 
