@@ -429,12 +429,12 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' )
 	my $macos_pg_major_version = 0; 
 	my $macos_pg_minor_version = 0; 
 
-	for $macso_pg_minor_version ( "3", "2", "1", "0" )
+	for $macos_pg_minor_version ( "3", "2", "1", "0" )
 	{
 	    if ( -x "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin/psql" ) 
 	    {
 		$macos_pg_major_version = 9;
-		if ($macos_pg_major_version > $psql_major_version || $macos_pg_minor_version > $psql_minor_version)
+		if (($macos_pg_major_version > $psql_major_version) || ($macos_pg_minor_version >= $psql_minor_version))
 		{
 		    $psql_exec = "/Library/PostgreSQL/9." . $macos_pg_minor_version . "/bin";
 		    $pg_major_version = $macos_pg_major_version;
@@ -443,20 +443,27 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' )
 		last; 
 	    }
 	}
-	for $macos_pg_minor_version ( "4", "3" )
-	    # TODO: 
-	    # Do we even want to support postgres 8.3?
+
+	# And if we haven't found an 9.* version of postgresql installed, we'll also check 
+	# for version 8.* available: 
+
+	if ($macos_pg_major_version < 9)
 	{
-	    if ( -x "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin/psql" ) 
+	    for $macos_pg_minor_version ( "4", "3" )
+		# TODO: 
+		# Do we even want to support postgres 8.3?
 	    {
-		$macos_pg_major_version = 8; 
-		if ($macos_pg_major_version > $psql_major_version || $macos_pg_minor_version > $psql_minor_version)
+		if ( -x "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin/psql" ) 
 		{
-		    $psql_exec = "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin";
-		    $pg_major_version = $macos_pg_major_version;
-		    $pg_minor_version = $macos_pg_minor_version;
+		    $macos_pg_major_version = 8; 
+		    if ($macos_pg_major_version > $psql_major_version || $macos_pg_minor_version > $psql_minor_version)
+		    {
+			$psql_exec = "/Library/PostgreSQL/8." . $macos_pg_minor_version . "/bin";
+			$pg_major_version = $macos_pg_major_version;
+			$pg_minor_version = $macos_pg_minor_version;
+		    }
+		    last; 
 		}
-		last; 
 	    }
 	}
     }
@@ -478,6 +485,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' )
     # 4. CONFIGURE POSTGRES: 
 
     print "\nConfiguring Postgres Database:\n";
+    print "(Using psql version ".$pg_major_version.".".$pg_minor_version.")\n";
 
     
 
@@ -856,7 +864,7 @@ unless ( -f $JHOVE_CONFIG )
 
 print "\nCopying additional configuration files... ";
 
-system ( "/bin/cp -Rf config/* ".$glassfish_dir."/glassfish/domains/domain1/config"); 
+system ( "/bin/cp -Rf " . $JHOVE_CONFIG . " ".$glassfish_dir."/glassfish/domains/domain1/config"); 
 #diagnostics needed!
 
 # install the DVN guides (HTML) into the application docroot: 
