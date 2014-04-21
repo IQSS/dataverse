@@ -100,7 +100,15 @@ List versions of the dataset.
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}?key={{apikey}}
 
 Show a version of the dataset. The `versionId` can be a number, or the values `:edit` for the edit version, and `:latest` for the latest one.
+The Dataset also include any metadata blocks the data might have.
 
+	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
+
+Lists all the metadata blocks and their content, for the given dataset and version.
+
+	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
+
+Lists the metadata block block named `blockname`, for the given dataset and version.
 
 ### permissions
 

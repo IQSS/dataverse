@@ -11,9 +11,13 @@ package edu.harvard.iq.dataverse;
  */
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -66,6 +70,25 @@ public class DatasetField implements Serializable {
 
         return dsfv;
 
+    }
+
+    /**
+     * Groups a list of fields by the block they belong to.
+     * @param fields well, duh.
+     * @return a map, mapping each block to the fields that belong to it.
+     */
+    public static Map<MetadataBlock, List<DatasetField>> groupByBlock(List<DatasetField> fields) {
+        Map<MetadataBlock, List<DatasetField>> retVal = new HashMap<>();
+        for (DatasetField f : fields) {
+            MetadataBlock metadataBlock = f.getDatasetFieldType().getMetadataBlock();
+            List<DatasetField> lst = retVal.get(metadataBlock);
+            if (lst == null) {
+                retVal.put(metadataBlock, new LinkedList<>(Collections.singleton(f)));
+            } else {
+                lst.add(f);
+            }
+        }
+        return retVal;
     }
 
     @Id

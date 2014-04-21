@@ -29,6 +29,7 @@ import javax.persistence.OneToMany;
 public class MetadataBlock implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -98,4 +99,5 @@ public class MetadataBlock implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
     }    
+    
 }

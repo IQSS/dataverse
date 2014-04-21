@@ -228,7 +228,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.required = required;
     }
 
-
     private boolean advancedSearchFieldType;
 
     public boolean isAdvancedSearchFieldType() {
@@ -254,7 +253,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isSubField() {
         return this.parentDatasetFieldType != null;        
     }
-    
     
     public boolean isHasChildren() {
         return !this.childDatasetFieldTypes.isEmpty();
