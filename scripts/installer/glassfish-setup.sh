@@ -38,6 +38,8 @@
 if [ -z "$DB_NAME" ]
  then
   echo "You must specify database name (DB_NAME)."
+  echo "PLEASE NOTE THAT YOU (THE HUMAN USER) SHOULD NEVER RUN THIS SCRIPT DIRECTLY!"
+  echo "IT SHOULD ONLY BE RUN BY OTHER SCRIPTS."
   exit 1
 fi
 
@@ -155,6 +157,10 @@ if [  $(echo $DOMAIN_DOWN|wc -c) -ne 1  ];
     echo domain running
 fi
 
+# undeploy the app, if running: 
+
+./asadmin $ASADMIN_OPTS undeploy dataverse-4.0
+
 # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
 #./asadmin $ASADMIN_OPTS list-jvm-options
 ./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
@@ -165,6 +171,13 @@ fi
 
 ###
 # JDBC connection pool
+
+# we'll try to delete a pool with this name, if already exists. 
+# - in case the database name has changed since the last time it 
+# was configured. 
+./asadmin $ASADMIN_OPTS delete-jdbc-connection-pool --cascade=true dvnDbPool
+
+
 ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
                                       --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
                                       --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:password=$DB_PASS:ServerName=$DB_HOST \
