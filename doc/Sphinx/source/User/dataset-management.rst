@@ -1,6 +1,10 @@
 Dataset & File Management
 +++++++++++++++++++++++++++++
 
+A Dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
+
+|image1|
+
 Add Dataset
 ====================
 
@@ -18,8 +22,8 @@ Edit Dataset
 
 Go to your Dataset page and click on the "Edit Dataset" button. There you will have two options where you can either edit:
 
-- Filed (Upload or Edit Data)
-- Metadata: now able to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
+- Filed (Upload or Edit Data): to add or edit files in this Dataset.
+- Metadata: to add/edit metadata including additional metadata than was not previously available during Dataset Creation.
 
 
 Publish Dataset
@@ -32,3 +36,4 @@ click on the "Unpublished" button on the right hand side of the page which shoul
 
 Important Note: Once a Dataset is published it cannot be unpublished.
 
+.. |image1| image:: ./img/DatasetDiagram.png
