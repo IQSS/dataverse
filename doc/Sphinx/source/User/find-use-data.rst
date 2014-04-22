@@ -40,14 +40,15 @@ To perform an advanced search, click the Advanced Search link next to the search
 Advanced Search fields: 
 
 Citation Metadata:
--  Title - Full title by which the dataset is known.
--  Author - The author's Family Name, Given Name or the name of the organization responsible for this dataset.
--  Author Affiliation - The organization with which the author is affiliated.
--  Description - A summary describing the purpose, nature, and scope of the dataset.
--  Keyword - Free-form text that describe important aspects of the dataset.
--  Subject - Domain-specific Subjects that are relevant to the Dataset.
--  Contributor Name - The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.
--  Production Date - Date when the data collection/other material(s) were produced (not distributed, released or archived).
+
+-Title: Full title by which the dataset is known.
+-Author: The author's Family Name, Given Name or the name of the organization responsible for this dataset.
+-Author Affiliation: The organization with which the author is affiliated.
+-Description: A summary describing the purpose, nature, and scope of the dataset.
+-Keyword: Free-form text that describe important aspects of the dataset.
+-Subject: Domain-specific Subjects that are relevant to the Dataset.
+-Contributor Name: The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.
+-Production Date: Date when the data collection/other material(s) were produced (not distributed, released or archived).
 
 Social Science and Humanities Metadata:
 -  Topic Classification - The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  
@@ -81,9 +82,11 @@ starting biological material derives.
 -  Cell Type - The name of the cell line from which the source or sample derives.
 
 
-**Browse Dataverse**
+**Browsing Dataverse**
 
-To browse dataverse, click on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
+In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only Dataverses and Datasets appear in the results list and the results can be sorted by Name (both A-Z and Z-A) and Publication Date (Newest and Oldest).
+
+Additionally, a user can browse all dataverses by clicking on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
 
 The dataverse breadcrumbs appear on each dataverse page and can be used to navigate throughout Dataverse.
 
