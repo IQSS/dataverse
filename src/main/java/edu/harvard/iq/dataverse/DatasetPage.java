@@ -198,7 +198,7 @@ public class DatasetPage implements java.io.Serializable {
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
-            if (versionId == null){
+            if (versionId == null) {
                 displayVersion = dataset.getLatestVersion();
             } else {
                 displayVersion = datasetVersionService.find(versionId);
@@ -211,7 +211,7 @@ public class DatasetPage implements java.io.Serializable {
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
             datasetVersionUI = new DatasetVersionUI(displayVersion);
-            if(!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion())) ){
+            if (!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion()) && !displayVersion.isDraft())) {
                 displayCitation = dataset.getCitation(false, displayVersion);
             } else if (dataset.isReleased() && displayVersion.isDraft()) {
                 displayCitation = dataset.getCitation(false, displayVersion.getMostRecentlyReleasedVersion());
@@ -220,7 +220,7 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 displayCitation = "";
             }
-            
+
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -279,20 +279,20 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public String releaseDataset(){
+    public String releaseDataset() {
         return releaseDataset(false);
     }
 
     private String releaseDataset(boolean minor) {
         Command<Dataset> cmd;
         try {
-            if (editMode == EditMode.CREATE){
+            if (editMode == EditMode.CREATE) {
                 cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
             } else {
                 cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
             }
             dataset = commandEngine.submit(cmd);
-        }  catch (CommandException ex) {
+        } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
             Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -341,18 +341,18 @@ public class DatasetPage implements java.io.Serializable {
          * The code below was likely added before real versioning has been 
          * added to the application. It shouldn't be necessary anymore. 
          * -- L.A. 
-        if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
-            int fmdIndex = 0;
-            for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
-                for (FileMetadata fmdTest : editVersion.getFileMetadatas()) {
-                    if (fmd.equals(fmdTest)) {
-                        dataset.getVersions().get(0).getFileMetadatas().get(fmdIndex).setDataFile(fmdTest.getDataFile());
-                    }
-                }
-                fmdIndex++;
-            }
-        }
-        */
+         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
+         int fmdIndex = 0;
+         for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
+         for (FileMetadata fmdTest : editVersion.getFileMetadatas()) {
+         if (fmd.equals(fmdTest)) {
+         dataset.getVersions().get(0).getFileMetadatas().get(fmdIndex).setDataFile(fmdTest.getDataFile());
+         }
+         }
+         fmdIndex++;
+         }
+         }
+         */
 
         /*
          * Save and/or ingest files, if there are any:
@@ -433,7 +433,7 @@ public class DatasetPage implements java.io.Serializable {
 
         Command<Dataset> cmd;
         try {
-            if (editMode == EditMode.CREATE){
+            if (editMode == EditMode.CREATE) {
                 cmd = new CreateDatasetCommand(dataset, session.getUser());
             } else {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
@@ -604,11 +604,11 @@ public class DatasetPage implements java.io.Serializable {
         FileMetadata fmd = new FileMetadata();
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
-        
+
         dFile.getFileMetadatas().add(fmd);
         fmd.setLabel(dFile.getName());
         fmd.setCategory(dFile.getContentType());
-        
+
         if (editVersion.getFileMetadatas() == null) {
             editVersion.setFileMetadatas(new ArrayList());
         }

@@ -275,7 +275,7 @@ public class DatasetVersion implements Serializable {
 
             if (this.getDataset().isReleased()){
                 for (DatasetVersion testVersion : this.dataset.getVersions()){
-                    if(testVersion.getVersionNumber().equals(this.getVersionNumber())){
+                    if(testVersion.getVersionNumber() != null && testVersion.getVersionNumber().equals(this.getVersionNumber())){
                         return testVersion; 
                     }
                 }
