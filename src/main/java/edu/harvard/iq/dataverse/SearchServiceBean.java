@@ -51,7 +51,19 @@ public class SearchServiceBean {
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
+    PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
+
+    public enum PublishedToggle {
+
+        PUBLISHED, UNPUBLISHED
+    };
+
+    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
+        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+        } else {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+        }
         /**
          * @todo make "localhost" and port number a config option
          */

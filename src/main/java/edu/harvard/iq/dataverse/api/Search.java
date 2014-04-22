@@ -64,13 +64,14 @@ public class Search extends AbstractApiBean {
                         return error("Couldn't find username: " + usernameProvided);
                     }
                 }
+                SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
                 if (publishedOnly) {
-                    filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+                    publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
                 }
                 if (unpublishedOnly) {
-                    filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+                    publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
                 }
-                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
+                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
             } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();

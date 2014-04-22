@@ -6,6 +6,22 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui">
 
+    <ui:fragment>
+        <h:form id="shareForm" rendered="#{SearchIncludeFragment.allowedToClickAddData}" style="margin-left:auto;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Add Data <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                    <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
+                    <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
+                    <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
+                    <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
+                </ul>
+            </div>
+        </h:form>
+    </ui:fragment>
+
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm">
 
@@ -27,28 +43,41 @@
                     </h:outputLink>
                 </h:form>
             </ui:fragment>
-            <ui:fragment>
 
-                <h:form id="shareForm" rendered="#{SearchIncludeFragment.allowedToClickAddData}" style="margin-left:auto;">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Add Data <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                            <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
-                            <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
-                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
-                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
-                        </ul>
-                    </div>
-                </h:form>
+            <!--PUBLISHED/UNPUBLISHED TOGGLE-->
+            <ui:fragment rendered="#{SearchIncludeFragment.userLoggedIn()}">
+                <h:outputLink>
+                    <h:outputText value="#{SearchIncludeFragment.PUBLISHED}" style="#{SearchIncludeFragment.showUnpublished == false ? 'font-weight: bolder' : 'font-weight: normal'}"/>
+                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                    </c:forEach>
+                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                    <f:param name="page" value="1"/>
+                </h:outputLink>
+                <h:outputText value=" | "/>
+                <h:outputLink>
+                    <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" style="#{SearchIncludeFragment.showUnpublished == true ? 'font-weight: bolder' : 'font-weight: normal'}"/>
+                    <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                    <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                    <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                        <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                    </c:forEach>
+                    <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                    <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                    <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                    <f:param name="page" value="1"/>
+                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
+                </h:outputLink>
             </ui:fragment>
         </p:panelGrid>
     </p:panel>
     <!-- Search Results -->
     <p:panel>
         <ui:fragment rendered="#{!SearchIncludeFragment.solrIsDown}">
-
             <div style="width:20%;float:left;padding-right:1em;">
 
                 <!--<div style="background:#E6F1F6;border:1px solid #DDDDDD;padding:.5em;margin-bottom:.5em;font-weight:bold;">Filter Your Results</div>-->
@@ -66,6 +95,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
                         <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('dataverses')}"/>-->
@@ -81,6 +111,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'icon_dataverse_dark.png' : 'icon_dataverse.png'}) no-repeat 4px 50% / 18px;"/>
                         <h:outputText value="Dataverses" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'bolder' : 'normal'}"/>
@@ -98,6 +129,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
                         <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('datasets')}"/>-->
@@ -113,6 +145,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'icon_dataset_dark.png' : 'icon_dataset.png'}) no-repeat 4px 50% / 18px;"/>
                         <h:outputText value="Datasets" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'bolder' : 'normal'}"/>
@@ -131,6 +164,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}"/>
                         <!--<h:outputText styleClass="glyphicon glyphicon-remove" value="" rendered="#{SearchIncludeFragment.selectedTypesList.contains('files')}"/>-->
@@ -147,6 +181,7 @@
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         <f:param name="page" value="1"/>
                         <h:outputText style="padding:4px 0px 4px 30px; background: url(/resources/images/#{SearchIncludeFragment.selectedTypesList.contains('files') ? 'icon_file_dark.png' : 'icon_file.png'}) no-repeat 4px 50% / 18px;"/>
                         <h:outputText value="Files" style="color: #428BCA; font-weight: #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'bolder' : 'normal'}"/>
@@ -173,6 +208,7 @@
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                 </h:outputLink>
 
                                 <h:outputLink rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink #{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery) ?  'facetSelected' : ''}">
@@ -188,6 +224,7 @@
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                 </h:outputLink>
 
                             </p:dataList>
@@ -211,6 +248,7 @@
                 <ui:fragment rendered="#{SearchIncludeFragment.debug}">
                     <div style="background-color: lightgray">
                         <tt>
+                            <h:outputText value="unpublished:#{SearchIncludeFragment.showUnpublished} "/>
                             <h:outputText value="mode:#{SearchIncludeFragment.mode} "/>
                             <h:outputText value="sort=#{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}"/><br/>
                             <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}"/><br/>
@@ -255,6 +293,7 @@
                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                            <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                         </h:outputLink>
                     </ui:repeat>
 
@@ -266,17 +305,6 @@
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount} "/>
                                 <h:outputText value="#{SearchIncludeFragment.searchResultsCount == 1 ? 'result' : 'results'}"/>
                             </div>
-                            <!--PUBLISHED/UNPUBLISHED TOGGLE-->
-                            <ui:fragment rendered="#{SearchIncludeFragment.userLoggedIn()}">
-                                <h:form>
-                                    <h:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
-                                        <p:selectOneButton value="#{SearchIncludeFragment.PUBLISHED}">
-                                            <f:selectItem itemLabel="#{SearchIncludeFragment.PUBLISHED}" itemValue="#{SearchIncludeFragment.PUBLISHED}"/>
-                                            <f:selectItem itemLabel="#{SearchIncludeFragment.UNPUBLISHED}" itemValue="#{SearchIncludeFragment.UNPUBLISHED}" />
-                                        </p:selectOneButton>
-                                    </h:panelGrid>
-                                </h:form>
-                            </ui:fragment>
                             <!-- SORT + PAGINATOR -->
                             <div class="results-sort-pagination pull-right">
                                 <!-- PAGINATOR -->
@@ -296,6 +324,7 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                     <f:param name="page" value="1"/>
                                                 </h:outputLink>
                                             </li>
@@ -310,6 +339,7 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                     <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
                                                 </h:outputLink>
                                             </li>
@@ -330,6 +360,7 @@
                                                         <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                        <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                         <f:param name="page" value="#{pageListItem}"/>
                                                     </h:outputLink>
                                                 </li>
@@ -345,6 +376,7 @@
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                     <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
                                                 </h:outputLink>
                                             </li>
@@ -358,6 +390,7 @@
                                                     </c:forEach>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                     <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                 </h:outputLink>
@@ -380,6 +413,7 @@
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                 <f:param name="page" value="1"/>
                                                 <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
@@ -394,6 +428,7 @@
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                 <f:param name="page" value="1"/>
                                                 <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
@@ -408,6 +443,7 @@
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                 <f:param name="page" value="1"/>
                                                 <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
@@ -422,6 +458,7 @@
                                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                 </c:forEach>
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                 <f:param name="page" value="1"/>
                                                 <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
@@ -437,6 +474,7 @@
                                                         <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                                                     </c:forEach>
                                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                                    <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                     <f:param name="page" value="1"/>
                                                     <f:param name="sort" value="#{SearchIncludeFragment.searchFieldRelevance}"/>
                                                     <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
@@ -636,6 +674,7 @@
                                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                            <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                             <f:param name="page" value="1"/>
                                         </h:outputLink>
                                     </li>
@@ -650,6 +689,7 @@
                                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                            <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                             <f:param name="page" value="#{Math:max(1,SearchIncludeFragment.page-1).intValue()}"/>
                                         </h:outputLink>
                                     </li>
@@ -670,6 +710,7 @@
                                                 <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                                 <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                                 <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                                <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                                 <f:param name="page" value="#{pageListItem}"/>
                                             </h:outputLink>
                                         </li>
@@ -685,6 +726,7 @@
                                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                            <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                             <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
                                         </h:outputLink>
                                     </li>
@@ -698,6 +740,7 @@
                                             </c:forEach>
                                             <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                                             <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                            <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                                             <f:param name="page" value="#{SearchIncludeFragment.totalPages}"/>
                                             <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                         </h:outputLink>

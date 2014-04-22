@@ -35,6 +35,7 @@
                     <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
+                    <f:viewParam name="unpublished" value="#{SearchIncludeFragment.showUnpublished}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
@@ -258,6 +259,7 @@
                 </h:form>
 
                 <!-- Content Panel -->
+                <!--TODO: move id "shareForm" here-->
                 <ui:fragment  rendered="#{empty DataversePage.editMode}">
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
