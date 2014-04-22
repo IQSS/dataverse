@@ -1,5 +1,5 @@
-Dataverse App
-==============
+Dataverse 
+==========
 
 Dataverse is an open source web application for sharing, citing, analyzing, and preserving research data.
 

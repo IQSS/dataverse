@@ -1,4 +1,4 @@
-Dataverse Administration
+Dataverse Management
 ++++++++++++++++++++++++++++
 
 A dataverse is a container for Datasets (research data, code, documentation, and metadata) and other dataverses, 
