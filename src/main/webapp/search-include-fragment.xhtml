@@ -25,13 +25,12 @@
                         <h:outputText value="Advanced Search"/>
                         <f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>
                     </h:outputLink>
-                </h:form>
-            </ui:fragment>
 
             <!--PUBLISHED/UNPUBLISHED TOGGLE-->
             <ui:fragment rendered="#{SearchIncludeFragment.userLoggedIn()}">
+                <p:spacer width="10"/>
                 <h:outputLink>
-                    <h:outputText value="#{SearchIncludeFragment.PUBLISHED}" style="#{SearchIncludeFragment.showUnpublished == false ? 'font-weight: bolder' : 'font-weight: normal'}"/>
+                    <h:outputText value="#{SearchIncludeFragment.PUBLISHED}" styleClass="btn #{SearchIncludeFragment.showUnpublished == false ? 'btn-primary' : 'btn-default'}"/>
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -42,9 +41,9 @@
                     <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:param name="page" value="1"/>
                 </h:outputLink>
-                <h:outputText value=" | "/>
                 <h:outputLink>
-                    <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" style="#{SearchIncludeFragment.showUnpublished == true ? 'font-weight: bolder' : 'font-weight: normal'}"/>
+                    <!--<h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" style="#{SearchIncludeFragment.showUnpublished == true ? 'font-weight: bolder' : 'font-weight: normal'}"/>-->
+                    <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="btn #{SearchIncludeFragment.showUnpublished == true ? 'btn-primary' : 'btn-default'}"/>
                     <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                     <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -57,7 +56,10 @@
                     <f:param name="unpublished" value="true" rendered="#{SearchIncludeFragment.showUnpublished == true}"/>
                 </h:outputLink>
             </ui:fragment>
-        </p:panelGrid>
+                 </h:form>
+            </ui:fragment>
+
+            </p:panelGrid>
     </p:panel>
     <!-- Search Results -->
     <p:panel>
