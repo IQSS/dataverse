@@ -460,6 +460,8 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
 
         // Queue the ingest jobs for asynchronous execution: 
+        // TODO: instead of dataset.getFiles(), use 
+        // editversion.getFileMetadatas() ... -- L.A. 4.0 alpha
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
@@ -612,7 +614,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         editVersion.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(editVersion);
-        //dataset.getFiles().add(dFile);
+        dataset.getFiles().add(dFile);
 
         datasetService.generateFileSystemName(dFile);
 
