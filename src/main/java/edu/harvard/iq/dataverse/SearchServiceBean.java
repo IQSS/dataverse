@@ -114,7 +114,6 @@ public class SearchServiceBean {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
             } else {
-                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
