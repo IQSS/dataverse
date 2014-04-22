@@ -29,6 +29,15 @@ public class ControlledVocabularyValue implements Serializable  {
         public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
             return Integer.compare( o1.getDisplayOrder(), o2.getDisplayOrder() );
     }};
+
+    public ControlledVocabularyValue() {
+    }
+
+    public ControlledVocabularyValue(Long id, String strValue, DatasetFieldType datasetFieldType) {
+        this.id = id;
+        this.strValue = strValue;
+        this.datasetFieldType = datasetFieldType;
+    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

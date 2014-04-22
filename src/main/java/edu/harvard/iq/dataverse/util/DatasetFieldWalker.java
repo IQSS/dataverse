@@ -75,14 +75,14 @@ public class DatasetFieldWalker {
             }
             
         } else if ( datasetFieldType.isPrimitive() ) {
-            for ( DatasetFieldValue pv : sort( fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
+            for ( DatasetFieldValue pv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
                 l.primitiveValue( pv );
             }
             
         } else if ( datasetFieldType.isCompound() ) {
            for ( DatasetFieldCompoundValue dsfcv : sort( fld.getDatasetFieldCompoundValues(), DatasetFieldCompoundValue.DisplayOrder) ) {
                l.startCompoundValue(dsfcv);
-               for ( DatasetField dsf : sort( dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder ) ) {
+               for ( DatasetField dsf : sort(dsfcv.getChildDatasetFields(), DatasetField.DisplayOrder ) ) {
                    walk( dsf );
                }
                l.endCompoundValue(dsfcv);

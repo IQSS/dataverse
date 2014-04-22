@@ -8,8 +8,11 @@ package edu.harvard.iq.dataverse;
 import java.util.Collection;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.persistence.*;
 
 /**
@@ -52,9 +55,18 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Transient
     private List<String> listValues;
 
-    public DatasetFieldType() {
-    }
+    @Transient
+    private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
+    
+    public DatasetFieldType() {}
 
+    public DatasetFieldType(String name, String fieldType, boolean allowMultiples) {
+        this.name = name;
+        this.fieldType = fieldType;
+        this.allowMultiples = allowMultiples;
+        childDatasetFieldTypes = new LinkedList<>();
+    }
+    
     private int displayOrder;
 
     public int getDisplayOrder() {
@@ -167,6 +179,19 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
         this.controlledVocabularyValues = controlledVocabularyValues;
+    }
+    
+    public ControlledVocabularyValue getControlledVocabularyValue( String strValue ) {
+        if ( ! isControlledVocabulary() ) {
+            throw new IllegalStateException("getControlledVocabularyValue() called on a non-controlled vocabulary type.");
+        }
+        if ( controlledVocabularyValuesByStrValue == null ) {
+            controlledVocabularyValuesByStrValue = new TreeMap<>();
+            for ( ControlledVocabularyValue cvv : getControlledVocabularyValues() ) {
+                controlledVocabularyValuesByStrValue.put( cvv.getStrValue(), cvv);
+            }
+        }
+        return controlledVocabularyValuesByStrValue.get(strValue);
     }
        
 
@@ -352,5 +377,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     // help us identify fields that have null fieldType values
     public String getTmpNullFieldTypeIdentifier() {
         return "NullFieldType_s";
+    }
+    
+    @Override
+    public String toString() {
+        return "[DatasetFieldType name:" + getName() + " id:" + getId() + "]";
     }
 }
