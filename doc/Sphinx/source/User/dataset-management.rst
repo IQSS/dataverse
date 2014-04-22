@@ -4,7 +4,6 @@ Dataset & File Management
 A Dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
 
 |image1|
-
 Add Dataset
 ====================
 
