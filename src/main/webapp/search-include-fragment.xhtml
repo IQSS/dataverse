@@ -537,6 +537,14 @@
                                 <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.citationHighlightSnippet}" escape="false" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet != null}"/>
 
+                                <h:outputText value="#{result.descriptionNoSnippet}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                                <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
+                                    <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
+                                        <h:outputText value="#{snippet}" escape="false"/>
+                                        <h:outputText value="... " rendered="#{varStatus.last != true}"/>
+                                    </ui:repeat>
+                                </ui:fragment>
+
                                 <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" style="display:block;">
                                     <h:outputText value="Host Dataverse: #{result.parent.get('name')} Dataverse"/>
                                 </h:outputLink>
