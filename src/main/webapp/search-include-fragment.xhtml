@@ -6,22 +6,6 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui">
 
-    <ui:fragment>
-        <h:form id="shareForm" rendered="#{SearchIncludeFragment.allowedToClickAddData}" style="margin-left:auto;">
-            <div class="btn-group">
-                <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
-                    <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Add Data <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                    <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
-                    <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
-                    <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
-                    <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
-                </ul>
-            </div>
-        </h:form>
-    </ui:fragment>
-
     <!-- Search Form -->
     <p:panel styleClass="panelLayoutBlock panelSerchForm">
 
