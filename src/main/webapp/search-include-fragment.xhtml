@@ -437,7 +437,7 @@
                                         </li>
                                         <li>
                                             <h:outputLink>
-                                                <h:outputText value="Release Date (Newest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateDesc? 'bold' : 'normal'}"/>
+                                                <h:outputText value="Newest" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateDesc? 'bold' : 'normal'}"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -452,7 +452,7 @@
                                         </li>
                                         <li>
                                             <h:outputLink>
-                                                <h:outputText value="Release Date (Oldest First)" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateAsc? 'bold' : 'normal'}"/>
+                                                <h:outputText value="Oldest" style="font-weight: #{SearchIncludeFragment.sortedByReleaseDateAsc? 'bold' : 'normal'}"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
