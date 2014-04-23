@@ -332,6 +332,7 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        List<FacetCategory> typeFacetCategories = new ArrayList<>();
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -405,8 +406,10 @@ public class SearchServiceBean {
 
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
-                if (!facetCategory.getName().equals(SearchFields.TYPE)) {
+                if (facetCategory.getName().equals(SearchFields.TYPE)) {
                     // the "type" facet is special, these are not
+                    typeFacetCategories.add(facetCategory);
+                } else {
                     facetCategoryList.add(facetCategory);
                 }
             }
@@ -448,6 +451,7 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
+        solrQueryResponse.setTypeFacetCategories(typeFacetCategories);
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);

@@ -345,11 +345,9 @@ public class SearchIncludeFragment {
             previewCountbyType.put("datasets", 0L);
             previewCountbyType.put("files", 0L);
             if (solrQueryResponseAllTypes != null) {
-                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getFacetCategoryList()) {
-                    if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                        }
+                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                     }
                 }
             }
