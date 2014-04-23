@@ -194,21 +194,6 @@
                                     <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
                                 </p:confirmDialog>
                             </ui:fragment>
-                            <ui:fragment>
-                                <h:form id="shareForm" rendered="#{SearchIncludeFragment.allowedToClickAddData}" style="margin-left:auto;">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-default dropdown-toggle" style="font-size:.9em;" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Add Data <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                            <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
-                                            <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
-                                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
-                                            <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
-                                        </ul>
-                                    </div>
-                                </h:form>
-                            </ui:fragment>
                         </div>
 
                         <div style="padding-bottom:.75em;">
