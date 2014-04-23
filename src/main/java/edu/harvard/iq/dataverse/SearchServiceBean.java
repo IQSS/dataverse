@@ -51,7 +51,19 @@ public class SearchServiceBean {
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
+    PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
+
+    public enum PublishedToggle {
+
+        PUBLISHED, UNPUBLISHED
+    };
+
+    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
+        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+        } else {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+        }
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -102,7 +114,6 @@ public class SearchServiceBean {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
             } else {
-                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
@@ -321,6 +332,7 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        List<FacetCategory> typeFacetCategories = new ArrayList<>();
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -394,7 +406,12 @@ public class SearchServiceBean {
 
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
-                facetCategoryList.add(facetCategory);
+                if (facetCategory.getName().equals(SearchFields.TYPE)) {
+                    // the "type" facet is special, these are not
+                    typeFacetCategories.add(facetCategory);
+                } else {
+                    facetCategoryList.add(facetCategory);
+                }
             }
         }
 
@@ -434,6 +451,7 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
+        solrQueryResponse.setTypeFacetCategories(typeFacetCategories);
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);

@@ -15,6 +15,7 @@ public class SolrQueryResponse {
     private Long resultsStart;
     private Map<String, List<String>> spellingSuggestionsByToken;
     private List<FacetCategory> facetCategoryList;
+    private List<FacetCategory> typeFacetCategories;
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
     private List<String> filterQueriesActual = new ArrayList<String>();
@@ -57,6 +58,14 @@ public class SolrQueryResponse {
 
     public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
         this.facetCategoryList = facetCategoryList;
+    }
+
+    public List<FacetCategory> getTypeFacetCategories() {
+        return typeFacetCategories;
+    }
+
+    public void setTypeFacetCategories(List<FacetCategory> typeFacetCategories) {
+        this.typeFacetCategories = typeFacetCategories;
     }
 
     public Map<String, String> getDatasetfieldFriendlyNamesBySolrField() {

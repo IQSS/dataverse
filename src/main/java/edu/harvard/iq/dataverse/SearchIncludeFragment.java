@@ -89,6 +89,7 @@ public class SearchIncludeFragment {
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
     private boolean debug = false;
+    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
 
@@ -255,8 +256,14 @@ public class SearchIncludeFragment {
             logger.info("query from user:   " + query);
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
             logger.info("sort by: " + sortField);
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart);
+            SearchServiceBean.PublishedToggle publishedToggle = null;
+            if (showUnpublished) {
+                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
+            } else {
+                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+            }
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, publishedToggle);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, publishedToggle);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -338,11 +345,9 @@ public class SearchIncludeFragment {
             previewCountbyType.put("datasets", 0L);
             previewCountbyType.put("files", 0L);
             if (solrQueryResponseAllTypes != null) {
-                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getFacetCategoryList()) {
-                    if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                        }
+                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                     }
                 }
             }
@@ -365,6 +370,14 @@ public class SearchIncludeFragment {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+
+    public boolean isShowUnpublished() {
+        return showUnpublished;
+    }
+
+    public void setShowUnpublished(boolean showUnpublished) {
+        this.showUnpublished = showUnpublished;
     }
 
     public String getBrowseModeString() {
