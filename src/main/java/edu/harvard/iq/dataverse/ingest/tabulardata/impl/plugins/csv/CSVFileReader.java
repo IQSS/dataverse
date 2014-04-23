@@ -29,17 +29,8 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.inject.Inject;
 
-// Rosuda Wrappers and Methods for R-calls to Rserve
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.RList;
-import org.rosuda.REngine.Rserve.RFileInputStream;
-import org.rosuda.REngine.Rserve.RFileOutputStream;
-import org.rosuda.REngine.Rserve.*;
-
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
@@ -47,7 +38,9 @@ import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.rserve.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -71,6 +64,9 @@ public class CSVFileReader extends TabularDataFileReader {
     VariableServiceBean varService;
 
     private static final Logger dbglog = Logger.getLogger(CSVFileReader.class.getPackage().getName());
+    private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
+    private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
+    private MathContext doubleMathContext;
     private char delimiterChar = ',';
 
     public CSVFileReader(TabularDataFileReaderSpi originator) {
@@ -78,6 +74,7 @@ public class CSVFileReader extends TabularDataFileReader {
     }
 
     private void init() throws IOException {
+        doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
         Context ctx = null; 
         try {
             ctx = new InitialContext();
@@ -178,7 +175,8 @@ public class CSVFileReader extends TabularDataFileReader {
         dataTable.setVarQuantity(new Long(varQnty));
         dataTable.setDataVariables(variableList);
         
-        boolean[] isNumericVariable = new boolean[varQnty]; 
+        boolean[] isNumericVariable = new boolean[varQnty];
+        boolean[] isIntegerVariable = new boolean[varQnty];
         
         for (int i = 0; i < varQnty; i++) {
             // OK, let's assume that every variable is numeric; 
@@ -186,6 +184,7 @@ public class CSVFileReader extends TabularDataFileReader {
             // moment we find a value that's not a legit numeric one, we'll 
             // assume that it is in fact a String. 
             isNumericVariable[i] = true; 
+            isIntegerVariable[i] = true; 
         }
 
         // First, "learning" pass.
@@ -217,6 +216,7 @@ public class CSVFileReader extends TabularDataFileReader {
                     if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
 
                         boolean isNumeric = false; 
+                        boolean isInteger = false; 
                         
                         if (valueTokens[i].equalsIgnoreCase("NaN")
                                 || valueTokens[i].equalsIgnoreCase("NA")
@@ -229,13 +229,25 @@ public class CSVFileReader extends TabularDataFileReader {
                             try {
                                 Double testDoubleValue = new Double(valueTokens[i]);
                                 isNumeric = true; 
-                            } catch (Exception ex) {
+                            } catch (NumberFormatException ex) {
                                 // the token failed to parse as a double number;
                                 // so we'll have to assume it's just a string variable.
                             }
                         }
+                        
                         if (!isNumeric) {
                             isNumericVariable[i] = false; 
+                        } else if (isIntegerVariable[i]) {
+                            try {
+                                Integer testIntegerValue = new Integer(valueTokens[i]);
+                                isInteger = true; 
+                            } catch (NumberFormatException ex) {
+                                // the token failed to parse as an integer number;
+                                // we'll assume it's a non-integere numeric...
+                            }
+                            if (!isInteger) {
+                                isIntegerVariable[i] = false; 
+                            }
                         }
                     }
                 } 
@@ -255,7 +267,12 @@ public class CSVFileReader extends TabularDataFileReader {
         for (int i = 0; i < varQnty; i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
-                dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+
+                if (isIntegerVariable[i]) {
+                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                } else {
+                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                }
             }
         }
                     
@@ -303,11 +320,44 @@ public class CSVFileReader extends TabularDataFileReader {
                         // numeric zero: 
                         caseRow[i] = "0";
                     } else {
-                        try {
-                            Double testDoubleValue = new Double(valueTokens[i]);
-                            caseRow[i] = testDoubleValue.toString();
-                        } catch (Exception ex) {
-                            throw new IOException ("Failed to parse a value recognized as numeric in the first pass! (?)");
+                        if (isIntegerVariable[i]) {
+                            try {
+                                Integer testIntegerValue = new Integer(valueTokens[i]);
+                                caseRow[i] = testIntegerValue.toString();
+                            } catch (NumberFormatException ex) {
+                                throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
+                            }
+                        } else {
+                            try {
+                                Double testDoubleValue = new Double(valueTokens[i]);
+                                if (testDoubleValue.equals(0.0)) {
+                                    caseRow[i] = "0.0";   
+                                } else {
+                                
+                                    // TODO: need to round to the number of decimal 
+                                    // digits supported by type Double!
+                                    //BigDecimal testBigDecimal = new BigDecimal(testDoubleValue, MathContext.DECIMAL64);
+                                    //BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], MathContext.DECIMAL64);
+                                    //caseRow[i] = testBigDecimal.round(new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN)).toString();
+                                    //caseRow[i] = testDoubleValue.toString();
+
+                                    // We want to round our fractional values to 15 digits 
+                                    // (minimum number of digits of precision guaranteed by 
+                                    // type Double) and format the resulting representations
+                                    // in a IEEE 754-like "scientific notation" - for ex., 
+                                    // 753.24 will be encoded as 7.5324e2
+                                    BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
+                                    caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
+                                    
+                                    caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
+                                    caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
+                                    caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
+                                    caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
+                                }
+                                
+                            } catch (NumberFormatException ex) {
+                                throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
+                            } 
                         }
                     }    
                 } else {
