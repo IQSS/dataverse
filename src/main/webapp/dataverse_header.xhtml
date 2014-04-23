@@ -21,21 +21,20 @@
                 </h:outputLink>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
-
                 <ul class="nav navbar-nav navbar-right">
-                    <!--                    <li class="dropdown">
-                                            <a value="#" class="dropdown-toggle" data-toggle="dropdown">
-                                                Search <b class="caret"></b>
-                                            </a>
-                                            <div class="dropdown-menu">
-                                                <form style="width:420px; padding:10px;">
-                                                    <input style="display: inline-block;" type="text" size="40" value="" placeholder="Search the entire app..." autocomplete="off" class="ui-autocomplete-input ui-inputfield ui-widget ui-state-default ui-corner-all" aria-disabled="false" aria-readonly="false" aria-multiline="false"/>
-                                                    <button style="margin-left:1em; display: inline-block;" type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-                                                        <span class="ui-button-text ui-c">Find</span>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </li>-->
+                    <!-- <li class="dropdown">
+                        <a value="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Search <b class="caret"></b>
+                        </a>
+                        <div class="dropdown-menu">
+                            <form style="width:420px; padding:10px;">
+                                <input style="display: inline-block;" type="text" size="40" value="" placeholder="Search the entire app..." autocomplete="off" class="ui-autocomplete-input ui-inputfield ui-widget ui-state-default ui-corner-all" aria-disabled="false" aria-readonly="false" aria-multiline="false"/>
+                                <button style="margin-left:1em; display: inline-block;" type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+                                    <span class="ui-button-text ui-c">Find</span>
+                                </button>
+                            </form>
+                        </div>
+                    </li> -->
                     <li>
                         <a value="#" id="navbar-search-toggle">
                             <span class="glyphicon glyphicon-search"></span>
@@ -46,7 +45,8 @@
                             <label class="sr-only" for="navbarsearch">Search</label>
                             <input id="navbarsearch" type="text" class="form-control ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="Search all Dataverses..." style="font-size:1em;margin-right:1em;" />
                         </div>
-                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
+                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
+                                return false;">
                             <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                         </button>
                     </form>
@@ -97,35 +97,33 @@
                         </li>
                     </ui:fragment>
                     <ui:fragment rendered="#{!dataverseSession.user.guest}">
-                        <li class="dropdown">
+                        <li class="dropdown accountName">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}" rendered="#{empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}"/>
-                                <ui:fragment rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}">
-                                    <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName} (" />
-                                    <h:outputText value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" style="color: red" />
-                                    <h:outputText value=")" />
-                                </ui:fragment>
-                                <b class="caret"></b>                                
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}"/>
+                                <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
+                                <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml" >
-                                        <f:param name="editMode" value="INFO" />                                    
+                                        <f:param name="editMode" value="INFO" />
                                         <f:param name="selectTab" value="notifications" />
-                                    <h:outputText value="Notifications" />
+                                        <h:outputText value="Notifications" />
                                     </h:outputLink>
                                 </li>
                                 <li>
                                     <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
-                                        <h:outputText value="Account Page" />
+                                        <h:outputText value="Data Related to Me" />
                                     </h:outputLink>
                                 </li>
                                 <li class="divider"></li>
-                                <li>
+                                <li class="logout">
                                     <h:form styleClass="navbar-form navbar-left" pt:role="logout">
-                                        <h:commandButton value="Log Out" styleClass="btn btn-default" actionListener="#{dataverseSession.setUser(null)}"/>
+                                        <h:commandLink actionListener="#{dataverseSession.setUser(null)}">
+                                            <h:outputText value="Log Out" />
+                                        </h:commandLink>
                                     </h:form>
-                                 </li>
+                                </li>
                             </ul>
                         </li>
                     </ui:fragment>
@@ -138,26 +136,26 @@
     <ui:fragment rendered="#{showDataverseHeader}">
         <div class="container" style="background:#B5E5F5; margin:0 auto .5em auto; padding:2em 1em;">
             <div style="display:table-row;">
-            <ui:fragment rendered="#{!empty dataverse.name}">
-                <div style="height:100px;width:100px;background:#EEE;display:table-cell;text-align:center;">
-                    <span style="text-decoration:line-through;line-height:100px;">(Logo)</span>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{!empty dataverse.name}">
-                <div style="display:table-cell; padding-left:1em;">
-                    <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{empty dataverse.name}">
-                <div style="display:table-cell;">
-                    <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{!empty dataverse.name}">
-                <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
-                    <span style="color:#777;">This, Right-Here, Is A Static Tagline For This Dataverse, Y'All</span>
-                </div>
-            </ui:fragment>
+                <ui:fragment rendered="#{!empty dataverse.name}">
+                    <div style="height:100px;width:100px;background:#EEE;display:table-cell;text-align:center;">
+                        <span style="text-decoration:line-through;line-height:100px;">(Logo)</span>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{!empty dataverse.name}">
+                    <div style="display:table-cell; padding-left:1em;">
+                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{empty dataverse.name}">
+                    <div style="display:table-cell;">
+                        <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{!empty dataverse.name}">
+                    <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
+                        <span style="color:#777;">This, Right-Here, Is A Static Tagline For This Dataverse, Y'All</span>
+                    </div>
+                </ui:fragment>
             </div>
         </div>
     </ui:fragment>
@@ -167,11 +165,8 @@
         <div id="breadcrumbNavBlock" class="container">
             <!-- Dataverses -->
             <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
-
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
-                
                 <div style="float:left; position:relative;">
-                    
                     <div class="dropdown #{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '800' : ''}" data-hover="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-target="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '#' : ''}" data-close-others="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'true' : ''}">
                         <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                         <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
@@ -197,7 +192,6 @@
                         </p:tree>
                     </div>
                 </div>
-
             </ui:repeat>
 
             <!-- Dataset, if available -->
@@ -206,7 +200,6 @@
                 <h:outputText value="#{dataset.latestVersion.title}" style="font-weight:bold;"/>
             </ui:fragment>
         </div>
-
     </ui:fragment>
 
     <!-- Message Panel -->
@@ -215,5 +208,4 @@
             <iqbs:messages collapsible="true" />
         </div>
     </ui:fragment>
-
 </div>
