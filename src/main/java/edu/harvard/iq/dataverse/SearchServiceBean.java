@@ -405,7 +405,10 @@ public class SearchServiceBean {
 
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
-                facetCategoryList.add(facetCategory);
+                if (!facetCategory.getName().equals(SearchFields.TYPE)) {
+                    // the "type" facet is special, these are not
+                    facetCategoryList.add(facetCategory);
+                }
             }
         }
 
