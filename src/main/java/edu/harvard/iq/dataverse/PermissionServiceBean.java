@@ -93,7 +93,7 @@ public class PermissionServiceBean {
 			retVal.addAll( asmnt.getRole().permissions() );
 		}
 		
-		// special root case
+		// special root case - All registered users can add to the root dv
 		if ( (d.getOwner() == null) && (!u.isGuest()) )  {
             // TODO when groups arrive, this has to go.
 			retVal.add( Permission.UndoableEdit );

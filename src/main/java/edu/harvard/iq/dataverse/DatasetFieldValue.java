@@ -33,8 +33,13 @@ public class DatasetFieldValue implements Serializable {
     public DatasetFieldValue() {
     }
     
-    public DatasetFieldValue(DatasetField dsf) {
-        setDatasetField(dsf); 
+    public DatasetFieldValue(DatasetField aField) {
+        setDatasetField(aField); 
+    }    
+        
+    public DatasetFieldValue(DatasetField aField, String aValue) {
+        setDatasetField(aField); 
+        value = aValue;
     }    
         
     @Id

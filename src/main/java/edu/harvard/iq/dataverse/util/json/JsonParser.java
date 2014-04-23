@@ -2,12 +2,14 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 
@@ -33,6 +35,11 @@ public class JsonParser {
         
         
         if ( type.isCompound() ) {
+            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
+            for ( DatasetFieldCompoundValue dsfcv : vals ) {
+                dsfcv.setParentDatasetField(ret);
+            }
+            ret.setDatasetFieldCompoundValues(vals);
             
         } else if ( type.isControlledVocabulary() ) {
             List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
@@ -51,6 +58,39 @@ public class JsonParser {
         }
         
         return ret;
+    }
+    
+    public List<DatasetFieldCompoundValue> parseCompoundValue( DatasetFieldType compoundType, JsonObject json ) throws JsonParseException {
+        
+        if ( json.getBoolean("multiple") ) {
+            List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+            
+            for ( JsonArray arr : json.getJsonArray("value").getValuesAs(JsonArray.class) ) {
+                DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
+                List<DatasetField> fields = new LinkedList<>();
+                for ( JsonObject childFieldJson : arr.getValuesAs(JsonObject.class) ) {
+                    DatasetField f = parseField( childFieldJson );
+                    f.setParentDatasetFieldCompoundValue(cv);
+                    fields.add( f );
+                }
+                cv.setChildDatasetFields(fields);
+                vals.add(cv);
+            }
+            
+            return vals;
+            
+        } else {
+            
+            DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
+            List<DatasetField> fields = new LinkedList<>();
+            for ( JsonObject childFieldJson : json.getJsonArray("value").getValuesAs(JsonObject.class) ) {
+                DatasetField f = parseField( childFieldJson );
+                f.setParentDatasetFieldCompoundValue(cv);
+                fields.add( f );
+            }
+            cv.setChildDatasetFields(fields);
+            return Collections.singletonList(cv);
+        }
     }
     
     public List<DatasetFieldValue> parsePrimitiveValue( JsonObject json ) throws JsonParseException {
