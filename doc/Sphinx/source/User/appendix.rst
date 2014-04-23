@@ -1,17 +1,25 @@
 Appendix
-++++++++
++++++++++
 
 Additional documentation complementary to the User Guide.
 
-
 Metadata References
 ====================
+
+As of the beta version of Dataverse 4.0 here are the currently proposed metadata fields for 4.0 (per metadata block):
+
+- `Citation Metadata (DDI 2.5 and DataCite compliant) <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodDBaYTFPakhGaEpoa3hqZUJTOWZtclE&usp=sharing>`
+- `Social Science & Humanities Metadata (DDI 2.5 compliant) <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodEppcTFHT1NnajNLV0tacE10NEdmUnc&usp=sharing>`
+- `Astronomy and Astrophysics Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodEp4Qmp0QURkUWo1S0t4X3hia0FnZUE&usp=sharing>`
+  (based on `Virtual Observatory (VO) Discovery and Provenance Metadata <http://www.wf4ever-project.org/wiki/download/attachments/1179927/DPmetadata.pdf?version=1&modificationDate=1337186963000>`) 
+- `Biomedical Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodExsRTB2SEpVWWd1Qmx6M09HSkExd3c&usp=sharing>` 
+  (based on `ISA-Tab <http://isatab.sourceforge.net/format.html>` and `Stem Cell Commons <http://stemcellcommons.org/>`)
 
 DDI 2.5
 --------
 
 The Dataverse metadata is compliant with the `DDI schema
-version 2.5 <http://www.icpsr.umich.edu/DDI/>`__. The Metadata fields in the Citation and Social Science blocks
+version 2.5 <http://www.ddialliance.org/>`__. The Metadata fields in the Citation and Social Science blocks
 associated with each Dataset contain most of the fields
 in the study description section of the DDI. That way the Dataverse
 metadata can be mapped easily to a DDI, and be exported into XML
