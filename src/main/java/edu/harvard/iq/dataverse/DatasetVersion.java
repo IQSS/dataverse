@@ -411,7 +411,7 @@ public class DatasetVersion implements Serializable {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
-            str += " " + rootDataverseName + " ";
+            str += " " + rootDataverseName + " Dataverse";
         }
 
         if (this.getVersionNumber() != null) {
