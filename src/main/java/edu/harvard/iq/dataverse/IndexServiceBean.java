@@ -322,19 +322,37 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ID, solrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
+
+        Date sortByDate = new Date();
+        Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
+        if (majorVersionReleaseDate != null) {
+            if (true) {
+                String msg = "major release date found: " + majorVersionReleaseDate.toString();
+                logger.info(msg);
+            }
+            sortByDate = majorVersionReleaseDate;
+        } else {
+            Date createDate = dataset.getCreateDate();
+            if (createDate != null) {
+                if (true) {
+                    String msg = "can't find major release date, using create date: " + createDate;
+                    logger.info(msg);
+                }
+                sortByDate = createDate;
+            } else {
+                String msg = "can't find major release date or create date, using \"now\"";
+                logger.info(msg);
+                sortByDate = new Date();
+            }
+        }
+        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
+
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
+//            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-            /**
-             * todo why is dataset.getCreateDate() null? For now I guess we'll
-             * use the createDate of it's parent dataverse?!
-             * https://redmine.hmdc.harvard.edu/issues/3806
-             */
-//            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getCreateDate());
-            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getOwner().getCreateDate());
             DataverseUser creator = dataset.getCreator();
             if (creator != null) {
                 solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
@@ -536,23 +554,12 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
+            datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
-                /**
-                 * @todo: are datafiles supposed to have release dates? It's
-                 * null. For now just set something: https://redmine.hmdc.harvard.edu/issues/3806
-                 */
-//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getReleaseDate());
-                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-                /**
-                 * todo why is dataFile.getCreateDate() null? For now I guess
-                 * we'll use the createDate of its parent datase's dataverset?! https://redmine.hmdc.harvard.edu/issues/3806
-                 */
-//                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getCreateDate());
-                datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataFile.getOwner().getOwner().getCreateDate());
                 DataverseUser creator = dataFile.getOwner().getCreator();
                 if (creator != null) {
                     datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
@@ -782,7 +789,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataverse.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
         }
     }
 
@@ -791,7 +798,7 @@ public class IndexServiceBean {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
-            solrInputDocument.addField(SearchFields.RELEASE_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
         }
     }
 

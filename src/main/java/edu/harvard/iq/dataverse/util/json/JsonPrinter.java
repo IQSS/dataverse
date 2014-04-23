@@ -289,7 +289,6 @@ public class JsonPrinter {
 
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
-
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
         Deque<JsonArrayBuilder>  valueArrStack = new LinkedList<>();
         Deque<JsonArrayBuilder>  fieldAggregator = new LinkedList<>();
