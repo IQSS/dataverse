@@ -38,7 +38,7 @@ public class DataversePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
     public enum EditMode {
-        CREATE, INFO, PERMISSIONS, SETUP
+        CREATE, INFO, PERMISSIONS, SETUP, THEME
     }
 
     @EJB
