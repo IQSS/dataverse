@@ -30,10 +30,6 @@ public class Dataset extends DvObjectContainer {
 
     private static final long serialVersionUID = 1L;
 
-    // #VALIDATION: page defines maxlength in input:textarea component
-    @Size(max = 1000, message = "Description must be at most 1000 characters.")
-    private String description;
-
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
     private List<DataFile> files = new ArrayList();
 
@@ -75,14 +71,6 @@ public class Dataset extends DvObjectContainer {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getPersistentURL() {
