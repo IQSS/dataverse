@@ -75,6 +75,11 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
+    
+    private String logo;
+    private String tagline;
+    private String link;
+    private String color; 
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -194,6 +199,38 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+        
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
