@@ -18,6 +18,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
+                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{DataversePage.init}"/>                
                     <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
@@ -250,7 +251,49 @@
 
                         <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter" 
                                     itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
-                    </ui:fragment>                    
+                    </ui:fragment>  
+                    
+                    <!-- Dataverse Theme Panel -->                
+                    <ui:fragment  rendered="#{DataversePage.editMode == 'THEME'}">
+                        <p:panelGrid columns="3">
+                            <h:outputLabel value="Logo"/>
+                            <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
+                            <p:message for="logo"/>
+
+                            <h:outputLabel value="Logo Format"/>
+                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
+                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
+                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                            </p:selectOneRadio>
+                            <p:message for="logoFormat"/>
+                            
+                            <h:outputLabel value="Tagline"/>
+                            <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
+                            <p:message for="tagline"/>                              
+ 
+                            <h:outputLabel value="Link URL"/>
+                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
+                            <p:message for="linkUrl"/>  
+                            
+                            <h:outputLabel value="Link Text"/>
+                            <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
+                            <p:message for="linkText"/>  
+                            
+                            <h:outputLabel value="Link Color"/>
+                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
+                            <p:message for="linkColor"/>  
+                            
+                            <h:outputLabel value="Text Color"/>
+                            <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
+                            <p:message for="textColor"/>  
+                            
+                            <h:outputLabel value="Background Color"/>
+                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
+                            <p:message for="backgroundColor"/>                              
+                            
+                        </p:panelGrid>
+
+                    </ui:fragment>                       
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
