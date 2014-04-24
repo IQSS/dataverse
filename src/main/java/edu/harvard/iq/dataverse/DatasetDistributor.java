@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.Comparator;
 import javax.persistence.Version;
 
 /**
@@ -13,7 +14,14 @@ import javax.persistence.Version;
  * @author skraffmiller
  */
 public class DatasetDistributor {
-        
+    
+    public static Comparator<DatasetDistributor> DisplayOrder = new Comparator<DatasetDistributor>() {
+        @Override
+        public int compare(DatasetDistributor o1, DatasetDistributor o2) {
+            return o1.getDisplayOrder()-o2.getDisplayOrder();
+        }
+    };
+    
     /** Creates a new instance of DatasetDistributor */
     public DatasetDistributor() {
     }

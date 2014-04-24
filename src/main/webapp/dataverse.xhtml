@@ -200,16 +200,18 @@
                             <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{empty DataversePage.editMode}"/>
                         </div>
 
-                        <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                        <p:panel id="descText" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                             <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                                 <ui:fragment>
                                     <p:panelGrid columns="3" styleClass="panelgridFormTable">
                                         <p:outputLabel value="Description" for="description"/>
                                         <ui:fragment>
-                                            <p:inputTextarea id="description" value="#{DataversePage.dataverse.description}"
-                                                             rows="5" cols="50" counter="counter" maxlength="1000"
-                                                             counterTemplate="{0} characters remaining" autoResize="false"/>
-                                            <h:outputText id="counter" style="display:block;"/>
+                                            <p:inputTextarea id="description" value="#{DataversePage.dataverseDescriptionPage}"
+                                                             rows="5" cols="50"  
+                                                             autoResize="false">
+                                                <p:ajax event="keyup" update="ajaxcounter" listener="#{DataversePage.updateCountDisplay}"/> 
+                                            </p:inputTextarea>                                                       
+                                            <h:outputText id="ajaxcounter" value="#{DataversePage.countString}"/>
                                         </ui:fragment>
                                         <p:message for="description"/>
                                     </p:panelGrid>

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -30,17 +31,18 @@ import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.json.JsonObject;
 
 /**
  * Convert objects to Json.
  * @author michael
  */
 public class JsonPrinter {
-	
-	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss X");
+	public static final String TIME_FORMAT_STRING = "yyyy-MM-dd hh:mm:ss X";
+    
+    private static final DateFormat dateFormat = new SimpleDateFormat(TIME_FORMAT_STRING);
 	
 	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
@@ -127,18 +129,35 @@ public class JsonPrinter {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 				.add("id", dsv.getId())
 				.add("version", dsv.getVersion() )
+				.add("versionNumber", dsv.getVersionNumber())
+				.add("versionMinorNumber", dsv.getMinorVersionNumber())
 				.add("versionState", dsv.getVersionState().name() )
 				.add("versionNote", dsv.getVersionNote())
 				.add("title", dsv.getTitle())
 				.add("archiveNote", dsv.getArchiveNote())
 				.add("deaccessionLink", dsv.getDeaccessionLink())
 				.add("distributionDate", dsv.getDistributionDate())
-				.add("distributorNames", dsv.getDistributorNames())
 				.add("productionDate", dsv.getProductionDate())
 				.add("UNF", dsv.getUNF())
 				.add("archiveTime", format(dsv.getArchiveTime()) )
+				.add("lastUpdateTime", format(dsv.getLastUpdateTime()) )
+				.add("releaseTime", format(dsv.getReleaseTime()) )
+				.add("createTime", format(dsv.getCreateTime()) )
 				;
-				
+        
+        // Add distributors
+        List<DatasetDistributor> dists = dsv.getDatasetDistributors();
+        if ( ! dists.isEmpty() ) {
+            if ( dists.size() > 1 ) {
+				Collections.sort(dists, DatasetDistributor.DisplayOrder );
+			}
+            JsonArrayBuilder ab = Json.createArrayBuilder();
+            for ( DatasetDistributor dist : dists ) {
+               ab.add( json(dist) );
+            }
+            bld.add( "distributors", ab );
+        }
+        
 		// Add authors
 		List<DatasetAuthor> auth = dsv.getDatasetAuthors();
 		if ( ! auth.isEmpty() ) {
@@ -156,6 +175,18 @@ public class JsonPrinter {
 		
 		return bld;
 	}
+    
+    public static JsonObjectBuilder json( DatasetDistributor dist ) {
+        return jsonObjectBuilder()
+                .add( "displayOrder",dist.getDisplayOrder())
+                .add( "version",dist.getVersion())
+                .add( "abbreviation", json(dist.getAbbreviation()) )
+                .add( "affiliation", json(dist.getAffiliation()) )
+                .add( "logo", json(dist.getLogo()) )
+                .add( "name", json(dist.getName()) )
+                .add( "url", json(dist.getUrl()) )
+                ;
+    }
     
     public static JsonObjectBuilder jsonByBlocks( List<DatasetField> fields ) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
@@ -176,7 +207,7 @@ public class JsonPrinter {
      * @param fields
      * @return JSON Object builder with the block and fields information.
      */
-    public static JsonObjectBuilder json( MetadataBlock block, List<DatasetField> fields) {
+    public static JsonObjectBuilder json( MetadataBlock block, List<DatasetField> fields ) {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 			
         blockBld.add("displayName", block.getDisplayName());
@@ -271,8 +302,8 @@ public class JsonPrinter {
 		return jsonObjectBuilder()
 				.add( "idType", da.getIdType() )
 				.add( "idValue", da.getIdValue() )
-				.addStrValue( "name", da.getName() )
-				.addStrValue( "affiliation", da.getAffiliation() )
+				.add( "name", json(da.getName()) )
+				.add( "affiliation", json(da.getAffiliation()) )
 				.add( "displayOrder", da.getDisplayOrder() )
 				;
 	}

@@ -101,7 +101,15 @@ public class DatasetVersion implements Serializable {
         return datasetFields;
     }
 
+    /**
+     * Sets the dataset fields for this version. Also updates the fields to 
+     * have @{code this} as their dataset version.
+     * @param datasetFields 
+     */
     public void setDatasetFields(List<DatasetField> datasetFields) {
+        for ( DatasetField dsf : datasetFields ) {
+            dsf.setDatasetVersion(this);
+        }
         this.datasetFields = datasetFields;
     }
 
@@ -358,6 +366,10 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
     
+    public void setDatasetAuthors( List<DatasetAuthor> authors ) {
+        // FIXME add the authores to the relevant fields
+    }
+    
      public String getCitation(boolean isOnlineVersion) {
 
 
@@ -451,7 +463,12 @@ public class DatasetVersion implements Serializable {
         //todo get distributors from DatasetfieldValues
         return new ArrayList();
     }
+    
+     public void setDatasetDistributors( List<DatasetDistributor> distributors) {
+        //todo implement
+    }
 
+    
     public String getDistributorNames() {
         String str = "";
         for (DatasetDistributor sd : this.getDatasetDistributors()) {

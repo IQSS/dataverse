@@ -119,7 +119,7 @@
                                 <li class="divider"></li>
                                 <li class="logout">
                                     <h:form styleClass="navbar-form navbar-left" pt:role="logout">
-                                        <h:commandLink actionListener="#{dataverseSession.setUser(null)}">
+                                        <h:commandLink action="#{dataverseHeaderFragment.logout}">
                                             <h:outputText value="Log Out" />
                                         </h:commandLink>
                                     </h:form>
@@ -134,16 +134,17 @@
 
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
-        <div class="container" style="background:#B5E5F5; margin:0 auto .5em auto; padding:2em 1em;">
+        <div class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#B5E5F5'}; margin:0 auto .5em auto; padding:2em 1em;">
             <div style="display:table-row;">
-                <ui:fragment rendered="#{!empty dataverse.name}">
-                    <div style="height:100px;width:100px;background:#EEE;display:table-cell;text-align:center;">
-                        <span style="text-decoration:line-through;line-height:100px;">(Logo)</span>
+                <ui:fragment rendered="#{!empty dataverse.logo}">
+                    <div style="display:table-cell;text-align:center;">
+                        <image src="/logos/#{dataverse.logo}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
                     <div style="display:table-cell; padding-left:1em;">
-                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em;">#{dataverse.name} Dataverse</a> <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : '#888'};">#{dataverse.name} Dataverse</a> 
+                        <h:outputText style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{empty dataverse.name}">
@@ -151,9 +152,9 @@
                         <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
                     </div>
                 </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.name}">
+                <ui:fragment rendered="#{!empty dataverse.tagline}">
                     <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
-                        <span style="color:#777;">This, Right-Here, Is A Static Tagline For This Dataverse, Y'All</span>
+                        <span style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};">#{dataverse.tagline}</span>
                     </div>
                 </ui:fragment>
             </div>

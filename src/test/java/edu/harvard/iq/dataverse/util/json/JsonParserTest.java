@@ -112,7 +112,7 @@ public class JsonParserTest {
                 "    \"typeName\": \"coordinate\"\n" +
                 "}");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
@@ -140,7 +140,7 @@ public class JsonParserTest {
 "            \"typeName\": \"publicationIdType\"\n" +
 "          }");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
@@ -161,7 +161,7 @@ public class JsonParserTest {
 "            \"typeName\": \"subject\"\n" +
 "          }");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
@@ -190,7 +190,7 @@ public class JsonParserTest {
 "            \"typeName\": \"keyword\"\n" +
 "          }");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
@@ -207,7 +207,7 @@ public class JsonParserTest {
 "            \"typeName\": \"description\"\n" +
 "          }");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
@@ -225,7 +225,7 @@ public class JsonParserTest {
 "            \"typeName\": \"no-such-type\"\n" +
 "          }");
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc);
+        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
         
         DatasetField result = instance.parseField(json);
         
