@@ -54,6 +54,12 @@
             <version>3.0.1</version>
             <type>jar</type>
         </dependency>
+	<dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
@@ -70,7 +76,12 @@
             <groupId>org.primefaces.themes</groupId>
             <artifactId>all-themes</artifactId>
             <version>1.0.10</version>
-        </dependency>    
+        </dependency>
+	<dependency>
+	  <groupId>org.atmosphere</groupId>
+	  <artifactId>atmosphere-runtime</artifactId>
+	  <version>2.0.8</version>
+	</dependency>
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
@@ -143,6 +154,21 @@
 	 <artifactId>poi-examples</artifactId>
 	 <version>3.10-FINAL</version>
        </dependency>
+       <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-module</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-handler</artifactId>
+            <version>1.11.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -151,6 +177,7 @@
                 <directory>src/main/java</directory>
                 <includes>
 		    <include>*.properties</include>
+		    <include>**/mime.types</include>
                     <include>**/*.R</include>
                 </includes>
             </resource>

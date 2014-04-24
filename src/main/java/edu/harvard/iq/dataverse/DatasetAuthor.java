@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.Comparator;
+
 
 /**
  *
@@ -14,6 +16,14 @@ package edu.harvard.iq.dataverse;
 
 public class DatasetAuthor {
        
+    public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>(){
+        @Override
+        public int compare(DatasetAuthor o1, DatasetAuthor o2) {
+            return o1.getDisplayOrder()-o2.getDisplayOrder();
+        }
+    };
+    
+    
     private DatasetVersion datasetVersion;
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

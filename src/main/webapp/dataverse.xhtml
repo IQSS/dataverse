@@ -35,6 +35,7 @@
                     <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
+                    <f:viewParam name="unpublished" value="#{SearchIncludeFragment.showUnpublished}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
@@ -102,7 +103,8 @@
                         <div id="actionButtonBlock" style="float:right;">
                             <!-- Edit Button -->
                             <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
-                                                     (!empty DataversePage.dataverse.owner or (empty DataversePage.dataverse.owner and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')))}">
+                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')
+                                                     }">                                
                                 <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -146,7 +148,7 @@
                             </ui:fragment>
                             <!-- Release Button -->
                             <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
-                                                     (!empty DataversePage.dataverse.owner or (empty DataversePage.dataverse.owner and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')))}">
+                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')}">
                                 <div style="float:right; margin-left:1em;">
                                     <div class="btn-group">
                                         <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
@@ -216,22 +218,27 @@
                         </p:panel>
                     </div>
 
-                    <!-- Dataverse Setup Panel -->                
-                    <ui:fragment  rendered="#{DataversePage.editMode == 'SETUP'}">
-                        <!-- Dataverse Setup Form -->
-                        <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                            <h:outputText value="Use MetadataBlocks form Parent Dataverse? " />
-                            <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}">  
-                                <p:ajax update="@all" listener="#{DataversePage.editMetadataBlocks}"/>  
+
+                    <!-- Metadata blocks -->
+                    <ui:fragment  rendered="#{DataversePage.editMode == 'INFO'}">
+                        <h:outputText value="Choose the sets of Metadata Elements for datasets in this Dataverse" />
+                        <br/>
+                        <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">                            
+                            <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Use Metadata Elements from Host Dataverse" > 
+                                <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>  
                             </p:selectBooleanCheckbox> 
                         </ui:fragment> 
 
-                        <p:selectManyMenu id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter" rendered="#{DataversePage.dataverse.metadataBlockRoot or DataversePage.dataverse.owner == null }" 
-                                          showCheckbox="true"  style="width:250px;height:300px">  
+                        <p:selectManyCheckbox id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
+                                              widgetVar="metadataBlocks" layout="pageDirection" style="width:400px;">  
                             <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
-                                           itemLabel="#{mdb.displayName}" itemValue="#{mdb}" /> 
-                        </p:selectManyMenu>
+                                           itemLabel="#{mdb.displayName}" itemValue="#{mdb}" 
+                                           itemDisabled="#{DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent}"/>
+                        </p:selectManyCheckbox>
+                    </ui:fragment>
 
+                    <!-- Dataverse Setup Panel -->                
+                    <ui:fragment  rendered="#{DataversePage.editMode == 'SETUP'}">
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                             <h:outputText value="Use Facets from Parent Dataverse? " /> 
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">

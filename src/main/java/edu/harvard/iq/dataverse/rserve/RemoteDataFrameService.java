@@ -19,6 +19,10 @@
 */
 package edu.harvard.iq.dataverse.rserve;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -49,6 +53,7 @@ public class RemoteDataFrameService {
 
     private static String TMP_DATA_FILE_NAME = "dataverseTabData_";
     private static String RWRKSP_FILE_PREFIX = "dataverseDataFrame_";
+    private static String PREPROCESS_FILE_PREFIX = "dataversePreprocess_";
 
     private static String TMP_TABDATA_FILE_EXT = ".tab";
     private static String TMP_RDATA_FILE_EXT = ".RData";
@@ -58,7 +63,8 @@ public class RemoteDataFrameService {
     private static String RSERVE_PWD = null;    
     private static int    RSERVE_PORT = -1;
         
-    static String DATAVERSE_R_FUNCTIONS = "dataverse_r_functions.R";
+    private static String DATAVERSE_R_FUNCTIONS = "dataverse_r_functions.R";
+    private static String DATAVERSE_R_PREPROCESSING = "scripts/preprocess.R";
                     
     public static String LOCAL_TEMP_DIR = System.getProperty("java.io.tmpdir");
     public static String RSERVE_TMP_DIR=null;
@@ -502,6 +508,103 @@ public class RemoteDataFrameService {
     }
     
 
+    public File runDataPreprocessing(DataFile dataFile) {
+        if (!dataFile.isTabularData()) {
+            return null;
+        }
+
+        File preprocessedDataFile = null; 
+        
+        try {
+            
+            // Set up an Rserve connection
+            
+            RConnection c = new RConnection(RSERVE_HOST, RSERVE_PORT);
+
+            c.login(RSERVE_USER, RSERVE_PWD);            
+            // check working directories
+            // This needs to be done *before* we try to create any files 
+            // there!
+            setupWorkingDirectory(c);
+            
+            // send the tabular data file to the Rserve side:
+            
+            DataAccessRequest daReq = new DataAccessRequest();
+            DataAccessObject accessObject = DataAccess.createDataAccessObject(dataFile, daReq);
+            
+            if (accessObject == null) {
+                return null; 
+            }
+            
+            accessObject.open();
+            InputStream is = accessObject.getInputStream();
+            if (is == null) {
+                return null; 
+            }
+                    
+            // Create the output stream on the remote, R end: 
+            
+            RFileOutputStream os = c.createFile(tempFileNameIn);   
+            
+            int bufsize;
+            byte[] bffr = new byte[4 * 8192];
+
+            // before writing out any bytes from the input stream, flush
+            // any extra content, such as the variable header for the 
+            // subsettable files:
+            if (accessObject.getVarHeader() != null) {
+                os.write(accessObject.getVarHeader().getBytes());
+            }
+
+            while ((bufsize = is.read(bffr)) != -1) {
+                os.write(bffr, 0, bufsize);
+            }
+
+            is.close();
+            os.close(); 
+            
+            // Rserve code starts here
+            dbgLog.fine("wrkdir="+RSERVE_TMP_DIR);
+            
+            // Locate the R code and run it on the temp file we've just 
+            // created: 
+            
+            String loadlib = "library(rjson)";
+            c.voidEval(loadlib);
+            String rscript = readLocalResource(DATAVERSE_R_PREPROCESSING);
+            dbgLog.fine("preprocessing R code: "+rscript.substring(0,64));
+            c.voidEval(rscript);
+            
+            String runPreprocessing = "json<-preprocess(filename=\""+ tempFileNameIn +"\")";
+            dbgLog.fine("data preprocessing command: "+runPreprocessing);
+            c.voidEval(runPreprocessing);
+                        
+            // Save the output in a temp file: 
+            
+            String saveResult = "write(json, file='"+ tempFileNameOut +"')";
+            dbgLog.fine("data preprocessing save command: "+saveResult);
+            c.voidEval(saveResult);
+            
+            // Finally, transfer the saved file back on the application side:
+            
+            int fileSize = getFileSize(c,tempFileNameOut);
+            preprocessedDataFile = transferRemoteFile(c, tempFileNameOut, PREPROCESS_FILE_PREFIX, "json", fileSize);
+            
+        } catch (RserveException rse) {
+            // RserveException (Rserve is not running maybe?)
+            // TODO: *ABSOLUTELY* need more diagnostics here!
+            rse.printStackTrace();            
+            return null;
+
+        } catch (Exception ex){
+            ex.printStackTrace();
+            return null ;
+        }
+
+            
+        return preprocessedDataFile;
+    }
+    
     // utilitiy methods:
     
     /**
@@ -623,5 +726,30 @@ public class RemoteDataFrameService {
             mme.printStackTrace();
         }
         return fileSize;
+    }
+    
+    private static String readLocalResource(String path) {
+        
+        dbgLog.fine(String.format("Data Frame Service: readLocalResource: reading local path \"%s\"", path));
+
+        // Get stream
+        InputStream resourceStream = RemoteDataFrameService.class.getResourceAsStream(path);
+        String resourceAsString = "";
+
+        // Try opening a buffered reader stream
+        try {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(resourceStream, "UTF-8"));
+
+            String line = null;
+            while ((line = rd.readLine()) != null) {
+                resourceAsString = resourceAsString.concat(line + "\n");
+            }
+            resourceStream.close();
+        } catch (IOException ex) {
+            dbgLog.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));
+        }
+
+        // Return string
+        return resourceAsString;
     }
 }

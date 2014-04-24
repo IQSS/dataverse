@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -37,7 +36,15 @@ public class Search extends AbstractApiBean {
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("key") String apiKey, @QueryParam("q") String query, @QueryParam("fq") final List<String> filterQueries, @QueryParam("sort") String sortField, @QueryParam("order") String sortOrder, @QueryParam("start") final int paginationStart) {
+    public String search(@QueryParam("key") String apiKey,
+            @QueryParam("q") String query,
+            @QueryParam("fq") final List<String> filterQueries,
+            @QueryParam("sort") String sortField,
+            @QueryParam("order") String sortOrder,
+            @QueryParam("start") final int paginationStart,
+            @QueryParam("published") boolean publishedOnly,
+            @QueryParam("unpublished") boolean unpublishedOnly,
+            @QueryParam("showrelevance") boolean showRelevance) {
         if (query != null) {
             if (sortField == null) {
                 // predictable default
@@ -57,7 +64,14 @@ public class Search extends AbstractApiBean {
                         return error("Couldn't find username: " + usernameProvided);
                     }
                 }
-                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart);
+                SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+                if (publishedOnly) {
+                    publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+                }
+                if (unpublishedOnly) {
+                    publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
+                }
+                solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
             } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -66,17 +80,19 @@ public class Search extends AbstractApiBean {
                     cause = cause.getCause();
                     sb.append(cause.getClass().getCanonicalName() + " ");
                     sb.append(cause + " ");
+                    // if you search for a colon you see RemoteSolrException: org.apache.solr.search.SyntaxError: Cannot parse ':'
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
                 return Util.message2ApiError(message);
             }
 
-//            JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+            JsonArrayBuilder relevancePerResult = Json.createArrayBuilder();
             List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
             for (SolrSearchResult solrSearchResult : solrSearchResults) {
-//                filesArrayBuilder.add(solrSearchResult.toJsonObject());
-
+                itemsArrayBuilder.add(solrSearchResult.toJsonObject());
+                relevancePerResult.add(solrSearchResult.getRelevance());
             }
 
             JsonObjectBuilder spelling_alternatives = Json.createObjectBuilder();
@@ -108,20 +124,25 @@ public class Search extends AbstractApiBean {
             }
 
             List filterQueriesActual = solrQueryResponse.getFilterQueriesActual();
-            JsonObject value = Json.createObjectBuilder()
+            JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("fq_provided", filterQueries.toString())
-                    .add("fq_actual", filterQueriesActual.toString() )
+                    .add("fq_actual", filterQueriesActual.toString())
                     .add("total_count", solrQueryResponse.getNumResultsFound())
                     .add("start", solrQueryResponse.getResultsStart())
                     .add("count_in_response", solrSearchResults.size())
-                    .add("items", solrSearchResults.toString())
-//                    .add("spelling_alternatives", spelling_alternatives)
-//                    .add("itemsJson", filesArrayBuilder.build())
-//                    .add("facets", facets)
-                    .build();
-//            logger.info("value: " + value);
-            return Util.jsonObject2prettyString(value);
+                    .add("items", solrSearchResults.toString());
+            if (showRelevance) {
+                value.add("relevance", relevancePerResult.build());
+            }
+            if (false) {
+                /**
+                 * @todo: add booleans to enable these
+                 */
+                value.add("spelling_alternatives", spelling_alternatives);
+                value.add("facets", facets);
+            }
+            return Util.jsonObject2prettyString(value.build());
         } else {
             /**
              * @todo use Util.message2ApiError() instead

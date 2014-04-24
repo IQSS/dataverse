@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +51,19 @@ public class SearchServiceBean {
     @EJB
     DataverseUserServiceBean dataverseUserService;
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart) {
+    PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
+
+    public enum PublishedToggle {
+
+        PUBLISHED, UNPUBLISHED
+    };
+
+    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
+        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+        } else {
+            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+        }
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -65,7 +79,24 @@ public class SearchServiceBean {
 //        }
 //        solrQuery.setSort(sortClause);
         solrQuery.setHighlight(true).setHighlightSnippets(1);
-        solrQuery.setParam("hl.fl", SearchFields.DESCRIPTION);
+        solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
+        solrQuery.setHighlightSimplePost("</span>");
+        Map<String,String> solrFieldsToHightlightOnMap = new HashMap<>();
+        solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
+        solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
+        solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
+        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        for (DatasetFieldType datasetFieldType: datasetFields) {
+            String solrField = datasetFieldType.getSolrField().getNameSearchable();
+            String displayName = datasetFieldType.getDisplayName();
+            solrFieldsToHightlightOnMap.put(solrField, displayName);
+        }
+        for (Map.Entry<String, String> entry : solrFieldsToHightlightOnMap.entrySet()) {
+            String solrField = entry.getKey();
+            // String displayName = entry.getValue();
+            solrQuery.addHighlightField(solrField);
+        }
         solrQuery.setParam("qt", "/spell");
         solrQuery.setParam("facet", "true");
         /**
@@ -83,6 +114,7 @@ public class SearchServiceBean {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
             } else {
+//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
@@ -113,10 +145,10 @@ public class SearchServiceBean {
         }
         solrQuery.addFilterQuery(permissionFilterQuery);
 
-        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
+//        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
 //        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.AFFILIATION);
-        solrQuery.addFacetField(SearchFields.RELEASE_DATE);
+        solrQuery.addFacetField(SearchFields.PUBLICATION_DATE);
 //        solrQuery.addFacetField(SearchFields.CATEGORY);
 //        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
 //        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
@@ -188,10 +220,8 @@ public class SearchServiceBean {
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
-        List<String> highlightSnippets = null;
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         /**
          * @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
@@ -226,11 +256,36 @@ public class SearchServiceBean {
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
+            Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
+            List<String> matchedFields = new ArrayList<>();
+            List<Highlight> highlights = new ArrayList<>();
+            Map<SolrField, Highlight> highlightsMap = new HashMap<>();
+            Map<SolrField, List<String>> highlightsMap2 = new HashMap<>();
+            Map<String, Highlight> highlightsMap3 = new HashMap<>();
             if (queryResponse.getHighlighting().get(id) != null) {
-                highlightSnippets = queryResponse.getHighlighting().get(id).get(SearchFields.DESCRIPTION);
-//                logger.info("highlight snippets: " + highlightSnippets);
+                for (Map.Entry<String, String> entry : solrFieldsToHightlightOnMap.entrySet()) {
+                    String field = entry.getKey();
+                    String displayName = entry.getValue();
+
+                    List<String> highlightSnippets = queryResponse.getHighlighting().get(id).get(field);
+                    if (highlightSnippets != null) {
+                        matchedFields.add(field);
+                        /**
+                         * @todo only SolrField.SolrType.STRING? that's not
+                         * right... knit the SolrField object more into the
+                         * highlighting stuff
+                         */
+                        SolrField solrField = new SolrField(field, SolrField.SolrType.STRING, true, true);
+                        Highlight highlight = new Highlight(solrField, highlightSnippets, displayName);
+                        highlights.add(highlight);
+                        highlightsMap.put(solrField, highlight);
+                        highlightsMap2.put(solrField, highlightSnippets);
+                        highlightsMap3.put(field, highlight);
+                    }
+                }
+
             }
-            SolrSearchResult solrSearchResult = new SolrSearchResult(query, highlightSnippets, name);
+            SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
             /**
              * @todo put all this in the constructor?
              */
@@ -240,6 +295,11 @@ public class SearchServiceBean {
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
+            solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
+            solrSearchResult.setMatchedFields(matchedFields);
+            solrSearchResult.setHighlightsAsList(highlights);
+            solrSearchResult.setHighlightsMap(highlightsMap);
+            solrSearchResult.setHighlightsAsMap(highlightsMap3);
             Map<String, String> parent = new HashMap<>();
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
@@ -273,6 +333,7 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        List<FacetCategory> typeFacetCategories = new ArrayList<>();
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -346,7 +407,12 @@ public class SearchServiceBean {
 
             facetCategory.setFacetLabel(facetLabelList);
             if (!facetLabelList.isEmpty()) {
-                facetCategoryList.add(facetCategory);
+                if (facetCategory.getName().equals(SearchFields.TYPE)) {
+                    // the "type" facet is special, these are not
+                    typeFacetCategories.add(facetCategory);
+                } else {
+                    facetCategoryList.add(facetCategory);
+                }
             }
         }
 
@@ -386,6 +452,7 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
+        solrQueryResponse.setTypeFacetCategories(typeFacetCategories);
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         solrQueryResponse.setDatasetfieldFriendlyNamesBySolrField(datasetfieldFriendlyNamesBySolrField);

@@ -62,10 +62,22 @@ List all the role assignments at the given dataverse.
 
 Assigns a new role (passed in the POST part, for `curl` that's `-d @{{filename}}` or `-d "{\"userName\": \"uma\",\"roleId\": 11}"`). Roles and users can be identifier by id (`"userId"`) or by name (`"userName"` and `"roleAlias"`).
 
-
 	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks?key={{username}}
 
 Get the metadata blocks defined on the passed dataverse.
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks?key={{username}}
+
+Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name).
+
+	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+
+Get whether the dataverse is a metadata block root, or does it uses its parent blocks.
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+
+Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
+values are `true` and `false` (both are valid JSON expressions).
 
 ### Datasets
 
@@ -88,7 +100,15 @@ List versions of the dataset.
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}?key={{apikey}}
 
 Show a version of the dataset. The `versionId` can be a number, or the values `:edit` for the edit version, and `:latest` for the latest one.
+The Dataset also include any metadata blocks the data might have.
 
+	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
+
+Lists all the metadata blocks and their content, for the given dataset and version.
+
+	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
+
+Lists the metadata block block named `blockname`, for the given dataset and version.
 
 ### permissions
 
@@ -133,3 +153,16 @@ Shows the role with `id`.
 	DELETE http://{{SERVER}}/api/roles/{{id}}
 
 Deletes the role with `id`.
+
+
+### Metadata Blocks
+
+	GET http://{{SERVER}}/api/metadatablocks
+
+Lists brief info about all metadata blocks registered in the system.
+
+	GET http://{{SERVER}}/api/metadatablocks/{{idtf}}
+
+Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
+
+	

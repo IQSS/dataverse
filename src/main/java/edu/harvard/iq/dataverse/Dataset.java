@@ -7,13 +7,14 @@ package edu.harvard.iq.dataverse;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
@@ -41,6 +42,17 @@ public class Dataset extends DvObjectContainer {
     @NotBlank(message = "Please enter an identifier for your dataset.")
     private String identifier;
 
+    public Dataset() {
+        //this.versions = new ArrayList();
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setDataset(this);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        datasetVersion.setFileMetadatas(new ArrayList());
+        datasetVersion.setVersionNumber(new Long(1));
+        datasetVersion.setMinorVersionNumber(new Long(0));
+        versions.add(datasetVersion);
+    }
+    
     public String getProtocol() {
         return protocol;
     }
@@ -99,22 +111,12 @@ public class Dataset extends DvObjectContainer {
         this.files = files;
     }
 
-    @OneToMany(mappedBy = "dataset")
-    @OrderBy("versionNumber DESC")
+    @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("id DESC")
     private List<DatasetVersion> versions = new ArrayList();
 
     public DatasetVersion getLatestVersion() {
-        if (versions.isEmpty()) {
-            DatasetVersion datasetVersion = new DatasetVersion();
-            //datasetVersion.setMetadata(new Metadata());
-            datasetVersion.setDataset(this);
-            datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            datasetVersion.setVersionNumber(new Long(1));
-            this.versions.add(datasetVersion);
-            return datasetVersion;
-        } else {
             return versions.get(0);
-        }
     }
 
     public List<DatasetVersion> getVersions() {
@@ -135,7 +137,6 @@ public class Dataset extends DvObjectContainer {
             dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
         }
         dsv.setFileMetadatas(new ArrayList());
-        //dsv.getMetadata().setDatasetVersion(dsv);
 
         for (FileMetadata fm : latestVersion.getFileMetadatas()) {
             FileMetadata newFm = new FileMetadata();
@@ -146,8 +147,6 @@ public class Dataset extends DvObjectContainer {
             newFm.setDatasetVersion(dsv);
             dsv.getFileMetadatas().add(newFm);
         }
-
-        dsv.setVersionNumber(latestVersion.getVersionNumber() + 1);
         // I'm adding the version to the list so it will be persisted when
         // the study object is persisted.
         getVersions().add(0, dsv);
@@ -165,6 +164,24 @@ public class Dataset extends DvObjectContainer {
             return latestVersion;
         }
     }
+    
+    public Date getMostRecentMajorVersionReleaseDate(){
+        for (DatasetVersion version : this.getVersions()){
+            if (version.isReleased()  && version.getMinorVersionNumber().equals(new Long(0))){               
+                return version.getReleaseTime();
+            } 
+        }
+        return null;
+    }
+    
+    public DatasetVersion getReleasedVersion() {
+        for (DatasetVersion version : this.getVersions()){
+            if (!version.isWorkingCopy()){
+                return version;               
+            }
+        }
+        return null;
+    }
 
     public Path getFileSystemDirectory() {
         Path studyDir = null;
@@ -180,6 +197,15 @@ public class Dataset extends DvObjectContainer {
 
         return studyDir;
     }
+    
+    
+   public String getCitation() {
+        return getCitation(false, getLatestVersion());
+    }
+
+    public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
+        return version.getCitation(isOnlineVersion);
+    }       
 
     @Override
     public boolean equals(Object object) {

@@ -1,0 +1,20 @@
+#!/bin/sh
+GLASSFISH_HOME=$HOME/tools/devguide-gf4/glassfish4
+ASADMIN=$GLASSFISH_HOME/glassfish/bin/asadmin
+$ASADMIN stop-domain
+psql -U postgres -c 'DROP DATABASE "dvnDb"'
+scripts/search/clear
+psql -U postgres -c 'CREATE DATABASE "dvnDb" WITH OWNER = "dvnApp"'
+mvn package
+$ASADMIN start-domain
+# should probably use this instead: https://maven-glassfish-plugin.java.net/deploy-mojo.html
+cp target/dataverse-4.0.war $GLASSFISH_HOME/glassfish/domains/domain1/autodeploy
+sleep 30
+psql -U postgres dvnDb -f scripts/database/reference_data.sql
+cd scripts/api
+./datasetfields.sh
+./setup-users.sh
+./setup-dvs.sh
+cd ../..
+scripts/search/tests/permissions
+scripts/search/tests/delete-dataverse

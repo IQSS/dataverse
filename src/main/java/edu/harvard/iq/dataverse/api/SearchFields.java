@@ -2,6 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 public class SearchFields {
 
+    /**
+     * @todo: consider making various dynamic fields (_s) static in schema.xml
+     * instead. Should they be stored in the database?
+     */
     // standard fields from example/solr/collection1/conf/schema.xml
     // (but we are getting away from these...)
     public static final String ID = "id";
@@ -26,6 +30,7 @@ public class SearchFields {
      * lives in the getSolrField() method of DatasetField.java
      */
     public static final String AFFILIATION = "affiliation_ss";
+    public static final String CITATION = "citation_t";
     /**
      * @todo: use a field called "author" instead. Solr default has "author" as
      * "text_general" so the field is tokenized ("Foo Bar" becomes "foo" "bar"
@@ -37,13 +42,14 @@ public class SearchFields {
 //    public static final String KEYWORD = DatasetFieldConstant.keywordValue + "_s";
 //    public static final String DISTRIBUTOR = DatasetFieldConstant.distributorName + "_s";
     /**
-     * @todo: if you search for "pdf" should you get all pdfs? do we need a
-     * copyField to the catchall?
+     * @todo: if you search for "pdf" we probably want to return all PDFs...
+     * Could fix this with a copyField in schema.xml (and rename to just "filetype").
      */
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
 
-    public static final String HOST_DATAVERSE = "hostdataverse_s";
+    // removing Host Dataverse facets per https://redmine.hmdc.harvard.edu/issues/3777#note-5
+//    public static final String HOST_DATAVERSE = "hostdataverse_s";
     public static final String SUBTREE = "subtree_ss";
     // i.e. http://localhost:8080/search.xhtml?q=*&fq0=citationdate_dt:[2008-01-01T00%3A00%3A00Z+TO+2011-01-01T00%3A00%3A00Z%2B1YEAR}
 //    public static final String PRODUCTION_DATE_ORIGINAL = DatasetFieldConstant.productionDate + "_dt";
@@ -58,9 +64,11 @@ public class SearchFields {
     // a dvtype can be a dataverse, a dataset, or a file
     public static final String TYPE = "dvtype";
     public static final String NAME_SORT = "name_sort";
-    public static final String RELEASE_DATE = "releasedate";
+    public static final String PUBLICATION_DATE = "publication_date_s";
+    public static final String RELEASE_OR_CREATE_DATE = "release_or_create_date_dt";
     public static final String GROUPS = "groups_s";
     public static final String PERMS = "perms_ss";
+    public static final String PUBLICATION_STATUS = "published_s";
     // Used for performance. Why hit the db if solr has the data?
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";

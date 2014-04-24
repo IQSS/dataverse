@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,7 +21,10 @@ import javax.persistence.Transient;
  */
 @Entity
 public class UserNotification implements Serializable {
-
+    public enum Type {
+        CREATEDV, CREATEDS
+    };
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +32,15 @@ public class UserNotification implements Serializable {
 
     @ManyToOne
     private DataverseUser user;
-    private String notification;
     private Timestamp sendDate;
     private boolean readNotification;
+    @Enumerated
+    private Type type;
+    private Long objectId;
 
     @Transient
     private boolean displayAsRead;
+    private boolean emailed;
 
     public Long getId() {
         return id;
@@ -49,14 +56,6 @@ public class UserNotification implements Serializable {
 
     public void setUser(DataverseUser user) {
         this.user = user;
-    }
-
-    public String getNotification() {
-        return notification;
-    }
-
-    public void setNotification(String notification) {
-        this.notification = notification;
     }
 
     public Timestamp getSendDate() {
@@ -75,6 +74,22 @@ public class UserNotification implements Serializable {
         this.readNotification = readNotification;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+    
+    public Long getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(Long objectId) {
+        this.objectId = objectId;
+    }
+        
     public boolean isDisplayAsRead() {
         return displayAsRead;
     }
@@ -82,4 +97,12 @@ public class UserNotification implements Serializable {
     public void setDisplayAsRead(boolean displayAsRead) {
         this.displayAsRead = displayAsRead;
     }
+
+    public boolean isEmailed() {
+        return emailed;
+    }
+
+    public void setEmailed(boolean emailed) {
+        this.emailed = emailed;
+    }        
 }

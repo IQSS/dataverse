@@ -19,7 +19,25 @@ import javax.persistence.*;
 })
 @Entity
 public abstract class DvObject implements java.io.Serializable {
+    
+    public static final Visitor<String> NamePrinter = new Visitor<String>(){
 
+        @Override
+        public String visit(Dataverse dv) {
+            return dv.getName();
+        }
+
+        @Override
+        public String visit(Dataset ds) {
+            return ds.getLatestVersion().getTitle();
+        }
+
+        @Override
+        public String visit(DataFile df) {
+            return df.getName();
+        }
+    };
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +45,7 @@ public abstract class DvObject implements java.io.Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     private DvObjectContainer owner;
 
-    private Timestamp releaseDate;
+    private Timestamp publicationDate;
 
     @ManyToOne
     private DataverseUser releaseUser;
@@ -66,12 +84,12 @@ public abstract class DvObject implements java.io.Serializable {
         this.id = id;
     }
 
-    public Timestamp getReleaseDate() {
-        return releaseDate;
+    public Timestamp getPublicationDate() {
+        return publicationDate;
     }
 
-    public void setReleaseDate(Timestamp releaseDate) {
-        this.releaseDate = releaseDate;
+    public void setPublicationDate(Timestamp publicationDate) {
+        this.publicationDate = publicationDate;
     }
 
     public DataverseUser getReleaseUser() {
@@ -83,7 +101,7 @@ public abstract class DvObject implements java.io.Serializable {
     }
 
     public boolean isReleased() {
-        return releaseDate != null;
+        return publicationDate != null;
     }
 
     public Timestamp getCreateDate() {

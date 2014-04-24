@@ -1,0 +1,18 @@
+#!/bin/bash
+# We assume you've done everything in scripts/search/tests/dataset-versioning02
+# where you released version 1.0. Now you'll edit the dataset so that it enters
+# draft mode by changing
+# Title: Rings of Trees and Other Observations
+# to
+# Title: Rings of Conifers and Other Observations
+#
+# anon should be able to see the published 1.0 version but not the new draft (no change from dataset-versioning02anon)
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning02anon
+# pete should be able to see the published version 1.0 with published=true (same as anon)
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&key=pete&published=true') scripts/search/tests/expected/dataset-versioning03pete-published-only
+# pete should be able to see the newer draft version with unpublished=true
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&key=pete&unpublished=true') scripts/search/tests/expected/dataset-versioning03pete-unpublished-only
+# pete should be able to see both published and unpublished by not specifying either
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&key=pete') scripts/search/tests/expected/dataset-versioning03pete-both
+# here's the solr doc for the dataset
+#diff -u scripts/search/tests/expected/dataset-versioning02dataset_17solr <(curl -s 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=id:dataset_17') | egrep -v '_version_|release_or_create_date_dt'

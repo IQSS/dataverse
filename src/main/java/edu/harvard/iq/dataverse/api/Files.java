@@ -3,6 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -11,9 +15,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
 @Path("files")
-public class Files {
+public class Files extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
 
@@ -21,7 +26,7 @@ public class Files {
     DatasetServiceBean datasetService;
 
     @POST
-    public String add(DataFile dataFile) {
+    public String add(DataFile dataFile, @QueryParam("key") String apiKey) {
         Dataset dataset;
         try {
             dataset = datasetService.find(dataFile.getOwner().getId());
@@ -32,7 +37,11 @@ public class Files {
         newListOfFiles.add(dataFile);
         dataset.setFiles(newListOfFiles);
         try {
-            datasetService.save(dataset);
+            DataverseUser u = userSvc.findByUserName(apiKey);
+            if (u == null) {
+                return error("Invalid apikey '" + apiKey + "'");
+            }
+            engineSvc.submit(new UpdateDatasetCommand(dataset, u));
             return "file " + dataFile.getName() + " created/updated with dataset " + dataset.getId() + " (and probably indexed, check server.log)\n";
         } catch (EJBException ex) {
             Throwable cause = ex;
@@ -49,6 +58,8 @@ public class Files {
                 }
             }
             return Util.message2ApiError("POST failed: " + sb.toString());
+        } catch (CommandException ex) {
+            return error("Can't update dataset: " + ex.getMessage());
         }
 //        return "file " + dataFile.getName() + " indexed dataset " + dataFile.getName() + " files updated (and probably indexed, check server.log)\n";
     }

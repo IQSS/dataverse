@@ -1,0 +1,32 @@
+package edu.harvard.iq.dataverse.search;
+
+import edu.harvard.iq.dataverse.SolrField;
+import java.util.List;
+import javax.inject.Named;
+
+@Named
+public class Highlight {
+
+    SolrField solrField;
+    List<String> snippets;
+    String displayName;
+
+    public Highlight(SolrField solrField, List<String> snippets, String displayName) {
+        this.solrField = solrField;
+        this.snippets = snippets;
+        this.displayName = displayName;
+    }
+
+    public SolrField getSolrField() {
+        return solrField;
+    }
+
+    public List<String> getSnippets() {
+        return snippets;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+}

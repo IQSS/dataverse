@@ -8,9 +8,10 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -18,6 +19,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
@@ -26,12 +30,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonString;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 /**
  * A REST API for dataverses. To be unified with {@link Dataverses}.
@@ -76,7 +83,7 @@ public class Dataverses extends AbstractApiBean {
 		} catch (CommandException ex) {
 			logger.log(Level.SEVERE, "Error creating dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
-            } catch (EJBException ex) {
+        } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
                 sb.append("Error creating dataverse.");
@@ -85,7 +92,10 @@ public class Dataverses extends AbstractApiBean {
                     if (cause instanceof ConstraintViolationException) {
                         ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                         for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                            sb.append(" Invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage());
+                            sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                    .append(violation.getPropertyPath()).append(" at ")
+                                    .append(violation.getLeafBean()).append(" - ")
+                                    .append(violation.getMessage());
                         }
                     }
                 }
@@ -117,7 +127,7 @@ public class Dataverses extends AbstractApiBean {
 		} catch ( CommandException ex ) {
 			logger.log(Level.SEVERE, "Error deleting dataverse", ex);
 			return error("Error creating dataverse: " + ex.getMessage() );
-		}
+		 }
 	}
 	
 	@GET
@@ -151,11 +161,72 @@ public class Dataverses extends AbstractApiBean {
 		
 		JsonArrayBuilder jab = Json.createArrayBuilder();
 		for ( MetadataBlock blk : dataverse.getMetadataBlocks()){
-			jab.add( json(blk) );
+			jab.add( brief.json(blk) );
 		}
+        
 		return ok(jab);
 	}
 	
+    @POST
+    @Path("{identifier}/metadatablocks")
+    @Produces("application/json")
+    public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String blockIds ) {
+        DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return badApiKey(apiKey);
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) {
+			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+        
+        List<MetadataBlock> blocks = new LinkedList<>();
+        
+        for ( JsonString blockId : Util.asJsonArray(blockIds).getValuesAs(JsonString.class) ) {
+            MetadataBlock blk = findMetadataBlock(blockId.getString());
+            if ( blk == null ) {
+                return errorResponse(Response.Status.BAD_REQUEST, "Can't find metadata block '"+ blockId + "'");
+            }
+            blocks.add( blk );
+        }
+        
+        return execute( new UpdateDataverseMetadataBlocksCommand.SetBlocks(u, dataverse, blocks) );
+    }
+    
+    @GET
+    @Path("{identifier}/metadatablocks/:isRoot")
+    @Produces("application/json")
+    public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
+        DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return badApiKey(apiKey);
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) 
+			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		
+        return okResponseWithValue( dataverse.isMetadataBlockRoot() );
+    }
+    
+    @POST
+    @Path("{identifier}/metadatablocks/:isRoot")
+    @Produces("application/json")
+    public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String body  ) {
+        
+        if ( ! Util.isBoolean(body) ) {
+            return errorResponse(Response.Status.BAD_REQUEST, "Illegal value '" + body + "'. Try 'true' or 'false'");
+        }
+        boolean root = Util.isTrue(body);
+        
+        DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return badApiKey(apiKey);
+
+		Dataverse dataverse = findDataverse(dvIdtf);
+		if ( dataverse == null ) 
+			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		
+        return execute( new UpdateDataverseMetadataBlocksCommand.SetRoot(u, dataverse, root) );
+    }
+    
+    
 	@GET
 	@Path("{identifier}/contents")
 	public String listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {

@@ -14,10 +14,12 @@ import java.util.Date;
 import java.util.EnumSet;
 
 /**
- *
+ * TODO make override the date and user more active, so prevent code errors.
+ * e.g. another command, with explicit parameters.
+ * 
  * @author michael
  */
-@RequiredPermissions( Permission.UndoableEdit )
+@RequiredPermissions( Permission.AddDataverse )
 public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse created;

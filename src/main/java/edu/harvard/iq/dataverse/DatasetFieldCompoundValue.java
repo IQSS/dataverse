@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -16,7 +17,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 
 /**
  *
@@ -25,6 +25,13 @@ import javax.persistence.OrderBy;
 @Entity
 public class DatasetFieldCompoundValue implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
+        @Override
+        public int compare(DatasetFieldCompoundValue o1, DatasetFieldCompoundValue o2) {
+            return Integer.compare( o1.getDisplayOrder(),
+                                    o2.getDisplayOrder() );
+    }};
     
     public static DatasetFieldCompoundValue createNewEmptyDatasetFieldCompoundValue(DatasetField dsf) {
         DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
@@ -46,7 +53,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     @ManyToOne(cascade = CascadeType.MERGE)
     private DatasetField parentDatasetField;    
 
-    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetField> childDatasetFields = new ArrayList();    
     
     public Long getId() {
@@ -115,7 +122,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         compoundValue.setDisplayOrder(displayOrder);
 
         for (DatasetField subField : childDatasetFields) {
-            compoundValue.getChildDatasetFields().add(subField.copy(this));
+            compoundValue.getChildDatasetFields().add(subField.copy(compoundValue));
         }
                      
         return compoundValue;

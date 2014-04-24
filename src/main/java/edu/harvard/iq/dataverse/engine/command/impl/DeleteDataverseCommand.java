@@ -38,13 +38,9 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			throw new IllegalCommandException("Cannot delete the root dataverse", this);
 		}
 		
-		// make sure the dataverse is empty
+		// make sure the dataverse is emptyw
 		if ( ctxt.dvObjects().hasData(doomed) ) {
 			throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
-		}
-		
-		if ( doomed.isReleased() ) {
-			throw new IllegalCommandException("Cannot delete a released dataverse", this);
 		}
 		
 		// if we got here, we can delete
@@ -54,7 +50,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 			ctxt.em().remove(block);
 		}
 		// ASSIGNMENTS
-		for ( RoleAssignment ra : ctxt.roles().rolesAssignments(doomed) ) {
+		for ( RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed) ) {
 			ctxt.em().remove(ra);
 		}
 		// ROLES
@@ -65,12 +61,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 		for ( DataverseFacet facet : doomed.getDataverseFacets(true) ) {
 			ctxt.em().remove(facet);
 		}
-		// DATAVERSE
-            /**
-             * @todo: Do something with the result. Log it? Throw
-             * IllegalCommandException, depending on the result?
-             */
-            String result = ctxt.index().delete(doomed);
+        
+        // Remove from index
+        ctxt.index().delete(doomed);
+		
+        // DATAVERSE
 		ctxt.em().remove(doomed);
 		
 		

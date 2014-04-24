@@ -73,14 +73,14 @@ public class EjbDataverseEngine {
 
 		DataverseUser user = aCommand.getUser();
 		
-		Map<String, Dataverse> affectedDataverses = aCommand.getAffectedDataverses();
+        Map<String, DvObject> affectedDataverses = aCommand.getAffectedDvObjects();
 		
 		for ( Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet() ) {
 			String dvName = pair.getKey();
 			if ( ! affectedDataverses.containsKey(dvName) ) {
 				throw new RuntimeException("Command instance " + aCommand + " does not have a DvObject named '" + dvName +"'" );
 			}
-			Dataverse dvo = affectedDataverses.get(dvName);
+			DvObject dvo = affectedDataverses.get(dvName);
 			
 			Set<Permission> granted = (dvo!=null) ? permissionService.permissionsFor(user, dvo)
 												  : EnumSet.allOf(Permission.class);
@@ -90,7 +90,7 @@ public class EjbDataverseEngine {
 				throw new PermissionException("Can't execute command " + aCommand 
 					+ ", because user " + aCommand.getUser() 
 					+ " is missing permissions " + required 
-					+ " on Object " + dvo.getName(),
+					+ " on Object " + dvo.accept( DvObject.NamePrinter ),
 					aCommand,
 					required, dvo);
 			}

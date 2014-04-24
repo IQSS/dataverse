@@ -2,8 +2,10 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.search.IndexableDataset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ public class SearchIncludeFragment {
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
     @Inject
@@ -58,10 +62,11 @@ public class SearchIncludeFragment {
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
-    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
+//    private String searchFieldHostDataverse = SearchFields.HOST_DATAVERSE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
     private String searchFieldRelevance = SearchFields.RELEVANCE;
-    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE;
+//    private String searchFieldReleaseDate = SearchFields.RELEASE_DATE_YYYY;
+    private String searchFieldReleaseOrCreateDate = SearchFields.RELEASE_OR_CREATE_DATE;
     final private String ASCENDING = "asc";
     final private String DESCENDING = "desc";
     private String typeFilterQuery;
@@ -84,6 +89,7 @@ public class SearchIncludeFragment {
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
     private boolean debug = false;
+    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
 
@@ -151,7 +157,7 @@ public class SearchIncludeFragment {
             if (!dataverse.getId().equals(dataverseService.findRootDataverse().getId())) {
                 optionalDataverseScope = "&id=" + dataverse.getId();
             }
-            return "dataverse.xhtml?faces-redirect=true&q=" + query + "&types=dataverses:datasets:files" + optionalDataverseScope ;
+            return "dataverse.xhtml?faces-redirect=true&q=" + query + optionalDataverseScope ;
         } else {
             return "FIXME";
         }
@@ -173,10 +179,13 @@ public class SearchIncludeFragment {
         if (mode.equals(browseModeString)) {
             queryToPassToSolr = "*";
             if (sortField == null) {
-                sortField = searchFieldNameSort;
+                sortField = searchFieldReleaseOrCreateDate;
             }
             if (sortOrder == null) {
-                sortOrder = ASCENDING;
+                sortOrder = DESCENDING;
+            }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets";
             }
         } else if (mode.equals(searchModeString)) {
             queryToPassToSolr = query;
@@ -185,6 +194,9 @@ public class SearchIncludeFragment {
             }
             if (sortOrder == null) {
                 sortOrder = DESCENDING;
+            }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets:files";
             }
         }
 
@@ -213,17 +225,6 @@ public class SearchIncludeFragment {
 //            this.dataverseSubtreeContext = "all";
         }
 
-        if (selectedTypesString == null || selectedTypesString.isEmpty()) {
-            /**
-             *
-             * "When you browse to a dataverse, we show dataverses OR datasets.
-             * The moment you type a term and search, we show all types
-             * (dataverses, datasets, files)."
-             *
-             * -- https://redmine.hmdc.harvard.edu/issues/3573
-             */
-            selectedTypesString = "dataverses:datasets";
-        }
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
 //        int count = 0;
@@ -255,8 +256,14 @@ public class SearchIncludeFragment {
             logger.info("query from user:   " + query);
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
             logger.info("sort by: " + sortField);
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart);
+            SearchServiceBean.PublishedToggle publishedToggle = null;
+            if (showUnpublished) {
+                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
+            } else {
+                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+            }
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, publishedToggle);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, publishedToggle);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -294,39 +301,39 @@ public class SearchIncludeFragment {
              * the UI (currently) shows this "citation" field.
              */
             for (SolrSearchResult solrSearchResult : searchResults) {
+                if (solrSearchResult.getEntityId() == null) {
+                    // avoiding EJBException a la https://redmine.hmdc.harvard.edu/issues/3809
+                    logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
+                    break;
+                }
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     if (dataverseInCard != null) {
                         List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId());
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
+                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
                     if (dataset != null) {
-                        DatasetVersion datasetVersion = dataset.getLatestVersion();
-                        if (datasetVersion != null) {
-                            DatasetVersionUI datasetVersionUI = null;
-                            try {
-                                datasetVersionUI = new DatasetVersionUI(datasetVersion);
-                            } catch (NullPointerException ex) {
-                                logger.info("Caught exception trying to instantiate DatasetVersionUI for dataset " + dataset.getId() + ". : " + ex);
-                            }
-                            if (datasetVersionUI != null) {
                                 String citation = null;
                                 try {
-                                    citation = datasetVersionUI.getCitation();
+                                    citation = dataset.getCitation();
                                 } catch (NullPointerException ex) {
                                     logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
                                 }
                                 solrSearchResult.setCitation(citation);
-                                solrSearchResult.setStatus("released:" + dataset.isReleased());
-                            }
-                        }
+                                String solrId = solrSearchResult.getId();
+                                solrSearchResult.setStatus(solrId + " " + getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
                     } else {
                         logger.info("couldn't find dataset id " + solrSearchResult.getEntityId() + ". Stale Solr data? Time to re-index?");
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
+                    DataFile dataFile = dataFileService.find(solrSearchResult.getEntityId());
+                    if (dataFile != null) {
+                        solrSearchResult.setStatus(getCreatedOrReleasedDate(dataFile, solrSearchResult.getReleaseOrCreateDate()));
+                    }
                     /**
                      * @todo: show DataTable variables
                      */
@@ -338,11 +345,9 @@ public class SearchIncludeFragment {
             previewCountbyType.put("datasets", 0L);
             previewCountbyType.put("files", 0L);
             if (solrQueryResponseAllTypes != null) {
-                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getFacetCategoryList()) {
-                    if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                        for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                            previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                        }
+                for (FacetCategory facetCategory : solrQueryResponseAllTypes.getTypeFacetCategories()) {
+                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                     }
                 }
             }
@@ -365,6 +370,14 @@ public class SearchIncludeFragment {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+
+    public boolean isShowUnpublished() {
+        return showUnpublished;
+    }
+
+    public void setShowUnpublished(boolean showUnpublished) {
+        this.showUnpublished = showUnpublished;
     }
 
     public String getBrowseModeString() {
@@ -426,6 +439,25 @@ public class SearchIncludeFragment {
         // TODO: decide on rules for this button and check actual permissions
         return session.getUser() != null && !session.getUser().isGuest();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
+    }
+
+    private String getCreatedOrReleasedDate(DvObject dvObject, Date date) {
+        // the hedge is for https://redmine.hmdc.harvard.edu/issues/3806
+        String hedge = "";
+        if (dvObject instanceof Dataverse) {
+            hedge = "";
+        } else if (dvObject instanceof Dataset) {
+            hedge = " maybe";
+        } else if (dvObject instanceof DataFile) {
+            hedge = " maybe";
+        } else {
+            hedge = " what object is this?";
+        }
+        if (dvObject.isReleased()) {
+            return date + " released" + hedge;
+        } else {
+            return date + " created" + hedge;
+        }
     }
 
     public String getQuery() {
@@ -612,13 +644,13 @@ public class SearchIncludeFragment {
         this.searchFieldSubtree = searchFieldSubtree;
     }
 
-    public String getSearchFieldHostDataverse() {
-        return searchFieldHostDataverse;
-    }
-
-    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
-        this.searchFieldHostDataverse = searchFieldHostDataverse;
-    }
+//    public String getSearchFieldHostDataverse() {
+//        return searchFieldHostDataverse;
+//    }
+//
+//    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
+//        this.searchFieldHostDataverse = searchFieldHostDataverse;
+//    }
 
     public String getTypeFilterQuery() {
         return typeFilterQuery;
@@ -656,8 +688,8 @@ public class SearchIncludeFragment {
         this.searchFieldNameSort = searchFieldNameSort;
     }
 
-    public String getSearchFieldReleaseDate() {
-        return searchFieldReleaseDate;
+    public String getSearchFieldReleaseOrCreateDate() {
+        return searchFieldReleaseOrCreateDate;
     }
 
     public String getASCENDING() {
@@ -714,11 +746,11 @@ public class SearchIncludeFragment {
     }
 
     public boolean isSortedByReleaseDateAsc() {
-        return getCurrentSort().equals(searchFieldReleaseDate + ":" + ASCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + ASCENDING) ? true : false;
     }
 
     public boolean isSortedByReleaseDateDesc() {
-        return getCurrentSort().equals(searchFieldReleaseDate + ":" + DESCENDING) ? true : false;
+        return getCurrentSort().equals(searchFieldReleaseOrCreateDate + ":" + DESCENDING) ? true : false;
     }
 
     public boolean isSortedByRelevance() {
@@ -789,6 +821,39 @@ public class SearchIncludeFragment {
 
     public List<String> getFilterQueriesDebug() {
         return filterQueriesDebug;
+    }
+
+    public boolean userLoggedIn() {
+        DataverseUser dataverseUser =session.getUser();
+        if (dataverseUser != null) {
+            if (dataverseUser.isGuest()) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean publishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
+        logger.info("published expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"");
+    }
+
+    public boolean unpublishedSelected() {
+        String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"";
+        logger.info("unpublished expected: " + expected + " actual: " + selectedTypesList);
+        return filterQueries.contains(SearchFields.PUBLICATION_STATUS + ":\"" + getUNPUBLISHED() + "\"");
+    }
+
+    public String getPUBLISHED() {
+        return IndexServiceBean.getPUBLISHED_STRING();
+    }
+
+    public String getUNPUBLISHED() {
+        return IndexServiceBean.getUNPUBLISHED_STRING();
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {

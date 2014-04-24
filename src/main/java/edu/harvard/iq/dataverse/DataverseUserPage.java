@@ -57,6 +57,8 @@ public class DataverseUserPage implements java.io.Serializable {
     private String permissionType;
     private List dataIdList;
     private List<UserNotification> notificationsList;
+    private int activeIndex;
+    private String selectTab = "somedata";
 
     public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
@@ -129,6 +131,22 @@ public class DataverseUserPage implements java.io.Serializable {
         this.notificationsList = notificationsList;
     }
 
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
+
+    public String getSelectTab() {
+        return selectTab;
+    }
+
+    public void setSelectTab(String selectTab) {
+        this.selectTab = selectTab;
+    }
+
     public void init() {
         if (dataverseUser == null) {
             dataverseUser = (session.getUser().isGuest() ? new DataverseUser() : session.getUser());
@@ -136,6 +154,15 @@ public class DataverseUserPage implements java.io.Serializable {
         notificationsList = userNotificationService.findByUser(dataverseUser.getId());
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
+        switch (selectTab) {
+            case "notifications":
+                activeIndex = 1;
+                displayNotification();
+                break;
+            default:
+                activeIndex = 0;
+                break;
+        }
     }
 
     public void edit(ActionEvent e) {
@@ -258,12 +285,16 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void onTabChange(TabChangeEvent event) {
         if (event.getTab().getId().equals("notifications")) {
-            for (UserNotification userNotification : notificationsList) {
-                userNotification.setDisplayAsRead(userNotification.isReadNotification());
-                if (userNotification.isReadNotification() == false) {
-                    userNotification.setReadNotification(true);
-                    userNotificationService.save(userNotification);
-                }
+            displayNotification();
+        }
+    }
+
+    public void displayNotification() {
+        for (UserNotification userNotification : notificationsList) {
+            userNotification.setDisplayAsRead(userNotification.isReadNotification());
+            if (userNotification.isReadNotification() == false) {
+                userNotification.setReadNotification(true);
+                userNotificationService.save(userNotification);
             }
         }
     }

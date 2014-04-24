@@ -1,0 +1,9 @@
+#!/bin/bash
+# curl -H "Content-type:application/json" -X POST -d @scripts/search/tests/data/dv-colon.json "http://localhost:8080/api/dvs/peteTop?key=pete"
+# curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q="description:\:"'
+diff <(curl -s 'http://localhost:8080/api/search?q=:') scripts/search/tests/expected/colon
+
+# http://stackoverflow.com/questions/18277609/search-in-solr-with-special-characters
+# curl -H "Content-type:application/json" -X POST -d @scripts/search/tests/data/dv-dash.json "http://localhost:8080/api/dvs/peteTop?key=pete"
+# curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=name:\-'
+# diff <(curl -s 'http://localhost:8080/api/search?q=name:"Titanic - 1999"') scripts/search/tests/expected/dash

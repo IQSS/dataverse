@@ -1,0 +1,64 @@
+
+{
+    "q":"trees",
+    "fq_provided":"[]",
+    "fq_actual":"[{!join from=groups_s to=perms_ss}id:group_public]",
+    "total_count":2,
+    "start":0,
+    "count_in_response":2,
+    "items":"[datafile_18:trees.png:18, dataset_17:Rings of Trees and Other Observations:17]",
+    "relevance":[
+        {
+            "id":"datafile_18",
+            "matched_fields":"[description]",
+            "detailsArray":[
+                {
+                    "description":[
+                        "<span class=\"search-term-match\">Trees</span> are lovely."
+                    ]
+                }
+            ]
+        },
+        {
+            "id":"dataset_17",
+            "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, keyword, contributorName]",
+            "detailsArray":[
+                {
+                    "title":[
+                        "Rings of <span class=\"search-term-match\">Trees</span> and Other Observations"
+                    ]
+                },
+                {
+                    "citation_t":[
+                        "Tree, Tony, 2014, \"Rings of <span class=\"search-term-match\">Trees</span> and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
+                    ]
+                },
+                {
+                    "description":[
+                        "<span class=\"search-term-match\">Trees</span> have rings. <span class=\"search-term-match\">Trees</span> can be tall."
+                    ]
+                },
+                {
+                    "notesText":[
+                        "Many notes have been taken about <span class=\"search-term-match\">trees</span> over the years."
+                    ]
+                },
+                {
+                    "authorAffiliation":[
+                        "<span class=\"search-term-match\">Trees</span> Inc."
+                    ]
+                },
+                {
+                    "keyword":[
+                        "<span class=\"search-term-match\">trees</span>"
+                    ]
+                },
+                {
+                    "contributorName":[
+                        "Edward <span class=\"search-term-match\">Trees</span> Jr."
+                    ]
+                }
+            ]
+        }
+    ]
+}

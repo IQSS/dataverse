@@ -1,13 +1,20 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.Highlight;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class SolrSearchResult {
+
+    private static final Logger logger = Logger.getLogger(SolrSearchResult.class.getCanonicalName());
 
     private String id;
     private Long entityId;
@@ -16,20 +23,17 @@ public class SolrSearchResult {
     private String name;
     private String nameSort;
     private String status;
+    private Date releaseOrCreateDate;
 
-    public String getNameSort() {
-        return nameSort;
-    }
-
-    public void setNameSort(String nameSort) {
-        this.nameSort = nameSort;
-    }
     /**
      * @todo: how important is it to differentiate between name and title?
      */
     private String title;
     private String descriptionNoSnippet;
-    private List<String> highlightSnippets;
+    private List<Highlight> highlightsAsList = new ArrayList<>();
+    private Map<SolrField, Highlight> highlightsMap;
+    private Map<String, Highlight> highlightsAsMap;
+
     // parent can be dataverse or dataset, store the name and id
     private Map<String, String> parent;
     // used on the SearchPage but not the search API
@@ -37,14 +41,119 @@ public class SolrSearchResult {
     private String dataverseAffiliation;
     private String citation;
     private String filetype;
+    /**
+     * @todo: used? remove
+     */
+    private List<String> matchedFields;
 
     /**
      * @todo: remove name?
      */
-    SolrSearchResult(String queryFromUser, List<String> highlightSnippets, String name) {
+    SolrSearchResult(String queryFromUser, String name) {
         this.query = queryFromUser;
 //        this.name = name;
-        this.highlightSnippets = highlightSnippets;
+    }
+
+    public Map<String, Highlight> getHighlightsAsMap() {
+        return highlightsAsMap;
+    }
+
+    public void setHighlightsAsMap(Map<String, Highlight> highlightsAsMap) {
+        this.highlightsAsMap = highlightsAsMap;
+    }
+
+    public String getNameHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.NAME);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public String getCitationHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.CITATION);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public String getDataverseAffiliationHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.AFFILIATION);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public String getFileTypeHighlightSnippet() {
+        Highlight highlight = highlightsAsMap.get(SearchFields.FILE_TYPE_MIME);
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public String getTitleHighlightSnippet() {
+        /**
+         * @todo: don't hard-code title, look it up properly... or start
+         * indexing titles as names:
+         * https://redmine.hmdc.harvard.edu/issues/3798#note-2
+         */
+        Highlight highlight = highlightsAsMap.get("title");
+        if (highlight != null) {
+            String firstSnippet = highlight.getSnippets().get(0);
+            if (firstSnippet != null) {
+                return firstSnippet;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getDescriptionSnippets() {
+        for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
+            SolrField solrField = entry.getKey();
+            Highlight highlight = entry.getValue();
+            logger.info("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
+        }
+
+        /**
+         * @todo: use SearchFields.DESCRIPTION
+         */
+        Highlight highlight = highlightsAsMap.get("description");
+        if (highlight != null) {
+            return highlight.getSnippets();
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public Map<SolrField, Highlight> getHighlightsMap() {
+        return highlightsMap;
+    }
+
+    public void setHighlightsMap(Map<SolrField, Highlight> highlightsMap) {
+        this.highlightsMap = highlightsMap;
+    }
+
+    public List<String> getMatchedFields() {
+        return matchedFields;
+    }
+
+    public void setMatchedFields(List<String> matchedFields) {
+        this.matchedFields = matchedFields;
     }
 
     @Override
@@ -54,6 +163,37 @@ public class SolrSearchResult {
         } else {
             return this.id + ":" + this.title + ":" + this.entityId;
         }
+    }
+
+    public JsonObject getRelevance() {
+        JsonArrayBuilder detailsArrayBuilder = Json.createArrayBuilder();
+        for (Highlight highlight : highlightsAsList) {
+            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
+            for (String snippet : highlight.getSnippets()) {
+                snippetArrayBuilder.add(snippet);
+            }
+            JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+            detailsObjectBuilder.add(highlight.getSolrField().getNameSearchable(), snippetArrayBuilder);
+            detailsArrayBuilder.add(detailsObjectBuilder);
+        }
+
+        JsonObjectBuilder detailsObjectBuilder = Json.createObjectBuilder();
+        for (Map.Entry<SolrField, Highlight> entry : highlightsMap.entrySet()) {
+            SolrField solrField = entry.getKey();
+            Highlight snippets = entry.getValue();
+            JsonArrayBuilder snippetArrayBuilder = Json.createArrayBuilder();
+            for (String highlight : snippets.getSnippets()) {
+                snippetArrayBuilder.add(highlight);
+                detailsObjectBuilder.add(solrField.getNameSearchable(), snippetArrayBuilder);
+            }
+        }
+        JsonObject jsonObject = Json.createObjectBuilder()
+                .add(SearchFields.ID, this.id)
+                .add("matched_fields", this.matchedFields.toString())
+                .add("detailsArray", detailsArrayBuilder)
+                //                .add("detailsObject", detailsObjectBuilder)
+                .build();
+        return jsonObject;
     }
 
     public JsonObject toJsonObject() {
@@ -80,6 +220,7 @@ public class SolrSearchResult {
                 .add(SearchFields.ENTITY_ID, this.entityId)
                 .add(SearchFields.TYPE, this.type)
                 .add(SearchFields.NAME_SORT, this.nameSort)
+                .add("matched_fields", this.matchedFields.toString())
                 .add("parent", parentBuilder)
                 .add("type_specific", typeSpecificFields)
                 .build();
@@ -142,12 +283,31 @@ public class SolrSearchResult {
         this.descriptionNoSnippet = descriptionNoSnippet;
     }
 
-    public List<String> getHighlightSnippets() {
-        return highlightSnippets;
+    public List<Highlight> getHighlightsAsListOrig() {
+        return highlightsAsList;
     }
 
-    public void setHighlightSnippets(List<String> highlightSnippets) {
-        this.highlightSnippets = highlightSnippets;
+    public List<Highlight> getHighlightsAsList() {
+        List<Highlight> filtered = new ArrayList<>();
+        for (Highlight highlight : highlightsAsList) {
+            String field = highlight.getSolrField().getNameSearchable();
+            /**
+             * @todo don't hard code "title" here. And should we collapse name
+             * and title together anyway?
+             */
+            if (!field.equals(SearchFields.NAME)
+                    && !field.equals(SearchFields.DESCRIPTION)
+                    && !field.equals(SearchFields.AFFILIATION)
+                    && !field.equals(SearchFields.CITATION)
+                    && !field.equals("title")) {
+                filtered.add(highlight);
+            }
+        }
+        return filtered;
+    }
+
+    public void setHighlightsAsList(List<Highlight> highlightsAsList) {
+        this.highlightsAsList = highlightsAsList;
     }
 
     public Map<String, String> getParent() {
@@ -190,6 +350,14 @@ public class SolrSearchResult {
         this.filetype = filetype;
     }
 
+    public String getNameSort() {
+        return nameSort;
+    }
+
+    public void setNameSort(String nameSort) {
+        this.nameSort = nameSort;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -198,4 +366,11 @@ public class SolrSearchResult {
         this.status = status;
     }
 
+    public Date getReleaseOrCreateDate() {
+        return releaseOrCreateDate;
+    }
+
+    public void setReleaseOrCreateDate(Date releaseOrCreateDate) {
+        this.releaseOrCreateDate = releaseOrCreateDate;
+    }
 }

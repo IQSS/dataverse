@@ -8,11 +8,11 @@ package edu.harvard.iq.dataverse;
 import java.util.Collection;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-import javax.faces.model.SelectItem;
+import java.util.TreeMap;
 import javax.persistence.*;
 
 /**
@@ -21,8 +21,6 @@ import javax.persistence.*;
  */
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
-
-    private static final Logger logger = Logger.getLogger(DatasetFieldType.class.getCanonicalName());
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,9 +55,18 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @Transient
     private List<String> listValues;
 
-    public DatasetFieldType() {
-    }
+    @Transient
+    private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
+    
+    public DatasetFieldType() {}
 
+    public DatasetFieldType(String name, String fieldType, boolean allowMultiples) {
+        this.name = name;
+        this.fieldType = fieldType;
+        this.allowMultiples = allowMultiples;
+        childDatasetFieldTypes = new LinkedList<>();
+    }
+    
     private int displayOrder;
 
     public int getDisplayOrder() {
@@ -173,6 +180,19 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {
         this.controlledVocabularyValues = controlledVocabularyValues;
     }
+    
+    public ControlledVocabularyValue getControlledVocabularyValue( String strValue ) {
+        if ( ! isControlledVocabulary() ) {
+            throw new IllegalStateException("getControlledVocabularyValue() called on a non-controlled vocabulary type.");
+        }
+        if ( controlledVocabularyValuesByStrValue == null ) {
+            controlledVocabularyValuesByStrValue = new TreeMap<>();
+            for ( ControlledVocabularyValue cvv : getControlledVocabularyValues() ) {
+                controlledVocabularyValuesByStrValue.put( cvv.getStrValue(), cvv);
+            }
+        }
+        return controlledVocabularyValuesByStrValue.get(strValue);
+    }
        
 
     @OneToMany(mappedBy = "parentDatasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -233,7 +253,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.required = required;
     }
 
-
     private boolean advancedSearchFieldType;
 
     public boolean isAdvancedSearchFieldType() {
@@ -259,7 +278,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isSubField() {
         return this.parentDatasetFieldType != null;        
     }
-    
     
     public boolean isHasChildren() {
         return !this.childDatasetFieldTypes.isEmpty();
@@ -325,26 +343,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public SolrField getSolrField() {
         SolrField.SolrType solrType2 = SolrField.SolrType.TEXT_GENERAL;
         if (fieldType != null) {
-            /**
-             * @todo: make this an enum
-             */
-            if (fieldType.equals("textBox")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("text")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("date")) {
-                solrType2 = SolrField.SolrType.INTEGER;
-            } else if (fieldType.equals("email")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else if (fieldType.equals("url")) {
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            } else {
-                /**
-                 * @todo: what should we do with types we don't expect?
-                 */
-                solrType2 = SolrField.SolrType.TEXT_GENERAL;
-            }
-
+            solrType2 = fieldType.equals("date") ? SolrField.SolrType.INTEGER : SolrField.SolrType.TEXT_GENERAL;
+            
             Boolean parentAllowsMultiplesBoolean = false;
             if (isHasParent()) {
                 if (getParentDatasetFieldType() != null) {
@@ -352,21 +352,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
                     parentAllowsMultiplesBoolean = parent.isAllowMultiples();
                 }
             }
-
+            
+            boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            boolean makeSolrFieldMultivalued = false;
-
             if (solrType2 == SolrField.SolrType.TEXT_GENERAL) {
-                if (allowMultiples || parentAllowsMultiplesBoolean) {
-                    makeSolrFieldMultivalued = true;
-//                    logger.info(name + " allows multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
-                } else {
-                    makeSolrFieldMultivalued = false;
-//                    logger.info(name + " does not allow multiples, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
-                }
+                makeSolrFieldMultivalued = (allowMultiples || parentAllowsMultiplesBoolean);
             } else {
                 makeSolrFieldMultivalued = false;
-//                logger.info(name + " only converting _s (String) fields to multiple, Solr field will be made multvalued: " + makeSolrFieldMultivalued);
             }
 
             return new SolrField(name, solrType2, makeSolrFieldMultivalued, facetable);
@@ -385,5 +377,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     // help us identify fields that have null fieldType values
     public String getTmpNullFieldTypeIdentifier() {
         return "NullFieldType_s";
+    }
+    
+    @Override
+    public String toString() {
+        return "[DatasetFieldType name:" + getName() + " id:" + getId() + "]";
     }
 }

@@ -1,9 +1,9 @@
-.. Harvard Dataverse Network Documentation master file, created by
+.. Dataverse Documentation master file, created by
    sphinx-quickstart on Mon Jan 13 15:30:58 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse Network Guides (Testing for 4.0)
+Dataverse Guides (Testing for 4.0)
 =======================================================
 
 Contents:
@@ -15,18 +15,20 @@ Contents:
 
   User/index
   Developers/index
+  Installers/index
   API/index
+  Data_Exploration/index
 
 How the Guides Are Organized
 =============================
 
-The Guides are reference documents that explain how to use
-the Dataverse Network, which are divided into the following sections: Installers Guide, Developers Guide, API Guide, and Users
-Guide. The Users Guide is further divided into primary activities: find & using
+The Guides are reference documents that explain how to use Dataverse, which are divided into the following sections: 
+Installers Guide, Developers Guide, Data Exploration Tool Guide, API Guide, and User
+Guide. The User Guide is further divided into primary activities: find & using
 data, adding Datasets, administering dataverses or Datasets. Details
 on all of the above tasks can be found in the Users Guide. The
 Installers Guide is for people or organizations who want to host their
-own Dataverse Network. The Developers Guide contains instructions for
+own Dataverse. The Developers Guide contains instructions for
 people who want to contribute to the Open Source Dataverse Network
 project or who want to modify the code to suit their own needs. Finally, the API Guide is for
 Developers that work on other applications and are interested in connecting with Dataverse through our APIs.
@@ -34,10 +36,9 @@ Developers that work on other applications and are interested in connecting with
 Other Resources
 =========================
 
-**Dataverse Network Project Site**
+**Dataverse Project Site**
 
-
-Additional information about the Dataverse Network project itself
+Additional information about the Dataverse Project itself
 including presentations, information about upcoming releases, data
 management and citation, and announcements can be found at
 `http://thedata.org <http://thedata.org/>`__

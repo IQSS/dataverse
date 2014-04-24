@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -105,7 +106,7 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setOwner(dataverseService.find(ownerId));
             dataverse.setContactEmail(session.getUser().getEmail());
             dataverse.setAffiliation(session.getUser().getAffiliation());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
+            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)
             try {
                 dataverse = dataverseService.findRootDataverse();
@@ -150,21 +151,18 @@ public class DataversePage implements java.io.Serializable {
 
     public String save() {
 		Command<Dataverse> cmd = null;
-        
-		if ( editMode == EditMode.INFO ) {
-            dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-			cmd = new CreateDataverseCommand(dataverse, session.getUser());
-        
-		} else if ( editMode == EditMode.SETUP ) {
-			cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
-        }
-        
+                //TODO change to Create - for now the page is expecting INFO instead.
+                if (dataverse.getId() == null){
+                    dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+                    cmd = new CreateDataverseCommand(dataverse, session.getUser());
+                } else {
+                    cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
+                }
+
 		try {
 			dataverse = commandEngine.submit(cmd);
-                        String notification = "Your Dataverse, " + dataverse.getName() + 
-                                ", has been created in the " + dataverse.getOwner().getName() + ". Remember to release it. ";                        
-                        userNotificationService.sendNotification(notification, session.getUser(), dataverse.getCreateDate());
-			editMode = null;
+                        userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+                        editMode = null;
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
 			return null;
@@ -230,7 +228,7 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public String releaseDataverse() {
-        dataverse.setReleaseDate(new Timestamp(new Date().getTime()));
+        dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser(session.getUser());
         dataverse = dataverseService.save(dataverse);
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");

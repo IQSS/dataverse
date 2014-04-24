@@ -8,6 +8,11 @@
 .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
+#navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em;}
+#navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
+#navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
+#navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
+
 .panelLayoutBlock, .panelLayoutTitleBlock, .panelLayoutButtonBlock {border:0;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content, .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content > td {border:0;}
 
@@ -75,7 +80,9 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 #resultsCountPaginatorBlock div.results-sort-pagination {width:70%; text-align:right;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
-em {background-color: yellow;}
+span.search-term-match {font-weight: bold;}
+div[id$="resultsTable"] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+div[id$="resultsTable"] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
 form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
 form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}
@@ -127,18 +134,25 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
-#keywords {margin-top:1em;}
+#keywords {}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
 #datasetForm .form-group .col-sm-7 .col-sm-6, #datasetForm .form-group .col-sm-9 .col-sm-6, #datasetForm .form-group .col-sm-7 .col-sm-12 {padding-left:0;}
 
+#datasetForm div.ui-selectonemenu.form-control {padding:1px;}
+
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
+
+#contentTabs div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+#contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
+
+.dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
 /* Overwrite Primefaces */
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}

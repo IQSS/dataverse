@@ -21,39 +21,36 @@
 	contributor	Contributor	The institution or person  responsible for collecting,  managing, distributing, or  otherwise contributing to the  development of the resource.			17	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	contributorType	Type	The type of contributor of the  resource.  		text	18	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
 	contributorName	Name	The name of the contributor.		text	19	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorAffiliation	Affilitation	If applicable, the organization with which the contributor is affiliated.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
+	contributorAffiliation	Affiliation	If applicable, the organization with which the contributor is affiliated.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
 	contributorAbbreviation	Abbreviation	If applicable, the abbreviation by which the contributor is commonly known. (ex. IQSS, ICPSR)		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorURL	URL	This URL points to the conributor's web presence, if appropriate. Enter an absolute URL where the contributor's web site is found, e.g., http://www.my.org.		url	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorLogo	Logo URL	If applicable, the logo url that points to this contributor's web accessible logo image. Enter an absolute URL where the contributor's logo image is found, e.g., http://www.my.org/images/logo.gif.		url	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	productionDate	Production Date	Date when the data collection/other material(s) were produced (not distributed, released or archived).		date	24	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	grantNumber	Grant Information	Grant Information			26	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	27	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	grantNumberAgency	Grant Agency	Grant Number Agency		text	28	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	depositor	Depositor	Name of a person (or organization) who provided this Dataset to the archive originally storing the data.		text	29	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.		date	30	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	31	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are relevant to this one, such as prior  research on this subject.		textbox	32	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or  supporting material to this Dataset.		text	33	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable  data files, if any, that served as the sources of the data  collection.		text	34	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	productionDate	Production Date	Date when the data collection/other material(s) were produced (not distributed, released or archived).		date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	grantNumber	Grant Information	Grant Information			24	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
+	grantNumberAgency	Grant Agency	Grant Number Agency		text	26	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
+	depositor	Depositor	Name of a person (or organization) who provided this Dataset to the archive originally storing the data.		text	27	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.		date	28	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	29	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Datasets	Any Datasets that are relevant to this one, such as prior  research on this subject.		textbox	30	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or  supporting material to this Dataset.		text	31	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	dataSources	Data Sources	List of books, articles, serials, or machine-readable  data files, if any, that served as the sources of the data  collection.		text	32	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	displayOrder											
-	subject	Government / Political Science	0											
-	subject	Astronomy / Astrophysics	1											
-	subject	Economics / Business	2											
-	subject	Architecture / Design	3											
-	subject	Agriculture	4											
-	subject	History	5											
-	subject	Psychology	6											
-	subject	Sociology	7											
-	subject	Health Sciences	8											
-	subject	Medical Sciences	9											
-	subject	Biology	10											
-	subject	Education	11											
-	subject	Geography	12											
+	subject	Arts and Architecture	0											
+	subject	Astronomy and Astrophysics	1											
+	subject	Business and Management	2											
+	subject	Chemistry	3											
+	subject	Earth Sciences	4											
+	subject	Engineering	5											
+	subject	Environmental Sciences	6											
+	subject	Health Sciences	7											
+	subject	Information Technology	8											
+	subject	Law	9											
+	subject	Life Sciences	10											
+	subject	Mathematical Sciences	11											
+	subject	Medical Sciences	12											
 	subject	Physics	13											
-	subject	Engineering	14											
-	subject	Humanities	15											
-	subject	Non Categorized	16											
+	subject	Social Sciences and Humanities	14											
+	subject	Other	15											
 	publicationIDType	ark	0											
 	publicationIDType	arXiv	1											
 	publicationIDType	bibcode	2											
@@ -72,9 +69,9 @@
 	publicationIDType	upc	15											
 	publicationIDType	url	16											
 	publicationIDType	urn	17											
-	contributorType	Data Collector 	0											
+	contributorType	Data Collector	0											
 	contributorType	Data Manager	1											
-	contributorType	Distributor 	2											
+	contributorType	Distributor	2											
 	contributorType	Editor	3											
 	contributorType	Funder	4											
 	contributorType	Hosting Institution	5											

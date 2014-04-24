@@ -1,0 +1,10 @@
+
+{
+    "q":"trees",
+    "fq_provided":"[]",
+    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user1)]",
+    "total_count":6,
+    "start":0,
+    "count_in_response":6,
+    "items":"[datafile_18:trees.png:18, dataset_17:Rings of Trees and Other Observations:17, dataset_17_draft:Rings of Conifers and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]"
+}

@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+import sys
+from optparse import OptionParser
+import csv
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+parser = OptionParser()
+options, args = parser.parse_args()
+
+if args:
+    csv_file = open(args[0])
+else:
+    csv_file = sys.stdin
+
+reader = csv.DictReader(csv_file, delimiter="\t")
+rows = [row for row in reader]
+for row in rows:
+    row["permissionRoot"] = "false"
+    parent = row["parent"]
+    parts = parent.split("/")
+    if parts[1]:
+        target = parts[-1]
+    else:
+        target = "root"
+    del row["parent"]
+    creator = row["creator"]
+    del row["creator"]
+    # FIXME: don't simply strip out single quotes
+    row["description"] = row["description"].replace("'", "")
+    jsondata = "%s%s%s" % ("'",json.dumps(row),"'")
+    start = 'curl -H "Content-type:application/json" -X POST "http://localhost:8080/api/dvs/'
+    print "echo creating dataverse ", row["alias"]
+    print "%s%s%s%s%s%s" % (start, target, "?key=",creator, "\" -d ", jsondata)
+    print
+csv_file.close()

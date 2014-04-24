@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
-import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.*;
 
@@ -24,13 +23,13 @@ public interface Command<R> {
 	
 	
 	/**
-	 * Retrieves the dataverses this command works on. Used by the {@link DataverseEngine} 
+	 * Retrieves the {@link DvObject}s this command works on. Used by the {@link DataverseEngine} 
 	 * to validate that the user
 	 * has the permissions required to execute {@code this} command.
 	 * 
-	 * @return The dataverse on which the command will work
+	 * @return The DvObjects on which the command will work
 	 */
-	public Map<String,Dataverse> getAffectedDataverses();
+	public Map<String,DvObject> getAffectedDvObjects();
 	
 	
 	/**

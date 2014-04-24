@@ -13,18 +13,23 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 /**
  *
  * @author skraffmiller
  */
-
-    
+@NamedQueries({
+    @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
+    @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
+})
 @Entity
 public class MetadataBlock implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,6 +56,7 @@ public class MetadataBlock implements Serializable {
     public Collection<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
     }
+    
     public void setDatasetFieldTypes(Collection<DatasetFieldType> datasetFieldTypes) {
         this.datasetFieldTypes = datasetFieldTypes;
     }
@@ -93,4 +99,5 @@ public class MetadataBlock implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
     }    
+    
 }

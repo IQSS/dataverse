@@ -5,17 +5,16 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.text.DateFormat;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import javax.ejb.EJB;
 
 /**
  *
@@ -83,37 +82,30 @@ public class DatasetVersionUI {
             } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
                 //Special handling for Related Publications
                 // Treated as below the tabs for editing, but must get first value for display above tabs    
-                if (this.datasetRelPublications.isEmpty()) {/*
-                     Collection childVals = dsfv.getChildDatasetFieldValues();
-                     DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                     if (childVals != null) {
-                     for (Object cv : childVals) {
-                     DatasetFieldValue cvo = (DatasetFieldValue) cv;
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                     datasetRelPublication.setText(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                     datasetRelPublication.setIdNumber(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                     datasetRelPublication.setIdType(cvo.getStrValue());
-                     }
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.publicationURL)) {
-                     datasetRelPublication.setUrl(cvo.getStrValue());
-                     }
-                     //if no pub URL is available get distributor url
-                     if (cvo.getDatasetField().getName().equals(DatasetFieldConstant.distributorURL) && datasetRelPublication.getUrl().isEmpty()) {
-                     datasetRelPublication.setUrl(cvo.getStrValue());
-                     }
-                     }
-                     }
-                     this.getDatasetRelPublications().add(datasetRelPublication);*/
-
+                if (this.datasetRelPublications.isEmpty()) {
+                    for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
+                        DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
+                        for (DatasetField subField : relPubVal.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                                datasetRelPublication.setText(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                                datasetRelPublication.setIdNumber(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                                datasetRelPublication.setIdType(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                                datasetRelPublication.setUrl(subField.getValue());
+                            }
+                        }
+                        this.getDatasetRelPublications().add(datasetRelPublication);
+                    }
                 }
-
             }
-
         }
+        
+        datasetVersion.setDatasetFields(initDatasetFields());
         setMetadataValueBlocks(datasetVersion);
     }
 
@@ -208,6 +200,18 @@ public class DatasetVersionUI {
         }
     }
 
+    public String getRelPublicationId() {
+        if (!this.datasetRelPublications.isEmpty()) {
+            if (!(this.getDatasetRelPublications().get(0).getIdNumber() == null)  && !this.getDatasetRelPublications().get(0).getIdNumber().isEmpty()){
+                            return this.getDatasetRelPublications().get(0).getIdType() + ": " + this.getDatasetRelPublications().get(0).getIdNumber();
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+    
     public String getRelPublicationUrl() {
         if (!this.datasetRelPublications.isEmpty()) {
             return this.getDatasetRelPublications().get(0).getUrl();
@@ -230,92 +234,6 @@ public class DatasetVersionUI {
         return dateString;
     }
 
-    public String getCitation() {
-        return getCitation(false);
-    }
-
-    public String getCitation(boolean isOnlineVersion) {
-
-        Dataset dataset = getDataset();
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        }
-
-        if (!StringUtil.isEmpty(getDistributionDate())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getYearForCitation(getDistributionDate());
-        } else if (!StringUtil.isEmpty(getProductionDate())) {
-
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getYearForCitation(getProductionDate());
-//getting 2014 for citation 
-//while still possible that prod date and deposit date are empty               
-        } else {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += "2014";
-
-        }
-
-        if (!StringUtil.isEmpty(getTitle().getValue())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += "\"" + getTitle().getValue() + "\"";
-        }
-
-        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getIdentifier() + "</a>";
-            } else {
-                str += dataset.getPersistentURL();
-            }
-        }
-
-        //Get root dataverse name for Citation
-        Dataverse root = getDatasetVersion().getDataset().getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += " " + rootDataverseName + " [Publisher] ";
-        }
-
-        if (this.getDatasetVersion().getVersionNumber() != null) {
-            str += " V" + this.getDatasetVersion().getVersionNumber();
-            str += " [Version]";
-        }
-        /*UNF is not calculated yet
-         if (!StringUtil.isEmpty(getUNF())) {
-         if (!StringUtil.isEmpty(str)) {
-         str += " ";
-         }
-         str += getUNF();
-         }
-         String distributorNames = getDistributorNames();
-         if (distributorNames.trim().length() > 0) {
-         str += " " + distributorNames;
-         str += " [Distributor]";
-         }*/
-        return str;
-    }
 
     public String getAuthorsStr() {
         return getAuthorsStr(true);
@@ -340,6 +258,25 @@ public class DatasetVersionUI {
         return str;
     }
 
+    public String getReleaseDate() {
+        if (datasetVersion.getReleaseTime() != null) {
+            Date relDate = datasetVersion.getReleaseTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(relDate);
+            return new Integer(calendar.get(Calendar.YEAR)).toString();
+        }
+        return "";
+    }
+    
+    public String getCreateDate() {
+        if (datasetVersion.getCreateTime() != null) {
+            Date relDate = datasetVersion.getCreateTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(relDate);
+            return new Integer(calendar.get(Calendar.YEAR)).toString();
+        }
+        return "";
+    }
 
     public String getProductionDate() {
         for (DatasetField dsfv : datasetVersion.getDatasetFields()) {
@@ -358,6 +295,86 @@ public class DatasetVersionUI {
         }
         return "";
     }
+    
+ // TODO: clean up init methods and get them to work, cascading all the way down.
+    // right now, only work for one level of compound objects
+    private DatasetField initDatasetField(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isCompound()) {
+            for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
+                // for each compound value; check the datasetfieldTypes associated with its type
+                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                    boolean add = true;
+                    for (DatasetField subfield : cv.getChildDatasetFields()) {
+                        if (dsfType.equals(subfield.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                    }
+                }
+                
+                sortDatasetFields(cv.getChildDatasetFields());
+            }
+        }
+
+        return dsf;
+    }
+
+    private List<DatasetField> initDatasetFields() {
+        //retList - Return List of values
+        List<DatasetField> retList = new ArrayList();
+        for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
+            retList.add(initDatasetField(dsf));
+        }
+     
+
+        //Test to see that there are values for 
+        // all fields in this dataset via metadata blocks
+        //only add if not added above
+        for (MetadataBlock mdb : this.getDataset().getOwner().getMetadataBlocks()) {
+            for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
+                if (!dsfType.isSubField()) {
+                    boolean add = true;
+                    //don't add if already added as a val
+                    for (DatasetField dsf : retList) {
+                        if (dsfType.equals(dsf.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        retList.add(DatasetField.createNewEmptyDatasetField(dsfType, this.datasetVersion));
+                    }
+                }
+            }
+        }
+
+        //sort via display order on dataset field
+        Collections.sort(retList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+
+        return sortDatasetFields(retList);
+    }  
+    
+    private List<DatasetField> sortDatasetFields (List<DatasetField> dsfList) {
+        Collections.sort(dsfList, new Comparator<DatasetField>() {
+            public int compare(DatasetField d1, DatasetField d2) {
+                int a = d1.getDatasetFieldType().getDisplayOrder();
+                int b = d2.getDatasetFieldType().getDisplayOrder();
+                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+            }
+        });
+        return dsfList;
+    }    
 
     public void setMetadataValueBlocks(DatasetVersion datasetVersion) {
         //TODO: A lot of clean up on the logic of this method

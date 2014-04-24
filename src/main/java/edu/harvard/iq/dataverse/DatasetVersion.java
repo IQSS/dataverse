@@ -6,10 +6,12 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -68,6 +70,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private Long versionNumber;
+    private Long minorVersionNumber;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     @Column(length = VERSION_NOTE_MAX_LENGTH)
     private String versionNote;
@@ -90,14 +93,13 @@ public class DatasetVersion implements Serializable {
         this.fileMetadatas = fileMetadatas;
     }
 
-    @OneToMany(mappedBy = "datasetVersion", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList<>();
+    private List<DatasetField> datasetFields = new ArrayList();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
-
 
     public void setDatasetFields(List<DatasetField> datasetFields) {
         this.datasetFields = datasetFields;
@@ -199,6 +201,14 @@ public class DatasetVersion implements Serializable {
         this.versionNumber = versionNumber;
     }
 
+    public Long getMinorVersionNumber() {
+        return minorVersionNumber;
+    }
+
+    public void setMinorVersionNumber(Long minorVersionNumber) {
+        this.minorVersionNumber = minorVersionNumber;
+    }
+
     public VersionState getVersionState() {
         return versionState;
     }
@@ -235,6 +245,44 @@ public class DatasetVersion implements Serializable {
     public boolean isRetiredCopy() {
         return (versionState.equals(VersionState.ARCHIVED) || versionState.equals(VersionState.DEACCESSIONED));
     }
+
+    public boolean isMinorUpdate() {
+        /*
+         For now we will say that if there are the same number of files then it can be a minor release
+         */
+        if (this.getDataset().getReleasedVersion() != null) {
+            return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
+        }
+        return true;
+    }
+    
+    public DatasetVersion getMostRecentlyReleasedVersion(){
+        if (this.isReleased()) { 
+            return this;
+        } else {
+            if (this.getDataset().isReleased()){
+                for (DatasetVersion testVersion : this.dataset.getVersions()){
+                    if(testVersion.isReleased()){
+                        return testVersion; 
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public DatasetVersion getLargestMinorRelease(){
+
+            if (this.getDataset().isReleased()){
+                for (DatasetVersion testVersion : this.dataset.getVersions()){
+                    if(testVersion.getVersionNumber() != null && testVersion.getVersionNumber().equals(this.getVersionNumber())){
+                        return testVersion; 
+                    }
+                }
+            }
+
+        return this;
+    }  
 
     public Dataset getDataset() {
         return dataset;
@@ -290,8 +338,104 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        return new ArrayList();
+        List retList = new ArrayList();
+        for (DatasetField dsf : this.getDatasetFields()) {
+             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    DatasetAuthor datasetAuthor = new DatasetAuthor();
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                            datasetAuthor.setName(subField);
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                            datasetAuthor.setAffiliation(subField);
+                        }
+                    }
+                    retList.add(datasetAuthor);
+                }                
+             } 
+        }
+        return retList;
     }
+    
+     public String getCitation(boolean isOnlineVersion) {
+
+
+        String str = "";
+
+        boolean includeAffiliation = false;
+        String authors = this.getAuthorsStr(includeAffiliation);
+        if (!StringUtil.isEmpty(authors)) {
+            str += authors;
+        }
+
+        if (this.getDataset().getPublicationDate() == null || StringUtil.isEmpty(this.getDataset().getPublicationDate().toString())) {
+            //if not released use current year
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str +=  new SimpleDateFormat("yyyy").format(new Timestamp(new Date().getTime())) ;
+        } else  {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += new SimpleDateFormat("yyyy").format(new Timestamp(this.getDataset().getPublicationDate().getTime()));             
+        } 
+
+        if ( this.getTitle() != null ) {
+            if (!StringUtil.isEmpty(this.getTitle())) {
+                if (!StringUtil.isEmpty(str)) {
+                    str += ", ";
+                }
+                str += "\"" + this.getTitle() + "\"";
+            }
+        }
+        if (!StringUtil.isEmpty(this.getDataset().getIdentifier())) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            if (isOnlineVersion) {
+                str += "<a href=\"" + this.getDataset().getPersistentURL() + "\">" + this.getDataset().getIdentifier() + "</a>";
+            } else {
+                str += this.getDataset().getPersistentURL();
+            }
+        }
+
+        //Get root dataverse name for Citation
+        Dataverse root = this.getDataset().getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " " + rootDataverseName + " Dataverse";
+        }
+
+        if (this.getVersionNumber() != null) {
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " V" + this.getVersionNumber();
+
+        }
+        /*UNF is not calculated yet
+         if (!StringUtil.isEmpty(getUNF())) {
+         if (!StringUtil.isEmpty(str)) {
+         str += " ";
+         }
+         str += getUNF();
+         }
+         String distributorNames = getDistributorNames();
+         if (distributorNames.trim().length() > 0) {
+         str += " " + distributorNames;
+         str += " [Distributor]";
+         }*/
+        return str;
+    }
+
 
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table
@@ -301,90 +445,6 @@ public class DatasetVersion implements Serializable {
     public String getUNF() {
         //todo get dist date from datasetfieldvalue table
         return "UNF";
-    }
-
-    //TODO - make sure getCitation works
-    private String getYearForCitation(String dateString) {
-        //get date to first dash only
-        if (dateString.indexOf("-") > -1) {
-            return dateString.substring(0, dateString.indexOf("-"));
-        }
-        return dateString;
-    }
-
-    /**
-     * @todo: delete this method? It seems to have been replaced by the version
-     * in DatasetVersionUI
-     */
-    public String getCitation() {
-        return getCitation(true);
-    }
-
-    /**
-     * @todo: delete this method? It seems to have been replaced by the version
-     * in DatasetVersionUI
-     */
-    public String getCitation(boolean isOnlineVersion) {
-
-        Dataset dataset = getDataset();
-
-        String str = "";
-
-        boolean includeAffiliation = false;
-        String authors = getAuthorsStr(includeAffiliation);
-        if (!StringUtil.isEmpty(authors)) {
-            str += authors;
-        }
-
-        if (!StringUtil.isEmpty(getDistributionDate())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += getYearForCitation(getDistributionDate());
-        } else {
-            if (!StringUtil.isEmpty(getProductionDate())) {
-                if (!StringUtil.isEmpty(str)) {
-                    str += ", ";
-                }
-                str += getYearForCitation(getProductionDate());
-            }
-        }
-        if (!StringUtil.isEmpty(getTitle())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            str += "\"" + getTitle() + "\"";
-        }
-        if (!StringUtil.isEmpty(dataset.getIdentifier())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += ", ";
-            }
-            if (isOnlineVersion) {
-                str += "<a href=\"" + dataset.getPersistentURL() + "\">" + dataset.getIdentifier() + "</a>";
-            } else {
-                str += dataset.getPersistentURL();
-            }
-
-        }
-
-        if (!StringUtil.isEmpty(getUNF())) {
-            if (!StringUtil.isEmpty(str)) {
-                str += " ";
-            }
-            str += getUNF();
-        }
-        String distributorNames = getDistributorNames();
-        if (distributorNames.length() > 0) {
-            str += " " + distributorNames;
-            str += " [Distributor]";
-        }
-
-        if (this.getVersionNumber() != null) {
-            str += " V" + this.getVersionNumber();
-            str += " [Version]";
-        }
-
-        return str;
     }
 
     public List<DatasetDistributor> getDatasetDistributors() {
@@ -423,12 +483,39 @@ public class DatasetVersion implements Serializable {
         return str;
     }
 
+    // TODO: clean up init methods and get them to work, cascading all the way down.
+    // right now, only work for one level of compound objects
+    private DatasetField initDatasetField(DatasetField dsf) {
+        if (dsf.getDatasetFieldType().isCompound()) {
+            for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
+                // for each compound value; check the datasetfieldTypes associated with its type
+                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                    boolean add = true;
+                    for (DatasetField subfield : cv.getChildDatasetFields()) {
+                        if (dsfType.equals(subfield.getDatasetFieldType())) {
+                            add = false;
+                            break;
+                        }
+                    }
+
+                    if (add) {
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                    }
+                }
+            }
+        }
+
+        return dsf;
+    }
+
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
-        //if the datasetversion already has values add them here
+        //Running into null on create new dataset
         if (this.getDatasetFields() != null) {
-            retList.addAll(this.getDatasetFields());
+            for (DatasetField dsf : this.getDatasetFields()) {
+                retList.add(initDatasetField(dsf));
+            }
         }
 
         //Test to see that there are values for 
@@ -439,42 +526,64 @@ public class DatasetVersion implements Serializable {
                 if (!dsfType.isSubField()) {
                     boolean add = true;
                     //don't add if already added as a val
-                    for (DatasetField dsfv : retList) {
-                        if (dsfType.equals(dsfv.getDatasetFieldType())) {
+                    for (DatasetField dsf : retList) {
+                        if (dsfType.equals(dsf.getDatasetFieldType())) {
                             add = false;
                             break;
                         }
                     }
 
                     if (add) {
-                        DatasetField addDsfv = DatasetField.createNewEmptyDatasetField(dsfType, this);
-                        retList.add(addDsfv);
+                        retList.add(DatasetField.createNewEmptyDatasetField(dsfType, this));
                     }
                 }
             }
         }
-
+        
         //sort via display order on dataset field
-        Collections.sort(retList, new Comparator<DatasetField>() {
-            public int compare(DatasetField d1, DatasetField d2) {
-                int a = d1.getDatasetFieldType().getDisplayOrder();
-                int b = d2.getDatasetFieldType().getDisplayOrder();
-                return Integer.valueOf(a).compareTo(Integer.valueOf(b));
-            }
-        });
+        Collections.sort(retList, DatasetField.DisplayOrder);
 
         return retList;
     }
 
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        //retList - Return List of values
         List<DatasetField> retList = new ArrayList();
 
         for (DatasetField sourceDsf : copyFromList) {
-            retList.add(sourceDsf.copy());
+            //the copy needs to have the current version
+            retList.add(sourceDsf.copy(this));
         }
 
         return retList;
     }
 
+    public List<DatasetField> getFlatDatasetFields() {
+        return getFlatDatasetFields(getDatasetFields());
+    }
+
+    private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
+        List<DatasetField> retList = new LinkedList();
+        for (DatasetField dsf : dsfList) {
+            retList.add(dsf);
+            if (dsf.getDatasetFieldType().isCompound()) {
+                for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                    retList.addAll(getFlatDatasetFields(compoundValue.getChildDatasetFields()));
+                }
+
+            }
+        }
+        return retList;
+    }
+
+    public String getSemanticVersion() {
+        /**
+         * Not prepending a "v" like "v1.1" or "v2.0" because while SemVerTag
+         * was in http://semver.org/spec/v1.0.0.html but later removed in
+         * http://semver.org/spec/v2.0.0.html
+         *
+         * See also to v or not to v · Issue #1 · mojombo/semver -
+         * https://github.com/mojombo/semver/issues/1#issuecomment-2605236
+         */
+        return versionNumber + "." + minorVersionNumber;
+    }
 }

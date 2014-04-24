@@ -7,6 +7,9 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -19,7 +22,11 @@ import javax.persistence.PersistenceContext;
 @Stateless
 @Named
 public class DataverseUserServiceBean {
-	
+
+    private static final Logger logger = Logger.getLogger(DataverseUserServiceBean.class.getCanonicalName());
+
+    @EJB IndexServiceBean indexService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -30,7 +37,11 @@ public class DataverseUserServiceBean {
     }
        
     public DataverseUser save(DataverseUser dataverseUser) {
-         return em.merge(dataverseUser);
+        DataverseUser savedUser = em.merge(dataverseUser);
+        em.flush();
+        String indexingResult = indexService.indexUser(savedUser);
+        logger.log(Level.INFO, "during user save, indexing result was: {0}", indexingResult);
+        return savedUser;
     }
     
 	public DataverseUser findGuestUser() {
@@ -77,11 +88,7 @@ public class DataverseUserServiceBean {
         return user;
     }
     
-    public DataverseUser findDataverseUser() {
-        return (DataverseUser) em.createQuery("select object(o) from DataverseUser as o where o.id = 1").getSingleResult();
-    }
-	
-	public List<DataverseUser> findAll() {
+    public List<DataverseUser> findAll() {
 		return em.createNamedQuery("DataverseUser.findAll", DataverseUser.class).getResultList();
 	}
 }

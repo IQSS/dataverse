@@ -25,6 +25,16 @@ public class CommandHelper {
 		if ( requiredPerms == null ) {
 			// try for the permission map
 			RequiredPermissionsMap reqPermMap = cmdClass.getAnnotation( RequiredPermissionsMap.class );
+            if ( reqPermMap == null ) {
+                // No annotations here. Look up the class hierachy
+                Class superClass = cmdClass.getSuperclass();
+                if ( superClass != null ) {
+                    return permissionsRequired(superClass);
+                } else {
+                    throw new IllegalArgumentException("Command class " + cmdClass.getCanonicalName() 
+                     + ", and its superclasses, do not declare required permissions.");
+                }
+            }
 			Map<String, Set<Permission>> retVal = new TreeMap<>();
 			for ( RequiredPermissions rp : reqPermMap.value() ) {
 				retVal.put( rp.dataverseName(), asPermissionSet(rp.value()) );

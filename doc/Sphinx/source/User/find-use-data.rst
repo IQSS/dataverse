@@ -1,5 +1,5 @@
 Finding and Using Data
-++++++++++++++++++
++++++++++++++++++++++++
 
 Without logging in to Dataverse, users can browse
 Dataverse, search for dataverses, datasets, and files, view dataset descriptions and files for
@@ -8,95 +8,86 @@ files. To view a restricted dataverse, dataset, or file, a user will need to be 
 
 A user can search the dataverses, datasets, and files within a particular dataverse by using the search bar found on a dataverse page. For example, if you are on the Murray Research Archive Dataverse page, you can search that specific dataverse's contents by using the search bar and/or facets displayed on the page.
 
-**Ways to Search**
+Basic Search
+===============
+From the Dataverse homepage, you can begin searching with an exact phrase search or entering a search term or query in the search box that says, "Search this dataverse" 
 
-From the Dataverse homepage, you can begin searching with a wildcard search, an exact phrase search, or entering a search term or query in the search box that says, "Search this dataverse" 
-
-Basic search block features:
-
-- Wildcard: by entering an asterisk (*), into the search bar, you can perform a search for all public dataverses, datasets, and files within Dataverse.
-- Autocomplete for names of dataverses and file names
-- Exact phrase search when a search term/query has quotes around it
-
-Search results features: 
+**Search results features**
 
 - Facets: to the left of the search results, there are several facets a user can click on to narrow the number of results displayed. 
     - Choosing a facet: to choose a facet, click on the facet to choose it
     - Removing a facet: to remove a facet, click on the X next to a chosen facet in search string above the results OR a chosen facet can be removed by clicking on the X next to it in the facets pane to the left of the results
     - Viewing more or less: the top five results show in each facet, to view more, click on "More..." in the bottom right of a facet. Once you've chosen to see more, an option to view less will appear in the bottom left of the facet.
    
-- Result cards - search terms/query highlighting within it
+- Result cards: after entering a search term or query, results cards that match appear underneath the search bar and to the right of the facets.
+    - Relevancy of results: each results card shows which metadata fields match the search query or term you entered into the search bar. If the search term or query was found in the title or name of the dataverse, dataset, or file, the search term or query will be bolded within it.
 
-Other search features: 
+- Other basic search features: 
+    - Sorting results: search results can be sorted by name (both A-Z and Z-A), publication date, or relevancy of results. The sort button can be found about the search results, in the top right.
+    - Bookmarkable URLs: search URLS can be copied and sent to a fellow researcher or can be bookmarked for you to be able to return to at a later time.
 
-- Bookmarkable URLs: search URLS can be copied and sent to a fellow researcher or can be bookmarked for you to be able to return to at a later time.
-- Spellcheck: in red text beneath the search bar, spelling suggestions for a potential misspelling in the search query appears
 
-
-**Search - Advanced** (Needs to be edited/updated once advanced search is developed)
+Advanced Search 
+================
 
 In an advanced search, you can refine your criteria by choosing which
-Metadata fields to search. You can perform an advanced search on all general metadata fields as well as domain specific metadata fields. Additionally, you can perform an advanced search on files.
+Metadata fields to search. You can perform an advanced search on Citation metadata fields as well as domain specific metadata fields (Social Sciences & Humanities, Astronomy & Astrophysics, and Biomedical). Additionally, you can perform an advanced search for dataverses and files.
 
 To perform an advanced search, click the Advanced Search link next to the search bar. 
 
-Advanced Search fields: (update based off metadata tables)
+**Advanced Search fields** 
 
--  Title - Title field of studies' Cataloging Information.
--  Author - Author fields of studies' Cataloging Information.
--  (Study) Global ID - ID assigned to studies.
--  Keyword - A term that defines the nature or scope of a study. For
-   example, ``elections``.
--  Topic Classification - One or more words that help to categorize the
-   study.
--  Topic Classification Vocabulary - Reference used to define the Topic
-   Classifications.
--  Producer - Institution, group, or person who produced the study.
--  Distributor - Institution that is responsible for distributing the
-   study.
--  Funding Agency - Agency that funded the study.
--  Production Date - Date on which the study was created or completed.
--  Distribution Date - Date on which the study was distributed to the
-   public.
--  Date of Deposit - Date on which the study was uploaded to the
-   Network.
--  Time Period Cover Start - The beginning of the period covered by the
-   study.
--  Time Period Cover End - The end of the period covered by the study.
--  Country/Nation - The country or countries where the study took place.
--  Geographic Coverage - The geographical area covered by the study. For
-   example, ``North America``.
--  Geographic Unit - The smallest geographic unit in which the study
-   took place, such as ``state``.
--  Universe - Universe of interest, population of interest, or target
-   population.
--  Kind of Data - The type of data included in the file, such
-   as ``survey data``, ``census/enumeration data``,
-   or ``aggregate data``.
--  Description
--  Variable Information - The variable name and description in the
-   studies' data files, given that the data file is subsettable and
-   contains tabular data. It returns the studies that contain the file
-   and the variable name where the search term was found.
--  Variable Name
--  Variable Label
+*Citation Metadata:*
 
-**Sort Results**
+- Title - Full title by which the dataset is known.
+- Author - The author's Family Name, Given Name or the name of the organization responsible for this dataset.
+- Author Affiliation - The organization with which the author is affiliated.
+- Description - A summary describing the purpose, nature, and scope of the dataset.
+- Keyword - Free-form text that describe important aspects of the dataset.
+- Subject - Domain-specific Subjects that are relevant to the Dataset.
+- Contributor Name - The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.
+- Production Date - Date when the data collection/other material(s) were produced (not distributed, released or archived).
 
-When your search is complete, the results page lists studies that met
-the search criteria in order of relevance. For example, a study that
-includes your search term within the Cataloging Information in ten
-places appears before a study that includes your search term in the
-Cataloging Information in only one place.
+*Social Science and Humanities Metadata:*
 
-You can sort search results by title, study ID, last updated, or number
-of downloads (that is, the number of times users downloaded any file
-belonging to that study). Click the Sort By drop-down list to choose
-your sort order.
+- Topic Classification - The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  
+- Time Period Covered (Start) - Time period to which the data refer. This item reflects the time period covered by the data, not the dates of  coding or making documents machine-readable or the dates the data were collected. Also known as span. The ISO standard for dates (YYYY-MM-DD) is recommended.
+- Time Period Covered (End) - Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span. The ISO standard for dates (YYYY-MM-DD) is recommended.
+- Country/Nation - Country were the data was collected. If more than one, they can be separated by commas.
+- Geographic Coverage - Information on the geographic coverage of the data. Inclusion of this element in the codebook is recommended.
+- Geographic Unit - Information on the geographic coverage of the data. Inclusion of this element in the codebook is recommended.
+- Universe - Description of the population covered by the data in the file; the group of people or other elements that are the object of the study and to which the study results refer. Age, nationality, and residence commonly help to  delineate a given universe, but any number of other factors may be used, such as age limits, sex, marital status, race, ethnic group, nationality, income, veteran status, criminal convictions, and more. The universe may consist of elements other than persons, such as housing units, court cases, deaths, countries, and so on. In general, it should be possible to tell from the description of the universe whether a given individual or element is a member of the population under study. Also known as the universe of interest, population of interest, and target population.
+- Kind of Data - Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.
 
-**Browse Dataverse**
+*Astronomy and Astrophysics Metadata:*
 
-To browse dataverse, click on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
+- Type - The nature or genre of the content of the files in the dataset.
+- Facility - The observatory or facility where the data was obtained. 
+- Instrument - The instrument used to collect the data.
+- Resolution Spatial Resolution - The spatial (angular) resolution that is typical of the observations, in decimal degrees.
+- Resolution Spectral Resolution - The spectral resolution that is typical of the observations, given as the ratio λ/Δλ.
+- Coverage Bandpass - Conventional bandpass name
+- Coverage Central Wavelength (m) - The central wavelength of the spectral bandpass, in meters.
+- Coverage Minimum Wavelength (m) - The minimum wavelength of the spectral bandpass, in meters.
+- Coverage Maximum Wavelength (m) - The maximum wavelength of the spectral bandpass, in meters.
+- Coverage Dataset Start Date - 
+- Coverage Dataset End Date
+
+*Biomedical Metadata:*
+
+- Design Type - Select the design types that are based on the overall experimental design.
+- Factor Type - Factors used in the Study. 
+- Measurement Type - A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 
+- Organism - The taxonomic name of the organism used in a study or from which the starting biological material derives.
+- Cell Type - The name of the cell line from which the source or sample derives.
+
+
+Browsing Dataverse
+===================
+
+In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only Dataverses and Datasets appear in the results list and the results can be sorted by Name (both A-Z and Z-A) and Publication Date (Newest and Oldest).
+
+Additionally, a user can browse all dataverses by clicking on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
 
 The dataverse breadcrumbs appear on each dataverse page and can be used to navigate throughout Dataverse.
 

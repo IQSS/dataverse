@@ -1,123 +1,46 @@
 #metadataBlock	name	displayName												
 	biomedical	Biomedical Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	studyDesignType	Study Design	Study Design Descriptors			1	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		biomedical
-	studyDesignTypeValue	Type	A term allowing the classification of the study based on the overall experimental design (e.g. crossover design; parallel group design). The term can be free text or from, for example, a controlled  vocabulary or an ontology. If the latter source is used the Term Accession Number and Term Source  REF fields below are required.		text	2	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	studyDesignType	biomedical
-	studyTermAccessionNumber	Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	3	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyDesignType	biomedical
-	studyTermSourceREF	Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology	OBI	text	4	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyDesignType	biomedical
-	studyFactor	Study Factor	Study Factor(s)		text	5	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		biomedical
-	studyFactorName	Name	The name of one factor used in the Study and/or Assay files. A factor corresponds to an independent  variable manipulated by the experimentalist with the intention to affect biological systems in a way  that can be measured by an assay. 		text	6	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	studyFactor	biomedical
-	studyFactorType	Type	A term allowing the classification of this factor into categories. The term can be free text or from, for  example, a controlled vocabulary or an ontology. If the latter source is used the Term Accession  Number and Term Source REF fields below are required. 		text	7	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	studyFactor	biomedical
-	studyFactorTermAccessionNumber	Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	8	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyFactor	biomedical
-	studyFactorTermSourceREF	Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	9	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyFactor	biomedical
-	studyAssay	Study Assay	Declares and describes each Assay file associated with the current Study.			10	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		biomedical
-	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). The term can be free text or from, for example, a controlled vocabulary or an ontology.  If the latter source is used the Term Accession Number and Term Source REF fields below are  required.  		text	11	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayMeasurementTermAccessionNumber	Measurement Type Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	12	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayMeasurementTermSourceREF	Measurement Type Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayTechnologyType	Technology Type	Term to identify the technology used to perform the measurement, e.g. DNA microarray, mass  spectrometry. The term can be free text or from, for example, a controlled vocabulary or an ontology.  If the latter source is used the Term Accession Number and Term Source REF fields below are  required.		text	14	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayTechnologyTypeTermAccessionNumber	Technology Type Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayTechnologyTypeTermSourceREF	Type Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayTechnologyPlatform	Technology Platform	Manufacturer and platform name (e.g., Bruker AVANCE).		text	17	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	studyAssay	biomedical
-	studyAssayFileName	Study Assay File Names	A field to specify the name of the Assay file corresponding the definition of that assay.		text	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyAssay	biomedical
-	studyProtocols	Study Protocol	Study Protocols			19	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		biomedical
-	studyProtocolName	Name	The name(s) of the protocols used in the experimental sequence. The protocol names are used as identifiers within the document and will be referenced in the Study Protocol REF columns. Names may be local identifiers, fully qualified external accession numbers or DOIs.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolType	Type	Term to classify the protocol. The term can be free text or from, for example, a controlled vocabulary  or an ontology. If the latter source is used the Term Accession Number and Term Source REF fields  below are required.   		text	21	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolTypeTermAccessionNumber	Type Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	22	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolTypeTermSourceREF	Type Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolDescription	Description 	A free-text description of the protocol.   		text	24	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolURI	URI	Pointer to protocol resources external to the ISA-TAB that can be accessed by their Uniform  Resource Identifier (URI).  		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolVersion	Version	An identifier for the version of the protocol used to ensure adequate protocol tracking.		text	26	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolParametersName	Parameters Name	Study Protocol Parameters Name		text	27	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolParametersNameTermAccessionNumber	Parameters Name Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	28	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolParametersNameTermSourceREF	Parameters Name Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	29	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolComponentsName	Components Name	Study Protocol Components Name		text	30	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolComponentsType	Components Type	Study Protocol Components Type		text	31	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolComponentsTypeTermAccessionNumber	Components Type Term Accession Number	If a controlled vocabulary or an ontology is used this field is required. The accession number from the Term Source associated with the selected term		text	32	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
-	studyProtocolComponentsTypeTermSourceREF	Components Type Term Source REF	If a controlled vocabulary or an ontology is used this field is required. Identifies the controlled vocabulary or ontology that this term comes from. The Source REF has to match one of the Term Source Name declared in the ontology		text	33	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	studyProtocols	biomedical
+	studyDesignType	Design Type	Select the design types that are based on the overall experimental design.		text	0	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyFactorType	Factor Type	Factors used in the Study. 		text	1	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). The term can be free text or from, for example, a controlled vocabulary or an ontology.  If the latter source is used the Term Accession Number and Term Source REF fields below are  required.  		text	2	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayOrganism	Organism	The taxonomic name of the organism used in a study or from which the  starting biological material derives.		text	4	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
+	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	5	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 #controlledVocabulary	DatasetField	Value	displayOrder											
-	studyDesignTypeValue	all pairs design	0											
-	studyDesignTypeValue	array platform variation design	1											
-	studyDesignTypeValue	cell component comparison design	2											
-	studyDesignTypeValue	cell cycle design	3											
-	studyDesignTypeValue	cell differentiation design	4											
-	studyDesignTypeValue	cellular process design	5											
-	studyDesignTypeValue	clinical history design	6											
-	studyDesignTypeValue	clinical study design	7											
-	studyDesignTypeValue	compound treatment design	8											
-	studyDesignTypeValue	compound treatment design > dose response design	9											
-	studyDesignTypeValue	disease state design	10											
-	studyDesignTypeValue	DNA methylation profiling by array design	11											
-	studyDesignTypeValue	DNA methylation profiling by high throughput sequencing design	12											
-	studyDesignTypeValue	dye swap design	13											
-	studyDesignTypeValue	environmental history design	14											
-	studyDesignTypeValue	ex vivo design	15											
-	studyDesignTypeValue	factorial design	16											
-	studyDesignTypeValue	factorial design > 2x2 factorial design	17											
-	studyDesignTypeValue	factorial design > balanced incomplete block design	18											
-	studyDesignTypeValue	factorial design > fractional factorial design	19											
-	studyDesignTypeValue	family history design	20											
-	studyDesignTypeValue	genotyping design	21											
-	studyDesignTypeValue	genotyping design > genotyping by array design	22											
-	studyDesignTypeValue	genotyping design > genotyping by high throughput sequencing design	23											
-	studyDesignTypeValue	grant	24											
-	studyDesignTypeValue	imprinting design	25											
-	studyDesignTypeValue	in vitro design	26											
-	studyDesignTypeValue	in vivo design	27											
-	studyDesignTypeValue	injury design	28											
-	studyDesignTypeValue	innate behavior design	29											
-	studyDesignTypeValue	intervention design	30											
-	studyDesignTypeValue	intervention design > compound treatment design	31											
-	studyDesignTypeValue	intervention design > compound treatment design > dose response design	32											
-	studyDesignTypeValue	intervention design > genetic modification design	33											
-	studyDesignTypeValue	intervention design > growth condition intervention design	34											
-	studyDesignTypeValue	intervention design > post-transcriptional modification design	35											
-	studyDesignTypeValue	intervention design > randomized complete block design	36											
-	studyDesignTypeValue	intervention design > randomized complete block design > graeco latin square design	37											
-	studyDesignTypeValue	intervention design > randomized complete block design > hyper graeco latin square design	38											
-	studyDesignTypeValue	intervention design > randomized complete block design > latin square design	39											
-	studyDesignTypeValue	intervention design > repeated measure design	40											
-	studyDesignTypeValue	intervention design > repeated measure design > cross over design 	41											
-	studyDesignTypeValue	intervention design > sequential design	42											
-	studyDesignTypeValue	intervention design > stimulus or stress design	43											
-	studyDesignTypeValue	investigation assay specification	44											
-	studyDesignTypeValue	loop design	45											
-	studyDesignTypeValue	matched pairs design	46											
-	studyDesignTypeValue	normalization testing design	47											
-	studyDesignTypeValue	observation design	48											
-	studyDesignTypeValue	operator variation design	49											
-	studyDesignTypeValue	operon identification design	50											
-	studyDesignTypeValue	organism development design	51											
-	studyDesignTypeValue	organism status comparison design	52											
-	studyDesignTypeValue	parallel group design	53											
-	studyDesignTypeValue	pathogenicity design	54											
-	studyDesignTypeValue	protein binding site identification design	55											
-	studyDesignTypeValue	protein binding site identification design > ChIP-chip design	56											
-	studyDesignTypeValue	protein binding site identification design > ChIP-chip design > ChIP-chip by tiling array design	57											
-	studyDesignTypeValue	protein binding site identification design > ChIP-chip design > ChIP-seq design	58											
-	studyDesignTypeValue	proteomic profiling by array design	59											
-	studyDesignTypeValue	quality control testing design	60											
-	studyDesignTypeValue	reference design	61											
-	studyDesignTypeValue	RNA stability design	62											
-	studyDesignTypeValue	RNAi profiling by array design 	63											
-	studyDesignTypeValue	species comparison design	64											
-	studyDesignTypeValue	self vs self design	65											
-	studyDesignTypeValue	sex comparison design	66											
-	studyDesignTypeValue	species comparison design	67											
-	studyDesignTypeValue	specification of data to be generated in an investigation	68											
-	studyDesignTypeValue	specimen-based scope of investigation specification	69											
-	studyDesignTypeValue	strain comparison design	70											
-	studyDesignTypeValue	study design controlled variable	71											
-	studyDesignTypeValue	study design dependent variable	72											
-	studyDesignTypeValue	study design independent variable	73											
-	studyDesignTypeValue	target capture specification	74											
-	studyDesignTypeValue	target material in specimen specification	75											
-	studyDesignTypeValue	time series design	76											
-	studyDesignTypeValue	transcription profiling design	77											
-	studyDesignTypeValue	transcription profiling design > microRNA profiling by array design	78											
-	studyDesignTypeValue	transcription profiling design > by array design	79											
-	studyDesignTypeValue	transcription profiling design > by high thoughput sequencing design	80											
-	studyDesignTypeValue	transcription profiling design > by RT-PCR design	81											
-	studyDesignTypeValue	transcription profiling design > by tiling array design 	82											
-	studyDesignTypeValue	translational bias design	83											
-	studyDesignTypeValue	validation by real time PCR design	84											
-	studyDesignTypeValue	validation by reverse transcription PCR design 	85											
+	studyDesignType	Case Control	0											
+	studyDesignType	Cross Sectional	1											
+	studyDesignType	Not Specified	2											
+	studyDesignType	Parallel Group Design	3											
+	studyDesignType	Perturbation Design	4											
+	studyDesignType	Technological Design	5											
+	studyFactorType	Age	0											
+	studyFactorType	Biomarkers	1											
+	studyFactorType	Developmental Stage	2											
+	studyFactorType	Cell Surface Markers	3											
+	studyFactorType	Cell Type/Cell Line	4											
+	studyFactorType	Disease State	5											
+	studyFactorType	Extract Molecule	6											
+	studyFactorType	Genetic Characteristics	7											
+	studyFactorType	Immunoprecipitation Antibody	8											
+	studyFactorType	Organism	9											
+	studyFactorType	Other	10											
+	studyFactorType	Passages	11											
+	studyFactorType	Platform	12											
+	studyFactorType	Sex	13											
+	studyFactorType	Strain	14											
+	studyFactorType	Time Point	15											
+	studyFactorType	Tissue Type	16											
+	studyFactorType	Treatment Compound	17											
+	studyFactorType	Treatment Type	18											
+	studyAssayMeasurementType	DNA Methylation Profiling (Bisulfite-Seq)	0											
+	studyAssayMeasurementType	DNA Methylation Profiling (MeDIP-Seq)	1											
+	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	2											
+	studyAssayMeasurementType	Protein-RNA Binding (RIP-Seq)	3											
+	studyAssayMeasurementType	Transcription Factor Binding (ChIP-Seq)	4											
+	studyAssayMeasurementType	Transcription Profiling (Microarray)	5											
+	studyAssayMeasurementType	Transcription Profiling (RNA-Seq)	6											
+	studyAssayMeasurementType	TRAP Translational Profiling	7											
+	studyAssayOrganism	Danio rerio	0											
+	studyAssayOrganism	Homo sapiens	1											
+	studyAssayOrganism	Mus musculus	2											
+	studyAssayOrganism	Rattus norvegicus	3											

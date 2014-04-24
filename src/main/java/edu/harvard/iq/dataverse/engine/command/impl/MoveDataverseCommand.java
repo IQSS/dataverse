@@ -34,6 +34,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 	
 	@Override
 	public void executeImpl(CommandContext ctxt) throws CommandException {
+        
+        // NOTE placeholder, more logic due
+        
 		// validate the move makes sense
 		if ( destination.getOwners().contains(moved) ) {
 			throw new IllegalCommandException("Can't move a dataverse to its descendant", this);

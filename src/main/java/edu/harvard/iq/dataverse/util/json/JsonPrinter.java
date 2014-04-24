@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
@@ -13,6 +16,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -20,12 +24,15 @@ import javax.json.JsonObjectBuilder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Convert objects to Json.
@@ -130,17 +137,13 @@ public class JsonPrinter {
 				.add("productionDate", dsv.getProductionDate())
 				.add("UNF", dsv.getUNF())
 				.add("archiveTime", format(dsv.getArchiveTime()) )
-				
 				;
 				
 		// Add authors
 		List<DatasetAuthor> auth = dsv.getDatasetAuthors();
 		if ( ! auth.isEmpty() ) {
 			if ( auth.size() > 1 ) {
-				Collections.sort(auth, new Comparator<DatasetAuthor>(){
-					@Override
-					public int compare(DatasetAuthor o1, DatasetAuthor o2) {
-						return o1.getDisplayOrder()-o2.getDisplayOrder();}});
+				Collections.sort(auth, DatasetAuthor.DisplayOrder );
 			}
 			JsonArrayBuilder ab = Json.createArrayBuilder();
 			for ( DatasetAuthor da : auth ) {
@@ -149,55 +152,57 @@ public class JsonPrinter {
 			bld.add("authors", ab);
 		}
 		
-		// Arrange the dataset field values in metadata blocks.
-		JsonObjectBuilder blocksBld = jsonObjectBuilder();
-		List<MetadataBlock> metadataBlocks = dsv.getDataset().getOwner().getMetadataBlocks();
-		List<DatasetField> fieldValues = dsv.getDatasetFields();
-		
-		for ( MetadataBlock block : metadataBlocks ) {
-			JsonObjectBuilder blockBld = jsonObjectBuilder();
-		
-			blockBld.add("block", json(block) );
-			
-			Set<DatasetFieldType> blockFields = new TreeSet<>(block.getDatasetFieldTypes());
-			
-			JsonObjectBuilder valuesBld = jsonObjectBuilder();
-
-			for ( DatasetField val : new TreeSet<>(fieldValues) ) {
-				if ( blockFields.contains(val.getDatasetFieldType()) ) {
-					valuesBld.add( val.getDatasetFieldType().getName(), json(val) );
-				}
-			}
-			
-			blockBld.add( "values", valuesBld );
-			
-			blocksBld.add(block.getName(), blockBld);
-		}
-		
-		bld.add("metadataBlocks", blocksBld);
-
+		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 		
 		return bld;
 	}
+    
+    public static JsonObjectBuilder jsonByBlocks( List<DatasetField> fields ) {
+        JsonObjectBuilder blocksBld = jsonObjectBuilder();
+		
+		for ( Map.Entry<MetadataBlock, List<DatasetField>> blockAndFields : DatasetField.groupByBlock(fields).entrySet() ) {
+            MetadataBlock block = blockAndFields.getKey();
+            blocksBld.add( block.getName(), json( block, blockAndFields.getValue()) );
+		}
+        return blocksBld;
+    }
+    
+    /**
+     * Create a JSON object for the block and its fields. The fields are
+     * assumed to belong to the block - there's no checking of that in the
+     * method.
+     * 
+     * @param block
+     * @param fields
+     * @return JSON Object builder with the block and fields information.
+     */
+    public static JsonObjectBuilder json( MetadataBlock block, List<DatasetField> fields) {
+        JsonObjectBuilder blockBld = jsonObjectBuilder();
+			
+        blockBld.add("displayName", block.getDisplayName());
+        final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+
+        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray));
+
+        blockBld.add("fields", fieldsArray);
+        return blockBld;
+    }
 	
+    public static String typeClassString( DatasetFieldType typ ) {
+        if ( typ.isControlledVocabulary()) return "controlledVocabulary";
+        if ( typ.isCompound()) return "compound";
+        return "primitive";
+    }
+    
 	public static JsonObjectBuilder json( DatasetField dfv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder();
 		bld.add( "id", dfv.getId() );
-                /*
-		bld.add( "displayOrder", dfv.getDisplayOrder() );
 		if ( dfv.isEmpty() ) {
 			bld.addNull("value");
 		} else {
-			if ( dfv.isChildEmpty() ) {
-				bld.add( "value", dfv.getValue());
-			} else {
-				JsonObjectBuilder childBld = jsonObjectBuilder();
-				for ( DatasetFieldValue childVal : dfv.getChildDatasetFieldValues() ) {
-					childBld.add(childVal.getDatasetField().getName(), json(childVal) );
-				}
-				bld.add( "value", childBld );
-			}
-		}*/
+            // TODO traverse the fields
+            bld.add( "value", dfv.getDisplayValue() );
+		}
 		
 		return bld;
 	}
@@ -280,4 +285,68 @@ public class JsonPrinter {
 	public static String format( Date d ) {
 		return (d==null) ? null : dateFormat.format(d);
 	}
+    
+
+    private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
+
+        Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
+        Deque<JsonArrayBuilder>  valueArrStack = new LinkedList<>();
+        Deque<JsonArrayBuilder>  fieldAggregator = new LinkedList<>();
+
+        public DatasetFieldsToJson(JsonArrayBuilder fieldsArray) {
+            fieldAggregator.push(fieldsArray);
+        }
+
+        @Override
+        public void startField(DatasetField f) {
+            objectStack.push( jsonObjectBuilder() );
+            DatasetFieldType typ = f.getDatasetFieldType();
+            objectStack.peek().add("typeName", typ.getName() );
+            objectStack.peek().add("multiple", typ.isAllowMultiples());
+            objectStack.peek().add("typeClass", typeClassString(typ) );
+            if ( typ.isAllowMultiples() ) {
+                valueArrStack.push(Json.createArrayBuilder());
+            }
+        }
+
+                @Override
+                public void endField(DatasetField f) {
+                    if ( f.getDatasetFieldType().isAllowMultiples() ) {
+                        objectStack.peek().add("value", valueArrStack.pop());
+                    }
+                    fieldAggregator.peek().add(objectStack.pop());
+                }
+
+                @Override
+                public void primitiveValue(DatasetFieldValue dsfv) {
+                    if ( dsfv.getDatasetField().getDatasetFieldType().isAllowMultiples() ) {
+                        valueArrStack.peek().add( dsfv.getValue() );
+                    } else {
+                        objectStack.peek().add("value", dsfv.getValue());
+                    }
+                }
+
+                @Override
+                public void controledVocabularyValue(ControlledVocabularyValue cvv) {
+                    if ( cvv.getDatasetFieldType().isAllowMultiples() ) {
+                        valueArrStack.peek().add( cvv.getStrValue() );
+                    } else {
+                        objectStack.peek().add("value", cvv.getStrValue());
+                    }
+                }
+
+                @Override
+                public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
+                    fieldAggregator.push( Json.createArrayBuilder() );
+                }
+
+                @Override
+                public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
+                    if ( dsfcv.getParentDatasetField().getDatasetFieldType().isAllowMultiples() ) {
+                        valueArrStack.peek().add( fieldAggregator.pop() );
+                    } else {
+                        objectStack.peek().add("value", fieldAggregator.pop() );
+                    }
+                }
+    }
 }

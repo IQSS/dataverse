@@ -1,0 +1,2 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "CREATE ROLE dataverse_app UNENCRYPTED PASSWORD 'secret' NOSUPERUSER CREATEDB CREATEROLE NOINHERIT LOGIN" template1
