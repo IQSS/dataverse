@@ -208,6 +208,7 @@ public class CSVFileReader extends TabularDataFileReader {
         // (we'll save the incoming stream in another temp file:)
         
         SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[varQnty]; 
+        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[varQnty];
 
         
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
@@ -353,6 +354,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                     dateResult = format.parse(valueTokens[i]);
                                     dbglog.info("format " + format.toPattern() + " worked!");
                                     isDate = true;
+                                    selectedDateFormat[i] = format;
                                     break;
                                 } catch (ParseException ex) {
                                     //Do nothing                                      
@@ -387,12 +389,12 @@ public class CSVFileReader extends TabularDataFileReader {
                 } else {
                     dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
                 }
-            } else if (isDateVariable[i]) {
+            } else if (isDateVariable[i] && selectedDateFormat[i] != null) {
                 // Dates are still Strings, i.e., they are "character" and "discrete";
                 // But we add special format values for them:
                 dataTable.getDataVariables().get(i).setFormatSchemaName(DATE_FORMATS[0].toPattern());
                 dataTable.getDataVariables().get(i).setFormatCategory("date");
-            } else if (isTimeVariable[i]) {
+            } else if (isTimeVariable[i] && selectedDateTimeFormat[i] != null) {
                 // Same for time values:
                 dataTable.getDataVariables().get(i).setFormatSchemaName(selectedDateTimeFormat[i].toPattern());
                 dataTable.getDataVariables().get(i).setFormatCategory("time");
