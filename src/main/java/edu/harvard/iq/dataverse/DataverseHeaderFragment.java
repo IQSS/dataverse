@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.event.NodeSelectEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -24,6 +24,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
+    
+    @Inject
+    DataverseSession dataverseSession;
 
     public List<Dataverse> getDataverses(Dataverse dataverse) {
         List dataverses = new ArrayList();
@@ -50,8 +53,13 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         for (Dataverse child : childDataversesOfCurrentDataverse) {
             getDataverseNode(child, dataverseNode, false);
         }
-        
+
         return dataverseNode;
-}
-      
+    }
+    
+    public String logout() {
+        dataverseSession.setUser(null);
+        return "/dataverse.xhtml?faces-redirect=true";
+    }
+
 }
