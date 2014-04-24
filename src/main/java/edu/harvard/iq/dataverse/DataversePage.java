@@ -265,8 +265,6 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public String getCountString (){
-        
-        System.out.print(1000 - descriptionSize.intValue());
         return new Integer(1000 - descriptionSize.intValue()).toString() + " characters remaining";
     }
     
