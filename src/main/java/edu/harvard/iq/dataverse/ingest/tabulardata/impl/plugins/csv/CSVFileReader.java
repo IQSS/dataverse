@@ -277,89 +277,93 @@ public class CSVFileReader extends TabularDataFileReader {
                 // a date-time value:
                 
                 if (!isNumericVariable[i]) {
-                    boolean isTime = false;
+                    
                     Date dateResult = null; 
+                    
                     if (isTimeVariable[i]) {
-                        if (selectedDateTimeFormat[i] != null) {
-                            dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
-                            ParsePosition pos = new ParsePosition(0);
-                            dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
-                            
-                            if (dateResult == null) {
-                                dbglog.info(selectedDateTimeFormat[i].toPattern()+": null result.");
-                            } else if (pos.getIndex() != valueTokens[i].length()) {
-                                dbglog.info(selectedDateTimeFormat[i].toPattern()+": didn't parse to the end - bad time zone?");
-                            } else {
-                                // OK, successfully parsed a value!
-                                isTime = true; 
-                                dbglog.info(selectedDateTimeFormat[i].toPattern()+" worked!");
-                            }
-                        } else {
-                            for (SimpleDateFormat format : TIME_FORMATS) {
-                                dbglog.info("will try format " + format.toPattern());
+                        if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
+                            boolean isTime = false;
+
+                            if (selectedDateTimeFormat[i] != null) {
+                                dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
                                 ParsePosition pos = new ParsePosition(0);
-                                dateResult = format.parse(valueTokens[i], pos);
+                                dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
+
                                 if (dateResult == null) {
-                                    dbglog.info(format.toPattern()+": null result.");
-                                    continue; 
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": null result.");
+                                } else if (pos.getIndex() != valueTokens[i].length()) {
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
+                                } else {
+                                    // OK, successfully parsed a value!
+                                    isTime = true;
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + " worked!");
                                 }
-                                if (pos.getIndex() != valueTokens[i].length()) {
-                                    dbglog.info(format.toPattern()+": didn't parse to the end - bad time zone?");
-                                    continue; 
+                            } else {
+                                for (SimpleDateFormat format : TIME_FORMATS) {
+                                    dbglog.info("will try format " + format.toPattern());
+                                    ParsePosition pos = new ParsePosition(0);
+                                    dateResult = format.parse(valueTokens[i], pos);
+                                    if (dateResult == null) {
+                                        dbglog.info(format.toPattern() + ": null result.");
+                                        continue;
+                                    }
+                                    if (pos.getIndex() != valueTokens[i].length()) {
+                                        dbglog.info(format.toPattern() + ": didn't parse to the end - bad time zone?");
+                                        continue;
+                                    }
+                                    // OK, successfully parsed a value!
+                                    isTime = true;
+                                    dbglog.info(format.toPattern() + " worked!");
+                                    selectedDateTimeFormat[i] = format;
+                                    break;
                                 }
-                                // OK, successfully parsed a value!
-                                isTime = true;
-                                dbglog.info(format.toPattern() + " worked!");
-                                selectedDateTimeFormat[i] = format;
-                                break; 
+                            }
+                            if (!isTime) {
+                                isTimeVariable[i] = false;
+                                // OK, the token didn't parse as a time value;
+                                // But we will still try to parse it as a date, below.
+                                // unless of course we have already decided that this column 
+                                // is NOT a date. 
+                            } else {
+                                // And if it is a time value, we are going to assume it's
+                                // NOT a date.
+                                isDateVariable[i] = false; 
                             }
                         }
                     }
-                    if (isTime) {
-                        // OK, if it's a time value, we are going to assume it's
-                        // NOT a date.
-                        isDateVariable[i] = false; 
-                        //isTimeVariable[i] still set to true, by default.
-                    } else {
-                        // 
-                        isTimeVariable[i] = false; 
-                        // OK, the token didn't parse as a time value;
-                        // But we can still try to parse it as a date. Unless
-                        // of course we have already decided that this column 
-                        // is not a date. 
-                       
-                        if (isDateVariable[i]) {
+
+                    if (isDateVariable[i]) {
+                        if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
                             boolean isDate = false;
-                            if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
-                                // TODO: 
-                                // Strictly speaking, we should be doing the same thing
-                                // here as with the time formats above; select the 
-                                // first one that works, then insist that all the 
-                                // other values in this column match it... but we 
-                                // only have one, as of now, so it should be ok. 
-                                // -- L.A. 4.0 beta
-                                
-                                for (SimpleDateFormat format : DATE_FORMATS) {
-                                    // Strict parsing - it will throw an 
-                                    // exception if it doesn't parse!
-                                    format.setLenient(false);
-                                    dbglog.info("will try format " + format.toPattern());
-                                    try {
-                                        dateResult = format.parse(valueTokens[i]);
-                                        dbglog.info("format " + format.toPattern() + " worked!");
-                                        isDate = true;
-                                        break;
-                                    } catch (ParseException ex) {
-                                        //Do nothing                                      
-                                        dbglog.info("format " + format.toPattern() + " didn't work.");
-                                    }
-                                }
-                                if (!isDate) {
-                                    isDateVariable[i] = false;
+
+                            // TODO: 
+                            // Strictly speaking, we should be doing the same thing
+                            // here as with the time formats above; select the 
+                            // first one that works, then insist that all the 
+                            // other values in this column match it... but we 
+                            // only have one, as of now, so it should be ok. 
+                            // -- L.A. 4.0 beta
+
+                            for (SimpleDateFormat format : DATE_FORMATS) {
+                                // Strict parsing - it will throw an 
+                                // exception if it doesn't parse!
+                                format.setLenient(false);
+                                dbglog.info("will try format " + format.toPattern());
+                                try {
+                                    dateResult = format.parse(valueTokens[i]);
+                                    dbglog.info("format " + format.toPattern() + " worked!");
+                                    isDate = true;
+                                    break;
+                                } catch (ParseException ex) {
+                                    //Do nothing                                      
+                                    dbglog.info("format " + format.toPattern() + " didn't work.");
                                 }
                             }
+                            if (!isDate) {
+                                isDateVariable[i] = false;
+                            } 
                         }
-                    } 
+                    }
                 }
             }
             
