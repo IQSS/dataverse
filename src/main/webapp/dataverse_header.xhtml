@@ -154,7 +154,7 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.tagline}">
                     <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
-                        <span style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};">#{dataverse.tagline}</span>
+                        <h:outputText escape="false" style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value="#{dataverse.tagline}" />
                     </div>
                 </ui:fragment>
             </div>
