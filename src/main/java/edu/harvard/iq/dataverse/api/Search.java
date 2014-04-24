@@ -65,12 +65,12 @@ public class Search extends AbstractApiBean {
                     }
                 }
                 SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-                if (publishedOnly) {
-                    publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-                }
-                if (unpublishedOnly) {
-                    publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
-                }
+//                if (publishedOnly) {
+//                    publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+//                }
+//                if (unpublishedOnly) {
+//                    publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
+//                }
                 solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
             } catch (EJBException ex) {
                 Throwable cause = ex;

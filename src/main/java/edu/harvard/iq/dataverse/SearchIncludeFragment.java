@@ -89,7 +89,7 @@ public class SearchIncludeFragment {
     private Map<String, Integer> numberOfFacets = new HashMap<>();
     private List<DvObjectContainer> directChildDvObjectContainerList = new ArrayList<>();
     private boolean debug = false;
-    private boolean showUnpublished;
+//    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
 
@@ -257,11 +257,11 @@ public class SearchIncludeFragment {
             logger.info("queryToPassToSolr: " + queryToPassToSolr);
             logger.info("sort by: " + sortField);
             SearchServiceBean.PublishedToggle publishedToggle = null;
-            if (showUnpublished) {
-                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
-            } else {
-                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-            }
+//            if (showUnpublished) {
+//                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
+//            } else {
+//                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+//            }
             solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, publishedToggle);
             solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, publishedToggle);
         } catch (EJBException ex) {
@@ -372,13 +372,13 @@ public class SearchIncludeFragment {
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
     }
 
-    public boolean isShowUnpublished() {
-        return showUnpublished;
-    }
-
-    public void setShowUnpublished(boolean showUnpublished) {
-        this.showUnpublished = showUnpublished;
-    }
+//    public boolean isShowUnpublished() {
+//        return showUnpublished;
+//    }
+//
+//    public void setShowUnpublished(boolean showUnpublished) {
+//        this.showUnpublished = showUnpublished;
+//    }
 
     public String getBrowseModeString() {
         return browseModeString;
@@ -854,6 +854,10 @@ public class SearchIncludeFragment {
 
     public String getUNPUBLISHED() {
         return IndexServiceBean.getUNPUBLISHED_STRING();
+    }
+
+    public String getDRAFT() {
+        return IndexServiceBean.getDRAFT_STRING();
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {

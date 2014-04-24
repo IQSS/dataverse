@@ -49,6 +49,7 @@ public class IndexServiceBean {
     private static final Long tmpNsaGroupId = 2L;
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
+    private static final String DRAFT_STRING = "Draft";
 
     public String indexAll() {
         /**
@@ -332,6 +333,7 @@ public class IndexServiceBean {
             }
             sortByDate = majorVersionReleaseDate;
         } else {
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             Date createDate = dataset.getCreateDate();
             if (createDate != null) {
                 if (true) {
@@ -352,7 +354,7 @@ public class IndexServiceBean {
 //            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
-            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
+            solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
             DataverseUser creator = dataset.getCreator();
             if (creator != null) {
                 solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
@@ -555,11 +557,14 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
             datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
+            if (majorVersionReleaseDate == null) {
+                datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
+            }
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
-                datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
+                datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
                 DataverseUser creator = dataFile.getOwner().getCreator();
                 if (creator != null) {
                     datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
@@ -824,6 +829,10 @@ public class IndexServiceBean {
 
     public static String getUNPUBLISHED_STRING() {
         return UNPUBLISHED_STRING;
+    }
+
+    public static String getDRAFT_STRING() {
+        return DRAFT_STRING;
     }
 
     public String delete(Dataverse doomed) {

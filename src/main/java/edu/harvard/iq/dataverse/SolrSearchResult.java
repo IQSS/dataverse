@@ -41,6 +41,33 @@ public class SolrSearchResult {
     private String dataverseAffiliation;
     private String citation;
     private String filetype;
+//    private boolean statePublished;
+    private boolean unpublishedState;
+    private boolean draftState;
+
+//    public boolean isStatePublished() {
+//        return statePublished;
+//    }
+
+//    public void setStatePublished(boolean statePublished) {
+//        this.statePublished = statePublished;
+//    }
+
+    public boolean isUnpublishedState() {
+        return unpublishedState;
+    }
+
+    public void setUnpublishedState(boolean unpublishedState) {
+        this.unpublishedState = unpublishedState;
+    }
+
+    public boolean isDraftState() {
+        return draftState;
+    }
+
+    public void setDraftState(boolean draftState) {
+        this.draftState = draftState;
+    }
     /**
      * @todo: used? remove
      */
@@ -214,6 +241,9 @@ public class SolrSearchResult {
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE_MIME, this.filetype);
+        }
+        if (this.id == null) {
+            this.id = "bug3809";
         }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add(SearchFields.ID, this.id)

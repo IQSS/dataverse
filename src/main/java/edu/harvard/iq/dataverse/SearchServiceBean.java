@@ -53,17 +53,21 @@ public class SearchServiceBean {
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 
+    /*
+     * @deprecated The Published/Unpublished toggle was an experiment: https://docs.google.com/a/harvard.edu/document/d/1clGJKOmrH8zhQyG_8vQHui5L4fszdqRjM4t3U6NFJXg/edit?usp=sharing
+     */
+    @Deprecated
     public enum PublishedToggle {
 
         PUBLISHED, UNPUBLISHED
     };
 
     public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
-            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
-        } else {
-            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
-        }
+//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+//        } else {
+//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+//        }
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -113,8 +117,9 @@ public class SearchServiceBean {
         if (dataverseUser != null) {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
+//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS); // remove ... just for dev
             } else {
-//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
@@ -143,6 +148,16 @@ public class SearchServiceBean {
                 }
             }
         }
+
+        /**
+         * @todo: Remove! Or at least keep this commented out! Very dangerous!
+         * If you pass in "null" for permissionFilterQuery then everyone, even
+         * guest, has "NSA Nick" privs and can see everything! This override
+         * should only be used during dev.
+         */
+//        String dangerZone = null;
+//        permissionFilterQuery = dangerZone;
+
         solrQuery.addFilterQuery(permissionFilterQuery);
 
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
@@ -289,6 +304,14 @@ public class SearchServiceBean {
             /**
              * @todo put all this in the constructor?
              */
+            List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
+            for (String state : states) {
+                if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                    solrSearchResult.setUnpublishedState(true);
+                } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
+                    solrSearchResult.setDraftState(true);
+                }
+            }
 //            logger.info(id + ": " + description);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setId(id);
