@@ -144,6 +144,7 @@ public class DataversePage implements java.io.Serializable {
     public void edit(EditMode editMode) {
         this.editMode = editMode;
         setDataverseDescriptionPage(dataverse.getDescription());
+        updateCountDisplay();
         if (editMode == EditMode.INFO) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
         } else if (editMode == EditMode.SETUP) {
