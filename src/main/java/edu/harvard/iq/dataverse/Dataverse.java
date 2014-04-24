@@ -12,6 +12,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -76,10 +78,17 @@ public class Dataverse extends DvObjectContainer {
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
     
+    public enum ImageFormat { SQUARE, RECTANGLE }
+
+    @Enumerated(EnumType.STRING)
+    private ImageFormat logoFormat;
     private String logo;
     private String tagline;
-    private String link;
-    private String color; 
+    private String linkUrl;
+    private String linkText;
+    private String linkColor;
+    private String textColor; 
+    private String backgroundColor; 
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -181,22 +190,12 @@ public class Dataverse extends DvObjectContainer {
         this.facetRoot = facetRoot;
     }
 
-    public void addRole(DataverseRole role) {
-        role.setOwner(this);
-        roles.add(role);
+    public ImageFormat getLogoFormat() {
+        return logoFormat;
     }
 
-    public Set<DataverseRole> getRoles() {
-        return roles;
-    }
-
-    public List<Dataverse> getOwners() {
-        List owners = new ArrayList();
-        if (getOwner() != null) {
-            owners.addAll(getOwner().getOwners());
-            owners.add(getOwner());
-        }
-        return owners;
+    public void setLogoFormat(ImageFormat logoFormat) {
+        this.logoFormat = logoFormat;
     }
 
     public String getLogo() {
@@ -215,21 +214,66 @@ public class Dataverse extends DvObjectContainer {
         this.tagline = tagline;
     }
 
-    public String getLink() {
-        return link;
+    public String getLinkUrl() {
+        return linkUrl;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setLinkUrl(String linkUrl) {
+        this.linkUrl = linkUrl;
     }
 
-    public String getColor() {
-        return color;
+    public String getLinkText() {
+        return linkText;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setLinkText(String linkText) {
+        this.linkText = linkText;
     }
+
+    public String getLinkColor() {
+        return linkColor;
+    }
+
+    public void setLinkColor(String linkColor) {
+        this.linkColor = linkColor;
+    }
+
+    public String getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(String textColor) {
+        this.textColor = textColor;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+    
+    
+
+    public void addRole(DataverseRole role) {
+        role.setOwner(this);
+        roles.add(role);
+    }
+
+    public Set<DataverseRole> getRoles() {
+        return roles;
+    }
+
+    public List<Dataverse> getOwners() {
+        List owners = new ArrayList();
+        if (getOwner() != null) {
+            owners.addAll(getOwner().getOwners());
+            owners.add(getOwner());
+        }
+        return owners;
+    }
+
         
     @Override
     public boolean equals(Object object) {
