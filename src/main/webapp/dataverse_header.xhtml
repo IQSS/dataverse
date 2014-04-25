@@ -131,19 +131,24 @@
             </div>
         </div>
     </nav>
-
+    
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
-        <div class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#B5E5F5'}; margin:0 auto .5em auto; padding:2em 1em;">
+        <div class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'}; margin:0 auto .5em auto;">
+            <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'RECTANGLE'}">
+                <div style="text-align:center;">
+                    <image src="/logos/#{dataverse.logo}" style="max-width:900px;max-height:120px"/>
+                </div>
+            </ui:fragment>
             <div style="display:table-row;">
-                <ui:fragment rendered="#{!empty dataverse.logo}">
+                <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'SQUARE'}">
                     <div style="display:table-cell;text-align:center;">
-                        <image src="/logos/#{dataverse.logo}"/>
+                        <image src="/logos/#{dataverse.logo}" style="max-width:100px;max-height:100px"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
-                    <div style="display:table-cell; padding-left:1em;">
-                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : '#888'};">#{dataverse.name} Dataverse</a> 
+                    <div style="display:table-cell; padding:2em 1em;">
+                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};">#{dataverse.name} Dataverse</a> 
                         <h:outputText style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     </div>
                 </ui:fragment>
@@ -155,6 +160,13 @@
                 <ui:fragment rendered="#{!empty dataverse.tagline}">
                     <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
                         <h:outputText escape="false" style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value="#{dataverse.tagline}" />
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{!empty dataverse.tagline}">
+                    <div style="display:table-cell; padding-left:2em;">
+                        <h:outputLink value="#{dataverse.linkUrl}" target="_blank">
+                            <h:outputText style="color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};" value="#{dataverse.linkText}" />
+                        </h:outputLink>
                     </div>
                 </ui:fragment>
             </div>
