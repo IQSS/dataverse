@@ -1,6 +1,9 @@
 Finding and Using Data
 +++++++++++++++++++++++
 
+Finding Data
+=============
+
 Without logging in to Dataverse, users can browse
 Dataverse, search for dataverses, datasets, and files, view dataset descriptions and files for
 public datasets, and subset, analyze and visualize data for public data
@@ -9,7 +12,7 @@ files. To view a restricted dataverse, dataset, or file, a user will need to be 
 A user can search the dataverses, datasets, and files within a particular dataverse by using the search bar found on a dataverse page. For example, if you are on the Murray Research Archive Dataverse page, you can search that specific dataverse's contents by using the search bar and/or facets displayed on the page.
 
 Basic Search
-===============
+--------------
 From the Dataverse homepage, you can begin searching with an exact phrase search or entering a search term or query in the search box that says, "Search this dataverse" 
 
 **Search results features**
@@ -28,7 +31,7 @@ From the Dataverse homepage, you can begin searching with an exact phrase search
 
 
 Advanced Search 
-================
+-----------------
 
 In an advanced search, you can refine your criteria by choosing which
 Metadata fields to search. You can perform an advanced search on Citation metadata fields as well as domain specific metadata fields (Social Sciences & Humanities, Astronomy & Astrophysics, and Biomedical). Additionally, you can perform an advanced search for dataverses and files.
@@ -83,11 +86,22 @@ To perform an advanced search, click the Advanced Search link next to the search
 
 
 Browsing Dataverse
-===================
+--------------------
 
 In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
 
 Additionally, a user can browse all dataverses by clicking on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
 
 The dataverse breadcrumbs appear on each dataverse page and can be used to navigate throughout Dataverse.
+
+
+Using Data
+===========
+
+View Datasets
+-------------
+
+Download Files
+--------------
+
 
