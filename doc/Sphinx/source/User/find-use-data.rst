@@ -20,11 +20,11 @@ From the Dataverse homepage, you can begin searching with an exact phrase search
     - Viewing more or less: the top five results show in each facet, to view more, click on "More..." in the bottom right of a facet. Once you've chosen to see more, an option to view less will appear in the bottom left of the facet.
    
 - Result cards: after entering a search term or query, results cards that match appear underneath the search bar and to the right of the facets.
-    - Relevancy of results: each results card shows which metadata fields match the search query or term you entered into the search bar. If the search term or query was found in the title or name of the dataverse, dataset, or file, the search term or query will be bolded within it.
+    - Relevancy of results: each results card shows which metadata fields match the search query or term you entered into the search bar with the matching term or query bolded. If the search term or query was found in the title or name of the dataverse, dataset, or file, the search term or query will be bolded within it.
 
 - Other basic search features: 
-    - Sorting results: search results can be sorted by name (both A-Z and Z-A), publication date, or relevancy of results. The sort button can be found about the search results, in the top right.
-    - Bookmarkable URLs: search URLS can be copied and sent to a fellow researcher or can be bookmarked for you to be able to return to at a later time.
+    - Sorting results: search results can be sorted by name (A-Z or Z-A), newest or oldest, or relevancy of results. The sort button can be found above the search results, in the top right.
+    - Bookmarkable URLs: search URLs can be copied and sent to a fellow researcher or can be bookmarked for you to be able to return to at a later time.
 
 
 Advanced Search 
@@ -85,7 +85,7 @@ To perform an advanced search, click the Advanced Search link next to the search
 Browsing Dataverse
 ===================
 
-In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only Dataverses and Datasets appear in the results list and the results can be sorted by Name (both A-Z and Z-A) and Publication Date (Newest and Oldest).
+In Dataverse, browsing happens when a user hasn't entered a search term or query into the basic search bar. Browsing is the default for a user when they are on the Dataverse homepage or a specific dataverse's page. When browsing, only dataverses and datasets appear in the results list and the results can be sorted by Name (A-Z or Z-A) and by Newest or Oldest.
 
 Additionally, a user can browse all dataverses by clicking on the triangle to the right of a dataverse's name in the breadcrumbs. A drop down menu will appear that holds a listing of all the dataverses within that dataverse. You can click the triangles next to a dataverse's name to view more dataverses within that dataverse. As you continue to browse dataverses, they will appear in the breadcrumbs.
 
