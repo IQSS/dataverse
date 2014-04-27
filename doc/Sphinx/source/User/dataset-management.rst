@@ -38,6 +38,6 @@ browse it or search for it. Once your Dataset is ready to go public, go to your 
 click on the "Unpublished" button on the right hand side of the page which should indicate: 
 "This Dataset is unpublished. To publish it click 'Publish Dataset' link."
 
-Important Note: Once a Dataset is published it cannot be unpublished.
+Important Note: Once a Dataset is published it **cannot be unpublished**; it can be archived instead.
 
 .. |image1| image:: ./img/DatasetDiagram.png
