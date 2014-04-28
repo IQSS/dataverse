@@ -3,6 +3,7 @@
 # We assume you've added the bird and tree dataverses with this:
 #
 #cd scripts/search
+#./populate
 #./create
 #exit
 #

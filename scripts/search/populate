@@ -1,10 +1,27 @@
 #!/bin/bash
 DVDIR='data/in/dataverses'
-DSDIR='data/in/datasets'
-FILESDIR='data/in/files'
+DVDIR_ROOT='data/in/dataverses.root'
+DVDIR_BIRDS='data/in/dataverses.birds'
+DVDIR_TREES='data/in/dataverses.trees'
+#DSDIR='data/in/datasets'
+#FILESDIR='data/in/files'
+#mkdir -p $DSDIR
+#mkdir -p $FILESDIR
+rm -rf data/in
 mkdir -p $DVDIR
-mkdir -p $DSDIR
-mkdir -p $FILESDIR
+mkdir -p $DVDIR_ROOT
+mkdir -p $DVDIR_BIRDS
+mkdir -p $DVDIR_TREES
 count=1; ./tab2json dv.tsv | while read i; do echo $i | python -m json.tool > $DVDIR/$count; let count++; done
-count=1; ./tab2json ds.tsv | while read i; do echo $i | python -m json.tool > $DSDIR/$count; let count++; done
+rm $DVDIR/1
+mv $DVDIR/2 $DVDIR_ROOT/2
+mv $DVDIR/3 $DVDIR_ROOT/3
+mv $DVDIR/4 $DVDIR_BIRDS/4
+mv $DVDIR/5 $DVDIR_BIRDS/5
+mv $DVDIR/6 $DVDIR_BIRDS/6
+mv $DVDIR/7 $DVDIR_TREES/7
+rm $DVDIR/8
+mv $DVDIR/9 $DVDIR_TREES/9
+rmdir $DVDIR
+#count=1; ./tab2json ds.tsv | while read i; do echo $i | python -m json.tool > $DSDIR/$count; let count++; done
 #count=1; ./tab2json files.tsv | while read i; do echo $i | python -m json.tool > $FILESDIR/$count; let count++; done
