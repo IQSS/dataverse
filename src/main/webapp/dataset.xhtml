@@ -102,7 +102,7 @@
                                                         <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
                                                     </ui:fragment>
                                                 </button>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.owner.released}">
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
                                                         <li>
                                                             <a  style="pointer-events: none; color:red;">
@@ -116,6 +116,16 @@
                                                                 <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataset" onclick="confirmation.show()"  /></span>
                                                             </a>
                                                         </li>                                                    
+                                                    </ul>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and !DatasetPage.dataset.owner.released}">
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                        <li>
+                                                            <a  style="pointer-events: none; color:red;">
+                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
+                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. It may not be published until its dataverse is published.</span>
+                                                            </a>
+                                                        </li>                                                   
                                                     </ul>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{DatasetPage.dataset.released}">
@@ -137,7 +147,7 @@
                                             </div>
                                         </div>
                                         <p:growl id="messages" showDetail="true" />  
-                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Public'."  header="Publish Dataset"  widgetVar="confirmation">  
+                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'."  header="Publish Dataset"  widgetVar="confirmation">  
                                             <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DatasetPage.releaseDataset}" >
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
