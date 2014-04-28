@@ -357,6 +357,9 @@ public class SearchServiceBean {
 
         List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
         List<FacetCategory> typeFacetCategories = new ArrayList<>();
+        boolean hidePublicationStatusFacet = true;
+        boolean draftsAvailable = false;
+        boolean unpublishedAvailable = false;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -370,6 +373,13 @@ public class SearchServiceBean {
                     // quote field facets
                     facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
+                    if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
+                        if (facetLabel.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                            unpublishedAvailable = true;
+                        } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
+                            draftsAvailable = true;
+                        }
+                    }
                 }
             }
             facetCategory.setName(facetField.getName());
@@ -433,6 +443,13 @@ public class SearchServiceBean {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
+                } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
+                    if (unpublishedAvailable || draftsAvailable) {
+                        hidePublicationStatusFacet = false;
+                    }
+                    if (!hidePublicationStatusFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
                 } else {
                     facetCategoryList.add(facetCategory);
                 }
