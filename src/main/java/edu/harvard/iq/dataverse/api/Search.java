@@ -42,8 +42,6 @@ public class Search extends AbstractApiBean {
             @QueryParam("sort") String sortField,
             @QueryParam("order") String sortOrder,
             @QueryParam("start") final int paginationStart,
-            @QueryParam("published") boolean publishedOnly,
-            @QueryParam("unpublished") boolean unpublishedOnly,
             @QueryParam("showrelevance") boolean showRelevance) {
         if (query != null) {
             if (sortField == null) {
@@ -65,12 +63,6 @@ public class Search extends AbstractApiBean {
                     }
                 }
                 SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-//                if (publishedOnly) {
-//                    publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
-//                }
-//                if (unpublishedOnly) {
-//                    publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
-//                }
                 solrQueryResponse = searchService.search(dataverseUser, dataverseService.findRootDataverse(), query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
             } catch (EJBException ex) {
                 Throwable cause = ex;
