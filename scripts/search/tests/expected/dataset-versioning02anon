@@ -3,10 +3,10 @@
     "q":"trees",
     "fq_provided":"[]",
     "fq_actual":"[{!join from=groups_s to=perms_ss}id:group_public]",
-    "total_count":2,
+    "total_count":3,
     "start":0,
-    "count_in_response":2,
-    "items":"[datafile_18:trees.png:18, dataset_17:Rings of Trees and Other Observations:17]",
+    "count_in_response":3,
+    "items":"[datafile_18:trees.png:18, dataset_17:Rings of Trees and Other Observations:17, dataverse_11:Trees:11]",
     "relevance":[
         {
             "id":"datafile_18",
@@ -56,6 +56,17 @@
                 {
                     "contributorName":[
                         "Edward <span class=\"search-term-match\">Trees</span> Jr."
+                    ]
+                }
+            ]
+        },
+        {
+            "id":"dataverse_11",
+            "matched_fields":"[name]",
+            "detailsArray":[
+                {
+                    "name":[
+                        "<span class=\"search-term-match\">Trees</span>"
                     ]
                 }
             ]
