@@ -205,10 +205,11 @@ public class IngestServiceBean {
         // it up with the Ingest Service Provider Registry:
         //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
         //TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile);
 
         if (ingestPlugin == null) {
-            throw new IOException("Could not find ingest plugin for the file " + dataFile.getName());
+            throw new IOException("Could not find ingest plugin for the file " + fileName);
         }
 
         FileInputStream tempFileInputStream = null; 
@@ -248,7 +249,7 @@ public class IngestServiceBean {
                 // and replace (or add) the extension ".tab" to the filename: 
                 
                 dataFile.setContentType(MIME_TYPE_TAB);
-                dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(dataFile.getName(), "tab"));  
+                dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));  
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);

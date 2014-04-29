@@ -98,10 +98,16 @@ The dataverse breadcrumbs appear on each dataverse page and can be used to navig
 Using Data
 ===========
 
-View Datasets
+View Dataverses & Datasets
 -------------
+
+After performing a search and finding the dataverse or dataset you are looking for, click on the name of the dataverse or dataset or on the thumbnail image to be taken to the page for that dataverse or dataset. Once on a dataverse page, you can view the dataverses, datasets, and files within that dataverse.
+
+Once on a dataset page, you will see the title, citation, description, and several other fields as well as a button to email the dataset contact. Below that information, the files, metadata, and version information for the dataset are available. 
 
 Download Files
 --------------
+
+Within the Files tab on a dataset page, a user can either Explore the file using SolaFide or Download the file as tab-delimited, RData, Saved Original, or the variable metadata.
 
 

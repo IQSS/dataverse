@@ -96,7 +96,7 @@ public class FileAccessObject extends DataAccessObject {
         this.setSize(getLocalFileSize(file));
 
         this.setMimeType(file.getContentType());
-        this.setFileName(file.getName());
+        this.setFileName(file.getFileMetadata().getLabel());
 
         
         if (file.getContentType() != null &&

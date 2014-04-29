@@ -285,9 +285,13 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( DataFile df ) {
+                String fileName = "";
+                if (df.getFileMetadata() != null) {
+                    fileName = df.getFileMetadata().getLabel();
+                }
 		return jsonObjectBuilder()
 				.add("id", df.getId() )
-				.add("name", df.getName())
+				.add("name", fileName)
 				.add("contentType", df.getContentType())
 				.add("filename", df.getFilename())
 				.add("originalFileFormat", df.getOriginalFileFormat())
