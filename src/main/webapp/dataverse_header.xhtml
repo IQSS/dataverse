@@ -33,8 +33,7 @@
                             <label class="sr-only" for="navbarsearch">Search</label>
                             <input id="navbarsearch" type="text" class="form-control ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" size="28" value="" placeholder="Search all Dataverses..." style="font-size:1em;margin-right:1em;" />
                         </div>
-                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value;
-                                return false;">
+                        <button type="submit" class="btn btn-default" onclick="window.location = '/?q=' + document.getElementById('navbarsearch').value; return false;">
                             <span class="glyphicon glyphicon-search" style="margin-right:.3em;"/> Find
                         </button>
                     </form>
@@ -93,14 +92,14 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <h:outputLink value="/dataverseuser.xhtml" >
+                                    <h:outputLink value="/dataverseuser.xhtml">
                                         <f:param name="editMode" value="INFO" />
                                         <f:param name="selectTab" value="notifications" />
                                         <h:outputText value="Notifications" />
                                     </h:outputLink>
                                 </li>
                                 <li>
-                                    <h:outputLink value="/dataverseuser.xhtml?editMode=INFO" >
+                                    <h:outputLink value="/dataverseuser.xhtml?editMode=INFO">
                                         <h:outputText value="Data Related to Me" />
                                     </h:outputLink>
                                 </li>
@@ -122,36 +121,36 @@
     
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
-        <div class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'}; margin:0 auto .5em auto;">
+        <div id="dataverseHeader" class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'RECTANGLE'}">
-                <div style="text-align:center;">
+                <div class="dataverseHeaderLogo">
                     <image src="/logos/#{dataverse.logo}" style="max-width:900px;max-height:120px"/>
                 </div>
             </ui:fragment>
-            <div style="display:table-row;">
+            <div class="dataverseHeaderBlock">
                 <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'SQUARE'}">
-                    <div style="display:table-cell;text-align:center;">
+                    <div class="dataverseHeaderCell dataverseHeaderLogo">
                         <image src="/logos/#{dataverse.logo}" style="max-width:100px;max-height:100px"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
-                    <div style="display:table-cell; padding:2em 1em;">
+                    <div class="dataverseHeaderCell dataverseHeaderName">
                         <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};">#{dataverse.name} Dataverse</a> 
                         <h:outputText style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{empty dataverse.name}">
-                    <div style="display:table-cell;">
+                    <div class="dataverseHeaderCell dataverseHeaderName">
                         <h:outputText style="font-size: 1.3em;" value="New Dataverse"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.tagline}">
-                    <div style="display:table-cell; padding-left:2em; font-size:1.3em;">
+                    <div class="dataverseHeaderCell dataverseHeaderTagline">
                         <h:outputText escape="false" style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value="#{dataverse.tagline}" />
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.tagline}">
-                    <div style="display:table-cell; padding-left:2em;">
+                    <div class="dataverseHeaderCell dataverseHeaderLink">
                         <h:outputLink value="#{dataverse.linkUrl}" target="_blank">
                             <h:outputText style="color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};" value="#{dataverse.linkText}" />
                         </h:outputLink>
@@ -167,9 +166,9 @@
             <!-- Dataverses -->
             <ui:repeat value="#{dataverseHeaderFragment.getDataverses(dataverse)}" var="dv" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
-                <div style="float:left; position:relative;">
+                <div class="breadcrumbBlock">
                     <div class="dropdown #{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown-toggle keep-on' : ''}" data-delay="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '800' : ''}" data-hover="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'dropdown' : ''}" data-target="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? '#' : ''}" data-close-others="#{!empty dataverseServiceBean.findByOwnerId(dv.getId()) ? 'true' : ''}">
-                        <h:outputText value="#{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
+                        <h:outputText value="#{dv.name} Dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" rendered="#{dataverse.id == dv.id and dataset == null}"/>
                         <ui:fragment rendered="#{dataverse.id != dv.id or dataset != null}" >
                             <a id="breadcrumbLnk#{status.index}" href="/dataverse.xhtml?id=#{dv.id}">
                                 <h:outputText value="#{dv.name} Dataverse"/>
@@ -177,15 +176,15 @@
                         </ui:fragment>
 
                         <ui:fragment rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
-                            <a id="breadcrumbLnkTree#{status.index}" title="Browse #{dv.name} Dataverse" style="font-weight: #{dataverse.id == dv.id ? 'bold' : 'normal'}; cursor: pointer; cursor: hand;" role="button">
-                                <span class="glyphicon glyphicon-chevron-down" style="vertical-align:middle;padding-bottom:2px;"></span>
+                            <a id="breadcrumbLnkTree#{status.index}" title="Browse #{dv.name} Dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
                             </a>
                         </ui:fragment>
                     </div>
                     <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{!empty dataverseServiceBean.findByOwnerId(dv.getId())}">
                         <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
                             <p:treeNode>
-                                <h:outputText value="#{node.name} Dataverse" style="font-weight:bold;" rendered="#{dataverse.id == node.id and dataset == null}"/>
+                                <h:outputText value="#{node.name} Dataverse" styleClass="breadcrumbActive" rendered="#{dataverse.id == node.id and dataset == null}"/>
                                 <h:outputLink value="/dataverse.xhtml?id=#{node.id}" rendered="#{dataverse.id != node.id or dataset != null}">
                                     <h:outputText value="#{node.name} Dataverse"/>
                                 </h:outputLink>
@@ -198,7 +197,7 @@
             <!-- Dataset, if available -->
             <ui:fragment rendered="#{!empty dataset.latestVersion.title}">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-                <h:outputText value="#{dataset.latestVersion.title}" style="font-weight:bold;"/>
+                <h:outputText value="#{dataset.latestVersion.title}" styleClass="breadcrumbActive"/>
             </ui:fragment>
         </div>
     </ui:fragment>

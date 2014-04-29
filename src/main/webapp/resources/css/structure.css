@@ -33,10 +33,22 @@
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
-.rightClass {text-align: right;}
+.rightClass {text-align: right;} /* REMOVE */
 
-.dataverseChildren .ui-datalist-data {padding-left:1em;}
-.dataverseChildren .ui-datalist-data li.ui-datalist-item {list-style-type:none; margin-left:0; margin-bottom:6px;}
+/* -------- HEADER -------- */
+#dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
+#dataverseHeader .dataverseHeaderBlock {display:table-row;}
+#dataverseHeader .dataverseHeaderCell {display:table-cell;}
+#dataverseHeader .dataverseHeaderLogo {text-align:center;}
+#dataverseHeader .dataverseHeaderName {padding:2em 1em;}
+#dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
+#dataverseHeader .dataverseHeaderLink {padding-left:2em;}
+
+/* -------- BREADCRUMBS -------- */
+#breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
+#breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
+#breadcrumbNavBlock a[id^='breadcrumbLnkTree'] {cursor: pointer; cursor: hand;}
+#breadcrumbNavBlock a[id^='breadcrumbLnkTree'] span.glyphicon-chevron-down {vertical-align:middle;padding-bottom:2px;}
 
 #breadcrumbNavBlock > .ui-panel-content {overflow:hidden;}
         
