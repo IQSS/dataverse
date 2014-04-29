@@ -260,8 +260,8 @@
                         <p:selectManyCheckbox id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
                                               widgetVar="metadataBlocks" layout="pageDirection" style="width:400px;">  
                             <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
-                                           itemLabel="#{mdb.displayName}" itemValue="#{mdb}" 
-                                           itemDisabled="#{DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent}"/>
+                                           itemLabel="#{mdb.displayName}#{mdb.required ? ' (required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}" 
+                                           itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
                         </p:selectManyCheckbox>
                     </ui:fragment>
 
