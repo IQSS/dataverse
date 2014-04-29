@@ -56,6 +56,16 @@ public class DataFile extends DvObject {
         fileMetadataFieldValues = new ArrayList<>();
     }    
 
+    public DataFile(String contentType) {
+        this.contentType = contentType;
+        this.fileMetadatas = new ArrayList<>();
+        fileMetadataFieldValues = new ArrayList<>();
+    }
+    
+    // The dvObject field "name" should not be used in
+    // datafile objects.
+    // The file name must be stored in the file metadata.
+    @Deprecated
     public DataFile(String name, String contentType) {
         this.name = name;
         this.contentType = contentType;
@@ -131,11 +141,16 @@ public class DataFile extends DvObject {
         
         return null; 
     }
-    
+   
+    // The dvObject field "name" should not be used in
+    // datafile objects.
+    // The file name must be stored in the file metadata.
+    @Deprecated
     public String getName() {
         return name;
     }
 
+    @Deprecated
     public void setName(String name) {
         this.name = name;
     }
