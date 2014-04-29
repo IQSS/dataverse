@@ -7,7 +7,7 @@
      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!-- Navbar Panel -->
-    <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation" style="margin-bottom:0;">
+    <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
@@ -17,24 +17,12 @@
                     <span class="icon-bar"></span>
                 </button>
                 <h:outputLink value="/">
-                    <h:outputText styleClass="navbar-brand" value="Dataverse" style="color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;"/>
+                    <h:outputText styleClass="navbar-brand" value="Dataverse"/>
                 </h:outputLink>
+                <span class="label label-default beta">Beta</span>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
                 <ul class="nav navbar-nav navbar-right">
-                    <!-- <li class="dropdown">
-                        <a value="#" class="dropdown-toggle" data-toggle="dropdown">
-                            Search <b class="caret"></b>
-                        </a>
-                        <div class="dropdown-menu">
-                            <form style="width:420px; padding:10px;">
-                                <input style="display: inline-block;" type="text" size="40" value="" placeholder="Search the entire app..." autocomplete="off" class="ui-autocomplete-input ui-inputfield ui-widget ui-state-default ui-corner-all" aria-disabled="false" aria-readonly="false" aria-multiline="false"/>
-                                <button style="margin-left:1em; display: inline-block;" type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
-                                    <span class="ui-button-text ui-c">Find</span>
-                                </button>
-                            </form>
-                        </div>
-                    </li> -->
                     <li>
                         <a value="#" id="navbar-search-toggle">
                             <span class="glyphicon glyphicon-search"></span>

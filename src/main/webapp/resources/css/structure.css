@@ -8,6 +8,10 @@
 .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
+#navbarFixed {margin-bottom:0;}
+#navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;}
+#navbarFixed .label.beta {display:block; float:left; margin-top:16px; font-size:100%;}
+
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
