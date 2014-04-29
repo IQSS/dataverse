@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -52,12 +52,12 @@ public class MetadataBlock implements Serializable {
     }
     
     @OneToMany(mappedBy = "metadataBlock", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Collection<DatasetFieldType> datasetFieldTypes;
-    public Collection<DatasetFieldType> getDatasetFieldTypes() {
+    private List<DatasetFieldType> datasetFieldTypes;
+    public List<DatasetFieldType> getDatasetFieldTypes() {
         return datasetFieldTypes;
     }
     
-    public void setDatasetFieldTypes(Collection<DatasetFieldType> datasetFieldTypes) {
+    public void setDatasetFieldTypes(List<DatasetFieldType> datasetFieldTypes) {
         this.datasetFieldTypes = datasetFieldTypes;
     }
     
@@ -75,6 +75,11 @@ public class MetadataBlock implements Serializable {
     }
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+    
+    public boolean isRequired() {
+        // eventually this will be dynamic, for now only citation is required
+        return "citation".equals(name);
     }
     
     public int hashCode() {
