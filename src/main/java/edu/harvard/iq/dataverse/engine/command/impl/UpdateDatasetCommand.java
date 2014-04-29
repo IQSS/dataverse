@@ -30,7 +30,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
     private final Dataset theDataset;
 
     public UpdateDatasetCommand(Dataset theDataset, DataverseUser user) {
-        super(user, theDataset.getOwner());
+        super(user, theDataset);
         this.theDataset = theDataset;
     }
 
