@@ -55,8 +55,8 @@
 
                 // Navbar Search Toggle
                 $(document).on('click', '#navbar-search-toggle', function (e) {
-                    $(this).parent("li").toggle();
-                    $("form.navbar-form[role='search']").toggle();
+                    $(this).parent("li").hide();
+                    $("form.navbar-form[role='search']").show();
                 });
                 $('body').click(function(e) {
                     if (!$(e.target).closest("form.navbar-form[role='search']").length) {
