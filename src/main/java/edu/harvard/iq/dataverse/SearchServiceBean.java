@@ -90,6 +90,11 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
+        /**
+         * @todo: show highlight on file card?
+         * https://redmine.hmdc.harvard.edu/issues/3848
+         */
+        solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType: datasetFields) {
             String solrField = datasetFieldType.getSolrField().getNameSearchable();

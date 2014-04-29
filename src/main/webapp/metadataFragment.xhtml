@@ -108,15 +108,15 @@
                                                                     </ui:include>
                                                                 </div>
                                                                 <!-- Add / Remove buttons -->
-                                                            <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
+                                                                <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                                     <div class="col-xs-3">
-                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
+                                                                        <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"  
                                                                                          title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false" 
                                                                                          actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}">
                                                                         </p:commandButton>
-                                                                    <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
+                                                                        <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"  
                                                                                          title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false" 
-                                                                                     rendered="#{dsf.datasetFieldValues.size() > 1}"
+                                                                                         rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                                          actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}">
                                                                         </p:commandButton>
                                                                     </div>
@@ -124,14 +124,18 @@
                                                             </div>
                                                         </ui:repeat>
                                                         <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
-                                                            <p:selectOneMenu  value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
-                                                                              rendered="#{!dsf.datasetFieldType.allowMultiples}">
-                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                            </p:selectOneMenu>
-                                                            <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" 
-                                                                                 layout="pageDirection" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                            </p:selectManyCheckbox>                                                          
+                                                                <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" styleClass="form-control"
+                                                                                 rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+                                                                </p:selectOneMenu>
+                                                                <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                                    <div class="ui-inputfield form-control select-scroll-block">
+                                                                        <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" 
+                                                                                             layout="pageDirection">
+                                                                            <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+                                                                        </p:selectManyCheckbox> 
+                                                                    </div>
+                                                                </ui:fragment>
                                                         </ui:fragment>                     
                                                     </div>
                                                 </ui:repeat>
@@ -149,7 +153,7 @@
                                                         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" /> 
                                                     </label>                  
 
-                                                    <div class="col-sm-7">
+                                                    <div class="form-group col-sm-7">
                                                         <!-- Sub Fields -->
                                                         <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
                                                             <div class="#{(subdsf.datasetFieldType.fieldType == 'textbox') ? 'col-sm-12' : 'col-sm-6'}">
@@ -166,16 +170,18 @@
 
                                                                 <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                 <ui:fragment rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-
-                                                                    <p:selectOneMenu  value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter"  styleClass="form-control"
+                                                                    <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" styleClass="form-control"
                                                                                       rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                                     </p:selectOneMenu>
-                                                                    <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                         layout="pageDirection" rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                        <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                                    </p:selectManyCheckbox>
-
+                                                                    <ui:fragment rendered="#{subdsf.datasetFieldType.allowMultiples}">
+                                                                        <div class="ui-inputfield form-control select-scroll-block">
+                                                                            <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                                                                                                 layout="pageDirection">
+                                                                                <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
+                                                                            </p:selectManyCheckbox>
+                                                                        </div>
+                                                                    </ui:fragment>
                                                                 </ui:fragment>
                                                             </div>
                                                         </ui:repeat>

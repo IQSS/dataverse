@@ -42,7 +42,11 @@ public class Files extends AbstractApiBean {
                 return error("Invalid apikey '" + apiKey + "'");
             }
             engineSvc.submit(new UpdateDatasetCommand(dataset, u));
-            return "file " + dataFile.getName() + " created/updated with dataset " + dataset.getId() + " (and probably indexed, check server.log)\n";
+            String fileName = "[No name?]";
+            if (dataFile.getFileMetadata() != null) {
+                fileName = dataFile.getFileMetadata().getLabel(); 
+            }
+            return "file " + fileName + " created/updated with dataset " + dataset.getId() + " (and probably indexed, check server.log)\n";
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

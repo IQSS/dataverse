@@ -19,19 +19,12 @@
 
                 <f:metadata>
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
-                    <f:viewParam name="q" value="#{AdvancedSearchPage.query}"/>
                 </f:metadata>
 
                 <!-- Search Panel -->
                 <p:panel styleClass="panelLayoutBlock" style="margin-bottom:1em;">
                     <h:form styleClass="form-horizontal">
                         <p:focus/>
-
-                        <div style="margin-bottom:1em;">
-                            <h:outputLabel value="Basic Search"/>
-                            <p:inputText value="#{AdvancedSearchPage.query}" size="40" style="margin-left:1em;"/>
-                            <!--                            <h:outputLabel value="From the 'nice to have' wishlist: after you do a basic search, you can click 'Advanced Search' and the Advanced Search page will be populated with the terms from your basic search (for further tweaking), just like Google. (With a 'Clear' link to start over.)" style="font-style: italic"/>-->
-                        </div>
 
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">                        
                             <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">

@@ -136,7 +136,9 @@ public class DownloadInfo {
     
     public String getFileName() {
         if (dataFile != null) {
-            return dataFile.getName();
+            if (dataFile.getFileMetadata() != null) {
+                return dataFile.getFileMetadata().getLabel();
+            }
         }
         
         return null; 

@@ -150,7 +150,7 @@ public class DataFileConverter {
             fileDownload.setIsLocalFile(true);
 
             fileDownload.setMimeType(formatType);
-            String dbFileName = file.getName();
+            String dbFileName = fileDownload.getFileName();
 
             if (dbFileName == null || dbFileName.equals("")) {
                 dbFileName = "f" + file.getId().toString();

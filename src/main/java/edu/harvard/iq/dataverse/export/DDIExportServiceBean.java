@@ -533,7 +533,7 @@ public class DDIExportServiceBean {
 
             if (checkField("fileTxt", excludedFieldSet, includedFieldSet)) {
                 xmlw.writeStartElement("fileName");
-                xmlw.writeCharacters(df.getName());
+                xmlw.writeCharacters(df.getFileMetadata().getLabel());
                 xmlw.writeEndElement(); // fileName
             }
 
