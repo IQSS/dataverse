@@ -24,7 +24,6 @@ public class AdvancedSearchPage {
     DatasetFieldServiceBean datasetFieldService;
 
     private Dataverse dataverse;
-    private String query;
     private List<MetadataBlock> metadataBlocks;
     private Map<Long,List<DatasetFieldType>> metadataFieldMap = new HashMap();
     private List<DatasetFieldType> metadataFieldList;    
@@ -33,7 +32,7 @@ public class AdvancedSearchPage {
     public void init() {
         /**
          * @todo: support advanced search at any depth in the dataverse
-         * hierarchy
+         * hierarchy https://redmine.hmdc.harvard.edu/issues/3894
          */
         this.dataverse = dataverseServiceBean.findRootDataverse();
         this.metadataBlocks = dataverseServiceBean.findAllMetadataBlocks();
@@ -69,7 +68,6 @@ public class AdvancedSearchPage {
          }
          logger.info("query: " + query); */
         StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(query.trim());
         
         String delimiter = "[\"]+";
         for (DatasetFieldType dsfType : metadataFieldList) {
@@ -127,16 +125,6 @@ public class AdvancedSearchPage {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-
-    }
-
 
     public List<MetadataBlock> getMetadataBlocks() {
         return metadataBlocks;
