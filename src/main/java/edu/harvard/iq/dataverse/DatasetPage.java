@@ -312,11 +312,11 @@ public class DatasetPage implements java.io.Serializable {
             DataFile dataFile = fileMetadata.getDataFile();
             // and see if any are marked as "ingest-in-progress":
             if (dataFile.isIngestInProgress()) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Refreshing the status of the file " + dataFile.getName() + "...");
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Refreshing the status of the file " + fileMetadata.getLabel() + "...");
                 // and if so, reload the file object from the database...
                 dataFile = datafileService.find(dataFile.getId());
                 if (!dataFile.isIngestInProgress()) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File " + dataFile.getName() + " finished ingesting.");
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File " + fileMetadata.getLabel() + " finished ingesting.");
                     // and, if the status has changed - i.e., if the ingest has 
                     // completed, or failed, update the object in the list of 
                     // files visible to the page:
@@ -337,22 +337,6 @@ public class DatasetPage implements java.io.Serializable {
         if (replicationFor) {
             updateTitle();
         }
-        /* 
-         * The code below was likely added before real versioning has been 
-         * added to the application. It shouldn't be necessary anymore. 
-         * -- L.A. 
-         if (!(dataset.getVersions().get(0).getFileMetadatas() == null) && !dataset.getVersions().get(0).getFileMetadatas().isEmpty()) {
-         int fmdIndex = 0;
-         for (FileMetadata fmd : dataset.getVersions().get(0).getFileMetadatas()) {
-         for (FileMetadata fmdTest : editVersion.getFileMetadatas()) {
-         if (fmd.equals(fmdTest)) {
-         dataset.getVersions().get(0).getFileMetadatas().get(fmdIndex).setDataFile(fmdTest.getDataFile());
-         }
-         }
-         fmdIndex++;
-         }
-         }
-         */
 
         /*
          * Save and/or ingest files, if there are any:
@@ -374,6 +358,15 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dFile : newFiles) {
                     String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
+                    
+                    // These are all brand new files, so they should all have 
+                    // one filemetadata total. You do NOT want to use 
+                    // getLatestFilemetadata() here - because it relies on 
+                    // comparing the object IDs of the corresponding datasetversions...
+                    // Which may not have been persisted yet. 
+                    // -- L.A. 4.0 beta.
+                    FileMetadata fileMetadata = dFile.getFileMetadatas().get(0);
+                    String fileName = fileMetadata.getLabel(); 
 
                     //boolean ingestedAsTabular = false;
                     boolean metadataExtracted = false;
@@ -397,12 +390,12 @@ public class DatasetPage implements java.io.Serializable {
                             dFile.setContentType("application/fits");
                             metadataExtracted = ingestService.extractIndexableMetadata(tempFileLocation, dFile, editVersion);
                         } catch (IOException mex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + dFile.getName(), mex);
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + fileName, mex);
                         }
                         if (metadataExtracted) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + dFile.getName());
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + fileName);
                         } else {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + dFile.getName());
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + fileName);
                         }
                     }
 
@@ -417,7 +410,7 @@ public class DatasetPage implements java.io.Serializable {
                         try {
                             dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
                         } catch (Exception md5ex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + dFile.getName());
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + fileName);
                         }
 
                     } catch (IOException ioex) {
@@ -460,12 +453,10 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
 
         // Queue the ingest jobs for asynchronous execution: 
-        // TODO: instead of dataset.getFiles(), use 
-        // editversion.getFileMetadatas() ... -- L.A. 4.0 alpha
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Attempting to queue the file " + dataFile.getName() + " for ingest.");
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
                 ingestService.asyncIngestAsTabular(dataFile);
             }
         }
@@ -536,7 +527,7 @@ public class DatasetPage implements java.io.Serializable {
                 status = getClient().executeMethod(dropBoxMethod);
                 if (status == 200) {
                     dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-                    dFile = new DataFile(fileName, "application/octet-stream");
+                    dFile = new DataFile("application/octet-stream");
                     dFile.setOwner(dataset);
 
                     // save the file, in the temporary location for now: 
@@ -569,7 +560,7 @@ public class DatasetPage implements java.io.Serializable {
             FileMetadata fmd = new FileMetadata();
             fmd.setDataFile(dFile);
             dFile.getFileMetadatas().add(fmd);
-            fmd.setLabel(dFile.getName());
+            fmd.setLabel(fileName);
             fmd.setCategory(dFile.getContentType());
             if (editVersion.getFileMetadatas() == null) {
                 editVersion.setFileMetadatas(new ArrayList());
@@ -584,13 +575,13 @@ public class DatasetPage implements java.io.Serializable {
             // what it is. 
             String fileType = null;
             try {
-                fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
+                fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fileName);
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
                 if (fileType != null && !fileType.equals("")) {
                     dFile.setContentType(fileType);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + fileName);
             }
 
             newFiles.add(dFile);
@@ -599,16 +590,17 @@ public class DatasetPage implements java.io.Serializable {
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        DataFile dFile = new DataFile(uFile.getFileName(), uFile.getContentType());
+        DataFile dFile = new DataFile(uFile.getContentType());
 
         FileMetadata fmd = new FileMetadata();
+        fmd.setLabel(uFile.getFileName());
+        fmd.setCategory(dFile.getContentType());
+
         dFile.setOwner(dataset);
         fmd.setDataFile(dFile);
 
         dFile.getFileMetadatas().add(fmd);
-        fmd.setLabel(dFile.getName());
-        fmd.setCategory(dFile.getContentType());
-
+        
         if (editVersion.getFileMetadatas() == null) {
             editVersion.setFileMetadatas(new ArrayList());
         }
@@ -635,7 +627,7 @@ public class DatasetPage implements java.io.Serializable {
         // which may have already recognized the type correctly...)
         String fileType = null;
         try {
-            fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), dFile.getName());
+            fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fmd.getLabel());
             Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
             if (fileType != null && !fileType.equals("")) {
                 // let's look at the browser's guess regarding the mime type
@@ -648,7 +640,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + dFile.getName());
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + fmd.getLabel());
         }
 
         newFiles.add(dFile);

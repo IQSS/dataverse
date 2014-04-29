@@ -25,7 +25,6 @@ public class DataFile extends DvObject {
     private static final char INGEST_STATUS_INPROGRESS = 67;
     private static final char INGEST_STATUS_ERROR = 68; 
     
-    @NotBlank
     private String name;
     
     @NotBlank    

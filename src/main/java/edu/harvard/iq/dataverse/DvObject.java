@@ -34,7 +34,7 @@ public abstract class DvObject implements java.io.Serializable {
 
         @Override
         public String visit(DataFile df) {
-            return df.getName();
+            return df.getFileMetadata().getLabel();
         }
     };
     

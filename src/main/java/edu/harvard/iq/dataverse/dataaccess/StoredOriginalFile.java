@@ -78,12 +78,13 @@ public class StoredOriginalFile {
                     fileDownload.setMimeType("application/x-unknown");
                 }
 
-                if (dataFile.getName() != null) {
+                String fileName = fileDownload.getFileName();
+                if (fileName != null) {
                     if ( originalMimeType != null) {
                         String origFileExtension = generateOriginalExtension(originalMimeType);
-                        fileDownload.setFileName(dataFile.getName().replaceAll(".tab$", origFileExtension));
+                        fileDownload.setFileName(fileName.replaceAll(".tab$", origFileExtension));
                     } else {
-                        fileDownload.setFileName(dataFile.getName().replaceAll(".tab$", ""));
+                        fileDownload.setFileName(fileName.replaceAll(".tab$", ""));
                     }
                 }
 
