@@ -554,8 +554,33 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + dataFile.getId());
             datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-            datafileSolrInputDocument.addField(SearchFields.NAME, dataFile.getName());
-            datafileSolrInputDocument.addField(SearchFields.NAME_SORT, dataFile.getName());
+
+            FileMetadata fileMetadata = dataFile.getFileMetadata();
+            String filenameCompleteFinal = "";
+            if (fileMetadata != null) {
+                String filenameComplete = fileMetadata.getLabel();
+                if (filenameComplete != null) {
+                    String filenameWithoutExtension = "";
+                    // String extension = "";
+                    int i = filenameComplete.lastIndexOf('.');
+                    if (i > 0) {
+                        // extension = filenameComplete.substring(i + 1);
+                        try {
+                            filenameWithoutExtension = filenameComplete.substring(0, i);
+                            datafileSolrInputDocument.addField(SearchFields.FILENAME_WITHOUT_EXTENSION, filenameWithoutExtension);
+                        } catch (IndexOutOfBoundsException ex) {
+                            filenameWithoutExtension = "";
+                        }
+                    } else {
+                        logger.info("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
+                        filenameWithoutExtension = filenameComplete;
+                    }
+                    filenameCompleteFinal = filenameComplete;
+                }
+            }
+            datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
+            datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
+
             datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
             if (majorVersionReleaseDate == null) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
