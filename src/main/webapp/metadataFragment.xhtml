@@ -128,10 +128,10 @@
                                                                               rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                             </p:selectOneMenu>
-                                                            <h:selectManyListbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                 rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                            <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" 
+                                                                                 layout="pageDirection" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                 <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                            </h:selectManyListbox>                                                          
+                                                            </p:selectManyCheckbox>                                                          
                                                         </ui:fragment>                     
                                                     </div>
                                                 </ui:repeat>
@@ -171,10 +171,10 @@
                                                                                       rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
                                                                     </p:selectOneMenu>
-                                                                    <h:selectManyListbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                         rendered="#{subdsf.datasetFieldType.allowMultiples}">
+                                                                    <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                                                                                         layout="pageDirection" rendered="#{subdsf.datasetFieldType.allowMultiples}">
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />                                                         
-                                                                    </h:selectManyListbox>
+                                                                    </p:selectManyCheckbox>
 
                                                                 </ui:fragment>
                                                             </div>
