@@ -50,4 +50,3 @@
 	responseRate	Response Rate	Percentage of sample members who provided information.		text	46	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		text	47	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	otherDataAppraisal	Other Forms of Data Appraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate  and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		text	48	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-#controlledVocabulary	DatasetField	Value	displayOrder											
