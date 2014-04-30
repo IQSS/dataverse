@@ -76,6 +76,7 @@ public class SampleCommandPage {
 				selectedDvObjectId = objects.get(0).getId();
 			}
 		}
+		JH.addMessage(FacesMessage.SEVERITY_FATAL, "FATAL Sample! " + getMessage(), "Such useful details! Oh My!");
 		
 	}
 	
