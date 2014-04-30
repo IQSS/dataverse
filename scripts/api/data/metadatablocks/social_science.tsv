@@ -1,17 +1,17 @@
 #metadataBlock	name	displayName												
 	socialscience	Social Science and Humanities Metadata												
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
-	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  			0	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
+	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.  		text	0	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	1	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	socialscience
 	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	2	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
 	topicClassVocabURI	URL	Specifies the URL location for the full controlled vocabulary.		url	3	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	socialscience
-	software	Software	Information about the software used to generate the Dataset.			4	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
+	software	Software	Information about the software used to generate the Dataset.		text	4	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	softwareName	Name	Name of software used to generate the Dataset.		text	5	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	software	socialscience
 	softwareVersion	Version	Version of the software used to generate the Dataset.		text	6	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	socialscience
-	series	Series	Information about the codebook series.			7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
+	series	Series	Information about the codebook series.		text	7	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	seriesName	Name	Name of the codebook series to which the codebook belongs.		text	8	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
 	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		text	9	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	socialscience
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.			10	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		date	10	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
 	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	socialscience
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	12	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	socialscience
 	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.			13	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		socialscience
