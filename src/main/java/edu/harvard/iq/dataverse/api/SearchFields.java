@@ -47,6 +47,10 @@ public class SearchFields {
      */
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
+    /**
+     * @todo change from dynamic to static?
+     */
+    public static final String FILENAME_WITHOUT_EXTENSION = "filename_without_extension_en";
 
     // removing Host Dataverse facets per https://redmine.hmdc.harvard.edu/issues/3777#note-5
 //    public static final String HOST_DATAVERSE = "hostdataverse_s";
@@ -68,7 +72,7 @@ public class SearchFields {
     public static final String RELEASE_OR_CREATE_DATE = "release_or_create_date_dt";
     public static final String GROUPS = "groups_s";
     public static final String PERMS = "perms_ss";
-    public static final String PUBLICATION_STATUS = "published_s";
+    public static final String PUBLICATION_STATUS = "published_ss";
     // Used for performance. Why hit the db if solr has the data?
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";

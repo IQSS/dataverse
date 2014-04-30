@@ -39,7 +39,7 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 		for ( DatasetFieldType df : facetList ) {
 			ctxt.facets().create(i++, df.getId(), result.getId());
 		}
-		
+		ctxt.index().indexDataverse(result);
 		return result;
 	}
 	

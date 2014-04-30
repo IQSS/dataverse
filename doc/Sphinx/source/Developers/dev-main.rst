@@ -15,7 +15,7 @@ Download solr-4.6.0.tgz from http://lucene.apache.org/solr/ to any directory you
 - ``cd ~/solr``
 - ``tar xvfz solr-4.6.0.tgz``
 - ``cd solr-4.6.0/example``
-- ``cp ~/NetBeansProjects/dataverse_temp/conf/solr/4.6.0/schema.xml solr/collection1/conf/schema.xml``
+- ``cp ~/NetBeansProjects/dataverse/conf/solr/4.6.0/schema.xml solr/collection1/conf/schema.xml``
 - ``java -jar start.jar``
 
 Please note: If you prefer, once the proper ``schema.xml`` file is in place, you can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line.

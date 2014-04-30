@@ -53,17 +53,21 @@ public class SearchServiceBean {
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 
+    /*
+     * @deprecated The Published/Unpublished toggle was an experiment: https://docs.google.com/a/harvard.edu/document/d/1clGJKOmrH8zhQyG_8vQHui5L4fszdqRjM4t3U6NFJXg/edit?usp=sharing
+     */
+    @Deprecated
     public enum PublishedToggle {
 
         PUBLISHED, UNPUBLISHED
     };
 
     public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
-            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
-        } else {
-            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
-        }
+//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
+//        } else {
+//            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
+//        }
         /**
          * @todo make "localhost" and port number a config option
          */
@@ -86,6 +90,11 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
+        /**
+         * @todo: show highlight on file card?
+         * https://redmine.hmdc.harvard.edu/issues/3848
+         */
+        solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType: datasetFields) {
             String solrField = datasetFieldType.getSolrField().getNameSearchable();
@@ -113,8 +122,9 @@ public class SearchServiceBean {
         if (dataverseUser != null) {
             if (dataverseUser.isGuest()) {
                 permissionFilterQuery = publicOnly;
+//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS); // remove ... just for dev
             } else {
-//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
                 /**
                  * Non-guests might get more than public stuff with an OR or
                  * two.
@@ -143,6 +153,16 @@ public class SearchServiceBean {
                 }
             }
         }
+
+        /**
+         * @todo: Remove! Or at least keep this commented out! Very dangerous!
+         * If you pass in "null" for permissionFilterQuery then everyone, even
+         * guest, has "NSA Nick" privs and can see everything! This override
+         * should only be used during dev.
+         */
+//        String dangerZone = null;
+//        permissionFilterQuery = dangerZone;
+
         solrQuery.addFilterQuery(permissionFilterQuery);
 
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
@@ -289,6 +309,14 @@ public class SearchServiceBean {
             /**
              * @todo put all this in the constructor?
              */
+            List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
+            for (String state : states) {
+                if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                    solrSearchResult.setUnpublishedState(true);
+                } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
+                    solrSearchResult.setDraftState(true);
+                }
+            }
 //            logger.info(id + ": " + description);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setId(id);
@@ -334,6 +362,9 @@ public class SearchServiceBean {
 
         List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
         List<FacetCategory> typeFacetCategories = new ArrayList<>();
+        boolean hidePublicationStatusFacet = true;
+        boolean draftsAvailable = false;
+        boolean unpublishedAvailable = false;
         for (FacetField facetField : queryResponse.getFacetFields()) {
             FacetCategory facetCategory = new FacetCategory();
             List<FacetLabel> facetLabelList = new ArrayList<>();
@@ -347,6 +378,13 @@ public class SearchServiceBean {
                     // quote field facets
                     facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
+                    if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
+                        if (facetLabel.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                            unpublishedAvailable = true;
+                        } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
+                            draftsAvailable = true;
+                        }
+                    }
                 }
             }
             facetCategory.setName(facetField.getName());
@@ -410,6 +448,13 @@ public class SearchServiceBean {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
                     // the "type" facet is special, these are not
                     typeFacetCategories.add(facetCategory);
+                } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
+                    if (unpublishedAvailable || draftsAvailable) {
+                        hidePublicationStatusFacet = false;
+                    }
+                    if (!hidePublicationStatusFacet) {
+                        facetCategoryList.add(facetCategory);
+                    }
                 } else {
                     facetCategoryList.add(facetCategory);
                 }

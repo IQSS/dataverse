@@ -12,6 +12,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -75,6 +77,18 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
+    
+    public enum ImageFormat { SQUARE, RECTANGLE }
+
+    @Enumerated(EnumType.STRING)
+    private ImageFormat logoFormat;
+    private String logo;
+    private String tagline;
+    private String linkUrl;
+    private String linkText;
+    private String linkColor;
+    private String textColor; 
+    private String backgroundColor; 
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -176,6 +190,72 @@ public class Dataverse extends DvObjectContainer {
         this.facetRoot = facetRoot;
     }
 
+    public ImageFormat getLogoFormat() {
+        return logoFormat;
+    }
+
+    public void setLogoFormat(ImageFormat logoFormat) {
+        this.logoFormat = logoFormat;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getLinkUrl() {
+        return linkUrl;
+    }
+
+    public void setLinkUrl(String linkUrl) {
+        this.linkUrl = linkUrl;
+    }
+
+    public String getLinkText() {
+        return linkText;
+    }
+
+    public void setLinkText(String linkText) {
+        this.linkText = linkText;
+    }
+
+    public String getLinkColor() {
+        return linkColor;
+    }
+
+    public void setLinkColor(String linkColor) {
+        this.linkColor = linkColor;
+    }
+
+    public String getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(String textColor) {
+        this.textColor = textColor;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+    
+    
+
     public void addRole(DataverseRole role) {
         role.setOwner(this);
         roles.add(role);
@@ -194,6 +274,7 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
+        
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

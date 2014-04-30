@@ -341,9 +341,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public SolrField getSolrField() {
-        SolrField.SolrType solrType2 = SolrField.SolrType.TEXT_GENERAL;
+        SolrField.SolrType solrType = SolrField.SolrType.TEXT_EN;
         if (fieldType != null) {
-            solrType2 = fieldType.equals("date") ? SolrField.SolrType.INTEGER : SolrField.SolrType.TEXT_GENERAL;
+            solrType = fieldType.equals("date") ? SolrField.SolrType.INTEGER : SolrField.SolrType.TEXT_EN;
             
             Boolean parentAllowsMultiplesBoolean = false;
             if (isHasParent()) {
@@ -355,13 +355,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (solrType2 == SolrField.SolrType.TEXT_GENERAL) {
+            if (solrType == SolrField.SolrType.TEXT_EN) {
                 makeSolrFieldMultivalued = (allowMultiples || parentAllowsMultiplesBoolean);
             } else {
                 makeSolrFieldMultivalued = false;
             }
 
-            return new SolrField(name, solrType2, makeSolrFieldMultivalued, facetable);
+            return new SolrField(name, solrType, makeSolrFieldMultivalued, facetable);
 
         } else {
             /**
@@ -369,8 +369,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              */
             String oddValue = name + getTmpNullFieldTypeIdentifier();
             boolean makeSolrFieldMultivalued = false;
-            SolrField solrField2 = new SolrField(oddValue, solrType2, makeSolrFieldMultivalued, facetable);
-            return solrField2;
+            SolrField solrField = new SolrField(oddValue, solrType, makeSolrFieldMultivalued, facetable);
+            return solrField;
         }
     }
 

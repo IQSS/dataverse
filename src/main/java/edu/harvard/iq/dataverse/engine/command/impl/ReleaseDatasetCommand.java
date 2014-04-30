@@ -24,8 +24,7 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.Release),
-    @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
+    @RequiredPermissions(dataverseName = "", value = Permission.Release)
 })
 public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
    private static final Logger logger = Logger.getLogger(ReleaseDatasetCommand.class.getCanonicalName());
@@ -33,7 +32,7 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
     Dataset theDataset;
 
     public ReleaseDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
-        super(user, datasetIn.getOwner());
+        super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
     }

@@ -46,7 +46,12 @@ public class SolrField {
 
     public enum SolrType {
 
-        STRING("string"), TEXT_GENERAL("text_general"), INTEGER("int"), LONG("long");
+        /**
+         * @todo: make this configurable from text_en to text_general or
+         * non-English languages? We changed it to text_en to improve English
+         * language searching in https://redmine.hmdc.harvard.edu/issues/3859
+         */
+        STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long");
 
         private String type;
 

@@ -97,20 +97,20 @@ public class DataverseRoleServiceBean {
 
 			@Override
 			public UserRoleAssignments visit(Dataverse dv) {
-				return roleAssignments(u, (Dataverse)d);
+				return roleAssignments(u, dv);
 			}
 
 			@Override
 			public UserRoleAssignments visit(Dataset ds) {
 				UserRoleAssignments asgn = ds.getOwner().accept(this);
-				asgn.add( directRoleAssignments(u, d) );
+				asgn.add( directRoleAssignments(u, ds) );
 				return asgn;
 			}
 
 			@Override
 			public UserRoleAssignments visit(DataFile df) {
 				UserRoleAssignments asgn = df.getOwner().accept(this);
-				asgn.add( directRoleAssignments(u, d) );
+				asgn.add( directRoleAssignments(u, df) );
 				return asgn;
 			}
 		});

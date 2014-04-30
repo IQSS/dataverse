@@ -26,7 +26,7 @@ public class Config extends AbstractApiBean {
             String type = datasetField.getSolrField().getSolrType().getType();
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
-            sb.append("<field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
+            sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
 
         List<String> listOfStaticFields = new ArrayList();
@@ -70,7 +70,7 @@ public class Config extends AbstractApiBean {
             }
 
             // <copyField source="*_i" dest="text" maxChars="3000"/>
-            sb.append("<copyField source=\"" + nameSearchable + "\" dest=\"text\" maxChars=\"3000\"/>\n");
+            sb.append("   <copyField source=\"" + nameSearchable + "\" dest=\"text\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();

@@ -29,17 +29,8 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.inject.Inject;
 
-// Rosuda Wrappers and Methods for R-calls to Rserve
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.RList;
-import org.rosuda.REngine.Rserve.RFileInputStream;
-import org.rosuda.REngine.Rserve.RFileOutputStream;
-import org.rosuda.REngine.Rserve.*;
-
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
@@ -47,7 +38,9 @@ import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import edu.harvard.iq.dataverse.rserve.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -71,13 +64,30 @@ public class CSVFileReader extends TabularDataFileReader {
     VariableServiceBean varService;
 
     private static final Logger dbglog = Logger.getLogger(CSVFileReader.class.getPackage().getName());
+    private static final int DIGITS_OF_PRECISION_DOUBLE = 15; 
+    private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
+    private MathContext doubleMathContext;
     private char delimiterChar = ',';
+    
+    // DATE FORMATS
+    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
+        new SimpleDateFormat("yyyy-MM-dd")
+    };
+  
+    // TIME FORMATS
+    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[] {
+        // Date-time up to seconds with timezone, e.g. 2013-04-08 13:14:23 -0500
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"),
+        // Date-time up to seconds and no timezone, e.g. 2013-04-08 13:14:23
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    };
 
     public CSVFileReader(TabularDataFileReaderSpi originator) {
         super(originator);
     }
 
     private void init() throws IOException {
+        doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
         Context ctx = null; 
         try {
             ctx = new InitialContext();
@@ -132,7 +142,7 @@ public class CSVFileReader extends TabularDataFileReader {
         String[] valueTokens;
 
         int lineCounter = 0;
-
+       
         // Read first line: 
         
         line = csvReader.readLine();
@@ -178,7 +188,10 @@ public class CSVFileReader extends TabularDataFileReader {
         dataTable.setVarQuantity(new Long(varQnty));
         dataTable.setDataVariables(variableList);
         
-        boolean[] isNumericVariable = new boolean[varQnty]; 
+        boolean[] isNumericVariable = new boolean[varQnty];
+        boolean[] isIntegerVariable = new boolean[varQnty];
+        boolean[] isTimeVariable = new boolean[varQnty];
+        boolean[] isDateVariable = new boolean[varQnty];
         
         for (int i = 0; i < varQnty; i++) {
             // OK, let's assume that every variable is numeric; 
@@ -186,10 +199,17 @@ public class CSVFileReader extends TabularDataFileReader {
             // moment we find a value that's not a legit numeric one, we'll 
             // assume that it is in fact a String. 
             isNumericVariable[i] = true; 
+            isIntegerVariable[i] = true;
+            isDateVariable[i] = true; 
+            isTimeVariable[i] = true; 
         }
 
         // First, "learning" pass.
         // (we'll save the incoming stream in another temp file:)
+        
+        SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[varQnty]; 
+        SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[varQnty];
+
         
         File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
         PrintWriter firstPassWriter = new PrintWriter(firstPassTempFile.getAbsolutePath());
@@ -217,6 +237,7 @@ public class CSVFileReader extends TabularDataFileReader {
                     if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
 
                         boolean isNumeric = false; 
+                        boolean isInteger = false; 
                         
                         if (valueTokens[i].equalsIgnoreCase("NaN")
                                 || valueTokens[i].equalsIgnoreCase("NA")
@@ -229,16 +250,123 @@ public class CSVFileReader extends TabularDataFileReader {
                             try {
                                 Double testDoubleValue = new Double(valueTokens[i]);
                                 isNumeric = true; 
-                            } catch (Exception ex) {
+                            } catch (NumberFormatException ex) {
                                 // the token failed to parse as a double number;
                                 // so we'll have to assume it's just a string variable.
                             }
                         }
+                        
                         if (!isNumeric) {
                             isNumericVariable[i] = false; 
+                        } else if (isIntegerVariable[i]) {
+                            try {
+                                Integer testIntegerValue = new Integer(valueTokens[i]);
+                                isInteger = true; 
+                            } catch (NumberFormatException ex) {
+                                // the token failed to parse as an integer number;
+                                // we'll assume it's a non-integere numeric...
+                            }
+                            if (!isInteger) {
+                                isIntegerVariable[i] = false; 
+                            }
                         }
                     }
-                } 
+                }
+                
+                // And if we have concluded that this is not a numeric column, 
+                // let's see if we can parse the string token as a date or 
+                // a date-time value:
+                
+                if (!isNumericVariable[i]) {
+                    
+                    Date dateResult = null; 
+                    
+                    if (isTimeVariable[i]) {
+                        if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
+                            boolean isTime = false;
+
+                            if (selectedDateTimeFormat[i] != null) {
+                                dbglog.info("will try selected format " + selectedDateTimeFormat[i].toPattern());
+                                ParsePosition pos = new ParsePosition(0);
+                                dateResult = selectedDateTimeFormat[i].parse(valueTokens[i], pos);
+
+                                if (dateResult == null) {
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": null result.");
+                                } else if (pos.getIndex() != valueTokens[i].length()) {
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + ": didn't parse to the end - bad time zone?");
+                                } else {
+                                    // OK, successfully parsed a value!
+                                    isTime = true;
+                                    dbglog.info(selectedDateTimeFormat[i].toPattern() + " worked!");
+                                }
+                            } else {
+                                for (SimpleDateFormat format : TIME_FORMATS) {
+                                    dbglog.info("will try format " + format.toPattern());
+                                    ParsePosition pos = new ParsePosition(0);
+                                    dateResult = format.parse(valueTokens[i], pos);
+                                    if (dateResult == null) {
+                                        dbglog.info(format.toPattern() + ": null result.");
+                                        continue;
+                                    }
+                                    if (pos.getIndex() != valueTokens[i].length()) {
+                                        dbglog.info(format.toPattern() + ": didn't parse to the end - bad time zone?");
+                                        continue;
+                                    }
+                                    // OK, successfully parsed a value!
+                                    isTime = true;
+                                    dbglog.info(format.toPattern() + " worked!");
+                                    selectedDateTimeFormat[i] = format;
+                                    break;
+                                }
+                            }
+                            if (!isTime) {
+                                isTimeVariable[i] = false;
+                                // OK, the token didn't parse as a time value;
+                                // But we will still try to parse it as a date, below.
+                                // unless of course we have already decided that this column 
+                                // is NOT a date. 
+                            } else {
+                                // And if it is a time value, we are going to assume it's
+                                // NOT a date.
+                                isDateVariable[i] = false; 
+                            }
+                        }
+                    }
+
+                    if (isDateVariable[i]) {
+                        if (valueTokens[i] != null && (!valueTokens[i].equals(""))) {
+                            boolean isDate = false;
+
+                            // TODO: 
+                            // Strictly speaking, we should be doing the same thing
+                            // here as with the time formats above; select the 
+                            // first one that works, then insist that all the 
+                            // other values in this column match it... but we 
+                            // only have one, as of now, so it should be ok. 
+                            // -- L.A. 4.0 beta
+
+                            for (SimpleDateFormat format : DATE_FORMATS) {
+                                // Strict parsing - it will throw an 
+                                // exception if it doesn't parse!
+                                format.setLenient(false);
+                                dbglog.info("will try format " + format.toPattern());
+                                try {
+                                    dateResult = format.parse(valueTokens[i]);
+                                    dbglog.info("format " + format.toPattern() + " worked!");
+                                    isDate = true;
+                                    selectedDateFormat[i] = format;
+                                    break;
+                                } catch (ParseException ex) {
+                                    //Do nothing                                      
+                                    dbglog.info("format " + format.toPattern() + " didn't work.");
+                                }
+                            }
+                            if (!isDate) {
+                                isDateVariable[i] = false;
+                            } 
+                        }
+                    }
+                }
             }
             
             firstPassWriter.println(line);
@@ -255,7 +383,21 @@ public class CSVFileReader extends TabularDataFileReader {
         for (int i = 0; i < varQnty; i++) {
             if (isNumericVariable[i]) {
                 dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
-                dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+
+                if (isIntegerVariable[i]) {
+                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                } else {
+                    dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                }
+            } else if (isDateVariable[i] && selectedDateFormat[i] != null) {
+                // Dates are still Strings, i.e., they are "character" and "discrete";
+                // But we add special format values for them:
+                dataTable.getDataVariables().get(i).setFormatSchemaName(DATE_FORMATS[0].toPattern());
+                dataTable.getDataVariables().get(i).setFormatCategory("date");
+            } else if (isTimeVariable[i] && selectedDateTimeFormat[i] != null) {
+                // Same for time values:
+                dataTable.getDataVariables().get(i).setFormatSchemaName(selectedDateTimeFormat[i].toPattern());
+                dataTable.getDataVariables().get(i).setFormatCategory("time");
             }
         }
                     
@@ -303,13 +445,60 @@ public class CSVFileReader extends TabularDataFileReader {
                         // numeric zero: 
                         caseRow[i] = "0";
                     } else {
-                        try {
-                            Double testDoubleValue = new Double(valueTokens[i]);
-                            caseRow[i] = testDoubleValue.toString();
-                        } catch (Exception ex) {
-                            throw new IOException ("Failed to parse a value recognized as numeric in the first pass! (?)");
+                        if (isIntegerVariable[i]) {
+                            try {
+                                Integer testIntegerValue = new Integer(valueTokens[i]);
+                                caseRow[i] = testIntegerValue.toString();
+                            } catch (NumberFormatException ex) {
+                                throw new IOException ("Failed to parse a value recognized as an integer in the first pass! (?)");
+                            }
+                        } else {
+                            try {
+                                Double testDoubleValue = new Double(valueTokens[i]);
+                                if (testDoubleValue.equals(0.0)) {
+                                    caseRow[i] = "0.0";   
+                                } else {
+                                    // One possible implementation: 
+                                    //
+                                    // Round our fractional values to 15 digits 
+                                    // (minimum number of digits of precision guaranteed by 
+                                    // type Double) and format the resulting representations
+                                    // in a IEEE 754-like "scientific notation" - for ex., 
+                                    // 753.24 will be encoded as 7.5324e2
+                                    BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
+                                    /*
+                                    // an experiment - what's gonna happen if we just 
+                                    // use the string representation of the bigdecimal object
+                                    // above? 
+                                    caseRow[i] = testBigDecimal.toString(); 
+                                    */
+                                    
+                                    caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
+                                    
+                                    // Strip meaningless zeros and extra + signs: 
+                                    caseRow[i] = caseRow[i].replaceFirst("00*e", "e");
+                                    caseRow[i] = caseRow[i].replaceFirst("\\.e", ".0e");
+                                    caseRow[i] = caseRow[i].replaceFirst("e\\+00", "");
+                                    caseRow[i] = caseRow[i].replaceFirst("^\\+", "");
+                                }
+                                
+                            } catch (NumberFormatException ex) {
+                                throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
+                            } 
                         }
                     }    
+                } else if (isTimeVariable[i] || isDateVariable[i]) {
+                    // Time and Dates are stored NOT quoted (don't ask).
+                    if (valueTokens[i] != null) {
+                        String charToken = valueTokens[i];
+                        // Dealing with quotes: 
+                        // remove the leading and trailing quotes, if present:
+                        charToken = charToken.replaceFirst("^\"*", "");
+                        charToken = charToken.replaceFirst("\"*$", "");
+                        caseRow[i] = charToken;
+                    } else {
+                        caseRow[i] = "";
+                    }
                 } else {
                     // Treat as a String:
                     // Strings are stored in tab files quoted;                                                                                   

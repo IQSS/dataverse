@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -23,7 +24,8 @@ import javax.persistence.Version;
 @Entity
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
-	
+
+    @NotBlank(message = "Please specify a file name.")
     private String label = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";
@@ -40,7 +42,7 @@ public class FileMetadata implements Serializable {
     public String getLabel() {
         return label;
     }
-
+    
     public void setLabel(String label) {
         this.label = label;
     }

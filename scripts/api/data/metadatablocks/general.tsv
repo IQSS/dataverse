@@ -3,54 +3,50 @@
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	title	Title	Full title by which the Dataset is known.	Enter title...	text	0	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
-	authorName	Name	Enter the author's Family Name, Given Name, or the name of the organization responsible for this dataset.	FamilyName, GivenName or Organization	text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
+	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this dataset.	FamilyName, GivenName or Organization	text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	author	citation
-	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset.		text	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
+	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		text	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	description	Description	A summary describing the purpose, nature, and scope of the Dataset.		textbox	5	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
-	keyword	Keyword	Free-form text that describe important aspects of the Dataset.		text	6	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
-	subject	Subject	Select any domain-specific Subject(s) that are relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
+	keyword	Keyword	Key terms that describe important aspects of the Dataset.		text	6	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
+	subject	Subject	Domain-specific Subjects that are topically relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
 	notesText	Notes	Additional important information about the Dataset		textbox	8	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
-	otherId	Other ID	Another unique identifier that identifies this dataset (e.g., producer's or archive's number).			9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherId	Other ID	Another unique identifier that identifies this dataset (e.g., producer's or another repository's number).			9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	10	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdAgency	Agency	Name of agency which generated this identifier.		text	11	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	publication	Related Publication	Publications that use the data from this Dataset.			12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	publicationCitation	Publication Citation	Provide the full bibliographic citation for this related publication.		textbox	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationCitation	Publication Citation	The full bibliographic citation for this related publication.		textbox	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
 	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	14	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationIDNumber	ID Number	The actual identifier for the selected ID type.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (in the journal site, archive site or other).		url	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	contributor	Contributor	The institution or person  responsible for collecting,  managing, distributing, or  otherwise contributing to the  development of the resource.			17	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	contributorType	Type	The type of contributor of the  resource.  		text	18	FALSE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
-	contributorName	Name	The name of the contributor.		text	19	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorAffiliation	Affiliation	If applicable, the organization with which the contributor is affiliated.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorAbbreviation	Abbreviation	If applicable, the abbreviation by which the contributor is commonly known. (ex. IQSS, ICPSR)		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	productionDate	Production Date	Date when the data collection/other material(s) were produced (not distributed, released or archived).		date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).		url	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	contributor	Contributor	The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.			17	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	contributorType	Type	The type of contributor of the  resource.  		text	18	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	19	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	contributorAffiliation	Affiliation	The organization which the contributor is affiliated with.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
+	contributorAbbreviation	Abbreviation	The abbreviation by which the contributor's affiliation is commonly known (e.g., IQSS, ICPSR, etc).		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
+	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, released or archived).		date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	grantNumber	Grant Information	Grant Information			24	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
 	grantNumberAgency	Grant Agency	Grant Number Agency		text	26	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	depositor	Depositor	Name of a person (or organization) who provided this Dataset to the archive originally storing the data.		text	27	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	27	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.		date	28	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	29	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are relevant to this one, such as prior  research on this subject.		textbox	30	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or  supporting material to this Dataset.		text	31	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable  data files, if any, that served as the sources of the data  collection.		text	32	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	30	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	31	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	displayOrder											
-	subject	Arts and Architecture	0											
+	subject	Arts and Humanities	0											
 	subject	Astronomy and Astrophysics	1											
 	subject	Business and Management	2											
 	subject	Chemistry	3											
-	subject	Earth Sciences	4											
+	subject	Earth and Environmental Sciences	4											
 	subject	Engineering	5											
-	subject	Environmental Sciences	6											
-	subject	Health Sciences	7											
-	subject	Information Technology	8											
-	subject	Law	9											
-	subject	Life Sciences	10											
-	subject	Mathematical Sciences	11											
-	subject	Medical Sciences	12											
-	subject	Physics	13											
-	subject	Social Sciences and Humanities	14											
-	subject	Other	15											
+	subject	Medicine, Health & Life Sciences	6											
+	subject	Computer and Information Science	7											
+	subject	Law	8											
+	subject	Mathematical Sciences	9											
+	subject	Physics	10											
+	subject	Social Sciences	11											
+	subject	Other	12											
 	publicationIDType	ark	0											
 	publicationIDType	arXiv	1											
 	publicationIDType	bibcode	2											

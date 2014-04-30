@@ -38,11 +38,12 @@ public class DataversePage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataversePage.class.getCanonicalName());
 
     public enum EditMode {
-        CREATE, INFO, PERMISSIONS, SETUP
+
+        CREATE, INFO, PERMISSIONS, SETUP, THEME
     }
 
     @EJB
-    DataverseServiceBean dataverseService;  
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
     @Inject
@@ -52,16 +53,16 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     SearchServiceBean searchService;
     @EJB
-    DatasetFieldServiceBean datasetFieldService; 
+    DatasetFieldServiceBean datasetFieldService;
     @EJB
-    DataverseFacetServiceBean dataverseFacetService; 
+    DataverseFacetServiceBean dataverseFacetService;
     @EJB
     UserNotificationServiceBean userNotificationService;
-    
+
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
-    private DualListModel<DatasetFieldType> facets; 
+    private DualListModel<DatasetFieldType> facets;
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
@@ -101,6 +102,7 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
+            setDataverseDescriptionPage(dataverse.getDescription());
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
@@ -119,10 +121,10 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-        
+
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
-        
+
         facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
 
         List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
@@ -142,33 +144,36 @@ public class DataversePage implements java.io.Serializable {
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
+        setDataverseDescriptionPage(dataverse.getDescription());
+        updateCountDisplay();
         if (editMode == EditMode.INFO) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
         } else if (editMode == EditMode.SETUP) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
-        }      
+        }
     }
 
     public String save() {
-		Command<Dataverse> cmd = null;
-                //TODO change to Create - for now the page is expecting INFO instead.
-                if (dataverse.getId() == null){
-                    dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-                    cmd = new CreateDataverseCommand(dataverse, session.getUser());
-                } else {
-                    cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
-                }
+        Command<Dataverse> cmd = null;
+        //TODO change to Create - for now the page is expecting INFO instead.
+        dataverse.setDescription(dataverseDescriptionPage);
+        if (dataverse.getId() == null) {
+            dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+            cmd = new CreateDataverseCommand(dataverse, session.getUser());
+        } else {
+            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
+        }
 
-		try {
-			dataverse = commandEngine.submit(cmd);
-                        userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
-                        editMode = null;
-		} catch (CommandException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
-			return null;
-		}
-		
-        return "/dataverse.xhtml?id=" + dataverse.getId() +"&faces-redirect=true";
+        try {
+            dataverse = commandEngine.submit(cmd);
+            userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            editMode = null;
+        } catch (CommandException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
+            return null;
+        }
+
+        return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
     }
 
     public void cancel(ActionEvent e) {
@@ -202,7 +207,7 @@ public class DataversePage implements java.io.Serializable {
             dataverse.getMetadataBlocks(true).clear();
         }
     }
-    
+
     public boolean isInheritFacetFromParent() {
         return !dataverse.isFacetRoot();
     }
@@ -210,7 +215,7 @@ public class DataversePage implements java.io.Serializable {
     public void setInheritFacetFromParent(boolean inheritFacetFromParent) {
         dataverse.setFacetRoot(!inheritFacetFromParent);
     }
-   
+
     public void editFacets() {
         if (dataverse.isFacetRoot()) {
             dataverse.getDataverseFacets().addAll(dataverse.getOwner().getDataverseFacets());
@@ -218,15 +223,15 @@ public class DataversePage implements java.io.Serializable {
             dataverse.getDataverseFacets(true).clear();
         }
     }
-    
+
     public DualListModel<DatasetFieldType> getFacets() {
         return facets;
     }
-    
+
     public void setFacets(DualListModel<DatasetFieldType> facets) {
         this.facets = facets;
     }
-    
+
     public String releaseDataverse() {
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser(session.getUser());
@@ -235,4 +240,55 @@ public class DataversePage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
     }
+
+    public void updateCountDisplay() {
+        setDescriptionSize(new Integer(dataverseDescriptionPage.length()));
+    }
+
+    private String dataverseDescriptionPage;
+
+    public String getDataverseDescriptionPage() {
+        return dataverseDescriptionPage;
+    }
+
+    public void setDataverseDescriptionPage(String dataverseDescriptionPage) {
+        this.dataverseDescriptionPage = dataverseDescriptionPage;
+    }
+
+    private Integer descriptionSize = new Integer(0);
+
+    public Integer getDescriptionSize() {
+        return descriptionSize;
+    }
+
+    public void setDescriptionSize(Integer descriptionSize) {
+        this.descriptionSize = descriptionSize;
+    }
+
+    public String getCountString() {
+        return new Integer(1000 - descriptionSize.intValue()).toString() + " characters remaining";
+    }
+
+    public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
+        /// for beta, we will just preview the first n fields
+        StringBuilder mdbPreview = new StringBuilder();
+        int count = 0;
+        for (DatasetFieldType dsfType : mdb.getDatasetFieldTypes()) {
+            if (!dsfType.isChild()) {
+                if (count != 0) {
+                    mdbPreview.append(", ");
+                    if (count == numberOfItems) {
+                        mdbPreview.append("etc.");
+                        break;
+                    }
+                }
+
+                mdbPreview.append(dsfType.getDisplayName());
+                count++;
+            }
+        }
+
+        return mdbPreview.toString();
+    }
+
 }
