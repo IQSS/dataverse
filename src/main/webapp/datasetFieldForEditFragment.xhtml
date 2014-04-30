@@ -6,7 +6,8 @@
     xmlns:p="http://primefaces.org/ui">
 
 
-    <p:inputText value="#{fieldValues.value}" id="inputText" styleClass="form-control"
+    <p:inputText value="#{fieldValues.value}" id="inputText" 
+                 styleClass="form-control #{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary        
                              and (fieldValues.datasetField.datasetFieldType.fieldType == 'text'
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'int'
@@ -15,14 +16,23 @@
                              or fieldValues.datasetField.datasetFieldType.fieldType == 'date'
                              or fieldValues.datasetField.datasetFieldType.fieldType == '')}"/>
 
-        <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
-            <h:outputText value="Replication for: " /> <p:selectBooleanCheckbox value="#{DatasetPage.replicationFor}"/>
-        </ui:fragment>
-
     <p:watermark for="inputText" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
 
     <p:inputTextarea value="#{fieldValues.value}" rows="5" cols="60" id="description" styleClass="form-control" 
                      rendered="#{fieldValues.datasetField.datasetFieldType.fieldType == 'textbox'}" />
     <p:watermark for="description" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
+
+    <!-- This button / script is for replication data for the title field and is client side only -->                         
+    <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
+        <input type="button" id="replicationDataButton" value="Add 'Replication Data for' to Title" onclick="replicationFor();
+                return false;"/>
+    </ui:fragment>
+
+    <script type="text/javascript">
+        function replicationFor() {
+            $(".datasetfield-title")[0].value = "Replication Data for: " + $(".datasetfield-title")[0].value;
+            $('#replicationDataButton').prop('disabled', true);
+        }
+    </script>    
 
 </div>
