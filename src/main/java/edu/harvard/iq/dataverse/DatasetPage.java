@@ -218,6 +218,7 @@ public class DatasetPage implements java.io.Serializable {
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
             datasetVersionUI = new DatasetVersionUI(displayVersion);
+            /*
             if (!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion()) && !displayVersion.isDraft())) {
                 displayCitation = dataset.getCitation(false, displayVersion);
             } else if (dataset.isReleased() && displayVersion.isDraft()) {
@@ -227,6 +228,10 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 displayCitation = "";
             }
+            */
+            // show citation for current display version if draft note it on page
+            
+            displayCitation = dataset.getCitation(false, displayVersion);
             
             setVersionTabList(resetVersionTabList());
 

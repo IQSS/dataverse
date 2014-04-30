@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -46,6 +47,7 @@ public class DatasetFieldValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "value", columnDefinition = "TEXT")
     private String value;
     private int displayOrder;
     
