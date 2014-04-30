@@ -535,8 +535,13 @@ public class DatasetPage implements java.io.Serializable {
                     if (getFilesTempDirectory() != null) {
                         Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the DropBox file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
                         Files.copy(dropBoxStream, Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                        long writtenBytes = dFile.getFileSystemLocation().toFile().length();
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File size, expected: " + fileSize + ", written: " + writtenBytes);
+                        File tempFile = Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile();
+                        if (tempFile.exists()) {
+                            long writtenBytes = tempFile.length();
+                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File size, expected: " + fileSize + ", written: " + writtenBytes);
+                        } else {
+                            throw new IOException();
+                        }
                     }
                 }
             } catch (IOException ex) {
