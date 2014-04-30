@@ -13,12 +13,34 @@
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? 'New' : DataversePage.dataverse.name} Dataverse"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
-            <ui:define name="body">
 
+            <ui:define name="body">
+              <script type="text/javascript">
+                //<![CDATA[
+                (function($) {
+                    $.fn.extend({
+                        updateCounter: function(limit, elem) {
+                            $(this).on("keyup focus", function() {
+                                setCount(this, elem);
+                            });
+                            function setCount(src, elem) {
+                                var chars = src.value.length;
+                                elem.html(limit - chars);
+                            }
+                            setCount($(this)[0], elem);
+                        }
+                    });
+                })(jQuery);
+                $(document).ready(function() {
+                    var elem = $("[id$='chars']");
+                    $("[id$='description']").updateCounter(1000, elem);
+                });
+                //]]>
+            </script>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{DataversePage.init}"/>                
                     <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
@@ -225,19 +247,17 @@
                         <div style="padding-bottom:.75em;">
                             <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{empty DataversePage.editMode}"/>
                         </div>
-
                         <p:panel id="descText" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                             <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
                                 <ui:fragment>
                                     <p:panelGrid columns="3" styleClass="panelgridFormTable">
                                         <p:outputLabel value="Description" for="description"/>
                                         <ui:fragment>
-                                            <p:inputTextarea id="description" value="#{DataversePage.dataverseDescriptionPage}"
+                                            <p:inputTextarea id="description" value="#{DataversePage.dataverse.description}"
                                                              rows="5" cols="50"  
-                                                             autoResize="false">
-                                                <p:ajax event="keyup" update="ajaxcounter" listener="#{DataversePage.updateCountDisplay}"/> 
+                                                             autoResize="false">                                               
                                             </p:inputTextarea>                                                       
-                                            <h:outputText id="ajaxcounter" value="#{DataversePage.countString}"/>
+                                            <h:outputText id="chars"/><h:outputText value=" characters remaining"/>
                                         </ui:fragment>
                                         <p:message for="description"/>
                                     </p:panelGrid>
@@ -277,7 +297,7 @@
                         <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter" 
                                     itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
                     </ui:fragment>  
-                    
+
                     <!-- Dataverse Theme Panel -->                
                     <ui:fragment  rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
@@ -291,31 +311,31 @@
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
-                            
+
                             <h:outputLabel value="Tagline"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
                             <p:message for="tagline"/>                              
- 
+
                             <h:outputLabel value="Link URL"/>
                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
                             <p:message for="linkUrl"/>  
-                            
+
                             <h:outputLabel value="Link Text"/>
                             <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
                             <p:message for="linkText"/>  
-                            
+
                             <h:outputLabel value="Link Color"/>
                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
                             <p:message for="linkColor"/>  
-                            
+
                             <h:outputLabel value="Text Color"/>
                             <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
                             <p:message for="textColor"/>  
-                            
+
                             <h:outputLabel value="Background Color"/>
                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
                             <p:message for="backgroundColor"/>                              
-                            
+
                         </p:panelGrid>
 
                     </ui:fragment>                       

@@ -102,7 +102,6 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
-            setDataverseDescriptionPage(dataverse.getDescription());
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
@@ -144,8 +143,6 @@ public class DataversePage implements java.io.Serializable {
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
-        setDataverseDescriptionPage(dataverse.getDescription());
-        updateCountDisplay();
         if (editMode == EditMode.INFO) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
         } else if (editMode == EditMode.SETUP) {
@@ -156,7 +153,6 @@ public class DataversePage implements java.io.Serializable {
     public String save() {
         Command<Dataverse> cmd = null;
         //TODO change to Create - for now the page is expecting INFO instead.
-        dataverse.setDescription(dataverseDescriptionPage);
         if (dataverse.getId() == null) {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             cmd = new CreateDataverseCommand(dataverse, session.getUser());
@@ -239,34 +235,6 @@ public class DataversePage implements java.io.Serializable {
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
-    }
-
-    public void updateCountDisplay() {
-        setDescriptionSize(new Integer(dataverseDescriptionPage.length()));
-    }
-
-    private String dataverseDescriptionPage;
-
-    public String getDataverseDescriptionPage() {
-        return dataverseDescriptionPage;
-    }
-
-    public void setDataverseDescriptionPage(String dataverseDescriptionPage) {
-        this.dataverseDescriptionPage = dataverseDescriptionPage;
-    }
-
-    private Integer descriptionSize = new Integer(0);
-
-    public Integer getDescriptionSize() {
-        return descriptionSize;
-    }
-
-    public void setDescriptionSize(Integer descriptionSize) {
-        this.descriptionSize = descriptionSize;
-    }
-
-    public String getCountString() {
-        return new Integer(1000 - descriptionSize.intValue()).toString() + " characters remaining";
     }
 
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {

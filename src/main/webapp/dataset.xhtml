@@ -82,7 +82,8 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion}">
+                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                             <li>
                                                 <h:outputLink value="/dataset.xhtml?id=#{DatasetPage.dataset.id}"  >
                                                                 <h:outputText value="Current Version"/>
@@ -422,7 +423,7 @@
                                 </p:tab>
 
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="version">
                                         <p:column>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText value="#{version.title}" />
