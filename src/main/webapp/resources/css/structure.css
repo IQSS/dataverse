@@ -34,8 +34,12 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
-button.btn.dropdown-toggle {}
 button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
+
+.messagePanel {margin-top:1em; font-size: 1em;}
+.messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
+
+#footer {padding-bottom:4em;}
 
 /* -------- HEADER -------- */
 #dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
@@ -56,37 +60,16 @@ button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
         
 #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
 
-#breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
-
-button[id$='breadcrumbBtn'] span.ui-button-text, 
-button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
-
-button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
-button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
-
-button[id$='breadcrumbBtn'] .ui-button-icon-left, 
-button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
-
 #breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+
+#breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
 
 #breadcrumbNavBlock .ui-tree {width: auto;}
 
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
-
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
-
-#breadcrumbNavBlock button[id$='breadcrumbBtn'], 
-#breadcrumbNavBlock button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
-#breadcrumbNavBlock button[id$='breadcrumbBtn'] span.ui-icon, 
-#breadcrumbNavBlock button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
-
-#breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
-
-.messagePanel {margin-top:1em; font-size: 1em;}
-.messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
-
-#footer {padding-bottom:4em;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content {border:0;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler {background-size: auto 284px; height:20px; width:20px;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-s {background-position: -72px -16px;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-e {background-position: -35px -16px;}
 
 /* -------- DATAVERSE -------- */
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
