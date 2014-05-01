@@ -36,7 +36,7 @@
 .rightClass {text-align: right;} /* REMOVE */
 
 /* -------- HEADER -------- */
-#dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
+#dataverseHeader {margin:50px auto .5em auto; background:#F5F5F5;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
 #dataverseHeader .dataverseHeaderLogo {text-align:center;}
@@ -85,6 +85,19 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
 #footer {padding-bottom:4em;}
+
+/* -------- DATAVERSE -------- */
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget td {border:0;}
+
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
+
+div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box {margin: 4px 10px;}
+div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
+
+table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
+table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
 
 /* -------- SEARCH -------- */
 .panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;}
