@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -14,14 +15,19 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import java.io.StringReader;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
@@ -30,7 +36,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
@@ -39,6 +47,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * A REST API for dataverses. To be unified with {@link Dataverses}.
@@ -49,6 +58,7 @@ import javax.ws.rs.core.Response;
 public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 	
+    
 	@GET
 	public String list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
@@ -103,6 +113,67 @@ public class Dataverses extends AbstractApiBean {
                 return error(sb.toString());
             }
 	}
+    
+    @POST
+    @Path("{identifier}/datasets/")
+    @Produces("application/json")
+    public Response createDataset( @PathParam("identifier") String parentIdtf, String jsonBody, @QueryParam("key") String apiKey ) {
+        DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+		
+        Dataverse owner = findDataverse(parentIdtf);
+        if ( owner == null ) {
+            return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+        }
+        
+        JsonObject json;
+        try ( StringReader rdr = new StringReader(jsonBody) ) {
+            json = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        Dataset ds = new Dataset();
+        ds.setOwner(owner);
+        ds.setIdentifier( json.getString("identifier"));
+        ds.setAuthority(  json.getString("authority"));
+        ds.setProtocol(   json.getString("protocol"));
+        JsonObject jsonVersion = json.getJsonObject("initialVersion");
+        if ( jsonVersion == null) {
+            return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
+        }
+        try {
+            try {
+            DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
+            
+            // force "initial version" properties
+            version.setMinorVersionNumber(0l);
+            version.setVersion(1l);
+            version.setVersionNumber(1l);
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            
+            ds.setVersions( Collections.singletonList(version) );
+            } catch ( javax.ejb.TransactionRolledbackLocalException rbe ) {
+                throw rbe.getCausedByException();
+            }
+        } catch (JsonParseException ex) {
+            logger.log( Level.INFO, "Error parsing dataset version from Json", ex);
+            return errorResponse(Status.BAD_REQUEST, "Error parsing initialVersion: " + ex.getMessage() );
+        } catch ( Exception e ) {
+            logger.log( Level.WARNING, "Error parsing dataset version from Json", e);
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing initialVersion: " + e.getMessage() );
+        }
+        
+        try {
+            Dataset managedDs = engineSvc.submit( new CreateDatasetCommand(ds, u));
+            return okResponse( Json.createObjectBuilder().add("id", managedDs.getId()) );
+            
+        } catch (CommandException ex) {
+            String incidentId = UUID.randomUUID().toString();
+            logger.log(Level.SEVERE, "Error creating new dataset: " + ex.getMessage() + " incidentId:" + incidentId, ex);
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error executing command. More data in the server logs. Incident id is " + incidentId);
+        }
+    }
 	
 	@GET
 	@Path("{identifier}")

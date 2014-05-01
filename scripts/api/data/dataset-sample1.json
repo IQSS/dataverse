@@ -1,0 +1,98 @@
+{
+  "authority": "anAuthority",
+  "identifier": "dataset-one",
+  "protocol": "chadham-house-rule",
+  "initialVersion": {
+    "authors": [
+      {
+        "displayOrder": 0,
+        "affiliation": {
+          "value": "IQSS"
+        },
+        "name": {
+          "value": "Castro, Eleni"
+        }
+      }
+    ],
+    "UNF": "UNF",
+    "title": "Replication Data for: Building a Bridge Between Journal Articles and Research Data",
+    "distributionDate": "Distribution Date",
+    "productionDate": "Production Date",
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Replication Data for: Building a Bridge Between Journal Articles and Research Data",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              [
+                {
+                  "value": "Castro, Eleni",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                {
+                  "value": "IQSS",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              ]
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              "ecastro@fas.harvard.edu"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "distributorContact"
+          },
+          {
+            "value": "Research dataset for my publication on connecting journal articles and their underlying research data. Includes an analysis of current data publication practices.",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "description"
+          },
+          {
+            "value": [
+              "data publication"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "keyword"
+          },
+          {
+            "value": [
+              "Social Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          },
+          {
+            "value": "Privileged, Pete",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "depositor"
+          },
+          {
+            "value": "2014-05-01",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "dateOfDeposit"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    }
+  }
+}

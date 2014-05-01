@@ -49,10 +49,6 @@
         <h:outputScript library="js" name="ie-compat.js" />
         <script>
             $(document).ready(function() {
-                // Navbar Body Padding
-                navbarH = $("#navbarFixed").height();
-                $("body").css("padding-top", navbarH + "px");
-
                 // Navbar Search Toggle
                 $(document).on('click', '#navbar-search-toggle', function (e) {
                     $(this).parent("li").hide();

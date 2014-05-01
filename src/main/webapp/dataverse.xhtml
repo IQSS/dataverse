@@ -24,6 +24,9 @@
                                     setCount(this, elem);
                                 });
                                 function setCount(src, elem) {
+									if (typeof src === "undefined") {
+									    return;
+									}
                                     var chars = src.value.length;
                                     elem.html(limit - chars);
                                 }
@@ -160,7 +163,7 @@
 
                     <!-- Description Panel / View Mode -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
-                        <div class="clearfix" style="border-bottom:1px solid #DDDDDD;">
+                        <div class="clearfix" style="margin-bottom:1.5em;">
                             <div id="actionButtonBlock" style="float:right;">
                                 <!-- Edit Button -->
                                 <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
@@ -168,9 +171,9 @@
                                     <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                         <div class="btn-group">
                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataverse <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-pencil"/> Edit Dataverse <span class="caret"></span>
                                             </button>
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                            <ul class="dropdown-menu pull-right text-left" role="menu">
                                                 <li>
                                                     <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
                                                         <div style="width:48px; float:left; margin:4px 12px 6px 0;">
@@ -276,7 +279,7 @@
                                 </ui:fragment>
                             </div>
                             <ui:fragment rendered="#{empty DataversePage.editMode}">
-                                <div style="padding-bottom:.75em;">
+                                <div>
                                     <h:outputText value="#{DataversePage.dataverse.description}"/>
                                 </div>
                             </ui:fragment>
