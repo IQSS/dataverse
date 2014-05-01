@@ -32,7 +32,7 @@ public class DatasetFieldTypeValidator implements ConstraintValidator<ValidateDa
         String fieldType = dsfType.getFieldType();
 
 
-        if (dsfType.isRequired() && StringUtils.isBlank(value.getValue())) {
+        if (dsfType.isRequired() && !dsfType.isControlledVocabulary() && StringUtils.isBlank(value.getValue())) {
             context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is required.").addConstraintViolation();
             return false;
         }
