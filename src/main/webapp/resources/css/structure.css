@@ -1,5 +1,6 @@
 /*--------- BODY --------- */
-/* body, .ui-widget {font:13px/1.7em "Open Sans","trebuchet ms",arial,sans-serif;} */
+body {margin-top:50px;}
+body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #428BCA;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
 
@@ -33,10 +34,11 @@
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
-.rightClass {text-align: right;} /* REMOVE */
+button.btn.dropdown-toggle {}
+button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 
 /* -------- HEADER -------- */
-#dataverseHeader {margin:50px auto .5em auto; background:#F5F5F5;}
+#dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}
 #dataverseHeader .dataverseHeaderCell {display:table-cell;}
 #dataverseHeader .dataverseHeaderLogo {text-align:center;}
@@ -100,7 +102,14 @@ table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; ma
 table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
 
 /* -------- SEARCH -------- */
-.panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;}
+.panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;padding:0;}
+.panelLayoutBlock.panelSerchForm input.ui-inputfield {margin-right:1em;}
+.panelLayoutBlock.panelSerchForm a[id$='searchbutton'] {color:black;font-size:.9em;}
+.panelLayoutBlock.panelSerchForm a[id$='searchbutton'] span.glyphicon {margin-right:.3em;}
+.panelLayoutBlock.panelSerchForm a[id$='advsearchlink'] {margin-left:1em;}
+
+#dv-sidecolumn {width:20%;float:left;padding-right:1em;}
+#dv-maincolumn {width:80%;float:left;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
@@ -110,8 +119,10 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
-div[id$="resultsTable"] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
-div[id$="resultsTable"] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
+#resultsTable div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
+#resultsTable div.ui-datatable-tablewrapper table td > div > span.label {margin-left:.5em;}
+#resultsTable .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+#resultsTable .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
 form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
 form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}
@@ -145,9 +156,9 @@ table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
 table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
-div[id$="resultsTable"] .ui-datatable-tablewrapper table > thead {display:none;}
 
-div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
+#resultsTable .ui-datatable-tablewrapper table > thead {display:none;}
+#resultsTable > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
 
 #resultsTable.resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
