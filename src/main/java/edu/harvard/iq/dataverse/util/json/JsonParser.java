@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetAuthor;
+import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -21,6 +22,7 @@ import java.util.Set;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.persistence.NoResultException;
 
 /**
  * Parses JSON objects into domain objects.
@@ -41,23 +43,25 @@ public class JsonParser {
     public DatasetVersion parseDatasetVersion( JsonObject obj ) throws JsonParseException {
         try {
             DatasetVersion dsv = new DatasetVersion();
+
+            String archiveNote = obj.getString("archiveNote", null);
+            if ( archiveNote != null ) dsv.setArchiveNote( archiveNote );
             
-            dsv.setArchiveNote( obj.getString("archiveNote", null) );
             dsv.setDeaccessionLink( obj.getString("deaccessionLink", null) );
-            dsv.setVersion( parseLong(obj.getString("version")) );
-            dsv.setVersionNumber( parseLong(obj.getString("versionNumber")) );
-            dsv.setMinorVersionNumber( parseLong(obj.getString("minorVersionNumber")) );
-            dsv.setId( parseLong(obj.getString("id")) );
+            dsv.setVersion( parseLong(obj.getString("version", null)) );
+            dsv.setVersionNumber( parseLong(obj.getString("versionNumber", null)) );
+            dsv.setMinorVersionNumber( parseLong(obj.getString("minorVersionNumber", null)) );
+            dsv.setId( parseLong(obj.getString("id", null)) );
             
-            String versionStateStr = obj.getString("versionState");
+            String versionStateStr = obj.getString("versionState", null);
             if ( versionStateStr != null ) {
                 dsv.setVersionState( DatasetVersion.VersionState.valueOf(versionStateStr) );
             }
             
-            dsv.setReleaseTime( parseDate(obj.getString("releaseDate")) );
-            dsv.setLastUpdateTime( parseDate(obj.getString("lastUpdateTime")) );
-            dsv.setCreateTime( parseDate(obj.getString("createTime")) );
-            dsv.setArchiveTime( parseDate(obj.getString("archiveTime")) );
+            dsv.setReleaseTime( parseDate(obj.getString("releaseDate", null)) );
+            dsv.setLastUpdateTime( parseDate(obj.getString("lastUpdateTime", null)) );
+            dsv.setCreateTime( parseDate(obj.getString("createTime", null)) );
+            dsv.setArchiveTime( parseDate(obj.getString("archiveTime", null)) );
             
             dsv.setDatasetFields( parseMetadataBlocks(obj.getJsonObject("metadataBlocks")) );
             
@@ -67,9 +71,9 @@ public class JsonParser {
             for ( JsonObject authorJson : authorsJson.getValuesAs(JsonObject.class) ) {
                 DatasetAuthor author = new DatasetAuthor();
                 author.setAffiliation( parseField( authorJson.getJsonObject("affiliation")) );
-                author.setIdType( authorJson.getString("idType") );
-                author.setIdValue( authorJson.getString("idValue"));
-                author.setDisplayOrder( parsePrimitiveInt(authorJson.getString("displayOrder"), 0) );
+                author.setIdType( authorJson.getString("idType", null) );
+                author.setIdValue( authorJson.getString("idValue", null));
+                author.setDisplayOrder( parsePrimitiveInt(authorJson.getString("displayOrder", null), 0) );
                 author.setName( parseField( authorJson.getJsonObject("name")) );
                 
                 authors.add( author );
@@ -78,7 +82,22 @@ public class JsonParser {
             dsv.setDatasetAuthors(authors);
             
             // parse distributors
-            // CONTPOINT 
+            JsonArray distrosJson = obj.getJsonArray("distributors");
+            if ( distrosJson != null ) {
+                List<DatasetDistributor> distros = new ArrayList<>(distrosJson.size());
+                for ( JsonObject distJson : distrosJson.getValuesAs(JsonObject.class) ) {
+                    DatasetDistributor distr = new DatasetDistributor();
+                    distr.setDisplayOrder( distJson.getInt("displayOrder", 0));
+                    distr.setVersion( Long.valueOf(distJson.getInt("version", 0)) );
+                    distr.setAbbreviation( parseField(distJson.getJsonObject("abbreviation")));
+                    distr.setAffiliation( parseField(distJson.getJsonObject("affiliation")));
+                    distr.setLogo( parseField(distJson.getJsonObject("logo")));
+                    distr.setName( parseField(distJson.getJsonObject("name")));
+                    distr.setUrl( parseField(distJson.getJsonObject("url")));
+                }
+                dsv.setDatasetDistributors(distros);
+            }
+            
             
             return dsv;
             
@@ -94,7 +113,6 @@ public class JsonParser {
         List<DatasetField> fields = new LinkedList<>();
         
         for ( String blockName : keys ) {
-            blockService.findByName(blockName);
             JsonObject blockJson = json.getJsonObject(blockName);
             JsonArray fieldsJson = blockJson.getJsonArray("fields");
             for ( JsonObject fieldJson : fieldsJson.getValuesAs(JsonObject.class) ) {
@@ -107,38 +125,40 @@ public class JsonParser {
     
     public DatasetField parseField( JsonObject json ) throws JsonParseException {
         if ( json == null ) return null;
-        DatasetField ret = new DatasetField();
-        DatasetFieldType type = datasetFieldSvc.findByName(json.getString("typeName"));
-        if ( type == null ) {
-            throw new JsonParseException("Can't find field type named '" + json.getString("typeName") + "'");
+        try {
+            DatasetField ret = new DatasetField();
+            DatasetFieldType type = datasetFieldSvc.findByName(json.getString("typeName",""));
+
+            ret.setDatasetFieldType(type);
+
+
+            if ( type.isCompound() ) {
+                List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
+                for ( DatasetFieldCompoundValue dsfcv : vals ) {
+                    dsfcv.setParentDatasetField(ret);
+                }
+                ret.setDatasetFieldCompoundValues(vals);
+
+            } else if ( type.isControlledVocabulary() ) {
+                List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
+                for ( ControlledVocabularyValue cvv : vals ) {
+                    cvv.setDatasetFieldType(type);
+                }
+                ret.setControlledVocabularyValues(vals);
+
+            } else {
+                // primitive
+                List<DatasetFieldValue> values = parsePrimitiveValue( json );
+                for ( DatasetFieldValue val : values ) {
+                    val.setDatasetField(ret);
+                }
+                ret.setDatasetFieldValues(values);
+            }
+
+            return ret;
+        } catch ( NoResultException nre ) {
+            throw new JsonParseException("Can't find field type named '" + json.getString("typeName","") + "'");
         }
-        ret.setDatasetFieldType(type);
-        
-        
-        if ( type.isCompound() ) {
-            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
-            for ( DatasetFieldCompoundValue dsfcv : vals ) {
-                dsfcv.setParentDatasetField(ret);
-            }
-            ret.setDatasetFieldCompoundValues(vals);
-            
-        } else if ( type.isControlledVocabulary() ) {
-            List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
-            for ( ControlledVocabularyValue cvv : vals ) {
-                cvv.setDatasetFieldType(type);
-            }
-            ret.setControlledVocabularyValues(vals);
-            
-        } else {
-            // primitive
-            List<DatasetFieldValue> values = parsePrimitiveValue( json );
-            for ( DatasetFieldValue val : values ) {
-                val.setDatasetField(ret);
-            }
-            ret.setDatasetFieldValues(values);
-        }
-        
-        return ret;
     }
     
     public List<DatasetFieldCompoundValue> parseCompoundValue( DatasetFieldType compoundType, JsonObject json ) throws JsonParseException {
@@ -187,7 +207,7 @@ public class JsonParser {
             
         } else {
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-            datasetFieldValue.setValue( json.getString("value") );
+            datasetFieldValue.setValue( json.getString("value", "") );
             vals.add(datasetFieldValue);
         }
 
@@ -208,7 +228,7 @@ public class JsonParser {
             return vals;
             
         } else {
-            String strValue = json.getString("value");
+            String strValue = json.getString("value", "");
             ControlledVocabularyValue cvv = cvvType.getControlledVocabularyValue( strValue );
             if ( cvv==null ) {
                 throw new JsonParseException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'");
