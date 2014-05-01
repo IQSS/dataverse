@@ -24,6 +24,9 @@
                                     setCount(this, elem);
                                 });
                                 function setCount(src, elem) {
+									if (typeof src === "undefined") {
+									    return;
+									}
                                     var chars = src.value.length;
                                     elem.html(limit - chars);
                                 }

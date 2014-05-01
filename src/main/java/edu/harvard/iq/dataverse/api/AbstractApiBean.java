@@ -13,7 +13,10 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -51,8 +54,14 @@ public abstract class AbstractApiBean {
 	
 	@EJB
 	DataverseRoleServiceBean rolesSvc;
-	
-	
+	 
+    private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
+        @Override
+        public JsonParser call() throws Exception {
+            return new JsonParser(datasetFieldSvc, metadataBlockSvc);
+        }
+    });
+    
 	protected DataverseUser findUser( String userIdtf ) {
         
 		return isNumeric(userIdtf) ? engineSvc.getContext().users().find(Long.parseLong(userIdtf))
@@ -118,6 +127,10 @@ public abstract class AbstractApiBean {
                 ).build();
     }
     
+    protected JsonParser jsonParser() {
+        return jsonParserRef.get();
+    }
+    
     protected Response notFound( String msg ) {
         return errorResponse(Status.NOT_FOUND, msg);
     }
@@ -149,12 +162,39 @@ public abstract class AbstractApiBean {
             return errorResponse(Status.INTERNAL_SERVER_ERROR, ce.getLocalizedMessage());
         }
     }
-    
-	protected boolean isNumeric( String str ) { return Util.isNumeric(str); };
+ 
+    protected boolean isNumeric( String str ) { return Util.isNumeric(str); };
 	protected String error( String msg ) { return Util.error(msg); }
 	protected String ok( String msg ) { return Util.ok(msg); }
 	protected String ok( JsonObject jo ) { return Util.ok(jo); }
 	protected String ok( JsonArray jo ) { return Util.ok(jo); }
 	protected String ok( JsonObjectBuilder jo ) { return ok(jo.build()); }
 	protected String ok( JsonArrayBuilder jo ) { return ok(jo.build()); }
+}
+
+class LazyRef<T> {
+    private interface Ref<T> {
+        T get();
+    }
+    
+    private Ref<T> ref;
+    
+    public LazyRef( final Callable<T> initer ) {
+        ref = new Ref<T>(){
+            @Override
+            public T get() {
+                try {
+                    final T t = initer.call();
+                    ref = new Ref<T>(){ @Override public T get() { return t;} };
+                    return ref.get();
+                } catch (Exception ex) {
+                    Logger.getLogger(LazyRef.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
+        }};
+    }
+    
+    public T get()  {
+        return ref.get();
+    }
 }
