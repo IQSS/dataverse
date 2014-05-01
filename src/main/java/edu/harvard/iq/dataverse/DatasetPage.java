@@ -217,7 +217,8 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMinorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue()).toString() + "."
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
-            datasetVersionUI = new DatasetVersionUI(displayVersion);
+            
+
             /*
             if (!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion()) && !displayVersion.isDraft())) {
                 displayCitation = dataset.getCitation(false, displayVersion);
@@ -230,9 +231,14 @@ public class DatasetPage implements java.io.Serializable {
             }
             */
             // show citation for current display version if draft note it on page
-            
-            displayCitation = dataset.getCitation(false, displayVersion);
-            
+            try {
+                 datasetVersionUI = new DatasetVersionUI(displayVersion);
+                 displayCitation = dataset.getCitation(false, displayVersion);
+            } catch (NullPointerException npe){
+                //This will happen when solr is down and will allow any link to be displayed.
+                throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
+            }
+           
             setVersionTabList(resetVersionTabList());
 
         } else if (ownerId != null) {

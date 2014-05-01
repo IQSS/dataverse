@@ -47,6 +47,7 @@ public class DatasetFieldValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "value", columnDefinition = "TEXT")
     private String value;
     private int displayOrder;
     
