@@ -28,6 +28,11 @@
 #   Type: Data Collector
 #   Name: Edward Trees Jr.
 #
+# Until https://redmine.hmdc.harvard.edu/issues/3778 is complete:
+# Add the following
+# Production Date: 2014-05-02
+# (Otherwise you won't be able to publish your dataset.)
+#
 # We assume you add a file called "trees.png" to this dataset
 # with a description of "Trees are lovely."
 #

@@ -26,11 +26,33 @@
                     <h:form styleClass="form-horizontal">
                         <p:focus/>
 
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#dataversesFieldList" class="panel-heading">
+                                <h:outputText value="Dataverses"/>
+                            </div>
+                            <div id="dataversesFieldList" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Name</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
+                                    </div>
+                                    <label class="col-sm-4 control-label">Affiliation</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
+                                    </div>
+                                    <label class="col-sm-4 control-label">Description</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">                        
                             <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#citationFieldList#{mdb.id}" class="panel-heading">
-                                        <h:outputText value="#{mdb.displayName}"/>
+                                        <h:outputText value="Datasets: #{mdb.displayName}"/>
                                     </div>
                                     <div id="citationFieldList#{mdb.id}" class="collapse #{status.first?'in':''}" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                         <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
@@ -49,6 +71,28 @@
                                 </div>
                             </ui:fragment>
                         </ui:repeat>
+
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#filesFieldList" class="panel-heading">
+                                <h:outputText value="Files"/>
+                            </div>
+                            <div id="filesFieldList" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">Name</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldName}"/>
+                                    </div>
+                                    <label class="col-sm-4 control-label">Description</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldDescription}"/>
+                                    </div>
+                                    <label class="col-sm-4 control-label">File Type</label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="fileFieldFiletype" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFiletype}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
 

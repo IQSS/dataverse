@@ -1,6 +1,6 @@
 #metadataBlock	name	displayName												
 	astrophysics	Astronomy and Astrophysics Metadata												
-#datasetField	name	title	dsDescription	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	astroType	Type	The nature or genre of the content of the files in the dataset.		text	0	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	astroFacility	Facility	The observatory or facility where the data was obtained. 		text	1	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	astroInstrument	Instrument	The instrument used to collect the data.		text	2	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
@@ -11,7 +11,7 @@
 	coverage.Spectral.Bandpass	Bandpass	Conventional bandpass name		text	7	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	coverage.Spectral.CentralWavelength	Central Wavelength (m)	The central wavelength of the spectral bandpass, in meters.		float	8	TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		astrophysics
 	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.		float	9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
-	coverage.Spectral.MinimumWavelength 	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
+	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
 	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.		float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
 	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		date	12	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics

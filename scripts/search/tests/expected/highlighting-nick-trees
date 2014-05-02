@@ -26,8 +26,13 @@
         },
         {
             "id":"dataset_17_draft",
-            "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, authorName, keyword, contributorName]",
+            "matched_fields":"[dsDescription, title, citation_t, notesText, authorAffiliation, authorName, keyword, contributorName]",
             "detailsArray":[
+                {
+                    "dsDescription":[
+                        "<span class=\"search-term-match\">Trees</span> have rings. <span class=\"search-term-match\">Trees</span> can be tall."
+                    ]
+                },
                 {
                     "title":[
                         "Rings of <span class=\"search-term-match\">Trees</span> and Other Observations"
@@ -36,11 +41,6 @@
                 {
                     "citation_t":[
                         "<span class=\"search-term-match\">Tree</span>, Tony, 2014, \"Rings of Trees and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
-                    ]
-                },
-                {
-                    "description":[
-                        "<span class=\"search-term-match\">Trees</span> have rings. <span class=\"search-term-match\">Trees</span> can be tall."
                     ]
                 },
                 {

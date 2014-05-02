@@ -1,6 +1,6 @@
 #metadataBlock	name	displayName												
 	biomedical	Biomedical Metadata												
-#datasetField	name	title	dsDescription	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
 	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyFactorType	Factor Type	Factors used in the Study. 		text	1	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
 	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	2	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical

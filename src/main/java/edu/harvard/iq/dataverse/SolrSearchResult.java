@@ -156,10 +156,10 @@ public class SolrSearchResult {
             logger.info("SolrSearchResult class: " + solrField.getNameSearchable() + ":" + highlight.getSnippets());
         }
 
-        /**
-         * @todo: use SearchFields.DESCRIPTION
-         */
-        Highlight highlight = highlightsAsMap.get("description");
+        Highlight highlight = highlightsAsMap.get(SearchFields.DESCRIPTION);
+        if (type.equals("datasets")) {
+            highlight = highlightsAsMap.get(SearchFields.DATASET_DESCRIPTION);
+        }
         if (highlight != null) {
             return highlight.getSnippets();
         } else {
@@ -327,6 +327,7 @@ public class SolrSearchResult {
              */
             if (!field.equals(SearchFields.NAME)
                     && !field.equals(SearchFields.DESCRIPTION)
+                    && !field.equals(SearchFields.DATASET_DESCRIPTION)
                     && !field.equals(SearchFields.AFFILIATION)
                     && !field.equals(SearchFields.CITATION)
                     && !field.equals("title")) {

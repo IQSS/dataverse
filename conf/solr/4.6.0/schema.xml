@@ -265,11 +265,16 @@
    <!-- Added for Dataverse 4.0: release date https://redmine.hmdc.harvard.edu/issues/3592 -->
    <field name="releasedate" type="int" indexed="true" stored="true"/>
 
+   <!-- Added for Dataverse 4.0: do we want a description field that applies to dataverses, datasets, and files? https://redmine.hmdc.harvard.edu/issues/3745 -->
+   <field name="description" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <copyField source="description" dest="text" maxChars="3000"/>
+
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="astroFacility" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="astroInstrument" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="astroObject" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="astroType" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="author" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="authorAffiliation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -297,7 +302,7 @@
    <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.CentralWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.MaximumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="coverage.Spectral.MinimumWavelength " type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="coverage.Spectral.MinimumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.Wavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Temporal" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="coverage.Temporal.StartTime" type="int" multiValued="false" stored="true" indexed="true"/>
@@ -310,9 +315,9 @@
    <field name="dateOfCollectionStart" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="dateOfDeposit" type="int" multiValued="false" stored="true" indexed="true"/>
    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="description" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="distributorContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dsDescription" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="eastLongitude" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="frequencyOfDataCollection" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="geographicBoundingBox" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -448,6 +453,7 @@
    <copyField source="actionsToMinimizeLoss" dest="text" maxChars="3000"/>
    <copyField source="astroFacility" dest="text" maxChars="3000"/>
    <copyField source="astroInstrument" dest="text" maxChars="3000"/>
+   <copyField source="astroObject" dest="text" maxChars="3000"/>
    <copyField source="astroType" dest="text" maxChars="3000"/>
    <copyField source="author" dest="text" maxChars="3000"/>
    <copyField source="authorAffiliation" dest="text" maxChars="3000"/>
@@ -475,7 +481,7 @@
    <copyField source="coverage.Spectral.Bandpass" dest="text" maxChars="3000"/>
    <copyField source="coverage.Spectral.CentralWavelength" dest="text" maxChars="3000"/>
    <copyField source="coverage.Spectral.MaximumWavelength" dest="text" maxChars="3000"/>
-   <copyField source="coverage.Spectral.MinimumWavelength " dest="text" maxChars="3000"/>
+   <copyField source="coverage.Spectral.MinimumWavelength" dest="text" maxChars="3000"/>
    <copyField source="coverage.Spectral.Wavelength" dest="text" maxChars="3000"/>
    <copyField source="coverage.Temporal" dest="text" maxChars="3000"/>
    <copyField source="coverage.Temporal.StartTime" dest="text" maxChars="3000"/>
@@ -488,9 +494,9 @@
    <copyField source="dateOfCollectionStart" dest="text" maxChars="3000"/>
    <copyField source="dateOfDeposit" dest="text" maxChars="3000"/>
    <copyField source="depositor" dest="text" maxChars="3000"/>
-   <copyField source="description" dest="text" maxChars="3000"/>
    <copyField source="deviationsFromSampleDesign" dest="text" maxChars="3000"/>
    <copyField source="distributorContact" dest="text" maxChars="3000"/>
+   <copyField source="dsDescription" dest="text" maxChars="3000"/>
    <copyField source="eastLongitude" dest="text" maxChars="3000"/>
    <copyField source="frequencyOfDataCollection" dest="text" maxChars="3000"/>
    <copyField source="geographicBoundingBox" dest="text" maxChars="3000"/>
