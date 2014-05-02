@@ -10,18 +10,23 @@
     "relevance":[
         {
             "id":"datafile_18",
-            "matched_fields":"[description]",
+            "matched_fields":"[description, filename_without_extension_en]",
             "detailsArray":[
                 {
                     "description":[
                         "<span class=\"search-term-match\">Trees</span> are lovely."
+                    ]
+                },
+                {
+                    "filename_without_extension_en":[
+                        "<span class=\"search-term-match\">trees</span>"
                     ]
                 }
             ]
         },
         {
             "id":"dataset_17",
-            "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, keyword, contributorName]",
+            "matched_fields":"[title, citation_t, description, notesText, authorAffiliation, authorName, keyword, contributorName]",
             "detailsArray":[
                 {
                     "title":[
@@ -30,7 +35,7 @@
                 },
                 {
                     "citation_t":[
-                        "Tree, Tony, 2014, \"Rings of <span class=\"search-term-match\">Trees</span> and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
+                        "<span class=\"search-term-match\">Tree</span>, Tony, 2014, \"Rings of Trees and Other Observations\", http://dx.doi.org/10.5072/FK2/17,  Root"
                     ]
                 },
                 {
@@ -49,6 +54,11 @@
                     ]
                 },
                 {
+                    "authorName":[
+                        "<span class=\"search-term-match\">Tree</span>, Tony"
+                    ]
+                },
+                {
                     "keyword":[
                         "<span class=\"search-term-match\">trees</span>"
                     ]
@@ -62,8 +72,13 @@
         },
         {
             "id":"dataverse_11",
-            "matched_fields":"[name]",
+            "matched_fields":"[description, name]",
             "detailsArray":[
+                {
+                    "description":[
+                        "A <span class=\"search-term-match\">tree</span> dataverse with some birds"
+                    ]
+                },
                 {
                     "name":[
                         "<span class=\"search-term-match\">Trees</span>"
