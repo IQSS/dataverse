@@ -39,6 +39,8 @@ button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 .messagePanel {margin-top:1em; font-size: 1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
+.highlightBold {font-weight:bold;}
+
 #footer {padding-bottom:4em;}
 
 /* -------- HEADER -------- */
@@ -107,12 +109,23 @@ span.search-term-match {font-weight: bold;}
 #resultsTable .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
 #resultsTable .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
-form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
-form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}
+form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
+form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
+form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
+form[id$='facetType'] > div.clearfix .facetTypeChBox > div.ui-chkbox {padding-top:2px;padding-right:4px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left; text-decoration:none;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px 4px 30px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataverse {background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataverse {background: url(/resources/images/icon_dataverse_dark.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataset {background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataset {background: url(/resources/images/icon_dataset_dark.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeFile {background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}
 
 div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
+div[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.ui-datalist div.ui-datalist-content {padding-top:0;}
@@ -131,14 +144,20 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
    -moz-hyphens: auto;
         hyphens: auto;}
 a.facetLink {text-decoration:none;}
-/*.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {}*/
+a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
 .facetSelected.resultsTopBlock {background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
-a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.5em;}
+a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
 table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
+
+#dv-maincolumn div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;}
+#dv-maincolumn a.facetLink.facetSelected.resultsTopBlock {margin-right:1em;}
+
+#dv-maincolumn div.results-sort-pagination div.pagination {margin-left:1em;}
+#dv-maincolumn div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
 
 #resultsTable .ui-datatable-tablewrapper table > thead {display:none;}
 #resultsTable > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
