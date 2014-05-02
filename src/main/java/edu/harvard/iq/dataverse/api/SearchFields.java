@@ -10,6 +10,15 @@ public class SearchFields {
     // (but we are getting away from these...)
     public static final String ID = "id";
     public static final String NAME = "name";
+    /**
+     * @todo Do we want to support finding dataverses, datasets, and files with
+     * a query for description:foo? Maybe not, since people will probably just
+     * use basic search for this. They could also use "dvDescription:foo OR
+     * dsDescription:foo OR fileDescription:foo" if they *really* only want to
+     * target the description of all three types at once.
+     *
+     * See also https://redmine.hmdc.harvard.edu/issues/3745
+     */
     public static final String DESCRIPTION = "description";
 
     public static final String DATAVERSE_NAME = "dvName_en";
@@ -89,4 +98,7 @@ public class SearchFields {
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";
+
+    public static final String DATASET_DESCRIPTION = "dsDescription";
+
 }

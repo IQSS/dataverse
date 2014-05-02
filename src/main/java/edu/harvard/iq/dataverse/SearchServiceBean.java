@@ -90,6 +90,7 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
+        solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
         /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
@@ -265,7 +266,6 @@ public class SearchServiceBean {
         Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         while (iter.hasNext()) {
             SolrDocument solrDocument = iter.next();
-            String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
             String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
@@ -318,7 +318,6 @@ public class SearchServiceBean {
                 }
             }
 //            logger.info(id + ": " + description);
-            solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             solrSearchResult.setType(type);
@@ -329,9 +328,13 @@ public class SearchServiceBean {
             solrSearchResult.setHighlightsMap(highlightsMap);
             solrSearchResult.setHighlightsAsMap(highlightsMap3);
             Map<String, String> parent = new HashMap<>();
+            String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
+            solrSearchResult.setDescriptionNoSnippet(description);
             if (type.equals("dataverses")) {
                 solrSearchResult.setName(name);
             } else if (type.equals("datasets")) {
+                String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
+                solrSearchResult.setDescriptionNoSnippet(datasetDescription);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
