@@ -37,7 +37,8 @@ where you will be presented with the following editing options.
 - **General Information**: edit name, host dataverse, alias, email, 
   description, affilitation, and Metadata Elements for your dataverse.
 - **Roles + Permissions** for this particular dataverse
-- **Setup**: Update the Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list.
+- **Setup**: Update the Facets you want to associate with your dataverse. 
+  Note: facets will appear in the order shown on the list.
 
 
 Publish Your Dataverse
@@ -45,7 +46,8 @@ Publish Your Dataverse
 
 Once your dataverse is ready to go public, go to your dataverse page, click on the "Unpublished" button on the right 
 hand side of the page which should indicate: 
-"This dataverse is Unpublished. To publish it click 'Publish dataverse' link"
+"This dataverse is Unpublished. To publish it click 'Publish dataverse' link." Once you click "Publish dataverse" it
+will be made public.
 
 **Important Note**: Once a dataverse is made public it can no longer be unpublished.
 
