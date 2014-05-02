@@ -215,7 +215,7 @@ public class JsonParserTest {
         assertEquals( "data", result.getValue() );
         
     }
-    
+    /*
     @Test(expected=JsonParseException.class)
     public void testParseField_primitive_NEType() throws JsonParseException {
         JsonObject json = json("{\n" +
@@ -233,7 +233,7 @@ public class JsonParserTest {
         assertEquals( "data", result.getValue() );
         
     }
-    
+    */
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
     }

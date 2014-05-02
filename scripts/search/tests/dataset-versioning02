@@ -1,9 +1,11 @@
 #!/bin/bash
 # We assume you've done everything in scripts/search/tests/dataset-versioning01
 # 
+# Your dataset lives at http://localhost:8080/dataverse.xhtml?id=11
+#
 # We assume you just released your dataset for the first time.
 #
-# To do this, you must also release the Tree and Root dataverses
+# To do this, you must also release the Trees and Root dataverses
 # raw version
 #diff <(curl -s 'http://localhost:8080/api/datasets/17/versions/1?key=pete') scripts/search/tests/expected/dataset-versioning02raw
 # anon can now see the dataset and file and parents

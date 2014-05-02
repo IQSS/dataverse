@@ -135,6 +135,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.TYPE, "dataverses");
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
+        solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -167,6 +168,7 @@ public class IndexServiceBean {
 //            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
 //        }
         solrInputDocument.addField(SearchFields.DESCRIPTION, dataverse.getDescription());
+        solrInputDocument.addField(SearchFields.DATAVERSE_DESCRIPTION, dataverse.getDescription());
 //        logger.info("dataverse affiliation: " + dataverse.getAffiliation());
         if (dataverse.getAffiliation() != null && !dataverse.getAffiliation().isEmpty()) {
             /**
@@ -174,6 +176,7 @@ public class IndexServiceBean {
              */
 //            solrInputDocument.addField(SearchFields.CATEGORY, dataverse.getAffiliation());
             solrInputDocument.addField(SearchFields.AFFILIATION, dataverse.getAffiliation());
+            solrInputDocument.addField(SearchFields.DATAVERSE_AFFILIATION, dataverse.getAffiliation());
         }
         // checking for NPE is important so we can create the root dataverse
         if (rootDataverse != null && !dataverse.equals(rootDataverse)) {
@@ -568,6 +571,7 @@ public class IndexServiceBean {
                         try {
                             filenameWithoutExtension = filenameComplete.substring(0, i);
                             datafileSolrInputDocument.addField(SearchFields.FILENAME_WITHOUT_EXTENSION, filenameWithoutExtension);
+                            datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameWithoutExtension);
                         } catch (IndexOutOfBoundsException ex) {
                             filenameWithoutExtension = "";
                         }
@@ -580,6 +584,7 @@ public class IndexServiceBean {
             }
             datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
+            datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
             datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
             if (majorVersionReleaseDate == null) {
@@ -619,9 +624,11 @@ public class IndexServiceBean {
             // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (!), etc., 
             // if available:
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getFriendlyType());
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, dataFile.getFriendlyType());
             // For the file type facets, we have a property file that maps mime types 
             // to facet-friendly names; "application/fits" should become "FITS", etc.:
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(dataFile));
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(dataFile));
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());

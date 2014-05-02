@@ -10,7 +10,20 @@ public class SearchFields {
     // (but we are getting away from these...)
     public static final String ID = "id";
     public static final String NAME = "name";
+    /**
+     * @todo Do we want to support finding dataverses, datasets, and files with
+     * a query for description:foo? Maybe not, since people will probably just
+     * use basic search for this. They could also use "dvDescription:foo OR
+     * dsDescription:foo OR fileDescription:foo" if they *really* only want to
+     * target the description of all three types at once.
+     *
+     * See also https://redmine.hmdc.harvard.edu/issues/3745
+     */
     public static final String DESCRIPTION = "description";
+
+    public static final String DATAVERSE_NAME = "dvName_en";
+    public static final String DATAVERSE_AFFILIATION = "dvAffiliation_en";
+    public static final String DATAVERSE_DESCRIPTION = "dvDescription_en";
     /**
      * @todo: standard Solr "title" field is multivalued. Do we want ours to be?
      */
@@ -28,6 +41,11 @@ public class SearchFields {
      * into it at index time. The business logic to determine if a data-driven
      * metadata field should be indexed into Solr as a single or multiple value
      * lives in the getSolrField() method of DatasetField.java
+     *
+     * AFFILIATION is used for the "collapsed" "Affiliation" facet that means
+     * either "Author Affiliation" or dataverse affiliation. It needs to be a
+     * string so we can facet on it and it needs to be multivalued because
+     * "Author Affiliation" can be multivalued.
      */
     public static final String AFFILIATION = "affiliation_ss";
     public static final String CITATION = "citation_t";
@@ -45,6 +63,9 @@ public class SearchFields {
      * @todo: if you search for "pdf" we probably want to return all PDFs...
      * Could fix this with a copyField in schema.xml (and rename to just "filetype").
      */
+    public static final String FILE_NAME = "filename_en";
+    public static final String FILE_DESCRIPTION = "fileDescription_en";
+    public static final String FILE_TYPE_SEARCHABLE = "filetype_en";
     public static final String FILE_TYPE_MIME = "filetypemime_s";
     public static final String FILE_TYPE = "filetype_s";
     /**
@@ -77,4 +98,7 @@ public class SearchFields {
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";
+
+    public static final String DATASET_DESCRIPTION = "dsDescription";
+
 }

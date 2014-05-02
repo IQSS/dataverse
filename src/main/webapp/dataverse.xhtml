@@ -15,11 +15,36 @@
             <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
             <ui:define name="body">
 
+                <script type="text/javascript">
+                    //<![CDATA[
+                    (function($) {
+                        $.fn.extend({
+                            updateCounter: function(limit, elem) {
+                                $(this).on("keyup focus", function() {
+                                    setCount(this, elem);
+                                });
+                                function setCount(src, elem) {
+									if (typeof src === "undefined") {
+									    return;
+									}
+                                    var chars = src.value.length;
+                                    elem.html(limit - chars);
+                                }
+                                setCount($(this)[0], elem);
+                            }
+                        });
+                    })(jQuery);
+                    $(document).ready(function() {
+                        var elem = $("[id$='chars']");
+                        $("[id$='description']").updateCounter(1000, elem);
+                    });
+                    //]]>
+                </script>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
-                    <f:viewAction action="#{DataversePage.init}"/>                
+                    <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <f:viewAction action="#{DataversePage.init}"/>
                     <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
                     <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
                     <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
@@ -39,7 +64,7 @@
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
-
+                
                 <h:form id="dataverseForm">
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
@@ -65,221 +90,224 @@
 
                     <!-- Edit Info Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass" rendered="#{DataversePage.editMode == 'INFO'}">
-                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                <ui:fragment>
+                        <div class="row form-horizontal">
+                            <div class="col-xs-6 form-group">
+                                <div class="col-sm-2 control-label">
                                     <p:outputLabel value="Alias" for="alias"/> <h:outputText value="*" style="color: #B94A48;"/>
-                                </ui:fragment>
-                                <ui:fragment>
+                                </div>
+                                <div class="col-sm-10">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="alias" value="#{DataversePage.dataverse.alias}"/>
+                                        <p:inputText id="alias" styleClass="form-control" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
-                                </ui:fragment>
-                                <ui:fragment>
+                                </div>
+                                <div class="col-sm-2 control-label">
                                     <p:outputLabel value="E-mail" for="contactEmail"/> <h:outputText value="*" style="color: #B94A48;"/>
-                                </ui:fragment>
-                                <ui:fragment>
+                                </div>
+                                <div class="col-sm-10">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="contactEmail" value="#{DataversePage.dataverse.contactEmail}"/>
+                                        <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
                                         <p:message for="contactEmail"/>
                                     </p:panelGrid>
-                                </ui:fragment>
-                                <ui:fragment>
+                                </div>
+                                <div class="col-sm-2 control-label">
                                     <p:outputLabel value="Affiliation" for="affiliation"/>
-                                </ui:fragment>
-                                <ui:fragment>
+                                </div>
+                                <div class="col-sm-10">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="affiliation" value="#{DataversePage.dataverse.affiliation}"/>
+                                        <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                         <p:message for="affiliation"/>
                                     </p:panelGrid>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 form-group">
+                                <div class="col-sm-2 control-label">
+                                    <p:outputLabel value="Description" for="description"/>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
+                                                     rows="5" cols="50"
+                                                     autoResize="false">
+                                    </p:inputTextarea>
+                                    <div><h:outputText id="chars"/> characters remaining</div>
+                                </div>
+                                <div class="col-sm-2 control-label">
+                                    <p:message for="description"/>
+                                </div>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
+                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
+                                <p:outputLabel value="Metadata Elements"/>
+                                <ui:fragment>
+                                    <h:outputText style="display:block; margin-bottom:.5em;" value="Choose the sets of Metadata Elements for datasets in this Dataverse." />
+                                    <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
+                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Use Metadata Elements from Host Dataverse">
+                                            <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>
+                                        </p:selectBooleanCheckbox>
+                                    </ui:fragment>
+
+                                    <p:selectManyCheckbox id="mdbSelect" styleClass="metadata-blocks-select" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
+                                                          widgetVar="metadataBlocks" layout="pageDirection">
+                                        <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb"
+                                                       itemLabel="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}"
+                                                       itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
+                                    </p:selectManyCheckbox>
                                 </ui:fragment>
                             </p:panelGrid>
                         </p:panelGrid>
                     </p:panel>
 
-                    <!-- Description Panel -->
-                    <div class="clearfix" style="border-bottom:1px solid #DDDDDD;">
-                        <div id="actionButtonBlock" style="float:right;">
-                            <!-- Edit Button -->
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
-                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')
-                                                     }">                                
-                                <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataverse <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                            <li>
-                                                <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
-                                                    <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                                        <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                    <!-- Description Panel / View Mode -->
+                    <ui:fragment rendered="#{empty DataversePage.editMode}">
+                        <div class="clearfix" style="margin-bottom:1.5em;">
+                            <div id="actionButtonBlock" style="float:right;">
+                                <!-- Edit Button -->
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
+                                                         permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')}">
+                                    <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <span class="glyphicon glyphicon-pencil"/> Edit Dataverse <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                <li>
+                                                    <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
+                                                        <div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                                                            <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                                                        </div>
+                                                        <div style="float:left; width:300px;">
+                                                            <div style="font-weight:bold;">#{DataversePage.dataverse.name} Dataverse <h:outputText value=" (#{DataversePage.dataverse.affiliation})" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
+                                                            <div style="color:#777;">#{DataversePage.dataverse.alias}</div>
+                                                            <div style="color:#777;">#{DataversePage.dataverse.contactEmail}</div>
+                                                        </div>
                                                     </div>
-                                                    <div style="float:left; width:300px;">
-                                                        <div style="font-weight:bold;">#{DataversePage.dataverse.name} Dataverse <h:outputText value=" (#{DataversePage.dataverse.affiliation})" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
-                                                        <div style="color:#777;">#{DataversePage.dataverse.alias}</div>
-                                                        <div style="color:#777;">#{DataversePage.dataverse.contactEmail}</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li class="divider" role="presentation"></li>
-                                            <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@all">
-                                                    <h:outputText value="General Information" />
-                                                </p:commandLink>
-                                            </li>
-                                            <li>
-                                                <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
-                                                    <h:outputText value="Roles + Permissions" />
-                                                    <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                                    <f:param name="objectType" value="DATAVERSE" />
-                                                </h:link>
-                                            </li>
-                                            <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>-->
-                                            <li>
-                                                <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
-                                                    <h:outputText value="Setup" />
-                                                </p:commandLink>   
-                                            </li>
-                                        </ul>
+                                                </li>
+                                                <li class="divider" role="presentation"></li>
+                                                <li>
+                                                    <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@all">
+                                                        <h:outputText value="General Information" />
+                                                    </p:commandLink>
+                                                </li>
+                                                <li>
+                                                    <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
+                                                        <h:outputText value="Roles + Permissions" />
+                                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                                                        <f:param name="objectType" value="DATAVERSE" />
+                                                    </h:link>
+                                                </li>
+                                                <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>-->
+                                                <li>
+                                                    <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
+                                                        <h:outputText value="Setup" />
+                                                    </p:commandLink>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                            </ui:fragment>
-                            <!-- Release Button -->
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and 
-                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')}">
-                                <div style="float:right; margin-left:1em;">
-                                    <div class="btn-group">
-                                        <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
-                                            <ui:fragment rendered="#{!DataversePage.dataverse.released}">
-                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
+                                </ui:fragment>
+                                <!-- Release Button -->
+                                <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
+                                                         permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')}">
+                                    <div style="float:right; margin-left:1em;">
+                                        <div class="btn-group">
+                                            <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
+                                                <ui:fragment rendered="#{!DataversePage.dataverse.released}">
+                                                    <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DataversePage.dataverse.released}">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
+                                                </ui:fragment>
+                                            </button>
+                                            <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner == null }">
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
+                                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
+                                                            <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. To publish it click 'Publish dataverse' link</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                            <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataverse" onclick="confirmation.show()"  /></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner != null and DataversePage.dataverse.owner.released}">
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
+                                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
+                                                            <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. To publish it click 'Publish dataverse' link</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                            <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataverse" onclick="confirmation.show()"  /></span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner != null and !DataversePage.dataverse.owner.released}">
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
+                                                            <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
+                                                            <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. It may not be published until its owner is also published.</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DataversePage.dataverse.released}">
-                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
+                                                <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                    <li>
+                                                        <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
+                                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published
+                                                            <span style="display:block;color:#777;font-size:small;">This dataverse has been Published. </span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </ui:fragment>
-                                        </button>
-                                        <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner == null }">
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                        <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. To publish it click 'Publish dataverse' link</span>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
-                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                        <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataverse" onclick="confirmation.show()"  /></span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner != null and DataversePage.dataverse.owner.released}">
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                        <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. To publish it click 'Publish dataverse' link</span>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
-                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                        <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataverse" onclick="confirmation.show()"  /></span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{!DataversePage.dataverse.released and DataversePage.dataverse.owner != null and !DataversePage.dataverse.owner.released}">
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:red;">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                        <span style="display:block;color:#777;font-size:small;">This dataverse is Unpublished. It may not be published until its owner is also published.</span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{DataversePage.dataverse.released}">
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                                <li>
-                                                    <a href="#" title="TURN THIS INTO SOME COMMANDLINK OR SOMETHING" style="pointer-events: none; color:green;">
-                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published
-                                                        <span style="display:block;color:#777;font-size:small;">This dataverse has been Published. </span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </ui:fragment>
+                                        </div>
                                     </div>
+                                </ui:fragment>
+                            </div>
+                            <ui:fragment rendered="#{empty DataversePage.editMode}">
+                                <div>
+                                    <h:outputText value="#{DataversePage.dataverse.description}"/>
                                 </div>
-                                <p:growl id="messages" showDetail="true" />  
-                                <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'."  header="Publish Dataverse"  widgetVar="confirmation">  
-                                    <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DataversePage.releaseDataverse}" >
-                                    </p:commandButton>  
-                                    <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
-                                </p:confirmDialog>
                             </ui:fragment>
                         </div>
-
-                        <div style="padding-bottom:.75em;">
-                            <h:outputText value="#{DataversePage.dataverse.description}" rendered="#{empty DataversePage.editMode}"/>
-                        </div>
-
-                        <p:panel id="descText" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
-                            <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-                                <ui:fragment>
-                                    <p:panelGrid columns="3" styleClass="panelgridFormTable">
-                                        <p:outputLabel value="Description" for="description"/>
-                                        <ui:fragment>
-                                            <p:inputTextarea id="description" value="#{DataversePage.dataverseDescriptionPage}"
-                                                             rows="5" cols="50"  
-                                                             autoResize="false">
-                                                <p:ajax event="keyup" update="ajaxcounter" listener="#{DataversePage.updateCountDisplay}"/> 
-                                            </p:inputTextarea>                                                       
-                                            <h:outputText id="ajaxcounter" value="#{DataversePage.countString}"/>
-                                        </ui:fragment>
-                                        <p:message for="description"/>
-                                    </p:panelGrid>
-                                </ui:fragment>
-                            </p:panelGrid>
-                        </p:panel>
-                    </div>
-
-
-                    <!-- Metadata blocks -->
-                    <ui:fragment  rendered="#{DataversePage.editMode == 'INFO'}">
-                        <h:outputText value="Choose the sets of Metadata Elements for datasets in this Dataverse" />
-                        <br/>
-                        <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">                            
-                            <p:selectBooleanCheckbox value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Use Metadata Elements from Host Dataverse" > 
-                                <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>  
-                            </p:selectBooleanCheckbox> 
-                        </ui:fragment> 
-
-                        <p:selectManyCheckbox id="mdbSelect" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
-                                              widgetVar="metadataBlocks" layout="pageDirection" style="width:400px;">  
-                            <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb" 
-                                           itemLabel="#{mdb.displayName}#{mdb.required ? ' (required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}" 
-                                           itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
-                        </p:selectManyCheckbox>
                     </ui:fragment>
+                    
+                    <!--<p:growl id="messages" showDetail="true" />-->
+                    <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
+                        <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />
+                    </p:confirmDialog>
 
-                    <!-- Dataverse Setup Panel -->                
-                    <ui:fragment  rendered="#{DataversePage.editMode == 'SETUP'}">
+                    <!-- Dataverse Setup Panel -->
+                    <ui:fragment rendered="#{DataversePage.editMode == 'SETUP'}">
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                            <h:outputText value="Use Facets from Parent Dataverse? " /> 
+                            <h:outputText value="Use Facets from Parent Dataverse? " />
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
-                                <p:ajax update="@all" listener="#{DataversePage.editFacets}"/> 
+                                <p:ajax update="@all" listener="#{DataversePage.editFacets}"/>
                             </p:selectBooleanCheckbox>
                         </ui:fragment>
 
-                        <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter" 
+                        <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                     itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
-                    </ui:fragment>  
-                    
-                    <!-- Dataverse Theme Panel -->                
-                    <ui:fragment  rendered="#{DataversePage.editMode == 'THEME'}">
+                    </ui:fragment>
+
+                    <!-- Dataverse Theme Panel -->
+                    <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
                             <h:outputLabel value="Logo"/>
                             <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
@@ -291,34 +319,32 @@
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
-                            
+
                             <h:outputLabel value="Tagline"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
-                            <p:message for="tagline"/>                              
- 
+                            <p:message for="tagline"/>
+
                             <h:outputLabel value="Link URL"/>
                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
-                            <p:message for="linkUrl"/>  
-                            
+                            <p:message for="linkUrl"/>
+
                             <h:outputLabel value="Link Text"/>
                             <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
-                            <p:message for="linkText"/>  
-                            
+                            <p:message for="linkText"/>
+
                             <h:outputLabel value="Link Color"/>
                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
-                            <p:message for="linkColor"/>  
-                            
+                            <p:message for="linkColor"/>
+
                             <h:outputLabel value="Text Color"/>
                             <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
-                            <p:message for="textColor"/>  
-                            
+                            <p:message for="textColor"/>
+
                             <h:outputLabel value="Background Color"/>
                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
-                            <p:message for="backgroundColor"/>                              
-                            
+                            <p:message for="backgroundColor"/>
                         </p:panelGrid>
-
-                    </ui:fragment>                       
+                    </ui:fragment>
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
@@ -329,7 +355,7 @@
                 </h:form>
 
                 <!-- Content Panel -->
-                <ui:fragment  rendered="#{empty DataversePage.editMode}">
+                <ui:fragment rendered="#{empty DataversePage.editMode}">
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
                         <ui:param name="dataverseLinksStayOnPage" value="true"/>

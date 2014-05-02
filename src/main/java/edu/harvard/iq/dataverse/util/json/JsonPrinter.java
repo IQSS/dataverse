@@ -33,7 +33,6 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
-import javax.json.JsonObject;
 
 /**
  * Convert objects to Json.
@@ -122,7 +121,6 @@ public class JsonPrinter {
 									.add("latest", brief.json(ds.getLatestVersion()))
 									.add("edit", brief.json(ds.getEditVersion()))
 				);
-		
 	}
 	
 	public static JsonObjectBuilder json( DatasetVersion dsv ) {
@@ -344,44 +342,44 @@ public class JsonPrinter {
             }
         }
 
-                @Override
-                public void endField(DatasetField f) {
-                    if ( f.getDatasetFieldType().isAllowMultiples() ) {
-                        objectStack.peek().add("value", valueArrStack.pop());
-                    }
-                    fieldAggregator.peek().add(objectStack.pop());
-                }
+        @Override
+        public void endField(DatasetField f) {
+            if ( f.getDatasetFieldType().isAllowMultiples() ) {
+                objectStack.peek().add("value", valueArrStack.pop());
+            }
+            fieldAggregator.peek().add(objectStack.pop());
+        }
 
-                @Override
-                public void primitiveValue(DatasetFieldValue dsfv) {
-                    if ( dsfv.getDatasetField().getDatasetFieldType().isAllowMultiples() ) {
-                        valueArrStack.peek().add( dsfv.getValue() );
-                    } else {
-                        objectStack.peek().add("value", dsfv.getValue());
-                    }
-                }
+        @Override
+        public void primitiveValue(DatasetFieldValue dsfv) {
+            if ( dsfv.getDatasetField().getDatasetFieldType().isAllowMultiples() ) {
+                valueArrStack.peek().add( dsfv.getValue() );
+            } else {
+                objectStack.peek().add("value", dsfv.getValue());
+            }
+        }
 
-                @Override
-                public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-                    if ( cvv.getDatasetFieldType().isAllowMultiples() ) {
-                        valueArrStack.peek().add( cvv.getStrValue() );
-                    } else {
-                        objectStack.peek().add("value", cvv.getStrValue());
-                    }
-                }
+        @Override
+        public void controledVocabularyValue(ControlledVocabularyValue cvv) {
+            if ( cvv.getDatasetFieldType().isAllowMultiples() ) {
+                valueArrStack.peek().add( cvv.getStrValue() );
+            } else {
+                objectStack.peek().add("value", cvv.getStrValue());
+            }
+        }
 
-                @Override
-                public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
-                    fieldAggregator.push( Json.createArrayBuilder() );
-                }
+        @Override
+        public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
+            fieldAggregator.push( Json.createArrayBuilder() );
+        }
 
-                @Override
-                public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
-                    if ( dsfcv.getParentDatasetField().getDatasetFieldType().isAllowMultiples() ) {
-                        valueArrStack.peek().add( fieldAggregator.pop() );
-                    } else {
-                        objectStack.peek().add("value", fieldAggregator.pop() );
-                    }
-                }
+        @Override
+        public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
+            if ( dsfcv.getParentDatasetField().getDatasetFieldType().isAllowMultiples() ) {
+                valueArrStack.peek().add( fieldAggregator.pop() );
+            } else {
+                objectStack.peek().add("value", fieldAggregator.pop() );
+            }
+        }
     }
 }

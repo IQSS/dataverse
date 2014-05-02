@@ -82,7 +82,8 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion}">
+                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                             <li>
                                                 <h:outputLink value="/dataset.xhtml?id=#{DatasetPage.dataset.id}"  >
                                                                 <h:outputText value="Current Version"/>
@@ -170,11 +171,13 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
-                                            <button type="button" class="btn btn-default">
+                                            <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
                                                 <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataset Contact
                                             </button>
                                         </div>
                                     </ui:fragment>
+                                    <p:confirmDialog message="Unfortunately, Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!"  header="Email Dataset Contact"  widgetVar="contact_confirmation">                                           
+                                    </p:confirmDialog>
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
@@ -185,7 +188,7 @@
                                             <span>#{DatasetPage.displayCitation}</span>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                    <ui:fragment rendered="#{!DatasetPage.displayVersion.released}">
                                         <div id="disclaimer">            
                                             <span>
                                                 <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="This is what your citation would look like when it's published." title="" style="margin-right:1em;">In Draft</a>                                                
@@ -422,7 +425,7 @@
                                 </p:tab>
 
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.dataset.versions}" var="version">
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="version">
                                         <p:column>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText value="#{version.title}" />

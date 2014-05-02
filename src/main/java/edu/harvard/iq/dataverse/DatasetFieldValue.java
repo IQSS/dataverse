@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,6 +21,7 @@ import javax.persistence.ManyToOne;
  * @author gdurand
  */
 @Entity
+@ValidateDatasetFieldType
 public class DatasetFieldValue implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -41,11 +43,12 @@ public class DatasetFieldValue implements Serializable {
         setDatasetField(aField); 
         value = aValue;
     }    
-        
+          
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "value", columnDefinition = "TEXT")
     private String value;
     private int displayOrder;
     

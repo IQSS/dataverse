@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.SearchFields;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +28,12 @@ public class AdvancedSearchPage {
     private List<MetadataBlock> metadataBlocks;
     private Map<Long,List<DatasetFieldType>> metadataFieldMap = new HashMap();
     private List<DatasetFieldType> metadataFieldList;    
-
+    private String dvFieldName;
+    private String dvFieldDescription;
+    private String dvFieldAffiliation;
+    private String fileFieldName;
+    private String fileFieldDescription;
+    private String fileFieldFiletype;
 
     public void init() {
         /**
@@ -111,7 +117,46 @@ public class AdvancedSearchPage {
             if (queryStrings.size() > 1) {
                 queryBuilder.append(")");
             }            
-        
+
+            /**
+             * @todo: What people really want (we think) is fancy combination
+             * searches with users typing a little under Dataverses, a little
+             * under Datasets, and a little under Files and logic would exist
+             * here to construct and OR (or AND?) query. For now, we reset the
+             * whole query every time we pass through the if's below.
+             *
+             * see also https://redmine.hmdc.harvard.edu/issues/3745
+             */
+            if (!dvFieldName.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.DATAVERSE_NAME + ":" + dvFieldName);
+            }
+
+            if (!dvFieldAffiliation.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.DATAVERSE_AFFILIATION + ":" + dvFieldAffiliation);
+            }
+
+            if (!dvFieldDescription.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.DATAVERSE_DESCRIPTION + ":" + dvFieldDescription);
+            }
+
+            if (!fileFieldName.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.FILE_NAME + ":" + fileFieldName);
+            }
+
+            if (!fileFieldDescription.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.FILE_DESCRIPTION + ":" + fileFieldDescription);
+            }
+
+            if (!fileFieldFiletype.isEmpty()) {
+                queryBuilder = new StringBuilder();
+                queryBuilder.append(SearchFields.FILE_TYPE_SEARCHABLE + ":" + fileFieldFiletype);
+            }
+
         }
 
         return "/dataverse.xhtml?q=" + queryBuilder.toString().trim() + "faces-redirect=true";
@@ -141,4 +186,53 @@ public class AdvancedSearchPage {
     public void setMetadataFieldMap(Map<Long, List<DatasetFieldType>> metadataFieldMap) {
         this.metadataFieldMap = metadataFieldMap;
     }
+
+    public String getDvFieldName() {
+        return dvFieldName;
+    }
+
+    public void setDvFieldName(String dvFieldName) {
+        this.dvFieldName = dvFieldName;
+    }
+
+    public String getDvFieldDescription() {
+        return dvFieldDescription;
+    }
+
+    public void setDvFieldDescription(String dvFieldDescription) {
+        this.dvFieldDescription = dvFieldDescription;
+    }
+
+    public String getDvFieldAffiliation() {
+        return dvFieldAffiliation;
+    }
+
+    public void setDvFieldAffiliation(String dvFieldAffiliation) {
+        this.dvFieldAffiliation = dvFieldAffiliation;
+    }
+
+    public String getFileFieldName() {
+        return fileFieldName;
+    }
+
+    public void setFileFieldName(String fileFieldName) {
+        this.fileFieldName = fileFieldName;
+    }
+
+    public String getFileFieldDescription() {
+        return fileFieldDescription;
+    }
+
+    public void setFileFieldDescription(String fileFieldDescription) {
+        this.fileFieldDescription = fileFieldDescription;
+    }
+
+    public String getFileFieldFiletype() {
+        return fileFieldFiletype;
+    }
+
+    public void setFileFieldFiletype(String fileFieldFiletype) {
+        this.fileFieldFiletype = fileFieldFiletype;
+    }
+
 }

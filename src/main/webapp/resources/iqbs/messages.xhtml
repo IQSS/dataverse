@@ -1,19 +1,16 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
 	  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
-	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
 	  xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
-	<!-- INTERFACE -->
 	<cc:interface>
 		<cc:attribute name="collapsible" default="false" />
 	</cc:interface>
 
-	<!-- IMPLEMENTATION -->
 	<cc:implementation>
-		<ui:repeat value="#{facesContext.messageList}" var="msg">
+		<ui:repeat value="#{facesContext.messageList}" var="msg" >
 			#{level = fn:split(msg.severity,' ')[0]; "" }
 			#{bsClass = (level eq 'INFO' ? 'info' : (level eq 'WARN' ? 'warning' : 'danger')); ""}
 			<div class="alert #{cc.attrs.collapsible ? 'alert-dismissable' :''} alert-#{bsClass}">

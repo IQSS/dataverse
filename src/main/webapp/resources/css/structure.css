@@ -1,5 +1,6 @@
 /*--------- BODY --------- */
-/* body, .ui-widget {font:13px/1.7em "Open Sans","trebuchet ms",arial,sans-serif;} */
+body {margin-top:50px;}
+body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #428BCA;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
 
@@ -33,7 +34,14 @@
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid {margin-bottom: 0}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
-.rightClass {text-align: right;} /* REMOVE */
+button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
+
+.messagePanel {margin-top:1em; font-size: 1em;}
+.messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
+
+.highlightBold {font-weight:bold;}
+
+#footer {padding-bottom:4em;}
 
 /* -------- HEADER -------- */
 #dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
@@ -54,40 +62,39 @@
         
 #breadcrumbNavBlock.panelLayoutBlock > .ui-widget-content {border-bottom: 0;}
 
-#breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
-
-button[id$='breadcrumbBtn'] span.ui-button-text, 
-button[id$='breadcrumbBtn2'] span.ui-button-text {padding-top:0; padding-bottom:0;}
-
-button[id$='breadcrumbBtn'] span.ui-button-text {padding-top:1px;}
-button[id$='breadcrumbBtn2'] span.ui-button-text {font-weight:bold;}
-
-button[id$='breadcrumbBtn'] .ui-button-icon-left, 
-button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
-
 #breadcrumbNavBlock .breadcrumbCarrot {float:left; margin:0 .4em 0 .8em; color:#B3B3B3;}
+
+#breadcrumbNavBlock div.dropdown-menu {padding-right:.5em; min-width:280px;}
 
 #breadcrumbNavBlock .ui-tree {width: auto;}
 
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container,
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode {padding:0;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content {border:0;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler {background-size: auto 284px; height:20px; width:20px;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-s {background-position: -72px -16px;}
+#breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-e {background-position: -35px -16px;}
 
-#breadcrumbNavBlock > .ui-widget-content > .ui-tree.ui-widget-content > .ui-tree-container > .ui-treenode .ui-treenode-label {padding:0; margin:0;}
+/* -------- DATAVERSE -------- */
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget td {border:0;}
 
-#breadcrumbNavBlock button[id$='breadcrumbBtn'], 
-#breadcrumbNavBlock button[id$='breadcrumbBtn2'] {float:left; border:0; box-shadow:none; background: none;}
-#breadcrumbNavBlock button[id$='breadcrumbBtn'] span.ui-icon, 
-#breadcrumbNavBlock button[id$='breadcrumbBtn2'] span.ui-icon {background-position: -64px -16px;}
+form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
 
-#breadcrumbNavBlock .ui-tree.ui-widget-content {border:0;}
+div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box {margin: 4px 10px;}
+div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
 
-.messagePanel {margin-top:1em; font-size: 1em;}
-.messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
-
-#footer {padding-bottom:4em;}
+table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
+table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
 
 /* -------- SEARCH -------- */
-.panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;}
+.panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;padding:0;}
+.panelLayoutBlock.panelSerchForm input.ui-inputfield {margin-right:1em;}
+.panelLayoutBlock.panelSerchForm a[id$='searchbutton'] {color:black;font-size:.9em;}
+.panelLayoutBlock.panelSerchForm a[id$='searchbutton'] span.glyphicon {margin-right:.3em;}
+.panelLayoutBlock.panelSerchForm a[id$='advsearchlink'] {margin-left:1em;}
+
+#dv-sidecolumn {width:20%;float:left;padding-right:1em;}
+#dv-maincolumn {width:80%;float:left;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
@@ -97,15 +104,28 @@ button[id$='breadcrumbBtn2'] .ui-button-icon-left {left:1em;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
-div[id$="resultsTable"] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
-div[id$="resultsTable"] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
+#resultsTable div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
+#resultsTable div.ui-datatable-tablewrapper table td > div > span.label {margin-left:.5em;}
+#resultsTable .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+#resultsTable .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
-form[id$='searchTypeFacet'] label {font-weight:normal;margin-left:.5em;}
-form[id$='searchTypeFacet'] .ui-chkbox-box {margin-top:.3em;}
+form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
+form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
+form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
+form[id$='facetType'] > div.clearfix .facetTypeChBox > div.ui-chkbox {padding-top:2px;padding-right:4px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left; text-decoration:none;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px 4px 30px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataverse {background: url(/resources/images/icon_dataverse.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataverse {background: url(/resources/images/icon_dataverse_dark.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeDataset {background: url(/resources/images/icon_dataset.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeDataset {background: url(/resources/images/icon_dataset_dark.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink span.facetTypeFile {background: url(/resources/images/icon_file.png) no-repeat 4px 50% / 18px;}
+form[id$='facetType'] > div.clearfix a.facetTypeLink.facetSelected span.facetTypeFile {background: url(/resources/images/icon_file_dark.png) no-repeat 4px 50% / 18px;}
 
 div[id$='facetCategoryList'] {padding:4px; border:1px solid #DDD;}
 div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
+div[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
 div[id$='facetCategoryList'] div li div.ui-datalist-empty-message {padding:4px 0px; font-style:italic; color:#AAA;}
 div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.ui-datalist div.ui-datalist-content {padding-top:0;}
@@ -124,17 +144,23 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
    -moz-hyphens: auto;
         hyphens: auto;}
 a.facetLink {text-decoration:none;}
-/*.facetSelected, a.facetSelected, a.facetSelected:link, a.facetSelected:active {}*/
+a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
 .facetSelected.resultsTopBlock {background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
-a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.5em;}
+a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
 table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
 table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
-div[id$="resultsTable"] .ui-datatable-tablewrapper table > thead {display:none;}
 
-div[id$="resultsTable"] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
+#dv-maincolumn div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;}
+#dv-maincolumn a.facetLink.facetSelected.resultsTopBlock {margin-right:1em;}
+
+#dv-maincolumn div.results-sort-pagination div.pagination {margin-left:1em;}
+#dv-maincolumn div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
+
+#resultsTable .ui-datatable-tablewrapper table > thead {display:none;}
+#resultsTable > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
 
 #resultsTable.resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 

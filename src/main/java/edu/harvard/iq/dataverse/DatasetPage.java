@@ -74,6 +74,8 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DataFileServiceBean datafileService;
     @EJB
+    PermissionServiceBean permissionServiceBean; 
+    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetFieldServiceBean fieldService;
@@ -199,10 +201,15 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
-                displayVersion = dataset.getLatestVersion();
+                if (canIssueUpdateCommand()){
+                   displayVersion = dataset.getLatestVersion(); 
+                } else {
+                   displayVersion = dataset.getReleasedVersion();
+                }                
             } else {
                 displayVersion = datasetVersionService.find(versionId);
-            }
+            }  
+
             ownerId = dataset.getOwner().getId();
             //displayVersion.setDatasetFields(displayVersion.initDatasetFields());
             if (dataset.getReleasedVersion() != null) {
@@ -210,7 +217,9 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMinorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue()).toString() + "."
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
-            datasetVersionUI = new DatasetVersionUI(displayVersion);
+            
+
+            /*
             if (!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion()) && !displayVersion.isDraft())) {
                 displayCitation = dataset.getCitation(false, displayVersion);
             } else if (dataset.isReleased() && displayVersion.isDraft()) {
@@ -220,6 +229,17 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 displayCitation = "";
             }
+            */
+            // show citation for current display version if draft note it on page
+            try {
+                 datasetVersionUI = new DatasetVersionUI(displayVersion);
+                 displayCitation = dataset.getCitation(false, displayVersion);
+            } catch (NullPointerException npe){
+                //This will happen when solr is down and will allow any link to be displayed.
+                throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
+            }
+           
+            setVersionTabList(resetVersionTabList());
 
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -333,10 +353,6 @@ public class DatasetPage implements java.io.Serializable {
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
         dataset.setIdentifier("5555");
-        //TODO update title in page itself
-        if (replicationFor) {
-            updateTitle();
-        }
 
         /*
          * Save and/or ingest files, if there are any:
@@ -656,41 +672,43 @@ public class DatasetPage implements java.io.Serializable {
         return datasetVersionUI;
     }
 
-    //boolean for adding "Replication for" to title
-    private boolean replicationFor;
+    private List<DatasetVersion> versionTabList = new ArrayList();
 
-    public boolean isReplicationFor() {
-        return replicationFor;
+    public List<DatasetVersion> getVersionTabList() {
+        return versionTabList;
     }
 
-    public void setReplicationFor(boolean replicationFor) {
-        this.replicationFor = replicationFor;
+    public void setVersionTabList(List<DatasetVersion> versionTabList) {
+        this.versionTabList = versionTabList;
     }
-
-    private void updateTitle() {
-        System.out.print(replicationFor);
-
-        Iterator<DatasetField> dsfIt = dataset.getEditVersion().getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-
-            DatasetField toUpdate = dsfIt.next();
-            if (toUpdate.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                //dsfIt.s
+    
+    private boolean canIssueUpdateCommand(){
+        try {
+            if (permissionServiceBean.on(dataset).canIssueCommand("UpdateDatasetCommand")) {
+                return true;
+            } else {
+                return false;
             }
+        } catch (ClassNotFoundException ex) {
 
         }
-        int i = 0;
-        for (DatasetField dsf : editVersion.getDatasetFields()) {
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
-                ArrayList<DatasetFieldValue> valList = new ArrayList();
-                DatasetFieldValue dsfv = new DatasetFieldValue(dsf);
-                String origVal = dsf.getValue();
-                dsfv.setValue("Replication for: " + origVal);
-                valList.add(dsfv);
-                editVersion.getDatasetFields().get(i).setDatasetFieldValues(valList);
-            }
-            i++;
-        }
+        return false;
     }
+    
+    private List<DatasetVersion> resetVersionTabList() {
+        List <DatasetVersion> retList = new ArrayList();
 
+            if (canIssueUpdateCommand()) {
+                return dataset.getVersions();
+            } else {
+                for(DatasetVersion version: dataset.getVersions()){
+                    if (version.isReleased()){
+                        retList.add(version);
+                    }
+                }
+                return retList;
+
+            }
+    }
+ 
 }
