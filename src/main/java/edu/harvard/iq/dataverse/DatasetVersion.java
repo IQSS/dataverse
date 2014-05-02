@@ -425,8 +425,13 @@ public class DatasetVersion implements Serializable {
             }
             str += " " + rootDataverseName + " Dataverse";
         }
-
-        if (this.getVersionNumber() != null) {
+        if (this.isDraft()){
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " DRAFT VERSION ";
+            
+        } else if (this.getVersionNumber() != null) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }

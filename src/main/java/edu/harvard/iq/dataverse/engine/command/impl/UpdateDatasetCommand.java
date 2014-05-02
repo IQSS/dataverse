@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -14,6 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -55,6 +58,13 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         while (dsfItSort.hasNext()) {
            dsfItSort.next().setValueDisplayOrder();
         }
+        Timestamp updateTime =  new Timestamp(new Date().getTime());
+        
+        for (DataFile dataFile: theDataset.getFiles() ){
+            if(dataFile.getCreateDate() == null){
+                dataFile.setCreateDate(updateTime);
+            }            
+        }       
         String indexingResult = ctxt.index().indexDataset(theDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
         Dataset savedDataset = ctxt.em().merge(theDataset);

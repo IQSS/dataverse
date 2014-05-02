@@ -188,11 +188,16 @@
                                             <span>#{DatasetPage.displayCitation}</span>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!DatasetPage.displayVersion.released}">
+                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                         <div id="disclaimer">            
                                             <span>
-                                                <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="This is what your citation would look like when it's published." title="" style="margin-right:1em;">In Draft</a>                                                
+                                                Unpublished - This citation will replaced "DRAFT VERSION" with V1 once it is published.                                                
                                             </span>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft}">
+                                        <div id="disclaimerArchive">            
+                                                This citation will replace "DRAFT VERSION" with the selected version once it is published.                                                
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
