@@ -171,11 +171,13 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
-                                            <button type="button" class="btn btn-default">
+                                            <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
                                                 <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataset Contact
                                             </button>
                                         </div>
                                     </ui:fragment>
+                                    <p:confirmDialog message="Unfortunately, Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!"  header="Email Dataset Contact"  widgetVar="contact_confirmation">                                           
+                                    </p:confirmDialog>
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
