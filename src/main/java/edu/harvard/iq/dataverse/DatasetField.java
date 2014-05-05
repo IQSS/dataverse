@@ -27,9 +27,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 
 @Entity
+@ValidateDatasetFieldType
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;    
     
@@ -49,8 +51,10 @@ public class DatasetField implements Serializable {
         dsfv.setDatasetVersion(dsv);
         return dsfv;
     }
-
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetFieldCompoundValue compoundValue) {
+    
+    // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
+    // (that looked t overloaded methods, when it meant to look at overriden methods
+    public static DatasetField createNewEmptyChildDatasetField(DatasetFieldType dsfType, DatasetFieldCompoundValue compoundValue) {
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
         dsfv.setParentDatasetFieldCompoundValue(compoundValue);
         return dsfv;
@@ -247,6 +251,18 @@ public class DatasetField implements Serializable {
 
         return true;
     }
+    
+
+    @Transient private String validationMessage;
+
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
+    }
+        
 
     @Override
     public int hashCode() {
@@ -277,7 +293,9 @@ public class DatasetField implements Serializable {
         return copy(version, null);
     }
 
-    public DatasetField copy(DatasetFieldCompoundValue parent) {
+    // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
+    // (that looked t overloaded methods, when it meant to look at overriden methods
+    public DatasetField copyChild(DatasetFieldCompoundValue parent) {
         return copy(null, parent);
     }
 
