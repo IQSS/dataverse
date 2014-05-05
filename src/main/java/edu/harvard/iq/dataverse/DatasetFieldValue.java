@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -87,6 +88,17 @@ public class DatasetFieldValue implements Serializable {
     public void setDatasetField(DatasetField datasetField) {
         this.datasetField = datasetField;
     }
+    
+    @Transient private String validationMessage;
+
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
+    }
+    
     
     
 
