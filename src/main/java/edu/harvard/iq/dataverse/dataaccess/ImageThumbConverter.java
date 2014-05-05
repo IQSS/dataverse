@@ -51,40 +51,43 @@ public class ImageThumbConverter {
         return getImageThumb (file, fileDownload, DEFAULT_THUMBNAIL_SIZE);
     }
     
-    public static FileAccessObject getImageThumb (DataFile file, FileAccessObject fileDownload, int size) {
+    public static FileAccessObject getImageThumb(DataFile file, FileAccessObject fileDownload, int size) {
+        String imageThumbFileName = null;
+
         if (file != null && file.getContentType().substring(0, 6).equalsIgnoreCase("image/")) {
-            String imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
-            if (imageThumbFileName != null) {
-                File imageThumbFile = new File(imageThumbFileName);
+            imageThumbFileName = generateImageThumb(file.getFileSystemLocation().toString(), size);
+        } else if (file != null && file.getContentType().equalsIgnoreCase("application/pdf")) {
+            imageThumbFileName = generatePDFThumb(file.getFileSystemLocation().toString(), size);
+        }
+        
+        if (imageThumbFileName != null) {
+            File imageThumbFile = new File(imageThumbFileName);
 
-                if (imageThumbFile != null && imageThumbFile.exists()) {
+            if (imageThumbFile != null && imageThumbFile.exists()) {
 
-                    fileDownload.closeInputStream();
-                    fileDownload.setSize(imageThumbFile.length());
+                fileDownload.closeInputStream();
+                fileDownload.setSize(imageThumbFile.length());
 
-                    
-                    InputStream imageThumbInputStream = null; 
-                    
-                    try {
+                InputStream imageThumbInputStream = null;
 
-                        imageThumbInputStream = new FileInputStream(imageThumbFile);
-                    } catch (IOException ex) {
-                        return null; 
-                    }
-                    
-                    if (imageThumbInputStream != null) {
-                        fileDownload.setInputStream(imageThumbInputStream);
-                        fileDownload.setIsLocalFile(true);
-                               
-                        fileDownload.setMimeType("image/png");
-                    } else {
-                        return null; 
-                    }
+                try {
+
+                    imageThumbInputStream = new FileInputStream(imageThumbFile);
+                } catch (IOException ex) {
+                    return null;
+                }
+
+                if (imageThumbInputStream != null) {
+                    fileDownload.setInputStream(imageThumbInputStream);
+                    fileDownload.setIsLocalFile(true);
+
+                    fileDownload.setMimeType("image/png");
+                } else {
+                    return null;
                 }
             }
-        } 
-        
-        
+        }
+
         return fileDownload;
     }
     
@@ -184,5 +187,55 @@ public class ImageThumbConverter {
 
             return null;
         }
+    }
+    
+    public static String generatePDFThumb(String fileLocation) {
+        return generatePDFThumb(fileLocation, DEFAULT_THUMBNAIL_SIZE);
+    }
+    
+    public static String generatePDFThumb(String fileLocation, int size) {
+
+        String thumbFileLocation = fileLocation + ".thumb" + size;
+
+        // see if the thumb is already generated and saved:
+
+        if (new File(thumbFileLocation).exists()) {
+            return thumbFileLocation;
+        }
+
+        // doesn't exist yet, let's attempt to generate it:
+
+	String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
+
+        if ( imageMagickExec != null ) {
+            imageMagickExec = imageMagickExec.trim();
+        }
+        
+        // default location:
+        
+        if ( imageMagickExec == null || imageMagickExec.equals("") ) {
+            imageMagickExec = "/usr/bin/convert";
+        } 
+        
+        if (new File(imageMagickExec).exists()) {
+
+            String ImageMagick = imageMagickExec + " pdf:" + fileLocation + "[0] -resize "+ size + " -flatten png:" + thumbFileLocation;
+            int exitValue = 1;
+
+            try {
+                Runtime runtime = Runtime.getRuntime();
+                Process process = runtime.exec(ImageMagick);
+                exitValue = process.waitFor();
+            } catch (Exception e) {
+                exitValue = 1;
+            }
+
+            if (exitValue == 0 && new File(thumbFileLocation).exists()) {
+                return thumbFileLocation;
+            }
+        }
+
+        return null; 
+        
     }
 }

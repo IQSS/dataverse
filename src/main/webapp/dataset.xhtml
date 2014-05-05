@@ -324,7 +324,7 @@
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview&#34; /&gt;">
+                                                <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;preeeeeeeeeeeeeeee&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
@@ -333,7 +333,7 @@
                                             <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!fileMetadata.dataFile.image}"/>
 
                                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
-                                                <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}"/>
+                                                <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                         </p:column>

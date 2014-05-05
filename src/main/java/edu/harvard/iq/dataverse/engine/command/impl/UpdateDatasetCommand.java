@@ -65,9 +65,11 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setCreateDate(updateTime);
             }            
         }       
-        String indexingResult = ctxt.index().indexDataset(theDataset);
-        logger.info("during dataset save, indexing result was: " + indexingResult);
+        //String indexingResult = ctxt.index().indexDataset(theDataset);
+        //logger.info("during dataset save, indexing result was: " + indexingResult);
         Dataset savedDataset = ctxt.em().merge(theDataset);
+        String indexingResult = ctxt.index().indexDataset(savedDataset);
+        logger.info("during dataset save, indexing result was: " + indexingResult);
         return savedDataset;
     }
 

@@ -233,7 +233,7 @@ public class IndexServiceBean {
          */
         String solrIdPublishedStudy = "dataset_" + dataset.getId();
         StringBuilder sb = new StringBuilder();
-        sb.append("rationale:\n");
+        sb.append("rationale:\n"); 
         List<DatasetVersion> versions = dataset.getVersions();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
