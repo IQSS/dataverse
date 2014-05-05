@@ -18,7 +18,7 @@ import javax.validation.Payload;
 
 @Target({TYPE, ANNOTATION_TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = DatasetFieldTypeValidator.class)
+@Constraint(validatedBy = {DatasetFieldValidator.class, DatasetFieldTypeValidator.class})
 @Documented
 public @interface ValidateDatasetFieldType {
 
