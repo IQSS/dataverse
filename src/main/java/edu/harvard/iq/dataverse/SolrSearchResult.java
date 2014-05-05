@@ -24,6 +24,7 @@ public class SolrSearchResult {
     private String nameSort;
     private String status;
     private Date releaseOrCreateDate;
+    private String dateToDisplayOnCard;
 
     /**
      * @todo: how important is it to differentiate between name and title?
@@ -404,4 +405,13 @@ public class SolrSearchResult {
     public void setReleaseOrCreateDate(Date releaseOrCreateDate) {
         this.releaseOrCreateDate = releaseOrCreateDate;
     }
+
+    public String getDateToDisplayOnCard() {
+        return dateToDisplayOnCard;
+    }
+
+    public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
+        this.dateToDisplayOnCard = dateToDisplayOnCard;
+    }
+
 }
