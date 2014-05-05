@@ -14,7 +14,7 @@
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
-            <ui:define name="body">                
+            <ui:define name="body">
 
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
@@ -25,18 +25,47 @@
 
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
                     <ui:fragment rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                        <div  style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
-                            <p:menuButton id="editAccountButton" value="Edit Account" iconPos="right">
-                                <p:menuitem id="editAccount" value="Account Information" actionListener="#{DataverseUserPage.edit}" update="@all" />
-                                <p:menuitem id="changePassword" value="Account Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
-                            </p:menuButton>
+                        <div class="clearfix">
+                            <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <li>
+                                            <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
+                                                <!--<div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                                                    <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                                                </div>-->
+                                                <div style="float:left; width:300px;">
+                                                    <div style="font-weight:bold;">#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName} <h:outputText value=" (#{DataverseUserPage.dataverseUser.affiliation})" rendered="#{!empty DataverseUserPage.dataverseUser.affiliation}"/></div>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.userName}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.userName}</div></ui:fragment>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.email}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.email}</div></ui:fragment>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.position}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.position}</div></ui:fragment>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="divider" role="presentation"></li>
+                                        <li>
+                                            <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@all">
+                                                <h:outputText value="Account Information" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" update="@all">
+                                                <h:outputText value="Password" />
+                                            </p:commandLink>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                    </ui:fragment>                   
-                    
+                    </ui:fragment>
+
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
                     </p:panel>
-                 
+
                     <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{DataverseUserPage.editMode == 'INFO'}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
                         <p:tab id="somedata" title="Data Related To Me">
@@ -56,16 +85,16 @@
                                     <ui:param name="showAdvancedSearchLink" value="true"/>
                                     <ui:param name="dataverseLinksStayOnPage" value="true"/>
                                 </ui:include>
-                            </ui:fragment> 
-                         <!--   <ui:fragment>    
-                                <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                                    <p:menuitem id="createDataverse" value="New Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                    <p:menuitem id="UploadDataset" value="New Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                </p:menuButton>
-                            </ui:fragment>  -->
+                            </ui:fragment>
+                            <!--   <ui:fragment>
+                                   <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
+                                       <p:menuitem id="createDataverse" value="New Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                       <p:menuitem id="UploadDataset" value="New Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                   </p:menuButton>
+                               </ui:fragment>  -->
                         </p:tab>
                         <p:tab id="notifications" title="Notifications">
-                            <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">  
+                            <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">
                                 <h:outputText value="Your Dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
                                 <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
                                     <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
@@ -82,7 +111,7 @@
                             </p:dataList>
                         </p:tab>
                     </p:tabView>
-                    
+
                     <p:tabView id="tabView1" rendered="#{DataverseUserPage.editMode != 'INFO'}">
                         <p:tab id="accountInfo" title="Account Information">
 
@@ -204,6 +233,6 @@
                     </p:tabView>
                 </h:form>
             </ui:define>
-        </ui:composition>        
+        </ui:composition>
     </h:body>
 </html>
