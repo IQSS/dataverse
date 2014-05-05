@@ -23,7 +23,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author gdurand
  */
-public class DatasetFieldTypeValidator implements ConstraintValidator<ValidateDatasetFieldType, DatasetFieldValue> {
+public class DatasetFieldValueValidator implements ConstraintValidator<ValidateDatasetFieldType, DatasetFieldValue> {
 
     //private String fieldType;
     public void initialize(ValidateDatasetFieldType constraintAnnotation) {

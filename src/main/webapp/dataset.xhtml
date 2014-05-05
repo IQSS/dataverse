@@ -82,19 +82,18 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
-                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
-                                            <li>
-                                                <h:outputLink value="/dataset.xhtml?id=#{DatasetPage.dataset.id}"  >
-                                                                <h:outputText value="Current Version"/>
-                                                            </h:outputLink>
-                                            </li>
-                                    </ui:fragment> 
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <div class="btn-group">
+                                            
+                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
+                                                <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>
+                                            
+                                            <!--<div class="btn-group">
                                                 <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                         <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
@@ -104,23 +103,23 @@
                                                     </ui:fragment>
                                                 </button>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
-                                                            <a  style="pointer-events: none; color:red;">
+                                                            <a style="pointer-events: none; color:red;">
                                                                 <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
                                                                 <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. To publish it click 'Publish dataset' link</span>
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a style="pointer-events: none; color:green;">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataset" onclick="confirmation.show()"  /></span>
+                                                            <a style="pointer-events: none; color:green;" onclick="confirmation.show()">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                                <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
                                                             </a>
                                                         </li>                                                    
                                                     </ul>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and !DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
                                                             <a  style="pointer-events: none; color:red;">
                                                                 <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
@@ -130,8 +129,7 @@
                                                     </ul>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
-
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
                                                             <a style="pointer-events: none; color:green;">
                                                                 <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
@@ -140,12 +138,15 @@
                                                         </li>   
                                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
                                                             <li>
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Draft" onclick="releaseDraft.show()"  /></span>
+                                                                <a style="cursor: pointer; cursor: hand; color:green;" onclick="releaseDraft.show()">
+                                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                                    <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
+                                                                </a>
                                                             </li>
                                                         </ui:fragment>
                                                     </ul>
                                                 </ui:fragment>
-                                            </div>
+                                            </div>-->
                                         </div>
                                         <p:growl id="messages" showDetail="true" />  
                                         <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'."  header="Publish Dataset"  widgetVar="confirmation">  
@@ -169,6 +170,22 @@
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionsId=#{DatasetPage.dataset.latestVersion.id}">
+                                                <h:outputText value="View Unpublished Version"/>
+                                            </h:outputLink>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}">
+                                                <h:outputText value="View Published Version"/>
+                                            </h:outputLink>
+                                        </div>
+                                    </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
                                             <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
@@ -181,7 +198,8 @@
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <span id="title" class="">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation">

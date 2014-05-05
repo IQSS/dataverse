@@ -205,7 +205,7 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
-                if (canIssueUpdateCommand()) {
+                if (!dataset.isReleased()) {
                     displayVersion = dataset.getLatestVersion();
                 } else {
                     displayVersion = dataset.getReleasedVersion();
@@ -344,13 +344,22 @@ public class DatasetPage implements java.io.Serializable {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                dontSave = true;
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
             for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
-                // dsfv.setValidationMessage(null); // clear out any existing validation message
-                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations = validator.validate(dsfv);
-                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations) {
+                dsfv.setValidationMessage(null); // clear out any existing validation message
+                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
+                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
-                    //  dsfv.setValidationMessage(constraintViolation.getMessage());
+                    dsfv.setValidationMessage(constraintViolation.getMessage());
                     dontSave = true;
+                    break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
                 }
             }
         }
@@ -487,7 +496,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId()  + "&faces-redirect=true";
     }
 
     private String getFilesTempDirectory() {

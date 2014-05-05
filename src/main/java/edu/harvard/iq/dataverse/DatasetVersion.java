@@ -370,6 +370,10 @@ public class DatasetVersion implements Serializable {
         // FIXME add the authores to the relevant fields
     }
     
+    public String getCitation(){
+        return getCitation(false);
+    }
+    
      public String getCitation(boolean isOnlineVersion) {
 
 
@@ -521,7 +525,7 @@ public class DatasetVersion implements Serializable {
                     }
 
                     if (add) {
-                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
                     }
                 }
             }

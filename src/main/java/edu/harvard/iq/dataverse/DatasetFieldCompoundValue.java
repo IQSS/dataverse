@@ -38,7 +38,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         compoundValue.setParentDatasetField(dsf);
 
         for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
-            compoundValue.getChildDatasetFields().add( DatasetField.createNewEmptyDatasetField(dsfType, compoundValue));
+            compoundValue.getChildDatasetFields().add( DatasetField.createNewEmptyChildDatasetField(dsfType, compoundValue));
         }
         
         return compoundValue;
@@ -122,7 +122,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         compoundValue.setDisplayOrder(displayOrder);
 
         for (DatasetField subField : childDatasetFields) {
-            compoundValue.getChildDatasetFields().add(subField.copy(compoundValue));
+            compoundValue.getChildDatasetFields().add(subField.copyChild(compoundValue));
         }
                      
         return compoundValue;

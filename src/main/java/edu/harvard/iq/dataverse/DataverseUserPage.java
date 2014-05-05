@@ -29,7 +29,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public enum EditMode {
 
-        CREATE, INFO, EDIT, CHANGE, FORGOT
+        CREATE, EDIT, CHANGE, FORGOT
     };
 
     @Inject
@@ -253,7 +253,7 @@ public class DataverseUserPage implements java.io.Serializable {
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 
-        editMode = EditMode.INFO;
+        editMode = null;
         return null;
     }
 
@@ -262,13 +262,13 @@ public class DataverseUserPage implements java.io.Serializable {
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 
-        editMode = EditMode.INFO;
+        editMode = null;
         return null;
     }
 
     public void submit(ActionEvent e) {
         updatePassword(dataverseUser.getUserName());
-        editMode = EditMode.INFO;
+        editMode = null;
     }
 
     public String remove(Long notificationId) {

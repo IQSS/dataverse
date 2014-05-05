@@ -187,6 +187,10 @@ public class Dataset extends DvObjectContainer {
    public String getCitation() {
         return getCitation(false, getLatestVersion());
     }
+   
+   public String getCitation(DatasetVersion version){
+       return version.getCitation();      
+   }
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
         return version.getCitation(isOnlineVersion);
