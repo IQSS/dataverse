@@ -647,6 +647,7 @@ public class IndexServiceBean {
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+                addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
                 DataverseUser creator = fileMetadata.getDataFile().getOwner().getCreator();
