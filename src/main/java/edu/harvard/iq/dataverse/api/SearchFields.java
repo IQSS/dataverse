@@ -91,6 +91,7 @@ public class SearchFields {
     public static final String NAME_SORT = "name_sort";
     public static final String PUBLICATION_DATE = "publication_date_s";
     public static final String RELEASE_OR_CREATE_DATE = "release_or_create_date_dt";
+    public static final String RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT = "date_en";
     public static final String GROUPS = "groups_s";
     public static final String PERMS = "perms_ss";
     public static final String PUBLICATION_STATUS = "published_ss";

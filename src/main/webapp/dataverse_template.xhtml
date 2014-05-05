@@ -97,35 +97,49 @@
         </script>	
         <script>
            //<![CDATA[
-           function post_edit_metadata(){
-               console.log('post_edit_cleanup');
-               $('#breadcrumbNavBlock').hide();  // hide breadcrumb navigation
+           function post_edit_files(){
+               console.log('post_edit_files');
+               hide_breadcrumb();
                bind_collapse_blocks();
-               show_edit_msg();
+               show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
+           }
+ 
+           function post_edit_metadata(){
+               console.log('post_edit_metadata');
+               hide_breadcrumb();
+               bind_collapse_blocks();
+               show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
 
            }
-           function post_cancel_edit_metadata(){
-               console.log('post_cancel_cleanup');
-               $('#breadcrumbNavBlock').show();  // hide breadcrumb navigation
+           function post_cancel_edit_files_or_metadata(){
+               console.log('post_cancel_edit_metadata');
+               show_breadcrumb();
                bind_collapse_blocks();
                hide_edit_msg();
+           }
+           function show_breadcrumb(){
+               $('#breadcrumbNavBlock').show();  // show breadcrumb navigation
+           }
+           function hide_breadcrumb(){
+                $('#breadcrumbNavBlock').hide();  // hide breadcrumb navigation
            }
            function hide_edit_msg(){
                 if ($('div.messagePanel').length > 0){
                     $('div.messagePanel').html('');
                 }
            }
-           function show_edit_msg(){
+           function show_info_msg(mtitle, mtext){
                if ($('div.messagePanel').length > 0){
                  //  alert('msg panel exists');
                    edit_msg = '<div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
                                    + '<span class="glyphicon glyphicon-info-sign"></span>'
-                                   + '<strong> Edit Dataset Metadata</strong> &#150; Add more metadata about your dataset to help others easily find it.</div>';
+                                   + '<strong> ' + mtitle + '</strong> &#150; ' + mtext + '</div>';
                    $('div.messagePanel').html(edit_msg );
                }else{
-                 //  alert('no msg panel');
+                 console.log('message panel does not exist');
                }
            }
+           
            //]]>
        </script>		
        <script>

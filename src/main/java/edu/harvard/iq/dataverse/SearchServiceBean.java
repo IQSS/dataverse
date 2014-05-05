@@ -277,6 +277,7 @@ public class SearchServiceBean {
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
+            String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -323,6 +324,7 @@ public class SearchServiceBean {
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
+            solrSearchResult.setDateToDisplayOnCard(dateToDisplayOnCard);
             solrSearchResult.setMatchedFields(matchedFields);
             solrSearchResult.setHighlightsAsList(highlights);
             solrSearchResult.setHighlightsMap(highlightsMap);
