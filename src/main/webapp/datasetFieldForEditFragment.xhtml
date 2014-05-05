@@ -6,24 +6,36 @@
     xmlns:p="http://primefaces.org/ui">
 
 
-    <p:inputText value="#{fieldValues.value}" id="inputText" 
-                 styleClass="form-control #{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
-                 rendered="#{!fieldValues.datasetField.datasetFieldType.controlledVocabulary        
-                             and (fieldValues.datasetField.datasetFieldType.fieldType == 'text'
-                             or fieldValues.datasetField.datasetFieldType.fieldType == 'int'
-                             or fieldValues.datasetField.datasetFieldType.fieldType == 'float'
-                             or fieldValues.datasetField.datasetFieldType.fieldType == 'url'
-                             or fieldValues.datasetField.datasetFieldType.fieldType == 'date'
-                             or fieldValues.datasetField.datasetFieldType.fieldType == '')}"/>
+    <p:inputText value="#{dsfv.value}" id="inputText" 
+                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
+                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
+                             and (dsfv.datasetField.datasetFieldType.fieldType == 'text'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'int'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'float'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'url'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'date'
+                             or dsfv.datasetField.datasetFieldType.fieldType == '')}"/>
 
-    <p:watermark for="inputText" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
 
-    <p:inputTextarea value="#{fieldValues.value}" rows="5" cols="60" id="description" styleClass="form-control" 
-                     rendered="#{fieldValues.datasetField.datasetFieldType.fieldType == 'textbox'}" />
-    <p:watermark for="description" value="#{fieldValues.datasetField.datasetFieldType.watermark}"></p:watermark>
+    <p:inputTextarea value="#{dsfv.value}" rows="5" cols="60" id="description" styleClass="form-control" 
+                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'textbox'}" />
+    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.watermark}"></p:watermark>
+
+    <ui:fragment rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
+        <div class="alert-danger">
+            <strong>#{dsfv.datasetField.validationMessage}</strong>
+        </div>
+    </ui:fragment>    
+    
+    <ui:fragment rendered="#{!empty dsfv.validationMessage}">
+        <div class="alert-danger">
+            <strong>#{dsfv.validationMessage}</strong>
+        </div>
+    </ui:fragment>
 
     <!-- This button / script is for replication data for the title field and is client side only -->                         
-    <ui:fragment rendered="#{fieldValues.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
+    <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
         <input type="button" id="replicationDataButton" value="Add 'Replication Data for' to Title" onclick="replicationFor();
                 return false;"/>
     </ui:fragment>
