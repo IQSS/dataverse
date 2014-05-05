@@ -205,7 +205,7 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
-                if (canIssueUpdateCommand()) {
+                if (!dataset.isReleased()) {
                     displayVersion = dataset.getLatestVersion();
                 } else {
                     displayVersion = dataset.getReleasedVersion();
@@ -496,7 +496,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId()  + "&faces-redirect=true";
     }
 
     private String getFilesTempDirectory() {

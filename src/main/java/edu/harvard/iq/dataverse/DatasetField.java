@@ -217,7 +217,7 @@ public class DatasetField implements Serializable {
         }
         return returnString;
     }
-
+    
     public List<String> getValues() {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {
@@ -226,7 +226,9 @@ public class DatasetField implements Serializable {
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
-                returnList.add(cvv.getStrValue());
+                if (cvv != null && cvv.getStrValue() != null){
+                        returnList.add(cvv.getStrValue()); 
+                }
             }
         }
         return returnList;
