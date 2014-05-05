@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -35,6 +37,15 @@ public class DeleteDatasetCommand extends AbstractVoidCommand {
 		
 		final Dataset managedDoomed = ctxt.em().merge(doomed);
 		
+        // ASSIGNMENTS
+		for ( RoleAssignment ra : ctxt.roles().directRoleAssignments(doomed) ) {
+			ctxt.em().remove(ra);
+		}
+		// ROLES
+		for ( DataverseRole ra : ctxt.roles().findByOwnerId(doomed.getId()) ) {
+			ctxt.em().remove(ra);
+		}
+        
 		// files
 		for ( DataFile df : managedDoomed.getFiles() ) {
 			ctxt.engine().submit( new DeleteDataFileCommand(df, getUser(), managedDoomed.getOwner()) );
