@@ -243,6 +243,16 @@ public class IndexServiceBean {
             sb.append("- semanticVersion-STATE: " + semanticVersion + "-" + versionState + "\n");
             sb.append("- isWorkingCopy: " + versionIsWorkingCopy + "\n");
             sb.append("- isReleased: " + versionIsReleased + "\n");
+            List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+            List<String> fileInfo = new ArrayList<>();
+            for (FileMetadata fileMetadata : fileMetadatas) {
+                fileInfo.add(fileMetadata.getDataFile().getId() + ":" + fileMetadata.getLabel());
+            }
+            int numFiles = 0;
+            if (fileMetadatas != null) {
+                numFiles = fileMetadatas.size();
+            }
+            sb.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionState = latestVersion.getVersionState().name();
@@ -551,14 +561,18 @@ public class IndexServiceBean {
 
         docs.add(solrInputDocument);
 
-        List<DataFile> files = dataset.getFiles();
-        for (DataFile dataFile : files) {
+        if (datasetVersion != null) {
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+        for (FileMetadata fileMetadata : fileMetadatas) {
             SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
-            datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + dataFile.getId());
-            datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, dataFile.getId());
+            Long fileEntityId = fileMetadata.getDataFile().getId();
+            /**
+             * @todo: should this sometimes end with "_draft" like datasets do?
+             */
+            datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + fileEntityId);
+            datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
 
-            FileMetadata fileMetadata = dataFile.getFileMetadata();
             String filenameCompleteFinal = "";
             if (fileMetadata != null) {
                 String filenameComplete = fileMetadata.getLabel();
@@ -595,7 +609,7 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-                DataverseUser creator = dataFile.getOwner().getCreator();
+                DataverseUser creator = fileMetadata.getDataFile().getOwner().getCreator();
                 if (creator != null) {
                     datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
                     /**
@@ -623,27 +637,27 @@ public class IndexServiceBean {
             // "PDF File" instead of "application/pdf", "MS Excel" instead of 
             // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (!), etc., 
             // if available:
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, dataFile.getFriendlyType());
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, dataFile.getFriendlyType());
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_MIME, fileMetadata.getDataFile().getFriendlyType());
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, fileMetadata.getDataFile().getFriendlyType());
             // For the file type facets, we have a property file that maps mime types 
             // to facet-friendly names; "application/fits" should become "FITS", etc.:
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(dataFile));
-            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(dataFile));
-            datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, dataFile.getDescription());
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
+            datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
+            datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
-            datafileSolrInputDocument.addField(SearchFields.PARENT_ID, dataFile.getOwner().getId());
-            if (!dataFile.getOwner().getLatestVersion().getTitle().isEmpty()) {
-                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getOwner().getLatestVersion().getTitle());
+            datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
+            if (!fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle().isEmpty()) {
+                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle());
             }
             
             // If this is a tabular data file -- i.e., if there are data
             // variables associated with this file, we index the variable 
             // names and labels: 
             
-            if (dataFile.isTabularData()) {
-                List<DataVariable> variables = dataFile.getDataTable().getDataVariables();
+            if (fileMetadata.getDataFile().isTabularData()) {
+                List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
                 String variableNamesToIndex = null;
                 String variableLabelsToIndex = null; 
                 for (DataVariable var : variables) {
@@ -685,7 +699,7 @@ public class IndexServiceBean {
             // And if the file has indexable file-level metadata associated
             // with it, we'll index that too:
             
-            List<FileMetadataFieldValue> fileMetadataFieldValues = dataFile.getFileMetadataFieldValues();
+            List<FileMetadataFieldValue> fileMetadataFieldValues = fileMetadata.getDataFile().getFileMetadataFieldValues();
             if (fileMetadataFieldValues != null && fileMetadataFieldValues.size() > 0) {
                 for (int j = 0; j < fileMetadataFieldValues.size(); j++) {
 
@@ -702,6 +716,7 @@ public class IndexServiceBean {
             }
             
             docs.add(datafileSolrInputDocument);
+        }
         }
 
         /**

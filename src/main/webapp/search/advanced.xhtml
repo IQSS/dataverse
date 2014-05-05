@@ -23,7 +23,7 @@
 
                 <!-- Search Panel -->
                 <p:panel styleClass="panelLayoutBlock" style="margin-bottom:1em;">
-                    <h:form styleClass="form-horizontal">
+                    <h:form id="advancedSearchForm" styleClass="form-horizontal">
                         <p:focus/>
 
                         <div class="panel panel-default">
@@ -36,10 +36,14 @@
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
                                     </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="col-sm-4 control-label">Affiliation</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
                                     </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="col-sm-4 control-label">Description</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
@@ -60,10 +64,14 @@
                                                 <label class="col-sm-4 control-label">#{item.displayName}</label>
                                                 <div class="col-sm-6">
                                                     <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
-                                                    <h:selectManyListbox value="#{item.listValues}" rendered="#{!empty item.controlledVocabularyValues}">
-                                                        <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/> 
-                                                    </h:selectManyListbox> 
+                                                    <ui:fragment rendered="#{!empty item.controlledVocabularyValues}">
+                                                        <div class="ui-inputfield form-control select-scroll-block">
+                                                            <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
+                                                                <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
+                                                                        itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/> 
+                                                            </p:selectManyCheckbox>
+                                                        </div>
+                                                    </ui:fragment>
                                                 </div>
                                             </div>
                                         </ui:repeat>
@@ -82,10 +90,14 @@
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldName}"/>
                                     </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="col-sm-4 control-label">Description</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldDescription}"/>
                                     </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="col-sm-4 control-label">File Type</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldFiletype" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFiletype}"/>
