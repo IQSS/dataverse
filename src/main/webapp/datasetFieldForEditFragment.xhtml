@@ -27,7 +27,7 @@
             <strong>#{dsfv.datasetField.validationMessage}</strong>
         </div>
     </ui:fragment>    
-    
+
     <ui:fragment rendered="#{!empty dsfv.validationMessage}">
         <div class="alert-danger">
             <strong>#{dsfv.validationMessage}</strong>
@@ -38,13 +38,12 @@
     <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
         <input type="button" id="replicationDataButton" value="Add 'Replication Data for' to Title" onclick="replicationFor();
                 return false;"/>
+
+        <script type="text/javascript">
+            function replicationFor() {
+                $(".datasetfield-title")[0].value = "Replication Data for: " + $(".datasetfield-title")[0].value;
+                $('#replicationDataButton').prop('disabled', true);
+            }
+        </script>    
     </ui:fragment>
-
-    <script type="text/javascript">
-        function replicationFor() {
-            $(".datasetfield-title")[0].value = "Replication Data for: " + $(".datasetfield-title")[0].value;
-            $('#replicationDataButton').prop('disabled', true);
-        }
-    </script>    
-
 </div>
