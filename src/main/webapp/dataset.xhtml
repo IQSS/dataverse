@@ -86,9 +86,18 @@
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            
-                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
+                                                <button type="button" class="btn btn-default" onclick="confirmation.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>                                            
+                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released }">
+                                                <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
                                                 </button>
                                             </ui:fragment>
@@ -169,6 +178,8 @@
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
+                                     <p:confirmDialog message="This dataset may not be published because its dataverse has not been published."  header="May not publish"  widgetVar="mayNotRelease">                                           
+                                    </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
                                                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
