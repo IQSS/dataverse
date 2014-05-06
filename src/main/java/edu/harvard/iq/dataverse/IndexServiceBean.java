@@ -143,10 +143,13 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getPublicationDate()));
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-        } else if (dataverse.getCreator() != null) {
+        } else if (dataverse.getCreator() != null) { //@todo: do we need this check still
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
+        }
+        
+        if (dataverse.getCreator() != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
              * @todo: replace this fake version of granting users access to
@@ -373,21 +376,21 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-            DataverseUser creator = dataset.getCreator();
-            if (creator != null) {
-                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                /**
-                 * @todo: replace this fake version of granting users access to
-                 * dataverses with the real thing, when it's available in the
-                 * app
-                 */
-                if (creator.getUserName().equals("pete")) {
-                    // figure out if cathy is around
-                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                    if (cathy != null) {
-                        // let cathy see all of pete's dataverses
-                        solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                    }
+        }
+        
+        DataverseUser creator = dataset.getCreator();
+        if (creator != null) {
+            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+            /**
+             * @todo: replace this fake version of granting users access to
+             * dataverses with the real thing, when it's available in the app
+             */
+            if (creator.getUserName().equals("pete")) {
+                // figure out if cathy is around
+                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                if (cathy != null) {
+                    // let cathy see all of pete's dataverses
+                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
                 }
             }
         }
@@ -650,24 +653,25 @@ public class IndexServiceBean {
                 addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-                DataverseUser creator = fileMetadata.getDataFile().getOwner().getCreator();
-                if (creator != null) {
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                    /**
-                     * @todo: replace this fake version of granting users access
-                     * to dataverses with the real thing, when it's available in
-                     * the app
-                     */
-                    if (creator.getUserName().equals("pete")) {
-                        // figure out if cathy is around
-                        DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                        if (cathy != null) {
-                            // let cathy see all of pete's dataverses
-                            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                        }
+            }
+
+            if (creator != null) {
+                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+                /**
+                 * @todo: replace this fake version of granting users access to
+                 * dataverses with the real thing, when it's available in the
+                 * app
+                 */
+                if (creator.getUserName().equals("pete")) {
+                    // figure out if cathy is around
+                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                    if (cathy != null) {
+                        // let cathy see all of pete's dataverses
+                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
                     }
                 }
             }
+
 
             /**
              * @todo: remove this fake "has access to all data" group
