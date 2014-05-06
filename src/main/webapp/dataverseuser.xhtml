@@ -14,32 +14,124 @@
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
-            <ui:define name="body">                
+            <ui:define name="body">
 
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
+                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
+                    <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
+                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
+                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
+                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
+                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
+                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
+                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
+                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
+                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
+                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
+                    <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                    <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                    <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
+                    <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
+                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />                    
                 </f:metadata>
 
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
+                    <ui:fragment rendered="#{empty DataverseUserPage.editMode}">
+                        <div class="clearfix">
+                            <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right text-left" role="menu">
+                                        <li>
+                                            <div style="padding:.5em 1em .25em 1em; overflow:hidden; width:400px;">
+                                                <!--<div style="width:48px; float:left; margin:4px 12px 6px 0;">
+                                                    <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                                                </div>-->
+                                                <div style="float:left; width:300px;">
+                                                    <div style="font-weight:bold;">#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName} <h:outputText value=" (#{DataverseUserPage.dataverseUser.affiliation})" rendered="#{!empty DataverseUserPage.dataverseUser.affiliation}"/></div>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.userName}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.userName}</div></ui:fragment>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.email}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.email}</div></ui:fragment>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.dataverseUser.position}"><div style="color:#777;">#{DataverseUserPage.dataverseUser.position}</div></ui:fragment>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="divider" role="presentation"></li>
+                                        <li>
+                                            <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@all">
+                                                <h:outputText value="Account Information" />
+                                            </p:commandLink>
+                                        </li>
+                                        <li>
+                                            <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" update="@all">
+                                                <h:outputText value="Password" />
+                                            </p:commandLink>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </ui:fragment>
+
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
                     </p:panel>
-                    <p:tabView id="tabView1">
+
+                    <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
+                        <p:tab id="somedata" title="Data Related To Me">
+                            <!--  <ui:fragment>
+                            <p:selectOneMenu value="#{DataverseUserPage.permissionType}">
+                                <f:selectItem id="writeAccess" itemLabel="Data I have write access to..." itemValue="writeAccess" />
+                                <f:selectItem id="readAccess" itemLabel="Data I have read access to..." itemValue="readAccess" />
+                            </p:selectOneMenu>
+                            </ui:fragment> -->
+                            <ui:fragment>
+                                <!-- <ui:include src="search-include-fragment.xhtml">
+                                <ui:param name="showTreeWidget" value="false"/>
+                                <ui:param name="userId" value="#{DataverseUserPage.dataverseUser.id}"/>
+                                <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
+                                </ui:include> -->
+                                <ui:include src="search-include-fragment.xhtml">
+                                    <ui:param name="dataverseRedirectPage" value="dataverseuser.xhtml"/>
+                                </ui:include>
+                            </ui:fragment>
+                            <!--   <ui:fragment>
+                                   <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{empty DataverseUserPage.editMode}">
+                                       <p:menuitem id="createDataverse" value="New Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                       <p:menuitem id="UploadDataset" value="New Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
+                                   </p:menuButton>
+                               </ui:fragment>  -->
+                        </p:tab>
+                        <p:tab id="notifications" title="Notifications">
+                            <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">
+                                <h:outputText value="Your Dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
+                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
+                                </h:outputLink>
+                                <h:outputText value=" Dataverse, has been created in the " />
+                                <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
+                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" style="color:#C55B28" />
+                                </h:outputLink>
+                                <h:outputText value=" Dataverse. Remember to release it. " />
+                                <h:outputText value="#{item.sendDate} " />
+                                <h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
+                                <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />
+                                <h:commandLink action="#{DataverseUserPage.remove(item.id)}" value="Remove" />
+                            </p:dataList>
+                        </p:tab>
+                    </p:tabView>
+
+                    <p:tabView id="tabView1" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfo" title="Account Information">
 
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
-
-                                <ui:fragment rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                                    <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
-                                        <p:menuButton id="editAccountButton" value="Edit Account" iconPos="right">
-                                            <p:menuitem id="editAccount" value="Account Information" actionListener="#{DataverseUserPage.edit}" update="@all" />
-                                            <p:menuitem id="changePassword" value="Account Password" actionListener="#{DataverseUserPage.changePassword}" update="@all" />
-                                        </p:menuButton>
-                                    </div>
-                                </ui:fragment>
 
                                 <div>
 
@@ -49,14 +141,14 @@
 
                                     <p:panelGrid columns="2" styleClass="panelgridFormTable">
                                         <p:outputLabel value="Username *" for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Username" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
+                                        <p:outputLabel value="Username" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <p:outputLabel value="Usuername/Email:  " rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{empty DataverseUserPage.editMode}" />
+                                            <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
                                                 <p:inputText id="userName" validator="#{DataverseUserPage.validateUserName}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}" />
                                                 <p:inputText id="userNameEmail" validator="#{DataverseUserPage.validateUserNameEmail}" value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                                <p:message for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
+                                                <p:message for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                                 <p:message for="userNameEmail" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
                                             </p:panelGrid>
                                         </ui:fragment>
@@ -88,9 +180,9 @@
 
                                         <p:outputLabel value="First Name *" for="firstName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                                         <p:outputLabel value="First Name" for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                                        <p:outputLabel value="Name" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'INFO' or DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                                        <p:outputLabel value="Name" rendered="#{empty DataverseUserPage.editMode}" />
+                                        <ui:fragment rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                                 <p:inputText id="firstName" value="#{DataverseUserPage.dataverseUser.firstName}" />
                                                 <p:message for="firstName" />
@@ -107,28 +199,28 @@
                                         </ui:fragment>
 
                                         <p:outputLabel value="Email *" for="email" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Email" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                                        <p:outputLabel value="Email" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                                 <p:inputText id="email" value="#{DataverseUserPage.dataverseUser.email}" />
                                                 <p:message for="email" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Affiliation" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.affiliation}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
+                                        <p:outputLabel value="Affiliation" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.affiliation}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                                 <p:inputText id="affiliation" value="#{DataverseUserPage.dataverseUser.affiliation}" />
                                                 <p:message for="affiliation" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}" />
-                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'INFO'}">
-                                            <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'INFO'}" />
-                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode != 'INFO'}">
+                                        <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
+                                            <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{empty DataverseUserPage.editMode}" />
+                                            <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
                                                 <p:selectOneMenu id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                                     <f:selectItem id="student" itemLabel="Student" itemValue="Student" />
                                                     <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />
@@ -142,7 +234,7 @@
 
                                 </div>
 
-                                <p:panel styleClass="panelLayoutButtonBlock" rendered="#{DataverseUserPage.editMode != 'INFO'}">
+                                <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataverseUserPage.editMode}">
                                     <ui:fragment>
                                         <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE'?'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
                                         <p:commandButton id="submit" value="Submit" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
@@ -155,53 +247,8 @@
                             </div>
                         </p:tab>
                     </p:tabView>
-                    <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
-                        <p:tab id="somedata" title="Data Related To Me">
-                            <!--  <p:panel>
-                                  <p:panelGrid columns="4">
-                                      <ui:fragment>
-                                      <p:selectOneMenu value="#{DataverseUserPage.permissionType}">
-                                          <f:selectItem id="writeAccess" itemLabel="Data I have write access to..." itemValue="writeAccess" />
-                                          <f:selectItem id="readAccess" itemLabel="Data I have read access to..." itemValue="readAccess" />
-                                      </p:selectOneMenu>
-                                      </ui:fragment>
-                                      <ui:fragment>
-                                          <ui:include src="search-include-fragment.xhtml">
-                                              <ui:param name="showTreeWidget" value="false"/>
-                                              <ui:param name="userId" value="#{DataverseUserPage.dataverseUser.id}"/>
-                                              <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
-                                          </ui:include>
-                                      </ui:fragment> -->
-                            <ui:fragment>    
-                                <p:menuButton id="shareData" value="Add Data" iconPos="right" rendered="#{DataverseUserPage.editMode == 'INFO'}">
-                                    <p:menuitem id="createDataverse" value="New Dataverse" url="/dataverse.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                    <p:menuitem id="UploadDataset" value="New Dataset" url="/dataset.xhtml?ownerId=#{DataverseUserPage.dataverseId}"/>
-                                </p:menuButton>
-                            </ui:fragment> 
-                            <!--    </p:panelGrid>
-                            </p:panel> -->
-                        </p:tab>
-                        <p:tab id="notifications" title="Notifications">
-                            <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">  
-                                <h:outputText value="Your Dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
-                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
-                                </h:outputLink>
-                                <h:outputText value=" Dataverse, has been created in the " />
-                                <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
-                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" style="color:#C55B28" />
-                                </h:outputLink>
-                                <h:outputText value=" Dataverse. Remember to release it. " />
-                                <h:outputText value="#{item.sendDate} " />
-                                <h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
-                                <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />
-                                <h:commandLink action="#{DataverseUserPage.remove(item.id)}" value="Remove" />
-                            </p:dataList>
-                        </p:tab>
-                    </p:tabView>
                 </h:form>
             </ui:define>
-        </ui:composition>        
+        </ui:composition>
     </h:body>
 </html>

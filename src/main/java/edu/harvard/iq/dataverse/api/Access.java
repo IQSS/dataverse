@@ -104,7 +104,7 @@ public class Access {
          * (and yes, this is a hack)
          * TODO: un-hack this. -- L.A. 4.0 alpha 1
          */
-        if (df.getContentType() != null && df.getContentType().startsWith("image/")) {
+        if (df.getContentType() != null && (df.getContentType().startsWith("image/") || df.getContentType().equalsIgnoreCase("application/pdf"))) {
             dInfo.addServiceAvailable(new OptionalAccessService("thumbnail", "image/png", "imageThumb=true", "Image Thumbnail (64x64)"));
         }
 
@@ -153,34 +153,41 @@ public class Access {
     
     @Path("imagethumb/{fileSystemId}")
     @GET
-    @Produces({ "image/png" })
-    public InputStream imagethumb(@PathParam("fileSystemId") Long fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    @Produces({"image/png"})
+    public InputStream imagethumb(@PathParam("fileSystemId") Long fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
         }
-        
-        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
-        String imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
-        if (imageThumbFileName != null) {
-            InputStream in;
 
-            try {
-                in = new FileInputStream(imageThumbFileName);
-            } catch (Exception ex) {
-                // We don't particularly care what the reason why we have
-                // failed to access the file was.
-                // From the point of view of the download subsystem, it's a
-                // binary operation -- it's either successfull or not.
-                // If we can't access it for whatever reason, we are saying
-                // it's 404 NOT FOUND in our HTTP response.
-                return null;
-            }
-            return in;
+        String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
+        
+        String mimeTypeParam = uriInfo.getQueryParameters().getFirst("mimetype");
+        String imageThumbFileName = null;
+        
+        if ("application/pdf".equals(mimeTypeParam)) {
+            imageThumbFileName = ImageThumbConverter.generatePDFThumb(fileSystemName);
+        } else {
+            imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
+        }
+        
+        if (imageThumbFileName == null) {
+            imageThumbFileName = getWebappImageResource(DEFAULT_FILE_ICON);
         }
 
-        return null; 
+        InputStream in;
+
+        try {
+            in = new FileInputStream(imageThumbFileName);
+        } catch (Exception ex) {
+
+            return null;
+        }
+        return in;
+
     }
+    
+    
     
     @Path("preview/{fileId}")
     @GET
@@ -197,7 +204,9 @@ public class Access {
         }
         
         String imageThumbFileName = null; 
-        if (df != null && df.isImage()) {
+        if (df != null && ("application/pdf".equalsIgnoreCase(df.getContentType()))) {
+            imageThumbFileName = ImageThumbConverter.generatePDFThumb(df.getFileSystemLocation().toString(), 48);
+        } else if (df != null && df.isImage()) {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(df.getFileSystemLocation().toString(), 48);
         } else {
             imageThumbFileName = getWebappImageResource (DEFAULT_FILE_ICON);
@@ -209,12 +218,6 @@ public class Access {
             try {
                 in = new FileInputStream(imageThumbFileName);
             } catch (Exception ex) {
-                // We don't particularly care what the reason why we have
-                // failed to access the file was.
-                // From the point of view of the download subsystem, it's a
-                // binary operation -- it's either successfull or not.
-                // If we can't access it for whatever reason, we are saying
-                // it's 404 NOT FOUND in our HTTP response.
                 return null;
             }
             return in;
@@ -241,7 +244,10 @@ public class Access {
         
         List<DataFile> dataFiles = dataset.getFiles();
         for (DataFile dataFile : dataFiles) {
-            if (dataFile.isImage()) {
+            if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                break; 
+            } else if (dataFile.isImage()) {
                 imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
                 break;
             } 
@@ -257,12 +263,6 @@ public class Access {
             try {
                 in = new FileInputStream(imageThumbFileName);
             } catch (Exception ex) {
-                // We don't particularly care what the reason why we have
-                // failed to access the file was.
-                // From the point of view of the download subsystem, it's a
-                // binary operation -- it's either successfull or not.
-                // If we can't access it for whatever reason, we are saying
-                // it's 404 NOT FOUND in our HTTP response.
                 return null;
             }
             return in;

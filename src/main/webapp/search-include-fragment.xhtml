@@ -16,10 +16,10 @@
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}"/>
                     <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
-                    <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
+                    <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
                         <span class="glyphicon glyphicon-search"/> Find
                     </p:commandLink>
-                    <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
+                    <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                       
                     <h:outputLink id="aadvsearchlink" value="/search/advanced.xhtml" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
@@ -429,6 +429,7 @@
                                         </h:outputLink>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
+                                        <h:outputText value=" #{result.dateToDisplayOnCard}"/>
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                         <h:outputLink value="#{dataversePage}?id=#{result.entityId}" style="display:block; clear:left; margin-bottom: .5em;">
@@ -506,6 +507,7 @@
                                         </h:outputLink>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
+                                        <h:outputText value=" #{result.dateToDisplayOnCard}"/>
                                     </div>
                                     <!--<span class="label label-default">Default</span>-->
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
@@ -515,8 +517,7 @@
                                         </h:outputLink>
                                     </div>
 
-                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.citationHighlightSnippet}" escape="false" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet != null}"/>
+                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock"/>
 
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -565,6 +566,7 @@
                                         </h:outputLink>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
+                                        <h:outputText value=" #{result.dateToDisplayOnCard}"/>
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0">
                                         <!-- img src="/resources/images/icon_file.png" style="width:48px;" border="0" alt="Data File"/ -->

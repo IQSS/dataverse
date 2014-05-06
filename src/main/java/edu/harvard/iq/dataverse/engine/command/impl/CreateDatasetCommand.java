@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DataverseRole;
@@ -50,11 +51,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
-        return save(ctxt);
-    }
-
-    public Dataset save(CommandContext ctxt) {
-        theDataset.getEditVersion().setCreateTime(new Timestamp(new Date().getTime()));
+        Date createDate = new Timestamp(new Date().getTime());
+        theDataset.getEditVersion().setCreateTime(createDate);
+        for (DataFile dataFile: theDataset.getFiles() ){
+            dataFile.setCreateDate(theDataset.getCreateDate());
+        }
         Dataset savedDataset = ctxt.em().merge(theDataset);
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);

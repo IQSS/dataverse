@@ -24,9 +24,9 @@
                                     setCount(this, elem);
                                 });
                                 function setCount(src, elem) {
-									if (typeof src === "undefined") {
-									    return;
-									}
+                                    if (typeof src === "undefined") {
+                                        return;
+                                    }
                                     var chars = src.value.length;
                                     elem.html(limit - chars);
                                 }
@@ -66,6 +66,7 @@
                 </f:metadata>
                 
                 <h:form id="dataverseForm">
+                               
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -80,10 +81,14 @@
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                                 <p:outputLabel value="Host Dataverse" for="hostDataverse"/>
-                                <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                <h:outputText value="#{ DataversePage.dataverse.getOwner().name }" />
+                                <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverse" />
+                                <ui:remove><!-- removed for beta -->
+                                    <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">                                    
                                     <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                                   itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
-                                </p:selectOneMenu>
+                                                   itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" />                                                                          
+                                    </p:selectOneMenu>
+                                </ui:remove>    
                             </p:panelGrid>
                         </p:panelGrid>
                     </p:panel>
@@ -97,7 +102,7 @@
                                 </div>
                                 <div class="col-sm-10">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="alias" styleClass="form-control" value="#{DataversePage.dataverse.alias}"/>
+                                        <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
                                 </div>
@@ -298,7 +303,7 @@
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                             <h:outputText value="Use Facets from Parent Dataverse? " />
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
-                                <p:ajax update="@all" listener="#{DataversePage.editFacets}"/>
+                                <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
                             </p:selectBooleanCheckbox>
                         </ui:fragment>
 
@@ -358,7 +363,6 @@
                 <ui:fragment rendered="#{empty DataversePage.editMode}">
                     <ui:include src="search-include-fragment.xhtml">
                         <ui:param name="showAdvancedSearchLink" value="true"/>
-                        <ui:param name="dataverseLinksStayOnPage" value="true"/>
                     </ui:include>
                 </ui:fragment>
 

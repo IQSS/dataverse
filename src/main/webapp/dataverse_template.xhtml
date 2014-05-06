@@ -48,6 +48,24 @@
         <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
         <h:outputScript library="js" name="ie-compat.js" />
         <script>
+            function bind_bsui_components(){
+                //console.log('bind_bsui_components');
+              // Collapse Header Icons
+               $('div[id^="collapse"]').on('shown.bs.collapse', function () {
+                  //console.log('hello block');
+                  $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
+               });
+
+               $('div[id^="collapse"]').on('hidden.bs.collapse', function () {
+                  //console.log('goodbye block');
+                   $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
+               });
+               
+              // Permissions + Dataset Tooltips/Popovers                
+                $("a[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
+                $("a[data-toggle='popover']").popover();
+
+           }
             $(document).ready(function() {
                 // Navbar Search Toggle
                 $(document).on('click', '#navbar-search-toggle', function (e) {
@@ -67,28 +85,66 @@
                     e.stopPropagation();
                 });
                 
-                // Collapse Header Icons
-                $('div[id^="collapse"]').on('shown.bs.collapse', function () {
-                    $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
-                });
-
-                $('div[id^="collapse"]').on('hidden.bs.collapse', function () {
-                    $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
-                });
-
-                // Permissions + Dataset Tooltips/Popovers
-                $("a[data-toggle='tooltip']").tooltip({container: 'body'});
-                $("a[data-toggle='popover']").popover();
+                // Open/close panels
+                bind_bsui_components();
+                
             });
         </script>	
-		<script>
-			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        <script>
+           //<![CDATA[
+           function post_edit_files(){
+               //console.log('post_edit_files');
+               hide_breadcrumb();
+               bind_bsui_components();
+               show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
+           }
+ 
+           function post_edit_metadata(){
+               //console.log('post_edit_metadata');
+               hide_breadcrumb();
+               bind_bsui_components();
+               show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
 
-			  ga('create', 'UA-3745567-10', 'harvard.edu');
-			  ga('send', 'pageview');
-		</script>
+           }
+           function post_cancel_edit_files_or_metadata(){
+               //console.log('post_cancel_edit_metadata');
+               show_breadcrumb();
+               bind_bsui_components();
+               hide_edit_msg();
+           }
+           function show_breadcrumb(){
+               $('#breadcrumbNavBlock').show();  // show breadcrumb navigation
+           }
+           function hide_breadcrumb(){
+                $('#breadcrumbNavBlock').hide();  // hide breadcrumb navigation
+           }
+           function hide_edit_msg(){
+                if ($('div.messagePanel').length > 0){
+                    $('div.messagePanel').html('');
+                }
+           }
+           function show_info_msg(mtitle, mtext){
+               if ($('div.messagePanel').length > 0){
+                 //  alert('msg panel exists');
+                   edit_msg = '<div class="alert alert-dismissable alert-info"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">x</button>'
+                                   + '<span class="glyphicon glyphicon-info-sign"></span>'
+                                   + '<strong> ' + mtitle + '</strong> &#150; ' + mtext + '</div>';
+                   $('div.messagePanel').html(edit_msg );
+               }else{
+                 //console.log('message panel does not exist');
+               }
+           }
+           
+           //]]>
+       </script>		
+       <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-3745567-10', 'harvard.edu');
+          ga('send', 'pageview');
+	</script>
     </h:body>
 </html>

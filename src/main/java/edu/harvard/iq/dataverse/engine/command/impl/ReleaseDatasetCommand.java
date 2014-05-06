@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -64,8 +65,15 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
             }
         }
 
-        theDataset.getEditVersion().setReleaseTime(new Timestamp(new Date().getTime()));
+        Timestamp updateTime =  new Timestamp(new Date().getTime());
+        theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
+        
+        for (DataFile dataFile: theDataset.getFiles() ){
+            if(dataFile.getPublicationDate() == null){
+                dataFile.setPublicationDate(updateTime);
+            }            
+        } 
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
         String indexingResult = ctxt.index().indexDataset(savedDataset);

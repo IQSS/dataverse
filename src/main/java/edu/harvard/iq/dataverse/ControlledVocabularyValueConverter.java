@@ -23,8 +23,12 @@ public class ControlledVocabularyValueConverter implements Converter {
     DatasetFieldServiceBean datasetFieldService;
 
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValue(new Long(submittedValue));
-        return cvv;
+        if (submittedValue == null || submittedValue.equals("")) {
+            return "";
+        } else {
+            ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValue(new Long(submittedValue));
+            return cvv;
+        }
     }
 
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {

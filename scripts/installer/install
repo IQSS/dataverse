@@ -827,7 +827,7 @@ print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
 print "TO CREATE ALREADY EXISTS; OR IF A JVM OPTION THAT WE ARE\n";
 print "DELETING DOESN'T. THESE \"FAILURES\" ARE NORMAL!\n";
 print "*********************\n\n";
-print "When asadmin asks you to \"Enter admin user name\",\n";
+print "When/if asadmin asks you to \"Enter admin user name\",\n";
 print "it should be safe to hit return and accept the default\n";
 print "(which is \"admin\").\n";
 
@@ -837,6 +837,20 @@ system "stty cbreak </dev/tty >/dev/tty 2>&1";
 	my $key = getc(STDIN);
 	system "stty -cbreak </dev/tty >/dev/tty 2>&1";
 	print "\n";
+
+# start domain, if not running: 
+
+my $DOMAIN_DOWN=`$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
+print STDERR $DOMAIN_DOWN . "\n";
+if ($DOMAIN_DOWN)
+{
+    print "Trying to start domain up...\n";
+    system ($CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}."/bin/asadmin start-domain domain1");
+}
+else
+{
+    print "domain appears to be up...\n";
+}
 
 # create asadmin login, so that the user doesn't have to enter
 # the username and password for every asadmin command, if

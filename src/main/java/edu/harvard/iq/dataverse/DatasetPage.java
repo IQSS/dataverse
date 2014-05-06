@@ -26,8 +26,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -44,6 +44,10 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 
@@ -74,7 +78,7 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DataFileServiceBean datafileService;
     @EJB
-    PermissionServiceBean permissionServiceBean; 
+    PermissionServiceBean permissionServiceBean;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -201,44 +205,30 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
-                if (canIssueUpdateCommand()){
-                   displayVersion = dataset.getLatestVersion(); 
+                if (!dataset.isReleased()) {
+                    displayVersion = dataset.getLatestVersion();
                 } else {
-                   displayVersion = dataset.getReleasedVersion();
-                }                
+                    displayVersion = dataset.getReleasedVersion();
+                }
             } else {
                 displayVersion = datasetVersionService.find(versionId);
-            }  
+            }
 
             ownerId = dataset.getOwner().getId();
-            //displayVersion.setDatasetFields(displayVersion.initDatasetFields());
             if (dataset.getReleasedVersion() != null) {
                 datasetNextMajorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue() + 1).toString() + ".0";
                 datasetNextMinorVersion = new Integer(dataset.getReleasedVersion().getVersionNumber().intValue()).toString() + "."
                         + new Integer(dataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1).toString();
             }
-            
 
-            /*
-            if (!dataset.isReleased() || (dataset.isReleased() && displayVersion.equals(dataset.getLatestVersion()) && !displayVersion.isDraft())) {
-                displayCitation = dataset.getCitation(false, displayVersion);
-            } else if (dataset.isReleased() && displayVersion.isDraft()) {
-                displayCitation = dataset.getCitation(false, displayVersion.getMostRecentlyReleasedVersion());
-            } else if (dataset.isReleased() && !displayVersion.equals(dataset.getLatestVersion())) {
-                displayCitation = dataset.getCitation(false, displayVersion.getLargestMinorRelease());
-            } else {
-                displayCitation = "";
-            }
-            */
-            // show citation for current display version if draft note it on page
             try {
-                 datasetVersionUI = new DatasetVersionUI(displayVersion);
-                 displayCitation = dataset.getCitation(false, displayVersion);
-            } catch (NullPointerException npe){
+                datasetVersionUI = new DatasetVersionUI(displayVersion);
+            } catch (NullPointerException npe) {
                 //This will happen when solr is down and will allow any link to be displayed.
                 throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
             }
-           
+
+            displayCitation = dataset.getCitation(false, displayVersion);
             setVersionTabList(resetVersionTabList());
 
         } else if (ownerId != null) {
@@ -348,6 +338,35 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
+
+        // Validate
+        boolean dontSave = false;
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                dontSave = true;
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
+            for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
+                dsfv.setValidationMessage(null); // clear out any existing validation message
+                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
+                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                    dsfv.setValidationMessage(constraintViolation.getMessage());
+                    dontSave = true;
+                    break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
+                }
+            }
+        }
+        if (dontSave) {
+            return "";
+        }
+
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
@@ -374,7 +393,7 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
                 for (DataFile dFile : newFiles) {
                     String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
-                    
+
                     // These are all brand new files, so they should all have 
                     // one filemetadata total. You do NOT want to use 
                     // getLatestFilemetadata() here - because it relies on 
@@ -382,7 +401,7 @@ public class DatasetPage implements java.io.Serializable {
                     // Which may not have been persisted yet. 
                     // -- L.A. 4.0 beta.
                     FileMetadata fileMetadata = dFile.getFileMetadatas().get(0);
-                    String fileName = fileMetadata.getLabel(); 
+                    String fileName = fileMetadata.getLabel();
 
                     //boolean ingestedAsTabular = false;
                     boolean metadataExtracted = false;
@@ -477,7 +496,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId()  + "&faces-redirect=true";
     }
 
     private String getFilesTempDirectory() {
@@ -621,7 +640,7 @@ public class DatasetPage implements java.io.Serializable {
         fmd.setDataFile(dFile);
 
         dFile.getFileMetadatas().add(fmd);
-        
+
         if (editVersion.getFileMetadatas() == null) {
             editVersion.setFileMetadatas(new ArrayList());
         }
@@ -681,8 +700,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
         this.versionTabList = versionTabList;
     }
-    
-    private boolean canIssueUpdateCommand(){
+
+    private boolean canIssueUpdateCommand() {
         try {
             if (permissionServiceBean.on(dataset).canIssueCommand("UpdateDatasetCommand")) {
                 return true;
@@ -694,21 +713,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
     private List<DatasetVersion> resetVersionTabList() {
-        List <DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList();
 
-            if (canIssueUpdateCommand()) {
-                return dataset.getVersions();
-            } else {
-                for(DatasetVersion version: dataset.getVersions()){
-                    if (version.isReleased()){
-                        retList.add(version);
-                    }
+        if (canIssueUpdateCommand()) {
+            return dataset.getVersions();
+        } else {
+            for (DatasetVersion version : dataset.getVersions()) {
+                if (version.isReleased()) {
+                    retList.add(version);
                 }
-                return retList;
-
             }
+            return retList;
+
+        }
     }
- 
+
 }

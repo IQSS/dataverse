@@ -52,6 +52,10 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv.CSVFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx.XLSXFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReaderSpi;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
@@ -124,6 +128,8 @@ public class IngestServiceBean {
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
+    private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
     
     private static final String MIME_TYPE_TAB   = "text/tab-separated-values";
     
@@ -307,6 +313,10 @@ public class IngestServiceBean {
             return true;
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             return true;
+        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
+            return true;
+        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
+            return true;
         }
 
         return false;
@@ -335,6 +345,10 @@ public class IngestServiceBean {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
+            ingestPlugin = new DTAFileReader(new SAVFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
+            ingestPlugin = new DTAFileReader(new PORFileReaderSpi());
         }
 
         return ingestPlugin;

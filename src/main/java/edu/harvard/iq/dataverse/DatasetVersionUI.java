@@ -312,7 +312,7 @@ public class DatasetVersionUI {
                     }
 
                     if (add) {
-                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
                     }
                 }
                 

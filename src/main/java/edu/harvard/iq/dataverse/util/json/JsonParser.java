@@ -128,9 +128,11 @@ public class JsonParser {
         try {
             DatasetField ret = new DatasetField();
             DatasetFieldType type = datasetFieldSvc.findByName(json.getString("typeName",""));
-
+            
+            if ( type == null ) {
+                throw new NoResultException("Can't find type '" + json.getString("typeName","") +"'");
+            }
             ret.setDatasetFieldType(type);
-
 
             if ( type.isCompound() ) {
                 List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);

@@ -370,6 +370,10 @@ public class DatasetVersion implements Serializable {
         // FIXME add the authores to the relevant fields
     }
     
+    public String getCitation(){
+        return getCitation(false);
+    }
+    
      public String getCitation(boolean isOnlineVersion) {
 
 
@@ -425,8 +429,13 @@ public class DatasetVersion implements Serializable {
             }
             str += " " + rootDataverseName + " Dataverse";
         }
-
-        if (this.getVersionNumber() != null) {
+        if (this.isDraft()){
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " DRAFT VERSION ";
+            
+        } else if (this.getVersionNumber() != null) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
@@ -516,7 +525,7 @@ public class DatasetVersion implements Serializable {
                     }
 
                     if (add) {
-                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyDatasetField(dsfType, cv));
+                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
                     }
                 }
             }

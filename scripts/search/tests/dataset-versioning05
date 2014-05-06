@@ -1,0 +1,24 @@
+#!/bin/bash
+# We assume you've done everything in scripts/search/tests/dataset-versioning04
+# There should now be two Solr documents for datasets with different titles.
+# 
+# Version 1.0 has a single file
+# Title: Rings of Trees and Other Observations
+# files: 18:trees.png
+#
+# The version that is post 1.0 but unpublished has two files
+# Title: Rings of Conifers and Other Observations
+# files: 18:trees.png, 19:trees2.png
+#
+# Now let's change the description of the published file (18:trees.png) from
+# "Trees are lovely."
+# to
+# "The first picture of trees I uploaded."
+#
+# anon should be able to see the published 1.0 version but not the new draft and not the new file
+# and not the change in description
+# (no change from dataset-versioning02anon)
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning02anon
+# What about pete? should he see multiple cards for the two versions
+# (with different descriptions) of 18:trees.png? Right now there is only one
+# card per file and for published files it always shows the published information.
