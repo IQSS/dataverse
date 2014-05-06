@@ -102,7 +102,7 @@
                                 </div>
                                 <div class="col-sm-10">
                                     <p:panelGrid columns="2">
-                                        <p:inputText id="alias" styleClass="form-control" value="#{DataversePage.dataverse.alias}"/>
+                                        <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
                                 </div>
