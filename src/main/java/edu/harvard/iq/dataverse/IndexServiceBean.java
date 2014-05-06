@@ -635,8 +635,13 @@ public class IndexServiceBean {
                 }
             }
             if (fileSortByDate == null) {
-                fileSortByDate = new Date();
-                logger.info("why was fileSortByDate null?");
+                if (datasetSortByDate != null) {
+                    logger.info("fileSortByDate was null, assigning datasetSortByDate");
+                    fileSortByDate = datasetSortByDate;
+                } else {
+                    logger.info("fileSortByDate and datasetSortByDate were null, assigning 'now'");
+                    fileSortByDate = new Date();
+                }
             }
             datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
             datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(fileSortByDate));
