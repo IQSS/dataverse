@@ -66,13 +66,13 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                     <li>
-                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Files (Upload + Edit)" />
                                                         </p:commandLink>   
                                                     </li>
                                                     <li>
-                                                        <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                        <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>   
@@ -311,7 +311,7 @@
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
                                             </p:commandLink>
@@ -473,7 +473,7 @@
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
                         </p:commandButton>
-                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_metadata()">
+                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
