@@ -37,7 +37,7 @@
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search()}" />                    
+                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />                    
                 </f:metadata>
 
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
@@ -99,7 +99,6 @@
                                 <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
                                 </ui:include> -->
                                 <ui:include src="search-include-fragment.xhtml">
-                                    <ui:param name="showAdvancedSearchLink" value="true"/>
                                     <ui:param name="dataverseLinksStayOnPage" value="true"/>
                                 </ui:include>
                             </ui:fragment>
