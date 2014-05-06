@@ -87,7 +87,7 @@
                                         <!-- Primitive fields -->    
                                         <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.primitive}">
                                             <div class="form-group">
-                                                <div class="col-sm-3 ">
+                                                <div class="col-sm-3">
                                                     <label for="metadata_#{dsf.datasetFieldType.name}" class="control-label">
                                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
                                                             #{dsf.datasetFieldType.title}
@@ -99,10 +99,10 @@
                                                     well together for the primitive fields, but are for the compound fields. So as a workaround for the primitive,
                                                     we wrap them in a ui:repeat that iterates on a single list. Note: dummyVar is never used--></ui:remove>
                                                 <ui:repeat value="#{Collections:singletonList('')}" var="dummyVar">
-                                                    <div class="form-group col-sm-7">
+                                                    <div class="form-group col-sm-9">
                                                         <ui:repeat value="#{dsf.datasetFieldValues}" var="dsfv" varStatus="valCount" >
                                                             <div class="form-group">
-                                                                <div class="col-sm-6">
+                                                                <div class="col-sm-9">
                                                                     <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                         <ui:param name="dsfv" value="#{dsfv}"/>
                                                                         <ui:param name="dsfvIndex" value="#{valCount.index}"/>
