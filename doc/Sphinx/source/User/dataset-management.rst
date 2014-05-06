@@ -33,11 +33,13 @@ Go to your Dataset page and click on the "Edit Dataset" button. There you will h
 Publish Dataset
 ====================
 
-When you publish a Dataset, you make it available to the public. Users can
-browse it or search for it. Once your Dataset is ready to go public, go to your Dataset page, 
-click on the "Unpublished" button on the right hand side of the page which should indicate: 
-"This Dataset is unpublished. To publish it click 'Publish Dataset' link."
+When you publish a Dataset, you make it available to the public so that other users can
+browse or search for it. Once your Dataset is ready to go public, go to your Dataset page and click on the 
+"Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually 
+Publish since once a Dataset is made public it can no longer be unpublished. 
 
-Important Note: Once a Dataset is published it **cannot be unpublished**; it can be archived instead.
+Note: Prior to publishing your Dataset the Data Citation will indicate that this is a draft but the "DRAFT VERSION" text
+will be removed as soon as you Publish.
+
 
 .. |image1| image:: ./img/DatasetDiagram.png
