@@ -10,6 +10,9 @@ body .ui-widget {font-size: inherit;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
 #navbarFixed {margin-bottom:0;}
+.navbar-fixed-top, .navbar-fixed-bottom {
+    z-index: 930;
+}
 #navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;}
 #navbarFixed .label.beta {display:block; float:left; margin-top:16px; font-size:100%;}
 
