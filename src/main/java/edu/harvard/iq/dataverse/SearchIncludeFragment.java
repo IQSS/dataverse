@@ -166,6 +166,10 @@ public class SearchIncludeFragment {
     }
 
     public void search() {
+        search(false);
+    }    
+    
+    public void search(boolean onlyDataRelatedToMe) {
         logger.info("search called");
 
         // wildcard/browse (*) unless user supplies a query
@@ -264,8 +268,8 @@ public class SearchIncludeFragment {
 //            } else {
 //                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
 //            }
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, publishedToggle);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, publishedToggle);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
