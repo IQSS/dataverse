@@ -66,6 +66,7 @@
                 </f:metadata>
                 
                 <h:form id="dataverseForm">
+                               
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -80,12 +81,14 @@
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                                 <p:outputLabel value="Host Dataverse" for="hostDataverse"/>
-                                <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="false" filterMatchMode="startsWith" effect="none">
+                                <h:outputText value="#{ DataversePage.dataverse.getOwner().name }" />
+                                <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverse" />
+                                <ui:remove><!-- removed for beta -->
+                                    <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">                                    
                                     <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                                   itemDisabled="true"/>
-                                    <ui:remove>    itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" </ui:remove>    
-                                    
-                                </p:selectOneMenu>
+                                                   itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" />                                                                          
+                                    </p:selectOneMenu>
+                                </ui:remove>    
                             </p:panelGrid>
                         </p:panelGrid>
                     </p:panel>
