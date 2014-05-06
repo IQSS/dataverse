@@ -87,6 +87,7 @@
                                     <h:outputLink value="/dataverseuser.xhtml">
                                         <f:param name="selectTab" value="notifications" />
                                         <h:outputText value="Notifications" />
+                                        <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />                                        
                                     </h:outputLink>
                                 </li>
                                 <li>
