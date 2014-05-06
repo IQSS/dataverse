@@ -400,6 +400,7 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
+        String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
@@ -452,6 +453,11 @@ public class IndexServiceBean {
                             solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValues());
                         } else if (dsf.getDatasetFieldType().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
+                            List<String> possibleTitles = dsf.getValues();
+                            String firstTitle = possibleTitles.get(0);
+                            if (firstTitle != null) {
+                                parentDatasetTitle = firstTitle;
+                            }
                             solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValues());
                         }
                         if (dsfType.isControlledVocabulary()) {
@@ -683,9 +689,8 @@ public class IndexServiceBean {
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-            if (!fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle().isEmpty()) {
-                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle());
-            }
+
+            datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
             
             // If this is a tabular data file -- i.e., if there are data
             // variables associated with this file, we index the variable 
