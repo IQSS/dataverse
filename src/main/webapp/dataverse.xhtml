@@ -80,9 +80,11 @@
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                                 <p:outputLabel value="Host Dataverse" for="hostDataverse"/>
-                                <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                <p:selectOneMenu id="hostDataverse" value="#{DataversePage.ownerId}" filter="false" filterMatchMode="startsWith" effect="none">
                                     <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"
-                                                   itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}"/>
+                                                   itemDisabled="true"/>
+                                    <ui:remove>    itemDisabled="#{dv eq DataversePage.dataverse or dv.owners.contains(DataversePage.dataverse)}" </ui:remove>    
+                                    
                                 </p:selectOneMenu>
                             </p:panelGrid>
                         </p:panelGrid>
