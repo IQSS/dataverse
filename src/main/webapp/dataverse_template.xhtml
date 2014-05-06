@@ -48,7 +48,8 @@
         <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
         <h:outputScript library="js" name="ie-compat.js" />
         <script>
-            function bind_collapse_blocks(){
+            function bind_bsui_components(){
+                //console.log('bind_bsui_components');
               // Collapse Header Icons
                $('div[id^="collapse"]').on('shown.bs.collapse', function () {
                   //console.log('hello block');
@@ -59,6 +60,10 @@
                   //console.log('goodbye block');
                    $(this).siblings('div.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
                });
+               
+              // Permissions + Dataset Tooltips/Popovers                
+                $("a[data-toggle='tooltip']").tooltip({container: 'body'});
+                $("a[data-toggle='popover']").popover();
 
            }
             $(document).ready(function() {
@@ -81,11 +86,8 @@
                 });
                 
                 // Open/close panels
-                bind_collapse_blocks();
+                bind_bsui_components();
                 
-                // Permissions + Dataset Tooltips/Popovers
-                $("a[data-toggle='tooltip']").tooltip({container: 'body'});
-                $("a[data-toggle='popover']").popover();
             });
         </script>	
         <script>
@@ -93,21 +95,21 @@
            function post_edit_files(){
                //console.log('post_edit_files');
                hide_breadcrumb();
-               bind_collapse_blocks();
+               bind_bsui_components();
                show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
            }
  
            function post_edit_metadata(){
                //console.log('post_edit_metadata');
                hide_breadcrumb();
-               bind_collapse_blocks();
+               bind_bsui_components();
                show_info_msg('Edit Dataset Metadata ', 'Add more metadata about your dataset to help others easily find it.');
 
            }
            function post_cancel_edit_files_or_metadata(){
                //console.log('post_cancel_edit_metadata');
                show_breadcrumb();
-               bind_collapse_blocks();
+               bind_bsui_components();
                hide_edit_msg();
            }
            function show_breadcrumb(){
