@@ -14,6 +14,7 @@
             <ui:param name="pageTitle" value="#{empty DatasetPage.dataset.latestVersion.title ? 'Add New Dataset' : DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
+            <ui:param name="version" value="#{DatasetPage.displayVersion}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
@@ -454,20 +455,17 @@
                                 </p:tab>
 
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="version">
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">
                                         <p:column>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
-                                                <h:outputText value="#{version.title}" />
-                                                <f:param name="id" value="#{version.dataset.id}" />
-                                                <f:param name="versionId" value="#{version.id}" />
+                                                <h:outputText value="#{versionTab.title}" />
+                                                <f:param name="id" value="#{versionTab.dataset.id}" />
+                                                <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
                                         <p:column>
-                                            <h:outputText rendered="#{!version.released}" id="versionStatusOutput" value="#{version.versionState}" />
-                                            <h:outputText rendered="#{version.released}" id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />
-                                        </p:column>
-                                        <p:column>
-                                            
+                                            <h:outputText rendered="#{!versionTab.released}" id="versionStatusOutput" value="#{versionTab.versionState}" />
+                                            <h:outputText rendered="#{versionTab.released}" id="versionNumberOutput" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>

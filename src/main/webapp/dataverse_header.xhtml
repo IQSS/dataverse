@@ -194,9 +194,9 @@
             </ui:repeat>
 
             <!-- Dataset, if available -->
-            <ui:fragment rendered="#{!empty dataset.latestVersion.title}">
+            <ui:fragment rendered="#{!empty version.title}">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot"/>
-                <h:outputText value="#{dataset.latestVersion.title}" styleClass="breadcrumbActive"/>
+                <h:outputText value="#{version.title}" styleClass="breadcrumbActive"/>
             </ui:fragment>
         </div>
     </ui:fragment>
