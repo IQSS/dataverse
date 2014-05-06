@@ -5,11 +5,11 @@ A Dataset in Dataverse is a container for your data, documentation, code, and th
 
 |image1|
 
-Add Dataset
+New Dataset
 ====================
 
 #. Navigate to the dataverse in which you want to add a Dataset (or in the "root" dataverse). 
-#. Click on the "Add Data" button and select "Add Dataset" in the dropdown menu.
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, etc)
 #. Scroll down to "Files" tab and click on "Select Files to Add" to add all the relevant files to your Dataset. 
