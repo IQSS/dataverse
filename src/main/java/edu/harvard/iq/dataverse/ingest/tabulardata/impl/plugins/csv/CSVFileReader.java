@@ -443,8 +443,19 @@ public class CSVFileReader extends TabularDataFileReader {
                     } else if (valueTokens[i].equalsIgnoreCase("null")) {
                         // By request from Gus - "NULL" is recognized as a 
                         // numeric zero: 
-                        caseRow[i] = "0";
+                        if (isIntegerVariable[i]) {
+                            caseRow[i] = "0";
+                        } else {
+                            caseRow[i] = "0.0";
+                        }
                     } else {
+                        /* No re-formatting is done on any other numeric values. 
+                         * We'll save them as they were, for archival purposes.
+                         * The alternative solution - formatting in sci. notation
+                         * is commented-out below. 
+                         */
+                        caseRow[i] = valueTokens[i];
+                        /*
                         if (isIntegerVariable[i]) {
                             try {
                                 Integer testIntegerValue = new Integer(valueTokens[i]);
@@ -466,13 +477,11 @@ public class CSVFileReader extends TabularDataFileReader {
                                     // in a IEEE 754-like "scientific notation" - for ex., 
                                     // 753.24 will be encoded as 7.5324e2
                                     BigDecimal testBigDecimal = new BigDecimal(valueTokens[i], doubleMathContext);
-                                    /*
                                     // an experiment - what's gonna happen if we just 
                                     // use the string representation of the bigdecimal object
                                     // above? 
-                                    caseRow[i] = testBigDecimal.toString(); 
-                                    */
-                                    
+                                    //caseRow[i] = testBigDecimal.toString(); 
+=                                    
                                     caseRow[i] = String.format(FORMAT_IEEE754, testBigDecimal);
                                     
                                     // Strip meaningless zeros and extra + signs: 
@@ -486,6 +495,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                 throw new IOException("Failed to parse a value recognized as numeric in the first pass! (?)");
                             } 
                         }
+                        */
                     }    
                 } else if (isTimeVariable[i] || isDateVariable[i]) {
                     // Time and Dates are stored NOT quoted (don't ask).
