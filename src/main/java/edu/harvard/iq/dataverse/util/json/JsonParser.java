@@ -98,7 +98,6 @@ public class JsonParser {
                 dsv.setDatasetDistributors(distros);
             }
             
-            
             return dsv;
             
         } catch (ParseException ex) {
@@ -125,42 +124,40 @@ public class JsonParser {
     
     public DatasetField parseField( JsonObject json ) throws JsonParseException {
         if ( json == null ) return null;
-        try {
-            DatasetField ret = new DatasetField();
-            DatasetFieldType type = datasetFieldSvc.findByName(json.getString("typeName",""));
-            
-            if ( type == null ) {
-                throw new NoResultException("Can't find type '" + json.getString("typeName","") +"'");
-            }
-            ret.setDatasetFieldType(type);
+        
+        DatasetField ret = new DatasetField();
+        DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName",""));
 
-            if ( type.isCompound() ) {
-                List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
-                for ( DatasetFieldCompoundValue dsfcv : vals ) {
-                    dsfcv.setParentDatasetField(ret);
-                }
-                ret.setDatasetFieldCompoundValues(vals);
-
-            } else if ( type.isControlledVocabulary() ) {
-                List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
-                for ( ControlledVocabularyValue cvv : vals ) {
-                    cvv.setDatasetFieldType(type);
-                }
-                ret.setControlledVocabularyValues(vals);
-
-            } else {
-                // primitive
-                List<DatasetFieldValue> values = parsePrimitiveValue( json );
-                for ( DatasetFieldValue val : values ) {
-                    val.setDatasetField(ret);
-                }
-                ret.setDatasetFieldValues(values);
-            }
-
-            return ret;
-        } catch ( NoResultException nre ) {
-            throw new JsonParseException("Can't find field type named '" + json.getString("typeName","") + "'");
+        if ( type == null ) {
+            throw new JsonParseException("Can't find type '" + json.getString("typeName","") +"'");
         }
+        
+        ret.setDatasetFieldType(type);
+
+        if ( type.isCompound() ) {
+            List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
+            for ( DatasetFieldCompoundValue dsfcv : vals ) {
+                dsfcv.setParentDatasetField(ret);
+            }
+            ret.setDatasetFieldCompoundValues(vals);
+
+        } else if ( type.isControlledVocabulary() ) {
+            List<ControlledVocabularyValue> vals = parseControlledVocabularyValue(type, json);
+            for ( ControlledVocabularyValue cvv : vals ) {
+                cvv.setDatasetFieldType(type);
+            }
+            ret.setControlledVocabularyValues(vals);
+
+        } else {
+            // primitive
+            List<DatasetFieldValue> values = parsePrimitiveValue( json );
+            for ( DatasetFieldValue val : values ) {
+                val.setDatasetField(ret);
+            }
+            ret.setDatasetFieldValues(values);
+        }
+
+        return ret;
     }
     
     public List<DatasetFieldCompoundValue> parseCompoundValue( DatasetFieldType compoundType, JsonObject json ) throws JsonParseException {

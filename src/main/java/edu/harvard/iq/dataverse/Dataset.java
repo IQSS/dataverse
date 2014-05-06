@@ -101,7 +101,7 @@ public class Dataset extends DvObjectContainer {
     private List<DatasetVersion> versions = new ArrayList();
 
     public DatasetVersion getLatestVersion() {
-            return versions.get(0);
+        return getVersions().get(0);
     }
 
     public List<DatasetVersion> getVersions() {

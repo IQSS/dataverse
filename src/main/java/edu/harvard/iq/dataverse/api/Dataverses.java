@@ -41,11 +41,13 @@ import javax.json.JsonString;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -58,7 +60,6 @@ import javax.ws.rs.core.Response.Status;
 public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 	
-    
 	@GET
 	public String list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
@@ -115,9 +116,8 @@ public class Dataverses extends AbstractApiBean {
 	}
     
     @POST
-    @Path("{identifier}/datasets/")
-    @Produces("application/json")
-    public Response createDataset( @PathParam("identifier") String parentIdtf, String jsonBody, @QueryParam("key") String apiKey ) {
+    @Path("{identifier}/datasets")
+    public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey ) {
         DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
@@ -130,6 +130,7 @@ public class Dataverses extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             json = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonBody);
             return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -240,7 +241,7 @@ public class Dataverses extends AbstractApiBean {
 	
     @POST
     @Path("{identifier}/metadatablocks")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String blockIds ) {
         DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
@@ -448,9 +449,6 @@ public class Dataverses extends AbstractApiBean {
 			return "Role assignment " + assignmentId + " not found";
 		}
 	}
-	
-	// CONTPOINT add a POST method for datasets here, and a POST method for dataset versions in the dataset part.
-	
 	
 	@GET
 	@Path(":gv")
