@@ -232,13 +232,13 @@
                                             <div class="panel-body">
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
                                                     <span id="keywords">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Keyword(s)</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="" style="margin-right:1em;">Keyword(s)</a>
                                                         #{DatasetPage.datasetVersionUI.keyword.displayValue}
                                                     </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
                                                     <span id="subject">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Subject(s)</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="" style="margin-right:1em;">Subject(s)</a>
                                                         #{DatasetPage.datasetVersionUI.subject.displayValue}
                                                     </span>
                                                 </ui:fragment>
@@ -247,7 +247,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
                                                     <span id="note">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Notes</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="" style="margin-right:1em;">Notes</a>
                                                         <div>
                                                             #{DatasetPage.datasetVersionUI.notes.value}
                                                         </div>
