@@ -220,13 +220,8 @@
                                         <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
-                                                <p:selectOneMenu id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                    <f:selectItem id="student" itemLabel="Student" itemValue="Student" />
-                                                    <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />
-                                                    <f:selectItem id="staff" itemLabel="Staff" itemValue="Staff" />
-                                                    <f:selectItem id="other" itemLabel="Other" itemValue="Other" />
-                                                </p:selectOneMenu>
+                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                                <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" />
                                                 <p:message for="position" />
                                             </p:panelGrid>
                                         </ui:fragment>
