@@ -50,6 +50,11 @@
         <script>
             function bind_bsui_components(){
                 //console.log('bind_bsui_components');
+                // Breadcrumb Tree Keep Open
+                $(document).on('click', '.dropdown-menu', function (e) {
+                    $(this).hasClass('keep-open'),
+                    e.stopPropagation();
+                });
               // Collapse Header Icons
                $('div[id^="collapse"]').on('shown.bs.collapse', function () {
                   //console.log('hello block');
@@ -79,12 +84,6 @@
                     };
                 });
 
-                // Breadcrumb Tree Keep Open
-                $(document).on('click', '.dropdown-menu', function (e) {
-                    $(this).hasClass('keep-open'),
-                    e.stopPropagation();
-                });
-                
                 // Open/close panels
                 bind_bsui_components();
                 
