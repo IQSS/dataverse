@@ -25,6 +25,8 @@ import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Logger;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 
 /**
@@ -259,4 +261,23 @@ public class DataversePage implements java.io.Serializable {
         return mdbPreview.toString();
     }
 
+    public void validateAlias(FacesContext context, UIComponent toValidate, Object value) {
+        String alias = (String) value;
+        boolean aliasFound = false;
+        Dataverse dv = dataverseService.findByAlias(alias);
+        if (editMode == DataversePage.EditMode.CREATE) {
+            if (dv != null) {
+                aliasFound = true;
+            }
+        } else {
+            if (dv != null && !dv.getId().equals(dataverse.getId())) {
+                aliasFound = true;
+            }
+        }
+        if (aliasFound) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage("This Alias is already taken.");
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
 }
