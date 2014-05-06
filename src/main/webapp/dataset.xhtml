@@ -55,7 +55,7 @@
                         <!-- View mode -->
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
-                                <div id="actionButtonBlock" style="float:right;">
+                                <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -157,13 +157,13 @@
                                                 </ui:fragment>
                                             </div>-->
                                         </div>
-                                        <p:growl id="messages" showDetail="true" />  
-                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'."  header="Publish Dataset"  widgetVar="confirmation">  
-                                            <p:commandButton value="Continue"  onclick="confirmation.hide()"  action="#{DatasetPage.releaseDataset}" >
+                                        <!-- <p:growl id="messages" showDetail="true" />  -->
+                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">  
+                                            <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="Are you sure you want to republish your dataset?"  header="Publish Dataset"  widgetVar="releaseDraft">  
+                                        <p:confirmDialog message="Are you sure you want to republish your dataset?" header="Publish Dataset" widgetVar="releaseDraft">  
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Select version number:
                                                 <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">  
@@ -174,12 +174,12 @@
                                             <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Due to the nature of changes to the current draft this will be a major release (#{DatasetPage.datasetNextMajorVersion})
                                             </ui:fragment> 
-                                            <p:commandButton value="Continue"  onclick="releaseDraft.hide()"  action="#{DatasetPage.releaseDraft}" >
+                                            <p:commandButton value="Continue" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
-                                     <p:confirmDialog message="This dataset may not be published because its dataverse has not been published."  header="May not publish"  widgetVar="mayNotRelease">                                           
-                                    </p:confirmDialog>
+                                        <p:confirmDialog message="This dataset may not be published because its dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
+                                        </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
                                                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
@@ -204,36 +204,31 @@
                                             </button>
                                         </div>
                                     </ui:fragment>
-                                    <p:confirmDialog message="Unfortunately, Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!"  header="Email Dataset Contact"  widgetVar="contact_confirmation">                                           
+                                    <p:confirmDialog message="Unfortunately, Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!" header="Email Dataset Contact" widgetVar="contact_confirmation">                                           
                                     </p:confirmDialog>
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title" class="">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                         <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation">
-                                            <span>#{DatasetPage.displayCitation}</span>
-                                        </div>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                        <div id="disclaimer">            
-                                            <span>
-                                                Unpublished - This citation will replaced "DRAFT VERSION" with V1 once it is published.                                                
-                                            </span>
-                                        </div>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft}">
-                                        <div id="disclaimerArchive">            
-                                                This citation will replace "DRAFT VERSION" with the selected version once it is published.                                                
+                                            <span>#{DatasetPage.displayCitation}</span> 
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft}">
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
                                         <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
-                                    <ui:fragment  rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation or !empty DatasetPage.datasetVersionUI.notes.value}">
-                                        <div class="panel panel-default" style="margin-top:1em;">                                       <div class="panel-body">
+                                    <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation or !empty DatasetPage.datasetVersionUI.notes.value}">
+                                        <div class="panel panel-default" style="margin-top:1em;">
+                                            <div class="panel-body">
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
                                                     <span id="keywords">
                                                         <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Keyword(s)</a>
