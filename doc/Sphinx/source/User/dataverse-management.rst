@@ -52,7 +52,7 @@ will be made public.
 **Important Note**: Once a dataverse is made public it can no longer be unpublished.
 
 
-.. |image1| image:: ./img/Dataverses-Datasets.png
+.. |image1| image:: ./img/Dataverse-Diagram.png
 
 
 

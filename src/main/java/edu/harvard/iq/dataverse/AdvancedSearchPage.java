@@ -128,40 +128,78 @@ public class AdvancedSearchPage {
              * see also https://redmine.hmdc.harvard.edu/issues/3745
              */
             if (!dvFieldName.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.DATAVERSE_NAME + ":" + dvFieldName);
+                queryBuilder = constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName);
             }
 
             if (!dvFieldAffiliation.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.DATAVERSE_AFFILIATION + ":" + dvFieldAffiliation);
+                queryBuilder = constructQuery(SearchFields.DATAVERSE_AFFILIATION, dvFieldAffiliation);
             }
 
             if (!dvFieldDescription.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.DATAVERSE_DESCRIPTION + ":" + dvFieldDescription);
+                queryBuilder = constructQuery(SearchFields.DATAVERSE_DESCRIPTION, dvFieldDescription);
             }
 
             if (!fileFieldName.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.FILE_NAME + ":" + fileFieldName);
+                queryBuilder = constructQuery(SearchFields.FILE_NAME, fileFieldName);
             }
 
             if (!fileFieldDescription.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.FILE_DESCRIPTION + ":" + fileFieldDescription);
+                queryBuilder = constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription);
             }
 
             if (!fileFieldFiletype.isEmpty()) {
-                queryBuilder = new StringBuilder();
-                queryBuilder.append(SearchFields.FILE_TYPE_SEARCHABLE + ":" + fileFieldFiletype);
+                queryBuilder = constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype);
             }
 
         }
 
         return "/dataverse.xhtml?q=" + queryBuilder.toString().trim() + "faces-redirect=true";
     }
-    
+
+
+    /**
+     * @todo have the code that operates on dataset fields call into this?
+     */
+    private StringBuilder constructQuery(String solrField, String userSuppliedQuery) {
+
+        StringBuilder queryBuilder = new StringBuilder();
+        String delimiter = "[\"]+";
+
+        List<String> queryStrings = new ArrayList();
+
+        if (userSuppliedQuery != null && !userSuppliedQuery.equals("")) {
+            if (userSuppliedQuery.contains("\"")) {
+                String[] tempString = userSuppliedQuery.split(delimiter);
+                for (int i = 1; i < tempString.length; i++) {
+                    if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
+                        queryStrings.add(solrField + ":" + "\"" + tempString[i].trim() + "\"");
+                    }
+                }
+            } else {
+                StringTokenizer st = new StringTokenizer(userSuppliedQuery);
+                while (st.hasMoreElements()) {
+                    queryStrings.add(solrField + ":" + st.nextElement());
+                }
+            }
+        }
+        
+        if (queryStrings.size() > 1) {
+            queryBuilder.append("(");
+        }
+        
+        for (int i = 0; i < queryStrings.size(); i++) {
+            if (i > 0) {
+                queryBuilder.append(" ");
+            }
+            queryBuilder.append(queryStrings.get(i));
+        }
+        
+        if (queryStrings.size() > 1) {
+            queryBuilder.append(")");
+        }
+
+        return queryBuilder;
+    }
 
     public Dataverse getDataverse() {
         return dataverse;

@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -139,10 +141,12 @@ public class IndexServiceBean {
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getPublicationDate()));
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (dataverse.getCreator() != null) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
+            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
              * @todo: replace this fake version of granting users access to
@@ -229,7 +233,7 @@ public class IndexServiceBean {
          */
         String solrIdPublishedStudy = "dataset_" + dataset.getId();
         StringBuilder sb = new StringBuilder();
-        sb.append("rationale:\n");
+        sb.append("rationale:\n"); 
         List<DatasetVersion> versions = dataset.getVersions();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
@@ -337,14 +341,14 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
-        Date sortByDate = new Date();
+        Date datasetSortByDate = new Date();
         Date majorVersionReleaseDate = dataset.getMostRecentMajorVersionReleaseDate();
         if (majorVersionReleaseDate != null) {
             if (true) {
                 String msg = "major release date found: " + majorVersionReleaseDate.toString();
                 logger.info(msg);
             }
-            sortByDate = majorVersionReleaseDate;
+            datasetSortByDate = majorVersionReleaseDate;
         } else {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             Date createDate = dataset.getCreateDate();
@@ -353,14 +357,15 @@ public class IndexServiceBean {
                     String msg = "can't find major release date, using create date: " + createDate;
                     logger.info(msg);
                 }
-                sortByDate = createDate;
+                datasetSortByDate = createDate;
             } else {
                 String msg = "can't find major release date or create date, using \"now\"";
                 logger.info(msg);
-                sortByDate = new Date();
+                datasetSortByDate = new Date();
             }
         }
-        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
+        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
+        solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
@@ -395,20 +400,10 @@ public class IndexServiceBean {
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
+        String parentDatasetTitle = "TBD";
         if (datasetVersion != null) {
 
-
-                String citation = null;
-                try {
-                    citation = dataset.getCitation(false, datasetVersion);
-                    if (citation != null) {
-                        solrInputDocument.addField(SearchFields.CITATION, citation);
-                    }
-
-                } catch (NullPointerException ex) {
-                    logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
-                }
-
+            solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
@@ -458,6 +453,11 @@ public class IndexServiceBean {
                             solrInputDocument.addField(SearchFields.AFFILIATION, dsf.getValues());
                         } else if (dsf.getDatasetFieldType().getName().equals("title")) {
                             // datasets have titles not names but index title under name as well so we can sort datasets by name along dataverses and files
+                            List<String> possibleTitles = dsf.getValues();
+                            String firstTitle = possibleTitles.get(0);
+                            if (firstTitle != null) {
+                                parentDatasetTitle = firstTitle;
+                            }
                             solrInputDocument.addField(SearchFields.NAME_SORT, dsf.getValues());
                         }
                         if (dsfType.isControlledVocabulary()) {
@@ -600,13 +600,54 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
             datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
-            datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, sortByDate);
+            /**
+             * for rules on sorting files see
+             * https://docs.google.com/a/harvard.edu/document/d/1DWsEqT8KfheKZmMB3n_VhJpl9nIxiUjai_AIQPAjiyA/edit?usp=sharing
+             * via https://redmine.hmdc.harvard.edu/issues/3701
+             */
+            Date fileSortByDate = new Date();
+            DataFile datafile = fileMetadata.getDataFile();
+            if (datafile != null) {
+                boolean fileHasBeenReleased = datafile.isReleased();
+                if (fileHasBeenReleased) {
+                    logger.info("indexing file with filePublicationTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                    Timestamp filePublicationTimestamp = datafile.getPublicationDate();
+                    if (filePublicationTimestamp != null) {
+                        fileSortByDate = filePublicationTimestamp;
+                    } else {
+                        String msg = "filePublicationTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                        logger.info(msg);
+                    }
+                } else {
+                    logger.info("indexing file with fileCreateTimestamp. " + fileMetadata.getId() + " (file id " + datafile.getId() + ")");
+                    Timestamp fileCreateTimestamp = datafile.getCreateDate();
+                    if (fileCreateTimestamp != null) {
+                        fileSortByDate = fileCreateTimestamp;
+                    } else {
+                        String msg = "fileCreateTimestamp was null for fileMetadata id " + fileMetadata.getId() + " (file id " + datafile.getId() + ")";
+                        logger.info(msg);
+                    }
+                }
+            }
+            if (fileSortByDate == null) {
+                if (datasetSortByDate != null) {
+                    logger.info("fileSortByDate was null, assigning datasetSortByDate");
+                    fileSortByDate = datasetSortByDate;
+                } else {
+                    logger.info("fileSortByDate and datasetSortByDate were null, assigning 'now'");
+                    fileSortByDate = new Date();
+                }
+            }
+            datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, fileSortByDate);
+            datafileSolrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(fileSortByDate));
+
             if (majorVersionReleaseDate == null) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             }
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
+                addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
                 DataverseUser creator = fileMetadata.getDataFile().getOwner().getCreator();
@@ -648,9 +689,8 @@ public class IndexServiceBean {
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
             datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-            if (!fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle().isEmpty()) {
-                datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, fileMetadata.getDataFile().getOwner().getLatestVersion().getTitle());
-            }
+
+            datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
             
             // If this is a tabular data file -- i.e., if there are data
             // variables associated with this file, we index the variable 
@@ -924,6 +964,16 @@ public class IndexServiceBean {
         String response = "Successfully deleted dataset draft " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.info(response);
         return response;
+    }
+
+    public String convertToFriendlyDate(Date dateAsDate) {
+        if (dateAsDate == null) {
+            dateAsDate = new Date();
+        }
+        //  using DateFormat.MEDIUM for May 5, 2014 to match what's in DVN 3.x
+        DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        String friendlyDate = format.format(dateAsDate);
+        return friendlyDate;
     }
 
 }

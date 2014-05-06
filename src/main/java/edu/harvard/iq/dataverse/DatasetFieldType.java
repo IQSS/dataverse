@@ -185,7 +185,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             throw new IllegalStateException("getControlledVocabularyValue() called on a non-controlled vocabulary type.");
         }
         if ( controlledVocabularyValuesByStrValue == null ) {
-            controlledVocabularyValuesByStrValue = new TreeMap<>();
+            controlledVocabularyValuesByStrValue = new TreeMap<>();               
             for ( ControlledVocabularyValue cvv : getControlledVocabularyValues() ) {
                 controlledVocabularyValuesByStrValue.put( cvv.getStrValue(), cvv);
             }

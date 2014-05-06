@@ -88,7 +88,6 @@ public class SearchServiceBean {
         Map<String,String> solrFieldsToHightlightOnMap = new HashMap<>();
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
-        solrFieldsToHightlightOnMap.put(SearchFields.CITATION, "Citation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
         /**
@@ -273,10 +272,12 @@ public class SearchServiceBean {
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
 //            ArrayList titles = (ArrayList) solrDocument.getFieldValues(SearchFields.TITLE);
             String title = (String) solrDocument.getFieldValue(titleSolrField);
+            Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
 //            logger.info("titleSolrField: " + titleSolrField);
 //            logger.info("title: " + title);
             String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_MIME);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
+            String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
             List<String> matchedFields = new ArrayList<>();
             List<Highlight> highlights = new ArrayList<>();
             Map<SolrField, Highlight> highlightsMap = new HashMap<>();
@@ -323,6 +324,7 @@ public class SearchServiceBean {
             solrSearchResult.setType(type);
             solrSearchResult.setNameSort(nameSort);
             solrSearchResult.setReleaseOrCreateDate(release_or_create_date);
+            solrSearchResult.setDateToDisplayOnCard(dateToDisplayOnCard);
             solrSearchResult.setMatchedFields(matchedFields);
             solrSearchResult.setHighlightsAsList(highlights);
             solrSearchResult.setHighlightsMap(highlightsMap);
@@ -335,6 +337,7 @@ public class SearchServiceBean {
             } else if (type.equals("datasets")) {
                 String datasetDescription = (String) solrDocument.getFieldValue(SearchFields.DATASET_DESCRIPTION);
                 solrSearchResult.setDescriptionNoSnippet(datasetDescription);
+                solrSearchResult.setDatasetVersionId(datasetVersionId);
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);

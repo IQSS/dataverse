@@ -66,13 +66,13 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                     <li>
-                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Files (Upload + Edit)" />
                                                         </p:commandLink>   
                                                     </li>
                                                     <li>
-                                                        <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                                        <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>   
@@ -82,19 +82,27 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
-                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
-                                            <li>
-                                                <h:outputLink value="/dataset.xhtml?id=#{DatasetPage.dataset.id}"  >
-                                                                <h:outputText value="Current Version"/>
-                                                            </h:outputLink>
-                                            </li>
-                                    </ui:fragment> 
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <div class="btn-group">
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
+                                                <button type="button" class="btn btn-default" onclick="confirmation.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>                                            
+                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
+                                                <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released }">
+                                                <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                </button>
+                                            </ui:fragment>
+                                            
+                                            <!--<div class="btn-group">
                                                 <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                         <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
@@ -104,23 +112,23 @@
                                                     </ui:fragment>
                                                 </button>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
-                                                            <a  style="pointer-events: none; color:red;">
+                                                            <a style="pointer-events: none; color:red;">
                                                                 <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
                                                                 <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. To publish it click 'Publish dataset' link</span>
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a style="pointer-events: none; color:green;">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Dataset" onclick="confirmation.show()"  /></span>
+                                                            <a style="pointer-events: none; color:green;" onclick="confirmation.show()">
+                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                                <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
                                                             </a>
                                                         </li>                                                    
                                                     </ul>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and !DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
                                                             <a  style="pointer-events: none; color:red;">
                                                                 <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
@@ -130,8 +138,7 @@
                                                     </ul>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;"  >
-
+                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
                                                             <a style="pointer-events: none; color:green;">
                                                                 <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
@@ -140,12 +147,15 @@
                                                         </li>   
                                                         <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
                                                             <li>
-                                                                <span style="display:block;color:#777;font-size:small;"><p:commandLink value="Publish Draft" onclick="releaseDraft.show()"  /></span>
+                                                                <a style="cursor: pointer; cursor: hand; color:green;" onclick="releaseDraft.show()">
+                                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
+                                                                    <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
+                                                                </a>
                                                             </li>
                                                         </ui:fragment>
                                                     </ul>
                                                 </ui:fragment>
-                                            </div>
+                                            </div>-->
                                         </div>
                                         <p:growl id="messages" showDetail="true" />  
                                         <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'."  header="Publish Dataset"  widgetVar="confirmation">  
@@ -157,7 +167,7 @@
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Select version number:
                                                 <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">  
-                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion}) " itemValue="1" />  
+                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />  
                                                     <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />   
                                                 </p:selectOneRadio>  
                                             </ui:fragment> 
@@ -168,6 +178,24 @@
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
+                                     <p:confirmDialog message="This dataset may not be published because its dataverse has not been published."  header="May not publish"  widgetVar="mayNotRelease">                                           
+                                    </p:confirmDialog>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
+                                                <h:outputText value="View Unpublished Version"/>
+                                            </h:outputLink>
+                                        </div>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft 
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                        <div style="float:right; margin-left:1em;">
+                                            <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}">
+                                                <h:outputText value="View Published Version"/>
+                                            </h:outputLink>
+                                        </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
@@ -181,7 +209,8 @@
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title" class="clearfix">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <span id="title" class="">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation">
@@ -291,9 +320,9 @@
                                     <!-- View -->
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@all">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
                                             </p:commandLink>
@@ -306,7 +335,7 @@
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview&#34; /&gt;">
+                                                <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;preeeeeeeeeeeeeeee&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
@@ -315,7 +344,7 @@
                                             <p:graphicImage value="/resources/images/icon_file.png" rendered="#{!fileMetadata.dataFile.image}"/>
 
                                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
-                                                <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}"/>
+                                                <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
                                                 <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                         </p:column>
@@ -412,9 +441,9 @@
 
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset.owner).canIssueCommand('UpdateDatasetCommand')}">
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@all">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
                                             </p:commandLink>
@@ -455,7 +484,7 @@
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
                         </p:commandButton>
-                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@all"  rendered="#{DatasetPage.editMode != 'CREATE'}">
+                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />

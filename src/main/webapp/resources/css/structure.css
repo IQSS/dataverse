@@ -175,7 +175,7 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
-#title {display:block;font-size:1.5em;font-weight:bold; margin-bottom:.5em;}
+#title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
 #citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
