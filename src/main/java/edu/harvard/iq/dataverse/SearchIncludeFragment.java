@@ -29,6 +29,8 @@ public class SearchIncludeFragment {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    @EJB
     DataFileServiceBean dataFileService;
     @EJB
     PermissionServiceBean permissionService;
@@ -315,19 +317,15 @@ public class SearchIncludeFragment {
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
-                    Dataset dataset = datasetService.find(solrSearchResult.getEntityId());
-                    if (dataset != null) {
-                                String citation = null;
-                                try {
-                                    citation = dataset.getCitation();
-                                } catch (NullPointerException ex) {
-                                    logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
-                                }
+                    Long datasetVersionId = solrSearchResult.getDatasetVersionId();
+                    if (datasetVersionId != null) {
+                        DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                        if (datasetVersion != null) {
+                            String citation = datasetVersion.getCitation();
+                            if (citation != null) {
                                 solrSearchResult.setCitation(citation);
-                                String solrId = solrSearchResult.getId();
-                                solrSearchResult.setStatus(solrId + " " + getCreatedOrReleasedDate(dataset, solrSearchResult.getReleaseOrCreateDate()));
-                    } else {
-                        logger.info("couldn't find dataset id " + solrSearchResult.getEntityId() + ". Stale Solr data? Time to re-index?");
+                            }
+                        }
                     }
                 } else if (solrSearchResult.getType().equals("files")) {
                     DataFile dataFile = dataFileService.find(solrSearchResult.getEntityId());

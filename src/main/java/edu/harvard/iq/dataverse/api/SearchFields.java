@@ -48,7 +48,6 @@ public class SearchFields {
      * "Author Affiliation" can be multivalued.
      */
     public static final String AFFILIATION = "affiliation_ss";
-    public static final String CITATION = "citation_t";
     /**
      * @todo: use a field called "author" instead. Solr default has "author" as
      * "text_general" so the field is tokenized ("Foo Bar" becomes "foo" "bar"
@@ -101,5 +100,6 @@ public class SearchFields {
     public static final String PARENT_ID = "parentid";
 
     public static final String DATASET_DESCRIPTION = "dsDescription";
+    public static final String DATASET_VERSION_ID = "dataset_version_id_l";
 
 }

@@ -517,8 +517,7 @@
                                         </h:outputLink>
                                     </div>
 
-                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.citationHighlightSnippet}" escape="false" styleClass="resultDatasetCitationBlock" rendered="#{result.citationHighlightSnippet != null}"/>
+                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock"/>
 
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">

@@ -45,6 +45,7 @@ public class SolrSearchResult {
 //    private boolean statePublished;
     private boolean unpublishedState;
     private boolean draftState;
+    private long datasetVersionId;
 
 //    public boolean isStatePublished() {
 //        return statePublished;
@@ -92,17 +93,6 @@ public class SolrSearchResult {
 
     public String getNameHighlightSnippet() {
         Highlight highlight = highlightsAsMap.get(SearchFields.NAME);
-        if (highlight != null) {
-            String firstSnippet = highlight.getSnippets().get(0);
-            if (firstSnippet != null) {
-                return firstSnippet;
-            }
-        }
-        return null;
-    }
-
-    public String getCitationHighlightSnippet() {
-        Highlight highlight = highlightsAsMap.get(SearchFields.CITATION);
         if (highlight != null) {
             String firstSnippet = highlight.getSnippets().get(0);
             if (firstSnippet != null) {
@@ -239,6 +229,7 @@ public class SolrSearchResult {
              * @todo: don't hard code this
              */
             typeSpecificFields.add("title_s", this.title);
+            typeSpecificFields.add(SearchFields.DATASET_VERSION_ID, this.datasetVersionId);
         } else if (this.type.equals("files")) {
             typeSpecificFields.add(SearchFields.NAME, this.name);
             typeSpecificFields.add(SearchFields.FILE_TYPE_MIME, this.filetype);
@@ -330,7 +321,6 @@ public class SolrSearchResult {
                     && !field.equals(SearchFields.DESCRIPTION)
                     && !field.equals(SearchFields.DATASET_DESCRIPTION)
                     && !field.equals(SearchFields.AFFILIATION)
-                    && !field.equals(SearchFields.CITATION)
                     && !field.equals("title")) {
                 filtered.add(highlight);
             }
@@ -412,6 +402,14 @@ public class SolrSearchResult {
 
     public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
         this.dateToDisplayOnCard = dateToDisplayOnCard;
+    }
+
+    public long getDatasetVersionId() {
+        return datasetVersionId;
+    }
+
+    public void setDatasetVersionId(long datasetVersionId) {
+        this.datasetVersionId = datasetVersionId;
     }
 
 }

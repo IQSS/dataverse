@@ -402,18 +402,7 @@ public class IndexServiceBean {
         DatasetVersion datasetVersion = indexableDataset.getDatasetVersion();
         if (datasetVersion != null) {
 
-
-                String citation = null;
-                try {
-                    citation = dataset.getCitation(false, datasetVersion);
-                    if (citation != null) {
-                        solrInputDocument.addField(SearchFields.CITATION, citation);
-                    }
-
-                } catch (NullPointerException ex) {
-                    logger.info("Caught exception trying to get citation for dataset " + dataset.getId() + ". : " + ex);
-                }
-
+            solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
