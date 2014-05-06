@@ -158,7 +158,7 @@
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Select version number:
                                                 <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">  
-                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion}) " itemValue="1" />  
+                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />  
                                                     <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />   
                                                 </p:selectOneRadio>  
                                             </ui:fragment> 
@@ -173,7 +173,7 @@
                                     <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
                                                        and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionsId=#{DatasetPage.dataset.latestVersion.id}">
+                                            <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
                                                 <h:outputText value="View Unpublished Version"/>
                                             </h:outputLink>
                                         </div>
