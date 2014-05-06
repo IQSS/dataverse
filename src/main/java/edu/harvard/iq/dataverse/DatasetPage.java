@@ -235,6 +235,7 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             editVersion = dataset.getLatestVersion();
+
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(editVersion);
             //On create set pre-populated fields
@@ -262,6 +263,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
+            displayVersion = editVersion;
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }

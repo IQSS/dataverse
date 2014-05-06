@@ -5,11 +5,11 @@ A Dataset in Dataverse is a container for your data, documentation, code, and th
 
 |image1|
 
-Add Dataset
+New Dataset
 ====================
 
 #. Navigate to the dataverse in which you want to add a Dataset (or in the "root" dataverse). 
-#. Click on the "Add Data" button and select "Add Dataset" in the dropdown menu.
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, etc)
 #. Scroll down to "Files" tab and click on "Select Files to Add" to add all the relevant files to your Dataset. 
@@ -33,11 +33,13 @@ Go to your Dataset page and click on the "Edit Dataset" button. There you will h
 Publish Dataset
 ====================
 
-When you publish a Dataset, you make it available to the public. Users can
-browse it or search for it. Once your Dataset is ready to go public, go to your Dataset page, 
-click on the "Unpublished" button on the right hand side of the page which should indicate: 
-"This Dataset is unpublished. To publish it click 'Publish Dataset' link."
+When you publish a Dataset, you make it available to the public so that other users can
+browse or search for it. Once your Dataset is ready to go public, go to your Dataset page and click on the 
+"Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually 
+Publish since once a Dataset is made public it can no longer be unpublished. 
 
-Important Note: Once a Dataset is published it **cannot be unpublished**; it can be archived instead.
+Note: Prior to publishing your Dataset the Data Citation will indicate that this is a draft but the "DRAFT VERSION" text
+will be removed as soon as you Publish.
+
 
 .. |image1| image:: ./img/DatasetDiagram.png

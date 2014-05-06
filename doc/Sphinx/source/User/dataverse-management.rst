@@ -44,12 +44,9 @@ where you will be presented with the following editing options.
 Publish Your Dataverse
 =================================================================
 
-Once your dataverse is ready to go public, go to your dataverse page, click on the "Unpublished" button on the right 
-hand side of the page which should indicate: 
-"This dataverse is Unpublished. To publish it click 'Publish dataverse' link." Once you click "Publish dataverse" it
-will be made public.
-
-**Important Note**: Once a dataverse is made public it can no longer be unpublished.
+Once your dataverse is ready to go public, go to your dataverse page, click on the "Publish" button on the right 
+hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataverse
+is made public it can no longer be unpublished.
 
 
 .. |image1| image:: ./img/Dataverse-Diagram.png

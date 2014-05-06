@@ -11,7 +11,7 @@
 
     <h:body> 
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{empty DatasetPage.dataset.latestVersion.title ? 'Add New Dataset' : DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.displayVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.displayVersion}"/>
@@ -89,17 +89,17 @@
                                         <div style="float:right; margin-left:1em;">
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>                                            
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>
                                             
@@ -475,7 +475,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Add Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
                         </p:commandButton>
                         <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
