@@ -72,10 +72,11 @@
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
                             <p:panelGrid columns="2">
                                 <ui:fragment>
-                                    <p:inputText id="name" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
-                                    <p:outputLabel value="Dataverse" for="name"/>
-                                    <h:outputText value="*" style="color: #B94A48;"/>
-                                    <p:watermark for="name" value="Enter name..."/>
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <p:inputText id="name" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
+                                        <label class="control-label" for="name">Dataverse <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                        <p:watermark for="name" value="Enter name..."/>
+                                    </div>
                                 </ui:fragment>
                                 <p:message for="name"/>
                             </p:panelGrid>
@@ -97,28 +98,22 @@
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
-                                <div class="col-sm-2 control-label">
-                                    <p:outputLabel value="Alias" for="alias"/> <h:outputText value="*" style="color: #B94A48;"/>
-                                </div>
-                                <div class="col-sm-10">
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">Alias <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
                                 </div>
-                                <div class="col-sm-2 control-label">
-                                    <p:outputLabel value="E-mail" for="contactEmail"/> <h:outputText value="*" style="color: #B94A48;"/>
-                                </div>
-                                <div class="col-sm-10">
+                                <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">E-mail <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
                                         <p:message for="contactEmail"/>
                                     </p:panelGrid>
                                 </div>
-                                <div class="col-sm-2 control-label">
-                                    <p:outputLabel value="Affiliation" for="affiliation"/>
-                                </div>
-                                <div class="col-sm-10">
+                                <label class="col-sm-3 control-label" for="affiliation" style="white-space:nowrap;">Affiliation</label>
+                                <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                         <p:message for="affiliation"/>
@@ -126,9 +121,7 @@
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group">
-                                <div class="col-sm-2 control-label">
-                                    <p:outputLabel value="Description" for="description"/>
-                                </div>
+                                <label class="col-sm-3 control-label" for="description">Description</label>
                                 <div class="col-sm-8">
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                      rows="5" cols="50"
@@ -168,12 +161,12 @@
 
                     <!-- Description Panel / View Mode -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
-                        <div class="clearfix" style="margin-bottom:1.5em;">
-                            <div id="actionButtonBlock" style="float:right;">
+                        
+                            <div id="actionButtonBlock" class="clearfix" style="margin-bottom:1em;">
                                 <!-- Edit Button -->
                                 <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
                                                          permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')}">
-                                    <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
+                                    <div class="pull-right" style="margin-left:1em;">
                                         <div class="btn-group">
                                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                 <span class="glyphicon glyphicon-pencil"/> Edit Dataverse <span class="caret"></span>
@@ -218,7 +211,12 @@
                                 <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
                                                          permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')}">
                                     <div style="float:right; margin-left:1em;">
-                                        <div class="btn-group">
+                                        
+                                        <button type="button" class="btn btn-default" onclick="confirmation.show()">
+                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataverse
+                                        </button>
+                                        
+                                        <!-- <div class="btn-group">
                                             <button type="button" id="releaseDataverse" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
                                                 <ui:fragment rendered="#{!DataversePage.dataverse.released}">
                                                     <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
@@ -279,7 +277,7 @@
                                                     </li>
                                                 </ul>
                                             </ui:fragment>
-                                        </div>
+                                        </div>-->
                                     </div>
                                 </ui:fragment>
                                     <ui:fragment rendered="#{empty DataversePage.editMode}">
@@ -293,11 +291,11 @@
                                     </p:confirmDialog>                                                                
                             </div>
                             <ui:fragment rendered="#{empty DataversePage.editMode}">
-                                <div>
+                                <div style="margin-bottom:1em;">
                                     <h:outputText value="#{DataversePage.dataverse.description}"/>
                                 </div>
                             </ui:fragment>
-                        </div>
+                        
                     </ui:fragment>
                     
                     <!--<p:growl id="messages" showDetail="true" />-->
