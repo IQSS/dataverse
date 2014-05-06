@@ -24,9 +24,9 @@
                                     setCount(this, elem);
                                 });
                                 function setCount(src, elem) {
-									if (typeof src === "undefined") {
-									    return;
-									}
+                                    if (typeof src === "undefined") {
+                                        return;
+                                    }
                                     var chars = src.value.length;
                                     elem.html(limit - chars);
                                 }
@@ -298,7 +298,7 @@
                         <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                             <h:outputText value="Use Facets from Parent Dataverse? " />
                             <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
-                                <p:ajax update="@all" listener="#{DataversePage.editFacets}"/>
+                                <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
                             </p:selectBooleanCheckbox>
                         </ui:fragment>
 
