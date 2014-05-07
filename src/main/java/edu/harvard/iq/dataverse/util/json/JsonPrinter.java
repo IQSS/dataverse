@@ -33,6 +33,8 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 
 /**
  * Convert objects to Json.
@@ -225,12 +227,12 @@ public class JsonPrinter {
     
 	public static JsonObjectBuilder json( DatasetField dfv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder();
-		bld.add( "id", dfv.getId() );
 		if ( dfv.isEmpty() ) {
 			bld.addNull("value");
 		} else {
-            // TODO traverse the fields
-            bld.add( "value", dfv.getDisplayValue() );
+            JsonArrayBuilder fieldArray = Json.createArrayBuilder();
+            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
+            bld.add( "value", fieldArray.build().getJsonObject(0) );
 		}
 		
 		return bld;
@@ -319,66 +321,63 @@ public class JsonPrinter {
 		return (d==null) ? null : dateFormat.format(d);
 	}
     
-
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
         Deque<JsonArrayBuilder>  valueArrStack = new LinkedList<>();
-        Deque<JsonArrayBuilder>  fieldAggregator = new LinkedList<>();
-
-        public DatasetFieldsToJson(JsonArrayBuilder fieldsArray) {
-            fieldAggregator.push(fieldsArray);
+        
+        DatasetFieldsToJson( JsonArrayBuilder result ) {
+            valueArrStack.push(result);
         }
-
+        
         @Override
         public void startField(DatasetField f) {
             objectStack.push( jsonObjectBuilder() );
+            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            valueArrStack.push(Json.createArrayBuilder());
+            
             DatasetFieldType typ = f.getDatasetFieldType();
             objectStack.peek().add("typeName", typ.getName() );
             objectStack.peek().add("multiple", typ.isAllowMultiples());
             objectStack.peek().add("typeClass", typeClassString(typ) );
-            if ( typ.isAllowMultiples() ) {
-                valueArrStack.push(Json.createArrayBuilder());
-            }
         }
 
         @Override
         public void endField(DatasetField f) {
-            if ( f.getDatasetFieldType().isAllowMultiples() ) {
-                objectStack.peek().add("value", valueArrStack.pop());
+            JsonObjectBuilder jsonField = objectStack.pop();
+            JsonArray jsonValues = valueArrStack.pop().build();
+            if ( ! jsonValues.isEmpty() ) {
+                jsonField.add("value",
+                    f.getDatasetFieldType().isAllowMultiples() ? jsonValues
+                                                               : jsonValues.get(0) );
+                valueArrStack.peek().add(jsonField);
             }
-            fieldAggregator.peek().add(objectStack.pop());
         }
 
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
-            if ( dsfv.getDatasetField().getDatasetFieldType().isAllowMultiples() ) {
-                valueArrStack.peek().add( dsfv.getValue() );
-            } else {
-                objectStack.peek().add("value", dsfv.getValue());
-            }
+            valueArrStack.peek().add( dsfv.getValue() );
         }
 
         @Override
         public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-            if ( cvv.getDatasetFieldType().isAllowMultiples() ) {
-                valueArrStack.peek().add( cvv.getStrValue() );
-            } else {
-                objectStack.peek().add("value", cvv.getStrValue());
-            }
+            valueArrStack.peek().add( cvv.getStrValue() );
         }
 
         @Override
         public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
-            fieldAggregator.push( Json.createArrayBuilder() );
+            valueArrStack.push( Json.createArrayBuilder() );
         }
 
         @Override
         public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
-            if ( dsfcv.getParentDatasetField().getDatasetFieldType().isAllowMultiples() ) {
-                valueArrStack.peek().add( fieldAggregator.pop() );
-            } else {
-                objectStack.peek().add("value", fieldAggregator.pop() );
+            JsonArray jsonValues = valueArrStack.pop().build();
+            if ( ! jsonValues.isEmpty() ) {
+                JsonObjectBuilder jsonField = jsonObjectBuilder();
+                for ( JsonObject jobj : jsonValues.getValuesAs(JsonObject.class) ) {
+                    jsonField.add( jobj.getString("typeName"), jobj );
+                }
+                valueArrStack.peek().add( jsonField );
             }
         }
     }
