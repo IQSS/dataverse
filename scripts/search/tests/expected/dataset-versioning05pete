@@ -2,14 +2,14 @@
 {
     "q":"trees",
     "fq_provided":"[]",
-    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user6 OR {!join from=groups_s to=perms_ss}id:group_2)]",
-    "total_count":5,
+    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user1)]",
+    "total_count":8,
     "start":0,
-    "count_in_response":5,
-    "items":"[datafile_18_draft:trees.png:18, dataset_17_draft:Rings of Trees and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
+    "count_in_response":8,
+    "items":"[datafile_18:trees.png:18, datafile_18_draft:trees.png:18, datafile_19_draft:trees2.png:19, dataset_17:Rings of Trees and Other Observations:17, dataset_17_draft:Rings of Conifers and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
     "relevance":[
         {
-            "id":"datafile_18_draft",
+            "id":"datafile_18",
             "matched_fields":"[description, filename_without_extension_en]",
             "detailsArray":[
                 {
@@ -25,7 +25,34 @@
             ]
         },
         {
-            "id":"dataset_17_draft",
+            "id":"datafile_18_draft",
+            "matched_fields":"[description, filename_without_extension_en]",
+            "detailsArray":[
+                {
+                    "description":[
+                        "The first picture of <span class=\"search-term-match\">trees</span> I uploaded."
+                    ]
+                },
+                {
+                    "filename_without_extension_en":[
+                        "<span class=\"search-term-match\">trees</span>"
+                    ]
+                }
+            ]
+        },
+        {
+            "id":"datafile_19_draft",
+            "matched_fields":"[description]",
+            "detailsArray":[
+                {
+                    "description":[
+                        "Another <span class=\"search-term-match\">tree</span> image."
+                    ]
+                }
+            ]
+        },
+        {
+            "id":"dataset_17",
             "matched_fields":"[dsDescription, title, notesText, authorAffiliation, authorName, keyword, contributorName]",
             "detailsArray":[
                 {
@@ -36,6 +63,42 @@
                 {
                     "title":[
                         "Rings of <span class=\"search-term-match\">Trees</span> and Other Observations"
+                    ]
+                },
+                {
+                    "notesText":[
+                        "Many notes have been taken about <span class=\"search-term-match\">trees</span> over the years."
+                    ]
+                },
+                {
+                    "authorAffiliation":[
+                        "<span class=\"search-term-match\">Trees</span> Inc."
+                    ]
+                },
+                {
+                    "authorName":[
+                        "<span class=\"search-term-match\">Tree</span>, Tony"
+                    ]
+                },
+                {
+                    "keyword":[
+                        "<span class=\"search-term-match\">trees</span>"
+                    ]
+                },
+                {
+                    "contributorName":[
+                        "Edward <span class=\"search-term-match\">Trees</span> Jr."
+                    ]
+                }
+            ]
+        },
+        {
+            "id":"dataset_17_draft",
+            "matched_fields":"[dsDescription, notesText, authorAffiliation, authorName, keyword, contributorName]",
+            "detailsArray":[
+                {
+                    "dsDescription":[
+                        "<span class=\"search-term-match\">Trees</span> have rings. <span class=\"search-term-match\">Trees</span> can be tall."
                     ]
                 },
                 {
