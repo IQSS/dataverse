@@ -460,18 +460,30 @@
 
                                 </p:tab>
 
-                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">
-                                        <p:column>
+                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">                                       
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">                                        
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Title
+                                            </f:facet>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText value="#{versionTab.title}" />
                                                 <f:param name="id" value="#{versionTab.dataset.id}" />
                                                 <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
-                                        <p:column>
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Version
+                                            </f:facet>
                                             <h:outputText rendered="#{!versionTab.released}" id="versionStatusOutput" value="#{versionTab.versionState}" />
                                             <h:outputText rendered="#{versionTab.released}" id="versionNumberOutput" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                        </p:column>
+                                        <p:column  > 
+                                            <f:facet name="header">
+                                                Version Date
+                                            </f:facet>
+                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
