@@ -13,9 +13,9 @@
 	coverage.Spectral.Wavelength	Wavelength Range	The minimum and maximum wavelength of the spectral bandpass.		float	9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Spectral.MinimumWavelength	Minimum (m)	The minimum wavelength of the spectral bandpass, in meters.		float	10	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
 	coverage.Spectral.MaximumWavelength	Maximum (m)	The maximum wavelength of the spectral bandpass, in meters.		float	11	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Spectral.Wavelength	astrophysics
-	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		date	12	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
-	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
-	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
+	coverage.Temporal	Dataset Date Range	 Time period covered by the data.		date	12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		astrophysics
+	coverage.Temporal.StartTime	Start	Dataset Start Date	YYYY-MM-DD	date	13	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
+	coverage.Temporal.StopTime	End	Dataset End Date	YYYY-MM-DD	date	14	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	coverage.Temporal	astrophysics
 	coverage.Spatial	Sky Coverage	The sky coverage of the data object.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	coverage.Depth	Depth Coverage	The (typical) depth coverage, or sensitivity, of the data object in Jy.		float	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
 	coverage.ObjectDensity	Object Density	The (typical) density of objects, catalog entries, telescope pointings, etc., on the sky, in number per square degree.		float	17	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		astrophysics
