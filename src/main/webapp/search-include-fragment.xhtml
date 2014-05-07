@@ -192,6 +192,7 @@
                                 <h:outputText value="mode:#{SearchIncludeFragment.mode} "/>
                                 <h:outputText value="sort=#{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}"/><br/>
                                 <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}"/><br/>
+                                <h:outputText value="errorFromSolr: #{SearchIncludeFragment.errorFromSolr}" rendered="#{SearchIncludeFragment.errorFromSolr != null}"/>
                             </tt>
                         </div>
                     </ui:fragment>

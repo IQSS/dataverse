@@ -95,6 +95,7 @@ public class SearchIncludeFragment {
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
+    private String errorFromSolr;
 
     /**
      * @todo:
@@ -288,6 +289,7 @@ public class SearchIncludeFragment {
             this.datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
             this.staticSolrFieldFriendlyNamesBySolrField = solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField();
             this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
+            this.errorFromSolr = solrQueryResponse.getError();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
@@ -904,4 +906,13 @@ public class SearchIncludeFragment {
         return combine(arr, ":");
 
     }
+
+    public String getErrorFromSolr() {
+        return errorFromSolr;
+    }
+
+    public void setErrorFromSolr(String errorFromSolr) {
+        this.errorFromSolr = errorFromSolr;
+    }
+    
 }
