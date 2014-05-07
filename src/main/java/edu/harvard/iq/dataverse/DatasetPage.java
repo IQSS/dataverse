@@ -91,6 +91,8 @@ public class DatasetPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseSession session;
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -469,6 +471,9 @@ public class DatasetPage implements java.io.Serializable {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
             }
             dataset = commandEngine.submit(cmd);
+            if (editMode == EditMode.CREATE) {
+                userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+            }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");
