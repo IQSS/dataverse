@@ -6,10 +6,10 @@
     "total_count":5,
     "start":0,
     "count_in_response":5,
-    "items":"[datafile_18:trees.png:18, dataset_17_draft:Rings of Trees and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
+    "items":"[datafile_18_draft:trees.png:18, dataset_17_draft:Rings of Trees and Other Observations:17, dataverse_10:Birds:10, dataverse_11:Trees:11, dataverse_16:Chestnut Trees:16]",
     "relevance":[
         {
-            "id":"datafile_18",
+            "id":"datafile_18_draft",
             "matched_fields":"[description, filename_without_extension_en]",
             "detailsArray":[
                 {

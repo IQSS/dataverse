@@ -1,0 +1,35 @@
+#!/bin/bash
+# We assume you've done everything in scripts/search/tests/dataset-versioning05
+# 
+# Now we publish the version that is post 1.0 but unpublished and has
+# two files (the description was changed on trees.png)
+# Title: Rings of Conifers and Other Observations
+# files: 18:trees.png, 19:trees2.png
+#
+# the expected index logging should be something like this:
+#
+#deleteDraftDatasetVersionResult: Attempted to delete draft dataset_17_draft from Solr index. updateRep
+#onse was: {responseHeader={status=0,QTime=0}}, deleteDraftFilesResults: Attempted to delete draft datafile_19_draft from Solr index. updateReponse
+# was: {responseHeader={status=0,QTime=0}}Attempted to delete draft datafile_18_draft from Solr index. updateReponse was: {responseHeader={status=0
+# ,QTime=0}}, indexReleasedVersionResult:indexed dataset 17 as dataset_17
+# indexFilesResults for dataset_17, filesIndexed: [datafile_19, datafile_18], 
+# rationale:
+# version found with database id 2
+# - title: Rings of Conifers and Other Observations
+# - semanticVersion-STATE: 2.0-RELEASED
+# - isWorkingCopy: false
+# - isReleased: true
+# - files: 2 [19:trees2.png, 18:trees.png]
+# version found with database id 1
+# - title: Rings of Trees and Other Observations
+# - semanticVersion-STATE: 1.0-RELEASED
+# - isWorkingCopy: false
+# - isReleased: true
+# - files: 1 [18:trees.png]
+# The latest version is not a working copy (latestVersionState: RELEASED) and will be indexed as dataset_17 (visible by anonymous) and we will be de
+# leting dataset_17_draft and its files (if any, num:2): [datafile_19_draft, datafile_18_draft]
+#
+# anon should be able to see the published 2.0 version
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning06anon
+# pete should see only the published 2.0 version too
+diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=pete') scripts/search/tests/expected/dataset-versioning06pete
