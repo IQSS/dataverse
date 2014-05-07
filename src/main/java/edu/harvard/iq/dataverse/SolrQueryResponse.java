@@ -19,6 +19,7 @@ public class SolrQueryResponse {
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
     private List<String> filterQueriesActual = new ArrayList<String>();
+    private String error;
 
     public List<SolrSearchResult> getSolrSearchResults() {
         return solrSearchResults;
@@ -90,6 +91,14 @@ public class SolrQueryResponse {
 
     public void setFilterQueriesActual(List<String> filterQueriesActual) {
         this.filterQueriesActual = filterQueriesActual;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
 }

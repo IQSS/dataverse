@@ -237,7 +237,7 @@ public class DatasetField implements Serializable {
     public boolean isEmpty() {
         if (datasetFieldType.isPrimitive()) { // primitive
             for (String value : getValues()) {
-                if (value != null && value.trim() != "") {
+                if (value != null && value.trim().isEmpty() ) {
                     return false;
                 }
             }

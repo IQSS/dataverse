@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -15,7 +13,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -31,9 +28,6 @@ public class DatasetServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-
-
-
  
     public Dataset find(Object pk) {
         return (Dataset) em.find(Dataset.class, pk);

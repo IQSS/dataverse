@@ -180,6 +180,10 @@ public class DatasetVersion implements Serializable {
         }
         this.lastUpdateTime = lastUpdateTime;
     }
+    
+    public String getVersionDate(){
+        return new SimpleDateFormat("MMMM d, yyyy").format(releaseTime);
+    }
 
     public Date getReleaseTime() {
         return releaseTime;

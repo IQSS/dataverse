@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.util.Collection;
@@ -19,6 +14,10 @@ import javax.persistence.*;
  *
  * @author Stephen Kraffmiller
  */
+@NamedQueries({
+  @NamedQuery( name="DatasetFieldType.findByName",
+               query="SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name")  
+})
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 
@@ -343,8 +342,15 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public SolrField getSolrField() {
         SolrField.SolrType solrType = SolrField.SolrType.TEXT_EN;
         if (fieldType != null) {
-            solrType = fieldType.equals("date") ? SolrField.SolrType.INTEGER : SolrField.SolrType.TEXT_EN;
-            
+
+            /**
+             * @todo made more decisions based on fieldType: index as dates,
+             * integers, and floats so we can do range queries etc.
+             */
+            if (fieldType.equals("date")) {
+                solrType = SolrField.SolrType.DATE;
+            }
+
             Boolean parentAllowsMultiplesBoolean = false;
             if (isHasParent()) {
                 if (getParentDatasetFieldType() != null) {
@@ -355,8 +361,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (solrType == SolrField.SolrType.TEXT_EN) {
-                makeSolrFieldMultivalued = (allowMultiples || parentAllowsMultiplesBoolean);
+            if (allowMultiples || parentAllowsMultiplesBoolean) {
+                makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;
             }

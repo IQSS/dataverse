@@ -11,9 +11,10 @@
 
     <h:body> 
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{empty DatasetPage.dataset.latestVersion.title ? 'Add New Dataset' : DatasetPage.dataset.latestVersion.title} - #{DatasetPage.dataset.owner.name}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.displayVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
+            <ui:param name="version" value="#{DatasetPage.displayVersion}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
@@ -88,76 +89,20 @@
                                         <div style="float:right; margin-left:1em;">
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>                                            
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Draft
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>
-                                            
-                                            <!--<div class="btn-group">
-                                                <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
-                                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
-                                                    </ui:fragment>
-                                                </button>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a style="pointer-events: none; color:red;">
-                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. To publish it click 'Publish dataset' link</span>
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a style="pointer-events: none; color:green;" onclick="confirmation.show()">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                                <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
-                                                            </a>
-                                                        </li>                                                    
-                                                    </ul>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and !DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a  style="pointer-events: none; color:red;">
-                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. It may not be published until its dataverse is published.</span>
-                                                            </a>
-                                                        </li>                                                   
-                                                    </ul>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a style="pointer-events: none; color:green;">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset has been published.</span>
-                                                            </a>
-                                                        </li>   
-                                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
-                                                            <li>
-                                                                <a style="cursor: pointer; cursor: hand; color:green;" onclick="releaseDraft.show()">
-                                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                                    <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
-                                                                </a>
-                                                            </li>
-                                                        </ui:fragment>
-                                                    </ul>
-                                                </ui:fragment>
-                                            </div>-->
                                         </div>
-                                        <!-- <p:growl id="messages" showDetail="true" />  -->
                                         <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">  
                                             <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
                                             </p:commandButton>  
@@ -178,7 +123,7 @@
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="This dataset may not be published because its dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
+                                        <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
@@ -231,13 +176,13 @@
                                             <div class="panel-body">
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
                                                     <span id="keywords">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Keyword(s)</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="" style="margin-right:1em;">Keyword(s)</a>
                                                         #{DatasetPage.datasetVersionUI.keyword.displayValue}
                                                     </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
                                                     <span id="subject">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Subject(s)</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="" style="margin-right:1em;">Subject(s)</a>
                                                         #{DatasetPage.datasetVersionUI.subject.displayValue}
                                                     </span>
                                                 </ui:fragment>
@@ -246,7 +191,7 @@
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
                                                     <span id="note">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="STATIC TOOLTIP" title="" style="margin-right:1em;">Notes</a>
+                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="" style="margin-right:1em;">Notes</a>
                                                         <div>
                                                             #{DatasetPage.datasetVersionUI.notes.value}
                                                         </div>
@@ -266,9 +211,15 @@
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">Host Dataverse</a>
                                 </label>
                                 <div class="col-sm-10">
+                                   
+                                    <h:outputText value="#{ DatasetPage.dataset.owner.name }" style="font-weight:bold;"/>
+                                    <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
+                                     
+                                     <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                         <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
                                     </p:selectOneMenu>
+                                     </ui:remove>
                                 </div>
                             </div>
                         </ui:fragment>
@@ -326,7 +277,7 @@
                                             <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
                                         </p>-->
                                     </ui:fragment>
-                                    <p:dataTable id="filesTable" value="#{DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata">
+                                    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.displayVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata">
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
@@ -453,21 +404,30 @@
 
                                 </p:tab>
 
-                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="version">
-                                        <p:column>
+                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">                                       
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">                                        
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Title
+                                            </f:facet>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
-                                                <h:outputText value="#{version.title}" />
-                                                <f:param name="id" value="#{version.dataset.id}" />
-                                                <f:param name="versionId" value="#{version.id}" />
+                                                <h:outputText value="#{versionTab.title}" />
+                                                <f:param name="id" value="#{versionTab.dataset.id}" />
+                                                <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
-                                        <p:column>
-                                            <h:outputText rendered="#{!version.released}" id="versionStatusOutput" value="#{version.versionState}" />
-                                            <h:outputText rendered="#{version.released}" id="versionNumberOutput" value="#{version.versionNumber}.#{version.minorVersionNumber}" />
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Version
+                                            </f:facet>
+                                            <h:outputText rendered="#{!versionTab.released}" id="versionStatusOutput" value="#{versionTab.versionState}" />
+                                            <h:outputText rendered="#{versionTab.released}" id="versionNumberOutput" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
                                         </p:column>
-                                        <p:column>
-                                            
+                                        <p:column  > 
+                                            <f:facet name="header">
+                                                Version Date
+                                            </f:facet>
+                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
@@ -477,7 +437,7 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Create Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Add Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
                         </p:commandButton>
                         <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>

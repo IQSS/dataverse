@@ -5,7 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -247,6 +249,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
         dataverseUser = dataverseUserService.save(dataverseUser);
+        userNotificationService.sendNotification(dataverseUser, new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
             session.setUser(dataverseUser);

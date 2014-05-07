@@ -61,14 +61,18 @@
                                     <div id="citationFieldList#{mdb.id}" class="collapse #{status.first?'in':''}" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                         <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
                                             <div class="form-group">
-                                                <label class="col-sm-4 control-label">#{item.displayName}</label>
+                                                <label class="col-sm-4 control-label">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{item.description}" title="">
+                                                        #{item.displayName}
+                                                    </a>                                                    
+                                                </label>
                                                 <div class="col-sm-6">
                                                     <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
                                                     <ui:fragment rendered="#{!empty item.controlledVocabularyValues}">
                                                         <div class="ui-inputfield form-control select-scroll-block">
                                                             <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
                                                                 <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
-                                                                        itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/> 
+                                                                               itemLabel="#{cvs.strValue}" itemValue="#{cvs.strValue}"/> 
                                                             </p:selectManyCheckbox>
                                                         </div>
                                                     </ui:fragment>

@@ -54,6 +54,19 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             if (!valid ) {
                 valid = isValidDate(value.getValue(), "yyyy");
             }
+            if (!valid) {
+                // TODO: 
+                // This is a temporary fix for the early beta! 
+                // (to accommodate dates with time stamps from Astronomy files)
+                // As a real fix, we need to introduce a different type - 
+                // "datetime" for ex. and use it for timestamps; 
+                // We do NOT want users to be able to enter a full time stamp
+                // as the release date... 
+                // -- L.A. 4.0 beta 
+               
+                valid = (isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss") || isValidDate(value.getValue(), "yyyy-MM-dd HH:mm:ss"));
+                
+            }
             if (!valid ) {
                 context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid date.").addConstraintViolation();
                 return false;
@@ -134,5 +147,6 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
         return valid;
     }
+        
 
 }

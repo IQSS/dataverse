@@ -1,0 +1,2 @@
+#!/bin/bash
+diff <(curl -s 'http://localhost:8080/api/search?q=:') scripts/search/tests/expected/query-unparseable

@@ -1,0 +1,11 @@
+
+{
+    "q":"*",
+    "fq_provided":"[]",
+    "fq_actual":"[]",
+    "total_count":0,
+    "start":0,
+    "count_in_response":0,
+    "items":"[]",
+    "error":"Internal error: Server refused connection at: http://localhost:8983/solr"
+}

@@ -91,6 +91,8 @@ public class DatasetPage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @Inject
     DataverseSession session;
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -235,6 +237,7 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             editVersion = dataset.getLatestVersion();
+
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(editVersion);
             //On create set pre-populated fields
@@ -262,6 +265,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
+            displayVersion = editVersion;
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }
@@ -467,6 +471,9 @@ public class DatasetPage implements java.io.Serializable {
                 cmd = new UpdateDatasetCommand(dataset, session.getUser());
             }
             dataset = commandEngine.submit(cmd);
+            if (editMode == EditMode.CREATE) {
+                userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+            }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
             error.append(ex + " ");

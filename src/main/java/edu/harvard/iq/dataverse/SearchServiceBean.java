@@ -25,6 +25,7 @@ import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
@@ -238,8 +239,31 @@ public class SearchServiceBean {
         QueryResponse queryResponse;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (SolrServerException ex) {
-            throw new RuntimeException("Is the Solr server down?");
+        } catch (SolrServerException | RemoteSolrException ex) {
+            String error = "Bloops!";
+            if (ex instanceof SolrServerException) {
+                error = "Internal error: " + ex.getLocalizedMessage();
+            } else if (ex instanceof RemoteSolrException) {
+                error = "Trouble parsing query? " + ex.getLocalizedMessage();
+            }
+
+            logger.info(error + " " + ex.getLocalizedMessage());
+            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse();
+            exceptionSolrQueryResponse.setError(error);
+
+            long zeroNumResultsFound = 0;
+            long zeroGetResultsStart = 0;
+            List<SolrSearchResult> emptySolrSearchResults = new ArrayList<>();
+            List<FacetCategory> exceptionFacetCategoryList = new ArrayList<>();
+            Map<String, List<String>> emptySpellingSuggestion = new HashMap<>();
+            exceptionSolrQueryResponse.setNumResultsFound(zeroNumResultsFound);
+            exceptionSolrQueryResponse.setResultsStart(zeroGetResultsStart);
+            exceptionSolrQueryResponse.setSolrSearchResults(emptySolrSearchResults);
+            exceptionSolrQueryResponse.setFacetCategoryList(exceptionFacetCategoryList);
+            exceptionSolrQueryResponse.setTypeFacetCategories(exceptionFacetCategoryList);
+            exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
+
+            return exceptionSolrQueryResponse;
         }
         SolrDocumentList docs = queryResponse.getResults();
         Iterator<SolrDocument> iter = docs.iterator();
@@ -351,6 +375,7 @@ public class SearchServiceBean {
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
+                solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

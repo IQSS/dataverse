@@ -12,3 +12,4 @@ sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
 scripts/search/tests/permissions
 scripts/search/tests/delete-dataverse
+scripts/search/tests/query-unparseable

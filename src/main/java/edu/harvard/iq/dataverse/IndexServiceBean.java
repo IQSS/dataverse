@@ -21,10 +21,14 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
 @Stateless
@@ -236,7 +240,7 @@ public class IndexServiceBean {
          */
         String solrIdPublishedStudy = "dataset_" + dataset.getId();
         StringBuilder sb = new StringBuilder();
-        sb.append("rationale:\n"); 
+        sb.append("\nrationale:\n");
         List<DatasetVersion> versions = dataset.getVersions();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
@@ -299,7 +303,12 @@ public class IndexServiceBean {
                 return "indexDraftResult:" + indexDraftResult + ", " + sb.toString();
             }
         } else {
-            sb.append("The latest version is not a working copy (latestVersionState: " + latestVersionState + ") and will be indexed as " + solrIdPublishedStudy + " (visible by anonymous) and we will be deleting " + solrIdDraftStudy + "\n");
+            List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+            sb.append("The latest version is not a working copy (latestVersionState: " + latestVersionState
+                    + ") and will be indexed as " + solrIdPublishedStudy
+                    + " (visible by anonymous) and we will be deleting "
+                    + solrIdDraftStudy + " and its files (if any, num:" + solrDocIdsForDraftFilesToDelete.size()
+                    + "): " + solrDocIdsForDraftFilesToDelete + "\n");
             if (releasedVersion != null) {
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
                 String releasedVersionState = releasedVersion.getVersionState().name();
@@ -314,9 +323,17 @@ public class IndexServiceBean {
                  * and will be  (again) indexed as dataset_34 (visible by anonymous)
                  */
                 logger.info(sb.toString());
-                String deleteDraftVersionResult = removeDatasetDraftFromIndex(solrIdDraftStudy);
+                String deleteDraftDatasetVersionResult = removeDraftFromIndex(solrIdDraftStudy);
+                StringBuilder deleteDraftFilesResults = new StringBuilder();
+                /**
+                 * @todo remove draft files from Solr index
+                 */
+                for (String doomed : solrDocIdsForDraftFilesToDelete) {
+                    String result = removeDraftFromIndex(doomed);
+                    deleteDraftFilesResults.append(result);
+                }
                 String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion);
-                return "deleteDraftVersionResult: " + deleteDraftVersionResult + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
+                return "deleteDraftDatasetVersionResult: " + deleteDraftDatasetVersionResult + ", deleteDraftFilesResults: " + deleteDraftFilesResults.toString() + ", indexReleasedVersionResult:" + indexReleasedVersionResult + ", " + sb.toString();
             } else {
                 sb.append("We don't ever expect to ever get here. Why is there no released version if the latest version is not a working copy? The latestVersionState is " + latestVersionState + " and we don't know what to do with it. Nothing will be added or deleted from the index.");
                 logger.info(sb.toString());
@@ -339,8 +356,8 @@ public class IndexServiceBean {
         }
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         SolrInputDocument solrInputDocument = new SolrInputDocument();
-        String solrDocId = indexableDataset.getSolrDocId();
-        solrInputDocument.addField(SearchFields.ID, solrDocId);
+        String datasetSolrDocId = indexableDataset.getSolrDocId();
+        solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
         solrInputDocument.addField(SearchFields.ENTITY_ID, dataset.getId());
         solrInputDocument.addField(SearchFields.TYPE, "datasets");
 
@@ -416,7 +433,8 @@ public class IndexServiceBean {
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
                     logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
-                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+//                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
                         String dateAsString = dsf.getValues().get(0);
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
@@ -431,9 +449,11 @@ public class IndexServiceBean {
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
                                 logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
-                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
+//                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
                                 if (dsfType.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
+//                                    solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                    solrInputDocument.addField(solrFieldFacetable, datasetFieldFlaggedAsDate);
                                 }
                             } catch (Exception ex) {
                                 logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
@@ -564,15 +584,12 @@ public class IndexServiceBean {
 
         docs.add(solrInputDocument);
 
+        List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
         List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
         for (FileMetadata fileMetadata : fileMetadatas) {
             SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
             Long fileEntityId = fileMetadata.getDataFile().getId();
-            /**
-             * @todo: should this sometimes end with "_draft" like datasets do?
-             */
-            datafileSolrInputDocument.addField(SearchFields.ID, "datafile_" + fileEntityId);
             datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
             datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
 
@@ -602,6 +619,8 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.NAME, filenameCompleteFinal);
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
             datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
+
+            datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
 
             /**
              * for rules on sorting files see
@@ -647,13 +666,19 @@ public class IndexServiceBean {
             if (majorVersionReleaseDate == null) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             }
+
+            String fileSolrDocId = "datafile_" + fileEntityId;
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
+                fileSolrDocId = "datafile_" + fileEntityId;
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                 addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
+                fileSolrDocId = "datafile_" + fileEntityId + indexableDataset.getDatasetState().getSuffix();
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
             }
+            datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
+            filesIndexed.add(fileSolrDocId);
 
             if (creator != null) {
                 datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
@@ -740,25 +765,6 @@ public class IndexServiceBean {
                 }
             }
             
-            // And if the file has indexable file-level metadata associated
-            // with it, we'll index that too:
-            
-            List<FileMetadataFieldValue> fileMetadataFieldValues = fileMetadata.getDataFile().getFileMetadataFieldValues();
-            if (fileMetadataFieldValues != null && fileMetadataFieldValues.size() > 0) {
-                for (int j = 0; j < fileMetadataFieldValues.size(); j++) {
-
-                    String fieldValue = fileMetadataFieldValues.get(j).getStrValue();
-
-                    FileMetadataField fmf = fileMetadataFieldValues.get(j).getFileMetadataField();
-                    String fileMetadataFieldName = fmf.getName();
-                    String fileMetadataFieldFormatName = fmf.getFileFormatName();
-                    String fieldName = fileMetadataFieldFormatName + "-" + fileMetadataFieldName  + "_s";
-
-                    datafileSolrInputDocument.addField(fieldName, fieldValue);
-
-                }
-            }
-            
             docs.add(datafileSolrInputDocument);
         }
         }
@@ -779,7 +785,8 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed dataset " + dataset.getId() + " as " + solrDocId; // + ":" + dataset.getTitle();
+//        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
+        return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + "\nindexFilesResults for " + datasetSolrDocId + ", filesIndexed: " + filesIndexed;
     }
 
     public String indexGroup(Map.Entry<Long, String> group) {
@@ -948,12 +955,12 @@ public class IndexServiceBean {
         return response;
     }
 
-    public String removeDatasetDraftFromIndex(String doomed) {
+    public String removeDraftFromIndex(String doomed) {
         /**
          * @todo allow for configuration of hostname and port
          */
         SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
-        logger.info("deleting Solr document for dataset draft: " + doomed);
+        logger.info("deleting Solr document draft: " + doomed);
         UpdateResponse updateResponse;
         try {
             updateResponse = server.deleteById(doomed);
@@ -965,7 +972,7 @@ public class IndexServiceBean {
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
-        String response = "Successfully deleted dataset draft " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
+        String response = "Attempted to delete draft " + doomed + " from Solr index. updateReponse was: " + updateResponse.toString();
         logger.info(response);
         return response;
     }
@@ -978,6 +985,33 @@ public class IndexServiceBean {
         DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM);
         String friendlyDate = format.format(dateAsDate);
         return friendlyDate;
+    }
+
+    private List<String> findSolrDocIdsForDraftFilesToDelete(Dataset datasetWithDraftFilesToDelete) {
+        Long datasetId = datasetWithDraftFilesToDelete.getId();
+        SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("parentid:" + datasetId);
+        /**
+         * @todo rather than hard coding "_draft" here, tie to
+         * IndexableDataset(new DatasetVersion()).getDatasetState().getSuffix()
+         */
+//        String draftSuffix = new IndexableDataset(new DatasetVersion()).getDatasetState().WORKING_COPY.name();
+        solrQuery.addFilterQuery(SearchFields.ID + ":" + "*_draft");
+        List<String> solrIdsOfFilesToDelete = new ArrayList<>();
+        try {
+            QueryResponse queryResponse = solrServer.query(solrQuery);
+            SolrDocumentList results = queryResponse.getResults();
+            for (SolrDocument solrDocument : results) {
+                String id = (String) solrDocument.getFieldValue(SearchFields.ID);
+                if (id != null) {
+                    solrIdsOfFilesToDelete.add(id);
+                }
+            }
+        } catch (SolrServerException ex) {
+            logger.info("error in findSolrDocIdsForDraftFilesToDelete method: " + ex.toString());
+        }
+        return solrIdsOfFilesToDelete;
     }
 
 }

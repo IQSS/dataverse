@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("AdvancedSearchPage")
@@ -26,8 +27,8 @@ public class AdvancedSearchPage {
 
     private Dataverse dataverse;
     private List<MetadataBlock> metadataBlocks;
-    private Map<Long,List<DatasetFieldType>> metadataFieldMap = new HashMap();
-    private List<DatasetFieldType> metadataFieldList;    
+    private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap();
+    private List<DatasetFieldType> metadataFieldList;
     private String dvFieldName;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
@@ -45,7 +46,7 @@ public class AdvancedSearchPage {
         this.metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
 
         for (MetadataBlock mdb : metadataBlocks) {
-           
+
             List dsfTypes = new ArrayList();
             for (DatasetFieldType dsfType : metadataFieldList) {
                 if (dsfType.getMetadataBlock().getId().equals(mdb.getId())) {
@@ -53,114 +54,96 @@ public class AdvancedSearchPage {
                 }
             }
             metadataFieldMap.put(mdb.getId(), dsfTypes);
-        }       
-        
+        }
+
     }
 
     public String find() throws IOException {
-        /*
-         logger.info("clicked find. author: " + author + ". title: " + title);
-         List<String> queryStrings = new ArrayList();
-         if (title != null && !title.isEmpty()) {
-         queryStrings.add(SearchFields.TITLE + ":" + title);
-         }
+        List<String> queryStrings = new ArrayList();
+        queryStrings.add(constructDataverseQuery());
+        queryStrings.add(constructDatasetQuery());
+        queryStrings.add(constructFileQuery());
 
-         if (author != null && !author.isEmpty()) {
-         queryStrings.add(SearchFields.AUTHOR_STRING + ":" + author);
-         }
-         query = new String();
-         for (String string : queryStrings) {
-         query += string + " ";
-         }
-         logger.info("query: " + query); */
-        StringBuilder queryBuilder = new StringBuilder();
-        
-        String delimiter = "[\"]+";
-        for (DatasetFieldType dsfType : metadataFieldList) {
-            List<String> queryStrings = new ArrayList();            
-            if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
-                String myString = dsfType.getSearchValue();
-                if (myString.contains("\"")) {
-                    String [] tempString = dsfType.getSearchValue().split(delimiter);
-                    for (int i = 1; i < tempString.length; i++) {
-                        if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
-                            queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + tempString[i].trim() + "\"");
-                        }
-                    }
-                } else {
-                    StringTokenizer st = new StringTokenizer(dsfType.getSearchValue());
-                    while (st.hasMoreElements()) {
-                        queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + st.nextElement());
-                    }
-                } 
-            } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()){
-                for (String value : dsfType.getListValues()) {
-                    queryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
-                }
-            }
-
-            if (queryStrings.size() > 0 && queryBuilder.length() > 0 ) {
-                queryBuilder.append(" AND ");
-            }            
-            
-            if (queryStrings.size() > 1) {
-                queryBuilder.append("(");
-            }
-            
-            for (int i = 0; i < queryStrings.size(); i++) {
-                if ( i > 0 ) {
-                    queryBuilder.append(" ");
-                }                 
-                queryBuilder.append(queryStrings.get(i));
-            }
-            
-            if (queryStrings.size() > 1) {
-                queryBuilder.append(")");
-            }            
-
-            /**
-             * @todo: What people really want (we think) is fancy combination
-             * searches with users typing a little under Dataverses, a little
-             * under Datasets, and a little under Files and logic would exist
-             * here to construct and OR (or AND?) query. For now, we reset the
-             * whole query every time we pass through the if's below.
-             *
-             * see also https://redmine.hmdc.harvard.edu/issues/3745
-             */
-            if (!dvFieldName.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName);
-            }
-
-            if (!dvFieldAffiliation.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.DATAVERSE_AFFILIATION, dvFieldAffiliation);
-            }
-
-            if (!dvFieldDescription.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.DATAVERSE_DESCRIPTION, dvFieldDescription);
-            }
-
-            if (!fileFieldName.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.FILE_NAME, fileFieldName);
-            }
-
-            if (!fileFieldDescription.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription);
-            }
-
-            if (!fileFieldFiletype.isEmpty()) {
-                queryBuilder = constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype);
-            }
-
-        }
-
-        return "/dataverse.xhtml?q=" + queryBuilder.toString().trim() + "faces-redirect=true";
+        return "/dataverse.xhtml?q=" + constructQuery(queryStrings, false, false) + "faces-redirect=true";
     }
 
+    private String constructDatasetQuery() {
+        List<String> queryStrings = new ArrayList();
+        for (DatasetFieldType dsfType : metadataFieldList) {
+            if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
+                queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue()));
+            } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()) {
+                List<String> listQueryStrings = new ArrayList();
+                for (String value : dsfType.getListValues()) {
+                    listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
+                }
+                queryStrings.add(constructQuery(listQueryStrings, false));
+            }
+        }
+        return constructQuery(queryStrings, true);
 
-    /**
-     * @todo have the code that operates on dataset fields call into this?
-     */
-    private StringBuilder constructQuery(String solrField, String userSuppliedQuery) {
+    }
+
+    private String constructDataverseQuery() {
+        List queryStrings = new ArrayList();
+        if (!dvFieldName.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName));
+        }
+
+        if (!dvFieldAffiliation.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.DATAVERSE_AFFILIATION, dvFieldAffiliation));
+        }
+
+        if (!dvFieldDescription.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.DATAVERSE_DESCRIPTION, dvFieldDescription));
+        }
+
+        return constructQuery(queryStrings, true);
+    }
+
+    private String constructFileQuery() {
+        List queryStrings = new ArrayList();
+        if (!fileFieldName.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.FILE_NAME, fileFieldName));
+        }
+
+        if (!fileFieldDescription.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription));
+        }
+
+        if (!fileFieldFiletype.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype));
+        }
+
+        return constructQuery(queryStrings, true);
+    }
+
+    private String constructQuery(List<String> queryStrings, boolean isAnd) {
+        return constructQuery(queryStrings, isAnd, true);
+    }
+
+    private String constructQuery(List<String> queryStrings, boolean isAnd, boolean surroundWithParens) {
+        StringBuilder queryBuilder = new StringBuilder();
+
+        int count = 0;
+        for (String string : queryStrings) {
+            if (!StringUtils.isBlank(string)) {
+                if (++count > 1) {
+                    queryBuilder.append(isAnd ? " AND " : " OR ");
+                }
+                queryBuilder.append(string);
+            }
+        }
+
+        if (surroundWithParens && count > 1) {
+            queryBuilder.insert(0, "(");
+            queryBuilder.append(")");
+        }
+
+        return queryBuilder.toString().trim();
+    }
+
+    private String constructQuery(String solrField, String userSuppliedQuery) {
 
         StringBuilder queryBuilder = new StringBuilder();
         String delimiter = "[\"]+";
@@ -182,23 +165,23 @@ public class AdvancedSearchPage {
                 }
             }
         }
-        
+
         if (queryStrings.size() > 1) {
             queryBuilder.append("(");
         }
-        
+
         for (int i = 0; i < queryStrings.size(); i++) {
             if (i > 0) {
                 queryBuilder.append(" ");
             }
             queryBuilder.append(queryStrings.get(i));
         }
-        
+
         if (queryStrings.size() > 1) {
             queryBuilder.append(")");
         }
 
-        return queryBuilder;
+        return queryBuilder.toString().trim();
     }
 
     public Dataverse getDataverse() {

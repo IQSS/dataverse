@@ -23,7 +23,6 @@ public class DatasetAuthor {
         }
     };
     
-    
     private DatasetVersion datasetVersion;
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

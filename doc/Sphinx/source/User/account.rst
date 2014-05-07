@@ -15,8 +15,8 @@ Create User Account
 
 Edit Your Account
 ==================
-#. To edit your account, click on your account name in the header on the right hand side.
-#. On the right of your account information, click on the "Edit Account" button and from there you can select to edit either your Account Information or your Account Password. 
+#. To edit your account, click on your account name in the header on the right hand side and click on either Notifications or Data Related to Me.
+#. On the top right of your account page, click on the "Edit Account" button and from there you can select to edit either your Account Information or your Account Password. 
 #. Select "Save Changes" when you are done.
 
 Notifications: Setup & Maintainance
@@ -25,7 +25,8 @@ Notifications appear in the notifications tab on your account page and are also 
 
 You will receive a notification when:
 
-- You've published a dataverse or dataset
-- When another user has published a dataverse or dataset within your dataverse (only if your dataverse allows this)- A user has requested access to restricted dataverses, datasets, or files within your dataverse
+- You've created your account
+- You've created a dataverse or added a dataset
+- More notifications to come!
 
 Dataverse will email your unread notifications once a day. Notifications will only be emailed one time even if you haven't read the notification on the Dataverse site.

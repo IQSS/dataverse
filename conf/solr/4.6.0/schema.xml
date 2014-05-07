@@ -298,22 +298,22 @@
    <field name="coverage.Redshift.MinimumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.RedshiftValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.SkyFraction" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="coverage.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="coverage.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.CentralWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.MaximumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.MinimumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.Wavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="coverage.Temporal" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="coverage.Temporal.StartTime" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="coverage.Temporal.StopTime" type="int" multiValued="false" stored="true" indexed="true"/>
+   <field name="coverage.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="coverage.Temporal.StartTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="datasetLevelErrorNotes" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="dateOfCollection" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="dateOfCollectionEnd" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="dateOfCollectionStart" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="dateOfDeposit" type="int" multiValued="false" stored="true" indexed="true"/>
+   <field name="dateOfCollectionEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dateOfCollectionStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="dateOfDeposit" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="depositor" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="deviationsFromSampleDesign" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="distributorContact" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -336,7 +336,7 @@
    <field name="otherIdAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="otherIdValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="otherReferences" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="productionDate" type="int" multiValued="false" stored="true" indexed="true"/>
+   <field name="productionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="productionPlace" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="publication" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="publicationCitation" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -350,7 +350,7 @@
    <field name="resolution.Redshift" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="resolution.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="resolution.Spectral" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="resolution.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="sampleFrame" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -370,9 +370,9 @@
    <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="targetSampleSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="timeMethod" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="timePeriodCovered" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="timePeriodCoveredEnd" type="int" multiValued="false" stored="true" indexed="true"/>
-   <field name="timePeriodCoveredStart" type="int" multiValued="false" stored="true" indexed="true"/>
+   <field name="timePeriodCovered" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="timePeriodCoveredEnd" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="timePeriodCoveredStart" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="title" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="topicClassValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="topicClassVocab" type="text_en" multiValued="true" stored="true" indexed="true"/>
