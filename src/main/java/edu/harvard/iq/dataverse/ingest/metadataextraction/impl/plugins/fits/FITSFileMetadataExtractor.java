@@ -199,8 +199,9 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     // Recognized date formats, for extracting temporal values: 
     
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
-        new SimpleDateFormat("yyyy-MM-dd"),
-        new SimpleDateFormat("yyyy")
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
+        new SimpleDateFormat("yyyy-MM-dd")
+        //new SimpleDateFormat("yyyy")
     };
     
     /**
@@ -489,7 +490,22 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     // Strict parsing - it will throw an 
                     // exception if it doesn't parse!
                     format.setLenient(false);
-                    //try {
+                    // replace all slashes with dashes: 
+                    obsDateString = obsDateString.replace('/', '-');
+                    // parse date string without truncating:
+                    try {
+                        obsDate = format.parse(obsDateString);
+                        dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
+                        break;
+                    } catch (ParseException ex) {
+                        obsDate = null; 
+                    }
+                    // Alternative method: 
+                    // We'll truncate the string to the point where the parser
+                    // stopped; e.g., if our format was yyyy-mm-dd and the
+                    // string was "2014-05-07T14:52:01" we'll truncate the 
+                    // string to "2014-05-07".
+                    /*
                     ParsePosition pos = new ParsePosition(0);
                     obsDate = format.parse(obsDateString, pos);
                     if (obsDate == null) {
@@ -500,9 +516,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     }
                     dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
                     break;
-                    //} catch (ParseException ex) {
-                    //    obsDate = null; 
-                    //}
+                    */
                 }
                 
                 if (obsDate != null) {
@@ -535,6 +549,10 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(stopObsTime);
             }
         }
+        
+        // TODO: 
+        // Numeric fields should also be validated!
+        // -- L.A. 4.0 beta
         
         String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys); //, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
         
