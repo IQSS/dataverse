@@ -25,8 +25,6 @@ public class DatasetFieldServiceBean {
     private EntityManager em;
     
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName ";
-    private static final String FILEMETA_NAME_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName ";
-    private static final String FILEMETA_NAME_FORMAT_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName and fmf.fileFormatName= :fileFormatName ";
  
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
         return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id").getResultList();

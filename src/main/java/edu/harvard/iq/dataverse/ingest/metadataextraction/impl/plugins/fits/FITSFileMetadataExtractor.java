@@ -15,12 +15,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader; 
 import java.io.IOException; 
 import java.io.File; 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Map; 
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList; 
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 import nom.tam.fits.BasicHDU;
@@ -69,65 +72,116 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     // This map defines the names of the keys under which they will be indexed
     // and made searchable in the application
     
-    
     private static final String CONFIG_TOKEN_META_KEY = "RECOGNIZED_META_KEY";
     private static final String CONFIG_TOKEN_COLUMN_KEY = "RECOGNIZED_COLUMN_KEY"; 
     
     private static final String ASTROPHYSICS_BLOCK_NAME = "astrophysics";
     
+    private static final int FIELD_TYPE_TEXT = 0;
+    private static final int FIELD_TYPE_DATE = 1; 
+    private static final int FIELD_TYPE_FLOAT = 2;
+    
+    private static final String ATTRIBUTE_TYPE = "astroType";
+    private static final String ATTRIBUTE_FACILITY = "astroFacility";
+    private static final String ATTRIBUTE_INSTRUMENT = "astroInstrument";
+    private static final String ATTRIBUTE_START_TIME = "coverage.Temporal.StartTime";
+    private static final String ATTRIBUTE_STOP_TIME = "coverage.Temporal.StopTime";
+    
+    
     static {
         
             dbgLog.fine("FITS plugin: loading the default configuration values;");
             
-            defaultRecognizedFitsMetadataKeys.put("DATE", 0);
-            //defaultRecognizedFitsMetadataKeys.put("DATE-OBS", 0);
-            defaultRecognizedFitsMetadataKeys.put("ORIGIN", 0);
-            defaultRecognizedFitsMetadataKeys.put("AUTHOR", 0);
-            defaultRecognizedFitsMetadataKeys.put("REFERENC", 0);
-            defaultRecognizedFitsMetadataKeys.put("COMMENT", 0);
-            defaultRecognizedFitsMetadataKeys.put("HISTORY", 0);
-            defaultRecognizedFitsMetadataKeys.put("OBSERVER", 0);
+            
+            // The following fields have been dropped from the configuration 
+            // map, not because we are not interested in them anymore - but
+            // because they are now *mandatory*, i.e. non-configurable. 
+            // We will be checking for the "telescope" and "instrument" 
+            // fields on all files and HDUs:
+            // -- 4.0 beta
+            
             //defaultRecognizedFitsMetadataKeys.put("TELESCOP", 0);
             //defaultRecognizedFitsMetadataKeys.put("INSTRUME", 0);
-            defaultRecognizedFitsMetadataKeys.put("EQUINOX", 0);
-            defaultRecognizedFitsMetadataKeys.put("EXTNAME", 0);
-            defaultRecognizedFitsColumnKeys.put("TTYPE", 1);
+            //defaultRecognizedFitsMetadataKeys.put("NAXIS", 0);
+            //defaultRecognizedFitsMetadataKeys.put("DATE-OBS", FIELD_TYPE_DATE);
+            // both coverage.Temporal.StartTime and .EndTime are derived from 
+            // the DATE-OBS values; extra rules apply (coded further down)
+            //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
+            //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StopTime");
+
+
+            //defaultIndexableFitsMetaKeys.put("NAXIS", "naxis");
+
+
+            // Optional, configurable fields: 
+            
+            defaultRecognizedFitsMetadataKeys.put("FILTER", FIELD_TYPE_TEXT);
+            defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
+            defaultRecognizedFitsMetadataKeys.put("CD1_1", FIELD_TYPE_FLOAT);
+            defaultRecognizedFitsMetadataKeys.put("CDELT", FIELD_TYPE_FLOAT);
+            defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
+            defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
+            defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
+
+            
+            // And the mapping to the corresponding values in the 
+            // metadata block:
+            // (per 4.0 beta implementation, the names below must match 
+            // the names of the fields in the corresponding metadata block!)
+            
+            defaultIndexableFitsMetaKeys.put("TELESCOP", ATTRIBUTE_FACILITY);
+            defaultIndexableFitsMetaKeys.put("INSTRUME", ATTRIBUTE_INSTRUMENT);
+            defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
+            defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
+            defaultIndexableFitsMetaKeys.put("CD1_1", "resolution.Spatial");
+            defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
+            defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
+            defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
+            defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
+            defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
+
+            
+
+            // The following fields have been dropped from the configuration 
+            // in 4.0 beta because we are not interested in them 
+            // any longer: 
+            
+            //defaultRecognizedFitsMetadataKeys.put("EQUINOX", 0);
+            //defaultIndexableFitsMetaKeys.put("EQUINOX", "Equinox");
+
+            //defaultRecognizedFitsMetadataKeys.put("DATE", 0);
+            //defaultRecognizedFitsMetadataKeys.put("ORIGIN", 0);
+            //defaultRecognizedFitsMetadataKeys.put("AUTHOR", 0);
+            //defaultRecognizedFitsMetadataKeys.put("REFERENC", 0);
+            //defaultRecognizedFitsMetadataKeys.put("COMMENT", 0);
+            //defaultRecognizedFitsMetadataKeys.put("HISTORY", 0);
+            //defaultRecognizedFitsMetadataKeys.put("OBSERVER", 0);
+            //defaultRecognizedFitsMetadataKeys.put("EXTNAME", 0);
+            //defaultRecognizedFitsColumnKeys.put("TTYPE", 1);
             //defaultRecognizedFitsColumnKeys.put("TCOMM", 0);
             //defaultRecognizedFitsColumnKeys.put("TUCD", 0);
-            defaultRecognizedFitsMetadataKeys.put("FILTER", 0);
-            defaultRecognizedFitsMetadataKeys.put("OBJECT", 0);
-            defaultRecognizedFitsMetadataKeys.put("NAXIS", 0);
-            defaultRecognizedFitsMetadataKeys.put("CD1_1", 0);
-            defaultRecognizedFitsMetadataKeys.put("CDELT", 0);
-            defaultRecognizedFitsMetadataKeys.put("CUNIT", 0);
+            //defaultRecognizedFitsMetadataKeys.put("CUNIT", 0);
             
             
 
-            defaultIndexableFitsMetaKeys.put("DATE", "Date");
-            //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
-            defaultIndexableFitsMetaKeys.put("ORIGIN", "Origin");
-            defaultIndexableFitsMetaKeys.put("AUTHOR", "Author");
-            defaultIndexableFitsMetaKeys.put("REFERENC", "Reference");
-            defaultIndexableFitsMetaKeys.put("COMMENT", "Comment");
-            defaultIndexableFitsMetaKeys.put("HISTORY", "History");
+            //defaultIndexableFitsMetaKeys.put("DATE", "Date");
+            //defaultIndexableFitsMetaKeys.put("ORIGIN", "Origin");
+            //defaultIndexableFitsMetaKeys.put("AUTHOR", "Author");
+            //defaultIndexableFitsMetaKeys.put("REFERENC", "Reference");
+            //defaultIndexableFitsMetaKeys.put("COMMENT", "Comment");
+            //defaultIndexableFitsMetaKeys.put("HISTORY", "History");
             //defaultIndexableFitsMetaKeys.put("OBSERVER", "Observer");
-            //defaultIndexableFitsMetaKeys.put("TELESCOP", "Telescope");
-            defaultIndexableFitsMetaKeys.put("INSTRUME", "Instrument");
-            defaultIndexableFitsMetaKeys.put("EQUINOX", "Equinox");
-            defaultIndexableFitsMetaKeys.put("EXTNAME", "Extension-Name");
-            defaultIndexableFitsMetaKeys.put("TTYPE", "Column-Label");
+            //defaultIndexableFitsMetaKeys.put("EXTNAME", "Extension-Name");
+            //defaultIndexableFitsMetaKeys.put("TTYPE", "Column-Label");
             //defaultIndexableFitsMetaKeys.put("TCOMM", "Column-Comment");
             //defaultIndexableFitsMetaKeys.put("TUCD", "Column-UCD");
-            defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
-            defaultIndexableFitsMetaKeys.put("OBJECT", "object");
-            defaultIndexableFitsMetaKeys.put("NAXIS", "naxis");
-            defaultIndexableFitsMetaKeys.put("CD1_1", "cd1_1");
-            defaultIndexableFitsMetaKeys.put("CUNIT", "cunit");
+            //defaultIndexableFitsMetaKeys.put("CUNIT", "cunit");
       
     }
     
-    private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
-    private static final String OPTION_PREFIX_SEARCHABLE = "PREFIXSEARCH";
+    //private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
+    //private static final String OPTION_PREFIX_SEARCHABLE = "PREFIXSEARCH";
+    
     
     private static final String HDU_TYPE_IMAGE = "Image";
     private static final String HDU_TYPE_IMAGE_CUBE = "Cube";
@@ -141,11 +195,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     private static final String FILE_TYPE_TABLE = "Table";
     private static final String FILE_TYPE_SPECTRUM = "Spectrum";
     
+    // Recognized date formats, for extracting temporal values: 
     
-    private static final String ATTRIBUTE_FACILITY = "facility";
-    private static final String ATTRIBUTE_INSTRUMENT = "instrument";
-    private static final String ATTRIBUTE_START_TIME = "coverage.Temporal.StartTime";
-    private static final String ATTRIBUTE_STOP_TIME = "coverage.Temporal.StopTime";
+    private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
+        new SimpleDateFormat("yyyy-MM-dd"),
+        new SimpleDateFormat("yyyy")
+    };
     
     /**
      * Constructs a <code>FITSFileMetadataExtractor</code> instance with a 
@@ -164,7 +219,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     public FileMetadataIngest ingest (BufferedInputStream stream) throws IOException{
         dbgLog.fine("Attempting to read FITS file;");
         
-        Map<String, Set<String>> fitsMetaMap = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> fitsMetaMap = new HashMap<>();
+        Map<String, Set<String>> tempMetaMap = new HashMap<>(); 
         
         FileMetadataIngest ingest = new FileMetadataIngest();
         ingest.setMetadataBlockName(ASTROPHYSICS_BLOCK_NAME);
@@ -179,6 +235,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         if (fitsFile == null) {
             throw new IOException ("Failed to open FITS stream; null Fits object");
         }
+        
         
         readConfig(); 
 
@@ -197,7 +254,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         List<String> hduNames = new ArrayList<String>(); 
         
         try {
-            fitsMetaMap.put("type", new HashSet<String>());
+            fitsMetaMap.put(ATTRIBUTE_TYPE, new HashSet<String>());
 
             while ((hdu = fitsFile.readHDU()) != null) {
                 dbgLog.fine("reading HDU number " + i);
@@ -212,15 +269,20 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     nAxis = hduHeader.getIntValue("NAXIS");
                     dbgLog.fine("NAXIS (directly from header): "+nAxis);
                     
-                    if (nAxis > 1) {
-                        nImageHDUs++;
-                        if (nAxis > 2) {
-                            hduTypes.add(HDU_TYPE_IMAGE_CUBE);
+                    if (nAxis > 0) {
+                        metadataKeys.add("NAXIS");
+
+                        if (nAxis > 1) {
+                        
+                            nImageHDUs++;
+                            if (nAxis > 2) {
+                                hduTypes.add(HDU_TYPE_IMAGE_CUBE);
                              
-                        } else {
-                            // Check for type Spectrum: 
+                            } else {
+                                // Check for type Spectrum: 
                             
-                            hduTypes.add(HDU_TYPE_IMAGE);
+                                hduTypes.add(HDU_TYPE_IMAGE);
+                            }
                         }
                     } else {
                         hduTypes.add(HDU_TYPE_UNKNOWN);
@@ -257,20 +319,23 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     if (hduInstrument != null) {
                         fitsMetaMap.put(ATTRIBUTE_INSTRUMENT, new HashSet<String>());
                         fitsMetaMap.get(ATTRIBUTE_INSTRUMENT).add(hduInstrument);
-                        metadataKeys.add("TELESCOP");
+                        metadataKeys.add("INSTRUME");
                     }
                 }
-                
-                if (fitsMetaMap.get(ATTRIBUTE_START_TIME) == null) {
-                    String obsDate = hduHeader.getStringValue("DATE-OBS"); 
-                    if (obsDate != null) {
-                        fitsMetaMap.put(ATTRIBUTE_START_TIME, new HashSet<String>());
-                        fitsMetaMap.get(ATTRIBUTE_START_TIME).add(obsDate);
-                        fitsMetaMap.put(ATTRIBUTE_STOP_TIME, new HashSet<String>());
-                        fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(obsDate);
-                        metadataKeys.add("DATE-OBS");
+
+                //if (fitsMetaMap.get(ATTRIBUTE_START_TIME) == null) {
+                String obsDate = hduHeader.getStringValue("DATE-OBS");
+                if (obsDate != null) {
+                        // The value of DATE-OBS will be used later, to determine
+                    // coverage.Temporal.StarTime and .StppTime; for now
+                    // we are storing the values in a temporary map. 
+                    if (tempMetaMap.get("DATE-OBS") == null) {
+                        tempMetaMap.put("DATE-OBS", new HashSet<String>());
                     }
+                    tempMetaMap.get("DATE-OBS").add(obsDate);
+                    metadataKeys.add("DATE-OBS");
                 }
+                //}
                 
                 
                 /* TODO: 
@@ -278,6 +343,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                 */
                 for (int j = 0; j < hdu.getAxes().length; j++) {
                     int nAxisN = hdu.getAxes()[j];
+                    metadataKeys.add("NAXIS"+j);
                     dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
                 }
                 
@@ -305,12 +371,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             dbgLog.fine("recognized key: " + headerKey);
                             recognized = true; 
                             metadataKeys.add(headerKey);
-                        } else if (isRecognizedColumnKey(headerKey)) {
+                        } /*else if (isRecognizedColumnKey(headerKey)) {
                             dbgLog.fine("recognized column key: " + headerKey);
                             recognized = true;
                             //columnKeys.add(getTrimmedColumnKey(headerKey));
                             columnKeys.add(headerKey);
-                        }
+                        }*/
                     } 
                     
                     if (recognized) {
@@ -377,25 +443,92 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         String imageFileType = determineImageFileType (nImageHDUs, hduTypes);
         if (imageFileType != null) {
-            fitsMetaMap.get("type").add(imageFileType);
+            fitsMetaMap.get(ATTRIBUTE_TYPE).add(imageFileType);
         }
         
-        if (fitsMetaMap.get("type").isEmpty()) {
+        if (fitsMetaMap.get(ATTRIBUTE_TYPE).isEmpty()) {
             String tableFileType = determineTableFileType (nTableHDUs, hduTypes);
             if (tableFileType != null) {
-                fitsMetaMap.get("type").add(tableFileType);
+                fitsMetaMap.get(ATTRIBUTE_TYPE).add(tableFileType);
             }
         }
         
-        if (n == 1 && fitsMetaMap.get("type").isEmpty()) {
+        if (n == 1 && fitsMetaMap.get(ATTRIBUTE_TYPE).isEmpty()) {
             // If there's only 1 (primary) HDU in the file, we'll make sure 
             // the file type is set to (at least) "image" - even if we skipped 
             // that HDU because it looked empty:
-            fitsMetaMap.get("type").add(FILE_TYPE_IMAGE);
+            fitsMetaMap.get(ATTRIBUTE_TYPE).add(FILE_TYPE_IMAGE);
         }
         
+        // Final post-processing. 
+        // Some values are derived from the collected fields 
+        // (for example, the coverage.temporal.StopTime is the min. 
+        // of all the collected OBS-DATE values). 
+        // Specific rules are applied below: 
+        
+        // start time and and stop time: 
+        
+        int numObsDates = tempMetaMap.get("DATE-OBS") == null ? 0 : tempMetaMap.get("DATE-OBS").size();
+        if (numObsDates > 0) {
 
-        String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
+            String[] obsDateValues = new String[numObsDates];
+            obsDateValues = tempMetaMap.get("DATE-OBS").toArray(new String[0]);
+
+            Date minDate = null; 
+            Date maxDate = null; 
+            
+            String startObsTime = "";
+            String stopObsTime = "";
+            
+            for (int k = 0; k < obsDateValues.length; k++) {
+                Date obsDate = null;
+                String obsDateString = obsDateValues[k];
+                
+                for (SimpleDateFormat format : DATE_FORMATS) {
+                    // Strict parsing - it will throw an 
+                    // exception if it doesn't parse!
+                    format.setLenient(false);
+                    try {
+                        obsDate = format.parse(obsDateString);
+                        dbgLog.info("Valid date: "+obsDateString+", format: "+format.toPattern());
+                        break;
+                    } catch (ParseException ex) {
+                        obsDate = null; 
+                    }
+                }
+                
+                if (obsDate != null) {
+                     
+                    if (minDate == null) {
+                        minDate = obsDate;
+                        startObsTime = obsDateString;
+                    } else if (obsDate.before(minDate)) {
+                        minDate = obsDate;
+                        startObsTime = obsDateString;
+                    }
+                    
+                    if (maxDate == null) {
+                        maxDate = obsDate;
+                        stopObsTime = obsDateString; 
+                    } else if (obsDate.after(maxDate)) {
+                        maxDate = obsDate; 
+                        stopObsTime = obsDateString; 
+                    }
+                }
+            }
+            
+            if (!startObsTime.equals("")) {
+                fitsMetaMap.put(ATTRIBUTE_START_TIME, new HashSet<String>());
+                fitsMetaMap.get(ATTRIBUTE_START_TIME).add(startObsTime);
+            }
+
+            if (!stopObsTime.equals("")) {
+                fitsMetaMap.put(ATTRIBUTE_STOP_TIME, new HashSet<String>());
+                fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(stopObsTime);
+            }
+        }
+        
+        String metadataSummary = createMetadataSummary (n, nTableHDUs, nImageHDUs, nUndefHDUs, metadataKeys); //, columnKeys, hduNames, fitsMetaMap.get("Column-Label"));
         
         ingest.setMetadataMap(fitsMetaMap);
         ingest.setMetadataSummary(metadataSummary);
@@ -418,7 +551,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         int nConfiguredKeys = 0; 
 
         if (domainRoot != null && !(domainRoot.equals(""))) {
-            String configFileName = domainRoot + "/config/fits.conf"; 
+            String configFileName = domainRoot + "/config/fits.conf_DONOTREAD"; 
             File configFile = new File (configFileName);
             BufferedReader configFileReader = null; 
             
@@ -466,11 +599,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                                     // Extra field options:
                                     // (the only option currently supported is prefix-steam searching
                                     // on the field)
+                                    /*
                                     if (configTokens.length > 3 && configTokens[3] != null) {
                                         if (configTokens[3].equalsIgnoreCase(OPTION_PREFIX_SEARCHABLE)) {
                                             recognizedFitsMetadataKeys.put(configTokens[1], 1);
                                         }
                                     } 
+                                    */
                                     nConfiguredKeys++;
                                 } else {
                                     dbgLog.warning("FITS plugin: empty (or malformed) meta key entry in the config file.");
@@ -489,11 +624,12 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                                         indexableFitsMetaKeys.put(configTokens[1], configTokens[1]);
                                     }
                                     // Extra field options:
+                                    /*
                                     if (configTokens.length > 3 && configTokens[3] != null) {
                                         if (configTokens[3].equalsIgnoreCase(OPTION_PREFIX_SEARCHABLE)) {
                                             recognizedFitsColumnKeys.put(configTokens[1], 1);
                                         }
-                                    } 
+                                    } */
                                     nConfiguredKeys++;
                                 } else {
                                     dbgLog.warning("FITS plugin: empty (or malformed) column key entry in the config file.");
@@ -611,7 +747,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         return null;
     }    
     
-    private String createMetadataSummary (int nHDU, int nTableHDUs, int nImageHDUs, int nUndefHDUs, Set<String> metadataKeys, Set<String> columnKeys, List<String> hduNames, Set<String> columnNames) {
+    private String createMetadataSummary (int nHDU, int nTableHDUs, int nImageHDUs, int nUndefHDUs, Set<String> metadataKeys) { //, Set<String> columnKeys, List<String> hduNames, Set<String> columnNames) {
         String summary = ""; 
         
         if (nHDU > 1) {
@@ -620,7 +756,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             summary = summary.concat("The primary HDU; ");
             if (nTableHDUs > 0) {
                 summary = summary.concat(nTableHDUs + " Table HDU(s) ");
-                summary = summary.concat("(column names: "+StringUtils.join(columnNames, ", ")+"); ");
+                //summary = summary.concat("(column names: "+StringUtils.join(columnNames, ", ")+"); ");
             }
             if (nImageHDUs > 0) {
                 summary = summary.concat(nImageHDUs + " Image HDU(s); ");
