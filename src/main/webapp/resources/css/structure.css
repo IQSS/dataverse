@@ -1,5 +1,5 @@
 /*--------- BODY --------- */
-body {margin-top:50px;}
+body {/*margin-top:50px;*/}
 body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #428BCA;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #2A6496;}
@@ -200,6 +200,8 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 #contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
+
+#content div.popover {max-width: 600px;}
 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
