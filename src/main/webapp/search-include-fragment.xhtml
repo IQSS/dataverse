@@ -27,24 +27,25 @@
                 </h:form>
             </ui:fragment>
 
-            <ui:fragment>
-                <h:form id="shareForm" rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDataverseCommand')
-                    or   permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDatasetCommand')         }">
+            <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDataverseCommand')
+                                     or permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDatasetCommand')}">
+                <h:form id="shareForm">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDataverseCommand')}">
-                            <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
+                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
                             </ui:fragment>
                             <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDatasetCommand')}">
-                            <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
+                                <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
                             </ui:fragment>
                             <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
                             <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataset</a></li>-->
                         </ul>
                     </div>
+                </h:form>
             </ui:fragment>
         </p:panelGrid>
     </p:panel>
@@ -442,15 +443,15 @@
                                             <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                         </h:outputLink>
                                     </div>
-                                    
+
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
-                                    
+
                                     <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
 
                                     <hr style="margin:.5em;border:0;"/>
-                                    
+
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
                                         <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus">
@@ -524,7 +525,7 @@
                                     </div>
 
                                     <h:outputText value=" #{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
-                                    
+
                                     <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
@@ -580,13 +581,13 @@
                                             <p:graphicImage value="/api/access/preview/#{result.entityId}"/>
                                         </h:outputLink>
                                     </div>
-                                    
+
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right: .5em;"/>
 
                                     <h:outputLink value="#{result.fileUrl}">
                                         <h:outputText value="Dataset: #{result.parent.get('name')}"/>
                                     </h:outputLink>
-                                    
+
                                     <hr style="margin:.5em;border:0;"/>
 
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
