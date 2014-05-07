@@ -298,7 +298,7 @@
    <field name="coverage.Redshift.MinimumValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.RedshiftValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.SkyFraction" type="text_en" multiValued="false" stored="true" indexed="true"/>
-   <field name="coverage.Spatial" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="coverage.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.Bandpass" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.CentralWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="coverage.Spectral.MaximumWavelength" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -350,7 +350,7 @@
    <field name="resolution.Redshift" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="resolution.Spatial" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="resolution.Spectral" type="text_en" multiValued="true" stored="true" indexed="true"/>
-   <field name="resolution.Temporal" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="resolution.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="responseRate" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="sampleFrame" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="samplingErrorEstimates" type="text_en" multiValued="false" stored="true" indexed="true"/>
