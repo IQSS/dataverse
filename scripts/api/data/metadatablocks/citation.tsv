@@ -5,7 +5,7 @@
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this dataset.	FamilyName, GivenName or Organization	text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	author	citation
-	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		text	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
+	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		textbox	5	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	keyword	Keyword	Key terms that describe important aspects of the Dataset.		text	6	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
 	subject	Subject	Domain-specific Subjects that are topically relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
