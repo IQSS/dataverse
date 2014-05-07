@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.IOException; 
 import java.io.File; 
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Map; 
 import java.util.HashMap;
@@ -488,13 +489,20 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     // Strict parsing - it will throw an 
                     // exception if it doesn't parse!
                     format.setLenient(false);
-                    try {
-                        obsDate = format.parse(obsDateString);
-                        dbgLog.info("Valid date: "+obsDateString+", format: "+format.toPattern());
-                        break;
-                    } catch (ParseException ex) {
-                        obsDate = null; 
+                    //try {
+                    ParsePosition pos = new ParsePosition(0);
+                    obsDate = format.parse(obsDateString, pos);
+                    if (obsDate == null) {
+                        continue;
                     }
+                    if (pos.getIndex() != obsDateString.length()) {
+                        obsDateString = obsDateString.substring(0, pos.getIndex());
+                    }
+                    dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
+                    break;
+                    //} catch (ParseException ex) {
+                    //    obsDate = null; 
+                    //}
                 }
                 
                 if (obsDate != null) {
