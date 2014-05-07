@@ -412,4 +412,12 @@ public class SolrSearchResult {
         this.datasetVersionId = datasetVersionId;
     }
 
+    public String getDatasetUrl() {
+        return "/dataset.xhtml?id=" + entityId + "&versionId=" + datasetVersionId;
+    }
+
+    public String getFileUrl() {
+        return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
+    }
+
 }

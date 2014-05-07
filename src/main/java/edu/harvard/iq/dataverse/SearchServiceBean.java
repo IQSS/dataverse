@@ -375,6 +375,7 @@ public class SearchServiceBean {
             } else if (type.equals("files")) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setFiletype(filetype);
+                solrSearchResult.setDatasetVersionId(datasetVersionId);
             }
             /**
              * @todo store PARENT_ID as a long instead and cast as such

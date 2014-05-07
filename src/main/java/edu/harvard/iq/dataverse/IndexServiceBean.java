@@ -620,6 +620,8 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
             datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
+            datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+
             /**
              * for rules on sorting files see
              * https://docs.google.com/a/harvard.edu/document/d/1DWsEqT8KfheKZmMB3n_VhJpl9nIxiUjai_AIQPAjiyA/edit?usp=sharing
