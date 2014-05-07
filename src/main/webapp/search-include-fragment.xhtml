@@ -428,7 +428,7 @@
                                             <h:outputText value="#{result.nameHighlightSnippet} Dataverse" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                         </h:outputLink>
-                                        <h:outputText value="(#{result.dataverseAffiliation})" rendered="#{result.dataverseAffiliation != null and result.dataverseAffiliationHighlightSnippet == null}" style="color:#999999; margin-left: .5em;"/>
+                                        <h:outputText value="(#{result.dataverseAffiliation})" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}" style="color:#999999; margin-left: .5em;"/>
                                         <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" style="color:#999999; margin-left: .5em;" escape="false"/>
                                         <h:outputText value="#{SearchIncludeFragment.DRAFT}" styleClass="label label-warning" rendered="#{result.draftState}"/>
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
