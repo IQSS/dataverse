@@ -143,10 +143,13 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getPublicationDate()));
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-        } else if (dataverse.getCreator() != null) {
+        } else if (dataverse.getCreator() != null) { //@todo: do we need this check still
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
+        }
+        
+        if (dataverse.getCreator() != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
              * @todo: replace this fake version of granting users access to
@@ -373,21 +376,21 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
         } else if (state.equals(indexableDataset.getDatasetState().WORKING_COPY)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-            DataverseUser creator = dataset.getCreator();
-            if (creator != null) {
-                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                /**
-                 * @todo: replace this fake version of granting users access to
-                 * dataverses with the real thing, when it's available in the
-                 * app
-                 */
-                if (creator.getUserName().equals("pete")) {
-                    // figure out if cathy is around
-                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                    if (cathy != null) {
-                        // let cathy see all of pete's dataverses
-                        solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                    }
+        }
+        
+        DataverseUser creator = dataset.getCreator();
+        if (creator != null) {
+            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+            /**
+             * @todo: replace this fake version of granting users access to
+             * dataverses with the real thing, when it's available in the app
+             */
+            if (creator.getUserName().equals("pete")) {
+                // figure out if cathy is around
+                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                if (cathy != null) {
+                    // let cathy see all of pete's dataverses
+                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
                 }
             }
         }
@@ -413,7 +416,8 @@ public class IndexServiceBean {
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
                     logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
-                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+//                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
+                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
                         String dateAsString = dsf.getValues().get(0);
                         logger.info("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
@@ -428,9 +432,11 @@ public class IndexServiceBean {
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
                                 logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
-                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
+//                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
                                 if (dsfType.getSolrField().isFacetable()) {
-                                    solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
+//                                    solrInputDocument.addField(solrFieldFacetable, Integer.parseInt(datasetFieldFlaggedAsDate));
+                                    solrInputDocument.addField(solrFieldFacetable, datasetFieldFlaggedAsDate);
                                 }
                             } catch (Exception ex) {
                                 logger.info("unable to convert " + dateAsString + " into YYYY format and couldn't index it (" + dsfType.getName() + ")");
@@ -650,24 +656,25 @@ public class IndexServiceBean {
                 addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
-                DataverseUser creator = fileMetadata.getDataFile().getOwner().getCreator();
-                if (creator != null) {
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                    /**
-                     * @todo: replace this fake version of granting users access
-                     * to dataverses with the real thing, when it's available in
-                     * the app
-                     */
-                    if (creator.getUserName().equals("pete")) {
-                        // figure out if cathy is around
-                        DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                        if (cathy != null) {
-                            // let cathy see all of pete's dataverses
-                            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                        }
+            }
+
+            if (creator != null) {
+                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
+                /**
+                 * @todo: replace this fake version of granting users access to
+                 * dataverses with the real thing, when it's available in the
+                 * app
+                 */
+                if (creator.getUserName().equals("pete")) {
+                    // figure out if cathy is around
+                    DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                    if (cathy != null) {
+                        // let cathy see all of pete's dataverses
+                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
                     }
                 }
             }
+
 
             /**
              * @todo: remove this fake "has access to all data" group
@@ -733,25 +740,6 @@ public class IndexServiceBean {
                 if (variableLabelsToIndex != null) {
                     logger.info("indexing  " + variableLabelsToIndex.length() + " bytes");
                     datafileSolrInputDocument.addField("varlabel_s", variableLabelsToIndex);
-                }
-            }
-            
-            // And if the file has indexable file-level metadata associated
-            // with it, we'll index that too:
-            
-            List<FileMetadataFieldValue> fileMetadataFieldValues = fileMetadata.getDataFile().getFileMetadataFieldValues();
-            if (fileMetadataFieldValues != null && fileMetadataFieldValues.size() > 0) {
-                for (int j = 0; j < fileMetadataFieldValues.size(); j++) {
-
-                    String fieldValue = fileMetadataFieldValues.get(j).getStrValue();
-
-                    FileMetadataField fmf = fileMetadataFieldValues.get(j).getFileMetadataField();
-                    String fileMetadataFieldName = fmf.getName();
-                    String fileMetadataFieldFormatName = fmf.getFileFormatName();
-                    String fieldName = fileMetadataFieldFormatName + "-" + fileMetadataFieldName  + "_s";
-
-                    datafileSolrInputDocument.addField(fieldName, fieldValue);
-
                 }
             }
             

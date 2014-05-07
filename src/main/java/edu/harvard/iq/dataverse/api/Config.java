@@ -58,8 +58,8 @@ public class Config extends AbstractApiBean {
             String nameFacetable = datasetField.getSolrField().getNameFacetable();
 
             if (listOfStaticFields.contains(nameSearchable)) {
-                if (nameSearchable.equals(SearchFields.DESCRIPTION)) {
-                    // Skip, known conflct. We are merging these fields together across types.
+                if (nameSearchable.equals(SearchFields.DATASET_DESCRIPTION)) {
+                    // Skip, expected conflct.
                 } else {
                     return error("searchable dataset metadata field conflict detected with static field: " + nameSearchable);
                 }

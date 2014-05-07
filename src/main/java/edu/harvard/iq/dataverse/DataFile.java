@@ -45,20 +45,15 @@ public class DataFile extends DvObject {
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
     
-    @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<FileMetadataFieldValue> fileMetadataFieldValues;
-    
     private char ingestStatus = INGEST_STATUS_NONE; 
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
-        fileMetadataFieldValues = new ArrayList<>();
     }    
 
     public DataFile(String contentType) {
         this.contentType = contentType;
         this.fileMetadatas = new ArrayList<>();
-        fileMetadataFieldValues = new ArrayList<>();
     }
     
     // The dvObject field "name" should not be used in
@@ -69,7 +64,6 @@ public class DataFile extends DvObject {
         this.name = name;
         this.contentType = contentType;
         this.fileMetadatas = new ArrayList<>();
-        fileMetadataFieldValues = new ArrayList<>();
     }    
 
     public List<DataTable> getDataTables() {
@@ -198,14 +192,6 @@ public class DataFile extends DvObject {
         if (fmd != null) {
             fmd.setDescription(description);
         }
-    }
-    
-    public List<FileMetadataFieldValue> getFileMetadataFieldValues() {
-        return fileMetadataFieldValues;
-    }
-
-    public void setFileMetadataFieldValues(List<FileMetadataFieldValue> fileMetadataFieldValues) {
-        this.fileMetadataFieldValues = fileMetadataFieldValues;
     }
     
     public FileMetadata getFileMetadata() {

@@ -15,6 +15,7 @@ import javax.ejb.EJBException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
@@ -121,7 +122,7 @@ public class SearchIncludeFragment {
      *
      * see also https://trello.com/c/jmry3BJR/28-browse-dataverses
      */
-    public String searchRedirect(String stayOnDataversePage) {
+    public String searchRedirect(String dataverseRedirectPage) {
         /**
          * These are our decided-upon search/browse rules, the way we expect
          * users to search/browse and how we want the app behave:
@@ -154,18 +155,19 @@ public class SearchIncludeFragment {
          * selections and what page you are on should be preserved.
          *
          */
-        if (stayOnDataversePage.equals("true")) {
-            String optionalDataverseScope = "";
-            if (!dataverse.getId().equals(dataverseService.findRootDataverse().getId())) {
-                optionalDataverseScope = "&id=" + dataverse.getId();
-            }
-            return "dataverse.xhtml?faces-redirect=true&q=" + query + optionalDataverseScope ;
-        } else {
-            return "FIXME";
-        }
+
+        dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
+        String optionalDataverseScope = dataverse.getId().equals(dataverseService.findRootDataverse().getId()) ? "" : "&id=" + dataverse.getId();
+
+        return dataverseRedirectPage + "?faces-redirect=true&q=" + query + optionalDataverseScope ;
+
     }
 
     public void search() {
+        search(false);
+    }    
+    
+    public void search(boolean onlyDataRelatedToMe) {
         logger.info("search called");
 
         // wildcard/browse (*) unless user supplies a query
@@ -264,8 +266,8 @@ public class SearchIncludeFragment {
 //            } else {
 //                publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
 //            }
-            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, publishedToggle);
-            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, publishedToggle);
+            solrQueryResponse = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
+            solrQueryResponseAllTypes = searchService.search(session.getUser(), dataverse, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, paginationStart, onlyDataRelatedToMe);
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();

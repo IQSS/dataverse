@@ -74,58 +74,6 @@ public class DatasetFieldServiceBean {
         return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
     }        
     
-    public List findAvailableFileMetadataFields() {
-        List <FileMetadataField> fileMetadataFields = null; 
-        fileMetadataFields = (List <FileMetadataField>) em.createQuery("SELECT fmf from FileMetadataField fmf ORDER by fmf.id").getResultList();
-        
-        return fileMetadataFields;
-    }
-    
-    public List<FileMetadataField> findFileMetadataFieldByName (String name) {
-        List<FileMetadataField> fmfs = null; 
-        try {
-            fmfs = (List<FileMetadataField>) em.createQuery(FILEMETA_NAME_QUERY).setParameter("fieldName",name).getResultList();
-        } catch (Exception ex) {
-            // getResultList() can throw an IllegalStateException.
-            // - we just return null.
-            return null; 
-        }
-        // If there are no results, getResultList returns an empty list. 
-        return fmfs; 
-    }
-    
-    public FileMetadataField findFileMetadataFieldByNameAndFormat (String fieldName, String formatName) {
-        FileMetadataField fmf = null; 
-        try {
-            Query query = em.createQuery(FILEMETA_NAME_FORMAT_QUERY); 
-            query.setParameter("fieldName", fieldName);
-            query.setParameter("fileFormatName", formatName);
-            fmf = (FileMetadataField) query.getSingleResult();
-        } catch (Exception ex) {
-            // getSingleResult() can throw several different exceptions:
-            // NoResultException, NonUniqueResultException, IllegalStateException...
-            // - we just return null.
-            return null; 
-        }
-        return fmf; 
-    }
-    
-    public FileMetadataField createFileMetadataField (String fieldName, String formatName) {
-        FileMetadataField fmf = new FileMetadataField(); 
-        fmf.setName(fieldName);
-        fmf.setFileFormatName(formatName);
-        //em.persist(fmf);
-        //em.flush(); 
-        
-        return fmf; 
-    }
-    
-    public void saveFileMetadataField (FileMetadataField fmf) {
-        em.persist(fmf);
-        em.flush();
-        
-    }
-
     public DatasetFieldType save(DatasetFieldType dsfType) {
        return em.merge(dsfType);
     }

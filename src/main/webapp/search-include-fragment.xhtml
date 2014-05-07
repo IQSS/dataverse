@@ -16,10 +16,10 @@
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
                     <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}"/>
                     <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
-                    <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}">
+                    <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
                         <span class="glyphicon glyphicon-search"/> Find
                     </p:commandLink>
-                    <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseLinksStayOnPage)}"/>                       
+                    <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                       
                     <h:outputLink id="aadvsearchlink" value="/search/advanced.xhtml" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->

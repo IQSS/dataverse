@@ -37,7 +37,7 @@
                     <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                     <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search()}" />                    
+                    <f:viewAction action="#{SearchIncludeFragment.search(true)}" />                    
                 </f:metadata>
 
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
@@ -99,8 +99,7 @@
                                 <ui:param name="permissionType" value="#{DataverseUserPage.permissionType}"/>
                                 </ui:include> -->
                                 <ui:include src="search-include-fragment.xhtml">
-                                    <ui:param name="showAdvancedSearchLink" value="true"/>
-                                    <ui:param name="dataverseLinksStayOnPage" value="true"/>
+                                    <ui:param name="dataverseRedirectPage" value="dataverseuser.xhtml"/>
                                 </ui:include>
                             </ui:fragment>
                             <!--   <ui:fragment>
@@ -221,13 +220,8 @@
                                         <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{empty DataverseUserPage.editMode}" />
-                                            <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
-                                                <p:selectOneMenu id="position" value="#{DataverseUserPage.dataverseUser.position}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
-                                                    <f:selectItem id="student" itemLabel="Student" itemValue="Student" />
-                                                    <f:selectItem id="faculty" itemLabel="Faculty" itemValue="Faculty" />
-                                                    <f:selectItem id="staff" itemLabel="Staff" itemValue="Staff" />
-                                                    <f:selectItem id="other" itemLabel="Other" itemValue="Other" />
-                                                </p:selectOneMenu>
+                                            <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                                <p:inputText id="position" value="#{DataverseUserPage.dataverseUser.position}" />
                                                 <p:message for="position" />
                                             </p:panelGrid>
                                         </ui:fragment>

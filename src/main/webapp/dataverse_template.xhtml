@@ -33,7 +33,7 @@
             <ui:insert name="body">Default Body</ui:insert>
         </div>
         <div class="container" id="footer" style="margin-top:3em;">
-            &#169; 2014 The President and Fellows of Harvard College | Privacy
+            &#169; 2014 The President and Fellows of Harvard College <!-- | <a href="#">Privacy</a> -->
         </div>
         <p:ajaxStatus style="width:31px;height:31px;position:fixed;right:50%;bottom:50%;" id="ajaxStatusPanel">
             <f:facet name="start">
@@ -50,6 +50,11 @@
         <script>
             function bind_bsui_components(){
                 //console.log('bind_bsui_components');
+                // Breadcrumb Tree Keep Open
+                $(document).on('click', '.dropdown-menu', function (e) {
+                    $(this).hasClass('keep-open'),
+                    e.stopPropagation();
+                });
               // Collapse Header Icons
                $('div[id^="collapse"]').on('shown.bs.collapse', function () {
                   //console.log('hello block');
@@ -62,7 +67,7 @@
                });
                
               // Permissions + Dataset Tooltips/Popovers                
-                $("a[data-toggle='tooltip']").tooltip({container: 'body'});
+                $("a[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
                 $("a[data-toggle='popover']").popover();
 
            }
@@ -79,12 +84,6 @@
                     };
                 });
 
-                // Breadcrumb Tree Keep Open
-                $(document).on('click', '.dropdown-menu', function (e) {
-                    $(this).hasClass('keep-open'),
-                    e.stopPropagation();
-                });
-                
                 // Open/close panels
                 bind_bsui_components();
                 

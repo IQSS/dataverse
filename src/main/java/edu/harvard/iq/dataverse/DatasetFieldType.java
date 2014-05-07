@@ -342,8 +342,15 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public SolrField getSolrField() {
         SolrField.SolrType solrType = SolrField.SolrType.TEXT_EN;
         if (fieldType != null) {
-            solrType = fieldType.equals("date") ? SolrField.SolrType.INTEGER : SolrField.SolrType.TEXT_EN;
-            
+
+            /**
+             * @todo made more decisions based on fieldType: index as dates,
+             * integers, and floats so we can do range queries etc.
+             */
+            if (fieldType.equals("date")) {
+                solrType = SolrField.SolrType.DATE;
+            }
+
             Boolean parentAllowsMultiplesBoolean = false;
             if (isHasParent()) {
                 if (getParentDatasetFieldType() != null) {
@@ -354,8 +361,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             
             boolean makeSolrFieldMultivalued;
             // http://stackoverflow.com/questions/5800762/what-is-the-use-of-multivalued-field-type-in-solr
-            if (solrType == SolrField.SolrType.TEXT_EN) {
-                makeSolrFieldMultivalued = (allowMultiples || parentAllowsMultiplesBoolean);
+            if (allowMultiples || parentAllowsMultiplesBoolean) {
+                makeSolrFieldMultivalued = true;
             } else {
                 makeSolrFieldMultivalued = false;
             }

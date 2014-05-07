@@ -10,6 +10,9 @@ body .ui-widget {font-size: inherit;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
 
 #navbarFixed {margin-bottom:0;}
+.navbar-fixed-top, .navbar-fixed-bottom {
+    z-index: 930;
+}
 #navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;}
 #navbarFixed .label.beta {display:block; float:left; margin-top:16px; font-size:100%;}
 
@@ -184,7 +187,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
-#datasetForm .form-group .col-sm-7 .col-sm-6, #datasetForm .form-group .col-sm-9 .col-sm-6, #datasetForm .form-group .col-sm-7 .col-sm-12 {padding-left:0;}
+#datasetForm .form-group .col-sm-9 .col-sm-9, #datasetForm .form-group .col-sm-7 .col-sm-6, #datasetForm .form-group .col-sm-7 .col-sm-12 {padding-left:0;}
 
 #datasetForm div.ui-selectonemenu.form-control {padding:1px;}
 

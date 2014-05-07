@@ -51,7 +51,7 @@ public class SolrField {
          * non-English languages? We changed it to text_en to improve English
          * language searching in https://redmine.hmdc.harvard.edu/issues/3859
          */
-        STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long");
+        STRING("string"), TEXT_EN("text_en"), INTEGER("int"), LONG("long"), DATE("text_en");
 
         private String type;
 
