@@ -40,6 +40,12 @@ To perform an advanced search, click the Advanced Search link next to the search
 
 **Advanced Search fields** 
 
+*Dataverses:*
+
+- Name - The project, department, university, or professor this Dataverse will contain data for.
+- Affiliation - The organization with which this Dataverse is affiliated.
+- Description - A summary describing the purpose, nature, or scope of this Dataverse.
+
 *Citation Metadata:*
 
 - Title - Full title by which the dataset is known.
@@ -84,6 +90,11 @@ To perform an advanced search, click the Advanced Search link next to the search
 - Organism - The taxonomic name of the organism used in a study or from which the starting biological material derives.
 - Cell Type - The name of the cell line from which the source or sample derives.
 
+*Files:*
+
+- Name - Full name by which the file is known.
+- Description - A summary describing the file, variables, or type.
+- File Type - The extension for the file, for example, JPEG, PNG, dta, etc
 
 Browsing Dataverse
 --------------------
