@@ -740,25 +740,6 @@ public class IndexServiceBean {
                 }
             }
             
-            // And if the file has indexable file-level metadata associated
-            // with it, we'll index that too:
-            
-            List<FileMetadataFieldValue> fileMetadataFieldValues = fileMetadata.getDataFile().getFileMetadataFieldValues();
-            if (fileMetadataFieldValues != null && fileMetadataFieldValues.size() > 0) {
-                for (int j = 0; j < fileMetadataFieldValues.size(); j++) {
-
-                    String fieldValue = fileMetadataFieldValues.get(j).getStrValue();
-
-                    FileMetadataField fmf = fileMetadataFieldValues.get(j).getFileMetadataField();
-                    String fileMetadataFieldName = fmf.getName();
-                    String fileMetadataFieldFormatName = fmf.getFileFormatName();
-                    String fieldName = fileMetadataFieldFormatName + "-" + fileMetadataFieldName  + "_s";
-
-                    datafileSolrInputDocument.addField(fieldName, fieldValue);
-
-                }
-            }
-            
             docs.add(datafileSolrInputDocument);
         }
         }
