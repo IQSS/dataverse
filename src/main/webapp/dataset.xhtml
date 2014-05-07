@@ -281,7 +281,7 @@
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a data-trigger="hover" data-toggle="popover" data-placement="right" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;preeeeeeeeeeeeeeee&#34; /&gt;">
+                                                <a data-container="#content" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
