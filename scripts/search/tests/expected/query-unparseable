@@ -1,0 +1,11 @@
+
+{
+    "q":":",
+    "fq_provided":"[]",
+    "fq_actual":"[]",
+    "total_count":0,
+    "start":0,
+    "count_in_response":0,
+    "items":"[]",
+    "error":"Trouble parsing query? org.apache.solr.search.SyntaxError: Cannot parse ':': Encountered \" \":\" \": \"\" at line 1, column 0.\nWas expecting one of:\n    <NOT> ...\n    \"+\" ...\n    \"-\" ...\n    <BAREOPER> ...\n    \"(\" ...\n    \"*\" ...\n    <QUOTED> ...\n    <TERM> ...\n    <PREFIXTERM> ...\n    <WILDTERM> ...\n    <REGEXPTERM> ...\n    \"[\" ...\n    \"{\" ...\n    <LPARAMS> ...\n    <NUMBER> ...\n    <TERM> ...\n    \"*\" ...\n    "
+}

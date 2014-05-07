@@ -21,6 +21,8 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 
 @Path("search")
 public class Search extends AbstractApiBean {
@@ -133,6 +135,9 @@ public class Search extends AbstractApiBean {
                  */
                 value.add("spelling_alternatives", spelling_alternatives);
                 value.add("facets", facets);
+            }
+            if (solrQueryResponse.getError() != null) {
+                value.add("error", solrQueryResponse.getError());
             }
             return Util.jsonObject2prettyString(value.build());
         } else {
