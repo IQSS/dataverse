@@ -24,7 +24,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
     @Inject
     DataverseSession dataverseSession;
 
@@ -39,6 +39,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return dataverses;
     }
 
+    // @todo right now we just check on if published or if you are the creator; need full permission support
+    public boolean hasVisibleChildren(Dataverse dataverse) {
+        for (Dataverse dv : dataverseService.findByOwnerId(dataverse.getId())) {
+            if (dv.isReleased() || dv.getCreator().equals(dataverseSession.getUser())) {
+                return true;
+            }
+        }
+        
+        return false;
+
+    }
+
     public TreeNode getDataverseTree(Dataverse dataverse) {
         if (dataverse == null) { // the primefaces component seems to call this with dataverse == null for some reason
             return null;
@@ -47,16 +59,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     private TreeNode getDataverseNode(Dataverse dataverse, TreeNode root, boolean expand) {
-        TreeNode dataverseNode = new DefaultTreeNode(dataverse, root);
-        dataverseNode.setExpanded(expand);
-        List<Dataverse> childDataversesOfCurrentDataverse = dataverseService.findByOwnerId(dataverse.getId());
-        for (Dataverse child : childDataversesOfCurrentDataverse) {
-            getDataverseNode(child, dataverseNode, false);
+        // @todo right now we just check on if published or if you are the creator; need full permission support
+        if (dataverse.isReleased() || dataverse.getCreator().equals(dataverseSession.getUser())) {
+            TreeNode dataverseNode = new DefaultTreeNode(dataverse, root);
+            dataverseNode.setExpanded(expand);
+            List<Dataverse> childDataversesOfCurrentDataverse = dataverseService.findByOwnerId(dataverse.getId());
+            for (Dataverse child : childDataversesOfCurrentDataverse) {
+                getDataverseNode(child, dataverseNode, false);
+            }
+            return dataverseNode;
         }
-
-        return dataverseNode;
+        return null;
     }
-    
+
     public String logout() {
         dataverseSession.setUser(null);
         return "/dataverse.xhtml?faces-redirect=true";
