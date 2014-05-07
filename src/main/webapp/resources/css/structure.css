@@ -107,10 +107,10 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
-#resultsTable div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
-#resultsTable div.ui-datatable-tablewrapper table td > div > span.label {margin-left:.5em;}
-#resultsTable .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
-#resultsTable .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
+div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
+div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {margin-left:.5em;}
+div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
@@ -162,10 +162,10 @@ table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 #dv-maincolumn div.results-sort-pagination div.pagination {margin-left:1em;}
 #dv-maincolumn div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
 
-#resultsTable .ui-datatable-tablewrapper table > thead {display:none;}
-#resultsTable > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
+div[id$='resultsTable'] .ui-datatable-tablewrapper table > thead {display:none;}
+div[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:separate; border-spacing:0 1em;}
 
-#resultsTable.resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
+div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
 /* -------- ADVANCED -------- */
 #advancedSearchForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
