@@ -43,8 +43,8 @@ To perform an advanced search, click the Advanced Search link next to the search
 *Dataverses:*
 
 - Name - The project, department, university, or professor this Dataverse will contain data for.
-- Affiliation - The organization with which this Dataverse is affiliated.
-- Description - A summary describing the purpose, nature, or scope of this Dataverse.
+- Affiliation - Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc)
+- Description - Provide a description of this dataverse (max. 1000 characters). This will display on the home page of your dataverse and in the search result list.
 
 *Citation Metadata:*
 

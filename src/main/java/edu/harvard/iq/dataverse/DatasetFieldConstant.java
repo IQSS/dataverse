@@ -30,7 +30,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String series = "series";
     public final static String datasetVersion = "datasetVersion";
     
-    public final static String description = "description";
+    public final static String description = "dsDescription";
     public final static String keyword = "keyword";
     public final static String topicClassification = "topicClassification";
     public final static String geographicBoundingBox = "geographicBoundingBox";

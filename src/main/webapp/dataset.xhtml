@@ -126,16 +126,15 @@
                                         <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
-                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.displayVersion != DatasetPage.dataset.latestVersion
+                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
                                                 <h:outputText value="View Unpublished Version"/>
                                             </h:outputLink>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft 
-                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion != DatasetPage.dataset.releasedVersion}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}">
                                                 <h:outputText value="View Published Version"/>
@@ -156,6 +155,7 @@
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                         <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
+                                        <h:outputText value="Unpublished" styleClass="label label-danger" style="margin-left:1em;vertical-align:text-top;" rendered="#{!DatasetPage.dataset.released}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation">

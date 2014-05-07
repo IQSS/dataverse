@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse Guides (Testing for 4.0)
+Dataverse 4.0 Beta Guides
 =======================================================
 
 Contents:
