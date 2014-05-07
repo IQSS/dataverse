@@ -7,6 +7,21 @@
 #
 # To do this, you must also release the Trees and Root dataverses
 # raw version
+#
+# the expected output in server.log is something like this:
+#
+#deleteDraftDatasetVersionResult: Attempted to delete draft dataset_17_draft from Solr index. updateReponse was: {responseHeader={status=0,QTime=1}}, deleteDraftFilesResults: , indexReleasedVersionResult:indexed dataset 17 as dataset_17
+#indexFilesResults for dataset_17, filesIndexed: [datafile_18], 
+#rationale:
+#version found with database id 1
+#- title: Rings of Trees and Other Observations
+#- semanticVersion-STATE: 1.0-RELEASED
+#- isWorkingCopy: false
+#- isReleased: true
+#- files: 1 [18:trees.png]
+#The latest version is not a working copy (latestVersionState: RELEASED) and will be indexed as dataset_17 (visible by anonymous) and we will be deleting dataset_17_draft and its files (if any, num:1): [datafile_18_draft]
+#The released version is 1.0 (releasedVersionState: RELEASED) and will be (again) indexed as dataset_17 (visible by anonymous)]]
+#
 #diff <(curl -s 'http://localhost:8080/api/datasets/17/versions/1?key=pete') scripts/search/tests/expected/dataset-versioning02raw
 # anon can now see the dataset and file and parents
 diff -u <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true') scripts/search/tests/expected/dataset-versioning02anon

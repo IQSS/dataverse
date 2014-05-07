@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import java.util.Collection;
@@ -19,6 +14,10 @@ import javax.persistence.*;
  *
  * @author Stephen Kraffmiller
  */
+@NamedQueries({
+  @NamedQuery( name="DatasetFieldType.findByName",
+               query="SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name")  
+})
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
 

@@ -102,63 +102,7 @@
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
                                             </ui:fragment>
-                                            
-                                            <!--<div class="btn-group">
-                                                <button type="button" id="releaseDataset" class="btn btn-default dropdown-toggle" data-toggle="dropdown" >
-                                                    <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                        <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished <span class="caret"></span>
-                                                    </ui:fragment>
-                                                    <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                        <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Published  <span class="caret"></span>
-                                                    </ui:fragment>
-                                                </button>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a style="pointer-events: none; color:red;">
-                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. To publish it click 'Publish dataset' link</span>
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a style="pointer-events: none; color:green;" onclick="confirmation.show()">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                                <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
-                                                            </a>
-                                                        </li>                                                    
-                                                    </ul>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and !DatasetPage.dataset.owner.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a  style="pointer-events: none; color:red;">
-                                                                <span class="glyphicon glyphicon-ban-circle" style="margin-right:.3em;"/> Unpublished
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset is unpublished. It may not be published until its dataverse is published.</span>
-                                                            </a>
-                                                        </li>                                                   
-                                                    </ul>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                                                    <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                        <li>
-                                                            <a style="pointer-events: none; color:green;">
-                                                                <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Public
-                                                                <span style="display:block;color:#777;font-size:small;">This dataset has been published.</span>
-                                                            </a>
-                                                        </li>   
-                                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT'}">
-                                                            <li>
-                                                                <a style="cursor: pointer; cursor: hand; color:green;" onclick="releaseDraft.show()">
-                                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish
-                                                                    <span style="display:block;color:#777;font-size:small;">Make this dataset public by publishing it.</span>
-                                                                </a>
-                                                            </li>
-                                                        </ui:fragment>
-                                                    </ul>
-                                                </ui:fragment>
-                                            </div>-->
                                         </div>
-                                        <!-- <p:growl id="messages" showDetail="true" />  -->
                                         <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">  
                                             <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
                                             </p:commandButton>  
@@ -179,7 +123,7 @@
                                             </p:commandButton>  
                                             <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="This dataset may not be published because its dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
+                                        <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.displayVersion != DatasetPage.dataset.latestVersion 
@@ -333,7 +277,7 @@
                                             <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
                                         </p>-->
                                     </ui:fragment>
-                                    <p:dataTable id="filesTable" value="#{DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata">
+                                    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.displayVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata">
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
@@ -460,18 +404,30 @@
 
                                 </p:tab>
 
-                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">
-                                        <p:column>
+                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">                                       
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">                                        
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Title
+                                            </f:facet>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText value="#{versionTab.title}" />
                                                 <f:param name="id" value="#{versionTab.dataset.id}" />
                                                 <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
-                                        <p:column>
+                                        <p:column >
+                                            <f:facet name="header">
+                                                Version
+                                            </f:facet>
                                             <h:outputText rendered="#{!versionTab.released}" id="versionStatusOutput" value="#{versionTab.versionState}" />
                                             <h:outputText rendered="#{versionTab.released}" id="versionNumberOutput" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                        </p:column>
+                                        <p:column  > 
+                                            <f:facet name="header">
+                                                Version Date
+                                            </f:facet>
+                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
