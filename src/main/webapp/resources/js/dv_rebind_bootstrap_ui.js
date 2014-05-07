@@ -1,10 +1,8 @@
 /* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Rebind bootstrap UI components
  */
 function bind_bsui_components(){
-    console.log('bind_bsui_components');
+    //console.log('bind_bsui_components');
     // Breadcrumb Tree Keep Open
     $(document).on('click', '.dropdown-menu', function (e) {
         $(this).hasClass('keep-open'),
