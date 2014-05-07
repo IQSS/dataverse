@@ -111,15 +111,35 @@
                         </p:tab>
                         <p:tab id="notifications" title="Notifications">
                             <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">
-                                <h:outputText value="Your Dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
-                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
-                                </h:outputLink>
-                                <h:outputText value=" Dataverse, has been created in the " />
-                                <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
-                                    <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" style="color:#C55B28" />
-                                </h:outputLink>
-                                <h:outputText value=" Dataverse. Remember to release it. " />
+                                <ui:fragment rendered="#{item.type == 'CREATEDV'}">
+                                    <h:outputText value="The dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                    <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
+                                        <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
+                                    </h:outputLink>
+                                    <h:outputText value=", has been created in the " />
+                                    <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
+                                        <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" style="color:#C55B28" />
+                                    </h:outputLink>
+                                    <h:outputText value=" Dataverse. Don't forget to publish it! " />
+                                </ui:fragment>
+                                <ui:fragment rendered="#{item.type == 'CREATEDS'}">
+                                    <h:outputText value="The dataset, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                    <h:outputLink value="/dataset.xhtml?id=#{item.objectId}">
+                                        <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" style="color:#C55B28" />
+                                    </h:outputLink>
+                                    <h:outputText value=", has been added in the " />
+                                    <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
+                                        <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()}" style="color:#C55B28" />
+                                    </h:outputLink>
+                                    <h:outputText value=" Dataverse. Don't forget to publish it! " />
+                                </ui:fragment>
+                                <ui:fragment rendered="#{item.type == 'CREATEACC'}">
+                                    <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                    <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
+                                        <h:outputText value="Google Group" style="color: blue" />
+                                    </h:outputLink>
+                                    <h:outputText value=" to leave feedback. " />
+                                </ui:fragment>
                                 <h:outputText value="#{item.sendDate} " />
                                 <h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
                                 <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />
