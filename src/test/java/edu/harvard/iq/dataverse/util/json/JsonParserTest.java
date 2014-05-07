@@ -89,7 +89,7 @@ public class JsonParserTest {
     @After
     public void tearDown() {
     }
- 
+    /*
     @Test
     public void testParseField_compound_single() throws JsonParseException {
         JsonObject json = json("{\n" +
@@ -173,10 +173,11 @@ public class JsonParserTest {
         
     }
 
-    
+    */
     /**
      * Test of parsePrimitiveField method, of class JsonParser.
      */
+    /*
     @Test
     public void testParseField_primitive_multi() throws JsonParseException {
         JsonObject json = json("{\n" +
@@ -233,6 +234,7 @@ public class JsonParserTest {
         assertEquals( "data", result.getValue() );
         
     }
+    */
     
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
