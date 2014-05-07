@@ -267,9 +267,15 @@
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">Host Dataverse</a>
                                 </label>
                                 <div class="col-sm-10">
+                                   
+                                    <h:outputText value="#{ DatasetPage.dataset.owner.name }" style="font-weight:bold;"/>
+                                    <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
+                                     
+                                     <ui:remove><!-- removed for beta -->
                                     <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
                                         <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
                                     </p:selectOneMenu>
+                                     </ui:remove>
                                 </div>
                             </div>
                         </ui:fragment>
