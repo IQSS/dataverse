@@ -102,7 +102,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
-#resultsCountPaginatorBlock div.results-count {width:25%; padding: 6px 12px; margin-top: 1px;}
+#resultsCountPaginatorBlock div.results-count {width:25%; padding: 6px 12px; margin-top: 1px; font-weight:bold;}
 #resultsCountPaginatorBlock div.results-sort-pagination {width:70%; text-align:right;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
