@@ -182,7 +182,7 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getVersionDate(){
-        return new SimpleDateFormat("MM/dd/yyyy").format(releaseTime);
+        return new SimpleDateFormat("MMMM d, yyyy").format(releaseTime);
     }
 
     public Date getReleaseTime() {
