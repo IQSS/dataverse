@@ -732,7 +732,6 @@ public class IndexServiceBean {
                 String variableLabelsToIndex = null; 
                 for (DataVariable var : variables) {
                     // Hard-coded search fields, for now: 
-                    // TODO: immediately: define these as constants in SearchFields;
                     // TODO: eventually: review, decide how datavariables should
                     // be handled for indexing purposes. (should it be a fixed
                     // setup, defined in the code? should it be flexible? unlikely
@@ -758,11 +757,11 @@ public class IndexServiceBean {
                 }
                 if (variableNamesToIndex != null) {
                     logger.info("indexing  " + variableNamesToIndex.length() + " bytes");
-                    datafileSolrInputDocument.addField("varname_s", variableNamesToIndex);
+                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, variableNamesToIndex);
                 }
                 if (variableLabelsToIndex != null) {
                     logger.info("indexing  " + variableLabelsToIndex.length() + " bytes");
-                    datafileSolrInputDocument.addField("varlabel_s", variableLabelsToIndex);
+                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, variableLabelsToIndex);
                 }
             }
             
