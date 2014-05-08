@@ -125,6 +125,7 @@ public class IngestServiceBean {
     private static final String MIME_TYPE_STATA = "application/x-stata";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
+    private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
     private static final String MIME_TYPE_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String MIME_TYPE_SPSS_SAV = "application/x-spss-sav";
     private static final String MIME_TYPE_SPSS_POR = "application/x-spss-por";
@@ -256,7 +257,12 @@ public class IngestServiceBean {
 
                 Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                    tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
+                } else {
+                    tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                }
+                
                 
                 // and we want to save the original of the ingested file: 
                 try {
@@ -319,7 +325,7 @@ public class IngestServiceBean {
             return true;
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             return true;
-        } else if (mimeType.equals(MIME_TYPE_CSV)) {
+        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             return true;
@@ -351,7 +357,7 @@ public class IngestServiceBean {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
-        } else if (mimeType.equals(MIME_TYPE_CSV)) {
+        } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
