@@ -103,6 +103,6 @@ public class SearchFields {
     public static final String DATASET_VERSION_ID = "dataset_version_id_l";
 
     public static final String VARIABLE_NAME = "variable_name_en";
-    public static final String VARIABLE_LABEL = "variable_lable_en";
+    public static final String VARIABLE_LABEL = "variable_label_en";
 
 }
