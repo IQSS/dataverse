@@ -416,7 +416,8 @@
    <!-- <copyField source="cat" dest="text"/> -->
    <!-- Dataverse 4.0: we want the "name" field in the "catchall"  -->
    <copyField source="name" dest="text"/>
-   <!-- Dataverse 4.0: we want the "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
+   <!-- Dataverse 4.0: we want the "filetype_en" and "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
+   <copyField source="filetype_en" dest="text"/>
    <copyField source="filename_without_extension_en" dest="text"/>
    <!-- <copyField source="manu" dest="text"/> -->
    <!-- <copyField source="features" dest="text"/> -->

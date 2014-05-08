@@ -27,18 +27,18 @@
                 </h:form>
             </ui:fragment>
 
-            <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDataverseCommand')
-                                     or permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDatasetCommand')}">
+            <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+                                     or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')  }">
                 <h:form id="shareForm">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
-                            <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDataverseCommand')}">
+                            <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') }">
                                 <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataverse</a></li>
                             </ui:fragment>
-                            <ui:fragment rendered="#{permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('CreateDatasetCommand')}">
+                            <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand') }">
                                 <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">New Dataset</a></li>
                             </ui:fragment>
                             <!--<li><a href="#" style="pointer-events: none; color: grey;">Existing Dataverse</a></li>-->
@@ -597,6 +597,17 @@
                                             <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                                         </ui:repeat>
                                     </ui:fragment>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{result.highlightsAsList.size() > 0}">
+                                    <div>
+                                        <ui:repeat value="#{result.highlightsAsList}" var="highlight">
+                                            <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                                <h:outputText value="#{highlight.displayName}: "/>
+                                                <h:outputText value="#{snippet}" escape="false"/>
+                                                <br/>
+                                            </ui:repeat>
+                                        </ui:repeat>
+                                    </div>
                                 </ui:fragment>
                             </p:column>
                         </p:dataTable>
