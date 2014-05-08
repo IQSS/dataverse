@@ -973,7 +973,8 @@ public class IndexServiceBean {
         Long datasetId = datasetWithDraftFilesToDelete.getId();
         SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("parentid:" + datasetId);
+        solrQuery.setRows(Integer.MAX_VALUE);
+        solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);
         /**
          * @todo rather than hard coding "_draft" here, tie to
          * IndexableDataset(new DatasetVersion()).getDatasetState().getSuffix()
@@ -982,6 +983,8 @@ public class IndexServiceBean {
         solrQuery.addFilterQuery(SearchFields.ID + ":" + "*_draft");
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         try {
+            // i.e. rows=2147483647&q=parentid%3A16&fq=id%3A*_draft
+            logger.info("passing this Solr query to find draft files to delete: " + solrQuery);
             QueryResponse queryResponse = solrServer.query(solrQuery);
             SolrDocumentList results = queryResponse.getResults();
             for (SolrDocument solrDocument : results) {
