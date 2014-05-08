@@ -714,6 +714,7 @@ public class IndexServiceBean {
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
             datafileSolrInputDocument.addField(SearchFields.FILE_TYPE_SEARCHABLE, FileUtil.getFacetFileType(fileMetadata.getDataFile()));
             datafileSolrInputDocument.addField(SearchFields.DESCRIPTION, fileMetadata.getDescription());
+            datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
             datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
 //            datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataFile.getOwner().getOwner().getName());
            // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, dataFile.getDataset().getTitle());
@@ -727,11 +728,8 @@ public class IndexServiceBean {
             
             if (fileMetadata.getDataFile().isTabularData()) {
                 List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
-                String variableNamesToIndex = null;
-                String variableLabelsToIndex = null; 
                 for (DataVariable var : variables) {
                     // Hard-coded search fields, for now: 
-                    // TODO: immediately: define these as constants in SearchFields;
                     // TODO: eventually: review, decide how datavariables should
                     // be handled for indexing purposes. (should it be a fixed
                     // setup, defined in the code? should it be flexible? unlikely
@@ -741,27 +739,11 @@ public class IndexServiceBean {
                     // anyway -- needs to be reviewed. -- L.A. 4.0alpha1 
                     
                     if (var.getName() != null && !var.getName().equals("")) {
-                        if (variableNamesToIndex == null) {
-                            variableNamesToIndex = var.getName();
-                        } else {
-                            variableNamesToIndex = variableNamesToIndex + " " + var.getName();
-                        }
+                        datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                     }
                     if (var.getLabel() != null && !var.getLabel().equals("")) {
-                        if (variableLabelsToIndex == null) {
-                            variableLabelsToIndex = var.getLabel();
-                        } else {
-                            variableLabelsToIndex = variableLabelsToIndex + " " + var.getLabel();
-                        }
+                        datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
                     }
-                }
-                if (variableNamesToIndex != null) {
-                    logger.info("indexing  " + variableNamesToIndex.length() + " bytes");
-                    datafileSolrInputDocument.addField("varname_s", variableNamesToIndex);
-                }
-                if (variableLabelsToIndex != null) {
-                    logger.info("indexing  " + variableLabelsToIndex.length() + " bytes");
-                    datafileSolrInputDocument.addField("varlabel_s", variableLabelsToIndex);
                 }
             }
             
@@ -991,7 +973,8 @@ public class IndexServiceBean {
         Long datasetId = datasetWithDraftFilesToDelete.getId();
         SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("parentid:" + datasetId);
+        solrQuery.setRows(Integer.MAX_VALUE);
+        solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);
         /**
          * @todo rather than hard coding "_draft" here, tie to
          * IndexableDataset(new DatasetVersion()).getDatasetState().getSuffix()
@@ -1000,6 +983,8 @@ public class IndexServiceBean {
         solrQuery.addFilterQuery(SearchFields.ID + ":" + "*_draft");
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         try {
+            // i.e. rows=2147483647&q=parentid%3A16&fq=id%3A*_draft
+            logger.info("passing this Solr query to find draft files to delete: " + solrQuery);
             QueryResponse queryResponse = solrServer.query(solrQuery);
             SolrDocumentList results = queryResponse.getResults();
             for (SolrDocument solrDocument : results) {

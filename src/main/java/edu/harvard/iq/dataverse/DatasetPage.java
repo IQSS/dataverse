@@ -322,7 +322,7 @@ public class DatasetPage implements java.io.Serializable {
         // .getLatestVersion().getFileMetadatas() - because that's how the page is
         // accessing them. -- L.A.)
         //for (DataFile dataFile : dataset.getFiles()) {
-        for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
+        for (FileMetadata fileMetadata : getDisplayVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
             // and see if any are marked as "ingest-in-progress":
             if (dataFile.isIngestInProgress()) {

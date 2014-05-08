@@ -35,6 +35,8 @@ public class AdvancedSearchPage {
     private String fileFieldName;
     private String fileFieldDescription;
     private String fileFieldFiletype;
+    private String fileFieldVariableName;
+    private String fileFieldVariableLabel;
 
     public void init() {
         /**
@@ -113,6 +115,14 @@ public class AdvancedSearchPage {
 
         if (!fileFieldFiletype.isEmpty()) {
             queryStrings.add(constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype));
+        }
+
+        if (!fileFieldVariableName.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.VARIABLE_NAME, fileFieldVariableName));
+        }
+
+        if (!fileFieldVariableLabel.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.VARIABLE_LABEL, fileFieldVariableLabel));
         }
 
         return constructQuery(queryStrings, true);
@@ -254,6 +264,22 @@ public class AdvancedSearchPage {
 
     public void setFileFieldFiletype(String fileFieldFiletype) {
         this.fileFieldFiletype = fileFieldFiletype;
+    }
+
+    public String getFileFieldVariableName() {
+        return fileFieldVariableName;
+    }
+
+    public void setFileFieldVariableName(String fileFieldVariableName) {
+        this.fileFieldVariableName = fileFieldVariableName;
+    }
+
+    public String getFileFieldVariableLabel() {
+        return fileFieldVariableLabel;
+    }
+
+    public void setFileFieldVariableLabel(String fileFieldVariableLabel) {
+        this.fileFieldVariableLabel = fileFieldVariableLabel;
     }
 
 }

@@ -94,6 +94,9 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
+        solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
+        solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         /**
          * @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848

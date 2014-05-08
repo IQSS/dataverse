@@ -269,6 +269,10 @@
    <field name="description" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <copyField source="description" dest="text" maxChars="3000"/>
 
+   <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
+   <copyField source="variable_name_en" dest="text" maxChars="3000"/>
+   <copyField source="variable_label_en" dest="text" maxChars="3000"/>
+
    <!-- Added for Dataverse 4.0 alpha 1 from output of http://localhost:8080/api/config/solr/schema -->
    <field name="accessToSources" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="actionsToMinimizeLoss" type="text_en" multiValued="false" stored="true" indexed="true"/>
@@ -412,7 +416,8 @@
    <!-- <copyField source="cat" dest="text"/> -->
    <!-- Dataverse 4.0: we want the "name" field in the "catchall"  -->
    <copyField source="name" dest="text"/>
-   <!-- Dataverse 4.0: we want the "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
+   <!-- Dataverse 4.0: we want the "filetype_en" and "filename_without_extension_en" field in the "catchall" per https://redmine.hmdc.harvard.edu/issues/3848  -->
+   <copyField source="filetype_en" dest="text"/>
    <copyField source="filename_without_extension_en" dest="text"/>
    <!-- <copyField source="manu" dest="text"/> -->
    <!-- <copyField source="features" dest="text"/> -->
