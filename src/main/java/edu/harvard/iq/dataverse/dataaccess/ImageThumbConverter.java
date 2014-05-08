@@ -147,15 +147,34 @@ public class ImageThumbConverter {
 		return null; 
 	    }
 
-            double scaleFactor = ((double) size) / (double) fullSizeImage.getWidth(null);
-            int thumbHeight = (int) (fullSizeImage.getHeight(null) * scaleFactor);
+            int width = fullSizeImage.getWidth(null);
+            int height = fullSizeImage.getHeight(null);
+            
+            logger.info("image dimensions: "+width+"x"+height);
+            
+            double scaleFactor = 0.0;
+            int thumbHeight = size; 
+            int thumbWidth = size; 
+            
+            if (width > height) {
+                scaleFactor = ((double) size) / (double) width;
+                thumbHeight = (int) (height * scaleFactor);
+            } else {
+                scaleFactor = ((double) size) / (double) height;
+                thumbWidth = (int) (width * scaleFactor);
+            }
+            
+            logger.info("scale factor: "+scaleFactor);
+            logger.info("thumbnail dimensions: "+thumbWidth+"x"+thumbHeight);
+
+
 
 	    // We are willing to spend a few extra CPU cycles to generate
 	    // better-looking thumbnails, hence the SCALE_SMOOTH flag. 
 	    // SCALE_FAST would trade quality for speed. 
 
             //logger.info("Start image rescaling ("+size+" pixels), SCALE_FAST used;");
-	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(size, thumbHeight, java.awt.Image.SCALE_FAST);
+	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(thumbWidth, thumbHeight, java.awt.Image.SCALE_FAST);
             //logger.info("Finished image rescaling.");
 
             ImageWriter writer = null;
@@ -166,7 +185,7 @@ public class ImageThumbConverter {
                 return null;
             }
 
-            BufferedImage lowRes = new BufferedImage(size, thumbHeight, BufferedImage.TYPE_INT_RGB);
+            BufferedImage lowRes = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
             lowRes.getGraphics().drawImage(thumbImage, 0, 0, null);
 
             ImageOutputStream ios = ImageIO.createImageOutputStream(new File(thumbFileLocation));
