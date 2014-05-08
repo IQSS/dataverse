@@ -129,7 +129,7 @@
                     <div class="dataverseHeaderCell dataverseHeaderName">
                         <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};">#{dataverse.name} Dataverse</a> 
                         <h:outputText style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
-                        <h:outputText value="Unpublished" styleClass="label label-danger" style="margin-left:1em;" rendered="#{!dataverse.released}"/>
+                        <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{empty dataverse.name}">
