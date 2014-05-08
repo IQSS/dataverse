@@ -13,8 +13,8 @@ body .ui-widget {font-size: inherit;}
 .navbar-fixed-top, .navbar-fixed-bottom {
     z-index: 930;
 }
-#navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/icon_dataverse.png) no-repeat left center;background-size:20% auto;}
-#navbarFixed .label.beta {display:block; float:left; margin-top:16px; font-size:100%;}
+#navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/logo_dataverse.png) no-repeat left center;background-size:20% auto;}
+#navbarFixed .label.beta {display:block; float:left; margin-top:10px; background:#C55B28; font-size:1.4em; font-weight:normal;}
 
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
