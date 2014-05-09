@@ -16,6 +16,7 @@ body .ui-widget {font-size: inherit;}
 #navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/logo_dataverse.png) no-repeat left center;background-size:20% auto;}
 #navbarFixed .label.beta {display:block; float:left; margin-top:10px; background:#C55B28; font-size:1.4em; font-weight:normal;}
 
+#navbarFixed #navbar-search-toggle {cursor: pointer; cursor: hand;}
 #navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
