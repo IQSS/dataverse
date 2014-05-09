@@ -619,7 +619,7 @@
                                 <div class="pagination pull-right" >
                                     <ul class="pagination">
                                         <!--should take you to page 1-->
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&#171;"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -633,7 +633,7 @@
                                                 <f:param name="page" value="1"/>
                                             </h:outputLink>
                                         </li>
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&lt; Previous"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
