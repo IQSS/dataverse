@@ -179,6 +179,8 @@ div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {disp
 .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content td {border:0;}
 
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
+
+#replicationDataButton {margin-top:5px;}
                                     
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
