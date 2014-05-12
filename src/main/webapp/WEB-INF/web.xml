@@ -33,8 +33,8 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
-      <servlet-name>Push Servlet</servlet-name>
-      <servlet-class>org.primefaces.push.PushServlet</servlet-class>
+        <servlet-name>Push Servlet</servlet-name>
+        <servlet-class>org.primefaces.push.PushServlet</servlet-class>
     </servlet>
  
     <!-- Map these files with JSF -->
@@ -55,30 +55,30 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-      <servlet-name>Push Servlet</servlet-name>
-      <url-pattern>/primepush/*</url-pattern>
+        <servlet-name>Push Servlet</servlet-name>
+        <url-pattern>/primepush/*</url-pattern>
     </servlet-mapping>
 	
 	
-	<!-- web fonts -->
-	<mime-mapping>
-		<extension>eot</extension>
-		<mime-type>application/vnd.ms-fontobject</mime-type>
-	</mime-mapping>
-	<mime-mapping>  
-		<extension>otf</extension>  
-		<mime-type>font/opentype</mime-type>  
-	</mime-mapping>      
-	<mime-mapping>  
-		<extension>ttf</extension>  
-		<mime-type>application/x-font-ttf</mime-type>  
-	</mime-mapping>      
-	<mime-mapping>  
-		<extension>woff</extension>  
-		<mime-type>application/x-font-woff</mime-type>  
-	</mime-mapping>
-	<mime-mapping>  
-		<extension>svg</extension>  
-		<mime-type>image/svg+xml</mime-type>  
-	</mime-mapping>
+    <!-- web fonts -->
+    <mime-mapping>
+        <extension>eot</extension>
+        <mime-type>application/vnd.ms-fontobject</mime-type>
+    </mime-mapping>
+    <mime-mapping>  
+        <extension>otf</extension>  
+        <mime-type>font/opentype</mime-type>  
+    </mime-mapping>      
+    <mime-mapping>  
+        <extension>ttf</extension>  
+        <mime-type>application/x-font-ttf</mime-type>  
+    </mime-mapping>      
+    <mime-mapping>  
+        <extension>woff</extension>  
+        <mime-type>application/x-font-woff</mime-type>  
+    </mime-mapping>
+    <mime-mapping>  
+        <extension>svg</extension>  
+        <mime-type>image/svg+xml</mime-type>  
+    </mime-mapping>
 </web-app>
