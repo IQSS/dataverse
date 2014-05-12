@@ -154,11 +154,11 @@
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                        <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
-                                        <h:outputText value="Unpublished" styleClass="label label-danger" style="margin-left:1em;vertical-align:text-top;" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.displayVersion.draft}"/>
+                                        <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div id="citation">
+                                        <div id="citation" class="bg-info">
                                             <span>#{DatasetPage.displayCitation}</span> 
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>

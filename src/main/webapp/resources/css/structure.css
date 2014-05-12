@@ -14,10 +14,10 @@ body .ui-widget {font-size: inherit;}
     z-index: 930;
 }
 #navbarFixed .navbar-brand {color:#C55B28; padding-left:34px;background: url(/resources/images/logo_dataverse.png) no-repeat left center;background-size:20% auto;}
-#navbarFixed .label.beta {display:block; float:left; margin-top:10px; background:#C55B28; font-size:1.4em; font-weight:normal;}
+#navbarFixed .label.beta {display:block; float:left; margin-top:12px; background:#C55B28; font-size:18px; font-weight:normal;}
 
 #navbarFixed #navbar-search-toggle {cursor: pointer; cursor: hand;}
-#navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em;}
+#navbarFixed .dropdown.accountName .label.label-danger {margin-left:.5em; line-height:normal; vertical-align:text-top;}
 #navbarFixed .dropdown.accountName .logout form {margin:0; padding:0; width:100%;}
 #navbarFixed .dropdown.accountName .logout a {clear: both; color: #333333; display: block; font-weight: normal; line-height: 1.42857; padding: 3px 20px; white-space: nowrap; text-decoration: none;}
 #navbarFixed .dropdown.accountName .logout a:hover, #navbarFixed .dropdown.accountName .logout a:focus {background-color: #E8E8E8; background-image: linear-gradient(to bottom, #F5F5F5 0px, #E8E8E8 100%); background-repeat: repeat-x; color: #262626; outline: 0; text-decoration: none;}
@@ -110,8 +110,8 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 span.search-term-match {font-weight: bold;}
 div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div {clear:left; margin-bottom: .5em;}
-div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {vertical-align:text-top; line-height: normal; margin-left:.5em;}
-div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;background:#FCFCE2;padding:4px;}
+div[id$='resultsTable'] div.ui-datatable-tablewrapper table td > div > span.label {vertical-align:text-bottom; line-height: normal; margin-left:.5em;}
+div[id$='resultsTable'] .resultDatasetCitationBlock {display:block;margin:4px 0 .5em 60px;padding:4px;}
 div[id$='resultsTable'] .resultDatasetCitationBlock span.search-term-match {font-weight: normal;}
 
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
@@ -178,13 +178,15 @@ div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {disp
 .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content, 
 .panelgridLayoutTable.titleCitationBlock tr.ui-widget-content td {border:0;}
 
+#datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: 1em;}
+
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 
 #replicationDataButton {margin-top:5px;}
                                     
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation {background-color: #FCFCE2; padding:.5em; margin-bottom:.5em;}
+#citation {padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 #keywords {}
