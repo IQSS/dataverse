@@ -1,13 +1,5 @@
-Dataverse Network APIs
-++++++++++++++++++++++++
-
-We strongly encourage anyone interested in building tools to
-interoperate with the Dataverse Network to utilize our open source
-APIs. Please visit our `website <http://thedata.org/book/apps>`__  for
-examples of external apps that have been built to work with our APIs.
-
 Data Sharing API
-==================
+================
 
 As of version 3.0, a new API for programmatic access to the DVN data and
 metadata has been added. The API allows a remote, non-DVN
@@ -307,17 +299,3 @@ type, file name and such)
 | Authorization header supplied, but the authenticated user is not
 | authorized to directly access the object protected by Access
 | Permissions and/or Access Restrictions (“Terms of Use”).
-
-
-Data Deposit API
-===========
-
-As of version 3.6, a new API for programmatic deposit of data and metadata to the Dataverse Network will be added. The API will allow a remote, non-Dataverse Network archive/application to deposit files and metadata to a Dataverse Network installation.
-
-The latest information on this plugin is available here:
-`https://redmine.hmdc.harvard.edu/issues/3108 <https://redmine.hmdc.harvard.edu/issues/3108>`__
-
-
-
-
-
