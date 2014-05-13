@@ -1,0 +1,7 @@
+#!/bin/bash
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+DATAVERSE_ALIAS=peteTop
+curl --insecure --data-binary "@scripts/api/data-deposit/data/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/collection/dataverse/$DATAVERSE_ALIAS \
+| xmllint -format -
