@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -25,6 +28,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
     private static final Logger logger = Logger.getLogger(CollectionListManagerImpl.class.getCanonicalName());
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -50,17 +55,30 @@ public class CollectionListManagerImpl implements CollectionListManager {
                      * user?
                      */
 //                    Collection<Study> studies = dv.getOwnedStudies();
-//                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
-//                    for (Study study : studies) {
-//                        String editUri = baseUrl + "/edit/study/" + study.getGlobalId();
-//                        String editMediaUri = baseUrl + "/edit-media/study/" + study.getGlobalId();
-//                        Entry entry = feed.addEntry();
-//                        entry.setId(editUri);
-//                        entry.setTitle(study.getLatestVersion().getMetadata().getTitle());
-//                        entry.setBaseUri(new IRI(editUri));
-//                        entry.addLink(editMediaUri, "edit-media");
-//                        feed.addEntry(entry);
-//                    }
+                    List childDvObjects = dataverseService.findByOwnerId(dv.getId());
+                    childDvObjects.addAll(datasetService.findByOwnerId(dv.getId()));
+                    List<Dataset> studies = new ArrayList<>();
+                    for (Object object : childDvObjects) {
+                        if (object instanceof Dataset) {
+                            studies.add((Dataset) object);
+                        }
+                    }
+                    String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
+                    for (Dataset study : studies) {
+                        /**
+                         * @todo is globalId the same as identifier?
+                         */
+                        // String editUri = baseUrl + "/edit/study/" + study.getGlobalId();
+                        String editUri = baseUrl + "/edit/study/" + study.getIdentifier();
+                        // String editMediaUri = baseUrl + "/edit-media/study/" + study.getGlobalId();
+                        String editMediaUri = baseUrl + "/edit-media/study/" + study.getIdentifier();
+                        Entry entry = feed.addEntry();
+                        entry.setId(editUri);
+                        entry.setTitle(study.getLatestVersion().getTitle());
+                        entry.setBaseUri(new IRI(editUri));
+                        entry.addLink(editMediaUri, "edit-media");
+                        feed.addEntry(entry);
+                    }
                     Boolean dvHasBeenReleased = dv.isReleased();
                     feed.addSimpleExtension(new QName(UriRegistry.SWORD_STATE, "dataverseHasBeenReleased"), dvHasBeenReleased.toString());
                     return feed;
