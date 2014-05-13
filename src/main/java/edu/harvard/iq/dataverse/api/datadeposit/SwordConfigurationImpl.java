@@ -58,7 +58,8 @@ public class SwordConfigurationImpl implements SwordConfiguration {
         /**
          * @todo is it safe to use dataverse.files.directory for this?
          */
-        String tmpFileDir = System.getProperty("vdc.temp.file.dir");
+//        String tmpFileDir = System.getProperty("vdc.temp.file.dir");
+        String tmpFileDir = System.getProperty("dataverse.files.directory");
         if (tmpFileDir != null) {
             return tmpFileDir + File.separator + "sword";
         } else {
