@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValidator;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -43,6 +44,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     UrlManager urlManager;
     @EJB
     EjbDataverseEngine engineSvc;
+    @EJB
+    DatasetFieldServiceBean datasetFieldService;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
@@ -127,23 +130,21 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         dataset.setIdentifier("myIdentifier");
                         dataset.setProtocol("myProtocol");
 
-                        DatasetVersion newDatasetVersion = new DatasetVersion();
+                        DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
                         newDatasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
 
                         List<DatasetField> datasetFields = new ArrayList<>();
                         DatasetField titleDatasetField = new DatasetField();
-                        DatasetFieldType titleDatasetFieldType = new DatasetFieldType("title", "text", false);
+                        DatasetFieldType titleDatasetFieldType = datasetFieldService.findByName("title");
                         titleDatasetField.setDatasetFieldType(titleDatasetFieldType);
                         List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
-                        DatasetFieldValue titleDatasetFieldValue = new DatasetFieldValue(titleDatasetField, "fooTitle");
+                        DatasetFieldValue titleDatasetFieldValue = new DatasetFieldValue(titleDatasetField, dublinCore.get("title").get(0));
                         datasetFieldValues.add(titleDatasetFieldValue);
                         titleDatasetField.setDatasetFieldValues(datasetFieldValues);
                         datasetFields.add(titleDatasetField);
 
                         newDatasetVersion.setDatasetFields(datasetFields);
 
-                        newDatasetVersion.setDataset(dataset);
-                        dataset.getVersions().add(newDatasetVersion);
                         try {
                             // there is no importStudy method in 4.0 :(
                             // study = studyService.importStudy(tmpFile, dcmiTermsFormatId, dvThatWillOwnStudy.getId(), vdcUser.getId());
