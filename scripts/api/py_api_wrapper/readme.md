@@ -8,9 +8,6 @@ Results of API calls may by returned as JSON (string format) or as python dictio
 Given a DVN server name and optional apikey, the class uses python's basic urllib2 to make the API calls.
 Generate the infamous _Pete_,_Uma_ and _Gabbi_. 
 
-	setup-dvs.sh
-
-Generates root dataverse and some other dataverses for Pete and Uma.
 
 ## Quick example
 
@@ -46,26 +43,7 @@ Output:
 	            "ownerId":1,
 	            "creationDate":"2014-05-12 02:38:36 -04"
 	        },
-	        {
-	            "id":77,
-	            "alias":"bc",
-	            "name":"Beta Candidate",
-	            "affiliation":"Top",
-	            "contactEmail":"pete@malinator.com",
-	            "permissionRoot":false,
-	            "creator":{
-	                "id":1,
-	                "firstName":"Pete",
-	                "lastName":"Privileged",
-	                "userName":"pete",
-	                "affiliation":"Top ",
-	                "position":"The Boss",
-	                "email":"pete@malinator.com"
-	            },
-	            "description":"This is a test",
-	            "ownerId":1,
-	            "creationDate":"2014-05-08 04:06:58 -04"
-	        },
+	       
 			(etc, etc)
 	
 Return the same list as a python object
@@ -73,7 +51,7 @@ Return the same list as a python object
 	dat.set_return_mode_python()
 	d = dat.list_dataverses()   # python dictionary {}
 	print d.keys()
-	dv_names = [dv_info.get('name', '?') for dv_info in d['data']]
+	dv_names = [dv_info.get('name', '?no name?') for dv_info in d['data']]
 	print dv_names
 
 Output:
