@@ -5,7 +5,7 @@
 This a python class "DataverseAPILink" which may be used to make the API calls described in the dataverse/scripts/api/readme.md
 Results of API calls may by returned as JSON (string format) or as python dictionaries.
 
-Given a DVN server name and optional apikey, the class uses python's basic urllib2 to make the API calls.
+Given a Dataverse server name and optional apikey, the class uses python's basic urllib2 to make the API calls.
 Generate the infamous _Pete_,_Uma_ and _Gabbi_. 
 
 
