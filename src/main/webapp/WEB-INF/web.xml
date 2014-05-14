@@ -112,6 +112,20 @@
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/collection/*</url-pattern>
     </servlet-mapping>
 
+    <context-param>
+        <param-name>media-resource-impl</param-name>
+        <param-value>edu.harvard.iq.dataverse.api.datadeposit.MediaResourceManagerImpl</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-name>
+        <url-pattern>/dvn/api/data-deposit/v1/swordv2/edit-media/*</url-pattern>
+    </servlet-mapping>
+
+
     <!-- END Data Deposit API v1 (SWORD v2) -->
 
 </web-app>
