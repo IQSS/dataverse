@@ -12,3 +12,4 @@ michael-local
 ehthumbs.db
 Thumbs.db
 .vagrant
+*.pyc
