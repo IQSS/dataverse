@@ -13,3 +13,4 @@ ehthumbs.db
 Thumbs.db
 .vagrant
 *.pyc
+scripts/api/py_api_wrapper/demo-data/*

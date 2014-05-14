@@ -136,7 +136,7 @@ class DataverseAPILink:
         if not self.apikey:
             msg('Sorry!  You need an api key!')
             return
-        url_str = self.get_server_name() + '/api/datasets/?key=%s' % self.apikey
+        url_str = self.get_server_name() + '/api/datasets?key=%s' % self.apikey
         return self.make_api_call(url_str, self.HTTP_GET)
     
     
@@ -147,6 +147,24 @@ class DataverseAPILink:
         kwargs = { 'key': self.apikey }
         return self.make_api_call(url_str, self.HTTP_DELETE, kwargs)
 
+    def get_user_data(self, uid_or_username=None):
+        """Get metadata for a specific user
+        GET http://{{SERVER}}/api/users/{{uid}}
+        """
+        msgt('get_user_data: %s' % uid_or_username)    
+        url_str = self.get_server_name() + '/api/users/%s' % uid_or_username 
+        return self.make_api_call(url_str, self.HTTP_GET)
+
+    # USERS
+    def list_users(self):
+        """List users
+        GET http://{{SERVER}}/api/users
+        """
+        msgt('list_users')    
+        
+        url_str = self.get_server_name() + '/api/users'
+        return self.make_api_call(url_str, self.HTTP_GET)
+        
         
     '''
     def make_dataverse(self, username, dvn_info_as_dict, dv_id=None):
@@ -165,8 +183,12 @@ def write_to_file(content, fname):
 def save_current_metadata(server_name):
     dat = DataverseAPILink(server_name, use_https=False, apikey='admin')
 
+    output_dir = 'demo-data'
+
     dv_json = dat.list_dataverses()
-    write_to_file(dv_json, '../demo-beta/2014_0513_dataverses.json')
+    write_to_file(dv_json, '%s/2014_0513_dataverses.json' % output_dir)
+    
+    # Currently, troubleshooting list datasets api which is giving a null pointer exception
     
     dataset_ids = """113:41 121:42 91:30 87:29 84:28 83:27 61:22 71:33 62:23 35:21
                     56:19 53:44 49:45 46:18 40:36 22:13 32:20 26:10 29:38""".split()
@@ -176,28 +198,40 @@ def save_current_metadata(server_name):
         did, vid = ds.split(':')
         geo_meta = dat.get_dataset_metadata(did,':latest')
         geo_list.append(geo_meta.strip())
-    geo_content = '\n'.join(geo_list)
-    write_to_file(geo_content, '../demo-beta/2014_0513_datasets.json')
+        write_to_file(geo_meta, '%s/2014_0513_dataset_id_%s.json' % (output_dir, did))
+    #geo_content = '\n'.join(geo_list)
+    
     
 if __name__=='__main__':
     
-    server_with_api = 'dvn-build.hmdc.harvard.edu'
-    #server_with_api = 'dataverse-demo.iq.harvard.edu'
+    #server_with_api = 'dvn-build.hmdc.harvard.edu'
+    server_with_api = 'dataverse-demo.iq.harvard.edu'
     
-    #save_current_metadata(server_with_api)
-    
-    dat = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
+    save_current_metadata(server_with_api)
+    """
+    dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
     json_text = dat.list_dataverses()
     print json_text
+    
+    print dat.list_datasets()
+    """
+    """
     
     dat.set_return_mode_python()
     d = dat.list_dataverses()   # python dictionary {}
     print d.keys()
     dv_names = [dv_info.get('name', '?') for dv_info in d['data']]
     print dv_names
-    #dat.set_return_mode_python()
+    """
     
-    
+    """
+    dat.set_return_mode_python()
+    user_info = dat.list_users()
+    user_ids = [info['id'] for info in user_info['data'] if info['id'] is not None]
+    for uid in user_ids:
+        print dat.get_user_data(uid)
+    """    
+        
     #print dat.get_root_dataverse_metadata()
     #print dat.get_dataverse_metadata(':root')
     #print dat.list_datasets()
