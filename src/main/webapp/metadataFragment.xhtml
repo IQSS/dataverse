@@ -77,16 +77,18 @@
                         <div id="collapse#{block.index}" class="collapse #{block.first || DatasetPage.editMode == 'CREATE'?'in':''}">
                             <div class="panel-body">
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
+                                    
+                                    <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate)}">
 
-                                    <div class="form-group">
-                                        <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
-                                                #{dsf.datasetFieldType.title}
-                                            </a>
-                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" />
-                                        </label>
+                                        <div class="form-group">
+                                            <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
+                                                    #{dsf.datasetFieldType.title}
+                                                </a>
+                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" />
+                                            </label>
 
-                                        <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate)}">
+                                        
                                             <!-- Primitive fields -->
                                             <p:fragment autoUpdate="true" rendered="#{dsf.datasetFieldType.primitive}">
                                                 <div class="form-group">
@@ -207,8 +209,11 @@
                                                     </ui:repeat>
                                                 </div>
                                             </p:fragment>
-                                        </ui:fragment>
-                                    </div>
+                                        
+                                        </div>
+                                    
+                                    </ui:fragment>
+                                    
                                 </ui:repeat>
                             </div>
                         </div>
