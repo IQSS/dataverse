@@ -23,50 +23,50 @@ List the dataverses
 
 Output: 
 
-{
-    "status":"OK",
-    "data":[
-        {
-            "id":93,
-            "alias":"b",
-            "name":"b",
-            "affiliation":"b",
-            "contactEmail":"b@b",
-            "permissionRoot":false,
-            "creator":{
-                "id":13,
-                "firstName":"b",
-                "lastName":"b",
-                "userName":"b",
-                "affiliation":"b",
-                "position":"b",
-                "email":"b@b"
-            },
-            "description":"b",
-            "ownerId":1,
-            "creationDate":"2014-05-12 02:38:36 -04"
-        },
-        {
-            "id":77,
-            "alias":"bc",
-            "name":"Beta Candidate",
-            "affiliation":"Top",
-            "contactEmail":"pete@malinator.com",
-            "permissionRoot":false,
-            "creator":{
-                "id":1,
-                "firstName":"Pete",
-                "lastName":"Privileged",
-                "userName":"pete",
-                "affiliation":"Top ",
-                "position":"The Boss",
-                "email":"pete@malinator.com"
-            },
-            "description":"This is a test",
-            "ownerId":1,
-            "creationDate":"2014-05-08 04:06:58 -04"
-        },
-		(etc, etc)
+	{
+	    "status":"OK",
+	    "data":[
+	        {
+	            "id":93,
+	            "alias":"b",
+	            "name":"b",
+	            "affiliation":"b",
+	            "contactEmail":"b@b",
+	            "permissionRoot":false,
+	            "creator":{
+	                "id":13,
+	                "firstName":"b",
+	                "lastName":"b",
+	                "userName":"b",
+	                "affiliation":"b",
+	                "position":"b",
+	                "email":"b@b"
+	            },
+	            "description":"b",
+	            "ownerId":1,
+	            "creationDate":"2014-05-12 02:38:36 -04"
+	        },
+	        {
+	            "id":77,
+	            "alias":"bc",
+	            "name":"Beta Candidate",
+	            "affiliation":"Top",
+	            "contactEmail":"pete@malinator.com",
+	            "permissionRoot":false,
+	            "creator":{
+	                "id":1,
+	                "firstName":"Pete",
+	                "lastName":"Privileged",
+	                "userName":"pete",
+	                "affiliation":"Top ",
+	                "position":"The Boss",
+	                "email":"pete@malinator.com"
+	            },
+	            "description":"This is a test",
+	            "ownerId":1,
+	            "creationDate":"2014-05-08 04:06:58 -04"
+	        },
+			(etc, etc)
 	
 Return the same list as a python object
 
