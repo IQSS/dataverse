@@ -6,14 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Version;
 
 /**
  *
@@ -22,11 +14,13 @@ import javax.persistence.Version;
 
 public class DatasetRelPublication {
 
-    @Column(columnDefinition = "TEXT")
+
     private String text;
     private String idType;
     private String idNumber;
     private String url;
+    private String title;
+    private String description;
     private boolean replicationData;
     private int displayOrder;
 
@@ -67,6 +61,23 @@ public class DatasetRelPublication {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
      public boolean isEmpty() {

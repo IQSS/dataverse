@@ -177,7 +177,7 @@
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
                                                     <span id="keywords" class="form-group">
                                                         <label class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.name}</a>
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.title}</a>
                                                         </label>
                                                         <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.keyword.displayValue}</span>
                                                     </span>
@@ -185,7 +185,7 @@
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
                                                     <span id="subject" class="form-group">
                                                         <label class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.subject.datasetFieldType.name}</a>
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.subject.datasetFieldType.title}</a>
                                                         </label>
                                                         <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.subject.displayValue}</span>
                                                     </span>
@@ -193,7 +193,7 @@
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
                                                     <span id="publication" class="form-group">
                                                         <label class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="STATIC" title="">Related Publication (STATIC)</a>
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}" title="">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title} </a>
                                                         </label>
                                                         <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a></span>
                                                     </span>
@@ -201,7 +201,7 @@
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
                                                     <span id="note" class="form-group">
                                                         <label class="col-sm-3 control-label">
-                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.name}</a>
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</a>
                                                         </label>
                                                         <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.notes.value}</span>
                                                     </span>
