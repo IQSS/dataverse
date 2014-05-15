@@ -125,6 +125,18 @@
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/edit-media/*</url-pattern>
     </servlet-mapping>
 
+    <context-param>
+        <param-name>statement-impl</param-name>
+        <param-value>edu.harvard.iq.dataverse.api.datadeposit.StatementManagerImpl</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-name>
+        <servlet-class>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-name>
+        <url-pattern>/dvn/api/data-deposit/v1/swordv2/statement/*</url-pattern>
+    </servlet-mapping>
 
     <!-- END Data Deposit API v1 (SWORD v2) -->
 
