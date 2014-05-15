@@ -17,7 +17,7 @@ currently proposed metadata fields for 4.0 (per metadata block):
 - `Social Science & Humanities Metadata (DDI 2.5 compliant) <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodEppcTFHT1NnajNLV0tacE10NEdmUnc&usp=sharing>`__
 - `Astronomy and Astrophysics Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodEp4Qmp0QURkUWo1S0t4X3hia0FnZUE&usp=sharing>`__
   : These metadata elements can be mapped/exported to the International Virtual Observatory Alliance’s (IVOA) 
-  `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`_ and based on `Virtual Observatory (VO) Discovery and Provenance Metadata <http://www.wf4ever-project.org/wiki/download/attachments/1179927/DPmetadata.pdf?version=1&modificationDate=1337186963000>`__) 
+  `VOResource Schema format <http://www.ivoa.net/documents/latest/RM.html>`_ and is based on `Virtual Observatory (VO) Discovery and Provenance Metadata <http://www.wf4ever-project.org/wiki/download/attachments/1179927/DPmetadata.pdf?version=1&modificationDate=1337186963000>`__) 
 - `Biomedical Metadata <https://docs.google.com/spreadsheet/ccc?key=0AjeLxEN77UZodExsRTB2SEpVWWd1Qmx6M09HSkExd3c&usp=sharing>`__ 
   (based on `ISA-Tab <http://isatab.sourceforge.net/format.html>`__ and `Stem Cell Commons <http://stemcellcommons.org/>`__)
 
