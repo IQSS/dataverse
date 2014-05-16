@@ -12,10 +12,7 @@ public class ReceiptGenerator {
     DepositReceipt createReceipt(String baseUrl, Dataset dataset) {
         logger.fine("baseUrl was: " + baseUrl);
         DepositReceipt depositReceipt = new DepositReceipt();
-        /**
-         * @todo is this same as globalId?
-         */
-        String globalId = dataset.getIdentifier();
+        String globalId = dataset.getGlobalId();
         /**
          * @todo should these URLs continue to have "study" in them? Do we need
          * to keep it as "study" for backwards compatibility or it ok to use

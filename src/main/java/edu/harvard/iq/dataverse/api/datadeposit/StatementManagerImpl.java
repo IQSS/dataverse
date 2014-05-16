@@ -56,15 +56,7 @@ public class StatementManagerImpl implements StatementManager {
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
             logger.fine("request for sword statement by user " + vdcUser.getUserName());
-
-//            Study study = null;
-            /**
-             * @todo don't hard code this, obviously. In DVN 3.x we had a method
-             * for editStudyService.getStudyByGlobalId(globalId)
-             */
-//            Study study = editStudyService.getStudyByGlobalId(globalId);
-            long databaseIdForRoastingAtHomeDataset = 10;
-            Dataset study = datasetService.find(databaseIdForRoastingAtHomeDataset);
+            Dataset study = datasetService.findByGlobalId(globalId);
 //            try {
 //                study = studyService.getStudyByGlobalId(globalId);
 //            } catch (EJBException ex) {
@@ -79,11 +71,7 @@ public class StatementManagerImpl implements StatementManager {
 
             Dataverse dvThatOwnsStudy = study.getOwner();
             if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                /**
-                 * @todo getIdentifier is equivalent to getGlobalId, right?
-                 */
-//                String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + study.getGlobalId();
-                String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + study.getIdentifier();
+                String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + study.getGlobalId();
                 /**
                  * @todo is it safe to use this?
                  */

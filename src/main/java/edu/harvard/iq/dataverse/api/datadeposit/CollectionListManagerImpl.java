@@ -65,13 +65,8 @@ public class CollectionListManagerImpl implements CollectionListManager {
                     }
                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
                     for (Dataset study : studies) {
-                        /**
-                         * @todo is globalId the same as identifier?
-                         */
-                        // String editUri = baseUrl + "/edit/study/" + study.getGlobalId();
-                        String editUri = baseUrl + "/edit/study/" + study.getIdentifier();
-                        // String editMediaUri = baseUrl + "/edit-media/study/" + study.getGlobalId();
-                        String editMediaUri = baseUrl + "/edit-media/study/" + study.getIdentifier();
+                        String editUri = baseUrl + "/edit/study/" + study.getGlobalId();
+                        String editMediaUri = baseUrl + "/edit-media/study/" + study.getGlobalId();
                         Entry entry = feed.addEntry();
                         entry.setId(editUri);
                         entry.setTitle(study.getLatestVersion().getTitle());

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -127,8 +128,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                          */
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
-                        dataset.setIdentifier("myIdentifier");
                         dataset.setProtocol("myProtocol");
+                        dataset.setAuthority("myAuthority");
+                        dataset.setIdentifier(UUID.randomUUID().toString());
 
                         DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
                         newDatasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);

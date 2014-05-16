@@ -93,8 +93,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-//                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to get a media resource representation of the study with global ID " + study.getGlobalId());
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to get a media resource representation of the dataset with identifier " + study.getIdentifier());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to get a media resource representation of the dataset with global ID " + study.getGlobalId());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Please use the Dataverse Network Data Sharing API instead");
@@ -222,13 +221,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordServerException("problem looking up editStudyService");
             }
             logger.fine("looking up study with globalId " + globalId);
-            /**
-             * @todo don't hard code this, obviously. In DVN 3.x we had a method
-             * for editStudyService.getStudyByGlobalId(globalId)
-             */
-//            Study study = editStudyService.getStudyByGlobalId(globalId);
-            long databaseIdForRoastingAtHomeDataset = 10;
-            Dataset study = datasetService.find(databaseIdForRoastingAtHomeDataset);
+            Dataset study = datasetService.findByGlobalId(globalId);
             if (study == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
             }

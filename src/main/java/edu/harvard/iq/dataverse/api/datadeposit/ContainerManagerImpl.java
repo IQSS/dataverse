@@ -65,13 +65,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = null;
                 try {
-                    /**
-                     * @todo don't hard code this, obviously. In DVN 3.x we had
-                     * a method for studyService.getStudyByGlobalId(globalId)
-                     */
-//                    study = studyService.getStudyByGlobalId(globalId);
-                    long databaseIdForRoastingAtHomeDataset = 10;
-                    dataset = datasetService.find(databaseIdForRoastingAtHomeDataset);
+                    dataset = datasetService.findByGlobalId(globalId);
                 } catch (EJBException ex) {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                 }
@@ -87,10 +81,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not generate deposit receipt.");
                         }
                     } else {
-                        /**
-                         * @todo need study.getGlobalId() from DVN 3.x
-                         */
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to retrieve entry for " + dataset.getIdentifier());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to retrieve entry for " + dataset.getGlobalId());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on URL: " + uri);
@@ -297,15 +288,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (globalId != null) {
                     Dataset study = null;
                     try {
-
-                        /**
-                         * @todo don't hard code this, obviously. In DVN 3.x we
-                         * had a method for
-                         * studyService.getStudyByGlobalId(globalId)
-                         */
-//                        study = studyService.getStudyByGlobalId(globalId);
-                        long databaseIdForRoastingAtHomeDataset = 10;
-                        study = datasetService.find(databaseIdForRoastingAtHomeDataset);
+                        study = datasetService.findByGlobalId(globalId);
                     } catch (EJBException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                     }
@@ -314,10 +297,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
                             DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
                             if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
-                                /**
-                                 * @todo use getGlobalId when it's available
-                                 */
-                                logger.info("destroying working copy version of study " + study.getIdentifier());
+                                logger.info("destroying working copy version of study " + study.getGlobalId());
                                 /**
                                  * @todo in DVN 3.x we had a convenient
                                  * destroyWorkingCopyVersion method but the
