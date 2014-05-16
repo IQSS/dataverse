@@ -1,0 +1,9 @@
+#!/bin/bash -x
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+GLOBAL_ID=hdl:TEST/12345
+DATABASE_ID=$1
+#curl --insecure -X DELETE https://$DVN_SERVER/api/datasets/$DATABASE_ID?key=$USERNAME
+curl --insecure -i -X DELETE https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID
+#| xmllint -format -

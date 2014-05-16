@@ -1,0 +1,8 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+GLOBAL_ID=hdl:TEST/12345
+DATABASE_ID=$1
+curl --insecure -s https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID \
+| xmllint -format -
