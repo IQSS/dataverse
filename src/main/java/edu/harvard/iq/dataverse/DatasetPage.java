@@ -264,7 +264,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
+            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
             displayVersion = editVersion;
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling

@@ -442,6 +442,12 @@
                             </p:tabView>
                         </div>
                     </ui:fragment>
+                    
+                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                        <div class="alert alert-info" style="margin-top:.5em;">
+                            Tip: You can add more metadata about this dataset after it's created.
+                        </div>
+                    </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
