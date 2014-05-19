@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.PasswordEncryption;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
@@ -24,18 +25,15 @@ public class SwordAuth {
             logger.fine("Checking username " + username + " ...");
             DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
             if (dataverseUser != null) {
-                /**
-                 * @todo actually check the user's password! Can't use
-                 * validateMethod on LoginPage.java since it's a backing bean...
-                 */
-//                if (dataverseUserService.validatePassword(username, password)) {
-                return dataverseUser;
-//                } else {
-//                    logger.info("wrong password");
-//                    throw new SwordAuthException();
-//                }
+                String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
+                if (encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
+                    return dataverseUser;
+                } else {
+                    logger.fine("wrong password");
+                    throw new SwordAuthException();
+                }
             } else {
-                logger.info("could not find username: " + username);
+                logger.fine("could not find username: " + username);
                 throw new SwordAuthException();
             }
         } else {
