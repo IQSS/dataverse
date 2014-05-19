@@ -2,6 +2,6 @@
 USERNAME=pete
 PASSWORD=pete
 DVN_SERVER=localhost:8181
-GLOBAL_ID=myIdentifier
+GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12`
 curl -s --insecure --data-binary @scripts/api/data-deposit/data/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/study/$GLOBAL_ID \
 | xmllint -format -
