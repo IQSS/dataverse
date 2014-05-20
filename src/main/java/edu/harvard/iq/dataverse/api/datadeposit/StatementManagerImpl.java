@@ -77,16 +77,28 @@ public class StatementManagerImpl implements StatementManager {
                  */
                 String author = study.getLatestVersion().getAuthorsStr();
                 String title = study.getLatestVersion().getTitle();
-                Date lastUpdated = study.getLatestVersion().getLastUpdateTime();
-                if (lastUpdated == null) {
+                // in the statement, the element is called "updated"
+                Date lastUpdatedFinal = new Date();
+                Date lastUpdateTime = study.getLatestVersion().getLastUpdateTime();
+                if (lastUpdateTime != null) {
+                    lastUpdatedFinal = lastUpdateTime;
+                } else {
                     /**
-                     * @todo why is this date null?
+                     * @todo In DVN 3.x lastUpdated was set on the service bean:
+                     * https://github.com/IQSS/dvn/blob/8ca34aded90511730c35ca32ace844770c24c68e/DVN-root/DVN-web/src/main/java/edu/harvard/iq/dvn/core/study/StudyServiceBean.java#L1803
+                     *
+                     * In 4.0, lastUpdateTime is always null.
                      */
-                    logger.info("why is lastUpdated null?");
-                    lastUpdated = new Date();
+                    logger.info("lastUpdateTime was null, trying createtime");
+                    Date createtime = study.getLatestVersion().getCreateTime();
+                    if (createtime != null) {
+                        lastUpdatedFinal = createtime;
+                    } else {
+                        logger.info("creatime was null, using \"now\"");
+                        lastUpdatedFinal = new Date();
+                    }
                 }
-                AtomDate atomDate = new AtomDate(lastUpdated);
-//                AtomDate atomDate = new AtomDate(study.getLatestVersion().getLastUpdateTime());
+                AtomDate atomDate = new AtomDate(lastUpdatedFinal);
                 String datedUpdated = atomDate.toString();
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
                 Map<String, String> states = new HashMap<String, String>();
