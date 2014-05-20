@@ -275,6 +275,18 @@
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
+                            
+                            <h:outputLabel value="Logo Alignment"/>
+                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
+                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
+                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
+                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                            </p:selectOneMenu>
+                            <p:message for="logoFormat"/>
+                            
+                            <h:outputLabel value="Logo Background Color"/>
+                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
+                            <p:message for="logoBackgroundColor"/>
 
                             <h:outputLabel value="Tagline"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>

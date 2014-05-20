@@ -154,11 +154,11 @@
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                        <h:outputText value="Draft" styleClass="label label-warning" style="margin-left:1em;vertical-align:text-top;" rendered="#{DatasetPage.displayVersion.draft}"/>
-                                        <h:outputText value="Unpublished" styleClass="label label-danger" style="margin-left:1em;vertical-align:text-top;" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.displayVersion.draft}"/>
+                                        <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div id="citation">
+                                        <div id="citation" class="bg-info">
                                             <span>#{DatasetPage.displayCitation}</span> 
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
@@ -172,29 +172,38 @@
                                         <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value or !empty DatasetPage.datasetVersionUI.subject.value or !empty DatasetPage.datasetVersionUI.relPublicationCitation or !empty DatasetPage.datasetVersionUI.notes.value}">
-                                        <div class="panel panel-default" style="margin-top:1em;">
-                                            <div class="panel-body">
+                                        <div id="" class="panel panel-default" style="margin-top:1em;">
+                                            <div class="panel-body" style="padding:12px 0;">
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.keyword.value}">
-                                                    <span id="keywords">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="" style="margin-right:1em;">Keyword(s)</a>
-                                                        #{DatasetPage.datasetVersionUI.keyword.displayValue}
+                                                    <span id="keywords" class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.keyword.datasetFieldType.title}</a>
+                                                        </label>
+                                                        <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.keyword.displayValue}</span>
                                                     </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.subject.value}">
-                                                    <span id="subject">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="" style="margin-right:1em;">Subject(s)</a>
-                                                        #{DatasetPage.datasetVersionUI.subject.displayValue}
+                                                    <span id="subject" class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.subject.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.subject.datasetFieldType.title}</a>
+                                                        </label>
+                                                        <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.subject.displayValue}</span>
                                                     </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.relPublicationCitation}">
-                                                    <span id="publication">Related Publication: #{DatasetPage.datasetVersionUI.relPublicationCitation} #{DatasetPage.datasetVersionUI.relPublicationId}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationUrl}</a></span>
+                                                    <span id="publication" class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}" title="">#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).title} </a>
+                                                        </label>
+                                                        <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.relPublicationCitation}  <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank">#{DatasetPage.datasetVersionUI.relPublicationId}</a></span>
+                                                    </span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.notes.value}">
-                                                    <span id="note">
-                                                        <a href="#" data-toggle="tooltip" data-placement="auto top" class="tooltiplabel right" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="" style="margin-right:1em;">Notes</a>
-                                                        <div>
-                                                            #{DatasetPage.datasetVersionUI.notes.value}
-                                                        </div>
+                                                    <span id="note" class="form-group">
+                                                        <label class="col-sm-3 control-label">
+                                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel" data-original-title="#{DatasetPage.datasetVersionUI.notes.datasetFieldType.description}" title="">#{DatasetPage.datasetVersionUI.notes.datasetFieldType.title}</a>
+                                                        </label>
+                                                        <span class="col-sm-8" style="padding-left:0; padding-right:0;">#{DatasetPage.datasetVersionUI.notes.value}</span>
                                                     </span>
                                                 </ui:fragment>
                                             </div>
@@ -431,6 +440,12 @@
                                     </p:dataTable>
                                 </p:tab>
                             </p:tabView>
+                        </div>
+                    </ui:fragment>
+                    
+                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                        <div class="alert alert-info" style="margin-top:.5em;">
+                            Tip: You can add more metadata about this dataset after it's created.
                         </div>
                     </ui:fragment>
 

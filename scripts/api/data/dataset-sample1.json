@@ -1,48 +1,44 @@
 {
-  "authority": "anAuthority",
-  "identifier": "dataset-one",
-  "protocol": "chadham-house-rule",
-  "initialVersion": {
-    "authors": [
-      {
-        "displayOrder": 0,
-        "affiliation": {
-          "value": "IQSS"
-        },
-        "name": {
-          "value": "Castro, Eleni"
-        }
-      }
-    ],
-    "UNF": "UNF",
-    "title": "Replication Data for: Building a Bridge Between Journal Articles and Research Data",
-    "distributionDate": "Distribution Date",
-    "productionDate": "Production Date",
+  "data": {
     "metadataBlocks": {
       "citation": {
         "fields": [
           {
-            "value": "Replication Data for: Building a Bridge Between Journal Articles and Research Data",
+            "value": "sample dataset",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "title"
           },
           {
             "value": [
-              [
-                {
-                  "value": "Castro, Eleni",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "authorName"
-                },
-                {
-                  "value": "IQSS",
+              {
+                "authorAffiliation": {
+                  "value": "Top",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "authorAffiliation"
+                },
+                "authorName": {
+                  "value": "Privileged, Pete",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
                 }
-              ]
+              },
+              {
+                "authorAffiliation": {
+                  "value": "Coca-cola co",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                },
+                "authorName": {
+                  "value": "Borrator, Colla",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                }
+              }
             ],
             "typeClass": "compound",
             "multiple": true,
@@ -50,21 +46,23 @@
           },
           {
             "value": [
-              "ecastro@fas.harvard.edu"
+              "pete@malinator.com"
             ],
             "typeClass": "primitive",
             "multiple": true,
             "typeName": "distributorContact"
           },
           {
-            "value": "Research dataset for my publication on connecting journal articles and their underlying research data. Includes an analysis of current data publication practices.",
+            "value": "description description description description description description description description description ",
             "typeClass": "primitive",
             "multiple": false,
-            "typeName": "description"
+            "typeName": "dsDescription"
           },
           {
             "value": [
-              "data publication"
+              "Keyword1",
+              "KeywordTwo",
+              "TheThirdKeyWord"
             ],
             "typeClass": "primitive",
             "multiple": true,
@@ -79,20 +77,134 @@
             "typeName": "subject"
           },
           {
+            "value": "notes notes notes notes notes notes notes notes notes notes notes ",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "notesText"
+          },
+          {
+            "value": [
+              {
+                "otherIdAgency": {
+                  "value": "otheridAgency",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "otherIdAgency"
+                },
+                "otherIdValue": {
+                  "value": "otherid",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "otherIdValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "otherId"
+          },
+          {
+            "value": "2014-04-01",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "productionDate"
+          },
+          {
+            "value": "2014-04-01",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "productionPlace"
+          },
+          {
+            "value": [
+              {
+                "grantNumberAgency": {
+                  "value": "NSF",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "grantNumberAgency"
+                },
+                "grantNumberValue": {
+                  "value": "NSF12345",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "grantNumberValue"
+                }
+              },
+              {
+                "grantNumberAgency": {
+                  "value": "NIH",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "grantNumberAgency"
+                },
+                "grantNumberValue": {
+                  "value": "NIH99999",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "grantNumberValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "grantNumber"
+          },
+          {
             "value": "Privileged, Pete",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "depositor"
           },
           {
-            "value": "2014-05-01",
+            "value": "2014-05-06",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "dateOfDeposit"
+          },
+          {
+            "value": [
+              "Other reference number one",
+              "Other reference number two"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "otherReferences"
           }
         ],
         "displayName": "Citation Metadata"
       }
-    }
-  }
+    },
+    "authors": [
+      {
+        "displayOrder": 0,
+        "affiliation": {
+          "value": null
+        },
+        "name": {
+          "value": null
+        }
+      },
+      {
+        "displayOrder": 0,
+        "affiliation": {
+          "value": null
+        },
+        "name": {
+          "value": null
+        }
+      }
+    ],
+    "createTime": "2014-05-06 01:38:01 -04",
+    "UNF": "UNF",
+    "id": 4,
+    "version": 1,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "DRAFT",
+    "title": "sample dataset",
+    "distributionDate": "Distribution Date",
+    "productionDate": "Production Date"
+  },
+  "status": "OK"
 }

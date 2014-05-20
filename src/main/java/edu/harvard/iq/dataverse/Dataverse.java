@@ -82,6 +82,11 @@ public class Dataverse extends DvObjectContainer {
 
     @Enumerated(EnumType.STRING)
     private ImageFormat logoFormat;
+    
+    public enum Alignment { LEFT, CENTER, RIGHT }
+    @Enumerated(EnumType.STRING)
+    private Alignment logoAlignment;
+    private String logoBackgroundColor;
     private String logo;
     private String tagline;
     private String linkUrl;
@@ -198,6 +203,22 @@ public class Dataverse extends DvObjectContainer {
         this.logoFormat = logoFormat;
     }
 
+    public Alignment getLogoAlignment() {
+        return logoAlignment;
+    }
+
+    public void setLogoAlignment(Alignment logoAlignment) {
+        this.logoAlignment = logoAlignment;
+    }
+
+    public String getLogoBackgroundColor() {
+        return logoBackgroundColor;
+    }
+
+    public void setLogoBackgroundColor(String logoBackgroundColor) {
+        this.logoBackgroundColor = logoBackgroundColor;
+    }
+    
     public String getLogo() {
         return logo;
     }

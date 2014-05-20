@@ -40,7 +40,7 @@
                         </button>
                     </form>
                     <li>
-                        <h:outputLink value="http://datascience.iq.harvard.edu/dataverse/harvarddataverse" target="_blank">
+                        <h:outputLink value="http://datascience.iq.harvard.edu/blog/dataverse-40-beta" target="_blank">
                             About
                         </h:outputLink>
                     </li>
@@ -115,7 +115,7 @@
     <ui:fragment rendered="#{showDataverseHeader}">
         <div id="dataverseHeader" class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'RECTANGLE'}">
-                <div class="dataverseHeaderLogo">
+                <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.logoAlignment ? dataverse.logoAlignment : 'center'};; background:#{!empty dataverse.logoBackgroundColor ? dataverse.logoBackgroundColor : 'inherit'};">
                     <image src="/logos/#{dataverse.logo}" style="max-width:900px;max-height:120px"/>
                 </div>
             </ui:fragment>
@@ -142,10 +142,10 @@
                         <h:outputText escape="false" style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value="#{dataverse.tagline}" />
                     </div>
                 </ui:fragment>
-                <ui:fragment rendered="#{!empty dataverse.tagline}">
+                <ui:fragment rendered="#{!empty dataverse.linkUrl}">
                     <div class="dataverseHeaderCell dataverseHeaderLink">
-                        <h:outputLink value="#{dataverse.linkUrl}" target="_blank">
-                            <h:outputText style="color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};" value="#{dataverse.linkText}" />
+                        <h:outputLink value="#{dataverse.linkUrl}" style="color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};" target="_blank">
+                            <h:outputText value="#{dataverse.linkText}" escape="false"/>
                         </h:outputLink>
                     </div>
                 </ui:fragment>

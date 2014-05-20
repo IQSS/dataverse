@@ -49,7 +49,23 @@ public class DatasetServiceBean {
         dataFile.setFileSystemName(result.toString());
 
     }
-    
-    
+
+    /**
+     * @todo write this method for real. Don't just iterate through every single
+     * dataset! See https://redmine.hmdc.harvard.edu/issues/3988
+     */
+    public Dataset findByGlobalId(String globalId) {
+        Dataset foundDataset = null;
+        if (globalId != null) {
+            Query query = em.createQuery("select object(o) from Dataset as o order by o.id");
+            List<Dataset> datasets = query.getResultList();
+            for (Dataset dataset : datasets) {
+                if (globalId.equals(dataset.getGlobalId())) {
+                    foundDataset = dataset;
+                }
+            }
+        }
+        return foundDataset;
+    }
 
 }

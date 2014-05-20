@@ -211,4 +211,8 @@ public class Dataset extends DvObjectContainer {
         return v.visit(this);
     }
 
+    public String getGlobalId() {
+        return protocol + ":" + authority + "/" + getIdentifier();
+    }
+
 }

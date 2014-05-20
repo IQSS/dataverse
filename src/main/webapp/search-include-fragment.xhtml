@@ -27,6 +27,20 @@
                 </h:form>
             </ui:fragment>
 
+            <ui:fragment rendered="#{dataverseSession.user.guest and (dataverse.owner == null or dataverse.alias.endsWith('_open'))}">
+                <div style="float:right;">
+                    <button type="button" class="btn btn-default" onclick="addData_popup.show()">
+                        <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
+                    </button>
+                </div>
+                <p:confirmDialog header="Add Data" widgetVar="addData_popup">                                           
+                    <f:facet name="message">
+                        You need to <a href="/dataverseuser.xhtml?editMode=CREATE">Sign Up</a>
+                        or <a href="/loginpage.xhtml">Log In</a> to create a dataverse or add a dataset.
+                    </f:facet>
+                </p:confirmDialog>  
+            </ui:fragment>
+
             <ui:fragment rendered="#{permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                      or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')  }">
                 <h:form id="shareForm">
@@ -256,7 +270,7 @@
                                         <div class="pagination pull-right">
                                             <ul class="pagination">
                                                 <!--should take you to page 1-->
-                                                <li>
+                                                <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&#171;"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -270,7 +284,7 @@
                                                         <f:param name="page" value="1"/>
                                                     </h:outputLink>
                                                 </li>
-                                                <li>
+                                                <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&lt; Previous"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -530,7 +544,7 @@
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
 
-                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock"/>
+                                    <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock bg-info"/>
 
                                     <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                                     <ui:fragment rendered="#{result.descriptionSnippets.size() gt 0}">
@@ -597,17 +611,17 @@
                                             <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                                         </ui:repeat>
                                     </ui:fragment>
-                                </ui:fragment>
-                                <ui:fragment rendered="#{result.highlightsAsList.size() > 0}">
-                                    <div>
-                                        <ui:repeat value="#{result.highlightsAsList}" var="highlight">
-                                            <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                                <h:outputText value="#{highlight.displayName}: "/>
-                                                <h:outputText value="#{snippet}" escape="false"/>
-                                                <br/>
+                                    <ui:fragment rendered="#{result.highlightsAsList.size() > 0}">
+                                        <div>
+                                            <ui:repeat value="#{result.highlightsAsList}" var="highlight">
+                                                <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                                    <h:outputText value="#{highlight.displayName}: "/>
+                                                    <h:outputText value="#{snippet}" escape="false"/>
+                                                    <br/>
+                                                </ui:repeat>
                                             </ui:repeat>
-                                        </ui:repeat>
-                                    </div>
+                                        </div>
+                                    </ui:fragment>
                                 </ui:fragment>
                             </p:column>
                         </p:dataTable>
@@ -619,7 +633,7 @@
                                 <div class="pagination pull-right" >
                                     <ul class="pagination">
                                         <!--should take you to page 1-->
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&#171;"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -633,7 +647,7 @@
                                                 <f:param name="page" value="1"/>
                                             </h:outputLink>
                                         </li>
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&lt; Previous"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>

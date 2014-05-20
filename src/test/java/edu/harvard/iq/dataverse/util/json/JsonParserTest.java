@@ -15,17 +15,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -33,12 +33,13 @@ import static org.junit.Assert.*;
  */
 public class JsonParserTest {
     
-    MockDatasetFieldSvc mockDatasetFieldSvc = null;
+    MockDatasetFieldSvc datasetFieldTypeSvc = null;
     DatasetFieldType keywordType;
     DatasetFieldType descriptionType;
     DatasetFieldType subjectType;
     DatasetFieldType pubIdType;
     DatasetFieldType compoundSingleType;
+    JsonParser sut;
     
     public JsonParserTest() {
     }
@@ -53,12 +54,12 @@ public class JsonParserTest {
     
     @Before
     public void setUp() {
-        mockDatasetFieldSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
-        keywordType = mockDatasetFieldSvc.add(new DatasetFieldType("keyword", "primitive", true));
-        descriptionType = mockDatasetFieldSvc.add( new DatasetFieldType("description", "primitive", false) );
+        keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", "primitive", true));
+        descriptionType = datasetFieldTypeSvc.add( new DatasetFieldType("description", "primitive", false) );
         
-        subjectType = mockDatasetFieldSvc.add(new DatasetFieldType("subject", "controlledVocabulary", true));
+        subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", "controlledVocabulary", true));
         subjectType.setAllowControlledVocabulary(true);
         subjectType.setControlledVocabularyValues( Arrays.asList( 
                 new ControlledVocabularyValue(1l, "mgmt", subjectType),
@@ -66,7 +67,7 @@ public class JsonParserTest {
                 new ControlledVocabularyValue(3l, "cs", subjectType)
         ));
         
-        pubIdType = mockDatasetFieldSvc.add(new DatasetFieldType("publicationIdType", "controlledVocabulary", false));
+        pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", "controlledVocabulary", false));
         pubIdType.setAllowControlledVocabulary(true);
         pubIdType.setControlledVocabularyValues( Arrays.asList( 
                 new ControlledVocabularyValue(1l, "ark", pubIdType),
@@ -74,177 +75,167 @@ public class JsonParserTest {
                 new ControlledVocabularyValue(3l, "url", pubIdType)
         ));
         
-        compoundSingleType = mockDatasetFieldSvc.add(new DatasetFieldType("coordinate", "compound", false));
+        compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", "compound", true));
         Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add( mockDatasetFieldSvc.add(new DatasetFieldType("lat", "primitive", false)) );
-        childTypes.add( mockDatasetFieldSvc.add(new DatasetFieldType("lon", "primitive", false)) );
+        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lat", "primitive", false)) );
+        childTypes.add( datasetFieldTypeSvc.add(new DatasetFieldType("lon", "primitive", false)) );
         
         for ( DatasetFieldType t : childTypes ) {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-        
-    }
-    
-    @After
-    public void tearDown() {
-    }
-    /*
-    @Test
-    public void testParseField_compound_single() throws JsonParseException {
-        JsonObject json = json("{\n" +
-                "  \"value\": [\n" +
-                "  {\n" +
-                "    \"value\": \"500.3\",\n" +
-                "    \"typeClass\": \"primitive\",\n" +
-                "    \"multiple\": false,\n" +
-                "    \"typeName\": \"lon\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"value\": \"300.3\",\n" +
-                "      \"typeClass\": \"primitive\",\n" +
-                "      \"multiple\": false,\n" +
-                "      \"typeName\": \"lat\"\n" +
-                "    }\n" +
-                "    ],\n" +
-                "    \"typeClass\": \"compound\",\n" +
-                "    \"multiple\": false,\n" +
-                "    \"typeName\": \"coordinate\"\n" +
-                "}");
-        
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
-        
-        DatasetField result = instance.parseField(json);
-        
-        assertEquals( compoundSingleType, result.getDatasetFieldType() );
-        DatasetFieldCompoundValue val = result.getDatasetFieldCompoundValues().get(0);
-        DatasetField lon = new DatasetField();
-        lon.setDatasetFieldType( mockDatasetFieldSvc.findByName("lon"));
-        lon.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(lon, "500.3")) );
-
-        DatasetField lat = new DatasetField();
-        lat.setDatasetFieldType( mockDatasetFieldSvc.findByName("lat"));
-        lat.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(lat, "300.3")) );
-        
-        List<DatasetField> actual = val.getChildDatasetFields();
-        assertEquals( lon, actual.get(0) );
-        assertEquals( lat, actual.get(1) );
+        sut = new JsonParser(datasetFieldTypeSvc, null);
     }
     
     @Test
-    public void testParseField_controlled_single() throws JsonParseException {
-        JsonObject json = json("{\n" +
-"            \"value\": \"ark\",\n" +
-"            \"typeClass\": \"controlledVocabulary\",\n" +
-"            \"multiple\": false,\n" +
-"            \"typeName\": \"publicationIdType\"\n" +
-"          }");
+    public void testCompoundRepeatsRoundtrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("coordinate") );
+        List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+        for ( int i=0; i<5; i++ ) {
+            DatasetFieldCompoundValue val = new DatasetFieldCompoundValue();
+            val.setParentDatasetField(expected);
+            val.setChildDatasetFields( Arrays.asList(latLonField("lat", Integer.toString(i*10)), latLonField("lon", Integer.toString(3+i*10))));
+            vals.add( val );
+        }
+        expected.setDatasetFieldCompoundValues(vals);
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
+        JsonObject json = JsonPrinter.json(expected);
         
-        DatasetField result = instance.parseField(json);
+        System.out.println("json = " + json);
         
-        assertEquals( pubIdType, result.getDatasetFieldType() );
-        assertEquals( pubIdType.getControlledVocabularyValue("ark"), result.getSingleControlledVocabularyValue() );
+        DatasetField actual = sut.parseField(json);
         
-    }
-
-    @Test
-    public void testParseField_controlled_multi() throws JsonParseException {
-        JsonObject json = json("{\n" +
-"            \"value\": [\n" +
-"              \"mgmt\",\n" +
-"              \"cs\"\n" +
-"            ],\n" +
-"            \"typeClass\": \"controlledVocabulary\",\n" +
-"            \"multiple\": true,\n" +
-"            \"typeName\": \"subject\"\n" +
-"          }");
-        
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
-        
-        DatasetField result = instance.parseField(json);
-        
-        assertEquals( subjectType, result.getDatasetFieldType() );
-        assertEquals( Arrays.asList( subjectType.getControlledVocabularyValue("mgmt"),
-                                     subjectType.getControlledVocabularyValue("cs")),
-                      result.getControlledVocabularyValues()
-        );
-        
-    }
-
-    */
-    /**
-     * Test of parsePrimitiveField method, of class JsonParser.
-     */
-    /*
-    @Test
-    public void testParseField_primitive_multi() throws JsonParseException {
-        JsonObject json = json("{\n" +
-"            \"value\": [\n" +
-"              \"data\",\n" +
-"              \"set\",\n" +
-"              \"sample\"\n" +
-"            ],\n" +
-"            \"typeClass\": \"primitive\",\n" +
-"            \"multiple\": true,\n" +
-"            \"typeName\": \"keyword\"\n" +
-"          }");
-        
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
-        
-        DatasetField result = instance.parseField(json);
-        
-        assertEquals( keywordType, result.getDatasetFieldType() );
-        assertEquals( Arrays.asList("data","set","sample"), result.getValues() );
+        assertFieldsEqual(expected, actual);
     }
     
-    @Test
-    public void testParseField_primitive_single() throws JsonParseException {
-        JsonObject json = json("{\n" +
-"            \"value\": \"data\",\n" +
-"            \"typeClass\": \"primitive\",\n" +
-"            \"multiple\": false,\n" +
-"            \"typeName\": \"description\"\n" +
-"          }");
+    DatasetField latLonField( String latLon, String value ) {
+        DatasetField retVal = new DatasetField();
+        retVal.setDatasetFieldType( datasetFieldTypeSvc.findByName(latLon));
+        retVal.setDatasetFieldValues( Collections.singletonList( new DatasetFieldValue(retVal, value)));
+        return retVal;
+    }
+    
+    @Test 
+    public void testControlledVocalNoRepeatsRoundTrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("publicationIdType");
+        expected.setDatasetFieldType( fieldType );
+        expected.setControlledVocabularyValues( Collections.singletonList( fieldType.getControlledVocabularyValue("ark")));
+        JsonObject json = JsonPrinter.json(expected);
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
-        
-        DatasetField result = instance.parseField(json);
-        
-        assertEquals( descriptionType, result.getDatasetFieldType() );
-        assertEquals( "data", result.getValue() );
+        DatasetField actual = sut.parseField(json);
+        assertFieldsEqual(expected, actual);
         
     }
     
-    @Test(expected=JsonParseException.class)
-    public void testParseField_primitive_NEType() throws JsonParseException {
-        JsonObject json = json("{\n" +
-"            \"value\": \"data\",\n" +
-"            \"typeClass\": \"primitive\",\n" +
-"            \"multiple\": false,\n" +
-"            \"typeName\": \"no-such-type\"\n" +
-"          }");
+    @Test 
+    public void testControlledVocalRepeatsRoundTrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        DatasetFieldType fieldType = datasetFieldTypeSvc.findByName("subject");
+        expected.setDatasetFieldType( fieldType );
+        expected.setControlledVocabularyValues( Arrays.asList( fieldType.getControlledVocabularyValue("mgmt"),
+                 fieldType.getControlledVocabularyValue("law"),
+                 fieldType.getControlledVocabularyValue("cs")));
         
-        JsonParser instance = new JsonParser( mockDatasetFieldSvc, null );
-        
-        DatasetField result = instance.parseField(json);
-        
-        assertEquals( descriptionType, result.getDatasetFieldType() );
-        assertEquals( "data", result.getValue() );
+        JsonObject json = JsonPrinter.json(expected);
+        DatasetField actual = sut.parseField(json);
+        assertFieldsEqual(expected, actual);
         
     }
-    */
+    
+    
+    @Test
+    public void testPrimitiveNoRepeatesFieldRoundTrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("description") );
+        expected.setDatasetFieldValues( Collections.singletonList(new DatasetFieldValue(expected, "This is a description value")) );
+        JsonObject json = JsonPrinter.json(expected);
+        
+        DatasetField actual = sut.parseField(json);
+        
+        assertFieldsEqual(actual, expected);
+    }
+    
+    @Test
+    public void testPrimitiveRepeatesFieldRoundTrip() throws JsonParseException {
+        DatasetField expected = new DatasetField();
+        expected.setDatasetFieldType( datasetFieldTypeSvc.findByName("keyword") );
+        expected.setDatasetFieldValues( Arrays.asList(new DatasetFieldValue(expected, "kw1"),
+                new DatasetFieldValue(expected, "kw2"),
+                new DatasetFieldValue(expected, "kw3")) );
+        JsonObject json = JsonPrinter.json(expected);
+        
+        DatasetField actual = sut.parseField(json);
+        
+        assertFieldsEqual(actual, expected);
+    }
     
     JsonObject json( String s ) {
         return Json.createReader( new StringReader(s) ).readObject();
     }
     
+    public boolean assertFieldsEqual( DatasetField ex, DatasetField act ) {
+        if ( ex == act ) return true;
+        if ( (ex == null) ^ (act==null) ) return false;
+        
+        // type
+        if ( ! ex.getDatasetFieldType().equals(act.getDatasetFieldType()) ) return false;
+        
+        if ( ex.getDatasetFieldType().isPrimitive() ) {
+            List<DatasetFieldValue> exVals = ex.getDatasetFieldValues();
+            List<DatasetFieldValue> actVals = act.getDatasetFieldValues();
+            if ( exVals.size() != actVals.size() ) return false;
+            Iterator<DatasetFieldValue> exItr = exVals.iterator();
+            for ( DatasetFieldValue actVal : actVals ) {
+                DatasetFieldValue exVal = exItr.next();
+                if ( ! exVal.getValue().equals(actVal.getValue()) ) {
+                    return false;
+                }
+            }
+            return true;
+            
+        } else if ( ex.getDatasetFieldType().isControlledVocabulary() ) {
+            List<ControlledVocabularyValue> exVals = ex.getControlledVocabularyValues();
+            List<ControlledVocabularyValue> actVals = act.getControlledVocabularyValues();
+            if ( exVals.size() != actVals.size() ) return false;
+            Iterator<ControlledVocabularyValue> exItr = exVals.iterator();
+            for ( ControlledVocabularyValue actVal : actVals ) {
+                ControlledVocabularyValue exVal = exItr.next();
+                if ( ! exVal.getId().equals(actVal.getId()) ) {
+                    return false;
+                }
+            }
+            return true;
+            
+        } else if ( ex.getDatasetFieldType().isCompound() ) {
+            List<DatasetFieldCompoundValue> exVals = ex.getDatasetFieldCompoundValues();
+            List<DatasetFieldCompoundValue> actVals = act.getDatasetFieldCompoundValues();
+            if ( exVals.size() != actVals.size() ) return false;
+            Iterator<DatasetFieldCompoundValue> exItr = exVals.iterator();
+            for ( DatasetFieldCompoundValue actVal : actVals ) {
+                DatasetFieldCompoundValue exVal = exItr.next();
+                Iterator<DatasetField> exChildItr = exVal.getChildDatasetFields().iterator();
+                Iterator<DatasetField> actChildItr = actVal.getChildDatasetFields().iterator();
+                while( exChildItr.hasNext() ) {
+                    assertFieldsEqual(exChildItr.next(), actChildItr.next());
+                }
+            }
+            return true;
+            
+        }
+        
+        throw new IllegalArgumentException("Unknown dataset field type '" + ex.getDatasetFieldType() + "'");
+    }
+    
     static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
         
         Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        
+        long nextId = 1;
         public DatasetFieldType add( DatasetFieldType t ) {
+            if ( t.getId()==null ) {
+                t.setId( nextId++ );
+            }
             fieldTypes.put( t.getName(), t);
             return t;
         }
@@ -252,6 +243,11 @@ public class JsonParserTest {
         @Override
         public DatasetFieldType findByName( String name ) {
             return fieldTypes.get(name);
+        }
+        
+        @Override
+        public DatasetFieldType findByNameOpt( String name ) {
+            return findByName( name );
         }
     }
 }
