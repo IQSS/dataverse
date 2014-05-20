@@ -165,10 +165,11 @@ public class JsonParser {
         if ( json.getBoolean("multiple") ) {
             List<DatasetFieldCompoundValue> vals = new LinkedList<>();
             
-            for ( JsonArray arr : json.getJsonArray("value").getValuesAs(JsonArray.class) ) {
+            for ( JsonObject obj : json.getJsonArray("value").getValuesAs(JsonObject.class) ) {
                 DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
                 List<DatasetField> fields = new LinkedList<>();
-                for ( JsonObject childFieldJson : arr.getValuesAs(JsonObject.class) ) {
+                for ( String fieldName: obj.keySet() ) {
+                    JsonObject childFieldJson = obj.getJsonObject(fieldName);
                     DatasetField f = parseField( childFieldJson );
                     f.setParentDatasetFieldCompoundValue(cv);
                     fields.add( f );
@@ -183,7 +184,9 @@ public class JsonParser {
             
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
-            for ( JsonObject childFieldJson : json.getJsonArray("value").getValuesAs(JsonObject.class) ) {
+            JsonObject value = json.getJsonObject("value");
+            for ( String key : value.keySet()  ) {
+                JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField f = parseField( childFieldJson );
                 f.setParentDatasetFieldCompoundValue(cv);
                 fields.add( f );

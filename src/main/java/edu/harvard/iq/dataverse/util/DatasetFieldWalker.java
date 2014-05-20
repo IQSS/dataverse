@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
@@ -97,9 +99,9 @@ public class DatasetFieldWalker {
     }
     
     static private <T> Iterable<T> sort( List<T> list, Comparator<T> cmp ) {
-        SortedSet<T> ret = new TreeSet<>(cmp);
-        ret.addAll( list );
-        return ret;
+        ArrayList<T> tbs = new ArrayList<>(list);
+        Collections.sort(tbs, cmp);
+        return tbs;
     }
     
 }

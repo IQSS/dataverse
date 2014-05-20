@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import java.math.BigDecimal;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 /**
  * Convert objects to Json.
@@ -225,17 +227,15 @@ public class JsonPrinter {
         return "primitive";
     }
     
-	public static JsonObjectBuilder json( DatasetField dfv ) {
-		JsonObjectBuilder bld = jsonObjectBuilder();
+    public static JsonObject json( DatasetField dfv ) {
 		if ( dfv.isEmpty() ) {
-			bld.addNull("value");
-		} else {
+			return null;
+        } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
-            bld.add( "value", fieldArray.build().getJsonObject(0) );
+            JsonArray out = fieldArray.build();
+            return out.getJsonObject(0);
 		}
-		
-		return bld;
 	}
 	
 	public static JsonObjectBuilder json( MetadataBlock blk ) {
@@ -325,6 +325,8 @@ public class JsonPrinter {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
         Deque<JsonArrayBuilder>  valueArrStack = new LinkedList<>();
+        JsonObjectBuilder result = null;
+        
         
         DatasetFieldsToJson( JsonArrayBuilder result ) {
             valueArrStack.push(result);
