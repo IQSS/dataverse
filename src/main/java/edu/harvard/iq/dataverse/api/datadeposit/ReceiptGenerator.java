@@ -16,25 +16,24 @@ public class ReceiptGenerator {
         /**
          * @todo should these URLs continue to have "study" in them? Do we need
          * to keep it as "study" for backwards compatibility or it ok to use
-         * "dataset"?
+         * "dataset"? http://irclog.iq.harvard.edu/dvn/2014-05-14#i_9404
          */
         String editIri = baseUrl + "/edit/study/" + globalId;
         depositReceipt.setEditIRI(new IRI(editIri));
         /**
          * @todo: should setLocation depend on if an atom entry or a zip file
-         * was deposited?
+         * was deposited? (This @todo has been carried over from the DVN 3.x
+         * version.)
          */
         depositReceipt.setLocation(new IRI(editIri));
         depositReceipt.setEditMediaIRI(new IRI(baseUrl + "/edit-media/study/" + globalId));
         depositReceipt.setStatementURI("application/atom+xml;type=feed", baseUrl + "/statement/study/" + globalId);
+        depositReceipt.addDublinCore("bibliographicCitation", dataset.getLatestVersion().getCitation());
         /**
-         * @todo re-enable bibliographicCitation
+         * @todo is this still returning the database id?
+         * https://redmine.hmdc.harvard.edu/issues/3397 ?
          */
-//        depositReceipt.addDublinCore("bibliographicCitation", study.getLatestVersion().getMetadata().getCitation(false));
-        /**
-         * @todo re-enable this
-         */
-//        depositReceipt.setSplashUri(study.getPersistentURL());
+        depositReceipt.setSplashUri(dataset.getPersistentURL());
         return depositReceipt;
     }
 
