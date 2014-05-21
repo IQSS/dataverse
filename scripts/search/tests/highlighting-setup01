@@ -1,0 +1,7 @@
+#!/bin/bash
+# We assume that scripts/search/tests/permissions came back clean.
+# We assume you've added the bird and tree dataverses with this:
+#
+cd scripts/search
+./populate
+./create
