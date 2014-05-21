@@ -1,2 +1,8 @@
 #!/bin/bash
-curl --insecure https://pete:pete@localhost:8181/dvn/api/data-deposit/v1/swordv2/service-document | xmllint -format -
+if [ -z "$1" ]; then
+  USERNAME=pete
+else
+  USERNAME=$1
+fi
+PASSWORD=$USERNAME
+curl --insecure -s https://$USERNAME:$PASSWORD@localhost:8181/dvn/api/data-deposit/v1/swordv2/service-document | xmllint -format -
