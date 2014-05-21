@@ -24,7 +24,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import java.io.StringReader;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +40,6 @@ import javax.json.JsonString;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
@@ -145,15 +143,17 @@ public class Dataverses extends AbstractApiBean {
         }
         try {
             try {
-            DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
-            
-            // force "initial version" properties
-            version.setMinorVersionNumber(0l);
-            version.setVersion(1l);
-            version.setVersionNumber(1l);
-            version.setVersionState(DatasetVersion.VersionState.DRAFT);
-            
-            ds.setVersions( Collections.singletonList(version) );
+                DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
+
+                // force "initial version" properties
+                version.setMinorVersionNumber(0l);
+                version.setVersionNumber(1l);
+                version.setVersionState(DatasetVersion.VersionState.DRAFT);
+                LinkedList<DatasetVersion> versions = new LinkedList<>();
+                versions.add(version);
+                version.setDataset(ds);
+                
+                ds.setVersions( versions );
             } catch ( javax.ejb.TransactionRolledbackLocalException rbe ) {
                 throw rbe.getCausedByException();
             }

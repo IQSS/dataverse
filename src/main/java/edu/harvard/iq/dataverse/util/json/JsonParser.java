@@ -48,7 +48,6 @@ public class JsonParser {
             if ( archiveNote != null ) dsv.setArchiveNote( archiveNote );
             
             dsv.setDeaccessionLink( obj.getString("deaccessionLink", null) );
-            dsv.setVersion( parseLong(obj.getString("version", null)) );
             dsv.setVersionNumber( parseLong(obj.getString("versionNumber", null)) );
             dsv.setMinorVersionNumber( parseLong(obj.getString("minorVersionNumber", null)) );
             dsv.setId( parseLong(obj.getString("id", null)) );
@@ -64,39 +63,6 @@ public class JsonParser {
             dsv.setArchiveTime( parseDate(obj.getString("archiveTime", null)) );
             
             dsv.setDatasetFields( parseMetadataBlocks(obj.getJsonObject("metadataBlocks")) );
-            
-            // parse authors
-            JsonArray authorsJson = obj.getJsonArray("authors");
-            List<DatasetAuthor> authors = new ArrayList<>( authorsJson.size() );
-            for ( JsonObject authorJson : authorsJson.getValuesAs(JsonObject.class) ) {
-                DatasetAuthor author = new DatasetAuthor();
-                author.setAffiliation( parseField( authorJson.getJsonObject("affiliation")) );
-                author.setIdType( authorJson.getString("idType", null) );
-                author.setIdValue( authorJson.getString("idValue", null));
-                author.setDisplayOrder( parsePrimitiveInt(authorJson.getString("displayOrder", null), 0) );
-                author.setName( parseField( authorJson.getJsonObject("name")) );
-                
-                authors.add( author );
-                author.setDatasetVersion(dsv);
-            }
-            dsv.setDatasetAuthors(authors);
-            
-            // parse distributors
-            JsonArray distrosJson = obj.getJsonArray("distributors");
-            if ( distrosJson != null ) {
-                List<DatasetDistributor> distros = new ArrayList<>(distrosJson.size());
-                for ( JsonObject distJson : distrosJson.getValuesAs(JsonObject.class) ) {
-                    DatasetDistributor distr = new DatasetDistributor();
-                    distr.setDisplayOrder( distJson.getInt("displayOrder", 0));
-                    distr.setVersion( Long.valueOf(distJson.getInt("version", 0)) );
-                    distr.setAbbreviation( parseField(distJson.getJsonObject("abbreviation")));
-                    distr.setAffiliation( parseField(distJson.getJsonObject("affiliation")));
-                    distr.setLogo( parseField(distJson.getJsonObject("logo")));
-                    distr.setName( parseField(distJson.getJsonObject("name")));
-                    distr.setUrl( parseField(distJson.getJsonObject("url")));
-                }
-                dsv.setDatasetDistributors(distros);
-            }
             
             return dsv;
             

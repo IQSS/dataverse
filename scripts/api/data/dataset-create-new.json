@@ -1,10 +1,14 @@
 {
-  "data": {
+  "authority": "anAuthority",
+  "identifier": "dataset-one",
+  "persistentUrl": "http://dx.doi.org/10.5072/FK2/9",
+  "protocol": "chadham-house-rule",
+  "initialVersion": {
     "metadataBlocks": {
       "citation": {
         "fields": [
           {
-            "value": "sample dataset",
+            "value": "SampleTitle",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "title"
@@ -27,7 +31,7 @@
               },
               {
                 "authorAffiliation": {
-                  "value": "Coca-cola co",
+                  "value": "UMASS, Amherst",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "authorAffiliation"
@@ -46,23 +50,24 @@
           },
           {
             "value": [
-              "pete@malinator.com"
+              "pete@malinator.com",
+              "beat@pailinator.gov"
             ],
             "typeClass": "primitive",
             "multiple": true,
             "typeName": "distributorContact"
           },
           {
-            "value": "description description description description description description description description description ",
+            "value": "lorem ipsum dolor sit amet. That must've been pretty interesting, I bet.",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "dsDescription"
           },
           {
             "value": [
-              "Keyword1",
-              "KeywordTwo",
-              "TheThirdKeyWord"
+              "kw1",
+              "kw2",
+              "kw3"
             ],
             "typeClass": "primitive",
             "multiple": true,
@@ -70,14 +75,15 @@
           },
           {
             "value": [
-              "Social Sciences"
+              "Arts and Humanities",
+              "Astronomy and Astrophysics"
             ],
             "typeClass": "controlledVocabulary",
             "multiple": true,
             "typeName": "subject"
           },
           {
-            "value": "notes notes notes notes notes notes notes notes notes notes notes ",
+            "value": "Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note Note note note note.\r\nNOTANOTANOTANOTANnot.e\r\n",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "notesText"
@@ -86,13 +92,13 @@
             "value": [
               {
                 "otherIdAgency": {
-                  "value": "otheridAgency",
+                  "value": "NSF",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "otherIdAgency"
                 },
                 "otherIdValue": {
-                  "value": "otherid",
+                  "value": "NSF1234",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "otherIdValue"
@@ -104,13 +110,46 @@
             "typeName": "otherId"
           },
           {
-            "value": "2014-04-01",
+            "value": [
+              {
+                "contributorAbbreviation": {
+                  "value": "DDD",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "contributorAbbreviation"
+                },
+                "contributorAffiliation": {
+                  "value": "Denmark",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "contributorAffiliation"
+                },
+                "contributorName": {
+                  "value": "Dennis",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "contributorName"
+                },
+                "contributorType": {
+                  "value": "Distributor",
+                  "typeClass": "controlledVocabulary",
+                  "multiple": false,
+                  "typeName": "contributorType"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "contributor"
+          },
+          {
+            "value": "2014-02-03",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "productionDate"
           },
           {
-            "value": "2014-04-01",
+            "value": "Cambridge, MA",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "productionPlace"
@@ -119,13 +158,13 @@
             "value": [
               {
                 "grantNumberAgency": {
-                  "value": "NSF",
+                  "value": "NIH",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "grantNumberAgency"
                 },
                 "grantNumberValue": {
-                  "value": "NSF12345",
+                  "value": "NIH1231245154",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "grantNumberValue"
@@ -139,7 +178,7 @@
                   "typeName": "grantNumberAgency"
                 },
                 "grantNumberValue": {
-                  "value": "NIH99999",
+                  "value": "NIH99999999",
                   "typeClass": "primitive",
                   "multiple": false,
                   "typeName": "grantNumberValue"
@@ -157,15 +196,30 @@
             "typeName": "depositor"
           },
           {
-            "value": "2014-05-06",
+            "value": "2014-05-20",
             "typeClass": "primitive",
             "multiple": false,
             "typeName": "dateOfDeposit"
           },
           {
             "value": [
-              "Other reference number one",
-              "Other reference number two"
+              "Bananas"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "relatedMaterial"
+          },
+          {
+            "value": [
+              "Data about bananas"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "relatedDatasets"
+          },
+          {
+            "value": [
+              "other ref other ref other ref ef ef"
             ],
             "typeClass": "primitive",
             "multiple": true,
@@ -175,36 +229,13 @@
         "displayName": "Citation Metadata"
       }
     },
-    "authors": [
-      {
-        "displayOrder": 0,
-        "affiliation": {
-          "value": null
-        },
-        "name": {
-          "value": null
-        }
-      },
-      {
-        "displayOrder": 0,
-        "affiliation": {
-          "value": null
-        },
-        "name": {
-          "value": null
-        }
-      }
-    ],
-    "createTime": "2014-05-06 01:38:01 -04",
+    "createTime": "2014-05-20 11:52:55 -04",
     "UNF": "UNF",
-    "id": 4,
-    "version": 1,
+    "id": 1,
     "versionNumber": 1,
     "versionMinorNumber": 0,
     "versionState": "DRAFT",
-    "title": "sample dataset",
     "distributionDate": "Distribution Date",
     "productionDate": "Production Date"
-  },
-  "status": "OK"
+  }
 }

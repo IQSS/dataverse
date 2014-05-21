@@ -61,7 +61,11 @@ public class DatasetVersion implements Serializable {
 
     @Version
     private Long version;
-
+    
+    /**
+     * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
+     * @return the object db version
+     */
     public Long getVersion() {
         return this.version;
     }
