@@ -200,9 +200,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
-	@Path("{id}/versions/{versionId}/metadata/{block}")
+	@Path("{id}/versions/{versionNumber}/metadata/{block}")
     public Response getVersionMetadataBlock( @PathParam("id") Long datasetId, 
-                                             @PathParam("versionId") String versionId, 
+                                             @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName,
                                              @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
@@ -214,7 +214,7 @@ public class Datasets extends AbstractApiBean {
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
 		DatasetVersion dsv = null;
-		switch (versionId) {
+		switch (versionNumber) {
 			case ":latest":
 				dsv = ds.getLatestVersion();
 				break;
@@ -223,15 +223,18 @@ public class Datasets extends AbstractApiBean {
 				break;
 			default:
 				try {
-					long versionNumericId = Long.parseLong(versionId);
+                    String[] comps = versionNumber.split("\\.");
+                    long majorVersion = Long.parseLong(comps[0]);
+                    long minorVersion = comps.length > 1 ? Long.parseLong(comps[1]) : 0;
 					for ( DatasetVersion aDsv : ds.getVersions() ) {
-						if ( aDsv.getId().equals(versionNumericId) ) {
+						if ( aDsv.getVersionNumber().equals(majorVersion) &&
+                              aDsv.getMinorVersionNumber().equals(minorVersion)) {
 							dsv = aDsv;
-							break; // for, not while
+							break; // for, not switch
 						}
 					}
 				} catch ( NumberFormatException nfe ) {
-					return errorResponse( Response.Status.BAD_REQUEST, "Illegal id number '" + versionId + "'");
+					return errorResponse( Response.Status.BAD_REQUEST, "Illegal version number '" + versionNumber + "'. Values are :latest, :edit and x.y");
 				}	
                 break;
 		}
