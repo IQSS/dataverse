@@ -200,6 +200,29 @@ public class DatasetVersion implements Serializable {
     public String getVersionNote() {
         return versionNote;
     }
+    
+    public List<String> getDifferencesNotes(){
+        List retList = new ArrayList();
+        int count = 0;
+        int size = this.getDataset().getVersions().size();
+        for (DatasetVersion dsv: this.getDataset().getVersions()){
+            if (this.equals(dsv)){
+                if ((count + 1) < size){
+                    DatasetVersionDifference dvd = new DatasetVersionDifference(this, this.getDataset().getVersions().get(count+1));                   
+                    return dvd.getNotes();
+                }
+            }
+            count++;
+        }
+        String defaultNote;
+        if (this.isReleased()){
+             defaultNote = "This is the first published version.";
+        } else {
+             defaultNote = "This is an unpublished draft.";
+        }
+        retList.add(defaultNote);
+        return retList;
+    }
 
     public void setVersionNote(String note) {
         if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {
@@ -346,7 +369,7 @@ public class DatasetVersion implements Serializable {
         }
         return retVal;
     }
-
+    
     public String getProductionDate() {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
