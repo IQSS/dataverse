@@ -521,65 +521,6 @@ public class DatasetPage implements java.io.Serializable {
         
         newFiles.add(dFile);
 
-        /*
-        DataFile dFile = new DataFile(uFile.getContentType());
-
-        FileMetadata fmd = new FileMetadata();
-        fmd.setLabel(uFile.getFileName());
-        fmd.setCategory(dFile.getContentType());
-
-        dFile.setOwner(dataset);
-        fmd.setDataFile(dFile);
-
-        dFile.getFileMetadatas().add(fmd);
-
-        if (editVersion.getFileMetadatas() == null) {
-            editVersion.setFileMetadatas(new ArrayList());
-        }
-        editVersion.getFileMetadatas().add(fmd);
-        fmd.setDatasetVersion(editVersion);
-        dataset.getFiles().add(dFile);
-
-        datasetService.generateFileSystemName(dFile);
-
-        // save the file, in the temporary location for now: 
-        if (ingestService.getFilesTempDirectory() != null) {
-            try {
-
-                logger.fine("Will attempt to save the file as: " + ingestService.getFilesTempDirectory() + "/" + dFile.getFileSystemName());
-                Files.copy(uFile.getInputstream(), Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ioex) {
-                logger.warning("Failed to save the file  " + dFile.getFileSystemName());
-                return;
-            }
-        }
-
-        // Let's try our own utilities (Jhove, etc.) to determine the file type 
-        // of the uploaded file. (we may or may not do better than the browser,
-        // which may have already recognized the type correctly...)
-        String fileType = null;
-        try {
-            fileType = FileUtil.determineFileType(Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fmd.getLabel());
-            logger.fine("File utility recognized the file as " + fileType);
-            if (fileType != null && !fileType.equals("")) {
-                // let's look at the browser's guess regarding the mime type
-                // of the file: 
-                String bgType = dFile.getContentType();
-                logger.fine("Browser recognized the file as " + bgType);
-
-                if (bgType == null || bgType.equals("") || bgType.equalsIgnoreCase("application/octet-stream")) {
-                    dFile.setContentType(fileType);
-                }
-            }
-        } catch (IOException ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
-        }
-        
-        newFiles.add(dFile);
-
-        */
-
-
     }
 
     public DatasetVersionUI getDatasetVersionUI() {
