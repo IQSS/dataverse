@@ -525,22 +525,20 @@
                         </ui:fragment>
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedData)}">    
                             <h:outputText  value="Additional Added Data" />
-                            <p:dataTable id="newAddlDataTable" value="#{DatasetPage.datasetVersionDifference.addedSummaryData}"
+                            <p:dataTable id="newAddlDataTable" value="#{DatasetPage.datasetVersionDifference.addedData}"
                                          rowIndexVar="rowNum" var="newData"> 
-                                <p:column>  
-                                    <h:outputText rendered="#{!(rowNum % 2 == 0) }" value="Current Value: " />
-                                    <h:outputText rendered="#{(rowNum % 2 == 0) }" value="Prior Value: " />
+                                <p:column>                                         
                                     <h:outputText  value="#{newData.datasetFieldType.title}" />
                                 </p:column>
                                 <p:column >
                                     <h:outputText rendered="#{newData.datasetFieldType.primitive}"  value="#{newData.displayValue}" />
                                     <h:outputText rendered="#{!newData.datasetFieldType.primitive}"  value="#{newData.compoundDisplayValue}" />
-                                </p:column>    
+                                </p:column>   
                             </p:dataTable>    
                         </ui:fragment> 
                         <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedData)}"> 
                             <h:outputText  value="Additional Removed Data" />
-                            <p:dataTable id="remAddlDataTable" value="#{DatasetPage.datasetVersionDifference.removedSummaryData}" var="removedData">                                                               
+                            <p:dataTable id="remAddlDataTable" value="#{DatasetPage.datasetVersionDifference.removedData}" var="removedData">                                                               
                                 <p:column>                                         
                                     <h:outputText  value="#{removedData.datasetFieldType.title}" />
                                 </p:column>
