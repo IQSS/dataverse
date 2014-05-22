@@ -42,20 +42,8 @@ public class DatasetVersionDifference {
                             } else {
                                 changedSummaryData.add(dsfo);
                                 changedSummaryData.add(dsfn);
-                            }
-                            boolean addedToAll = false;
-                            for (List blockList : addedDataByBlock) {
-                                DatasetField dsft[] = (DatasetField[]) blockList.get(0);
-                                if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
-                                    addToList(blockList, dsfo, dsfn);
-                                    addedToAll = true;
-                                }
-                            }
-                            if (!addedToAll) {
-                                List<DatasetField[]> newList = new ArrayList<>();
-                                addToList(newList, dsfo, dsfn);
-                                addedDataByBlock.add(newList);
-                            }
+                            }                            
+                            addToSummary(dsfo, dsfn);
                         }
                     } else {
                         if (!compareValuesCompound(dsfo, dsfn)) {
@@ -66,20 +54,7 @@ public class DatasetVersionDifference {
                                 changedSummaryData.add(dsfo);
                                 changedSummaryData.add(dsfn);
                             }
-                            boolean addedToAll = false;
-                            for (List blockList : addedDataByBlock) {
-                                DatasetField dsft[] = (DatasetField[]) blockList.get(0);
-                                if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
-                                    addToList(blockList, dsfo, dsfn);
-                                    addedToAll = true;
-                                }
-                            }
-                            if (!addedToAll) {
-                                List<DatasetField[]> newList = new ArrayList<>();
-                                addToList(newList, dsfo, dsfn);
-                                addedDataByBlock.add(newList);
-                            }
-                            
+                            addToSummary(dsfo, dsfn);                            
                         }
                     }
                     break; //if found go to next dataset field
@@ -150,6 +125,24 @@ public class DatasetVersionDifference {
                                 listIn.add(dsfArray);        
     }
 
+    private void addToSummary(DatasetField dsfo, DatasetField dsfn){
+        
+                            boolean addedToAll = false;
+                            for (List blockList : addedDataByBlock) {
+                                DatasetField dsft[] = (DatasetField[]) blockList.get(0);
+                                if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
+                                    addToList(blockList, dsfo, dsfn);
+                                    addedToAll = true;
+                                }
+                            }
+                            if (!addedToAll) {
+                                List<DatasetField[]> newList = new ArrayList<>();
+                                addToList(newList, dsfo, dsfn);
+                                addedDataByBlock.add(newList);
+                            }
+       
+    }
+    
     private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
 
         if (!(fmdo.getDescription().equals(fmdn.getDescription()))) {

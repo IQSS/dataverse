@@ -502,7 +502,32 @@
                                         </p:dataTable> 
                                     </p:column>                                      
                                 </p:dataTable>    
-                            </ui:fragment>  
+                            </ui:fragment> 
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedFiles)}"> 
+                                <h:outputText  value="Added Data File" />
+                                <p:dataTable id="addFileTableBlock" value="#{DatasetPage.datasetVersionDifference.addedFiles}" var="newFile">                                
+                                    <p:column >
+                                        <h:outputText value="#{newFile.label}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedFiles)}">   
+                                <h:outputText  value="Removed Data File" />
+                                <p:dataTable id="removedDataFileTableBlock" value="#{DatasetPage.datasetVersionDifference.removedFiles}" var="delFile">                                
+                                    <p:column >
+                                        <h:outputText value="#{delFile.label}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedFileMetadata)}">   
+                                <h:outputText  value="Updated File Metadata" />
+                                <p:dataTable id="updateFileMetadataTableBlock" value="#{DatasetPage.datasetVersionDifference.changedFileMetadata}" 
+                                             rowIndexVar="rowNum"     var="updFileMetdata">                                
+                                    <p:column >
+                                        <h:outputText value="#{updFileMetdata.label}" />
+                                    </p:column>  
+                                </p:dataTable>    
+                            </ui:fragment>
                         </p:confirmDialog>                          
 
                         <p:confirmDialog id="details" message="Current: #{DatasetPage.datasetVersionDifference.newVersion.title}" header="Details" widgetVar="details">                          
