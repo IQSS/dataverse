@@ -8,13 +8,17 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand.BumpWhat;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -23,6 +27,7 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
@@ -70,7 +75,6 @@ public class Datasets extends AbstractApiBean {
         Dataset ds = datasetService.find(id);
         return (ds != null) ? ok(json(ds))
 							: error("dataset not found");
-		
         
     }
 	
@@ -196,9 +200,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
-	@Path("{id}/versions/{versionId}/metadata/{block}")
+	@Path("{id}/versions/{versionNumber}/metadata/{block}")
     public Response getVersionMetadataBlock( @PathParam("id") Long datasetId, 
-                                             @PathParam("versionId") String versionId, 
+                                             @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName,
                                              @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
@@ -210,7 +214,7 @@ public class Datasets extends AbstractApiBean {
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
 		DatasetVersion dsv = null;
-		switch (versionId) {
+		switch (versionNumber) {
 			case ":latest":
 				dsv = ds.getLatestVersion();
 				break;
@@ -219,15 +223,18 @@ public class Datasets extends AbstractApiBean {
 				break;
 			default:
 				try {
-					long versionNumericId = Long.parseLong(versionId);
+                    String[] comps = versionNumber.split("\\.");
+                    long majorVersion = Long.parseLong(comps[0]);
+                    long minorVersion = comps.length > 1 ? Long.parseLong(comps[1]) : 0;
 					for ( DatasetVersion aDsv : ds.getVersions() ) {
-						if ( aDsv.getId().equals(versionNumericId) ) {
+						if ( aDsv.getVersionNumber().equals(majorVersion) &&
+                              aDsv.getMinorVersionNumber().equals(minorVersion)) {
 							dsv = aDsv;
-							break; // for, not while
+							break; // for, not switch
 						}
 					}
 				} catch ( NumberFormatException nfe ) {
-					return errorResponse( Response.Status.BAD_REQUEST, "Illegal id number '" + versionId + "'");
+					return errorResponse( Response.Status.BAD_REQUEST, "Illegal version number '" + versionNumber + "'. Values are :latest, :edit and x.y");
 				}	
                 break;
 		}
@@ -249,12 +256,41 @@ public class Datasets extends AbstractApiBean {
 		return error("Not implemented yet");
 	}
 	
-	
 	@POST
 	@Path("{id}/versions")
-	public String addVersion( @PathParam("id") Long id, @QueryParam("key") String apikey, DatasetDTO dsDto ){
-		// CONTPOINT accept the dsDto and push it to the DB.
-		return null;
+	public Response addVersion( String jsonBody, @PathParam("id") Long id, @QueryParam("bump")String bumpParam, @QueryParam("key") String apiKey ){
+
+        DataverseUser u = userSvc.findByUserName(apiKey);
+        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        
+        if ( bumpParam == null ) return errorResponse(Response.Status.BAD_REQUEST, "Must specify 'bump' parameter, either 'minor' or 'major'");
+        
+        CreateDatasetVersionCommand.BumpWhat bump;
+        switch (bumpParam.toLowerCase()) {
+            case "major": bump = BumpWhat.BumpMajor; break;
+            case "minor": bump = BumpWhat.BumpMinor; break;
+            default: return errorResponse(Response.Status.BAD_REQUEST, "bump parameter must be either 'minor' or 'major'");
+        }
+        
+        Dataset ds = datasetService.find(id);
+        if ( ds == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataset with id '" + id + "'");
+        
+        
+        try ( StringReader rdr = new StringReader(jsonBody) ) {
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion version = jsonParser().parseDatasetVersion(json);
+            DatasetVersion managedVersion = engineSvc.submit( new CreateDatasetVersionCommand(u, ds, version, bump) );
+            return okResponse( json(managedVersion) );
+                    
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Error executing CreateDatasetVersionCommand: " + ex.getMessage(), ex);
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + ex.getMessage() );
+            
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+        }
+        
 	}
 	
     // used to primarily to feed data into elasticsearch

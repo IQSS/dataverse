@@ -1,34 +1,6 @@
 #!/bin/bash
-# We assume that scripts/search/tests/permissions came back clean.
-# We assume you've added the bird and tree dataverses with this:
-#
-#cd scripts/search
-#./populate
-#./create
-#exit
-#
-# We assume you've created a dataset as pete in the "Trees" dataverse at
-# http://localhost:8080/dataverse.xhtml?id=11
-# with the following:
-# Title: Rings of Trees and Other Observations
-# Author: Tree, Tony
-# Affiliation: Trees Inc.
-# Contact E-mail: tony@trees.com
-# Description: Trees have rings. Trees can be tall.
-# Keyword: trees
-# Keyword: rings
-# Keyword: tall
-# Subject: Medicine, Health & Life Sciences
-# Notes: Many notes have been taken about trees over the years.
-#
-# We assume you edit the metadata of this dataset at
+# We assume you add a file called "trees.png" to the dataset at
 # http://localhost:8080/dataset.xhtml?id=17
-# and add the following
-# Contributor:
-#   Type: Data Collector
-#   Name: Edward Trees Jr.
-#
-# We assume you add a file called "trees.png" to this dataset
 # with a description of "Trees are lovely."
 #
 diff <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=nick') scripts/search/tests/expected/highlighting-nick-trees

@@ -26,7 +26,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +52,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -108,6 +111,10 @@ public class DatasetPage implements java.io.Serializable {
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
     private String dropBoxSelection = "";
+    private DatasetVersionDifference datasetVersionDifference;
+    private Map<Long, Boolean> checked = new HashMap<>();
+
+
 
     private String displayCitation;
 
@@ -503,7 +510,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId()  + "&faces-redirect=true";
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 
     private String getFilesTempDirectory() {
@@ -707,6 +714,71 @@ public class DatasetPage implements java.io.Serializable {
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
         this.versionTabList = versionTabList;
     }
+    
+ 
+    private List<DatasetVersion> selectedVersions;
+    public List<DatasetVersion> getSelectedVersions() {
+        return selectedVersions;
+    }
+ 
+    public void setSelectedVersions(List<DatasetVersion> selectedVersions) {
+        this.selectedVersions = selectedVersions;
+    }
+
+
+    public DatasetVersionDifference getDatasetVersionDifference() {
+        return datasetVersionDifference;
+    }
+
+    public void setDatasetVersionDifference(DatasetVersionDifference datasetVersionDifference) {
+        this.datasetVersionDifference = datasetVersionDifference;
+    }
+
+    public void compareVersionDifferences() {
+        twoSelected = false;
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (this.selectedVersions.size() != 2) {
+            twoSelected = false;
+            requestContext.execute("openCompareTwo();");
+        } else {
+            twoSelected = true;
+            //order depends on order of selection - needs to be chronological order
+            if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue() ){
+                updateVersionDifferences(this.selectedVersions.get(0), this.selectedVersions.get(1));
+            } else {
+                updateVersionDifferences(this.selectedVersions.get(1), this.selectedVersions.get(0));
+            }           
+        }
+    }
+
+    public void updateVersionDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        int count = 0;
+        int size = this.getDataset().getVersions().size();
+
+        if (originalVersion == null) {
+            for (DatasetVersion dsv : newVersion.getDataset().getVersions()) {
+                if (newVersion.equals(dsv)) {
+                    if ((count + 1) < size) {
+                        setDatasetVersionDifference(new DatasetVersionDifference(newVersion, newVersion.getDataset().getVersions().get(count + 1)));
+                        break;
+                    }
+                }
+                count++;
+            }
+        } else {
+            setDatasetVersionDifference(new DatasetVersionDifference(newVersion, originalVersion));
+        }
+    }
+
+    private boolean twoSelected;
+
+    public boolean isTwoSelected() {
+        return twoSelected;
+    }
+
+    public void setTwoSelected(boolean twoSelected) {
+        this.twoSelected = twoSelected;
+    }
 
     private boolean canIssueUpdateCommand() {
         try {
@@ -733,8 +805,6 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             return retList;
-
         }
     }
-
 }

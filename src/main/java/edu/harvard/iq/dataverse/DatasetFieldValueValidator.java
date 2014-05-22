@@ -110,7 +110,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
         }
 
         if (fieldType.equals("email")) {
-            Pattern p = Pattern.compile(".+@.+\\.[a-z]+");
+            Pattern p =  Pattern.compile("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
             Matcher m = p.matcher(value.getValue());
             boolean matchFound = m.matches();
             if (!matchFound) {

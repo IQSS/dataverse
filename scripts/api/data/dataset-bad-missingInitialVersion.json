@@ -1,5 +1,6 @@
 {
-  "authority":"anAuthority",
-  "identifier":"dataset-one",
-  "protocol":"chadham-house-rule"
+  "authority": "anAuthority",
+  "identifier": "dataset-one",
+  "persistentUrl": "http://dx.doi.org/10.5072/FK2/9",
+  "protocol": "chadham-house-rule"
 }

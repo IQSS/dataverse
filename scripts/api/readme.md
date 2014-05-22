@@ -5,7 +5,7 @@ The API uses `json`, and sometimes query parameters as well. Also, sometimes the
 
 To have a fresh start in the database, you can execute the script `drop-create.sh` in the `../database` folder.
 
-## Pre-made scripts
+## Pre-made Scripts
 
 	setup-users.sh
 
@@ -79,6 +79,10 @@ Get whether the dataverse is a metadata block root, or does it uses its parent b
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are `true` and `false` (both are valid JSON expressions).
 
+	POST http://{{SERVER}}/api/dvs/{{id}}/datasets/?key={{username}}
+
+Create a new dataset in dataverse `id`. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of `"initialVersion"`. The initial versions version number will be set to `1.0`, and its state will be set to `DRAFT` regardless of the content of the json object. Example json can be found at `data/dataset-create-new.json`.
+
 ### Datasets
 
 	GET http://{{SERVER}}/api/datasets/?key={{apikey}}
@@ -97,18 +101,22 @@ Delete the dataset whose id is passed.
 
 List versions of the dataset. 
 	
-	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionNumber}}?key={{apikey}}
 
-Show a version of the dataset. The `versionId` can be a number, or the values `:edit` for the edit version, and `:latest` for the latest one.
+Show a version of the dataset. The `versionNumber` can be a specific version number (in the form of `major.minor`, e.g. `1.2` or `3.0`), or the values `:edit` for the edit version, and `:latest` for the latest one.
 The Dataset also include any metadata blocks the data might have.
 
-	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
 
 Lists all the metadata blocks and their content, for the given dataset and version.
 
-	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
 
 Lists the metadata block block named `blockname`, for the given dataset and version.
+
+	POST http://{{SERVER}}/api/datasets/{{id}}/versions/?bump={{minor|major}}&key={{apiKey}}
+
+Adds a new version to a dataset. The `POST` parameter contains json version data. The new version number is determined by the server, based on the `bump` parameter. When `minor`, the dot-number is advances (2.4 &rarr; 2.5). When `major`, the major version number is advanced (2.4 &rarr; 3.0).
 
 ### permissions
 

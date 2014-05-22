@@ -30,7 +30,7 @@ public class DatasetServiceBean {
     private EntityManager em;
  
     public Dataset find(Object pk) {
-        return (Dataset) em.find(Dataset.class, pk);
+        return em.find(Dataset.class, pk);
     }
     
     public List<Dataset> findByOwnerId(Long ownerId) {

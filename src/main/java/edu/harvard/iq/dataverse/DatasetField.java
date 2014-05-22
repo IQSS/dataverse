@@ -218,6 +218,18 @@ public class DatasetField implements Serializable {
         return returnString;
     }
     
+    public String getCompoundDisplayValue() {
+        String returnString = "";
+        for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
+            for (DatasetField dsf : dscv.getChildDatasetFields()){
+                        for (String value : dsf.getValues()) {
+            returnString += (returnString.equals("") ? "" : "; ") + value;
+                }
+            }
+        }
+        return returnString;
+    }
+    
     public List<String> getValues() {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {

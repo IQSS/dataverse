@@ -155,11 +155,11 @@ public class ManageRolesPage implements java.io.Serializable {
 	
 	public void saveRole( ActionEvent e ) {
 		role.setOwner(getDataverse());
-		role.permissions().clear();
+		role.clearPermissions();
 		for ( String pmsnStr : getSelectedPermissions() ) {
 			role.addPermission(Permission.valueOf(pmsnStr) );
 		}
-		setRole( rolesService.save(role) );;
+		setRole( rolesService.save(role) );
 		JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
 		intent = Intent.LIST;
 	}

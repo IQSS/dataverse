@@ -17,6 +17,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
 /**
  *
@@ -54,6 +55,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     private DatasetField parentDatasetField;    
 
     @OneToMany(mappedBy = "parentDatasetFieldCompoundValue", orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("datasetFieldType ASC")
     private List<DatasetField> childDatasetFields = new ArrayList();    
     
     public Long getId() {
