@@ -13,7 +13,7 @@ import java.util.List;
 public class DatasetVersionDifference {
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List>addedDataAll = new ArrayList();
+    private List<List>addedDataByBlock = new ArrayList();
     private List<FileMetadata> addedFiles = new ArrayList();
     private List<FileMetadata> removedFiles = new ArrayList();
     private List<FileMetadata> changedFileMetadata = new ArrayList();
@@ -44,7 +44,7 @@ public class DatasetVersionDifference {
                                 changedSummaryData.add(dsfn);
                             }
                             boolean addedToAll = false;
-                            for (List blockList : addedDataAll) {
+                            for (List blockList : addedDataByBlock) {
                                 DatasetField dsft[] = (DatasetField[]) blockList.get(0);
                                 if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                                     addToList(blockList, dsfo, dsfn);
@@ -54,7 +54,7 @@ public class DatasetVersionDifference {
                             if (!addedToAll) {
                                 List<DatasetField[]> newList = new ArrayList<>();
                                 addToList(newList, dsfo, dsfn);
-                                addedDataAll.add(newList);
+                                addedDataByBlock.add(newList);
                             }
                         }
                     } else {
@@ -67,7 +67,7 @@ public class DatasetVersionDifference {
                                 changedSummaryData.add(dsfn);
                             }
                             boolean addedToAll = false;
-                            for (List blockList : addedDataAll) {
+                            for (List blockList : addedDataByBlock) {
                                 DatasetField dsft[] = (DatasetField[]) blockList.get(0);
                                 if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                                     addToList(blockList, dsfo, dsfn);
@@ -77,12 +77,12 @@ public class DatasetVersionDifference {
                             if (!addedToAll) {
                                 List<DatasetField[]> newList = new ArrayList<>();
                                 addToList(newList, dsfo, dsfn);
-                                addedDataAll.add(newList);
+                                addedDataByBlock.add(newList);
                             }
                             
                         }
                     }
-                    break;
+                    break; //if found go to next dataset field
                 }
             }
             if (deleted && !dsfo.isEmpty()) {
@@ -139,7 +139,7 @@ public class DatasetVersionDifference {
                 addedFiles.add(fmdn);
             }
         }
-        System.out.print("arrayList size " + addedDataAll.size());
+        System.out.print("arrayList size " + addedDataByBlock.size());
     }
 
     private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn){
@@ -354,7 +354,17 @@ public class DatasetVersionDifference {
 
         return retString;
     }
-        public List<FileMetadata> getAddedFiles() {
+    
+    public List<List> getAddedDataByBlock() {
+        return addedDataByBlock;
+    }
+
+    public void setAddedDataByBlock(List<List> addedDataAll) {
+        this.addedDataByBlock = addedDataAll;
+    }
+    
+    
+    public List<FileMetadata> getAddedFiles() {
         return addedFiles;
     }
 

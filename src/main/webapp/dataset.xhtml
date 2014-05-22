@@ -20,22 +20,22 @@
             <ui:define name="body">
                 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
                 <script type="text/javascript">
-                    
+
                     function openDialog() {
                         details.show();
                     }
                     function openCompareTwo() {
                         compareTwo.show();
-                    }                    
-                    function testCheckBoxes(){                       
-                        var count = versionsTable.getSelectedRowsCount(); 
-                        if (count!==2){
-                           compareTwo.show(); 
+                    }
+                    function testCheckBoxes() {
+                        var count = versionsTable.getSelectedRowsCount();
+                        if (count !== 2) {
+                            compareTwo.show();
                         } else {
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                    
+
                     function openDropboxChooser() {
                         options = {
                             // Required. Called when a user selects an item in the Chooser.
@@ -433,15 +433,15 @@
                                     <p:commandButton  value="Direct"  id="compareVersions"  
                                                       style="display:none"
                                                       update=":datasetForm"
-                                                     oncomplete="details.show()"
-                                                            
+                                                      oncomplete="details.show()"
+
                                                       actionListener="#{DatasetPage.compareVersionDifferences()}">                                                                                              
-                                            </p:commandButton>
+                                    </p:commandButton>
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" rowKey="#{versionTab}"> 
 
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.versionTabList.size() > 2}"
-                                                   style="width:2%;text-align:center"/>
+                                                  style="width:2%;text-align:center"/>
                                         <p:column >
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
                                                 <h:outputText rendered="#{!versionTab.released}"  value="#{versionTab.versionState}" />
@@ -453,20 +453,20 @@
                                         <p:column>  
                                             <ui:fragment rendered="#{!empty(versionTab.differencesNotes)}">
                                                 <p:dataTable var="diffNote" value="#{versionTab.differencesNotes}">
-                                                    
+
                                                     <p:column >
-<h:outputText  value="#{diffNote}" /> 
-                                        </p:column>
+                                                        <h:outputText  value="#{diffNote}" /> 
+                                                    </p:column>
                                                 </p:dataTable>                                                
                                             </ui:fragment>                                              
                                             <p:commandLink  rendered ="#{(!empty(versionTab.differencesNotes)) and DatasetPage.versionTabList.size() > (rowNum + 1) }"
-                                                              actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                                                              oncomplete="details.show()"
-                                                              update=":datasetForm"
-                                                              value=" Show Details"></p:commandLink>
+                                                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
+                                                            oncomplete="detailsBlocks.show()"
+                                                            update=":datasetForm"
+                                                            value=" Show Details"></p:commandLink>
                                         </p:column>
-                                         <p:column>                                         
-                                             <h:outputText  value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />    
+                                        <p:column>                                         
+                                            <h:outputText  value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />    
                                         </p:column>
                                         <p:column  > 
                                             <f:facet name="header">
@@ -482,114 +482,137 @@
                     <p:confirmDialog id="compareTwo" message="You may only compare two versions." header="Please Select Two Versions" widgetVar="compareTwo">
                     </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
-                    <p:confirmDialog id="details" message="Current: #{DatasetPage.datasetVersionDifference.newVersion.title}" header="Details" widgetVar="details">                          
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedSummaryData)}">    
-                            <h:outputText  value="New Summary Data" />
-                            <p:dataTable id="newSummDataTable" value="#{DatasetPage.datasetVersionDifference.addedSummaryData}" var="newData"> 
-                                <p:column>                                         
-                                    <h:outputText  value="#{newData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{newData.datasetFieldType.primitive}"  value="#{newData.displayValue}" />
-                                    <h:outputText rendered="#{!newData.datasetFieldType.primitive}"  value="#{newData.compoundDisplayValue}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment> 
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedSummaryData)}">      
-                            <h:outputText  value="Removed Summary Data" />
-                            <p:dataTable id="remSummDataTable" value="#{DatasetPage.datasetVersionDifference.removedSummaryData}" var="removedData"> 
+                        <p:confirmDialog id="detailsBlocks" message="Current: #{DatasetPage.datasetVersionDifference.newVersion.title}" header="Details" widgetVar="detailsBlocks">                          
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedDataByBlock)}">                                
+                                <p:dataTable id="byBlockOuter" value="#{DatasetPage.datasetVersionDifference.addedDataByBlock}" var="block"> 
+                                    <p:column>   
+                                        <h:outputText  value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />  
+                                        <p:dataTable id="byBlockInner" var="dsfArray" value="#{block}"> 
+                                            <p:column>
+                                                <h:outputText  value="#{dsfArray[0].datasetFieldType.title}" />   
+                                            </p:column>
+                                            <p:column >
+                                                <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive}"  value="#{dsfArray[0].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive}"  value="#{dsfArray[0].compoundDisplayValue}" />
+                                            </p:column>  
+                                            <p:column >
+                                                <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive}"  value="#{dsfArray[1].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive}"  value="#{dsfArray[1].compoundDisplayValue}" />
+                                            </p:column> 
+                                        </p:dataTable> 
+                                    </p:column>                                      
+                                </p:dataTable>    
+                            </ui:fragment>  
+                        </p:confirmDialog>                          
 
-                                <p:column>                                         
-                                    <h:outputText  value="#{removedData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{removedData.datasetFieldType.primitive}"  value="#{removedData.displayValue}" />
-                                    <h:outputText rendered="#{!removedData.datasetFieldType.primitive}"  value="#{removedData.compoundDisplayValue}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedSummaryData)}">  
-                            <h:outputText  value="Updated Summary Data" />
-                            <p:dataTable id="changedSummDataTable" value="#{DatasetPage.datasetVersionDifference.changedSummaryData}" 
-                                         rowIndexVar="rowNum" var="changedData">                               
-                                <p:column> 
-                                    <h:outputText rendered="#{!(rowNum % 2 == 0) }" value="Current Value: " />
-                                    <h:outputText rendered="#{(rowNum % 2 == 0) }" value="Prior Value: " />
-                                    <h:outputText  value="#{changedData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{changedData.datasetFieldType.primitive}"  value="#{changedData.displayValue}" />
-                                    <h:outputText rendered="#{!changedData.datasetFieldType.primitive}"  value="#{changedData.compoundDisplayValue}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedData)}">    
-                            <h:outputText  value="Additional Added Data" />
-                            <p:dataTable id="newAddlDataTable" value="#{DatasetPage.datasetVersionDifference.addedData}"
-                                         rowIndexVar="rowNum" var="newData"> 
-                                <p:column>                                         
-                                    <h:outputText  value="#{newData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{newData.datasetFieldType.primitive}"  value="#{newData.displayValue}" />
-                                    <h:outputText rendered="#{!newData.datasetFieldType.primitive}"  value="#{newData.compoundDisplayValue}" />
-                                </p:column>   
-                            </p:dataTable>    
-                        </ui:fragment> 
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedData)}"> 
-                            <h:outputText  value="Additional Removed Data" />
-                            <p:dataTable id="remAddlDataTable" value="#{DatasetPage.datasetVersionDifference.removedData}" var="removedData">                                                               
-                                <p:column>                                         
-                                    <h:outputText  value="#{removedData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{removedData.datasetFieldType.primitive}"  value="#{removedData.displayValue}" />
-                                    <h:outputText rendered="#{!removedData.datasetFieldType.primitive}"  value="#{removedData.compoundDisplayValue}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment> 
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedData)}">                             
-                            <h:outputText  value="Updated Additional Data" />
-                            <p:dataTable id="changedAddlDataTable" value="#{DatasetPage.datasetVersionDifference.changedData}"
-                                         rowIndexVar="rowNum" var="changedData">                                
-                                <p:column> 
-                                    <h:outputText rendered="#{!(rowNum % 2 == 0) }" value="Current Value: " />
-                                    <h:outputText rendered="#{(rowNum % 2 == 0) }" value="Prior Value: " />
-                                    <h:outputText  value="#{changedData.datasetFieldType.title}" />
-                                </p:column>
-                                <p:column >
-                                    <h:outputText rendered="#{changedData.datasetFieldType.primitive}"  value="#{changedData.displayValue}" />
-                                    <h:outputText rendered="#{!changedData.datasetFieldType.primitive}"  value="#{changedData.compoundDisplayValue}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedFiles)}"> 
-                            <h:outputText  value="Added Data File" />
-                            <p:dataTable id="addFileTable" value="#{DatasetPage.datasetVersionDifference.addedFiles}" var="newFile">                                
-                                <p:column >
-                                    <h:outputText value="#{newFile.label}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedFiles)}">   
-                            <h:outputText  value="Removed Data File" />
-                            <p:dataTable id="removedDataFileTable" value="#{DatasetPage.datasetVersionDifference.removedFiles}" var="delFile">                                
-                                <p:column >
-                                    <h:outputText value="#{delFile.label}" />
-                                </p:column>    
-                            </p:dataTable>    
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedFileMetadata)}">   
-                            <h:outputText  value="Updated File Metadata" />
-                            <p:dataTable id="updateFileMetadataTable" value="#{DatasetPage.datasetVersionDifference.changedFileMetadata}" 
-                                    rowIndexVar="rowNum"     var="updFileMetdata">                                
-                                <p:column >
-                                    <h:outputText value="#{updFileMetdata.label}" />
-                                </p:column>  
-                            </p:dataTable>    
-                        </ui:fragment>
-                    </p:confirmDialog>
-                        </ui:fragment>
+                        <p:confirmDialog id="details" message="Current: #{DatasetPage.datasetVersionDifference.newVersion.title}" header="Details" widgetVar="details">                          
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedSummaryData)}">    
+                                <h:outputText  value="New Summary Data" />
+                                <p:dataTable id="newSummDataTable" value="#{DatasetPage.datasetVersionDifference.addedSummaryData}" var="newData"> 
+                                    <p:column>                                         
+                                        <h:outputText  value="#{newData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{newData.datasetFieldType.primitive}"  value="#{newData.displayValue}" />
+                                        <h:outputText rendered="#{!newData.datasetFieldType.primitive}"  value="#{newData.compoundDisplayValue}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment> 
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedSummaryData)}">      
+                                <h:outputText  value="Removed Summary Data" />
+                                <p:dataTable id="remSummDataTable" value="#{DatasetPage.datasetVersionDifference.removedSummaryData}" var="removedData"> 
+
+                                    <p:column>                                         
+                                        <h:outputText  value="#{removedData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{removedData.datasetFieldType.primitive}"  value="#{removedData.displayValue}" />
+                                        <h:outputText rendered="#{!removedData.datasetFieldType.primitive}"  value="#{removedData.compoundDisplayValue}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedSummaryData)}">  
+                                <h:outputText  value="Updated Summary Data" />
+                                <p:dataTable id="changedSummDataTable" value="#{DatasetPage.datasetVersionDifference.changedSummaryData}" 
+                                             rowIndexVar="rowNum" var="changedData">                               
+                                    <p:column> 
+                                        <h:outputText rendered="#{!(rowNum % 2 == 0) }" value="Current Value: " />
+                                        <h:outputText rendered="#{(rowNum % 2 == 0) }" value="Prior Value: " />
+                                        <h:outputText  value="#{changedData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{changedData.datasetFieldType.primitive}"  value="#{changedData.displayValue}" />
+                                        <h:outputText rendered="#{!changedData.datasetFieldType.primitive}"  value="#{changedData.compoundDisplayValue}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedData)}">    
+                                <h:outputText  value="Additional Added Data" />
+                                <p:dataTable id="newAddlDataTable" value="#{DatasetPage.datasetVersionDifference.addedData}"
+                                             rowIndexVar="rowNum" var="newData"> 
+                                    <p:column>                                         
+                                        <h:outputText  value="#{newData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{newData.datasetFieldType.primitive}"  value="#{newData.displayValue}" />
+                                        <h:outputText rendered="#{!newData.datasetFieldType.primitive}"  value="#{newData.compoundDisplayValue}" />
+                                    </p:column>   
+                                </p:dataTable>    
+                            </ui:fragment> 
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedData)}"> 
+                                <h:outputText  value="Additional Removed Data" />
+                                <p:dataTable id="remAddlDataTable" value="#{DatasetPage.datasetVersionDifference.removedData}" var="removedData">                                                               
+                                    <p:column>                                         
+                                        <h:outputText  value="#{removedData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{removedData.datasetFieldType.primitive}"  value="#{removedData.displayValue}" />
+                                        <h:outputText rendered="#{!removedData.datasetFieldType.primitive}"  value="#{removedData.compoundDisplayValue}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment> 
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedData)}">                             
+                                <h:outputText  value="Updated Additional Data" />
+                                <p:dataTable id="changedAddlDataTable" value="#{DatasetPage.datasetVersionDifference.changedData}"
+                                             rowIndexVar="rowNum" var="changedData">                                
+                                    <p:column> 
+                                        <h:outputText rendered="#{!(rowNum % 2 == 0) }" value="Current Value: " />
+                                        <h:outputText rendered="#{(rowNum % 2 == 0) }" value="Prior Value: " />
+                                        <h:outputText  value="#{changedData.datasetFieldType.title}" />
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText rendered="#{changedData.datasetFieldType.primitive}"  value="#{changedData.displayValue}" />
+                                        <h:outputText rendered="#{!changedData.datasetFieldType.primitive}"  value="#{changedData.compoundDisplayValue}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedFiles)}"> 
+                                <h:outputText  value="Added Data File" />
+                                <p:dataTable id="addFileTable" value="#{DatasetPage.datasetVersionDifference.addedFiles}" var="newFile">                                
+                                    <p:column >
+                                        <h:outputText value="#{newFile.label}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.removedFiles)}">   
+                                <h:outputText  value="Removed Data File" />
+                                <p:dataTable id="removedDataFileTable" value="#{DatasetPage.datasetVersionDifference.removedFiles}" var="delFile">                                
+                                    <p:column >
+                                        <h:outputText value="#{delFile.label}" />
+                                    </p:column>    
+                                </p:dataTable>    
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.changedFileMetadata)}">   
+                                <h:outputText  value="Updated File Metadata" />
+                                <p:dataTable id="updateFileMetadataTable" value="#{DatasetPage.datasetVersionDifference.changedFileMetadata}" 
+                                             rowIndexVar="rowNum"     var="updFileMetdata">                                
+                                    <p:column >
+                                        <h:outputText value="#{updFileMetdata.label}" />
+                                    </p:column>  
+                                </p:dataTable>    
+                            </ui:fragment>
+                        </p:confirmDialog>
+                    </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
                             Tip: You can add more metadata about this dataset after it's created.
