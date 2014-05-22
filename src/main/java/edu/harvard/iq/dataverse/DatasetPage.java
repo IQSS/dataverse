@@ -481,22 +481,14 @@ public class DatasetPage implements java.io.Serializable {
                 status = getClient().executeMethod(dropBoxMethod);
                 if (status == 200) {
                     dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-                    dFile = new DataFile("application/octet-stream");
-                    dFile.setOwner(dataset);
-
-                    // save the file, in the temporary location for now: 
-                    datasetService.generateFileSystemName(dFile);
-                    if (ingestService.getFilesTempDirectory() != null) {
-                        logger.info("Will attempt to save the DropBox file as: " + ingestService.getFilesTempDirectory() + "/" + dFile.getFileSystemName());
-                        Files.copy(dropBoxStream, Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                        File tempFile = Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()).toFile();
-                        if (tempFile.exists()) {
-                            long writtenBytes = tempFile.length();
-                            logger.info("File size, expected: " + fileSize + ", written: " + writtenBytes);
-                        } else {
-                            throw new IOException();
-                        }
-                    }
+                    
+                    // If we've made it this far, we must have been able to
+                    // make a successful HTTP call to the DropBox server and 
+                    // obtain an InputStream - so we can now create a new
+                    // DataFile object: 
+                    
+                    dFile = ingestService.createDataFile(editVersion, dropBoxStream, fileName, null);
+                    newFiles.add(dFile);
                 }
             } catch (IOException ex) {
                 logger.warning("Failed to access DropBox url: " + fileLink + "!");
@@ -509,46 +501,27 @@ public class DatasetPage implements java.io.Serializable {
                     try {
                         dropBoxStream.close();
                     } catch (Exception ex) {
+                        //logger.whocares("...");
                     }
                 }
-            }
-
-            // If we've made it this far, we must have downloaded the file
-            // successfully, so let's finish processing it as a new DataFile
-            // object: 
-            FileMetadata fmd = new FileMetadata();
-            fmd.setDataFile(dFile);
-            dFile.getFileMetadatas().add(fmd);
-            fmd.setLabel(fileName);
-            fmd.setCategory(dFile.getContentType());
-            if (editVersion.getFileMetadatas() == null) {
-                editVersion.setFileMetadatas(new ArrayList());
-            }
-            editVersion.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(editVersion);
-            dataset.getFiles().add(dFile);
-
-            // When uploading files from dropBox, we don't get the benefit of 
-            // having the browser recognize the mime type of the file. So we'll 
-            // have to rely on our own utilities (Jhove, etc.) to try and determine
-            // what it is. 
-            String fileType = null;
-            try {
-                fileType = FileUtil.determineFileType(Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fileName);
-                logger.fine("File utility recognized the file as " + fileType);
-                if (fileType != null && !fileType.equals("")) {
-                    dFile.setContentType(fileType);
-                }
-            } catch (IOException ex) {
-                logger.warning("Failed to run the file utility mime type check on file " + fileName);
-            }
-
-            newFiles.add(dFile);
+            }            
         }
     }
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
+        DataFile dFile = null; 
+        
+        try {
+            dFile = ingestService.createDataFile(editVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
+        } catch (IOException ioex) {
+            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
+        }
+        
+        newFiles.add(dFile);
+
+        /*
         DataFile dFile = new DataFile(uFile.getContentType());
 
         FileMetadata fmd = new FileMetadata();
@@ -601,8 +574,11 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException ex) {
             logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
         }
-
+        
         newFiles.add(dFile);
+
+        */
+
 
     }
 

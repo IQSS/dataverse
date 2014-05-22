@@ -139,6 +139,75 @@ public class IngestServiceBean {
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
     
+    
+    public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+        Dataset dataset = version.getDataset();
+        DataFile datafile;
+        
+        FileMetadata fmd = new FileMetadata();
+
+        if (contentType != null && !contentType.equals("")) {
+            datafile = new DataFile(contentType);
+            fmd.setCategory(contentType);
+        } else {
+            datafile = new DataFile("application/octet-stream"); 
+        }
+
+        fmd.setLabel(fileName);
+
+        datafile.setOwner(dataset);
+        fmd.setDataFile(datafile);
+
+        datafile.getFileMetadatas().add(fmd);
+
+        if (version.getFileMetadatas() == null) {
+            version.setFileMetadatas(new ArrayList());
+        }
+        version.getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(version);
+        dataset.getFiles().add(datafile);
+
+        datasetService.generateFileSystemName(datafile);
+
+        // save the file, in the temporary location for now: 
+        String tempFilesDirectory = getFilesTempDirectory();
+        if (tempFilesDirectory != null) {
+            //try {
+
+                logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
+                Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
+            //} catch (IOException ioex) {
+            //    logger.warning("Failed to save the file  " + datafile.getFileSystemName());
+            //    return;
+            //}
+        }
+
+        // Let's try our own utilities (Jhove, etc.) to determine the file type 
+        // of the uploaded file. (We may already have a mime type supplied for this
+        // file - maybe the type that the browser recognized on upload; or, if 
+        // it's a harvest, maybe the remote server has already given us the type
+        // for this file... with our own type utility we may or may not do better 
+        // than the type supplied:
+        //  -- L.A. 
+        String recognizedType = null;
+        try {
+            recognizedType = FileUtil.determineFileType(Paths.get(tempFilesDirectory, datafile.getFileSystemName()).toFile(), fmd.getLabel());
+            logger.fine("File utility recognized the file as " + recognizedType);
+            if (recognizedType != null && !recognizedType.equals("")) {
+                // is it any better than the type that was supplied to us,
+                // if any?
+
+                if (contentType == null || contentType.equals("") || contentType.equalsIgnoreCase("application/octet-stream")) {
+                    datafile.setContentType(recognizedType);
+                }
+            }
+        } catch (IOException ex) {
+            logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
+        }
+        
+        return datafile;
+    }
+    
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
         if (newFiles != null && newFiles.size() > 0) {
             Dataset dataset = version.getDataset();
