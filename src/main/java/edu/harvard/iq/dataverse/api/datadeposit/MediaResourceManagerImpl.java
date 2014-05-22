@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -287,68 +288,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 }
             }
 
-            if (true) {
-                DataFile dFile = new DataFile("application/octet-stream");
-                dFile.setOwner(study);
-                datasetService.generateFileSystemName(dFile);
-//                if (true) {
-//                    throw returnEarly("dataFile.getFileSystemName(): " + dFile.getFileSystemName());
-//                }
-                InputStream depositInputStream = deposit.getInputStream();
-                try {
-                    Files.copy(depositInputStream, Paths.get(importDirString, dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException ex) {
-                    throw new SwordError("problem running Files.copy");
-                }
-                study.getFiles().add(dFile);
-
-                DatasetVersion editVersion = study.getEditVersion();
-//                boolean metadataExtracted = false;
-//                try {
-//                    metadataExtracted = ingestService.extractIndexableMetadata(importDir.getAbsolutePath() + File.separator + dFile.getFileSystemName(), dFile, editVersion);
-//                } catch (IOException ex) {
-//                    throw returnEarly("couldn't extract metadata" + ex);
-//                }
-                FileMetadata fmd = new FileMetadata();
-                fmd.setDataFile(dFile);
-                fmd.setLabel("myLabel");
-                fmd.setDatasetVersion(editVersion);
-                dFile.getFileMetadatas().add(fmd);
-
-                Command<Dataset> cmd;
-                cmd = new UpdateDatasetCommand(study, vdcUser);
-                try {
-                    /**
-                     * @todo at update time indexing is run but the file is not
-                     * indexed. Why? Manually re-indexing later finds it. Fix
-                     * this. Related to
-                     * https://redmine.hmdc.harvard.edu/issues/3809 ?
-                     */
-                    study = commandEngine.submit(cmd);
-                } catch (CommandException ex) {
-                    throw returnEarly("couldn't update dataset");
-                } catch (EJBException ex) {
-                    Throwable cause = ex;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ex.getLocalizedMessage());
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        sb.append(cause + " ");
-                        if (cause instanceof ConstraintViolationException) {
-                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                        .append(violation.getPropertyPath()).append(" at ")
-                                        .append(violation.getLeafBean()).append(" - ")
-                                        .append(violation.getMessage());
-                            }
-                        }
-                    }
-                    throw returnEarly("EJBException: " + sb.toString());
-                }
-
-            }
-
             /**
              * @todo remove this comment after confirming that the upstream jar
              * now has our bugfix
@@ -362,12 +301,69 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             FileOutputStream tempOutStream = null;
 //                List<StudyFileEditBean> fbList = new ArrayList<StudyFileEditBean>();
 
+            DatasetVersion editVersion = study.getEditVersion();
+            List<DataFile> newFiles = new ArrayList<>();
             try {
                 // copied from createStudyFilesFromZip in AddFilesPage
                 while ((zEntry = ziStream.getNextEntry()) != null) {
                     // Note that some zip entries may be directories - we 
                     // simply skip them:
                     if (!zEntry.isDirectory()) {
+
+                        // BEGIN 4.0 code
+                        DataFile dFile = new DataFile("application/octet-stream");
+                        dFile.setOwner(study);
+                        datasetService.generateFileSystemName(dFile);
+                        /**
+                         * @todo make this work with zip files containing more
+                         * than one file
+                         */
+                        InputStream individualFileInputStream = ziStream;
+                        try {
+                            Files.copy(individualFileInputStream, Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException ex) {
+                            throw new SwordError("problem running Files.copy");
+                        }
+                        study.getFiles().add(dFile);
+
+                        FileMetadata fmd = new FileMetadata();
+                        fmd.setDataFile(dFile);
+                        String fileName = "myLabel";
+                        if (zEntry.getName() != null) {
+                            String zentryFilename = zEntry.getName();
+                            int ind = zentryFilename.lastIndexOf('/');
+
+                            String finalFileName = fileName;
+                            String dirName = "";
+                            if (ind > -1) {
+                                finalFileName = zentryFilename.substring(ind + 1);
+                                if (ind > 0) {
+                                    dirName = zentryFilename.substring(0, ind);
+                                    dirName = dirName.replace('/', '-');
+                                }
+                            } else {
+                                finalFileName = zentryFilename;
+                            }
+
+                            fileName = finalFileName;
+                        }
+                        fmd.setLabel(fileName);
+                        fmd.setDatasetVersion(editVersion);
+                        dFile.getFileMetadatas().add(fmd);
+
+                        String fileType = null;
+                        try {
+                            fileType = FileUtil.determineFileType(Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fileName);
+                            logger.info("File utility recognized the file as " + fileType);
+                            if (fileType != null && !fileType.equals("")) {
+                                dFile.setContentType(fileType);
+                            }
+                        } catch (IOException ex) {
+                            logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                        }
+
+                        newFiles.add(dFile);
+                        // END 4.0 code
 
                         String fileEntryName = zEntry.getName();
                         logger.fine("file found: " + fileEntryName);
@@ -465,6 +461,42 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             } catch (EJBException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to study: " + ex.getMessage());
             }
+
+            ingestService.addFiles(editVersion, newFiles);
+
+            Command<Dataset> cmd;
+            cmd = new UpdateDatasetCommand(study, vdcUser);
+            try {
+                /**
+                 * @todo at update time indexing is run but the file is not
+                 * indexed. Why? Manually re-indexing later finds it. Fix this.
+                 * Related to https://redmine.hmdc.harvard.edu/issues/3809 ?
+                 */
+                study = commandEngine.submit(cmd);
+            } catch (CommandException ex) {
+                throw returnEarly("couldn't update dataset");
+            } catch (EJBException ex) {
+                Throwable cause = ex;
+                StringBuilder sb = new StringBuilder();
+                sb.append(ex.getLocalizedMessage());
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    sb.append(cause + " ");
+                    if (cause instanceof ConstraintViolationException) {
+                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                            sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                    .append(violation.getPropertyPath()).append(" at ")
+                                    .append(violation.getLeafBean()).append(" - ")
+                                    .append(violation.getMessage());
+                        }
+                    }
+                }
+                throw returnEarly("EJBException: " + sb.toString());
+            }
+
+            ingestService.startIngestJobs(study);
+
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
             DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, study);
