@@ -85,7 +85,7 @@ public class DatasetVersionDifference {
                     break;
                 }
             }
-            if (deleted) {
+            if (deleted && !dsfo.isEmpty()) {
                 if (dsfo.getDatasetFieldType().isDisplayOnCreate()) {
                     removedSummaryData.add(dsfo);
                 } else {
@@ -166,12 +166,12 @@ public class DatasetVersionDifference {
     }
 
     private boolean compareValuesPrimitive(DatasetField originalField, DatasetField newField) {
-
-        String originalValue = originalField.getDisplayValue();
-        String newValue = newField.getDisplayValue();
-        if (originalValue == null || newValue == null) {
+        if (originalField.isEmpty() &&  newField.isEmpty()) {
             return true;
         }
+        
+        String originalValue = originalField.getDisplayValue();
+        String newValue = newField.getDisplayValue();
         return originalValue.equals(newValue);
 
     }
@@ -179,6 +179,9 @@ public class DatasetVersionDifference {
     private boolean compareValuesCompound(DatasetField originalField, DatasetField newField) {
         String originalValue = "";
         String newValue = "";
+        if (originalField.isEmpty() &&  newField.isEmpty()) {
+            return true;
+        }
         for (DatasetFieldCompoundValue datasetFieldCompoundValueNew : newField.getDatasetFieldCompoundValues()) {
             for (DatasetField dsfn : datasetFieldCompoundValueNew.getChildDatasetFields()) {
                 newValue += dsfn.getDisplayValue() + ", ";
@@ -192,9 +195,6 @@ public class DatasetVersionDifference {
             originalValue += ";";
         }
 
-        if (originalValue == null || newValue == null) {
-            return true;
-        }
         return originalValue.equals(newValue);
 
     }
