@@ -83,7 +83,6 @@ function post_edit_dv_setup(){
  * Called after "Edit Dataverse" -  "General Information" or "Setup"
  */
 function post_edit_dv(){
-   // alert('hallo');
    hide_breadcrumb();
    hide_search_panels();
    bind_bsui_components();               
