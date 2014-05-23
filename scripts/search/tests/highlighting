@@ -1,7 +1,14 @@
 #!/bin/bash
-# We assume you add a file called "trees.png" to the dataset at
-# http://localhost:8080/dataset.xhtml?id=17
-# with a description of "Trees are lovely."
+# We assume you added a file called "trees.png" to the dataset at
+# by running highlighting-setup03
+#
+# It doesn't have a description yet. Go make it "Trees are lovely."
+# Handy link: http://localhost:8080/dataset.xhtml?id=17
+#
+# Then this test should pass.
+#
+# Of course, you can't operate on it with SWORD anymore until this
+# ticket is resolved: https://redmine.hmdc.harvard.edu/issues/3993
 #
 diff <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=nick') scripts/search/tests/expected/highlighting-nick-trees
 diff <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=pete') scripts/search/tests/expected/highlighting-pete-trees
