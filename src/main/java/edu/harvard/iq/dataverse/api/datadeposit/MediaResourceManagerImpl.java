@@ -212,15 +212,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-//            EditStudyService editStudyService;
-            Context ctx;
-            try {
-                ctx = new InitialContext();
-//                editStudyService = (EditStudyService) ctx.lookup("java:comp/env/editStudy");
-            } catch (NamingException ex) {
-                logger.info("problem looking up editStudyService");
-                throw new SwordServerException("problem looking up editStudyService");
-            }
             logger.fine("looking up study with globalId " + globalId);
             Dataset study = datasetService.findByGlobalId(globalId);
             if (study == null) {
@@ -239,53 +230,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
             Dataverse dvThatOwnsStudy = study.getOwner();
             if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-//                editStudyService.setStudyVersion(studyId);
-//                editStudyService.save(dvThatOwnsStudy.getId(), vdcUser.getId());
-//
-//                EditStudyFilesService editStudyFilesService;
-//                try {
-//                    editStudyFilesService = (EditStudyFilesService) ctx.lookup("java:comp/env/editStudyFiles");
-//                } catch (NamingException ex) {
-//                    logger.info("problem looking up editStudyFilesService");
-//                    throw new SwordServerException("problem looking up editStudyFilesService");
-//                }
-//                editStudyFilesService.setStudyVersionByGlobalId(globalId);
-//                List studyFileEditBeans = editStudyFilesService.getCurrentFiles();
-                List<String> exisitingFilenames = new ArrayList<String>();
-//                for (Iterator it = studyFileEditBeans.iterator(); it.hasNext();) {
-//                    StudyFileEditBean studyFileEditBean = (StudyFileEditBean) it.next();
-                if (shouldReplace) {
-//                        studyFileEditBean.setDeleteFlag(true);
-//                        logger.fine("marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-                } else {
-//                        String filename = studyFileEditBean.getStudyFile().getFileName();
-//                        exisitingFilenames.add(filename);
-                }
-            }
-//                editStudyFilesService.save(dvThatOwnsStudy.getId(), vdcUser.getId());
-
-            if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
-                throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
+                /**
+                 * @todo enforce this!
+                 */
             }
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
             // That's what the uploadDir was going to be for, but for now it's commented out
-            //
-            String importDirString;
-            File importDir;
-            String swordTempDirString = swordConfiguration.getTempDirectory();
-            if (swordTempDirString == null) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine temp directory");
-            } else {
-                importDirString = swordTempDirString + File.separator + "import" + File.separator + study.getId().toString();
-                importDir = new File(importDirString);
-                if (!importDir.exists()) {
-                    if (!importDir.mkdirs()) {
-                        logger.info("couldn't create directory: " + importDir.getAbsolutePath());
-                        throw new SwordServerException("couldn't create import directory");
-                    }
-                }
+            if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
+                throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
             }
 
             /**
@@ -298,8 +252,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             String uploadedZipFilename = deposit.getFilename();
             ZipInputStream ziStream = new ZipInputStream(deposit.getInputStream());
             ZipEntry zEntry;
-            FileOutputStream tempOutStream = null;
-//                List<StudyFileEditBean> fbList = new ArrayList<StudyFileEditBean>();
 
             DatasetVersion editVersion = study.getEditVersion();
             List<DataFile> newFiles = new ArrayList<>();
@@ -311,19 +263,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     if (!zEntry.isDirectory()) {
 
                         // BEGIN 4.0 code
-                        DataFile dFile = new DataFile("application/octet-stream");
-                        dFile.setOwner(study);
-                        datasetService.generateFileSystemName(dFile);
-                        InputStream individualFileInputStream = ziStream;
-                        try {
-                            Files.copy(individualFileInputStream, Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                        } catch (IOException ex) {
-                            throw new SwordError("problem running Files.copy");
-                        }
-                        study.getFiles().add(dFile);
-
-                        FileMetadata fmd = new FileMetadata();
-                        fmd.setDataFile(dFile);
                         String fileName = "myLabel";
                         if (zEntry.getName() != null) {
                             String zentryFilename = zEntry.getName();
@@ -343,21 +282,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
                             fileName = finalFileName;
                         }
-                        fmd.setLabel(fileName);
-                        fmd.setDatasetVersion(editVersion);
-                        dFile.getFileMetadatas().add(fmd);
-
-                        String fileType = null;
-                        try {
-                            fileType = FileUtil.determineFileType(Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fileName);
-                            logger.info("File utility recognized the file as " + fileType);
-                            if (fileType != null && !fileType.equals("")) {
-                                dFile.setContentType(fileType);
-                            }
-                        } catch (IOException ex) {
-                            logger.warning("Failed to run the file utility mime type check on file " + fileName);
-                        }
-
+                        String guessContentTypeForMe = null;
+                        DataFile dFile = ingestService.createDataFile(editVersion, ziStream, fileName, guessContentTypeForMe);
                         newFiles.add(dFile);
                         // END 4.0 code
 
@@ -388,64 +314,28 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             continue;
                         }
 
-                        File tempUploadedFile = new File(importDir, finalFileName);
-                        tempOutStream = new FileOutputStream(tempUploadedFile);
-
-                        byte[] dataBuffer = new byte[8192];
-                        int i = 0;
-
-                        while ((i = ziStream.read(dataBuffer)) > 0) {
-                            tempOutStream.write(dataBuffer, 0, i);
-                            tempOutStream.flush();
-                        }
-
-                        tempOutStream.close();
-
+                        /**
+                         * @todo confirm that this DVN 3.x zero-length file
+                         * check that was put in because of
+                         * https://redmine.hmdc.harvard.edu/issues/3273 is done
+                         * in the back end, if it's still important in 4.0.
+                         */
                         // We now have the unzipped file saved in the upload directory;
                         // zero-length dta files (for example) are skipped during zip
                         // upload in the GUI, so we'll skip them here as well
-                        if (tempUploadedFile.length() != 0) {
-
-                            if (true) {
-//                                tempUploadedFile;
-//                                UploadedFile uFile = tempUploadedFile;
-//                                DataFile dataFile = new DataFile();
-//                                throw new SwordError("let's create a file");
-                            }
-//                                StudyFileEditBean tempFileBean = new StudyFileEditBean(tempUploadedFile, studyService.generateFileSystemNameSequence(), study);
-//                                tempFileBean.setSizeFormatted(tempUploadedFile.length());
-                            String finalFileNameAfterReplace = finalFileName;
-//                                if (tempFileBean.getStudyFile() instanceof TabularDataFile) {
-                            // predict what the tabular file name will be
-//                                    finalFileNameAfterReplace = FileUtil.replaceExtension(finalFileName);
-//                                }
-
-//                                validateFileName(exisitingFilenames, finalFileNameAfterReplace, study);
-                            // And, if this file was in a legit (non-null) directory, 
-                            // we'll use its name as the file category: 
-                            if (dirName != null) {
-//                                    tempFileBean.getFileMetadata().setCategory(dirName);
-                            }
-
-//                                fbList.add(tempFileBean);
-                        }
+//                        if (tempUploadedFile.length() != 0) {
+                        /**
+                         * @todo are file categories going away?
+                         */
+                        // And, if this file was in a legit (non-null) directory, 
+                        // we'll use its name as the file category: 
+//                        tempFileBean.getFileMetadata().setCategory(dirName);
                     } else {
                         logger.fine("directory found: " + zEntry.getName());
                     }
                 }
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with file: " + uploadedZipFilename);
-            } finally {
-                /**
-                 * @todo shouldn't we delete this uploadDir? Commented out in
-                 * DVN 3.x
-                 */
-//                    if (!uploadDir.delete()) {
-//                        logger.fine("Unable to delete " + uploadDir.getAbsolutePath());
-//                    }
-            }
-            try {
-//                        studyFileService.addFiles(study.getLatestVersion(), fbList, vdcUser);
             } catch (EJBException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to study: " + ex.getMessage());
             }
@@ -459,11 +349,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             Command<Dataset> cmd;
             cmd = new UpdateDatasetCommand(study, vdcUser);
             try {
-                /**
-                 * @todo at update time indexing is run but the file is not
-                 * indexed. Why? Manually re-indexing later finds it. Fix this.
-                 * Related to https://redmine.hmdc.harvard.edu/issues/3809 ?
-                 */
                 study = commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 throw returnEarly("couldn't update dataset");
@@ -494,6 +379,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, study);
             return depositReceipt;
         }
+        /**
+         * @todo move these SwordErrors to the right place
+         */
 //            } else {
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify study with global ID " + study.getGlobalId());
         return new DepositReceipt(); // added just to get this to compile 2014-05-14
@@ -503,6 +391,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 //        }
 //    }
 
+    /**
+     * @todo This validation was in DVN 3.x and should go into the 4.0 ingest
+     * service
+     */
     // copied from AddFilesPage
 //    private void validateFileName(List<String> existingFilenames, String fileName, Study study) throws SwordError {
 //        if (fileName.contains("\\")
