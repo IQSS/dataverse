@@ -314,10 +314,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         DataFile dFile = new DataFile("application/octet-stream");
                         dFile.setOwner(study);
                         datasetService.generateFileSystemName(dFile);
-                        /**
-                         * @todo make this work with zip files containing more
-                         * than one file
-                         */
                         InputStream individualFileInputStream = ziStream;
                         try {
                             Files.copy(individualFileInputStream, Paths.get(ingestService.getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
@@ -448,18 +444,14 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 //                        logger.fine("Unable to delete " + uploadDir.getAbsolutePath());
 //                    }
             }
-//                if (fbList.size() > 0) {
-//                    StudyFileServiceLocal studyFileService;
-//                    try {
-//                        studyFileService = (StudyFileServiceLocal) ctx.lookup("java:comp/env/studyFileService");
-//                    } catch (NamingException ex) {
-//                        logger.info("problem looking up studyFileService");
-//                        throw new SwordServerException("problem looking up studyFileService");
-//                    }
             try {
 //                        studyFileService.addFiles(study.getLatestVersion(), fbList, vdcUser);
             } catch (EJBException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to study: " + ex.getMessage());
+            }
+
+            if (newFiles.isEmpty()) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with zip file '" + uploadedZipFilename + "'. Number of files unzipped: " + newFiles.size());
             }
 
             ingestService.addFiles(editVersion, newFiles);
@@ -501,8 +493,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
             DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, study);
             return depositReceipt;
-        } else {
-//                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with zip file '" + uploadedZipFilename + "'. Number of files unzipped: " + fbList.size());
         }
 //            } else {
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify study with global ID " + study.getGlobalId());
