@@ -41,7 +41,7 @@ Other Resources
 Additional information about the Dataverse Project itself
 including presentations, information about upcoming releases, data
 management and citation, and announcements can be found at
-`http://thedata.org <http://thedata.org/>`__
+`http://datascience.iq.harvard.edu/ <http://datascience.iq.harvard.edu/>`__
 
 **User Group**
 
