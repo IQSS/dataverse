@@ -116,13 +116,13 @@
         <div id="dataverseHeader" class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'RECTANGLE'}">
                 <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.logoAlignment ? dataverse.logoAlignment : 'center'};; background:#{!empty dataverse.logoBackgroundColor ? dataverse.logoBackgroundColor : 'inherit'};">
-                    <image src="/logos/#{dataverse.logo}" style="max-width:900px;max-height:120px"/>
+                    <img src="/logos/#{dataverse.logo}" style="max-width:900px;max-height:120px" alt="logo"/>
                 </div>
             </ui:fragment>
             <div class="dataverseHeaderBlock">
                 <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'SQUARE'}">
                     <div class="dataverseHeaderCell dataverseHeaderLogo">
-                        <image src="/logos/#{dataverse.logo}" style="max-width:100px;max-height:100px"/>
+                        <img src="/logos/#{dataverse.logo}" style="max-width:100px;max-height:100px" alt="logo"/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
