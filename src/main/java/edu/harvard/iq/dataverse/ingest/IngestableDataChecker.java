@@ -550,8 +550,14 @@ public class IngestableDataChecker implements java.io.Serializable {
                     }
                 } catch (InvocationTargetException e) {
                     Throwable cause = e.getCause();
-                    err.format(cause.getMessage());
-                    e.printStackTrace();
+                    // added null check because of "homemade.zip" from https://redmine.hmdc.harvard.edu/issues/3273
+                    if (cause.getMessage() != null) {
+                        err.format(cause.getMessage());
+                        e.printStackTrace();
+                    } else {
+                        dbgLog.info("cause.getMessage() was null for " + e);
+                        e.printStackTrace();
+                    }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
