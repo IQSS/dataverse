@@ -294,19 +294,42 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     if (study != null) {
                         Dataverse dvThatOwnsStudy = study.getOwner();
-                        if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                            DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
+                        if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
+                        }
+                        DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
+                        if (study.isReleased()) {
                             if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 logger.info("destroying working copy version of study " + study.getGlobalId());
                                 /**
                                  * @todo in DVN 3.x we had a convenient
-                                 * destroyWorkingCopyVersion method but the
-                                 * DeleteDatasetCommand is pretty scary... what
-                                 * if a released study has a new draft version?
-                                 * What we need is a
-                                 * DeleteDatasetVersionCommand, I suppose...
+                                 * destroyWorkingCopyVersion method. We have
+                                 * DeleteDatasetCommand but we need
+                                 * DeleteDatasetEditVersionCommand
                                  */
-//                                studyService.destroyWorkingCopyVersion(study.getLatestVersion().getId());
+                                // studyService.destroyWorkingCopyVersion(study.getLatestVersion().getId());
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "This dataset has been published and subsequently a draft has been created. You are trying to delete that draft but this is not yet supported: https://redmine.hmdc.harvard.edu/issues/4032");
+                            } else if (studyState.equals(DatasetVersion.VersionState.RELEASED)) {
+//                                logger.fine("deaccessioning latest version of study " + study.getGlobalId());
+//                                studyService.deaccessionStudy(study.getLatestVersion());
+                                /**
+                                 * @todo revisit this when deaccessioning is
+                                 * available in
+                                 * https://redmine.hmdc.harvard.edu/issues/4031
+                                 */
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is not yet supported: https://redmine.hmdc.harvard.edu/issues/4031");
+                            } else if (studyState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + study.getGlobalId() + " has already been deaccessioned.");
+                            } else if (studyState.equals(DatasetVersion.VersionState.ARCHIVED)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
+                            } else if (studyState.equals(DatasetVersion.VersionState.IN_REVIEW)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " is in review and can not be deleted or deaccessioned.");
+                            } else {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for study " + study.getGlobalId() + " in state " + studyState);
+                            }
+                        } else {
+                            // dataset has never been published, this is just a sanity check (should always be draft)
+                            if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 try {
                                     engineSvc.submit(new DeleteDatasetCommand(study, vdcUser));
                                     /**
@@ -320,23 +343,10 @@ public class ContainerManagerImpl implements ContainerManager {
                                 } catch (CommandException ex) {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset: " + ex.getMessage());
                                 }
-                                /**
-                                 * @todo think about how to handle non-drafts
-                                 */
-                            } else if (studyState.equals(DatasetVersion.VersionState.RELEASED)) {
-//                                logger.fine("deaccessioning latest version of study " + study.getGlobalId());
-//                                studyService.deaccessionStudy(study.getLatestVersion());
-                            } else if (studyState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has already been deaccessioned.");
-                            } else if (studyState.equals(DatasetVersion.VersionState.ARCHIVED)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
-                            } else if (studyState.equals(DatasetVersion.VersionState.IN_REVIEW)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " is in review and can not be deleted or deaccessioned.");
                             } else {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for study " + study.getGlobalId() + " in state " + studyState);
+                                // we should never get here. throw an error explaining why
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not released yet not in draft)");
                             }
-                        } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(404);
