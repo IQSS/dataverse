@@ -7,9 +7,11 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import java.io.File;
 import java.util.List;
@@ -366,7 +368,7 @@ public class ContainerManagerImpl implements ContainerManager {
     public DepositReceipt useHeaders(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         logger.fine("uri was " + uri);
         logger.fine("isInProgress:" + deposit.isInProgress());
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
@@ -374,15 +376,15 @@ public class ContainerManagerImpl implements ContainerManager {
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 if (globalId != null) {
-                    Dataset studyToRelease = null;
+                    Dataset dataset = null;
                     try {
-//                        studyToRelease = studyService.getStudyByGlobalId(globalId);
+                        dataset = datasetService.findByGlobalId(globalId);
                     } catch (EJBException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                     }
-                    if (studyToRelease != null) {
-                        Dataverse dvThatOwnsStudy = studyToRelease.getOwner();
-                        if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+                    if (dataset != null) {
+                        Dataverse dvThatOwnsStudy = dataset.getOwner();
+                        if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsStudy)) {
                             if (!deposit.isInProgress()) {
                                 /**
                                  * We are considering a draft version of a study
@@ -403,16 +405,29 @@ public class ContainerManagerImpl implements ContainerManager {
                                  * that the deposit is complete." --
                                  * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#continueddeposit_incomplete
                                  */
-                                if (!studyToRelease.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
-                                    /**
-                                     * @todo DVN 3.x had
-                                     * studyService.setReleased... what should
-                                     * we do in 4.0?
-                                     */
-//                                    studyService.setReleased(studyToRelease.getId());
+                                if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
+                                    Command<Dataset> cmd;
+                                    try {
+                                        /**
+                                         * @todo We *could* attempt a minor
+                                         * version bump first and if it fails go
+                                         * ahead and re-try with a major version
+                                         * bump. For simplicity, we decided to
+                                         * always do a major version bump but
+                                         * the @todo is to think about this a
+                                         * bit more before we release 4.0.
+                                         */
+                                        boolean attemptMinorVersionBump = false;
+                                        cmd = new ReleaseDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
+                                        dataset = engineSvc.submit(cmd);
+                                    } catch (CommandException ex) {
+                                        String msg = "Unable to publish dataset: " + ex;
+                                        logger.severe(msg + ": " + ex.getMessage());
+                                        throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
+                                    }
                                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                                    DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, studyToRelease);
+                                    DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
                                     return depositReceipt;
                                 } else {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been released.");
@@ -421,7 +436,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to release a study.");
                             }
                         } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study using globalId " + globalId);
