@@ -186,7 +186,7 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@all">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info()">
                                                     <h:outputText value="General Information" />
                                                 </p:commandLink>
                                             </li>
@@ -199,7 +199,7 @@
                                             </li>
                                             <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>-->
                                             <li>
-                                                <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@all">
+                                                <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@form" oncomplete="javascript:post_edit_dv_setup()">
                                                     <h:outputText value="Setup" />
                                                 </p:commandLink>
                                             </li>
@@ -317,7 +317,7 @@
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
                         <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}"  action="#{DataversePage.save}" update="@all"/>
-                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@all" rendered="#{DataversePage.dataverse.id != null}"/>
+                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </p:panel>
                 </h:form>
