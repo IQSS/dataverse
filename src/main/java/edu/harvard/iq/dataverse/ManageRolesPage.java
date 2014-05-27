@@ -38,7 +38,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	private static final Logger logger = Logger.getLogger(ManageRolesPage.class.getName());
 	
 	public enum Intent { LIST, VIEW, EDIT };
-	public enum ObjectType { DATAVERSE, ROLES, USERS };
+	public enum ObjectType { USERS, DATAVERSE, ROLES };
 	
     @Inject DataverseSession session;     
 	
@@ -83,7 +83,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void init() {
 		
 		// decide object type
-		objectType = JH.enumValue(getObjectTypeParam(), ObjectType.class, ObjectType.DATAVERSE);
+		objectType = JH.enumValue(getObjectTypeParam(), ObjectType.class, ObjectType.USERS);
 		setActiveTab(objectType);
 		setIntent( JH.enumValue(getIntentParam(), Intent.class, Intent.LIST));
 		if ( viewRoleId != null ) {
