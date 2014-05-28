@@ -7,20 +7,13 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +23,6 @@ import java.util.zip.ZipInputStream;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import org.swordapp.server.AuthCredentials;
@@ -63,44 +53,37 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public MediaResource getMediaResourceRepresentation(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
 
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-//            EditStudyService editStudyService;
-            Context ctx;
-            try {
-                ctx = new InitialContext();
-//                editStudyService = (EditStudyService) ctx.lookup("java:comp/env/editStudy");
-            } catch (NamingException ex) {
-                logger.info("problem looking up editStudyService");
-                throw new SwordServerException("problem looking up editStudyService");
-            }
-            logger.fine("looking up study with globalId " + globalId);
-//            Study study = editStudyService.getStudyByGlobalId(globalId);
-            Dataset study = null;
-            if (study != null) {
+            logger.fine("looking up dataset with globalId " + globalId);
+            Dataset dataset = datasetService.findByGlobalId(globalId);
+            if (dataset != null) {
                 /**
-                 * @todo: support this
+                 * @todo: support downloading of files (SWORD 2.0 Profile 6.4. -
+                 * Retrieving the content)
+                 * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_retrievingcontent
+                 * https://redmine.hmdc.harvard.edu/issues/3595
                  */
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
-                    Dataverse dvThatOwnsStudy = study.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                        InputStream fixmeInputStream = new ByteArrayInputStream("FIXME: replace with zip of all study files".getBytes());
+                    Dataverse dvThatOwnsStudy = dataset.getOwner();
+                    if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsStudy)) {
+                        InputStream fixmeInputStream = new ByteArrayInputStream("FIXME: replace with zip of all dataset files".getBytes());
                         String contentType = "application/zip";
                         String packaging = UriRegistry.PACKAGE_SIMPLE_ZIP;
                         boolean isPackaged = true;
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to get a media resource representation of the dataset with global ID " + study.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Please use the Dataverse Network Data Sharing API instead");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://redmine.hmdc.harvard.edu/issues/3595");
                 }
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find study with global ID of " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't find dataset with global ID of " + globalId);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't dermine target type or identifier from URL: " + uri);
@@ -122,7 +105,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
          * and an empty zip uploaded. If no files are unzipped the user will see
          * a error about this but the files will still be deleted!
          */
-        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Replacing the files of a study is not supported. Please delete and add files separately instead.");
+        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Replacing the files of a dataset is not supported. Please delete and add files separately instead.");
     }
 
     @Override
@@ -213,8 +196,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
             logger.fine("looking up study with globalId " + globalId);
-            Dataset study = datasetService.findByGlobalId(globalId);
-            if (study == null) {
+            Dataset dataset = datasetService.findByGlobalId(globalId);
+            if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
             }
 //            StudyLock studyLock = study.getStudyLock();
@@ -222,38 +205,22 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 //                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //            }
-            Long studyId;
-            try {
-                studyId = study.getId();
-            } catch (NullPointerException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find study with global ID of " + globalId);
-            }
-            Dataverse dvThatOwnsStudy = study.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                /**
-                 * @todo enforce this!
-                 */
+            Dataverse dvThatOwnsStudy = dataset.getOwner();
+            if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
-            // That's what the uploadDir was going to be for, but for now it's commented out
             if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
                 throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
             }
 
-            /**
-             * @todo remove this comment after confirming that the upstream jar
-             * now has our bugfix
-             */
-            // the first character of the filename is truncated with the official jar
-            // so we use include the bug fix at https://github.com/IQSS/swordv2-java-server-library/commit/aeaef83
-            // and use this jar: https://build.hmdc.harvard.edu:8443/job/swordv2-java-server-library-iqss/2/
             String uploadedZipFilename = deposit.getFilename();
             ZipInputStream ziStream = new ZipInputStream(deposit.getInputStream());
             ZipEntry zEntry;
 
-            DatasetVersion editVersion = study.getEditVersion();
+            DatasetVersion editVersion = dataset.getEditVersion();
             List<DataFile> newFiles = new ArrayList<>();
             try {
                 // copied from createStudyFilesFromZip in AddFilesPage
@@ -262,7 +229,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     // simply skip them:
                     if (!zEntry.isDirectory()) {
 
-                        // BEGIN 4.0 code
                         String fileName = "myLabel";
                         if (zEntry.getName() != null) {
                             String zentryFilename = zEntry.getName();
@@ -285,8 +251,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         String guessContentTypeForMe = null;
                         DataFile dFile = ingestService.createDataFile(editVersion, ziStream, fileName, guessContentTypeForMe);
                         newFiles.add(dFile);
-                        // END 4.0 code
 
+                        /**
+                         * @todo remove copied code and put checks above
+                         */
                         String fileEntryName = zEntry.getName();
                         logger.fine("file found: " + fileEntryName);
 
@@ -347,9 +315,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             ingestService.addFiles(editVersion, newFiles);
 
             Command<Dataset> cmd;
-            cmd = new UpdateDatasetCommand(study, vdcUser);
+            cmd = new UpdateDatasetCommand(dataset, vdcUser);
             try {
-                study = commandEngine.submit(cmd);
+                dataset = commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 throw returnEarly("couldn't update dataset");
             } catch (EJBException ex) {
@@ -372,24 +340,16 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw returnEarly("EJBException: " + sb.toString());
             }
 
-            ingestService.startIngestJobs(study);
+            ingestService.startIngestJobs(dataset);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, study);
+            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
             return depositReceipt;
+        } else {
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
         }
-        /**
-         * @todo move these SwordErrors to the right place
-         */
-//            } else {
-//                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify study with global ID " + study.getGlobalId());
-        return new DepositReceipt(); // added just to get this to compile 2014-05-14
     }
-//        } else {
-//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
-//        }
-//    }
 
     /**
      * @todo This validation was in DVN 3.x and should go into the 4.0 ingest
@@ -419,6 +379,5 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
         swordError.setStackTrace(emptyStackTrace);
         return swordError;
-
     }
 }
