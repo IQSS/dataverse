@@ -205,8 +205,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 //                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //            }
-            Dataverse dvThatOwnsStudy = dataset.getOwner();
-            if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+            Dataverse dvThatOwnsDataset = dataset.getOwner();
+            if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsDataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
 
@@ -268,7 +268,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         // upload in the GUI, so we'll skip them here as well
 //                        if (tempUploadedFile.length() != 0) {
                         /**
-                         * @todo are file categories going away?
+                         * @todo set the category (or categories) for files once
+                         * we can: https://redmine.hmdc.harvard.edu/issues/3717
                          */
                         // And, if this file was in a legit (non-null) directory, 
                         // we'll use its name as the file category: 
@@ -283,7 +284,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with file: " + uploadedZipFilename);
             } catch (EJBException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to study: " + ex.getMessage());
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
 
             if (newFiles.isEmpty()) {

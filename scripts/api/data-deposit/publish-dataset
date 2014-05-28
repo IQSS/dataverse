@@ -3,10 +3,9 @@ USERNAME=pete
 PASSWORD=pete
 DVN_SERVER=localhost:8181
 if [ -z "$1" ]; then
-  GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12`
+  GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12,13`
 else
   GLOBAL_ID=$1
-  #GLOBAL_ID=doi:myAuthority/17
   #GLOBAL_ID=doi:10.5072/FK2/5555
 fi
 # when contentLength is zero headersOnly is true, which is what we want: https://github.com/swordapp/JavaServer2.0/blob/31e625ac97be13f794e1b98512f8d1c48d751652/src/main/java/org/swordapp/server/ContainerAPI.java#L338
