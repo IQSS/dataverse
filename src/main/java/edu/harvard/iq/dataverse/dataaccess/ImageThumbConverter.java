@@ -238,7 +238,7 @@ public class ImageThumbConverter {
         
         if (new File(imageMagickExec).exists()) {
 
-            String ImageMagick = imageMagickExec + " pdf:" + fileLocation + "[0] -resize "+ size + " -flatten png:" + thumbFileLocation;
+            String ImageMagick = imageMagickExec + " pdf:" + fileLocation + "[0] -resize "+ size + "x" + size + " png:" + thumbFileLocation;
             int exitValue = 1;
 
             try {
