@@ -229,12 +229,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     // simply skip them:
                     if (!zEntry.isDirectory()) {
 
-                        String fileName = "myLabel";
+                        String finalFileName = "UNKNOWN";
                         if (zEntry.getName() != null) {
                             String zentryFilename = zEntry.getName();
                             int ind = zentryFilename.lastIndexOf('/');
 
-                            String finalFileName = fileName;
                             String dirName = "";
                             if (ind > -1) {
                                 finalFileName = zentryFilename.substring(ind + 1);
@@ -246,33 +245,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                 finalFileName = zentryFilename;
                             }
 
-                            fileName = finalFileName;
-                        }
-                        String guessContentTypeForMe = null;
-                        DataFile dFile = ingestService.createDataFile(editVersion, ziStream, fileName, guessContentTypeForMe);
-                        newFiles.add(dFile);
-
-                        /**
-                         * @todo remove copied code and put checks above
-                         */
-                        String fileEntryName = zEntry.getName();
-                        logger.fine("file found: " + fileEntryName);
-
-                        String dirName = null;
-                        String finalFileName = null;
-
-                        int ind = fileEntryName.lastIndexOf('/');
-
-                        if (ind > -1) {
-                            finalFileName = fileEntryName.substring(ind + 1);
-                            if (ind > 0) {
-                                dirName = fileEntryName.substring(0, ind);
-                                dirName = dirName.replace('/', '-');
-                            }
-                        } else {
-                            finalFileName = fileEntryName;
                         }
 
+                        // skip junk files
                         if (".DS_Store".equals(finalFileName)) {
                             continue;
                         }
@@ -298,6 +273,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         // And, if this file was in a legit (non-null) directory, 
                         // we'll use its name as the file category: 
 //                        tempFileBean.getFileMetadata().setCategory(dirName);
+                        String guessContentTypeForMe = null;
+                        DataFile dFile = ingestService.createDataFile(editVersion, ziStream, finalFileName, guessContentTypeForMe);
+                        newFiles.add(dFile);
                     } else {
                         logger.fine("directory found: " + zEntry.getName());
                     }
