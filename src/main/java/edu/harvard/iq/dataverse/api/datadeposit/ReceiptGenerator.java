@@ -12,6 +12,10 @@ public class ReceiptGenerator {
     DepositReceipt createReceipt(String baseUrl, Dataset dataset) {
         logger.fine("baseUrl was: " + baseUrl);
         DepositReceipt depositReceipt = new DepositReceipt();
+        /**
+         * @todo is dataset.getGlobalId() being populated properly?
+         * https://redmine.hmdc.harvard.edu/issues/3988 ?
+         */
         String globalId = dataset.getGlobalId();
         /**
          * @todo should these URLs continue to have "study" in them? Do we need
@@ -30,8 +34,8 @@ public class ReceiptGenerator {
         depositReceipt.setStatementURI("application/atom+xml;type=feed", baseUrl + "/statement/study/" + globalId);
         depositReceipt.addDublinCore("bibliographicCitation", dataset.getLatestVersion().getCitation());
         /**
-         * @todo is this still returning the database id?
-         * https://redmine.hmdc.harvard.edu/issues/3397 ?
+         * @todo is dataset.getPersistentURL() still returning the database id?
+         * https://redmine.hmdc.harvard.edu/issues/3988 ?
          */
         depositReceipt.setSplashUri(dataset.getPersistentURL());
         return depositReceipt;

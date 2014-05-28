@@ -50,36 +50,29 @@ public class StatementManagerImpl implements StatementManager {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "swordAuth is null");
         }
 
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(editUri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
-            logger.fine("request for sword statement by user " + vdcUser.getUserName());
-            Dataset study = datasetService.findByGlobalId(globalId);
-//            try {
-//                study = studyService.getStudyByGlobalId(globalId);
-//            } catch (EJBException ex) {
-//                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + editUri);
-//            }
-            Long studyId;
-            try {
-                studyId = study.getId();
-            } catch (NullPointerException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find study with global ID of " + globalId);
+            logger.fine("request for sword statement by user " + dataverseUser.getUserName());
+            Dataset dataset = datasetService.findByGlobalId(globalId);
+            if (dataset == null) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);
             }
 
-            Dataverse dvThatOwnsStudy = study.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + study.getGlobalId();
+            Dataverse dvThatOwnsDataset = dataset.getOwner();
+            if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsDataset)) {
+                String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
                 /**
-                 * @todo is it safe to use this?
+                 * @todo did the format of getAuthorsStr() change? It looks more
+                 * or less the same.
                  */
-                String author = study.getLatestVersion().getAuthorsStr();
-                String title = study.getLatestVersion().getTitle();
+                String author = dataset.getLatestVersion().getAuthorsStr();
+                String title = dataset.getLatestVersion().getTitle();
                 // in the statement, the element is called "updated"
                 Date lastUpdatedFinal = new Date();
-                Date lastUpdateTime = study.getLatestVersion().getLastUpdateTime();
+                Date lastUpdateTime = dataset.getLatestVersion().getLastUpdateTime();
                 if (lastUpdateTime != null) {
                     lastUpdatedFinal = lastUpdateTime;
                 } else {
@@ -90,7 +83,7 @@ public class StatementManagerImpl implements StatementManager {
                      * In 4.0, lastUpdateTime is always null.
                      */
                     logger.info("lastUpdateTime was null, trying createtime");
-                    Date createtime = study.getLatestVersion().getCreateTime();
+                    Date createtime = dataset.getLatestVersion().getCreateTime();
                     if (createtime != null) {
                         lastUpdatedFinal = createtime;
                     } else {
@@ -102,7 +95,7 @@ public class StatementManagerImpl implements StatementManager {
                 String datedUpdated = atomDate.toString();
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
                 Map<String, String> states = new HashMap<String, String>();
-                states.put("latestVersionState", study.getLatestVersion().getVersionState().toString());
+                states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
                 /**
                  * @todo DVN 3.x had a studyLock. What's the equivalent in 4.0?
                  */
@@ -115,15 +108,15 @@ public class StatementManagerImpl implements StatementManager {
 //                    states.put("locked", "false");
 //                }
                 statement.setStates(states);
-                List<FileMetadata> fileMetadatas = study.getLatestVersion().getFileMetadatas();
+                List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
                 for (FileMetadata fileMetadata : fileMetadatas) {
-                    DataFile studyFile = fileMetadata.getDataFile();
+                    DataFile dataFile = fileMetadata.getDataFile();
                     // We are exposing the filename for informational purposes. The file id is what you
                     // actually operate on to delete a file, etc.
                     //
                     // Replace spaces to avoid IRISyntaxException
                     String fileNameFinal = fileMetadata.getLabel().replace(' ', '_');
-                    String studyFileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + studyFile.getId() + "/" + fileNameFinal;
+                    String studyFileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
                     IRI studyFileUrl;
                     try {
                         studyFileUrl = new IRI(studyFileUrlString);
@@ -151,7 +144,7 @@ public class StatementManagerImpl implements StatementManager {
                 }
                 return statement;
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to view study with global ID " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to view study with global ID " + globalId);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + editUri);

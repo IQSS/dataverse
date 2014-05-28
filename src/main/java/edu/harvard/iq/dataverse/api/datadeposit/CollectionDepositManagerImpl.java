@@ -4,14 +4,15 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValidator;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -135,7 +136,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                          * https://redmine.hmdc.harvard.edu/issues/3993
                          */
                         dataset.setProtocol("doi");
-                        dataset.setAuthority("myAuthority");
+                        dataset.setAuthority("10.5072/FK2");
+                        // temporary, will change identifer to database id of dataset after we know it
                         dataset.setIdentifier(UUID.randomUUID().toString());
 
                         DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
@@ -153,10 +155,11 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         newDatasetVersion.setDatasetFields(datasetFields);
 
+                        Dataset createdDataset = null;
                         try {
                             // there is no importStudy method in 4.0 :(
                             // study = studyService.importStudy(tmpFile, dcmiTermsFormatId, dvThatWillOwnStudy.getId(), vdcUser.getId());
-                            engineSvc.submit(new CreateDatasetCommand(dataset, dataverseUser));
+                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, dataverseUser));
                         } catch (Exception ex) {
 //                            StringWriter stringWriter = new StringWriter();
 //                            ex.printStackTrace(new PrintWriter(stringWriter));
@@ -188,10 +191,20 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             tmpFile.delete();
                             uploadDir.delete();
                         }
-                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
-                        DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
-                        return depositReceipt;
+                        if (createdDataset != null) {
+                            try {
+                                createdDataset.setIdentifier(createdDataset.getId().toString());
+                                engineSvc.submit(new UpdateDatasetCommand(createdDataset, dataverseUser));
+                            } catch (CommandException ex) {
+                                throw new SwordError("Dataset created but identifier was not changed to database id from " + dataset.getIdentifier() + " " + ex);
+                            }
+                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
+                            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
+                            return depositReceipt;
+                        } else {
+                            throw new SwordError("Dataset created but identifier was not changed to database id from " + dataset.getIdentifier());
+                        }
                     } else if (deposit.isBinaryOnly()) {
                         // get here with this:
                         // curl --insecure -s --data-binary "@example.zip" -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/
