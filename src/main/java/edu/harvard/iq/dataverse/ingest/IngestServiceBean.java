@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -633,13 +634,14 @@ public class IngestServiceBean {
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                     if (dsft.isPrimitive()) {
+                        if (!dsft.isHasParent()) {
                         String dsfName = dsft.getName();
                         // See if the plugin has found anything for this field: 
                         if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                            
                             logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
                             // go through the existing fields:
                             for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
-                                String fName = dsf.getDatasetFieldType().getName();
                                 if (dsf.getDatasetFieldType().equals(dsft)) {
                                     // yep, this is our field!
                                     // let's go through the values that the ingest 
@@ -712,12 +714,69 @@ public class IngestServiceBean {
                                 }
                             }
                         }
+                        }
+                    } else {
+                        // A compound field: 
+                        // See if the plugin has found anything for the fields that 
+                        // make up this compound field; if we find at least one 
+                        // of the child values in the map of extracted values, we'll 
+                        // create a new compound field value and its child 
+                        // 
+                        DatasetFieldCompoundValue compoundDsfv = new DatasetFieldCompoundValue();
+                        boolean empty = true; 
+                        for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
+                            String dsfName = cdsft.getName();
+                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {  
+                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                
+                                if (cdsft.isPrimitive()) {
+                                    // probably an unnecessary check - child fields
+                                    // of compound fields are always primitive... 
+                                    // but maybe it'll change in the future. 
+                                    if (!cdsft.isControlledVocabulary()) {
+                                        // TODO: can we have controlled vocabulary
+                                        // sub-fields inside compound fields?
+                                        
+                                        DatasetField childDsf = new DatasetField();
+                                        childDsf.setDatasetFieldType(cdsft);
+                                        
+                                        DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
+                                        newDsfv.setValue((String)fileMetadataMap.get(dsfName).toArray()[0]);
+                                        childDsf.getDatasetFieldValues().add(newDsfv);
+                                        
+                                        childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
+                                        compoundDsfv.getChildDatasetFields().add(childDsf);
+                                        
+                                        empty = false; 
+                                    }
+                                } 
+                            }
+                        }
+                        
+                        if (!empty) {
+                            // save this compound value, by attaching it to the 
+                            // version for proper cascading.
+                            // but first we need to go through this dataset's fields and find the 
+                            // actual parent field for this sub-field: 
+                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                                if (dsf.getDatasetFieldType().equals(dsft)) {
+                                    // yep, this is our field... 
+                                    
+                                    boolean exists = false; 
+                                    // TODO: 
+                                    // Check that the dataset version doesn't already have this
+                                    // compound value - we are only interested in aggregating 
+                                    // unique values. Make sure to compare compound values as 
+                                    // sets! -- i.e. all the fields must match. 
+                                    if (!exists) {
+                                        compoundDsfv.setParentDatasetField(dsf);
+                                        dsf.getDatasetFieldCompoundValues().add(compoundDsfv);
+                                    }
+                                }
+                            }
+                        }
                     }
-                } //else {
-                    // A compound field: 
-                    // - but that's not going to happen!
-                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
-                //}
+                } 
             }
         }  
     }
