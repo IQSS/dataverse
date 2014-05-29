@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.IndexServiceBean;
 
 public class IndexableDataset extends IndexableObject {
 
@@ -32,7 +33,7 @@ public class IndexableDataset extends IndexableObject {
 
     public enum DatasetState {
 
-        WORKING_COPY("_draft"), PUBLISHED("");
+        WORKING_COPY(IndexServiceBean.draftSuffix), PUBLISHED("");
 
         private String suffix;
 

@@ -1,0 +1,14 @@
+#!/bin/bash -x
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+if [ -z "$1" ]; then
+  FILE_ID=`scripts/api/data-deposit/show-files | cut -d'/' -f1`
+  #echo $FILE_ID
+  #exit
+else
+  FILE_ID=$1
+fi
+#curl --insecure -X DELETE https://$DVN_SERVER/api/datasets/$DATABASE_ID?key=$USERNAME
+curl --insecure -i -X DELETE https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/file/$FILE_ID
+#| xmllint -format -

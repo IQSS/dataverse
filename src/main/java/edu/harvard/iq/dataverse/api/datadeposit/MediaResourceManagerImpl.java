@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -9,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.ByteArrayInputStream;
@@ -43,6 +45,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     EjbDataverseEngine commandEngine;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    DataFileServiceBean dataFileService;
     @EJB
     IngestServiceBean ingestService;
     @Inject
@@ -110,7 +114,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -125,50 +129,41 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "File id must be a number, not '" + fileIdString + "'. URL was: " + uri);
                     }
                     if (fileIdLong != null) {
-                        logger.fine("preparing to delete file id " + fileIdLong);
-//                        StudyFile fileToDelete;
-                        try {
-//                            fileToDelete = studyFileService.getStudyFile(fileIdLong);
-                        } catch (EJBException ex) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong);
-                        }
-//                        if (fileToDelete != null) {
+                        logger.info("preparing to delete file id " + fileIdLong);
+                        DataFile fileToDelete = dataFileService.find(fileIdLong);
+                        if (fileToDelete != null) {
+                            /**
+                             * @todo test if StudyLock is necessary
+                             */
 //                            Study study = fileToDelete.getStudy();
 //                            StudyLock studyLock = study.getStudyLock();
 //                            if (studyLock != null) {
 //                                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
 //                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //                            }
-//                            String globalId = study.getGlobalId();
-//                            VDC dvThatOwnsFile = fileToDelete.getStudy().getOwner();
-//                            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsFile)) {
-//                                EditStudyFilesService editStudyFilesService;
-//                                try {
-//                                    Context ctx = new InitialContext();
-//                                    editStudyFilesService = (EditStudyFilesService) ctx.lookup("java:comp/env/editStudyFiles");
-//                                } catch (NamingException ex) {
-//                                    logger.info("problem looking up editStudyFilesService");
-//                                    throw new SwordServerException("problem looking up editStudyFilesService");
-//                                }
-//                                editStudyFilesService.setStudyVersionByGlobalId(globalId);
-//                                // editStudyFilesService.findStudyFileEditBeanById() would be nice
-//                                List studyFileEditBeans = editStudyFilesService.getCurrentFiles();
-//                                for (Iterator it = studyFileEditBeans.iterator(); it.hasNext();) {
-//                                    StudyFileEditBean studyFileEditBean = (StudyFileEditBean) it.next();
-//                                    if (studyFileEditBean.getStudyFile().getId().equals(fileToDelete.getId())) {
-//                                        logger.fine("marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-//                                        studyFileEditBean.setDeleteFlag(true);
-//                                    } else {
-//                                        logger.fine("not marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-//                                    }
-//                                }
-//                                editStudyFilesService.save(dvThatOwnsFile.getId(), vdcUser.getId());
-//                            } else {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsFile.getAlias());
-//                            }
-//                        } else {
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
-//                        }
+                            Dataset datasetThatOwnsFile = fileToDelete.getOwner();
+                            Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dataverseThatOwnsFile)) {
+                                try {
+                                    /**
+                                     * @todo with only one command, should we be
+                                     * falling back on the permissions system to
+                                     * enforce if the user can delete a file or
+                                     * not. If we do, a 403 Forbidden is
+                                     * returned. For now, we'll have belt and
+                                     * suspenders and do our normal sword auth
+                                     * check.
+                                     */
+                                    commandEngine.submit(new DeleteDataFileCommand(fileToDelete, dataverseUser, dataverseThatOwnsFile));
+                                } catch (CommandException ex) {
+                                    throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
+                                }
+                            } else {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                            }
+                        } else {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
+                        }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id in URL: " + uri);
                     }
