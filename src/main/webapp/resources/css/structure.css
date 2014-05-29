@@ -150,7 +150,6 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
         hyphens: auto;}
 a.facetLink {text-decoration:none;}
 a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
-.facetSelected.resultsTopBlock {background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
 a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
@@ -159,7 +158,8 @@ table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 
 #dv-maincolumn div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;}
-#dv-maincolumn a.facetLink.facetSelected.resultsTopBlock {margin-right:1em;}
+#resultsFacetsTopBlock {margin-bottom:.5em;}
+#resultsFacetsTopBlock a.facetLink.facetSelected {display:inline-block; margin-bottom:.5em; margin-right:1em; background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
 
 #dv-maincolumn div.results-sort-pagination div.pagination {margin-left:1em;}
 #dv-maincolumn div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
