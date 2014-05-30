@@ -27,6 +27,8 @@ body .ui-widget {font-size: inherit;}
 
 .panelgridLayoutTable, .panelgridFormTable {width:100%;}
 .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+.panelgridFormTable.ui-panelgrid td table.ui-picklist td {border: 0; padding:0;}
+.panelgridFormTable.ui-panelgrid td table.ui-picklist td ul.ui-widget-content.ui-corner-all {border:1px solid #DDDDDD; border-radius: 4px;}
 
 .panelLayoutButtonBlock button {margin-right:2em;}
 
@@ -85,8 +87,8 @@ form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.
 
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
 
-div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box {margin: 4px 10px;}
-div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
+div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box, div.ui-chkbox.facet-category-default div.ui-chkbox-box {margin: 4px 10px;}
+div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label, div.ui-chkbox.facet-category-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
 
 table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
 table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
