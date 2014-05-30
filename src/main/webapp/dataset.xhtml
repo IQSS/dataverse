@@ -460,7 +460,7 @@
                                                   <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " /> 
                                                   <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} Removed" /> 
                                                   <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Removed" />
-                                                  <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value="," />                                                
+                                                  <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value=", " />                                                
                                                   <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} Changed" /> 
                                                   <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Changed" /> 
                                                   <h:outputText  value="); " /> 
@@ -472,10 +472,10 @@
                                                   <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " /> 
                                                   <h:outputText  value=" " />
                                                   <h:outputText  value="(" />
-                                                  <h:outputText rendered="#{blockNote[1] > 0}"  value="#{blockNote[1]} Added " />  
-                                                  <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}"  value="," /> 
+                                                  <h:outputText rendered="#{blockNote[1] > 0}"  value="#{blockNote[1]} Added" />  
+                                                  <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}"  value=", " /> 
                                                   <h:outputText rendered="#{(blockNote[2]) > 0}"  value="#{blockNote[2]} Removed" /> 
-                                                  <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}"  value="," /> 
+                                                  <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}"  value=", " /> 
                                                   <h:outputText rendered="#{(blockNote[3]) > 0}"  value="#{blockNote[3]} Changed" /> 
                                                   <h:outputText  value="); " />
                                                 </ui:repeat>

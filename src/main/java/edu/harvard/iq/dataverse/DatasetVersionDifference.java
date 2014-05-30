@@ -267,12 +267,14 @@ public class DatasetVersionDifference {
                 if (!originalValue.isEmpty()) {
                     countOriginal++;
                 }
-
+                if (!newValue.isEmpty()) {
+                    countNew++;
+                }
             }
         } else {
             int index = 0;
             for (String valString : originalField.getValues()) {
-                if (valString != null && !valString.isEmpty()) {
+                if (valString != null && !valString.isEmpty()) {                    
                     countOriginal++;
                 }
             }
@@ -290,6 +292,7 @@ public class DatasetVersionDifference {
                     totalChanged++;
                 }
             }
+
         }
 
         if (countNew > countOriginal) {
