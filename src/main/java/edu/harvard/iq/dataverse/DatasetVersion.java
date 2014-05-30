@@ -201,27 +201,19 @@ public class DatasetVersion implements Serializable {
         return versionNote;
     }
     
-    public List<String> getDifferencesNotes(){
-        List retList = new ArrayList();
+    public DatasetVersionDifference getDefaultVersionDifference(){
         int count = 0;
         int size = this.getDataset().getVersions().size();
         for (DatasetVersion dsv: this.getDataset().getVersions()){
             if (this.equals(dsv)){
                 if ((count + 1) < size){
                     DatasetVersionDifference dvd = new DatasetVersionDifference(this, this.getDataset().getVersions().get(count+1));                   
-                    return dvd.getNotes();
+                    return dvd;
                 }
             }
             count++;
         }
-        String defaultNote;
-        if (this.isReleased()){
-             defaultNote = "This is the first published version.";
-        } else {
-             defaultNote = "This is an unpublished draft.";
-        }
-        retList.add(defaultNote);
-        return retList;
+        return null;
     }
 
     public void setVersionNote(String note) {

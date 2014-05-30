@@ -158,6 +158,25 @@
                             </p:panelGrid>
                         </p:panelGrid>
                     </p:panel>
+                    
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
+                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
+                                <p:outputLabel value="Select Facets"/>
+                                <ui:fragment>
+                                    <h:outputText style="display:block; margin-bottom:.5em;" value="Choose the search result facets to display for this Dataverse." />
+                                    <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
+                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Use Facets from Host Dataverse">
+                                            <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
+                                        </p:selectBooleanCheckbox>
+                                    </ui:fragment>
+
+                                    <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
+                                                itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
+                                </ui:fragment>
+                            </p:panelGrid>
+                        </p:panelGrid>
+                    </p:panel>
 
                     <!-- Description Panel / View Mode -->
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
@@ -197,12 +216,6 @@
                                                     <f:param name="objectType" value="USERS" />
                                                 </h:link>
                                             </li>
-                                            <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Theme</a></li>-->
-                                            <li>
-                                                <p:commandLink id="editSetup" actionListener="#{DataversePage.edit('SETUP')}" update="@form" oncomplete="javascript:post_edit_dv_setup()">
-                                                    <h:outputText value="Setup" />
-                                                </p:commandLink>
-                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -238,7 +251,6 @@
                                 <h:outputText value="#{DataversePage.dataverse.description}"/>
                             </div>
                         </ui:fragment>
-
                     </ui:fragment>
 
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
@@ -247,20 +259,7 @@
                         <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:confirmDialog message="This dataverse may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
-                    </p:confirmDialog>                    
-
-                    <!-- Dataverse Setup Panel -->
-                    <ui:fragment rendered="#{DataversePage.editMode == 'SETUP'}">
-                        <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                            <h:outputText value="Use Facets from Parent Dataverse? " />
-                            <p:selectBooleanCheckbox value="#{DataversePage.inheritFacetFromParent}">
-                                <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
-                            </p:selectBooleanCheckbox>
-                        </ui:fragment>
-
-                        <p:pickList id="facetPickList" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
-                                    itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
-                    </ui:fragment>
+                    </p:confirmDialog>
 
                     <!-- Dataverse Theme Panel -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">

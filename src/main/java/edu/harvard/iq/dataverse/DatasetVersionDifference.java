@@ -13,7 +13,7 @@ public class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List> addedDataByBlock = new ArrayList();
+    private List<List> detailDataByBlock = new ArrayList();
     private List<FileMetadata> addedFiles = new ArrayList();
     private List<FileMetadata> removedFiles = new ArrayList();
     private List<FileMetadata> changedFileMetadata = new ArrayList();
@@ -23,6 +23,8 @@ public class DatasetVersionDifference {
     private List<DatasetField> addedSummaryData = new ArrayList();
     private List<DatasetField> removedSummaryData = new ArrayList();
     private List<DatasetField> changedSummaryData = new ArrayList();
+    private List<Object[]> summaryDataForNote = new ArrayList();
+    private List<Object[]> blockDataForNote = new ArrayList();
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
 
@@ -39,9 +41,11 @@ public class DatasetVersionDifference {
                             if (!dsfo.getDatasetFieldType().isDisplayOnCreate()) {
                                 changedData.add(dsfo);
                                 changedData.add(dsfn);
+                                compareValuesCount(dsfo, dsfn, false);
                             } else {
                                 changedSummaryData.add(dsfo);
                                 changedSummaryData.add(dsfn);
+                                compareValuesCount(dsfo, dsfn, false);
                             }
                             addToSummary(dsfo, dsfn);
                         }
@@ -50,9 +54,11 @@ public class DatasetVersionDifference {
                             if (!dsfo.getDatasetFieldType().isDisplayOnCreate()) {
                                 changedData.add(dsfo);
                                 changedData.add(dsfn);
+                                compareValuesCount(dsfo, dsfn, true);
                             } else {
                                 changedSummaryData.add(dsfo);
                                 changedSummaryData.add(dsfn);
+                                compareValuesCount(dsfo, dsfn, true);
                             }
                             addToSummary(dsfo, dsfn);
                         }
@@ -103,7 +109,6 @@ public class DatasetVersionDifference {
                 removedFiles.add(fmdo);
             }
         }
-
         for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
             boolean added = true;
             for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
@@ -116,7 +121,6 @@ public class DatasetVersionDifference {
                 addedFiles.add(fmdn);
             }
         }
-        System.out.print("arrayList size " + addedDataByBlock.size());
     }
 
     private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
@@ -128,16 +132,16 @@ public class DatasetVersionDifference {
     }
 
     private void addToSummary(DatasetField dsfo, DatasetField dsfn) {
-        if(dsfo==null){
+        if (dsfo == null) {
             dsfo = new DatasetField();
             dsfo.setDatasetFieldType(dsfn.getDatasetFieldType());
         }
-        if(dsfn==null){
+        if (dsfn == null) {
             dsfn = new DatasetField();
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
         boolean addedToAll = false;
-        for (List blockList : addedDataByBlock) {
+        for (List blockList : detailDataByBlock) {
             DatasetField dsft[] = (DatasetField[]) blockList.get(0);
             if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                 addToList(blockList, dsfo, dsfn);
@@ -147,9 +151,40 @@ public class DatasetVersionDifference {
         if (!addedToAll) {
             List<DatasetField[]> newList = new ArrayList<>();
             addToList(newList, dsfo, dsfn);
-            addedDataByBlock.add(newList);
+            detailDataByBlock.add(newList);
+        }
+    }
+
+    private void updateBlockSummary(DatasetField dsf, int added, int deleted, int changed) {
+
+        boolean addedToAll = false;
+        for (Object[] blockList : blockDataForNote) {
+            DatasetField dsft = (DatasetField) blockList[0];
+            if (dsft.getDatasetFieldType().getMetadataBlock().equals(dsf.getDatasetFieldType().getMetadataBlock())) {
+                blockList[1] = (Integer) blockList[1] + added;
+                blockList[2] = (Integer) blockList[2] + deleted;
+                blockList[3] = (Integer) blockList[3] + changed;
+                addedToAll = true;
+            }
+        }
+        if (!addedToAll) {
+            Object[] newArray = new Object[4];
+            newArray[0] = dsf;
+            newArray[1] = added;
+            newArray[2] = deleted;
+            newArray[3] = changed;
+            blockDataForNote.add(newArray);
         }
 
+    }
+
+    private void addToNoteSummary(DatasetField dsfo, int added, int deleted, int changed) {
+        Object[] noteArray = new Object[4];
+        noteArray[0] = dsfo;
+        noteArray[1] = added;
+        noteArray[2] = deleted;
+        noteArray[3] = changed;
+        summaryDataForNote.add(noteArray);
     }
 
     private boolean compareFileMetadatas(FileMetadata fmdo, FileMetadata fmdn) {
@@ -188,181 +223,176 @@ public class DatasetVersionDifference {
             for (DatasetField dsfn : datasetFieldCompoundValueNew.getChildDatasetFields()) {
                 newValue += dsfn.getDisplayValue() + ", ";
             }
-            newValue += ";";
+            newValue += "; ";
         }
         for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {
             for (DatasetField dsfn : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
                 originalValue += dsfn.getDisplayValue() + ", ";
             }
-            originalValue += ";";
+            originalValue += "; ";
         }
-
         return originalValue.equals(newValue);
-
     }
 
-    public List<String> getNotes() {
-        String retString = "";
+    private void compareValuesCount(DatasetField originalField, DatasetField newField, boolean compound) {
+        String originalValue = "";
+        String newValue = "";
+        int countOriginal = 0;
+        int countNew = 0;
+        int totalAdded = 0;
+        int totalDeleted = 0;
+        int totalChanged = 0;
+        int loopIndex = 0;
+
+        countNew = newField.getDatasetFieldCompoundValues().size();
+
+        if (compound) {
+            for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {
+                if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {
+                    for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
+                        if (!dsfo.getDisplayValue().isEmpty()) {
+                            originalValue += dsfo.getDisplayValue() + ", ";
+                        }
+                    }
+                    for (DatasetField dsfn : newField.getDatasetFieldCompoundValues().get(loopIndex).getChildDatasetFields()) {
+                        if (!dsfn.getDisplayValue().isEmpty()) {
+                            newValue += dsfn.getDisplayValue() + ", ";
+                        }
+                    }
+                    if (!newValue.isEmpty() && !originalValue.isEmpty() && !originalValue.equals(newValue)) {
+                        totalChanged++;
+                    }
+                }
+                loopIndex++;
+                if (!originalValue.isEmpty()) {
+                    countOriginal++;
+                }
+                if (!newValue.isEmpty()) {
+                    countNew++;
+                }
+            }
+        } else {
+            int index = 0;
+            for (String valString : originalField.getValues()) {
+                if (valString != null && !valString.isEmpty()) {                    
+                    countOriginal++;
+                }
+            }
+            for (String valString : newField.getValues()) {
+                if (valString != null && !valString.isEmpty()) {
+                    countNew++;
+                }
+            }
+            String nString = "";
+            for (String oString : originalField.getValues()) {
+                if (newField.getValues().size() >= (index + 1)) {
+                    nString = newField.getValues().get(index);
+                }
+                if (nString != null && oString != null && !oString.equals(nString)) {
+                    totalChanged++;
+                }
+            }
+
+        }
+
+        if (countNew > countOriginal) {
+            totalAdded = countNew - countOriginal;
+        }
+
+        if (countOriginal > countNew) {
+            totalDeleted = countOriginal - countNew;
+        }
+        
+        if (originalField.getDatasetFieldType().isDisplayOnCreate()){
+            addToNoteSummary(originalField, totalAdded, totalDeleted, totalChanged);
+        } else {
+            updateBlockSummary(originalField, totalAdded, totalDeleted, totalChanged);
+        }               
+    }
+
+    public List<String> getFileNotes() {
+        String retString;
         List retList = new ArrayList();
-        if (addedSummaryData.size() > 0) {
-            retString = " Summary data added ";
-            int count = 0;
-            for (DatasetField dsf : addedSummaryData) {
-                if (count == 0) {
-                    retString += ":";
-                } else {
-                    retString += ";";
-                }
-                retString += " " + dsf.getDatasetFieldType().getDisplayName();
-                count++;
-            }
-            retList.add(retString);
-        }
-        if (removedSummaryData.size() > 0) {
-            retString = " Summary data deleted ";
-            int count = 0;
-            for (DatasetField dsf : removedSummaryData) {
-                if (count == 0) {
-                    retString += ":";
-                } else {
-                    retString += ";";
-                }
-                retString += " " + dsf.getDatasetFieldType().getDisplayName();
-                count++;
-            }
-            retList.add(retString);
-        }
-        if (changedSummaryData.size() > 0) {
-            retString = " Summary data changed: ";
-            for (Iterator<DatasetField> iter = changedSummaryData.iterator(); iter.hasNext();) {
-                DatasetField dsf = iter.next();
-                retString += " " + dsf.getDatasetFieldType().getDisplayName() + "; ";
-                DatasetField dsfn = iter.next();
-            }
-            retList.add(retString);
-        }
-        /*
-         for (Iterator<DatasetField> iter = changedSummaryData.iterator(); iter.hasNext();) {
-         DatasetField dsf = iter.next();
-         if (dsf.getDatasetFieldType().isPrimitive()) {
-         retString += " " + dsf.getDatasetFieldType().getDisplayName() + " from " + dsf.getDisplayValue();
-         DatasetField dsfn = iter.next();
-         retString += " to " + dsfn.getDisplayValue() + "; ";
-         } else {
-         retString += " " + dsf.getDatasetFieldType().getDisplayName() + " from " + dsf.getCompoundDisplayValue();
-         DatasetField dsfn = iter.next();
-         retString += " to " + dsfn.getCompoundDisplayValue() + "; ";
-         }
-
-         }*/
-
-        if (addedData.size() > 0) {
-            retString = " Number of Additional Data added: " + addedData.size();
-            retList.add(retString);
-        }
-        if (removedData.size() > 0) {
-            retString = " Number of Additional Data deleted: " + removedData.size();
-            retList.add(retString);
-        }
-        if (changedData.size() > 0) {
-            retString = " Number of Additional Data changed: " + changedData.size() / 2;
-            retList.add(retString);
-        }
         if (addedFiles.size() > 0) {
-            retString = " Number of Files added: " + addedFiles.size();
+            retString = "Files Added: " + addedFiles.size() + "; ";
             retList.add(retString);
         }
         if (removedFiles.size() > 0) {
-            retString = " Number of Files deleted: " + removedFiles.size();
+            retString = "Files Deleted: " + removedFiles.size() + "; ";
             retList.add(retString);
         }
         if (changedFileMetadata.size() > 0) {
-            retString = " Number of File Metadata changed: " + changedFileMetadata.size() / 2;
+            retString = "Number of File Metadata changed:" + changedFileMetadata.size() / 2;
             retList.add(retString);
         }
-
         return retList;
     }
 
     public String getNote() {
         String retString = "";
         if (addedSummaryData.size() > 0) {
-            retString += " Summary data added ";
+            retString += "Summary data added";
             int count = 0;
             for (DatasetField dsf : addedSummaryData) {
                 if (count == 0) {
                     retString += ":";
                 } else {
-                    retString += ";";
+                    retString += "; ";
                 }
                 retString += " " + dsf.getDatasetFieldType().getDisplayName();
                 count++;
             }
         }
         if (removedSummaryData.size() > 0) {
-            retString += " Summary data deleted ";
+            retString += "Summary data deleted";
             int count = 0;
             for (DatasetField dsf : removedSummaryData) {
                 if (count == 0) {
                     retString += ":";
                 } else {
-                    retString += ";";
+                    retString += "; ";
                 }
                 retString += " " + dsf.getDatasetFieldType().getDisplayName();
                 count++;
             }
         }
         if (changedSummaryData.size() > 0) {
-            retString += " Summary data changed: ";
+            retString += "Summary data changed:";
             for (Iterator<DatasetField> iter = changedSummaryData.iterator(); iter.hasNext();) {
                 DatasetField dsf = iter.next();
                 retString += " " + dsf.getDatasetFieldType().getDisplayName() + "; ";
                 DatasetField dsfn = iter.next();
             }
         }
-        /*
-         for (Iterator<DatasetField> iter = changedSummaryData.iterator(); iter.hasNext();) {
-         DatasetField dsf = iter.next();
-         if (dsf.getDatasetFieldType().isPrimitive()) {
-         retString += " " + dsf.getDatasetFieldType().getDisplayName() + " from " + dsf.getDisplayValue();
-         DatasetField dsfn = iter.next();
-         retString += " to " + dsfn.getDisplayValue() + "; ";
-         } else {
-         retString += " " + dsf.getDatasetFieldType().getDisplayName() + " from " + dsf.getCompoundDisplayValue();
-         DatasetField dsfn = iter.next();
-         retString += " to " + dsfn.getCompoundDisplayValue() + "; ";
-         }
-
-         }*/
 
         if (addedData.size() > 0) {
-            retString += " Number of Additional Data added " + addedData.size() + ";";
+            retString += addedData.size() + " Additional Citation Metadata Added; ";
         }
         if (removedData.size() > 0) {
-            retString += " Number of Additional Data deleted " + removedData.size() + ";";
+            retString += "Number of Additional Data deleted" + removedData.size() + "; ";
         }
         if (changedData.size() > 0) {
-            retString += " Number of Additional Data changed " + changedData.size() / 2 + ";";
+            retString += changedData.size() / 2 + " Additional Citation Metadata Changed; ";
         }
         if (addedFiles.size() > 0) {
-            retString += " Number of Files added " + addedFiles.size() + ";";
+            retString += "Files Added: " + addedFiles.size() + "; ";
         }
         if (removedFiles.size() > 0) {
-            retString += " Number of Files deleted " + removedFiles.size() + ";";
+            retString += "Files Deleted: " + removedFiles.size() + "; ";
         }
         if (changedFileMetadata.size() > 0) {
-            retString += " Number of File Metadata changed " + changedFileMetadata.size() / 2 + ";";
+            retString += "Number of File Metadata changed" + changedFileMetadata.size() / 2 + "; ";
         }
 
         return retString;
     }
 
-    public List<List> getAddedDataByBlock() {
-        return addedDataByBlock;
+    public List<List> getDetailDataByBlock() {
+        return detailDataByBlock;
     }
 
-    public void setAddedDataByBlock(List<List> addedDataAll) {
-        this.addedDataByBlock = addedDataAll;
+    public void setDetailDataByBlock(List<List> detailDataByBlock) {
+        this.detailDataByBlock = detailDataByBlock;
     }
 
     public List<FileMetadata> getAddedFiles() {
@@ -451,6 +481,23 @@ public class DatasetVersionDifference {
 
     public void setChangedFileMetadata(List<FileMetadata> changedFileMetadata) {
         this.changedFileMetadata = changedFileMetadata;
+    }
+    
+    
+    public List<Object[]> getSummaryDataForNote() {
+        return summaryDataForNote;
+    }
+
+    public List<Object[]> getBlockDataForNote() {
+        return blockDataForNote;
+    }
+
+    public void setSummaryDataForNote(List<Object[]> summaryDataForNote) {
+        this.summaryDataForNote = summaryDataForNote;
+    }
+
+    public void setBlockDataForNote(List<Object[]> blockDataForNote) {
+        this.blockDataForNote = blockDataForNote;
     }
 
 }
