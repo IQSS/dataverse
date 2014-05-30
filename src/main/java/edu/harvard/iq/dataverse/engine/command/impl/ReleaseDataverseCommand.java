@@ -7,21 +7,39 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import java.sql.Timestamp;
+import java.util.Date;
 
-/**
- *
- * @author michael
- */
-@RequiredPermissions( Permission.Release )
+@RequiredPermissions(Permission.Release)
 public class ReleaseDataverseCommand extends AbstractVoidCommand {
 
-	public ReleaseDataverseCommand(DataverseUser aUser, Dataverse anAffectedDataverse) {
-		super(aUser, anAffectedDataverse);
-	}
-	
-	@Override
-	protected void executeImpl(CommandContext ctxt) throws CommandException {
-		throw new UnsupportedOperationException("Sample Implementation");
-	}
-	
+    private final Dataverse dataverse;
+    private final DataverseUser dataverseUser;
+
+    public ReleaseDataverseCommand(DataverseUser dataverseUser, Dataverse dataverse) {
+        super(dataverseUser, dataverse);
+        this.dataverse = dataverse;
+        this.dataverseUser = dataverseUser;
+    }
+
+    @Override
+    protected void executeImpl(CommandContext ctxt) throws CommandException {
+        if (dataverse.isReleased()) {
+            throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
+        }
+
+        Dataverse parent = dataverse.getOwner();
+        // root dataverse doesn't have a parent
+        if (parent != null) {
+            if (!parent.isReleased()) {
+                throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " may not be published because its host dataverse (" + parent.getAlias() + ") has not been published.", this);
+            }
+        }
+
+        dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
+        dataverse.setReleaseUser(dataverseUser);
+        Dataverse saved = ctxt.dataverses().save(dataverse);
+    }
+
 }

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverseCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import java.io.File;
 import java.util.List;
@@ -41,6 +43,8 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @EJB
     protected EjbDataverseEngine engineSvc;
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -446,73 +450,35 @@ public class ContainerManagerImpl implements ContainerManager {
                 }
             } else if ("dataverse".equals(targetType)) {
                 /**
-                 * @todo support releasing of dataverses via SWORD
+                 * @todo confirm we want to allow dataverses to be released via
+                 * SWORD. If so, document the curl example.
                  */
-//                String dvAlias = urlManager.getTargetIdentifier();
-//                if (dvAlias != null) {
-//                    VDC dvToRelease = vdcService.findByAlias(dvAlias);
-//                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvToRelease)) {
-//                        if (dvToRelease != null) {
-//                            String optionalPort = "";
-//                            URI u;
-//                            try {
-//                                u = new URI(uri);
-//                                int port = u.getPort();
-//                                if (port != -1) {
-//                                    // https often runs on port 8181 in dev
-//                                    optionalPort = ":" + port;
-//                                }
-//                            } catch (URISyntaxException ex) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unable to part URL");
-//                            }
-//                            String hostName = System.getProperty("dvn.inetAddress");
-//                            String dvHomePage = "https://" + hostName + optionalPort + "/dvn/dv/" + dvToRelease.getAlias();
-//                            if (deposit.isInProgress()) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Changing a dataverse to 'not released' is not supported. Please change to 'not released' from the web interface: " + dvHomePage);
-//                            } else {
-//                                try {
-//                                    getVDCRequestBean().setVdcNetwork(dvToRelease.getVdcNetwork());
-//                                } catch (ContextNotActiveException ex) {
-//                                    /**
-//                                     * todo: observe same rules about dataverse
-//                                     * release via web interface such as a study
-//                                     * or a collection must be release:
-//                                     * https://redmine.hmdc.harvard.edu/issues/3225
-//                                     */
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Releasing a dataverse is not yet supported. Please release from the web interface: " + dvHomePage);
-//                                }
-//                                OptionsPage optionsPage = new OptionsPage();
-//                                if (optionsPage.isReleasable()) {
-//                                    if (dvToRelease.isRestricted()) {
-//                                        logger.fine("releasing dataverse via SWORD: " + dvAlias);
-//                                        /**
-//                                         * @todo: tweet and send email about
-//                                         * release
-//                                         */
-//                                        dvToRelease.setReleaseDate(DateUtil.getTimestamp());
-//                                        dvToRelease.setRestricted(false);
-//                                        vdcService.edit(dvToRelease);
-                DepositReceipt fakeDepositReceipt = new DepositReceipt();
-//                                        IRI fakeIri = new IRI("fakeIriDvWasJustReleased");
-//                                        fakeDepositReceipt.setEditIRI(fakeIri);
-//                                        fakeDepositReceipt.setVerboseDescription("Dataverse alias: " + dvAlias);
-                return fakeDepositReceipt;
-//                                    } else {
-//                                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverse has already been released: " + dvAlias);
-//                                    }
-//                                } else {
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataverse is not releaseable");
-//                                }
-//                            }
-//                        } else {
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse based on alias in URL: " + uri);
-//                        }
-//                    } else {
-//                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvAlias);
-//                    }
-//                } else {
-//                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find dataverse alias in URL: " + uri);
-//                }
+                String dvAlias = urlManager.getTargetIdentifier();
+                if (dvAlias != null) {
+                    Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
+                    if (dvToRelease != null) {
+                        if (!swordAuth.hasAccessToModifyDataverse(dataverseUser, dvToRelease)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvAlias);
+                        }
+                        if (deposit.isInProgress()) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
+                        }
+                        ReleaseDataverseCommand cmd = new ReleaseDataverseCommand(dataverseUser, dvToRelease);
+                        try {
+                            engineSvc.submit(cmd);
+                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                            DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
+                            return depositReceipt;
+                        } catch (CommandException ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't publish dataverse " + dvAlias + ": " + ex);
+                        }
+                    } else {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse based on alias in URL: " + uri);
+                    }
+                } else {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find dataverse alias in URL: " + uri);
+                }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unsupported target type (" + targetType + ") in URL:" + uri);
             }

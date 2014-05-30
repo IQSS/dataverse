@@ -42,7 +42,7 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
         if (!theDataset.getOwner().isReleased()) {
-            throw new IllegalCommandException("This dataset may not be published because its host dataverse has not been published.", this);
+            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
 
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
