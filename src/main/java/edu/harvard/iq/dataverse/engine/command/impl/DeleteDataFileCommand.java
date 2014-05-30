@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.engine.Permission;
@@ -31,11 +30,8 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
     private final DataFile doomed;
 
-    /**
-     * @todo sounds like in the future the Dataverse argument could be removed
-     */
-    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser, Dataverse anAffectedDataverse) {
-        super(aUser, anAffectedDataverse);
+    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser) {
+        super(aUser, doomed);
         this.doomed = doomed;
     }
 

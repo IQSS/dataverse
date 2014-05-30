@@ -11,8 +11,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Same as {@link DeleteDataversCommand}, but does not stop it the dataset is published.
@@ -45,7 +43,7 @@ public class DestroyDataverseCommand extends AbstractVoidCommand {
         
 		// files
 		for ( DataFile df : managedDoomed.getFiles() ) {
-			ctxt.engine().submit( new DeleteDataFileCommand(df, getUser(), managedDoomed.getOwner()) );
+			ctxt.engine().submit( new DeleteDataFileCommand(df, getUser()) );
 		}
 		
 		// versions
