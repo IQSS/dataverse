@@ -37,7 +37,6 @@ public class ManageRolesPage implements java.io.Serializable {
     
 	private static final Logger logger = Logger.getLogger(ManageRolesPage.class.getName());
 	
-	public enum Intent { LIST, VIEW, EDIT };
 	public enum ObjectType { USERS, DATAVERSE, ROLES };
 	
     @Inject DataverseSession session;     
@@ -60,16 +59,12 @@ public class ManageRolesPage implements java.io.Serializable {
 	@Inject
 	DataversePage dvpage;
 	
-	
-	private Intent intent = null;
-	
 	private List<String> selectedPermissions;
 	private String intentParam;
 	private Long viewRoleId;
 	private int activeTabIndex;
 	private DataverseRole role;
 	private DataverseRole defaultUserRole;
-	private boolean permissionRoot;
 	private String objectTypeParam;
 	private Long dataverseIdParam;
 	private ObjectType objectType;
@@ -80,23 +75,24 @@ public class ManageRolesPage implements java.io.Serializable {
 	private List<RoleAssignment> guestRolesUp;
 	private List<String> guestRolesHereId;
 	
+    private boolean inheritAssignmentsCbValue;
+    
 	public void init() {
 		
 		// decide object type
 		objectType = JH.enumValue(getObjectTypeParam(), ObjectType.class, ObjectType.USERS);
 		setActiveTab(objectType);
-		setIntent( JH.enumValue(getIntentParam(), Intent.class, Intent.LIST));
+		
 		if ( viewRoleId != null ) {
 			// enter view mode
 			setRole( rolesService.find(viewRoleId) );
 			if ( getRole() == null ) {
 				JH.addMessage(FacesMessage.SEVERITY_WARN, "Can't find role with id '" + viewRoleId + "'",
 								"The role might have existed once, but was deleted");
-				setIntent( Intent.LIST );
 			} 
 		}
 		dvpage.setDataverse(getDataverse());
-		
+		setInheritAssignmentsCbValue( ! getDataverse().isPermissionRoot() );
 		guestRolesHere = new LinkedList<>();
 		guestRolesUp = new LinkedList<>();
 		for ( RoleAssignment ra : rolesService.roleAssignments(usersService.findGuestUser(), dataverse).getAssignments() ) {
@@ -126,14 +122,22 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	public void createNewRole( ActionEvent e ) {
-		setIntent(Intent.EDIT);
 		DataverseRole aRole = new DataverseRole();
 		setRole( aRole );
 		setActiveTab(ObjectType.ROLES);
 	}
 	
+    public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
+        try {
+            dataverse = engineService.submit( new UpdateDataversePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
+            setInheritAssignmentsCbValue( ! dataverse.isPermissionRoot() );
+            logger.info( "isPermissionRoot: " + isPermissionRoot() );
+        } catch (CommandException ex) {
+            Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
 	public void cancelEdit( ActionEvent e ) {
-		intent = Intent.LIST;
 	}
 	
 	public void saveDataverse( ActionEvent e ) {
@@ -144,13 +148,12 @@ public class ManageRolesPage implements java.io.Serializable {
 		
 		try {
 			engineService.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
-			engineService.submit( new UpdateDataversePermissionRootCommand(permissionRoot, session.getUser(), getDataverse()));
+			engineService.submit( new UpdateDataversePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
 		}
 		objectType=ObjectType.DATAVERSE;
-		setIntent( Intent.VIEW );
 	}
 	
 	public void saveRole( ActionEvent e ) {
@@ -161,7 +164,6 @@ public class ManageRolesPage implements java.io.Serializable {
 		}
 		setRole( rolesService.save(role) );
 		JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
-		intent = Intent.LIST;
 	}
 
 	public List<Permission> getRolePermissions() {
@@ -176,14 +178,6 @@ public class ManageRolesPage implements java.io.Serializable {
 
 	public void setSelectedPermissions(List<String> selectedPermissions) {
 		this.selectedPermissions = selectedPermissions;
-	}
-	
-	public Intent getIntent() {
-		return intent;
-	}
-
-	public void setIntent(Intent anIntent) {
-		this.intent = anIntent;
 	}
 
 	public DataverseRole getRole() {
@@ -278,12 +272,8 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 
 	public boolean isPermissionRoot() {
-		return permissionRoot;
+		return getDataverse().isPermissionRoot();
  	}
-
-	public void setPermissionRoot(boolean permissionRoot) {
-		this.permissionRoot = permissionRoot;
-	}
 
 	public int getActiveTabIndex() {
 		return activeTabIndex;
@@ -355,6 +345,14 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void setGuestRolesHereId(List<String> guestUserRolesHereId) {
 		this.guestRolesHereId = guestUserRolesHereId;
 	}
+
+    public boolean isInheritAssignmentsCbValue() {
+        return inheritAssignmentsCbValue;
+    }
+
+    public void setInheritAssignmentsCbValue(boolean inheritAssignmentsCbValue) {
+        this.inheritAssignmentsCbValue = inheritAssignmentsCbValue;
+    }
 	
 	public static class RoleAssignmentRow {
 		private final String name;
@@ -400,4 +398,3 @@ public class ManageRolesPage implements java.io.Serializable {
 
 	}
 }
-
