@@ -424,55 +424,89 @@
                                     </div>
 
                                 </p:tab>
-
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandButton value="Show Differences" 
+                                    <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
                                                      onclick="testCheckBoxes();"
-                                                     rendered="#{DatasetPage.versionTabList.size() > 2}">                                                   
+                                                     rendered="#{DatasetPage.versionTabList.size() > 2}">
                                     </p:commandButton>
-                                    <p:commandButton  value="Direct"  id="compareVersions"  
-                                                      style="display:none"
-                                                      update=":datasetForm"
-                                                      oncomplete="details.show()"
-
-                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">                                                                                              
+                                    <p:commandButton value="Direct" id="compareVersions"
+                                                     style="display:none"
+                                                     update=":datasetForm"
+                                                     oncomplete="details.show()"
+                                                     actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
-                                                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" rowKey="#{versionTab}"> 
-
+                                                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" rowKey="#{versionTab}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.versionTabList.size() > 2}"
                                                   style="width:2%;text-align:center"/>
-                                        <p:column >
+                                        <p:column>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
-                                                <h:outputText rendered="#{!versionTab.released}"  value="#{versionTab.versionState}" />
-                                                <h:outputText rendered="#{versionTab.released}"  value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                                <h:outputText rendered="#{!versionTab.released}" value="#{versionTab.versionState}" />
+                                                <h:outputText rendered="#{versionTab.released}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
                                                 <f:param name="id" value="#{versionTab.dataset.id}" />
                                                 <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
-                                        <p:column>  
-                                            <ui:fragment rendered="#{!empty(versionTab.differencesNotes)}">
-                                                <p:dataTable var="diffNote" value="#{versionTab.differencesNotes}">
-
-                                                    <p:column >
-                                                        <h:outputText  value="#{diffNote}" /> 
-                                                    </p:column>
-                                                </p:dataTable>                                                
-                                            </ui:fragment>                                              
-                                            <p:commandLink  rendered ="#{(!empty(versionTab.differencesNotes)) and DatasetPage.versionTabList.size() > (rowNum + 1) }"
-                                                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                                                            oncomplete="detailsBlocks.show()"
-                                                            update=":datasetForm"
-                                                            value=" Show Details"></p:commandLink>
+                                        <p:column>
+                                            <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
+                                                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
+                                                <h:outputLabel  value="Citation Metadata: " />
+                                                <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
+                                                  <h:outputText  value=" " />
+                                                  <h:outputText  value="#{summaryNote[0].datasetFieldType.displayName} " /> 
+                                                  <h:outputText  value="(" />
+                                                  <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} Added" /> 
+                                                  <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Added" /> 
+                                                  <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " /> 
+                                                  <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} Removed" /> 
+                                                  <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Removed" />
+                                                  <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value="," />                                                
+                                                  <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} Changed" /> 
+                                                  <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Changed" /> 
+                                                  <h:outputText  value="); " /> 
+                                                </ui:repeat>                                                                                                    
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
+                                                <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
+                                                  <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="Additional Citation Metadata: " /> 
+                                                  <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " /> 
+                                                  <h:outputText  value=" " />
+                                                  <h:outputText  value="(" />
+                                                  <h:outputText rendered="#{blockNote[1] > 0}"  value="#{blockNote[1]} Added " />  
+                                                  <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}"  value="," /> 
+                                                  <h:outputText rendered="#{(blockNote[2]) > 0}"  value="#{blockNote[2]} Removed" /> 
+                                                  <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}"  value="," /> 
+                                                  <h:outputText rendered="#{(blockNote[3]) > 0}"  value="#{blockNote[3]} Changed" /> 
+                                                  <h:outputText  value="); " />
+                                                </ui:repeat>
+                                            </ui:fragment> 
+                                            <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNotes)}">
+                                                <ui:repeat value="#{versionTab.defaultVersionDifference.fileNotes}" var="fileNote">
+                                                  <h:outputText  value=" " />
+                                                  <h:outputLabel  value="#{fileNote}" />
+                                                  <h:outputText  value=" " />
+                                                </ui:repeat>
+                                            </ui:fragment> 
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
+                                            <ui:fragment rendered="#{versionTab.draft}">
+                                                This is a draft version.
+                                            </ui:fragment> 
+                                            <ui:fragment rendered="#{!versionTab.draft}">
+                                                This is the first released version.
+                                            </ui:fragment>    
+                                            </ui:fragment>
+                                            <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
+                                                           actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
+                                                           oncomplete="detailsBlocks.show()"
+                                                           update=":datasetForm"
+                                                           value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
-                                        <p:column>                                         
-                                            <h:outputText  value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />    
+                                        <p:column style="min-width:140px;">
+                                            <h:outputText value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />
                                         </p:column>
-                                        <p:column  > 
-                                            <f:facet name="header">
-                                                Version Date
-                                            </f:facet>
-                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" />
+                                        <p:column>
+                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
@@ -483,8 +517,8 @@
                     </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
                         <p:confirmDialog id="detailsBlocks" message="Current: #{DatasetPage.datasetVersionDifference.newVersion.title}" header="Details" widgetVar="detailsBlocks">                          
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.addedDataByBlock)}">                                
-                                <p:dataTable id="byBlockOuter" value="#{DatasetPage.datasetVersionDifference.addedDataByBlock}" var="block"> 
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">                                
+                                <p:dataTable id="byBlockOuter" value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block"> 
                                     <p:column>   
                                         <h:outputText  value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />  
                                         <p:dataTable id="byBlockInner" var="dsfArray" value="#{block}"> 

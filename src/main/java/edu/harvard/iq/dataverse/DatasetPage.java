@@ -382,8 +382,7 @@ public class DatasetPage implements java.io.Serializable {
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
-        dataset.setIdentifier("5555");
-
+               
         /*
          * Save and/or ingest files, if there are any:
         
@@ -557,13 +556,10 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void compareVersionDifferences() {
-        twoSelected = false;
         RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
-            twoSelected = false;
             requestContext.execute("openCompareTwo();");
         } else {
-            twoSelected = true;
             //order depends on order of selection - needs to be chronological order
             if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue() ){
                 updateVersionDifferences(this.selectedVersions.get(0), this.selectedVersions.get(1));
@@ -590,16 +586,6 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             setDatasetVersionDifference(new DatasetVersionDifference(newVersion, originalVersion));
         }
-    }
-
-    private boolean twoSelected;
-
-    public boolean isTwoSelected() {
-        return twoSelected;
-    }
-
-    public void setTwoSelected(boolean twoSelected) {
-        this.twoSelected = twoSelected;
     }
 
     private boolean canIssueUpdateCommand() {
