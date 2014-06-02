@@ -62,6 +62,10 @@ public class NullSafeJsonBuilder implements JsonObjectBuilder {
 		return this;
 	}
 
+	public NullSafeJsonBuilder add(String name, Long value) {
+        return ( value != null ) ? add(name, value.longValue()) : this;
+    }
+    
 	@Override
 	public NullSafeJsonBuilder add(String name, long value) {
 		delegate.add(name, value);

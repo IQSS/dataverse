@@ -17,19 +17,13 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 @RequiredPermissions( Permission.AddDatasetVersion )
 public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     
-    public enum BumpWhat {
-        BumpMinor,
-        BumpMajor
-    }
-    final BumpWhat whatToBump;
     final DatasetVersion newVersion;
     final Dataset dataset;
     
-    public CreateDatasetVersionCommand(DataverseUser aUser, Dataset theDataset, DatasetVersion aVersion, BumpWhat bump) {
+    public CreateDatasetVersionCommand(DataverseUser aUser, Dataset theDataset, DatasetVersion aVersion) {
         super(aUser, theDataset);
         dataset = theDataset;
         newVersion = aVersion;
-        whatToBump = bump;
     }
     
     @Override
@@ -37,17 +31,6 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
             throw new IllegalCommandException("Latests version is already a draft. Cannot add another draft", this);
-        }
-        
-        switch ( whatToBump ) {
-            case BumpMajor:
-                newVersion.setMinorVersionNumber(0l);
-                newVersion.setVersionNumber( latest.getVersionNumber() + 1l );
-                break;
-            case BumpMinor:
-                newVersion.setMinorVersionNumber( latest.getMinorVersionNumber() + 1l);
-                newVersion.setVersionNumber( latest.getVersionNumber());
-                break;
         }
         
         newVersion.setDataset(dataset);
