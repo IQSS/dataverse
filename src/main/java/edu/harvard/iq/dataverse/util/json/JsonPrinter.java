@@ -121,7 +121,7 @@ public class JsonPrinter {
 				.add( "versions", jsonObjectBuilder()
 									.add("count", versionCount)
 									.add("latest", brief.json(ds.getLatestVersion()))
-									.add("edit", brief.json(ds.getEditVersion()))
+									.add("edit", ds.getEditVersion().getId()!=null ? brief.json(ds.getEditVersion()) : null )
 				);
 	}
 	
