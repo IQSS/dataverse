@@ -81,24 +81,24 @@ public class Datasets extends AbstractApiBean {
 	
 	@DELETE
 	@Path("{id}")
-	public String deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+	public Response deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
-        if (ds == null) return error("dataset not found");
+        if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
 		
 		try {
 			engineSvc.submit( new DeleteDatasetCommand(ds, u));
-			return ok("Dataset " + id + " deleted");
+			return okResponse("Dataset " + id + " deleted");
 			
 		} catch (CommandExecutionException ex) {
 			// internal error
 			logger.log( Level.SEVERE, "Error deleting dataset " + id + ":  " + ex.getMessage(), ex );
-			return error( "Can't delete dataset: " + ex.getMessage() );
+			return errorResponse( Response.Status.FORBIDDEN, "Can't delete dataset: " + ex.getMessage() );
 			
 		} catch (CommandException ex) {
-			return error( "Can't delete dataset: " + ex.getMessage() );
+			return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Can't delete dataset: " + ex.getMessage() );
 		}
 		
 	}

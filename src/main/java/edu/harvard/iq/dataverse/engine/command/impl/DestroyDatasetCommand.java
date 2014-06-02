@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
@@ -13,16 +14,16 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 
 /**
- * Same as {@link DeleteDataversCommand}, but does not stop it the dataset is published.
+ * Same as {@link DeleteDatasetCommand}, but does not stop it the dataset is published.
  * This command is reserved for super-users, if at all.
  * @author michael
  */
 @RequiredPermissions( Permission.DestructiveEdit )
-public class DestroyDataverseCommand extends AbstractVoidCommand {
+public class DestroyDatasetCommand extends AbstractVoidCommand {
     
     private final Dataset doomed;
 
-	public DestroyDataverseCommand(Dataset doomed, DataverseUser aUser) {
+	public DestroyDatasetCommand(Dataset doomed, DataverseUser aUser) {
 		super(aUser, doomed.getOwner());
 		this.doomed = doomed;
 	}
@@ -52,8 +53,12 @@ public class DestroyDataverseCommand extends AbstractVoidCommand {
 			ctxt.em().remove( managed );
 		}
 		
+        Dataverse toReIndex = managedDoomed.getOwner();
+     
 		// dataset
 		ctxt.em().remove(managedDoomed);
+        
+        ctxt.index().indexDataverse(toReIndex);
 	}
 	
 }
