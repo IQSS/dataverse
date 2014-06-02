@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 
 /**
  *
@@ -34,6 +35,10 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
+        if ( latest.isWorkingCopy() ) {
+            throw new IllegalCommandException("Latests version is already a draft. Cannot add another draft", this);
+        }
+        
         switch ( whatToBump ) {
             case BumpMajor:
                 newVersion.setMinorVersionNumber(0l);

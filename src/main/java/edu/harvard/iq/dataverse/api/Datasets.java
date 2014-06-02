@@ -8,13 +8,13 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand.BumpWhat;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -33,6 +33,7 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -256,13 +257,42 @@ public class Datasets extends AbstractApiBean {
 		return error("Not implemented yet");
 	}
 	
+    @PUT
+	@Path("{id}/versions/{versionId}")
+	public Response updateDraftVersion( String jsonBody, @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
+        
+        if ( ! ":edit".equals(versionId) ) 
+            return errorResponse( Response.Status.BAD_REQUEST, "Only the :edit version can be updated");
+        
+        DataverseUser u = userSvc.findByUserName(apiKey);
+        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        Dataset ds = datasetService.find(id);
+        if ( ds == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataset with id '" + id + "'");
+        
+        try ( StringReader rdr = new StringReader(jsonBody) ) {
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion version = jsonParser().parseDatasetVersion(json);
+            version.setDataset(ds);
+            DatasetVersion managedVersion = engineSvc.submit( new UpdateDatasetVersionCommand(u, version) );
+            return okResponse( json(managedVersion) );
+                    
+        } catch (CommandException ex) {
+            logger.log(Level.SEVERE, "Error executing CreateDatasetVersionCommand: " + ex.getMessage(), ex);
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + ex.getMessage() );
+            
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+        }
+    }
+    
 	@POST
 	@Path("{id}/versions")
 	public Response addVersion( String jsonBody, @PathParam("id") Long id, @QueryParam("bump")String bumpParam, @QueryParam("key") String apiKey ){
-
+        
         DataverseUser u = userSvc.findByUserName(apiKey);
         if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-        
+
         if ( bumpParam == null ) return errorResponse(Response.Status.BAD_REQUEST, "Must specify 'bump' parameter, either 'minor' or 'major'");
         
         CreateDatasetVersionCommand.BumpWhat bump;
@@ -274,7 +304,6 @@ public class Datasets extends AbstractApiBean {
         
         Dataset ds = datasetService.find(id);
         if ( ds == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataset with id '" + id + "'");
-        
         
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             JsonObject json = Json.createReader(rdr).readObject();

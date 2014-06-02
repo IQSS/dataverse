@@ -118,6 +118,10 @@ Lists the metadata block block named `blockname`, for the given dataset and vers
 
 Adds a new version to a dataset. The `POST` parameter contains json version data. The new version number is determined by the server, based on the `bump` parameter. When `minor`, the dot-number is advances (2.4 &rarr; 2.5). When `major`, the major version number is advanced (2.4 &rarr; 3.0).
 
+    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:edit?key={{apiKey}}
+
+Updates the current edit version of dataset `{{id}}`. The dataset must have an edit version - if its most recent version is published, this command fails.
+
 ### permissions
 
 	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}
