@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
@@ -37,8 +38,6 @@ public class ManageRolesPage implements java.io.Serializable {
     
 	private static final Logger logger = Logger.getLogger(ManageRolesPage.class.getName());
 	
-	public enum ObjectType { USERS, DATAVERSE, ROLES };
-	
     @Inject DataverseSession session;     
 	
 	@EJB
@@ -65,10 +64,8 @@ public class ManageRolesPage implements java.io.Serializable {
 	private int activeTabIndex;
 	private DataverseRole role;
 	private DataverseRole defaultUserRole;
-	private String objectTypeParam;
-	private Long dataverseIdParam;
-	private ObjectType objectType;
 	private String assignRoleUsername;
+    private String dataverseIdParam;
 	private Dataverse dataverse;
 	private Long assignRoleRoleId;
 	private List<DataverseRole> guestRolesHere;
@@ -80,9 +77,6 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void init() {
 		
 		// decide object type
-		objectType = JH.enumValue(getObjectTypeParam(), ObjectType.class, ObjectType.USERS);
-		setActiveTab(objectType);
-		
 		if ( viewRoleId != null ) {
 			// enter view mode
 			setRole( rolesService.find(viewRoleId) );
@@ -90,7 +84,10 @@ public class ManageRolesPage implements java.io.Serializable {
 				JH.addMessage(FacesMessage.SEVERITY_WARN, "Can't find role with id '" + viewRoleId + "'",
 								"The role might have existed once, but was deleted");
 			} 
-		}
+		} else {
+            setRole( new DataverseRole() );
+        }
+        dataverse = dvService.find( Long.parseLong(dataverseIdParam) );
 		dvpage.setDataverse(getDataverse());
 		setInheritAssignmentsCbValue( ! getDataverse().isPermissionRoot() );
 		guestRolesHere = new LinkedList<>();
@@ -124,14 +121,16 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void createNewRole( ActionEvent e ) {
 		DataverseRole aRole = new DataverseRole();
 		setRole( aRole );
-		setActiveTab(ObjectType.ROLES);
 	}
 	
+    public void editRole( String roleId ) {
+        setRole( rolesService.find(Long.parseLong(roleId)) );
+    }
+    
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
             dataverse = engineService.submit( new UpdateDataversePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
             setInheritAssignmentsCbValue( ! dataverse.isPermissionRoot() );
-            logger.info( "isPermissionRoot: " + isPermissionRoot() );
         } catch (CommandException ex) {
             Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -153,24 +152,31 @@ public class ManageRolesPage implements java.io.Serializable {
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
 		}
-		objectType=ObjectType.DATAVERSE;
 	}
 	
-	public void saveRole( ActionEvent e ) {
+	public void updateRole( ActionEvent e ) {
 		role.setOwner(getDataverse());
 		role.clearPermissions();
 		for ( String pmsnStr : getSelectedPermissions() ) {
 			role.addPermission(Permission.valueOf(pmsnStr) );
 		}
-		setRole( rolesService.save(role) );
-		JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+        try {
+            setRole( engineService.submit( new CreateRoleCommand(role, session.getUser(), getDataverse())) );
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+        } catch (CommandException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage() );
+            Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
 	}
-
+    
+    public void saveNewRole( ActionEvent e ) {
+        role.setId( null );
+        updateRole( e );
+    }
+     
 	public List<Permission> getRolePermissions() {
 		return (role != null ) ? new ArrayList( role.permissions() ) : Collections.emptyList();
 	}
-	
-	
 	
 	public List<String> getSelectedPermissions() {
 		return selectedPermissions;
@@ -207,10 +213,14 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	public void assignRole( ActionEvent evt ) {
-		DataverseUser u = usersService.findByUserName(getAssignRoleUsername());
+		logger.warning("Username: " + getAssignRoleUsername() );
+		logger.warning("RoleID: " + getAssignRoleRoleId());
+        
+		DataverseUser u = usersService.findByUserName( getAssignRoleUsername() );
 		DataverseRole r = rolesService.find( getAssignRoleRoleId() );
+		logger.warning("User: " + u + " role:" + r );
 		
-		try {
+        try {
 			engineService.submit( new AssignRoleCommand(u, r, getDataverse(), session.getUser()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + u.getFirstName() + " " + u.getLastName() + " on " + getDataverse().getName() );
 		} catch (CommandException ex) {
@@ -233,7 +243,6 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	public void revokeRole( Long roleAssignmentId ) {
-		
 		try {
 			engineService.submit( new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
@@ -283,18 +292,6 @@ public class ManageRolesPage implements java.io.Serializable {
 		this.activeTabIndex = activeTabIndex;
 	}
 
-	public String getObjectTypeParam() {
-		return objectTypeParam;
-	}
-
-	public void setObjectTypeParam(String objectTypeParam) {
-		this.objectTypeParam = objectTypeParam;
-	}
-
-	public void setActiveTab( ObjectType t ) {
-		setActiveTabIndex( (t!=null) ? t.ordinal() : 0 );
-	}
-
 	public String getAssignRoleUsername() {
 		return assignRoleUsername;
 	}
@@ -311,18 +308,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		this.assignRoleRoleId = assignRoleRoleId;
 	}
 
-	public Long getDataverseIdParam() {
-		return dataverseIdParam;
-	}
-
-	public void setDataverseIdParam(Long dataverseIdParam) {
-		this.dataverseIdParam = dataverseIdParam;
-	}
-
 	public Dataverse getDataverse() {
-		if ( dataverse == null ) {
-			dataverse = dvService.find( getDataverseIdParam() );
-		}
 		return dataverse;
 	}
 	
@@ -353,7 +339,15 @@ public class ManageRolesPage implements java.io.Serializable {
     public void setInheritAssignmentsCbValue(boolean inheritAssignmentsCbValue) {
         this.inheritAssignmentsCbValue = inheritAssignmentsCbValue;
     }
-	
+
+    public String getDataverseIdParam() {
+        return dataverseIdParam;
+    }
+
+    public void setDataverseIdParam(String dataverseIdParam) {
+        this.dataverseIdParam = dataverseIdParam;
+    }
+    
 	public static class RoleAssignmentRow {
 		private final String name;
 		private final RoleAssignment ra;
