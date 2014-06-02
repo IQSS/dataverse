@@ -219,6 +219,19 @@ div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
 
+div[id$='byBlockOuter'] > div.ui-datatable-tablewrapper > table > thead, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > thead {display:none;}
+div[id$='byBlockOuter'] > div.ui-datatable-tablewrapper > table > tbody, div[id$='byBlockOuter'] > div.ui-datatable-tablewrapper > table > tbody > tr, div[id$='byBlockOuter'] > div.ui-datatable-tablewrapper > table > tbody > tr > td {border:0;}
+div[id$='byBlockOuter'] > div.ui-datatable-tablewrapper > table > tbody > tr > td {padding:0;}
+div[id$='detailsBlocks'] div.ui-dialog-buttonpane {border-top:0;}
+.ui-confirm-dialog-severity {margin-top:3px;}
+div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody {border:0;}
+div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr:first-child, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr:first-child > td {border-top-width:0;}
+div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr:last-child, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr:last-child > td {border-bottom-width:0;}
+div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr > td:first-child {border-left-width:0;}
+div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr, div[id$='byBlockInner'] > div.ui-datatable-tablewrapper > table > tbody > tr > td:last-child {border-right-width:0;}
+div[id$='byBlockInner'] div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
+div[id$='byBlockInner'] div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
+
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
 /* Overwrite Primefaces */
