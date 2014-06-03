@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.IOException; 
 import java.io.File; 
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Map; 
 import java.util.HashMap;
@@ -24,11 +23,11 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList; 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Data;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
 import nom.tam.fits.Header;
@@ -36,7 +35,6 @@ import nom.tam.fits.HeaderCard;
 import nom.tam.fits.ImageHDU;
 import nom.tam.fits.TableHDU;
 import nom.tam.fits.UndefinedHDU;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -87,6 +85,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     private static final String ATTRIBUTE_INSTRUMENT = "astroInstrument";
     private static final String ATTRIBUTE_START_TIME = "coverage.Temporal.StartTime";
     private static final String ATTRIBUTE_STOP_TIME = "coverage.Temporal.StopTime";
+    private static final String ATTRIBUTE_COVERAGE_SPATIAL = "coverage.Spatial";
     
     
     static {
@@ -107,10 +106,9 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             //defaultRecognizedFitsMetadataKeys.put("DATE-OBS", FIELD_TYPE_DATE);
             // both coverage.Temporal.StartTime and .EndTime are derived from 
             // the DATE-OBS values; extra rules apply (coded further down)
+            
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StopTime");
-
-
             //defaultIndexableFitsMetaKeys.put("NAXIS", "naxis");
 
 
@@ -121,8 +119,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultRecognizedFitsMetadataKeys.put("CD1_1", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("CDELT", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
-            defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
-            defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
 
             
             // And the mapping to the corresponding values in the 
@@ -138,8 +136,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
-            defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
-            defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
+            //defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
+            //defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
 
             
 
@@ -199,9 +197,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     // Recognized date formats, for extracting temporal values: 
     
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
-        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
-        new SimpleDateFormat("yyyy-MM-dd")
-        //new SimpleDateFormat("yyyy")
+        new SimpleDateFormat("yyyy-MM-dd"),
+        new SimpleDateFormat("dd-MM-yy")   
+    };
+    
+    private static SimpleDateFormat[] TIME_FORMATS = new SimpleDateFormat[] {
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"),
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     };
     
     /**
@@ -222,7 +224,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         dbgLog.fine("Attempting to read FITS file;");
         
         Map<String, Set<String>> fitsMetaMap = new HashMap<>();
-        Map<String, Set<String>> tempMetaMap = new HashMap<>(); 
+                
+        Date minDate = null; 
+        Date maxDate = null; 
+            
+        String startObsTime = "";
+        String stopObsTime = "";
+                
         
         FileMetadataIngest ingest = new FileMetadataIngest();
         ingest.setMetadataBlockName(ASTROPHYSICS_BLOCK_NAME);
@@ -257,7 +265,6 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         try {
             fitsMetaMap.put(ATTRIBUTE_TYPE, new HashSet<String>());
-
             while ((hdu = fitsFile.readHDU()) != null) {
                 dbgLog.fine("reading HDU number " + i);
                 hduNames.add("[UNNAMED]");
@@ -324,29 +331,212 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                         metadataKeys.add("INSTRUME");
                     }
                 }
-
-                //if (fitsMetaMap.get(ATTRIBUTE_START_TIME) == null) {
-                String obsDate = hduHeader.getStringValue("DATE-OBS");
-                if (obsDate != null) {
-                        // The value of DATE-OBS will be used later, to determine
-                    // coverage.Temporal.StarTime and .StppTime; for now
-                    // we are storing the values in a temporary map. 
-                    if (tempMetaMap.get("DATE-OBS") == null) {
-                        tempMetaMap.put("DATE-OBS", new HashSet<String>());
+                
+                /* 
+                 * Spatial coordinates: we just use CRVAL1 and CRVAL2, 
+                 * X and Y coordinates of the center pixel, if available:
+                */
+                
+                double crval1Float = hduHeader.getDoubleValue("CRVAL1");
+                double crval2Float = hduHeader.getDoubleValue("CRVAL2");
+                
+                dbgLog.fine("CRVAL1: "+crval1Float);
+                dbgLog.fine("CRVAL2: "+crval2Float);
+                
+                if (crval1Float != 0.0 || crval2Float != 0.0) {
+                    if (fitsMetaMap.get(ATTRIBUTE_COVERAGE_SPATIAL) == null) {
+                        fitsMetaMap.put(ATTRIBUTE_COVERAGE_SPATIAL, new HashSet<String>());
                     }
-                    tempMetaMap.get("DATE-OBS").add(obsDate);
-                    metadataKeys.add("DATE-OBS");
+                    fitsMetaMap.get(ATTRIBUTE_COVERAGE_SPATIAL).add("("+crval1Float+" "+crval2Float+")");
+                    metadataKeys.add("CRVAL1");
+                    metadataKeys.add("CRVAL2");
                 }
-                //}
+                
+                /* 
+                 * Let's try to determine the start and end date/time for this
+                 * HDU. HDUs can have their own, differend end and start times; 
+                 * for the start time of the whole file we'll select the min. 
+                 * of the individual HDU start times, and the max. for end time. 
+                 */
+                
+                // The standard header key is "DATE-OBS" - but all these 
+                // hacky variants below are common too, so we'll go through 
+                // them all: 
+                
+                String obsDateString = hduHeader.getStringValue("DATE-OBS");
+                if (obsDateString != null && !obsDateString.equals("")) {
+                    metadataKeys.add("DATE-OBS");
+                } else {
+                    obsDateString = hduHeader.getStringValue("DATE_OBS");
+                    if (obsDateString != null && !obsDateString.equals("")) {
+                        metadataKeys.add("DATE_OBS");
+                    } else {
+                        obsDateString = hduHeader.getStringValue("OBS-DATE");
+                        if (obsDateString != null && !obsDateString.equals("")) {
+                            metadataKeys.add("OBS-DATE");
+                        }
+                    }
+                }
+                
+                // TODO: 
+                // see if it's easier to replace this with getObservationDate() 
+                // on the HDU - ?
+                // DONE: No, getObservationDate() is bad news. all it does 
+                // on the inside is 
+                // return new FitsDate(myHeader.getStringValue("DATE-OBS")).toDate();
+                // -- which adds all the complications you'd expect, adding 
+                // a time zone to the strings that didn't have any (shifting 
+                // the value by a seemingly random number of hours), etc. 
+                
+                if (obsDateString != null) {
+                    Date startDate = null;
+                    Date endDate = null; 
+                    String startDateFormatted = null; 
+                    String endDateFormatted = null; 
+                    
+                    // We'll try to parse it, first as a full date-time string:
+                    // replace all slashes with dashes: 
+                    obsDateString = obsDateString.replace('/', '-');
+                    
+                    for (SimpleDateFormat format : TIME_FORMATS) {
+                        format.setLenient(false);
+                    
+                        try {
+                            startDate = format.parse(obsDateString);
+                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
+                            //startDateFormatted = TIME_FORMATS[0].format(startDate);
+                            startDateFormatted = obsDateString;
+                            break;
+                        } catch (ParseException ex) {
+                            startDate = null; 
+                        }
+                        
+                        // Alternative method: 
+                        // We could truncate the string to the point where the parser
+                        // stopped; e.g., if our format was yyyy-mm-dd and the
+                        // string was "2014-05-07T14:52:01" we'll truncate the 
+                        // string to "2014-05-07".
+                        /*
+                        ParsePosition pos = new ParsePosition(0);
+                        startDate = format.parse(obsDateString, pos);
+                        if (startDate == null) {
+                            continue;
+                        }
+                        if (pos.getIndex() != obsDateString.length()) {
+                            obsDateString = obsDateString.substring(0, pos.getIndex());
+                        }
+                        dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
+                        break;
+                        */
+                    }
+                    
+                    // if that didn't work, we'll try parsing the string as a 
+                    // date only: 
+                    if (startDate == null) {
+                        for (SimpleDateFormat format : DATE_FORMATS) {
+                            format.setLenient(false);
+                    
+                            try {
+                                startDate = format.parse(obsDateString);
+                                dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+DATE_FORMATS[0].format(startDate));
+                                startDateFormatted = DATE_FORMATS[0].format(startDate);
+                                break;
+                            } catch (ParseException ex) {
+                                startDate = null; 
+                            }
+                        }
+                        // if that worked, let's see if we have the time value
+                        // stored separately - in "TIME-OBS":
+                        if (startDate != null) {
+                            String obsTimeString = hduHeader.getStringValue("TIME-OBS");
+                            Date startDateTime = null; 
+                            
+                            if (obsTimeString != null && !obsTimeString.equals("")) {
+                                String newObsDateString = DATE_FORMATS[0].format(startDate) + "T" + obsTimeString;
+                                
+                                for (SimpleDateFormat format : TIME_FORMATS) {
+                                    format.setLenient(false);
+                    
+                                    try {
+                                        startDateTime = format.parse(newObsDateString);
+                                        dbgLog.fine("Valid date obtained by combining obs date and time: " + newObsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDateTime+", formatted resulting date: "+TIME_FORMATS[0].format(startDateTime));
+                                        //startDateFormatted = TIME_FORMATS[0].format(startDateTime);
+                                        startDateFormatted = newObsDateString;
+                                        break;
+                                    } catch (ParseException ex) {
+                                        startDateTime = null; 
+                                    }
+                                }
+                                
+                                if (startDateTime != null) {
+                                    startDate = startDateTime;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (startDate != null) {
+                        dbgLog.fine("Let's try and calculate the end date...");
+                        // Check if it's the min. start date value we've got so far:
+                        
+                        if (minDate == null) {
+                            minDate = startDate;
+                            startObsTime = startDateFormatted;
+                        } else if (startDate.before(minDate)) {
+                            minDate = startDate;
+                            startObsTime = startDateFormatted;
+                        }
+                        
+                        // Stop/end dates: 
+                        endDate = startDate; 
+                        endDateFormatted = startDateFormatted; 
+                        
+                        // Check if we have the EXPTIME stored, that would allow us
+                        // to recalculate the end time: 
+                        float expTimeValue = hduHeader.getFloatValue("EXPTIME");
+                        long expTimeInMillis = (long) (expTimeValue * 1000);
+                        dbgLog.fine("EXPTIME in MILLISECONDS: " + expTimeInMillis);
+                        Calendar endDateCal = Calendar.getInstance();
+                        endDateCal.setTime(endDate);
+                        long endTimeInMillis = endDateCal.getTimeInMillis() + expTimeInMillis;
+                        dbgLog.fine("END TIME in MILLISECONDS: " + endTimeInMillis);
+
+                        endDateCal.setTimeInMillis(endTimeInMillis);
+                        endDate = endDateCal.getTime();
+                        
+                        if ((endTimeInMillis / 1000) * 1000 != endTimeInMillis) {
+                            endDateFormatted = TIME_FORMATS[0].format(endDate);
+                        } else {
+                            endDateFormatted = TIME_FORMATS[1].format(endDate);
+                        }
+                        
+                        // Check if it's the max. end date value so far: 
+                        
+                        if (maxDate == null) {
+                            maxDate = endDate;
+                            stopObsTime = endDateFormatted; 
+                        } else if (endDate.after(maxDate)) {
+                            maxDate = endDate; 
+                            stopObsTime = endDateFormatted; 
+                        }
+                        
+                        
+                    }
+                   
+                }
                 
                 
                 /* TODO: 
                  * use the Axes values for determining if this is a spectrum:
                 */
-                for (int j = 0; j < hdu.getAxes().length; j++) {
-                    int nAxisN = hdu.getAxes()[j];
-                    metadataKeys.add("NAXIS"+j);
-                    dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
+                if (hdu.getAxes() != null) {
+                    for (int j = 0; j < hdu.getAxes().length; j++) {
+                        int nAxisN = hdu.getAxes()[j];
+                        metadataKeys.add("NAXIS"+j);
+                        dbgLog.fine("NAXIS"+j+" value: "+nAxisN);
+                    }
+                } else {
+                        dbgLog.fine("NULL Axes array.");
                 }
                 
                 // Process individual header cards:
@@ -405,24 +595,18 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             dbgLog.fine("value is null");
                         }
 
-                        /*
-                         * TODO:
-                         * decide what to do with regular key comments:
-                         
-                        if (headerComment != null) {
-                            dbgLog.fine("comment: " + headerComment);
-                        } else {
-                            dbgLog.fine("comment is null");
-                        }
-                        * */
                     }
                     j++;
                 }
                 dbgLog.fine ("processed "+j+" cards total;");
                 
-                Data fitsData = hdu.getData(); 
-                
-                dbgLog.fine ("data size: "+fitsData.getSize());
+                // not sure this is legit: hdu.skipData(fitsFile.getStream());
+                // the following is legit, but seemingly unnecessary: 
+                // Data fitsData = hdu.getData(); 
+                // dbgLog.info ("data size: "+fitsData.getSize());
+                // TODO: confirm memory use implications of reading the Data 
+                // section vs. skipping it explicitly vs. not doing anything. :) 
+                // -- L.A. June 1 2014.
                 dbgLog.fine("total size of the HDU is "+hdu.getSize());
                                
             }
@@ -470,86 +654,16 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         // start time and and stop time: 
         
-        int numObsDates = tempMetaMap.get("DATE-OBS") == null ? 0 : tempMetaMap.get("DATE-OBS").size();
-        if (numObsDates > 0) {
-
-            String[] obsDateValues = new String[numObsDates];
-            obsDateValues = tempMetaMap.get("DATE-OBS").toArray(new String[0]);
-
-            Date minDate = null; 
-            Date maxDate = null; 
-            
-            String startObsTime = "";
-            String stopObsTime = "";
-            
-            for (int k = 0; k < obsDateValues.length; k++) {
-                Date obsDate = null;
-                String obsDateString = obsDateValues[k];
-                
-                for (SimpleDateFormat format : DATE_FORMATS) {
-                    // Strict parsing - it will throw an 
-                    // exception if it doesn't parse!
-                    format.setLenient(false);
-                    // replace all slashes with dashes: 
-                    obsDateString = obsDateString.replace('/', '-');
-                    // parse date string without truncating:
-                    try {
-                        obsDate = format.parse(obsDateString);
-                        dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
-                        break;
-                    } catch (ParseException ex) {
-                        obsDate = null; 
-                    }
-                    // Alternative method: 
-                    // We'll truncate the string to the point where the parser
-                    // stopped; e.g., if our format was yyyy-mm-dd and the
-                    // string was "2014-05-07T14:52:01" we'll truncate the 
-                    // string to "2014-05-07".
-                    /*
-                    ParsePosition pos = new ParsePosition(0);
-                    obsDate = format.parse(obsDateString, pos);
-                    if (obsDate == null) {
-                        continue;
-                    }
-                    if (pos.getIndex() != obsDateString.length()) {
-                        obsDateString = obsDateString.substring(0, pos.getIndex());
-                    }
-                    dbgLog.fine("Valid date: " + obsDateString + ", format: " + format.toPattern());
-                    break;
-                    */
-                }
-                
-                if (obsDate != null) {
-                     
-                    if (minDate == null) {
-                        minDate = obsDate;
-                        startObsTime = obsDateString;
-                    } else if (obsDate.before(minDate)) {
-                        minDate = obsDate;
-                        startObsTime = obsDateString;
-                    }
-                    
-                    if (maxDate == null) {
-                        maxDate = obsDate;
-                        stopObsTime = obsDateString; 
-                    } else if (obsDate.after(maxDate)) {
-                        maxDate = obsDate; 
-                        stopObsTime = obsDateString; 
-                    }
-                }
-            }
-            
-            if (!startObsTime.equals("")) {
-                fitsMetaMap.put(ATTRIBUTE_START_TIME, new HashSet<String>());
-                fitsMetaMap.get(ATTRIBUTE_START_TIME).add(startObsTime);
-            }
-
-            if (!stopObsTime.equals("")) {
-                fitsMetaMap.put(ATTRIBUTE_STOP_TIME, new HashSet<String>());
-                fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(stopObsTime);
-            }
+        if (!startObsTime.equals("")) {
+            fitsMetaMap.put(ATTRIBUTE_START_TIME, new HashSet<String>());
+            fitsMetaMap.get(ATTRIBUTE_START_TIME).add(startObsTime);
         }
-        
+
+        if (!stopObsTime.equals("")) {
+            fitsMetaMap.put(ATTRIBUTE_STOP_TIME, new HashSet<String>());
+            fitsMetaMap.get(ATTRIBUTE_STOP_TIME).add(stopObsTime);
+        }
+
         // TODO: 
         // Numeric fields should also be validated!
         // -- L.A. 4.0 beta
