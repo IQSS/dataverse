@@ -494,20 +494,21 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                         // Check if we have the EXPTIME stored, that would allow us
                         // to recalculate the end time: 
                         float expTimeValue = hduHeader.getFloatValue("EXPTIME");
-                        long expTimeInMillis = (long) (expTimeValue * 1000);
-                        dbgLog.fine("EXPTIME in MILLISECONDS: " + expTimeInMillis);
-                        Calendar endDateCal = Calendar.getInstance();
-                        endDateCal.setTime(endDate);
-                        long endTimeInMillis = endDateCal.getTimeInMillis() + expTimeInMillis;
-                        dbgLog.fine("END TIME in MILLISECONDS: " + endTimeInMillis);
-
-                        endDateCal.setTimeInMillis(endTimeInMillis);
-                        endDate = endDateCal.getTime();
+                        if (expTimeValue != 0.0) {
+                            long expTimeInMillis = (long) (expTimeValue * 1000);
+                            dbgLog.fine("EXPTIME in MILLISECONDS: " + expTimeInMillis);
+                            Calendar endDateCal = Calendar.getInstance();
+                            endDateCal.setTime(endDate);
+                            long endTimeInMillis = endDateCal.getTimeInMillis() + expTimeInMillis;
+                            dbgLog.fine("END TIME in MILLISECONDS: " + endTimeInMillis);
+                            endDateCal.setTimeInMillis(endTimeInMillis);
+                            endDate = endDateCal.getTime();
                         
-                        if ((endTimeInMillis / 1000) * 1000 != endTimeInMillis) {
-                            endDateFormatted = TIME_FORMATS[0].format(endDate);
-                        } else {
-                            endDateFormatted = TIME_FORMATS[1].format(endDate);
+                            if ((endTimeInMillis / 1000) * 1000 != endTimeInMillis) {
+                                endDateFormatted = TIME_FORMATS[0].format(endDate);
+                            } else {
+                                endDateFormatted = TIME_FORMATS[1].format(endDate);
+                            }
                         }
                         
                         // Check if it's the max. end date value so far: 
