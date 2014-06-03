@@ -83,6 +83,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     private static final String ATTRIBUTE_TYPE = "astroType";
     private static final String ATTRIBUTE_FACILITY = "astroFacility";
     private static final String ATTRIBUTE_INSTRUMENT = "astroInstrument";
+    private static final String ATTRIBUTE_OBJECT = "astroObject";
     private static final String ATTRIBUTE_START_TIME = "coverage.Temporal.StartTime";
     private static final String ATTRIBUTE_STOP_TIME = "coverage.Temporal.StopTime";
     private static final String ATTRIBUTE_COVERAGE_SPATIAL = "coverage.Spatial";
@@ -115,7 +116,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             // Optional, configurable fields: 
             
             defaultRecognizedFitsMetadataKeys.put("FILTER", FIELD_TYPE_TEXT);
-            defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
             defaultRecognizedFitsMetadataKeys.put("CD1_1", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("CDELT", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
@@ -131,7 +132,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("TELESCOP", ATTRIBUTE_FACILITY);
             defaultIndexableFitsMetaKeys.put("INSTRUME", ATTRIBUTE_INSTRUMENT);
             defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
-            defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
+            //defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
             defaultIndexableFitsMetaKeys.put("CD1_1", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
@@ -351,6 +352,28 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     metadataKeys.add("CRVAL1");
                     metadataKeys.add("CRVAL2");
                 }
+                
+                /* 
+                 * Special treatment for the OBJECT value:
+                */
+                
+                String objectString = hduHeader.getStringValue("OBJECT");
+                if (objectString != null && !objectString.equals("")) {
+                    metadataKeys.add("OBJECT");
+                } else {
+                    objectString = hduHeader.getStringValue("TARGNAME");
+                    if (objectString != null && !objectString.equals("")) {
+                        metadataKeys.add("TARGNAME");
+                    }
+                }
+                
+                if (objectString != null && !objectString.equals("")) {
+                    if (fitsMetaMap.get(ATTRIBUTE_OBJECT) == null) {
+                        fitsMetaMap.put(ATTRIBUTE_OBJECT, new HashSet<String>());
+                    }
+                    fitsMetaMap.get(ATTRIBUTE_OBJECT).add(objectString);    
+                }
+                
                 
                 /* 
                  * Let's try to determine the start and end date/time for this
