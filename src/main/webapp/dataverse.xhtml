@@ -222,7 +222,7 @@
                             </ui:fragment>
                             <!-- Release Button -->
                             <ui:fragment rendered="#{!dataverseSession.user.guest and empty DataversePage.editMode and
-                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('ReleaseDataverseCommand')}">
+                                                     permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand')}">
                                 <div style="float:right; margin-left:1em;">
                                     <ui:fragment rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                         <button type="button" class="btn btn-default" onclick="confirmation.show()">
