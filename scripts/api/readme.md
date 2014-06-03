@@ -118,6 +118,10 @@ Lists the metadata block block named `blockname`, for the given dataset and vers
 
 Updates the current edit version of dataset `{{id}}`. If the dataset does not have an edit version - e.g. when its most recent version is published, a new dreaft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
 
+    POST http://{{SERVER}}/api/datasets/{{id}}/actions/:publish?type={{type}}&key={{apiKey}}
+
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0).
+
 ### permissions
 
 	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}

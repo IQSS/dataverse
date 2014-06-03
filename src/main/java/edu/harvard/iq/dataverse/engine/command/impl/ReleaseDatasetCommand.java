@@ -80,8 +80,9 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
         } 
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        String indexingResult = ctxt.index().indexDataset(savedDataset);
-        logger.info("during dataset save, indexing result was: " + indexingResult);
+        
+        ctxt.index().indexDataset(savedDataset);
+        
         return savedDataset;
     }
 

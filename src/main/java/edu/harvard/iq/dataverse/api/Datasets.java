@@ -10,9 +10,11 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -287,7 +289,45 @@ public class Datasets extends AbstractApiBean {
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
         }
     }
-
+    
+    @POST
+    @Path("{id}/actions/:publish") 
+    public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("key") String apiKey ) {
+        try {
+            
+            if ( type == null ) return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+            type = type.toLowerCase();
+            boolean isMinor = false;
+            switch ( type ) {
+                case "minor": isMinor = true; break;
+                case "major": isMinor = false; break;
+                default: return errorResponse( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+            }
+            long dsId=0;
+            try {
+                dsId = Long.parseLong(id);
+            } catch ( NumberFormatException nfe ) {
+                return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
+            }
+            
+            DataverseUser u = userSvc.findByUserName(apiKey);
+            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+            
+            Dataset ds = datasetService.find(dsId);
+            if ( ds == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataset with id '" + id + "'");
+            
+            ds = engineSvc.submit( new ReleaseDatasetCommand(ds, u, isMinor));
+            return okResponse( json(ds) );
+            
+        } catch (IllegalCommandException ex) {
+            return errorResponse( Response.Status.FORBIDDEN, "Error releasing the dataset: " + ex.getMessage() );
+            
+        } catch (CommandException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while releasing a Dataset", ex);
+            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error releasing the dataset: " + ex.getMessage() );
+        }
+    }
+    
     // used to primarily to feed data into elasticsearch
     @GET
 	@Deprecated
