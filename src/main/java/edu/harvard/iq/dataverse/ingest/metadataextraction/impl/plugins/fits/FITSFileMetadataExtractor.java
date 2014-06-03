@@ -107,22 +107,24 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             //defaultRecognizedFitsMetadataKeys.put("DATE-OBS", FIELD_TYPE_DATE);
             // both coverage.Temporal.StartTime and .EndTime are derived from 
             // the DATE-OBS values; extra rules apply (coded further down)
+            //defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
+            
             
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StopTime");
             //defaultIndexableFitsMetaKeys.put("NAXIS", "naxis");
-
+            //defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
+            //defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
+            //defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
 
             // Optional, configurable fields: 
             
             defaultRecognizedFitsMetadataKeys.put("FILTER", FIELD_TYPE_TEXT);
-            //defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
             defaultRecognizedFitsMetadataKeys.put("CD1_1", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("CDELT", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
-            //defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
-            //defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
-
             
             // And the mapping to the corresponding values in the 
             // metadata block:
@@ -132,13 +134,11 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("TELESCOP", ATTRIBUTE_FACILITY);
             defaultIndexableFitsMetaKeys.put("INSTRUME", ATTRIBUTE_INSTRUMENT);
             defaultIndexableFitsMetaKeys.put("FILTER", "coverage.Spectral.Bandpass");
-            //defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
             defaultIndexableFitsMetaKeys.put("CD1_1", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
-            //defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
-            //defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
+            
 
             
 
