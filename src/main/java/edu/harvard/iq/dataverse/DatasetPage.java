@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -308,9 +308,9 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
-                cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
+                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
             } else {
-                cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
+                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
             }
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {

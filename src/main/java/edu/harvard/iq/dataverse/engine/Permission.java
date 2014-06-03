@@ -15,7 +15,7 @@ public enum Permission implements java.io.Serializable {
     AddDataset("Add a dataset to a dataverse"),
     AddDatasetVersion("Add a version to a dataset"),
 	ChooseTemplate("Choose metadata template for dataverses and datasets"),
-	Release("Release a dataverse or a dataset"),
+	Publish("Release a dataverse or a dataset"),
 	Style("Customize the appearance of objects"),
 	GrantPermissions("Manage permissions of other users"),
 	Tracking("Manage guestbook, download statistics, etc.")

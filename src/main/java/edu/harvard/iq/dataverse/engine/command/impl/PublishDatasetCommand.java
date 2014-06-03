@@ -25,14 +25,14 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.Release)
+    @RequiredPermissions(dataverseName = "", value = Permission.Publish)
 })
-public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
-   private static final Logger logger = Logger.getLogger(ReleaseDatasetCommand.class.getCanonicalName());
+public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+   private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
     boolean minorRelease = false;
     Dataset theDataset;
 
-    public ReleaseDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
+    public PublishDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
         super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;

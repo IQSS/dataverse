@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -316,7 +316,7 @@ public class Datasets extends AbstractApiBean {
             Dataset ds = datasetService.find(dsId);
             if ( ds == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataset with id '" + id + "'");
             
-            ds = engineSvc.submit( new ReleaseDatasetCommand(ds, u, isMinor));
+            ds = engineSvc.submit( new PublishDatasetCommand(ds, u, isMinor));
             return okResponse( json(ds) );
             
         } catch (IllegalCommandException ex) {

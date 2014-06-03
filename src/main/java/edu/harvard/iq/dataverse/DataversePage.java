@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
@@ -230,7 +230,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String releaseDataverse() {
-        ReleaseDataverseCommand cmd = new ReleaseDataverseCommand(session.getUser(), dataverse);
+        PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");

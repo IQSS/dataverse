@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.impl.RenameDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -97,7 +97,7 @@ public class SampleCommandPage {
 	}
 	
 	public boolean isCanRelease() {
-		return permissionsService.on(dataversePage.getDataverse()).canIssue( ReleaseDataverseCommand.class );
+		return permissionsService.on(dataversePage.getDataverse()).canIssue( PublishDataverseCommand.class );
 	}
 	
 	public List<Dataverse> getDataverseList() {

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
+import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -11,20 +11,20 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import java.sql.Timestamp;
 import java.util.Date;
 
-@RequiredPermissions(Permission.Release)
-public class ReleaseDataverseCommand extends AbstractVoidCommand {
+@RequiredPermissions(Permission.Publish)
+public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse dataverse;
     private final DataverseUser dataverseUser;
 
-    public ReleaseDataverseCommand(DataverseUser dataverseUser, Dataverse dataverse) {
+    public PublishDataverseCommand(DataverseUser dataverseUser, Dataverse dataverse) {
         super(dataverseUser, dataverse);
         this.dataverse = dataverse;
         this.dataverseUser = dataverseUser;
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt) throws CommandException {
+    public Dataverse execute(CommandContext ctxt) throws CommandException {
         if (dataverse.isReleased()) {
             throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " has already been published.", this);
         }
@@ -39,7 +39,7 @@ public class ReleaseDataverseCommand extends AbstractVoidCommand {
 
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
         dataverse.setReleaseUser(dataverseUser);
-        Dataverse saved = ctxt.dataverses().save(dataverse);
+        return ctxt.dataverses().save(dataverse);
     }
 
 }

@@ -12,8 +12,8 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import java.io.File;
 import java.util.List;
@@ -422,7 +422,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                          * bit more before we release 4.0.
                                          */
                                         boolean attemptMinorVersionBump = false;
-                                        cmd = new ReleaseDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
+                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
                                         dataset = engineSvc.submit(cmd);
                                     } catch (CommandException ex) {
                                         String msg = "Unable to publish dataset: " + ex;
@@ -463,7 +463,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (deposit.isInProgress()) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
                         }
-                        ReleaseDataverseCommand cmd = new ReleaseDataverseCommand(dataverseUser, dvToRelease);
+                        PublishDataverseCommand cmd = new PublishDataverseCommand(dataverseUser, dvToRelease);
                         try {
                             engineSvc.submit(cmd);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
