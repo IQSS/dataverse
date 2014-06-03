@@ -20,182 +20,191 @@
             <ui:param name="dataverse" value="#{manageRolesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-				<h:form id="dataverseForm">
+                <h:form id="dataverseForm">
 
-					<ui:remove>
-					<!-- Permission root -->
-					</ui:remove>
-					
-					<ui:fragment rendered="#{manageRolesPage.dataverse.owner ne null}">
-						<h:outputLabel for="permissionRootCb" value="Inherit Assignments" />
-						<h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.inheritAssignmentsCbValue}">
-							<p:ajax update="permissionRootCbHelp permissionRootCbHelpWhenIs permissionRootCbHelpWhenIsNot assignedRoles" listener="#{manageRolesPage.updatePermissionRoot}" />
-						</h:selectBooleanCheckbox>
-						<p:outputPanel id="permissionRootCbHelp">
-							<h:outputText id="permissionRootCbHelpWhenIs" rendered="#{manageRolesPage.permissionRoot}"
-										  value="Role assignments in parent dataverses are not honored in this dataverse" />
-							<h:outputText id="permissionRootCbHelpWhenIsNot" rendered="#{not manageRolesPage.permissionRoot}"
-										  value="Role assignments in parent dataverses are honored in this dataverse" />
-						</p:outputPanel>
-					</ui:fragment>
-					
-					<ui:remove>
-					<!-- User invitations -->
-					</ui:remove>
-					<p:panel header="Invite Users/Create Groups" toggleable="true" style="margin-bottom:1em;">
-						This has yet to be invented.
-					</p:panel>
-					
-					<p:panel header="Role Assignments" toggleable="true" collapsed="false" styleClass="form-group">
-						<p:dataTable id="assignedRoles" var="ar" value="#{manageRolesPage.roleAssignments}">
-							<p:column sortBy="name" headerText="User">
-								<h:outputText value="#{ar.name} (#{ar.email})" />
-							</p:column>
-							<p:column sortBy="roleName" headerText="Role">
-								<h:outputText value="#{ar.roleName} (#{ar.assignedDvName} Dataverse)" />
-							</p:column>
-							<p:column sortBy="assignedDvName" headerText="Action">
-								<p:commandButton value="Revoke" actionListener="#{manageRolesPage.revokeRole(ar.id)}"
-												 update="assignedRoles" rendered="#{ar.assignDv eq manageRolesPage.dataverse}" />
-							</p:column>
-						</p:dataTable>
-						<p:outputLabel value="Assign Role" for="userRole"/>
-						<h:selectOneMenu id="userRole" styleClass="form-control" value="#{manageRolesPage.assignRoleRoleId}">
-							<f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
-										   itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
-						</h:selectOneMenu>
-						<h:outputText value="  to  " />
-						<p:outputLabel for="usernameField" value="User/Group"/>
-						<p:autoComplete id="usernameField"
-										value="#{manageRolesPage.assignRoleUsername}"
-										completeMethod="#{manageRolesPage.acUsername}"
-										queryDelay="1000"
-										var="u"
-										itemLabel="#{u.userName}"
-										itemValue="#{u.userName}">
-							<f:facet name="itemtip">
-								<div>
-									<strong>#{u.firstName} #{u.lastName}</strong><br/>
-									<em>#{u.affiliation}</em>
-									#{u.email}
-								</div>
-							</f:facet>
-						</p:autoComplete>
+                    <ui:remove>
+                        <!-- Permission root -->
+                    </ui:remove>
 
-						<p:commandButton value="Assign" 
-										 actionListener="#{manageRolesPage.assignRole}"
-										 update="assignedRoles"/>
-					</p:panel>
-					
-					<ui:remove>
-					<!-- Manage roles -->
-					</ui:remove>
-					<p:panel header="Role Management" toggleable="true" collapsed="true" style="margin-bottom:1em;">
-						
-						<ui:remove>
-						<!-- List of roles -->
-						</ui:remove>
-						<p:dataList styleClass="list-unstyled" id="roleList" value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles}">
-							<f:passThroughAttribute name="class" value="list-unstyled" />
-							<p class="#{manageRolesPage.role.id == role.id?'bg-primary':'bg-info'}">
-								<strong>#{role.name}</strong>
-								<p:commandButton value="edit" 
-										actionListener="#{manageRolesPage.editRole(role.id)}"
-												update="roleList :#{p:component('editRoleButtonPanel')} :#{p:component('editRolePermissionPanel')} :#{p:component('editRolePropertiesPanel')}"/>
-								<br />
-								<ui:repeat value="#{role.permissions().toArray()}" var="prm">
-									<span class="label label-default">#{prm}</span>
-								</ui:repeat>
-							</p>
-						</p:dataList>
-						<p:panel rendered="#{! manageRolesPage.hasRoles}">
-							No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
-							<h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
-								Any roles applied to users at parent dataverses, are valid in this
-								dataverse as well.
-							</h:outputText>
-						</p:panel>
+                    <ui:fragment rendered="#{manageRolesPage.dataverse.owner ne null}">
+                        <h:outputLabel for="permissionRootCb" value="Inherit Assignments" />
+                        <h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.inheritAssignmentsCbValue}">
+                            <p:ajax update="permissionRootCbHelp permissionRootCbHelpWhenIs permissionRootCbHelpWhenIsNot assignedRoles" listener="#{manageRolesPage.updatePermissionRoot}" />
+                        </h:selectBooleanCheckbox>
+                        <p:outputPanel id="permissionRootCbHelp">
+                            <h:outputText id="permissionRootCbHelpWhenIs" rendered="#{manageRolesPage.permissionRoot}"
+                                          value="Role assignments in parent dataverses are not honored in this dataverse" />
+                            <h:outputText id="permissionRootCbHelpWhenIsNot" rendered="#{not manageRolesPage.permissionRoot}"
+                                          value="Role assignments in parent dataverses are honored in this dataverse" />
+                        </p:outputPanel>
+                    </ui:fragment>
 
-						
-						<p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" header="Role Properties">
-							<p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
-								<p:outputLabel value="Name" for="roleName"/>
-								<p:inputText id="roleName" value="#{manageRolesPage.role.name}"/>
-								<p:watermark for="roleName" value="Enter a name for the role..."/>
-								<p:message for="roleName"/>
+                    <ui:remove>
+                        <!-- User invitations -->
+                    </ui:remove>
+                    <!--<p:panel header="Invite Users/Create Groups" toggleable="true" style="margin-bottom:1em;">
+                        This has yet to be invented.
+                    </p:panel>-->
 
-								<p:outputLabel value="Alias" for="roleAlias"/>
-								<p:inputText id="roleAlias" value="#{manageRolesPage.role.alias}"/>
-								<p:watermark for="roleAlias" value="Enter alias for the role..."/>
-								<p:message for="roleAlias"/>
+                    <p:panel header="Role Assignments" toggleable="true" collapsed="false" style="margin-bottom:1em;">
+                        
+                        <div class="form-group clearfix">
+                            <p:outputLabel styleClass="col-xs-2 control-label" value="Assign Role" for="userRole"/>
+                            <div class="col-xs-4">
+                                <h:selectOneMenu id="userRole" styleClass="form-control" value="#{manageRolesPage.assignRoleRoleId}">
+                                    <f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
+                                                   itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
+                                </h:selectOneMenu>
+                            </div>
+                            <p:outputLabel styleClass="col-xs-2 control-label" value="User/Group" for="userRole"/>
+                            <div class="col-xs-2">
+                                <p:autoComplete id="usernameField"
+                                                value="#{manageRolesPage.assignRoleUsername}"
+                                                completeMethod="#{manageRolesPage.acUsername}"
+                                                queryDelay="1000"
+                                                var="u"
+                                                itemLabel="#{u.userName}"
+                                                itemValue="#{u.userName}">
+                                    <f:facet name="itemtip">
+                                        <div>
+                                            <strong>#{u.firstName} #{u.lastName}</strong><br/>
+                                            <em>#{u.affiliation}</em>
+                                            #{u.email}
+                                        </div>
+                                    </f:facet>
+                                </p:autoComplete>
+                            </div>
 
-								<p:outputLabel value="Description" for="roleDescription"/>
-								<h:panelGroup>
-									<p:inputTextarea id="roleDescription" value="#{manageRolesPage.role.description}"
-													 rows="5" cols="50" counter="counter" maxlength="1000"
-													 counterTemplate="{0} characters remaining" autoResize="false"/>
-									<h:outputText id="counter" style="display:block;"/>
-								</h:panelGroup>
-								<p:watermark for="roleDescription" value="Describe the role (1000 characters max)"/>
-								<p:message for="roleDescription"/>
-							</p:panelGrid>
-						</p:panel>
-						<p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions">
-							<h:selectManyCheckbox value="#{manageRolesPage.selectedPermissions}"
-												  layout="pageDirection">
-								<f:selectItems value="#{manageRolesPage.permissions}" var="pmsn"
-											   itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
-											   itemValue="#{pmsn.name()}"
-											   />
-							</h:selectManyCheckbox>
-						</p:panel>
-						<p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
-							<p:commandButton value="Update Role" rendered="#{manageRolesPage.role.id ne null}"
-											 actionListener="#{manageRolesPage.updateRole}" update="roleList userRole"/>
-							<p:commandButton value="Save New Role"
-											 actionListener="#{manageRolesPage.saveNewRole}" update="roleList userRole"/>
-						</p:panel>
-					</p:panel>
-				
-					<div>
-						<code><pre>
+                            <div class="col-xs-2">
+                                <p:commandButton value="Assign"
+                                             actionListener="#{manageRolesPage.assignRole}"
+                                             update="assignedRoles"/>
+                            </div>
+                        </div>
+                        
+                        <p:dataTable id="assignedRoles" var="ar" value="#{manageRolesPage.roleAssignments}">
+                            <p:column sortBy="name" headerText="User">
+                                <h:outputText value="#{ar.name} (#{ar.email})" />
+                            </p:column>
+                            <p:column sortBy="roleName" headerText="Role">
+                                <h:outputText value="#{ar.roleName} (#{ar.assignedDvName} Dataverse)" />
+                            </p:column>
+                            <p:column sortBy="assignedDvName" headerText="Action">
+                                <p:commandButton value="Revoke" actionListener="#{manageRolesPage.revokeRole(ar.id)}"
+                                                 update="assignedRoles" rendered="#{ar.assignDv eq manageRolesPage.dataverse}" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <ui:remove>
+                        <!-- Manage roles -->
+                    </ui:remove>
+                    <p:panel header="Role Management" toggleable="true" collapsed="true" style="margin-bottom:1em;">
+
+                        <ui:remove>
+                            <!-- List of roles -->
+                        </ui:remove>
+                        <p:dataList styleClass="list-unstyled" id="roleList" value="#{manageRolesPage.getRoles()}" var="role" rendered="#{manageRolesPage.hasRoles}">
+                            <f:passThroughAttribute name="class" value="list-unstyled" />
+                            <p class="#{manageRolesPage.role.id == role.id?'bg-primary':'bg-info'}">
+                                <strong>#{role.name}</strong>
+                                <p:commandButton value="edit"
+                                                 actionListener="#{manageRolesPage.editRole(role.id)}"
+                                                 update="roleList :#{p:component('editRoleButtonPanel')} :#{p:component('editRolePermissionPanel')} :#{p:component('editRolePropertiesPanel')}"/>
+                                <br />
+                                <ui:repeat value="#{role.permissions().toArray()}" var="prm">
+                                    <span class="label label-default">#{prm}</span>
+                                </ui:repeat>
+                            </p>
+                        </p:dataList>
+                        <p:panel rendered="#{! manageRolesPage.hasRoles}">
+                            No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
+                            <h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
+                                Any roles applied to users at parent dataverses, are valid in this
+                                dataverse as well.
+                            </h:outputText>
+                        </p:panel>
+
+                        <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" header="Role Properties">
+                            <p:panelGrid styleClass="panelgridLayoutTable" columns="2" columnClasses="leftClass,rightClass">
+                                <p:outputLabel value="Name" for="roleName"/>
+                                <p:inputText id="roleName" value="#{manageRolesPage.role.name}"/>
+                                <p:watermark for="roleName" value="Enter a name for the role..."/>
+                                <p:message for="roleName"/>
+
+                                <p:outputLabel value="Alias" for="roleAlias"/>
+                                <p:inputText id="roleAlias" value="#{manageRolesPage.role.alias}"/>
+                                <p:watermark for="roleAlias" value="Enter alias for the role..."/>
+                                <p:message for="roleAlias"/>
+
+                                <p:outputLabel value="Description" for="roleDescription"/>
+                                <h:panelGroup>
+                                    <p:inputTextarea id="roleDescription" value="#{manageRolesPage.role.description}"
+                                                     rows="5" cols="50" counter="counter" maxlength="1000"
+                                                     counterTemplate="{0} characters remaining" autoResize="false"/>
+                                    <h:outputText id="counter" style="display:block;"/>
+                                </h:panelGroup>
+                                <p:watermark for="roleDescription" value="Describe the role (1000 characters max)"/>
+                                <p:message for="roleDescription"/>
+                            </p:panelGrid>
+                        </p:panel>
+                        <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions">
+                            <h:selectManyCheckbox value="#{manageRolesPage.selectedPermissions}"
+                                                  layout="pageDirection">
+                                <f:selectItems value="#{manageRolesPage.permissions}" var="pmsn"
+                                               itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
+                                               itemValue="#{pmsn.name()}"
+                                               />
+                            </h:selectManyCheckbox>
+                        </p:panel>
+                        <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
+                            <p:commandButton value="Update Role" rendered="#{manageRolesPage.role.id ne null}"
+                                             actionListener="#{manageRolesPage.updateRole}" update="roleList userRole"/>
+                            <p:commandButton value="Save New Role"
+                                             actionListener="#{manageRolesPage.saveNewRole}" update="roleList userRole"/>
+                        </p:panel>
+                    </p:panel>
+
+                    <!--<pre>
  ______________________________________ 
 / The part below is going away once we \
 \ have groups                          /
- -------------------------------------- 
+ `````````````````````````````````````` 
         \   ^__^
          \  (oo)\_______
             (__)\       )\/\
-                ||----w |
+                ||````w |
                 ||     ||
-							</pre></code>
-					</div>
-					<p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
-						<p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
-							<h:outputText value="Guest User" />
-							<h:selectManyCheckbox value="#{manageRolesPage.guestRolesHereId}"
-												  layout="pageDirection">
-								<f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
-											   itemLabel="#{role.name} (#{role.owner.name} Dataverse)" itemValue="#{role.id}" />
-							</h:selectManyCheckbox>
-							<h:panelGroup>
-								Define what roles non-logged in users have.
-								<p:outputPanel rendered="#{empty manageRolesPage.guestRolesUp}">
-									Guests do not inherit any role from parent dataverses.
-								</p:outputPanel>
-								<p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
-									Guest users inherit these roles from parent dataverses:
-									<p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
-										#{ra.role.name} <small>(assigned at #{ra.definitionPoint.name})</small>
-									</p:dataList>
-								</p:outputPanel>
-							</h:panelGroup>
-						</p:panelGrid>
-					</p:panelGrid>
-					<p:commandButton value="Save"
-									 actionListener="#{manageRolesPage.saveDataverse}"
-									 update="@all"/>
-				</h:form>
+                        </pre>-->
+                    <p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
+                        <p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
+                            <h:outputText value="Guest User" />
+                            <h:selectManyCheckbox value="#{manageRolesPage.guestRolesHereId}"
+                                                  layout="pageDirection">
+                                <f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
+                                               itemLabel="#{role.name} (#{role.owner.name} Dataverse)" itemValue="#{role.id}" />
+                            </h:selectManyCheckbox>
+                            <h:panelGroup>
+                                Define what roles non-logged in users have.
+                                <p:outputPanel rendered="#{empty manageRolesPage.guestRolesUp}">
+                                    Guests do not inherit any role from parent dataverses.
+                                </p:outputPanel>
+                                <p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
+                                    Guest users inherit these roles from parent dataverses:
+                                    <p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
+                                        #{ra.role.name} <small>(assigned at #{ra.definitionPoint.name})</small>
+                                    </p:dataList>
+                                </p:outputPanel>
+                            </h:panelGroup>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                    
+                    <div style="margin-top:1em;">
+                        <p:commandButton value="Save"
+                                        actionListener="#{manageRolesPage.saveDataverse}"
+                                        update="@all"/>
+                    </div>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>
