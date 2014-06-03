@@ -337,10 +337,24 @@ public class IngestServiceBean {
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
 
-        Double[][] variableVectors = subsetContinuousVectors(dataFile);
-
-        calculateContinuousSummaryStatistics(dataFile, variableVectors);
-
+        // quick, but memory-inefficient way:
+        // - this method just loads the entire file-worth of continuous vectors 
+        // into a Double[][] matrix. 
+        //Double[][] variableVectors = subsetContinuousVectors(dataFile);
+        //calculateContinuousSummaryStatistics(dataFile, variableVectors);
+        
+        // A more sophisticated way: this subsets one column at a time, using 
+        // the new optimized subsetting that does not have to read any extra 
+        // bytes from the file to extract the column:
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
+                Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
+                calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+            }
+        }
     }
     
     public boolean asyncIngestAsTabular(DataFile dataFile) {
@@ -902,6 +916,11 @@ public class IngestServiceBean {
                 assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(i), sumStats);
             }
         }
+    }
+    
+    private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Double[] dataVector) throws IOException {
+        double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);
+        assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(varnum), sumStats);
     }
     
     private void assignContinuousSummaryStatistics(DataVariable variable, double[] sumStats) throws IOException {

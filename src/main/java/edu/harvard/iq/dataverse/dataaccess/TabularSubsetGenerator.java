@@ -20,13 +20,21 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-
+import edu.harvard.iq.dataverse.DataFile;
 import java.util.*;
 import java.util.Scanner;
 import java.util.logging.*;
 import java.io.*;
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+
 import org.apache.commons.lang.*;
 
 
@@ -41,6 +49,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     private static Logger dbgLog = Logger.getLogger(TabularSubsetGenerator.class.getPackage().getName());
 
+    private static int COLUMN_TYPE_STRING = 1;
+    private static int COLUMN_TYPE_LONG   = 2;
+    private static int COLUMN_TYPE_DOUBLE = 3; 
+    
        
     public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases) {
         subsetFile(infile, outfile, columns, numCases, "\t");
@@ -179,9 +191,192 @@ public class TabularSubsetGenerator implements SubsetGenerator {
 
     }
     
+    public String[] subsetStringVector(DataFile datafile, int column) throws IOException {
+        return (String[])subsetObjectVector(datafile, column, COLUMN_TYPE_STRING);
+    }
     
+    public Double[] subsetDoubleVector(DataFile datafile, int column) throws IOException {
+        return (Double[])subsetObjectVector(datafile, column, COLUMN_TYPE_DOUBLE);
+    }
     
-    private void generateRotatedImage (File tabfile, int varcount, int casecount) throws IOException {
+    public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (String[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_STRING);
+    }
+    
+    public Double[] subsetDoubleVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (Double[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_DOUBLE);
+    }
+    
+    public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
+        if (!dataFile.isTabularData()) {
+            throw new IOException("DataFile is not tabular data.");
+        }
+         
+        int varcount = dataFile.getDataTable().getVarQuantity().intValue(); 
+        int casecount = dataFile.getDataTable().getCaseQuantity().intValue(); 
+        
+        if (column >= varcount) {
+            throw new IOException("Column "+column+" is out of bounds.");
+        }
+        
+        File tabfile = dataFile.getFileSystemLocation().toFile();
+        
+        return subsetObjectVector(tabfile, column, varcount, casecount, columntype);
+    }
+    
+    public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype) throws IOException {
+        
+        Object[] retVector = null; 
+        
+        boolean isString = false; 
+        boolean isDouble = false;
+        
+        if (columntype == COLUMN_TYPE_STRING) {
+            isString = true; 
+        } else if (columntype == COLUMN_TYPE_DOUBLE) {
+            isDouble = true; 
+        } else {
+            throw new IOException("Unsupported column type: "+columntype);
+        }
+        if (isString) {
+            retVector = new String[casecount];
+        } else if (isDouble) {
+            retVector = new Double[casecount];
+        }
+        
+        File rotatedImageFile = getRotatedImage(tabfile, varcount, casecount);
+        long[] columnEndOffsets = getColumnOffsets(rotatedImageFile, varcount, casecount); 
+        long columnOffset = 0; 
+        long columnLength = 0; 
+        
+        if (column > 0) {
+            columnOffset = columnEndOffsets[column - 1];
+            columnLength = columnEndOffsets[column] - columnEndOffsets[column - 1];
+        } else {
+            columnOffset = varcount * 8; 
+            columnLength = columnEndOffsets[0] - varcount * 8;  
+        }
+        
+        FileChannel fc = (FileChannel.open(Paths.get(rotatedImageFile.getAbsolutePath()), StandardOpenOption.READ));
+        fc.position(columnOffset);
+        int MAX_COLUMN_BUFFER = 8192;
+        
+        ByteBuffer in = ByteBuffer.allocate(MAX_COLUMN_BUFFER);
+        
+        if (columnLength < MAX_COLUMN_BUFFER) {
+          in.limit((int)(columnLength));
+        }
+        
+        long bytesRead = 0;
+        long bytesReadTotal = 0;
+        int caseindex = 0; 
+        int byteoffset = 0; 
+        byte[] leftover = null; 
+        
+        while (bytesReadTotal < columnLength) {
+            bytesRead = fc.read(in);
+            byte[] columnBytes = in.array();
+            int bytecount = 0; 
+
+            
+            while (bytecount < bytesRead) {
+                if (columnBytes[bytecount] == '\n') {
+                    String token = new String(columnBytes, byteoffset, bytecount-byteoffset);
+
+                    if (leftover != null) {
+                        String leftoverString = new String (leftover);
+                        token = leftoverString + token;
+                        leftover = null;
+                    }
+                    
+                    if (isString) {
+                        retVector[caseindex] = token;
+                    } else if (isDouble) {
+                        try {
+                            // TODO: verify that NaN and +-Inf are 
+                            // handled correctly here! -- L.A.
+                            retVector[caseindex] = new Double(token);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseindex] = null; // missing value
+                        }
+                    }
+                    caseindex++;
+                    
+                    if (bytecount == bytesRead - 1) {
+                        byteoffset = 0;
+                    } else {
+                        byteoffset = bytecount + 1;
+                    }
+                } else {
+                    if (bytecount == bytesRead - 1) {
+                        leftover = new byte[(int)bytesRead - byteoffset];
+                        System.arraycopy(columnBytes, byteoffset, leftover, 0, (int)bytesRead - byteoffset);
+                        byteoffset = 0;
+
+                    }
+                }
+                bytecount++;
+            }
+            
+            bytesReadTotal += bytesRead; 
+            in.clear();
+            if (columnLength - bytesReadTotal < MAX_COLUMN_BUFFER) {
+                in.limit((int)(columnLength - bytesReadTotal));
+            }
+        }
+        
+        fc.close();
+
+        if (caseindex != casecount) {
+            throw new IOException("Faile to read "+casecount+" tokens for column "+column);
+            //System.out.println("read "+caseindex+" tokens instead of expected "+casecount+".");
+        }
+        
+        return retVector; 
+    }
+    
+    private long[] getColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
+         BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile));
+        
+        byte[] offsetHeader = new byte[varcount * 8];
+        long[] byteOffsets = new long[varcount];
+        
+        
+        int readlen = rotfileStream.read(offsetHeader); 
+        
+        if (readlen != varcount * 8) {
+            throw new IOException ("Could not read "+varcount*8+" header bytes from the rotated file.");
+        }
+        
+        for (int varindex = 0; varindex < varcount; varindex++) {
+            byte[] offsetBytes = new byte[8];
+            System.arraycopy(offsetHeader, varindex*8, offsetBytes, 0, 8);
+           
+            ByteBuffer offsetByteBuffer = ByteBuffer.wrap(offsetBytes);
+            byteOffsets[varindex] = offsetByteBuffer.getLong();
+            
+            //System.out.println(byteOffsets[varindex]);
+        }
+        
+        rotfileStream.close(); 
+        
+        return byteOffsets; 
+    }
+    
+    private File getRotatedImage(File tabfile, int varcount, int casecount)  throws IOException {
+        String fileName = tabfile.getAbsolutePath();
+        String rotatedImageFileName = fileName + ".90d";
+        File rotatedImageFile = new File(rotatedImageFileName); 
+        if (rotatedImageFile.exists()) {
+            //System.out.println("Image already exists!");
+            return rotatedImageFile;
+        }
+        
+        return generateRotatedImage(tabfile, varcount, casecount);
+        
+    }
+    
+    private File generateRotatedImage (File tabfile, int varcount, int casecount) throws IOException {
         // TODO: throw exceptions if bad file, zero varcount, etc. ...
         
         String fileName = tabfile.getAbsolutePath();
@@ -268,6 +463,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                 scanner.close();
                 throw new IOException("Tab file has fewer rows than the stored number of cases!");
             }
+            
         }
         
         // OK, we've created the individual byte vectors of the tab file columns;
@@ -283,7 +479,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         long columnOffset = varcount * 8;
         // (this is the offset of the first column vector; it is equal to the
         // size of the offset header, i.e. varcount * 8 bytes)
-        
+      
         for (int varindex = 0; varindex < varcount; varindex++) {
             long totalColumnBytes = cachedfileSizes[varindex] + bufferedSizes[varindex];
             columnOffset+=totalColumnBytes;
@@ -326,10 +522,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         finalOut.close();
+        return new File(rotatedImageFileName);
+
     }
   
     /*
-     * Test method for taking a "roated" image, and reversing it, reassembling 
+     * Test method for taking a "rotated" image, and reversing it, reassembling 
      * all the columns in the original order. Which should result in a file 
      * byte-for-byte identical file to the original tab-delimited version.
      *
@@ -437,26 +635,41 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         String tabFileName = args[0]; 
         int varcount = new Integer(args[1]).intValue();
         int casecount = new Integer(args[2]).intValue();
+        int column = new Integer(args[3]).intValue();
         
-        File tabFile = null; 
+        File tabFile = new File(tabFileName);
+        File rotatedImageFile = null; 
         
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator(); 
         
         /*
         try {
-            tabFile = new File(tabFileName);
-            subsetGenerator.generateRotatedImage(tabFile, varcount, casecount);
+            rotatedImageFile = subsetGenerator.getRotatedImage(tabFile, varcount, casecount);
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        }*/
+        }
+        */
         
         //System.out.println("\nFinished generating \"rotated\" column image file."); 
-        
-        String rotatedImageFileName = tabFileName + ".90d";
-        
+                
         //System.out.println("\nOffsets:");
+        
+        MathContext doubleMathContext = new MathContext(15, RoundingMode.HALF_EVEN);
+        String FORMAT_IEEE754 = "%+#.15e";
+        
         try {
-            subsetGenerator.reverseRotatedImage(new File(rotatedImageFileName), varcount, casecount);
+            //subsetGenerator.reverseRotatedImage(rotatedImageFile, varcount, casecount);
+            //String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
+            Double[] columns = subsetGenerator.subsetDoubleVector(tabFile, column, varcount, casecount);
+            for (int i = 0; i < casecount; i++) {
+                if (columns[i] != null) {
+                    BigDecimal outBigDecimal = new BigDecimal(columns[i], doubleMathContext);
+                    System.out.println(String.format(FORMAT_IEEE754, outBigDecimal));
+                } else {
+                    System.out.println("NA");
+                }
+                //System.out.println(columns[i]);
+            }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
