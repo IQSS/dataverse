@@ -320,11 +320,11 @@ public class Datasets extends AbstractApiBean {
             return okResponse( json(ds) );
             
         } catch (IllegalCommandException ex) {
-            return errorResponse( Response.Status.FORBIDDEN, "Error releasing the dataset: " + ex.getMessage() );
+            return errorResponse( Response.Status.FORBIDDEN, "Error publishing the dataset: " + ex.getMessage() );
             
         } catch (CommandException ex) {
-            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while releasing a Dataset", ex);
-            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error releasing the dataset: " + ex.getMessage() );
+            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while publishing a Dataset", ex);
+            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error publishing the dataset: " + ex.getMessage() );
         }
     }
     

@@ -64,12 +64,13 @@ public class PermissionServiceBean {
          * "Fast and loose" query mechanism, allowing to pass the command class
          * name. Command is assumed to live in
          * {@code edu.harvard.iq.dataverse.engine.command.impl.}
-         *
+         * @deprecated
          * @param commandName
          * @return {@code true} iff the user has the permissions required by the
          * command on the object.
          * @throws ClassNotFoundException
          */
+        @Deprecated
         public boolean canIssueCommand(String commandName) throws ClassNotFoundException {
             return isUserAllowedOn(user,
                     (Class<? extends Command>) Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);

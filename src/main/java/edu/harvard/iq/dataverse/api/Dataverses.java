@@ -11,9 +11,9 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -21,8 +21,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
@@ -450,28 +452,28 @@ public class Dataverses extends AbstractApiBean {
 		}
 	}
 	
-	@GET
-	@Path(":gv")
-	public String toGraphviz() {
-		StringBuilder sb = new StringBuilder();
-		StringBuilder edges = new StringBuilder();
-		
-		sb.append( "digraph dataverses {");
-		for ( Dataverse dv : dataverseSvc.findAll() ) {
-			sb.append("dv").append(dv.getId()).append(" [label=\"").append(dv.getAlias()).append( "\"]\n");
-			if ( dv.getOwner() != null ) {
-				edges.append("dv").append(dv.getOwner().getId())
-						.append("->")
-					.append("dv").append(dv.getId())
-					.append("\n");
-			}
-		}
-		
-		sb.append("\n");
-		sb.append( edges );
-		
-		sb.append( "}" );
-		return sb.toString();
-	}
-	
+    @POST
+    @Path("{identifier}/actions/:publish") 
+    public Response publishDataverse( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+        try {
+
+            Dataverse dv = findDataverse(dvIdtf);
+            if ( dv == null ) {
+                return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
+            }
+            
+            DataverseUser u = userSvc.findByUserName(apiKey);
+            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+            
+            dv = engineSvc.submit( new PublishDataverseCommand(u, dv) );
+            return okResponse( json(dv) );
+            
+        } catch (IllegalCommandException ex) {
+            return errorResponse( Response.Status.FORBIDDEN, "Error publishing dataverse: " + ex.getMessage() );
+            
+        } catch (CommandException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while publishing a Dataverse", ex);
+            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error publishing the dataset: " + ex.getMessage() );
+        }
+    }
 }

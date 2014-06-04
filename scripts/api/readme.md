@@ -40,12 +40,6 @@ View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id num
 
 Deletes the dataverse whose ID is given.
 
-	GET http://{{SERVER}}/api/dvs/:gv
-
-Dump the structure of the dataverse to a graphviz file. Sample usage: 
-`curl http://localhost:8080/api/dvs/:gv | circo -Tpdf > dataverses.pdf`
-Creates a pdf with all dataverses, and their hierarchy.
-
 	GET http://{{SERVER}}/api/dvs/{{id}}/roles?key={{username}}
 
 All the roles defined directly in the dataverse identified by `id`.
@@ -70,18 +64,22 @@ Get the metadata blocks defined on the passed dataverse.
 
 Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name).
 
-	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks.
 
-	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are `true` and `false` (both are valid JSON expressions).
 
-	POST http://{{SERVER}}/api/dvs/{{id}}/datasets/?key={{username}}
+	POST http://{{SERVER}}/api/dvs/{{id}}/datasets/?key={{apikey}}
 
 Create a new dataset in dataverse `id`. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of `"initialVersion"`. The initial versions version number will be set to `1.0`, and its state will be set to `DRAFT` regardless of the content of the json object. Example json can be found at `data/dataset-create-new.json`.
+
+	POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+
+Publish the Dataverse pointed by `identifier`, which can either by the dataverse alias or its numerical id.
 
 ### Datasets
 
