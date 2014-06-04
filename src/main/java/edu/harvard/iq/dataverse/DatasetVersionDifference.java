@@ -29,8 +29,6 @@ public class DatasetVersionDifference {
     private List<Object[]> blockDataForNote = new ArrayList();
     String noFileDifferencesFoundLabel = "";
 
-
-
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
 
         setOriginalVersion(originalVersion);
@@ -76,10 +74,10 @@ public class DatasetVersionDifference {
                     removedSummaryData.add(dsfo);
                 } else {
                     removedData.add(dsfo);
-                    updateBlockSummary(dsfo,  0, dsfo.getDatasetFieldValues().size(), 0);
+                    updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
                 }
                 addToSummary(dsfo, null);
-                
+
             }
         }
         for (DatasetField dsfn : newVersion.getDatasetFields()) {
@@ -130,7 +128,20 @@ public class DatasetVersionDifference {
             }
         }
         initDatasetFilesDifferencesList();
+
+        //Sort within blocks by datasetfieldtype dispaly order then....
         //sort via metadatablock order - citation first...
+        for (List blockList : detailDataByBlock) {
+            Collections.sort(blockList, new Comparator<DatasetField[]>() {
+                public int compare(DatasetField[] l1, DatasetField[] l2) {
+                    DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
+                    DatasetField dsfb = l2[0];
+                    int a = dsfa.getDatasetFieldType().getDisplayOrder();
+                    int b = dsfb.getDatasetFieldType().getDisplayOrder();
+                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                }
+            });
+        }
         Collections.sort(detailDataByBlock, new Comparator<List>() {
             public int compare(List l1, List l2) {
                 DatasetField dsfa[] = (DatasetField[]) l1.get(0);
@@ -149,7 +160,7 @@ public class DatasetVersionDifference {
         dsfArray[1] = dsfn;
         listIn.add(dsfArray);
     }
-    
+
     private void addToSummary(DatasetField dsfo, DatasetField dsfn) {
         if (dsfo == null) {
             dsfo = new DatasetField();
@@ -263,13 +274,11 @@ public class DatasetVersionDifference {
         int totalChanged = 0;
         int loopIndex = 0;
 
-        countNew = newField.getDatasetFieldCompoundValues().size();
-
         if (compound) {
             for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {
                 if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {
                     for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
-                        if (!dsfo.getDisplayValue().isEmpty()) {                           
+                        if (!dsfo.getDisplayValue().isEmpty()) {
                             originalValue += dsfo.getDisplayValue() + ", ";
                         }
                     }
@@ -283,17 +292,14 @@ public class DatasetVersionDifference {
                     }
                 }
                 loopIndex++;
-                if (!originalValue.isEmpty()) {
-                    countOriginal++;
-                }
-                if (!newValue.isEmpty()) {
-                    countNew++;
-                }
+
             }
+            countNew = newField.getDatasetFieldCompoundValues().size();
+            countOriginal = originalField.getDatasetFieldCompoundValues().size();
         } else {
             int index = 0;
             for (String valString : originalField.getValues()) {
-                if (valString != null && !valString.isEmpty()) {                    
+                if (valString != null && !valString.isEmpty()) {
                     countOriginal++;
                 }
             }
@@ -313,7 +319,6 @@ public class DatasetVersionDifference {
             }
 
         }
-        
         if (countNew > countOriginal) {
             totalAdded = countNew - countOriginal;
         }
@@ -321,41 +326,40 @@ public class DatasetVersionDifference {
         if (countOriginal > countNew) {
             totalDeleted = countOriginal - countNew;
         }
-        
-        if (originalField.getDatasetFieldType().isDisplayOnCreate()){
+        if (originalField.getDatasetFieldType().isDisplayOnCreate()) {
             addToNoteSummary(originalField, totalAdded, totalDeleted, totalChanged);
         } else {
             updateBlockSummary(originalField, totalAdded, totalDeleted, totalChanged);
-        }               
+        }
     }
-    
-    public String getFileNote(){
+
+    public String getFileNote() {
         String retString = "";
-        
-        if ( addedFiles.size() > 0){
+
+        if (addedFiles.size() > 0) {
             retString = "Files (Added: " + addedFiles.size();
         }
-        
-        if ( removedFiles.size() > 0){
-            if (retString.isEmpty()){
-               retString = "Files (Removed: " + removedFiles.size(); 
+
+        if (removedFiles.size() > 0) {
+            if (retString.isEmpty()) {
+                retString = "Files (Removed: " + removedFiles.size();
             } else {
-                retString += "; Removed: "+ removedFiles.size(); 
-            }            
+                retString += "; Removed: " + removedFiles.size();
+            }
         }
-        
-        if ( changedFileMetadata.size() > 0){
-            if (retString.isEmpty()){
-               retString = "Files (Changed File Metadata: " + changedFileMetadata.size() / 2; 
+
+        if (changedFileMetadata.size() > 0) {
+            if (retString.isEmpty()) {
+                retString = "Files (Changed File Metadata: " + changedFileMetadata.size() / 2;
             } else {
-                retString += "; Changed File Metadata: "+ changedFileMetadata.size() / 2;  
-            }            
+                retString += "; Changed File Metadata: " + changedFileMetadata.size() / 2;
+            }
         }
-        
-        if (!retString.isEmpty()){
+
+        if (!retString.isEmpty()) {
             retString += ")";
         }
-        
+
         return retString;
     }
 
@@ -443,7 +447,6 @@ public class DatasetVersionDifference {
     public void setDetailDataByBlock(List<List> detailDataByBlock) {
         this.detailDataByBlock = detailDataByBlock;
     }
-    
 
     public List<FileMetadata> getAddedFiles() {
         return addedFiles;
@@ -532,8 +535,7 @@ public class DatasetVersionDifference {
     public void setChangedFileMetadata(List<FileMetadata> changedFileMetadata) {
         this.changedFileMetadata = changedFileMetadata;
     }
-    
-    
+
     public List<Object[]> getSummaryDataForNote() {
         return summaryDataForNote;
     }
@@ -549,8 +551,8 @@ public class DatasetVersionDifference {
     public void setBlockDataForNote(List<Object[]> blockDataForNote) {
         this.blockDataForNote = blockDataForNote;
     }
-    
-    private void initDatasetFilesDifferencesList () {
+
+    private void initDatasetFilesDifferencesList() {
         datasetFilesDiffList = new ArrayList<datasetFileDifferenceItem>();
 
         // Study Files themselves are version-less;
@@ -560,13 +562,10 @@ public class DatasetVersionDifference {
         // files in 2 versions we can just go through the lists of the
         // files and compare the ids. If both versions have the file with
         // the same file id, it is the same file.
-
         // UPDATE: in addition to the above, even when the 2 versions share the
         // same study file, the file metadatas ARE version-specific, so some of
         // the fields there (filename, etc.) may be different. If this is the
         // case, we want to display these differences as well.
-
-
         if (originalVersion.getFileMetadatas().size() == 0 && newVersion.getFileMetadatas().size() == 0) {
             noFileDifferencesFoundLabel = "No data files in either version of the study";
             return;
@@ -578,30 +577,30 @@ public class DatasetVersionDifference {
         FileMetadata fm1;
         FileMetadata fm2;
 
-        while ( i < originalVersion.getFileMetadatas().size() &&
-                j <newVersion.getFileMetadatas().size() ) {
+        while (i < originalVersion.getFileMetadatas().size()
+                && j < newVersion.getFileMetadatas().size()) {
             fm1 = originalVersion.getFileMetadatas().get(i);
-            fm2 =  newVersion.getFileMetadatas().get(j);
+            fm2 = newVersion.getFileMetadatas().get(j);
 
             if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) == 0) {
                 // The 2 versions share the same study file;
                 // Check if the metadata information is identical in the 2 versions
                 // of the metadata:
-                if ( fileMetadataIsDifferent (fm1, fm2)) {
-                   datasetFileDifferenceItem fdi = selectFileMetadataDiffs (fm1, fm2);
-                   fdi.setFileId(fm1.getDataFile().getId().toString());
-                   datasetFilesDiffList.add(fdi);
+                if (fileMetadataIsDifferent(fm1, fm2)) {
+                    datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, fm2);
+                    fdi.setFileId(fm1.getDataFile().getId().toString());
+                    datasetFilesDiffList.add(fdi);
                 }
                 i++;
                 j++;
             } else if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
-                datasetFileDifferenceItem fdi = selectFileMetadataDiffs (null, fm2);
+                datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
                 fdi.setFileId(fm2.getDataFile().getId().toString());
                 datasetFilesDiffList.add(fdi);
 
                 j++;
             } else if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
-                datasetFileDifferenceItem fdi = selectFileMetadataDiffs (fm1, null);
+                datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
                 fdi.setFileId(fm1.getDataFile().getId().toString());
                 datasetFilesDiffList.add(fdi);
 
@@ -612,19 +611,18 @@ public class DatasetVersionDifference {
         // We've reached the end of at least one file list.
         // Whatever files are left on either of the 2 lists are automatically "different"
         // between the 2 versions.
-
-        while ( i < originalVersion.getFileMetadatas().size() ) {
+        while (i < originalVersion.getFileMetadatas().size()) {
             fm1 = originalVersion.getFileMetadatas().get(i);
-            datasetFileDifferenceItem fdi = selectFileMetadataDiffs (fm1, null);
+            datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
             fdi.setFileId(fm1.getDataFile().getId().toString());
             datasetFilesDiffList.add(fdi);
 
             i++;
         }
 
-         while ( j < newVersion.getFileMetadatas().size() ) {
+        while (j < newVersion.getFileMetadatas().size()) {
             fm2 = newVersion.getFileMetadatas().get(j);
-            datasetFileDifferenceItem fdi = selectFileMetadataDiffs (null, fm2);
+            datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
             fdi.setFileId(fm2.getDataFile().getId().toString());
             datasetFilesDiffList.add(fdi);
 
@@ -636,109 +634,107 @@ public class DatasetVersionDifference {
         }
     }
 
-    private boolean fileMetadataIsDifferent (FileMetadata fm1, FileMetadata fm2) {
+    private boolean fileMetadataIsDifferent(FileMetadata fm1, FileMetadata fm2) {
         if (fm1 == null && fm2 == null) {
-                return false;
+            return false;
         }
 
         if (fm1 == null && fm2 != null) {
-                return true;
+            return true;
         }
 
         if (fm2 == null && fm1 != null) {
-                return true;
+            return true;
         }
 
         // Both are non-null metadata objects.
         // We simply go through the 5 metadata fields, if any one of them
         // is different between the 2 versions, we declare the objects
         // different.
-
         String value1;
         String value2;
 
         // filename:
-
         value1 = fm1.getLabel();
         value2 = fm2.getLabel();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-        	value1 = "[Empty]";
+            value1 = "[Empty]";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-        	value2 = "[Empty]";
+            value2 = "[Empty]";
         }
 
-        if(!value1.equals(value2)) {
-                return true;
-		}
+        if (!value1.equals(value2)) {
+            return true;
+        }
 
         // file type:
         value1 = fm1.getDataFile().getFriendlyType();
         value2 = fm2.getDataFile().getFriendlyType();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-        	value1 = "[Empty]";
+            value1 = "[Empty]";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-        	value2 = "[Empty]";
+            value2 = "[Empty]";
         }
 
-        if(!value1.equals(value2)) {
-                return true;
-		}
+        if (!value1.equals(value2)) {
+            return true;
+        }
 
         // file size:
         /*
-        value1 = FileUtil.byteCountToDisplaySize(new File(fm1.getStudyFile().getFileSystemLocation()).length());
-        value2 = FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length());
+         value1 = FileUtil.byteCountToDisplaySize(new File(fm1.getStudyFile().getFileSystemLocation()).length());
+         value2 = FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length());
 
-        if (value1 == null || value1.equals("") || value1.equals(" ")) {
-        	value1 = "[Empty]";
-        }
-        if (value2 == null || value2.equals("") || value2.equals(" ")) {
-        	value2 = "[Empty]";
-        }
+         if (value1 == null || value1.equals("") || value1.equals(" ")) {
+         value1 = "[Empty]";
+         }
+         if (value2 == null || value2.equals("") || value2.equals(" ")) {
+         value2 = "[Empty]";
+         }
 
-        if(!value1.equals(value2)) {
-                return true;
-		}
-*/
+         if(!value1.equals(value2)) {
+         return true;
+         }
+         */
         // file category:
         value1 = fm1.getCategory();
         value2 = fm2.getCategory();
 
-         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-         	value1 = "[Empty]";
-         }
-         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-         	value2 = "[Empty]";
-         }
+        if (value1 == null || value1.equals("") || value1.equals(" ")) {
+            value1 = "[Empty]";
+        }
+        if (value2 == null || value2.equals("") || value2.equals(" ")) {
+            value2 = "[Empty]";
+        }
 
-         if(!value1.equals(value2)) {
-                return true;
-		}
+        if (!value1.equals(value2)) {
+            return true;
+        }
 
-       // file description:
+        // file description:
         value1 = fm1.getDescription();
         value2 = fm2.getDescription();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-        	value1 = "[Empty]";
+            value1 = "[Empty]";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-        	value2 = "[Empty]";
+            value2 = "[Empty]";
         }
 
-        if(!value1.equals(value2)) {
-                return true;
-		}
+        if (!value1.equals(value2)) {
+            return true;
+        }
 
         // if we got this far, the 2 metadatas are identical:
         return false;
     }
 
-    private datasetFileDifferenceItem selectFileMetadataDiffs (FileMetadata fm1, FileMetadata fm2) {
+    private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
         datasetFileDifferenceItem fdi = new datasetFileDifferenceItem();
 
         if (fm1 == null && fm2 == null) {
@@ -747,11 +743,12 @@ public class DatasetVersionDifference {
 
             return fdi;
 
-        } if (fm2 == null) {
+        }
+        if (fm2 == null) {
             fdi.setFileName1(fm1.getLabel());
-		    fdi.setFileType1(fm1.getDataFile().getFriendlyType());
+            fdi.setFileType1(fm1.getDataFile().getFriendlyType());
             //fdi.setFileSize1(FileUtil. (new File(fm1.getDataFile().getFileSystemLocation()).length()));
-            
+
             fdi.setFileCat1(fm1.getCategory());
             fdi.setFileDesc1(fm1.getDescription());
 
@@ -761,7 +758,7 @@ public class DatasetVersionDifference {
             fdi.setFile1Empty(true);
 
             fdi.setFileName2(fm2.getLabel());
-		    fdi.setFileType2(fm2.getDataFile().getFriendlyType());
+            fdi.setFileType2(fm2.getDataFile().getFriendlyType());
             //fdi.setFileSize2(FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length()));
             fdi.setFileCat2(fm2.getCategory());
             fdi.setFileDesc2(fm2.getDescription());
@@ -776,71 +773,66 @@ public class DatasetVersionDifference {
             String value2;
 
             // filename:
-
             value1 = fm1.getLabel();
             value2 = fm2.getLabel();
-            
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            	value1 = "[Empty]";
+                value1 = "[Empty]";
             }
             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            	value2 = "[Empty]";
+                value2 = "[Empty]";
             }
 
-            if(!value1.equals(value2)) {
+            if (!value1.equals(value2)) {
 
-                    fdi.setFileName1(value1);
-                    fdi.setFileName2(value2);
-    		}
+                fdi.setFileName1(value1);
+                fdi.setFileName2(value2);
+            }
 
             // NOTE:
             // fileType and fileSize will always be the same
             // for the same studyFile! -- so no need to check for differences in
             // these 2 items.
-
             // file category:
-
             value1 = fm1.getCategory();
             value2 = fm2.getCategory();
 
-             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-             	value1 = "[Empty]";
-             }
-             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-             	value2 = "[Empty]";
-             }
+            if (value1 == null || value1.equals("") || value1.equals(" ")) {
+                value1 = "[Empty]";
+            }
+            if (value2 == null || value2.equals("") || value2.equals(" ")) {
+                value2 = "[Empty]";
+            }
 
-             if(!value1.equals(value2)) {
+            if (!value1.equals(value2)) {
 
-                    fdi.setFileCat1(value1);
-                    fdi.setFileCat2(value2);
-    		}
+                fdi.setFileCat1(value1);
+                fdi.setFileCat2(value2);
+            }
 
             // file description:
-
             value1 = fm1.getDescription();
             value2 = fm2.getDescription();
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            	value1 = "[Empty]";
+                value1 = "[Empty]";
             }
             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            	value2 = "[Empty]";
+                value2 = "[Empty]";
             }
 
-            if(!value1.equals(value2)) {
+            if (!value1.equals(value2)) {
 
-                    fdi.setFileDesc1(value1);
-                    fdi.setFileDesc2(value2);
-    		}
+                fdi.setFileDesc1(value1);
+                fdi.setFileDesc2(value2);
+            }
         }
         return fdi;
     }
-    
+
     public class datasetFileDifferenceItem {
 
-        public datasetFileDifferenceItem () {
+        public datasetFileDifferenceItem() {
         }
 
         private String fileId;
@@ -908,7 +900,7 @@ public class DatasetVersionDifference {
             this.fileDesc1 = fd;
         }
 
-         public String getFileName2() {
+        public String getFileName2() {
             return fileName2;
         }
 
@@ -964,9 +956,8 @@ public class DatasetVersionDifference {
             file2Empty = state;
         }
 
-
     }
-       
+
     public List<datasetFileDifferenceItem> getDatasetFilesDiffList() {
         return datasetFilesDiffList;
     }
@@ -974,7 +965,7 @@ public class DatasetVersionDifference {
     public void setDatasetFilesDiffList(List<datasetFileDifferenceItem> datasetFilesDiffList) {
         this.datasetFilesDiffList = datasetFilesDiffList;
     }
-    
+
     public String getNoFileDifferencesFoundLabel() {
         return noFileDifferencesFoundLabel;
     }
