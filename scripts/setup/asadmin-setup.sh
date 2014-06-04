@@ -101,7 +101,7 @@ if [ $SUDO_USER == "vagrant" ]
   wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
   cd
   echo "Installing dependencies via yum"
-  yum install -y -q java-1.7.0-openjdk-devel postgresql-server apache-maven
+  yum install -y -q java-1.7.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl
   rpm -q postgresql-server
   echo "Starting PostgreSQL"
   chkconfig postgresql on

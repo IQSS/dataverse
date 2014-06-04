@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+require "rexml/document"
+include REXML
+service_document = Document.new `scripts/api/data-deposit/service-document`
+collection = XPath.first(service_document, "//collection/@href")
+puts collection
+
+puts "Getting first title from #{collection}"
+feed_of_studies = Document.new `scripts/api/data-deposit/show-collection #{collection}`
+title = XPath.first(feed_of_studies, "//title")
+puts title

@@ -231,6 +231,9 @@ fi
 
 ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
 
+# so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
+./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
+
 ###
 # Restart
 echo Updates done. Restarting...
