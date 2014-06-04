@@ -333,12 +333,12 @@ public class DatasetVersionDifference {
         String retString = "";
         
         if ( addedFiles.size() > 0){
-            retString = "Data files (Added: " + addedFiles.size();
+            retString = "Files (Added: " + addedFiles.size();
         }
         
         if ( removedFiles.size() > 0){
             if (retString.isEmpty()){
-               retString = "Data files (Removed: " + removedFiles.size(); 
+               retString = "Files (Removed: " + removedFiles.size(); 
             } else {
                 retString += "; Removed: "+ removedFiles.size(); 
             }            
@@ -346,7 +346,7 @@ public class DatasetVersionDifference {
         
         if ( changedFileMetadata.size() > 0){
             if (retString.isEmpty()){
-               retString = "Data files (Changed File Metadata: " + changedFileMetadata.size() / 2; 
+               retString = "Files (Changed File Metadata: " + changedFileMetadata.size() / 2; 
             } else {
                 retString += "; Changed File Metadata: "+ changedFileMetadata.size() / 2;  
             }            
