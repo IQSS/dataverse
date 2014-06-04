@@ -247,6 +247,7 @@ public class DatasetPage implements java.io.Serializable {
 
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(editVersion);
+            dataset.setIdentifier(datasetService.generateIdentifierSequence("doi", "10.5072/FK2"));
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
