@@ -1,14 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.sun.mail.iap.CommandFailedException;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +57,7 @@ public class Roles extends AbstractApiBean {
 	public Response viewRole( @PathParam("id") Long id ) {
 		DataverseRole role = rolesSvc.find(id);
 		if ( role == null ) {
-			return errorResponse( Status.NOT_FOUND, "role with id " + id + " not found");
+			return notFound("role with id " + id + " not found");
 		} else  {
 			return okResponse( json(role) );
 		}
@@ -71,7 +68,7 @@ public class Roles extends AbstractApiBean {
 	public Response deleteRole( @PathParam("id") Long id ) {
 		DataverseRole role = rolesSvc.find(id);
 		if ( role == null ) {
-			return errorResponse( Status.NOT_FOUND, "role with id " + id + " not found");
+			return notFound( "role with id " + id + " not found");
 		} else  {
 			em.remove(role);
 			return okResponse("role " + id + " deleted.");
@@ -121,6 +118,5 @@ public class Roles extends AbstractApiBean {
 			return ce.getResponse();
 		}
 	}
-	
-	
+
 }
