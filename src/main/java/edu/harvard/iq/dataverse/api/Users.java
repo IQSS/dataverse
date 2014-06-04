@@ -11,6 +11,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  *
@@ -21,44 +23,44 @@ public class Users extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Users.class.getName());
 	
 	@GET
-	public String list() {
+	public Response list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		
 		for ( DataverseUser u : userSvc.findAll() ) {
 			bld.add( json(u) );
 		}
 		
-		return ok( bld.build() );
+		return okResponse( bld );
 	}
 	
 	@GET
 	@Path("{identifier}")
-	public String view( @PathParam("identifier") String identifier ) {
+	public Response view( @PathParam("identifier") String identifier ) {
 		DataverseUser u = findUser(identifier);
 		
 		return ( u!=null ) 
-				? ok( json(u).build() ) 
-				: error( "Can't find user with identifier '" + identifier + "'");
+				? okResponse( json(u) ) 
+				: errorResponse( Status.NOT_FOUND, "Can't find user with identifier '" + identifier + "'");
 	}
 	
 	@POST
-	public String save( DataverseUser user, @QueryParam("password") String password ) {
+	public Response save( DataverseUser user, @QueryParam("password") String password ) {
 		try { 
 			if ( password != null ) {
 				user.setEncryptedPassword(userSvc.encryptPassword(password));
 			}
 			user = userSvc.save(user);
-			return ok ( json(user).build() );
+			return okResponse( json(user) );
 		} catch ( Exception e ) {
 			logger.log( Level.WARNING, "Error saving user", e );
-			return error( "Can't save user: " + e.getMessage() );
+			return errorResponse( Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage() );
 		}
 	}
 	
 	@GET
 	@Path(":guest")
-	public String genarateGuest() {
-		return ok( json(userSvc.createGuestUser()) );
+	public Response genarateGuest() {
+		return okResponse( json(userSvc.createGuestUser()) );
 		
 	}
 }

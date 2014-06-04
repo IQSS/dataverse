@@ -70,30 +70,30 @@ public class Dataverses extends AbstractApiBean {
 	}
 	
 	@POST
-	public String addRoot( Dataverse d, @QueryParam("key") String apiKey ) {
+	public Response addRoot( Dataverse d, @QueryParam("key") String apiKey ) {
 		return addDataverse(d, "", apiKey);
 	}
 	
 	@POST
 	@Path("{identifier}")
-	public String addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
+	public Response addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		if ( ! parentIdtf.isEmpty() ) {
 			Dataverse owner = findDataverse(parentIdtf);
 			if ( owner == null ) {
-				return error( "Can't find dataverse with identifier='" + parentIdtf + "'");
+				return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
 			}
 			d.setOwner(owner);
 		}
 		
 		try {
 			d = engineSvc.submit( new CreateDataverseCommand(d, u) );
-			return ok( json(d) );
+			return okResponse( json(d) );
 		} catch (CommandException ex) {
 			logger.log(Level.SEVERE, "Error creating dataverse", ex);
-			return error("Error creating dataverse: " + ex.getMessage() );
+			return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + ex.getMessage() );
         } catch (EJBException ex) {
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
@@ -111,7 +111,7 @@ public class Dataverses extends AbstractApiBean {
                     }
                 }
                 logger.log(Level.SEVERE, sb.toString());
-                return error(sb.toString());
+                return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error creating dataverse: " + sb.toString() );
             }
 	}
     
@@ -180,57 +180,56 @@ public class Dataverses extends AbstractApiBean {
 	
 	@GET
 	@Path("{identifier}")
-	public String viewDataverse( @PathParam("identifier") String idtf ) {
+	public Response viewDataverse( @PathParam("identifier") String idtf ) {
 		Dataverse d = findDataverse(idtf);
-		return ( d==null) ? error("Can't find dataverse with identifier '" + idtf + "'")
-						  : ok( json(d) );
+		return ( d==null) ? errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'")
+						  : okResponse( json(d) );
 	}
 	
 	@DELETE
 	@Path("{identifier}")
-	public String deleteDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
+	public Response deleteDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		Dataverse d = findDataverse(idtf);
-		if ( d == null ) return error("Can't find dataverse with identifier '" + idtf + "'");
+		if ( d == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'");
 		
 		try {
-			engineSvc.submit( new DeleteDataverseCommand(u, d) );
-			return ok( "Dataverse " + idtf  +" deleted");
-		} catch ( CommandException ex ) {
-			logger.log(Level.SEVERE, "Error deleting dataverse", ex);
-			return error("Error creating dataverse: " + ex.getMessage() );
-		 }
+			execCommand( new DeleteDataverseCommand(u, d), "Delete Dataverse" );
+			return okResponse( "Dataverse " + idtf  +" deleted");
+		} catch ( FailedCommandResult ex ) {
+			return ex.getResponse();
+		}
 	}
 	
 	@GET
 	@Path("{identifier}/roles")
-	public String listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
 		}
 		
 		JsonArrayBuilder jab = Json.createArrayBuilder();
 		for ( DataverseRole r : dataverse.getRoles() ){
 			jab.add( json(r) );
 		}
-		return ok(jab);
+		return okResponse(jab);
 	}
 	
 	@GET
 	@Path("{identifier}/metadatablocks")
-	public String listMetadataBlocks( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
 		}
 		
 		JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -238,7 +237,7 @@ public class Dataverses extends AbstractApiBean {
 			jab.add( brief.json(blk) );
 		}
         
-		return ok(jab);
+		return okResponse(jab);
 	}
 	
     @POST
@@ -303,13 +302,13 @@ public class Dataverses extends AbstractApiBean {
     
 	@GET
 	@Path("{identifier}/contents")
-	public String listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
+			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
 		}
 		
 		final JsonArrayBuilder jab = Json.createArrayBuilder();
@@ -333,75 +332,70 @@ public class Dataverses extends AbstractApiBean {
 			public Void visit(DataFile df) { throw new UnsupportedOperationException("Files don't live directly in Dataverses"); }
 		};
 		try {
-			for ( DvObject o : engineSvc.submit( new ListDataverseContentCommand(u, dataverse)) ) {
+			for ( DvObject o : execCommand(new ListDataverseContentCommand(u, dataverse), "List Dataverse") ) {
 				o.accept(ser);
 			}
-		} catch (CommandException ex) {
-			return error(ex.getMessage());
+		} catch (FailedCommandResult ex) {
+			return ex.getResponse();
 		}
-		return ok(jab);
+		return okResponse(jab);
 	}
 	
 	@POST
 	@Path("{identifier}/roles")
-	public String createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
-
+	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		
+        DataverseUser u = userSvc.findByUserName(apiKey);
+		if ( u == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
+		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		
+        
 		try {
-			return ok(json(engineSvc.submit( new CreateRoleCommand(roleDto.asRole(), u, dataverse) )));
-		} catch ( CommandException ce ) {
-			return error( ce.getMessage() );
+			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), u, dataverse), "Create Role")));
+        } catch ( FailedCommandResult ce ) {
+			return ce.getResponse();
 		}
 	}
 	
 	@GET
 	@Path("{identifier}/assignments")
-	public String listAssignments( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response listAssignments( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
-
+		if ( u == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
+		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
 		try {
 			JsonArrayBuilder jab = Json.createArrayBuilder();
-			for ( RoleAssignment ra : engineSvc.submit(new ListRoleAssignments(u, dataverse)) ){
+			for ( RoleAssignment ra : execCommand(new ListRoleAssignments(u, dataverse), "Role Assignment Listing") ){
 				jab.add( json(ra) );
 			}
-			return ok(jab);
+			return okResponse(jab);
 			
-		} catch (CommandException ex) {
-			return error( "can't list assignments: " + ex.getMessage() );
+		} catch (FailedCommandResult ex) {
+			return ex.getResponse();
 		}
 	}
 	
 	@POST
 	@Path("{identifier}/assignments")
-	public String createAssignment( RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response createAssignment( RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser actingUser = userSvc.findByUserName(apiKey);
-		if ( actingUser == null ) return error( "Invalid apikey '" + apiKey + "'"); 
-
+		if ( actingUser == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
+		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
+		
 		DataverseUser grantedUser = (ra.getUserName()!=null) ? findUser(ra.getUserName()) : userSvc.find(ra.getUserId());
 		if ( grantedUser==null ) {
-			return error("Can't find user using " + ra.getUserName() + "/" + ra.getUserId() );
+			return errorResponse( Status.BAD_REQUEST, "Can't find user using " + ra.getUserName() + "/" + ra.getUserId() );
 		}
 		
 		DataverseRole theRole;
 		if ( ra.getRoleId() != 0 ) {
 			theRole = rolesSvc.find(ra.getRoleId());
 			if ( theRole == null ) {
-				return error("Can't find role with id " + ra.getRoleId() );
+				return errorResponse( Status.BAD_REQUEST, "Can't find role with id " + ra.getRoleId() );
 			}
 			
 		} else {
@@ -417,38 +411,35 @@ public class Dataverses extends AbstractApiBean {
 				dv = dv.getOwner();
 			}
 			if ( theRole == null ) {
-				return error("Can't find role named '" + ra.getRoleAlias() + "' in dataverse " + dataverse);
+				return errorResponse( Status.BAD_REQUEST, "Can't find role named '" + ra.getRoleAlias() + "' in dataverse " + dataverse);
 			}
 		}
 		
 		try {
-			RoleAssignment roleAssignment = engineSvc.submit( new AssignRoleCommand(grantedUser, theRole, dataverse, actingUser));
-			return ok(json(roleAssignment));
+			RoleAssignment roleAssignment = execCommand( new AssignRoleCommand(grantedUser, theRole, dataverse, actingUser), "Assign role");
+			return okResponse(json(roleAssignment));
 			
-		} catch (CommandException ex) {
+		} catch (FailedCommandResult ex) {
 			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
-			return error(ex.getMessage());
+			return ex.getResponse();
 		}
 	}
 	
 	@DELETE
 	@Path("{identifier}/assignments/{id}")
-	public String deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+	public Response deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		DataverseUser actingUser = userSvc.findByUserName(apiKey);
-		if ( actingUser == null ) return error( "Invalid apikey '" + apiKey + "'"); 
-
+		if ( actingUser == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return error( "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
+		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
 		RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
 		if ( ra != null ) {
 			em.remove( ra );
 			em.flush();
-			return "Role assignment " + assignmentId + " removed";
+			return okResponse("Role assignment " + assignmentId + " removed");
 		} else {
-			return "Role assignment " + assignmentId + " not found";
+			return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
 		}
 	}
 	
