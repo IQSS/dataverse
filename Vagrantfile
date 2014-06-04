@@ -42,10 +42,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
+  # FIXME: use /dataverse/downloads instead
   config.vm.synced_folder "downloads", "/downloads"
-  config.vm.synced_folder "target", "/builds"
+  # FIXME: use /dataverse/conf instead
   config.vm.synced_folder "conf", "/conf"
+  # FIXME: use /dataverse/scripts instead
   config.vm.synced_folder "scripts", "/scripts"
+  config.vm.synced_folder ".", "/dataverse"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
