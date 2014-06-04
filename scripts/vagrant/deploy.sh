@@ -11,7 +11,9 @@ su $GLASSFISH_USER -s /bin/sh -c "cd $SOLR_HOME/solr-4.6.0/example && java -jar 
 
 #su $GLASSFISH_USER -s /bin/sh -c "cp /builds/dataverse-4.0.war /home/glassfish/glassfish4/glassfish/domains/domain1/autodeploy"
 cp /builds/dataverse-4.0.war /home/glassfish/glassfish4/glassfish/domains/domain1/autodeploy
-sleep 60
+# FIXME: detect when the app is up rather than sleeping
+# maybe check $? for 0 after `asadmin list-applications | grep dataverse`
+sleep 180
 cd /scripts/api
 ./datasetfields.sh
 ./setup-users.sh

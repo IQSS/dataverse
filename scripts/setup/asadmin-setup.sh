@@ -189,7 +189,10 @@ fi
 
 # ONCE AGAIN, ASADMIN COMMANDS BELOW HAVE ALL BEEN MOVED INTO THIS SCRIPT:
 
-../installer/glassfish-setup.sh
+if [ $SUDO_USER == "vagrant" ]
+  then
+  /scripts/installer/glassfish-setup.sh
+fi
 
 # TODO: diagnostics
 
