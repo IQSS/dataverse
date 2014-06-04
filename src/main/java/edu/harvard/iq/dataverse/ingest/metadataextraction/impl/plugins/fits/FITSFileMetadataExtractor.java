@@ -138,7 +138,6 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
-            
 
             
 
@@ -426,9 +425,9 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                         try {
                             startDate = format.parse(obsDateString);
-                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
-                            //startDateFormatted = TIME_FORMATS[0].format(startDate);
-                            startDateFormatted = obsDateString;
+                            dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
+                            startDateFormatted = format.format(startDate);
+                            //startDateFormatted = obsDateString;
                             break;
                         } catch (ParseException ex) {
                             startDate = null; 
@@ -462,7 +461,8 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             try {
                                 startDate = format.parse(obsDateString);
                                 dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+DATE_FORMATS[0].format(startDate));
-                                startDateFormatted = DATE_FORMATS[0].format(startDate);
+                                startDateFormatted = format.format(startDate);
+                                //startDateFormatted = DATE_FORMATS[0].format(startDate);
                                 break;
                             } catch (ParseException ex) {
                                 startDate = null; 

@@ -64,7 +64,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 // as the release date... 
                 // -- L.A. 4.0 beta 
                
-                valid = (isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss") || isValidDate(value.getValue(), "yyyy-MM-dd HH:mm:ss"));
+                valid = (isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss") || isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss.SSS") || isValidDate(value.getValue(), "yyyy-MM-dd HH:mm:ss"));
                 
             }
             if (!valid ) {
