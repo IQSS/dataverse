@@ -432,7 +432,7 @@
                                     <p:commandButton value="Direct" id="compareVersions"
                                                      style="display:none"
                                                      update=":datasetForm"
-                                                     oncomplete="detailsBlocks.show()"
+                                                     oncomplete="detailsBlocks.show();post_differences();"
                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
@@ -479,7 +479,7 @@
                                                         <h:outputText rendered="#{(blockNote[3]) > 0}"  value="#{blockNote[3]} Changed" />
                                                         <h:outputText  value="); " />
                                                     </ui:repeat>
-                                                </ui:fragment>                                                
+                                                </ui:fragment>
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
                                                         <h:outputLabel  value="#{versionTab.defaultVersionDifference.fileNote}" />
                                                 </ui:fragment>
@@ -494,7 +494,7 @@
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
                                                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
-                                                           oncomplete="detailsBlocks.show()"
+                                                           oncomplete="detailsBlocks.show();post_differences();"
                                                            update=":datasetForm"
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
@@ -513,80 +513,76 @@
                     </p:confirmDialog>
 
                     <ui:fragment id="detailsBlock">
-                        <p:dialog id="detailsBlocks"  header="Version Differences Details" widgetVar="detailsBlocks">
+                        <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
+                            <div class="clearfix" style="margin-bottom:1em;">
+                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
+                                    Version: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
+                                    <!-- Last Updated: -->
+                                </div>
+                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
+                                    Version: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
+                                    <!-- Last Updated: -->
+                                </div>
+                                <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
+                                    &#160;
+                                </div>
+                            </div>
                             <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
-                                <div class="clearfix" style="margin-bottom:1em;">
-                                    <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
-                                        Version: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                        
-                                    </div>
-                                    <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
-                                        Version: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                       
-                                    </div>
-                                    <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
-                                        &#160;
-                                    </div>
-                                </div>
-                                <p:dataTable id="byBlockOuter" value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
-                                    <p:column>
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading text-info">
-                                                <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
-                                            </div>
-                                            <p:dataTable id="byBlockInner" var="dsfArray" value="#{block}"> 
-                                                <p:column styleClass="versionValue">
-                                                    <h:outputText  value="#{dsfArray[0].datasetFieldType.title}" />   
-                                                </p:column>
-                                                <p:column styleClass="versionDetails">
-                                                    <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}"  value="#{dsfArray[0].displayValue}" />
-                                                    <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}"  value="#{dsfArray[0].compoundDisplayValue}" />
-                                                </p:column> 
-                                                <p:column styleClass="versionDetails" >
-                                                    <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}"  value="#{dsfArray[1].displayValue}" />
-                                                    <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}"  value="#{dsfArray[1].compoundDisplayValue}" />
-                                                </p:column> 
-                                            </p:dataTable> 
+                                <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading text-info">
+                                            <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
                                         </div>
-                                    </p:column>
-                                </p:dataTable>
+                                        <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
+                                            <p:column styleClass="versionValue">
+                                                <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
+                                            </p:column>
+                                            <p:column styleClass="versionDetails">
+                                                <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].compoundDisplayValue}" />
+                                            </p:column>
+                                            <p:column styleClass="versionDetails" >
+                                                <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].compoundDisplayValue}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+                                </ui:repeat>
                             </ui:fragment>
-                            <div class="panel panel-default">
-                            <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                <h:outputText id="outputText" value="Differences in Files"/>
-                            </div>
-                            <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff"
-                                         rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                <p:column styleClass="versionValue">
-                                    <h:outputText value="File ID: #{fileDiff.fileId}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
-                                    <h:outputText value="File Name: #{fileDiff.fileName1}" rendered="#{fileDiff.fileName1 != null}"/>
-                                    <h:outputText value="File Type: #{fileDiff.fileType1}" rendered="#{fileDiff.fileType1 != null}"/>
-                                    <h:outputText value="File Size: #{fileDiff.fileSize1}" rendered="#{fileDiff.fileSize1 != null}"/>
-                                    <h:outputText value="Category: #{fileDiff.fileCat1}" rendered="#{fileDiff.fileCat1 != null}"/>
-                                    <h:outputText value="Description: #{fileDiff.fileDesc1}" rendered="#{fileDiff.fileDesc1 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
-                                    <h:outputText value=""/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
-                                    <h:outputText value="File Name: #{fileDiff.fileName2}" rendered="#{fileDiff.fileName2 != null}"/>
-                                    <h:outputText value="File Type: #{fileDiff.fileType2}" rendered="#{fileDiff.fileType2 != null}"/>
-                                    <h:outputText value="File Size: #{fileDiff.fileSize2}" rendered="#{fileDiff.fileSize2 != null}"/>
-                                    <h:outputText value="Category: #{fileDiff.fileCat2}" rendered="#{fileDiff.fileCat1 != null}"/>
-                                    <h:outputText value="Description: #{fileDiff.fileDesc2}" rendered="#{fileDiff.fileDesc1 != null}"/>
-                                </p:column>
-                                <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
-                                    <h:outputText value=""/>
-                                </p:column>
-                            </p:dataTable>
-                            <div rendered="#{empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                <h:outputText id="outputText9" value="#{DatasetPage.datasetVersionDifference.noFileDifferencesFoundLabel}"/>
-                            </div>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
+                                        <h:outputText id="outputText" value="Files"/>
+                                    </div>
+                                    <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
+                                        <p:column styleClass="versionValue">
+                                            <h:outputText value="File ID: #{fileDiff.fileId}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
+                                            <h:outputText value="File Name: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
+                                            <h:outputText value="File Type: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
+                                            <h:outputText value="File Size: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
+                                            <h:outputText value="Category: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                            <h:outputText value="Description: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
+                                            &#160;
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
+                                            <h:outputText value="File Name: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
+                                            <h:outputText value="File Type: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
+                                            <h:outputText value="File Size: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
+                                            <h:outputText value="Category: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                            <h:outputText value="Description: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
+                                            &#160;
+                                        </p:column>
+                                    </p:dataTable>
                                 </div>
-                        </p:dialog>                       
+                            </ui:fragment>
+                        </p:dialog>
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">

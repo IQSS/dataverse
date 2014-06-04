@@ -155,3 +155,13 @@ function post_cancel_edit_files_or_metadata(){
    bind_bsui_components();
    hide_info_msg();
 }
+
+/*
+ * Dialog Height-Scrollable
+ */
+function post_differences(){
+       var dialogHeight = $('div[id$="detailsBlocks"].ui-dialog').outerHeight();
+       var dialogHeader = $('div[id$="detailsBlocks"] .ui-dialog-titlebar').outerHeight();
+       var dialogScroll = dialogHeight - dialogHeader;
+       $('div[id$="detailsBlocks"] .ui-dialog-content').css('height', dialogScroll);
+}
