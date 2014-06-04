@@ -633,6 +633,10 @@ public class DatasetVersion implements Serializable {
          * See also to v or not to v · Issue #1 · mojombo/semver -
          * https://github.com/mojombo/semver/issues/1#issuecomment-2605236
          */
-        return versionNumber + "." + minorVersionNumber;
+        if (this.isReleased()){
+            return versionNumber + "." + minorVersionNumber;
+        } else {
+            return "DRAFT";
+        }        
     }
 }
