@@ -1,0 +1,8 @@
+{
+    "alias":"peteTop2",
+    "name":"Top dataverse of Pete",
+    "affiliation":"Affiliation value",
+    "contactEmail":"pete@mailinator.com",
+    "permissionRoot":false,
+    "description":"Pete's top level dataverse"
+}

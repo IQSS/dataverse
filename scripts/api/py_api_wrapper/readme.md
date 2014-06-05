@@ -1,22 +1,24 @@
 # Python API Wrapper Guide
 
-(in progress)
+This a python class "DataverseAPILink" which may be used to make the API calls described in the Dataverse [API Guide](https://github.com/IQSS/dataverse/tree/master/scripts/api/readme.md)
 
-This a python class "DataverseAPILink" which may be used to make the API calls described in the dataverse/scripts/api/readme.md
 Results of API calls may by returned as JSON (string format) or as python dictionaries.
 
-Given a Dataverse server name and optional apikey, the class uses python's basic urllib2 to make the API calls.
-Generate the infamous _Pete_,_Uma_ and _Gabbi_. 
 
+## Dependency 
+
+[python request module](http://docs.python-requests.org/)
 
 ## Quick example
 
 List the dataverses
-	
+
+'''python
 	server_with_api = 'dataverse-demo.iq.harvard.edu'
 	dal = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
     json_text = dal.list_dataverses()
     print json_text
+'''
 
 Output: 
 
