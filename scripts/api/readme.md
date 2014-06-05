@@ -40,6 +40,10 @@ View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id num
 
 Deletes the dataverse whose ID is given.
 
+    GET http://{{SERVER}}/api/dvs/{{id}}/contents
+
+Lists all the DvObjects under dataverse `id`.
+
 	GET http://{{SERVER}}/api/dvs/{{id}}/roles?key={{username}}
 
 All the roles defined directly in the dataverse identified by `id`.
