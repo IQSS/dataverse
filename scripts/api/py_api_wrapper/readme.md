@@ -9,7 +9,7 @@ Results of API calls may by returned as JSON (string format) or as python dictio
 
 ## Dependency 
 
-[python request module](http://docs.python-requests.org/)
+[python requests module](http://docs.python-requests.org/)
 
 ## Quick example
 
