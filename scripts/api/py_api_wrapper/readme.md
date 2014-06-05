@@ -1,5 +1,7 @@
 # Python API Wrapper Guide
 
+(6/5/2014 - work in progress)
+
 This a python class "DataverseAPILink" which may be used to make the API calls described in the Dataverse [API Guide](https://github.com/IQSS/dataverse/tree/master/scripts/api/readme.md)
 
 Results of API calls may by returned as JSON (string format) or as python dictionaries.
@@ -65,23 +67,23 @@ print dv_names
 
 Output:
 ```python
-	[u'status', u'data']
-	[u'b', u'Beta Candidate', u'kc58', u'Kevin Smoke Test 5/8', u'Penultimate Smoke Test', u"Pete's public place", u"Pete's restricted data", u"Pete's secrets", u'Root', u'smoke 5/7', u'testadd', u'testauthor', u'Test Cliosed', u'Test Open', u'testpete', u'Top dataverse of Pete', u'Top dataverse of Uma', u"Uma's first", u"Uma's restricted"]
+[u'status', u'data']
+[u'b', u'Beta Candidate', u'kc58', u'Kevin Smoke Test 5/8', u'Penultimate Smoke Test', u"Pete's public place", u"Pete's restricted data", u"Pete's secrets", u'Root', u'smoke 5/7', u'testadd', u'testauthor', u'Test Cliosed', u'Test Open', u'testpete', u'Top dataverse of Pete', u'Top dataverse of Uma', u"Uma's first", u"Uma's restricted"]
 ```
 ### Users
 
 List Users:
 
 ```python
-	dat.set_return_mode_python()
-	user_info = dat.list_users()
-	print user_info
+dat.set_return_mode_python()
+user_info = dat.list_users()
+print user_info
 ```
 	
 Iterate through each user and pull the same data by 'id'
 
 ```python
-	user_ids = [info['id'] for info in user_info['data'] if info['id'] is not None]
-	for uid in user_ids:
-    	print dat.get_user_data(uid)
+user_ids = [info['id'] for info in user_info['data'] if info['id'] is not None]
+for uid in user_ids:
+   	print dat.get_user_data(uid)
 ```
