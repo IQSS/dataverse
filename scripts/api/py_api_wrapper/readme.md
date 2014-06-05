@@ -13,12 +13,13 @@ Results of API calls may by returned as JSON (string format) or as python dictio
 
 List the dataverses
 
-'''python
-	server_with_api = 'dataverse-demo.iq.harvard.edu'
-	dal = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
-    json_text = dal.list_dataverses()
-    print json_text
-'''
+
+```python
+server_with_api = 'dataverse-demo.iq.harvard.edu'
+dal = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
+json_text = dal.list_dataverses()
+print json_text
+```
 
 Output: 
 
@@ -50,11 +51,13 @@ Output:
 	
 Return the same list as a python object
 
+```python
 	dat.set_return_mode_python()
 	d = dat.list_dataverses()   # python dictionary {}
 	print d.keys()
 	dv_names = [dv_info.get('name', '?no name?') for dv_info in d['data']]
 	print dv_names
+```
 
 Output:
 
@@ -65,13 +68,16 @@ Output:
 
 List Users:
 
+```python
 	dat.set_return_mode_python()
 	user_info = dat.list_users()
 	print user_info
+```
 	
 Iterate through each user and pull the same data by 'id'
 
+```python
 	user_ids = [info['id'] for info in user_info['data'] if info['id'] is not None]
 	for uid in user_ids:
     	print dat.get_user_data(uid)
-
+```
