@@ -33,8 +33,8 @@ import org.apache.commons.lang.StringUtils;
 @Entity
 @ValidateDatasetFieldType
 public class DatasetField implements Serializable {
-    private static final long serialVersionUID = 1L;    
-    
+    private static final long serialVersionUID = 1L;
+
     /**
      * Orders dataset fields by their display order.
      */
@@ -45,13 +45,12 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    
     public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
         dsfv.setDatasetVersion(dsv);
         return dsfv;
     }
-    
+
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
     // (that looked t overloaded methods, when it meant to look at overriden methods
     public static DatasetField createNewEmptyChildDatasetField(DatasetFieldType dsfType, DatasetFieldCompoundValue compoundValue) {
@@ -78,6 +77,7 @@ public class DatasetField implements Serializable {
 
     /**
      * Groups a list of fields by the block they belong to.
+     *
      * @param fields well, duh.
      * @return a map, mapping each block to the fields that belong to it.
      */
@@ -213,23 +213,26 @@ public class DatasetField implements Serializable {
     public String getDisplayValue() {
         String returnString = "";
         for (String value : getValues()) {
+            if(value == null) value="";
             returnString += (returnString.equals("") ? "" : "; ") + value;
         }
         return returnString;
     }
-    
+
     public String getCompoundDisplayValue() {
         String returnString = "";
         for (DatasetFieldCompoundValue dscv : datasetFieldCompoundValues) {
-            for (DatasetField dsf : dscv.getChildDatasetFields()){
-                        for (String value : dsf.getValues()) {
-            returnString += (returnString.equals("") ? "" : "; ") + value;
+            for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                for (String value : dsf.getValues()) {
+                    if (!(value == null)) {
+                        returnString += (returnString.equals("") ? "" : "; ") + value;
+                    }
                 }
             }
         }
         return returnString;
     }
-    
+
     public List<String> getValues() {
         List returnList = new ArrayList();
         if (!datasetFieldValues.isEmpty()) {
@@ -238,8 +241,8 @@ public class DatasetField implements Serializable {
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
-                if (cvv != null && cvv.getStrValue() != null){
-                        returnList.add(cvv.getStrValue()); 
+                if (cvv != null && cvv.getStrValue() != null) {
+                    returnList.add(cvv.getStrValue());
                 }
             }
         }
@@ -249,7 +252,7 @@ public class DatasetField implements Serializable {
     public boolean isEmpty() {
         if (datasetFieldType.isPrimitive()) { // primitive
             for (String value : getValues()) {
-                if (value != null && !value.trim().isEmpty() ) {
+                if (value != null && !value.trim().isEmpty()) {
                     return false;
                 }
             }
@@ -265,9 +268,9 @@ public class DatasetField implements Serializable {
 
         return true;
     }
-    
 
-    @Transient private String validationMessage;
+    @Transient
+    private String validationMessage;
 
     public String getValidationMessage() {
         return validationMessage;
@@ -276,7 +279,6 @@ public class DatasetField implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-        
 
     @Override
     public int hashCode() {

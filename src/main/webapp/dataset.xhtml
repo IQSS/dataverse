@@ -481,7 +481,7 @@
                                                     </ui:repeat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                                                        <h:outputLabel  value="#{versionTab.defaultVersionDifference.fileNote}" />
+                                                    <h:outputLabel  value="#{versionTab.defaultVersionDifference.fileNote}" />
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
@@ -550,7 +550,7 @@
                                     </div>
                                 </ui:repeat>
                             </ui:fragment>
-                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
                                 <div class="panel panel-default">
                                     <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                         <h:outputText id="outputText" value="Files"/>
