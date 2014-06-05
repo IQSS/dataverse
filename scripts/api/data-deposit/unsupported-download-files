@@ -1,0 +1,12 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+if [ -z "$1" ]; then
+  GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12,13`
+else
+  GLOBAL_ID=$1
+  #GLOBAL_ID=doi:10.5072/FK2/5555
+fi
+curl -s --insecure https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit-media/study/$GLOBAL_ID \
+| xmllint -format -

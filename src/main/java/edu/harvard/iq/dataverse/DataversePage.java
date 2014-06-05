@@ -9,9 +9,9 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -23,7 +23,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -231,12 +230,22 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public String releaseDataverse() {
-        dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
-        dataverse.setReleaseUser(session.getUser());
-        dataverse = dataverseService.save(dataverse);
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
-        FacesContext.getCurrentInstance().addMessage(null, message);
-        return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
+        PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
+        try {
+            commandEngine.submit(cmd);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
+        } catch (CommandException ex) {
+            String msg = "There was a problem publishing your dataverse: " + ex;
+            logger.severe(msg);
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
+        }
     }
 
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {

@@ -1,0 +1,13 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+if [ -z "$1" ]; then
+  echo "Please supply a dataverse alias"
+  exit 1
+else
+  DATAVERSE_ALIAS=$1
+  #DATAVERSE_ALIAS=peteTop
+fi
+cat /dev/null | curl -s --insecure -X POST -H "In-Progress: false" --data-binary @- https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/dataverse/$DATAVERSE_ALIAS \
+| xmllint --format -

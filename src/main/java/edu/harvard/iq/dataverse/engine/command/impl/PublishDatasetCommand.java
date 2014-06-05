@@ -25,14 +25,14 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.Release)
+    @RequiredPermissions(dataverseName = "", value = Permission.Publish)
 })
-public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
-   private static final Logger logger = Logger.getLogger(ReleaseDatasetCommand.class.getCanonicalName());
+public class PublishDatasetCommand extends AbstractCommand<Dataset> {
+   private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
     boolean minorRelease = false;
     Dataset theDataset;
 
-    public ReleaseDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
+    public PublishDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
         super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
@@ -41,10 +41,14 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
+        if (!theDataset.getOwner().isReleased()) {
+            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
+        }
+
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
-
+        
         if (theDataset.getReleasedVersion() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.setReleaseUser(getUser());
@@ -67,6 +71,7 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
 
         Timestamp updateTime =  new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setReleaseTime(updateTime);
+        theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
         for (DataFile dataFile: theDataset.getFiles() ){
@@ -76,8 +81,9 @@ public class ReleaseDatasetCommand extends AbstractCommand<Dataset> {
         } 
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        String indexingResult = ctxt.index().indexDataset(savedDataset);
-        logger.info("during dataset save, indexing result was: " + indexingResult);
+        
+        ctxt.index().indexDataset(savedDataset);
+        
         return savedDataset;
     }
 

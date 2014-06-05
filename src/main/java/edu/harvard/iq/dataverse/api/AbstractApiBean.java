@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.util.concurrent.Callable;
@@ -34,6 +35,23 @@ import javax.ws.rs.core.Response.Status;
  */
 public abstract class AbstractApiBean {
 	
+    /**
+     * Utility class to convey a proper error response on failed commands.
+     * @see #execCommand(edu.harvard.iq.dataverse.engine.command.Command, java.lang.String) 
+     */
+    public static class FailedCommandResult extends Exception {
+        private final Response response;
+
+        public FailedCommandResult(Response response) {
+            this.response = response;
+        }
+
+        public Response getResponse() {
+            return response;
+        }
+        
+    }
+    
 	@EJB
 	protected EjbDataverseEngine engineSvc;
 	
@@ -100,6 +118,19 @@ public abstract class AbstractApiBean {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", "OK")
             .add("data", Json.createObjectBuilder().add("message",msg)).build() ).build();
+    }
+    
+    protected <T> T execCommand( Command<T> com, String messageSeed ) throws FailedCommandResult {
+        try {
+            return engineSvc.submit(com);
+            
+        } catch (IllegalCommandException ex) {
+            throw new FailedCommandResult( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
+                    
+        } catch (CommandException ex) {
+            Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
+            throw new FailedCommandResult(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
+        }
     }
     
     /**

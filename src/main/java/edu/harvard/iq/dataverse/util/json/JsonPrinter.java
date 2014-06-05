@@ -30,13 +30,11 @@ import java.util.List;
 import java.util.TreeSet;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import java.math.BigDecimal;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Map;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 /**
  * Convert objects to Json.
@@ -50,12 +48,12 @@ public class JsonPrinter {
 	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
 	public static JsonObjectBuilder json( RoleAssignment ra ) {
-		return Json.createObjectBuilder()
+		return jsonObjectBuilder()
 				.add("id", ra.getId())
 				.add("userId", ra.getUser().getId() )
-				.add("_username", nullFill(ra.getUser().getUserName()))
+				.add("_username", ra.getUser().getUserName())
 				.add("roleId", ra.getRole().getId() )
-				.add("_roleAlias", nullFill(ra.getRole().getAlias()))
+				.add("_roleAlias", ra.getRole().getAlias())
 				.add("definitionPointId", ra.getDefinitionPoint().getId() );
 	}
 	
@@ -68,11 +66,11 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( DataverseRole role ) {
-		JsonObjectBuilder bld = Json.createObjectBuilder()
-				.add("alias", nullFill(role.getAlias()) )
-				.add("name", nullFill(role.getName()))
+		JsonObjectBuilder bld = jsonObjectBuilder()
+				.add("alias", role.getAlias()) 
+				.add("name", role.getName())
 				.add("permissions", json(role.permissions()))
-				.add("description", nullFill(role.getDescription()));
+				.add("description", role.getDescription());
 		if ( role.getId() != null ) bld.add("id", role.getId() );
 		if ( role.getOwner()!=null && role.getOwner().getId()!=null ) bld.add("ownerId", role.getOwner().getId());
 		
@@ -82,9 +80,9 @@ public class JsonPrinter {
 	public static JsonObjectBuilder json( Dataverse dv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 						.add("id", dv.getId() )
-						.add("alias", nullFill(dv.getAlias()) )
-						.add("name", nullFill(dv.getName()))
-						.add("affiliation", dv.getAffiliation())
+						.add("alias", dv.getAlias()) 
+						.add("name", dv.getName())
+                        .add("affiliation", dv.getAffiliation())
 						.add("contactEmail", dv.getContactEmail())
 						.add("permissionRoot", dv.isPermissionRoot())
 						.add("creator",json(dv.getCreator()))
@@ -123,19 +121,17 @@ public class JsonPrinter {
 				.add( "versions", jsonObjectBuilder()
 									.add("count", versionCount)
 									.add("latest", brief.json(ds.getLatestVersion()))
-									.add("edit", brief.json(ds.getEditVersion()))
+									.add("edit", ds.getEditVersion().getId()!=null ? brief.json(ds.getEditVersion()) : null )
 				);
 	}
 	
 	public static JsonObjectBuilder json( DatasetVersion dsv ) {
 		JsonObjectBuilder bld = jsonObjectBuilder()
 				.add("id", dsv.getId())
-				.add("version", dsv.getVersion() )
 				.add("versionNumber", dsv.getVersionNumber())
 				.add("versionMinorNumber", dsv.getMinorVersionNumber())
 				.add("versionState", dsv.getVersionState().name() )
 				.add("versionNote", dsv.getVersionNote())
-				.add("title", dsv.getTitle())
 				.add("archiveNote", dsv.getArchiveNote())
 				.add("deaccessionLink", dsv.getDeaccessionLink())
 				.add("distributionDate", dsv.getDistributionDate())
@@ -146,33 +142,7 @@ public class JsonPrinter {
 				.add("releaseTime", format(dsv.getReleaseTime()) )
 				.add("createTime", format(dsv.getCreateTime()) )
 				;
-        
-        // Add distributors
-        List<DatasetDistributor> dists = dsv.getDatasetDistributors();
-        if ( ! dists.isEmpty() ) {
-            if ( dists.size() > 1 ) {
-				Collections.sort(dists, DatasetDistributor.DisplayOrder );
-			}
-            JsonArrayBuilder ab = Json.createArrayBuilder();
-            for ( DatasetDistributor dist : dists ) {
-               ab.add( json(dist) );
-            }
-            bld.add( "distributors", ab );
-        }
-        
-		// Add authors
-		List<DatasetAuthor> auth = dsv.getDatasetAuthors();
-		if ( ! auth.isEmpty() ) {
-			if ( auth.size() > 1 ) {
-				Collections.sort(auth, DatasetAuthor.DisplayOrder );
-			}
-			JsonArrayBuilder ab = Json.createArrayBuilder();
-			for ( DatasetAuthor da : auth ) {
-				ab.add( json(da) );
-			}
-			bld.add("authors", ab);
-		}
-		
+                
 		bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields()));
 		
 		return bld;
@@ -300,21 +270,6 @@ public class JsonPrinter {
 				.add("md5", df.getmd5())
 				.add("description", df.getDescription())
 				;
-	}
-	
-	public static JsonObjectBuilder json( DatasetAuthor da ) {
-		return jsonObjectBuilder()
-				.add( "idType", da.getIdType() )
-				.add( "idValue", da.getIdValue() )
-				.add( "name", json(da.getName()) )
-				.add( "affiliation", json(da.getAffiliation()) )
-				.add( "displayOrder", da.getDisplayOrder() )
-				;
-	}
-	
-	
-	public static String nullFill( String s ) {
-		return s==null ? "" : s;
 	}
 	
 	public static String format( Date d ) {

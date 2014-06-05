@@ -5,7 +5,7 @@ The API uses `json`, and sometimes query parameters as well. Also, sometimes the
 
 To have a fresh start in the database, you can execute the script `drop-create.sh` in the `../database` folder.
 
-## Pre-made scripts
+## Pre-made Scripts
 
 	setup-users.sh
 
@@ -40,11 +40,9 @@ View data about the dataverse identified by `{{id}}`. `{{id}}` can be the id num
 
 Deletes the dataverse whose ID is given.
 
-	GET http://{{SERVER}}/api/dvs/:gv
+    GET http://{{SERVER}}/api/dvs/{{id}}/contents
 
-Dump the structure of the dataverse to a graphviz file. Sample usage: 
-`curl http://localhost:8080/api/dvs/:gv | circo -Tpdf > dataverses.pdf`
-Creates a pdf with all dataverses, and their hierarchy.
+Lists all the DvObjects under dataverse `id`.
 
 	GET http://{{SERVER}}/api/dvs/{{id}}/roles?key={{username}}
 
@@ -70,14 +68,22 @@ Get the metadata blocks defined on the passed dataverse.
 
 Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name).
 
-	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+	GET http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks.
 
-	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{username}}
+	POST http://{{SERVER}}/api/dvs/{{id}}/metadatablocks/:isRoot?key={{apikey}}
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are `true` and `false` (both are valid JSON expressions).
+
+	POST http://{{SERVER}}/api/dvs/{{id}}/datasets/?key={{apikey}}
+
+Create a new dataset in dataverse `id`. The post data is a Json object, containing the dataset fields and an initial dataset version, under the field of `"initialVersion"`. The initial versions version number will be set to `1.0`, and its state will be set to `DRAFT` regardless of the content of the json object. Example json can be found at `data/dataset-create-new.json`.
+
+	POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+
+Publish the Dataverse pointed by `identifier`, which can either by the dataverse alias or its numerical id.
 
 ### Datasets
 
@@ -97,18 +103,26 @@ Delete the dataset whose id is passed.
 
 List versions of the dataset. 
 	
-	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionNumber}}?key={{apikey}}
 
-Show a version of the dataset. The `versionId` can be a number, or the values `:edit` for the edit version, and `:latest` for the latest one.
+Show a version of the dataset. The `versionNumber` can be a specific version number (in the form of `major.minor`, e.g. `1.2` or `3.0`), or the values `:edit` for the edit version, and `:latest` for the latest one.
 The Dataset also include any metadata blocks the data might have.
 
-	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
 
 Lists all the metadata blocks and their content, for the given dataset and version.
 
-	GET http://{{SERVER}}//api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
+	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata/{{blockname}}?key={{apikey}}
 
 Lists the metadata block block named `blockname`, for the given dataset and version.
+
+    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:edit?key={{apiKey}}
+
+Updates the current edit version of dataset `{{id}}`. If the dataset does not have an edit version - e.g. when its most recent version is published, a new dreaft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
+
+    POST http://{{SERVER}}/api/datasets/{{id}}/actions/:publish?type={{type}}&key={{apiKey}}
+
+Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0).
 
 ### permissions
 

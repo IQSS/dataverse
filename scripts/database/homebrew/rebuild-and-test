@@ -13,3 +13,7 @@ scripts/database/homebrew/run-post-create-post-deploy
 scripts/search/tests/permissions
 scripts/search/tests/delete-dataverse
 scripts/search/tests/query-unparseable
+scripts/search/tests/highlighting-setup01 > /dev/null
+scripts/search/tests/highlighting-setup02 > /dev/null
+scripts/search/tests/highlighting-setup03
+scripts/search/tests/highlighting

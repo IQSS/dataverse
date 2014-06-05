@@ -1,2 +1,12 @@
 #!/bin/bash
-curl --insecure https://pete:pete@localhost:8181/dvn/api/data-deposit/v1/swordv2/service-document | xmllint -format -
+USERNAME=pete
+PASSWORD=$USERNAME
+if [ -z "$1" ]; then
+  HOSTNAME=localhost:8181
+else
+  HOSTNAME=$1
+fi
+URL=https://$HOSTNAME/dvn/api/data-deposit/v1/swordv2/service-document
+echo Retrieving service document from $URL >&2
+curl --insecure -u $USERNAME:$PASSWORD $URL \
+| xmllint -format -

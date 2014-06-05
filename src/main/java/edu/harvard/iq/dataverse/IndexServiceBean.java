@@ -45,6 +45,8 @@ public class IndexServiceBean {
     DataverseUserServiceBean dataverseUserServiceBean;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
+    public static final String solrDocIdentifierFile = "datafile_";
+    public static final String draftSuffix = "_draft";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
     private static final Long publicGroupId = 1L;
@@ -667,14 +669,14 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             }
 
-            String fileSolrDocId = "datafile_" + fileEntityId;
+            String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
             if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
-                fileSolrDocId = "datafile_" + fileEntityId;
+                fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
                 datafileSolrInputDocument.addField(SearchFields.PERMS, publicGroupString);
                 addDatasetReleaseDateToSolrDoc(datafileSolrInputDocument, dataset);
             } else if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().WORKING_COPY)) {
-                fileSolrDocId = "datafile_" + fileEntityId + indexableDataset.getDatasetState().getSuffix();
+                fileSolrDocId = solrDocIdentifierFile + fileEntityId + indexableDataset.getDatasetState().getSuffix();
                 datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
             }
             datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
@@ -975,12 +977,7 @@ public class IndexServiceBean {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRows(Integer.MAX_VALUE);
         solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);
-        /**
-         * @todo rather than hard coding "_draft" here, tie to
-         * IndexableDataset(new DatasetVersion()).getDatasetState().getSuffix()
-         */
-//        String draftSuffix = new IndexableDataset(new DatasetVersion()).getDatasetState().WORKING_COPY.name();
-        solrQuery.addFilterQuery(SearchFields.ID + ":" + "*_draft");
+        solrQuery.addFilterQuery(SearchFields.ID + ":" + "*" + draftSuffix);
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         try {
             // i.e. rows=2147483647&q=parentid%3A16&fq=id%3A*_draft

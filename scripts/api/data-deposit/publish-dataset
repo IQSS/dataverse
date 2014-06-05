@@ -1,0 +1,14 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+if [ -z "$1" ]; then
+  GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12,13`
+else
+  GLOBAL_ID=$1
+  #GLOBAL_ID=doi:10.5072/FK2/5555
+fi
+# We cat /dev/null so that contentLength is zero. This makes headersOnly true:: https://github.com/swordapp/JavaServer2.0/blob/sword2-server-1.0/src/main/java/org/swordapp/server/ContainerAPI.java#L338
+# 'to tell curl to read the format from stdin you write "@-"' -- http://curl.haxx.se/docs/manpage.html
+cat /dev/null | curl -s --insecure -X POST -H "In-Progress: false" --data-binary @- https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID \
+| xmllint --format -

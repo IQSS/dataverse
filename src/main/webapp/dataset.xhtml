@@ -9,7 +9,7 @@
     <h:head>
     </h:head>
 
-    <h:body> 
+    <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.displayVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
@@ -19,28 +19,43 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
-                <script type="text/javascript">                    
+                <script type="text/javascript">
+
+                    function openDialog() {
+                        details.show();
+                    }
+                    function openCompareTwo() {
+                        compareTwo.show();
+                    }
+                    function testCheckBoxes() {
+                        var count = versionsTable.getSelectedRowsCount();
+                        if (count !== 2) {
+                            compareTwo.show();
+                        } else {
+                            $('button[id$="compareVersions"]').trigger('click');
+                        }
+                    }
+
                     function openDropboxChooser() {
                         options = {
                             // Required. Called when a user selects an item in the Chooser.
                             success: function(files) {
                                 // Pass the JSON-ized output of the Chooser to the backing bean,
-                                // via a hidden input field: 
+                                // via a hidden input field:
                                 $('input[id$="dropBoxSelectionInput"]').val(JSON.stringify(files));
                                 //alert(JSON.stringify(files));
                                 // Trigger the upload processing method in the backing
-                                // bean, via an invisible commandButton: 
+                                // bean, via an invisible commandButton:
                                 $('button[id$="dropBoxButton"]').trigger('click');
-                                
+
                             },
                             linkType: "direct",
                             multiselect: true,
-
                         };
                         Dropbox.choose(options);
                     }
                 </script>
-                
+
                 <f:metadata>
                     <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                     <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -49,17 +64,15 @@
                 </f:metadata>
 
                 <h:form id="datasetForm">
-
                     <!-- Header / Button Panel -->
                     <ui:fragment>
-
                         <!-- View mode -->
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
-                                   <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
-                                                            and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
-                                                            and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -70,28 +83,28 @@
                                                         <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Files (Upload + Edit)" />
-                                                        </p:commandLink>   
+                                                        </p:commandLink>
                                                     </li>
                                                     <li>
                                                         <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Metadata" />
-                                                        </p:commandLink>   
+                                                        </p:commandLink>
                                                     </li>
                                                     <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Permissions</a></li>-->
                                                 </ul>
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('ReleaseDatasetCommand')}">
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
-                                            </ui:fragment>                                            
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
                                                 <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
@@ -103,31 +116,31 @@
                                                 </button>
                                             </ui:fragment>
                                         </div>
-                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">  
+                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">
                                             <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
-                                            </p:commandButton>  
-                                            <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />   
+                                            </p:commandButton>
+                                            <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="Are you sure you want to republish your dataset?" header="Publish Dataset" widgetVar="releaseDraft">  
+                                        <p:confirmDialog message="Are you sure you want to republish your dataset?" header="Publish Dataset" widgetVar="releaseDraft">
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Select version number:
-                                                <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">  
-                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />  
-                                                    <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />   
-                                                </p:selectOneRadio>  
-                                            </ui:fragment> 
+                                                <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
+                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />
+                                                    <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />
+                                                </p:selectOneRadio>
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 Due to the nature of changes to the current draft this will be a major release (#{DatasetPage.datasetNextMajorVersion})
-                                            </ui:fragment> 
+                                            </ui:fragment>
                                             <p:commandButton value="Continue" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
-                                            </p:commandButton>  
-                                            <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />   
+                                            </p:commandButton>
+                                            <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />
                                         </p:confirmDialog>
                                         <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.displayVersion != DatasetPage.dataset.latestVersion
-                                                       and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
                                                 <h:outputText value="View Unpublished Version"/>
@@ -148,7 +161,7 @@
                                             </button>
                                         </div>
                                     </ui:fragment>
-                                    <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!" header="Email Dataset Contact" widgetVar="contact_confirmation">                                           
+                                    <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!" header="Email Dataset Contact" widgetVar="contact_confirmation">
                                     </p:confirmDialog>
                                 </div>
                                 <div id="datasetVersionBlock">
@@ -159,7 +172,7 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation" class="bg-info">
-                                            <span>#{DatasetPage.displayCitation}</span> 
+                                            <span>#{DatasetPage.displayCitation}</span>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
                                             </ui:fragment>
@@ -220,15 +233,15 @@
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">Host Dataverse</a>
                                 </label>
                                 <div class="col-sm-10">
-                                   
+
                                     <h:outputText value="#{ DatasetPage.dataset.owner.name }" style="font-weight:bold;"/>
                                     <h:inputHidden value="#{DatasetPage.ownerId}" id="select_HostDataverse" />
-                                     
-                                     <ui:remove><!-- removed for beta -->
-                                    <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
-                                        <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
-                                    </p:selectOneMenu>
-                                     </ui:remove>
+
+                                    <ui:remove><!-- removed for beta -->
+                                        <p:selectOneMenu id="select_HostDataverse" value="#{DatasetPage.ownerId}" filter="true" filterMatchMode="startsWith" effect="none">
+                                            <f:selectItems value="#{dataverseServiceBean.findAll()}" var="dv" itemLabel="#{dv.name}" itemValue="#{dv.id}"/>
+                                        </p:selectOneMenu>
+                                    </ui:remove>
                                 </div>
                             </div>
                         </ui:fragment>
@@ -262,8 +275,8 @@
                                             </div>
                                         </ui:fragment>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                  fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add" oncomplete="javascript:bind_bsui_components();"/> 
-                                                                   
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add" oncomplete="javascript:bind_bsui_components();"/>
+
                                         <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
                                         <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
                                         </p:commandButton>
@@ -273,7 +286,7 @@
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
@@ -322,7 +335,7 @@
                                             <div class="fileDescription">
                                                 <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
                                                 <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
-                                                
+
                                                 <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                                     <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                         Description
@@ -393,7 +406,7 @@
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode 
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
@@ -411,38 +424,166 @@
                                     </div>
 
                                 </p:tab>
-
-                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">                                       
-                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab">                                        
-                                        <p:column >
-                                            <f:facet name="header">
-                                                Title
-                                            </f:facet>
+                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
+                                    <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
+                                                     onclick="testCheckBoxes();"
+                                                     rendered="#{DatasetPage.versionTabList.size() > 2}">
+                                    </p:commandButton>
+                                    <p:commandButton value="Direct" id="compareVersions"
+                                                     style="display:none"
+                                                     update=":datasetForm"
+                                                     oncomplete="detailsBlocks.show();post_differences();"
+                                                     actionListener="#{DatasetPage.compareVersionDifferences()}">
+                                    </p:commandButton>
+                                    <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
+                                                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" rowKey="#{versionTab}">
+                                        <p:column selectionMode="multiple" rendered="#{DatasetPage.versionTabList.size() > 2}"
+                                                  style="width:2%;text-align:center"/>
+                                        <p:column>
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
-                                                <h:outputText value="#{versionTab.title}" />
+                                                <h:outputText rendered="#{!versionTab.released}" value="#{versionTab.versionState}" />
+                                                <h:outputText rendered="#{versionTab.released}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
                                                 <f:param name="id" value="#{versionTab.dataset.id}" />
                                                 <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
                                         </p:column>
-                                        <p:column >
-                                            <f:facet name="header">
-                                                Version
-                                            </f:facet>
-                                            <h:outputText rendered="#{!versionTab.released}" id="versionStatusOutput" value="#{versionTab.versionState}" />
-                                            <h:outputText rendered="#{versionTab.released}" id="versionNumberOutput" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                        <p:column>
+                                            <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
+                                                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
+                                                    <h:outputLabel  value="Citation Metadata: " />
+                                                    <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
+                                                        <h:outputText  value=" " />
+                                                        <h:outputText  value="#{summaryNote[0].datasetFieldType.displayName} " />
+                                                        <h:outputText  value="(" />
+                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} Added" />
+                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Added" />
+                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " />
+                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} Removed" />
+                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Removed" />
+                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value=", " />
+                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} Changed" />
+                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Changed" />
+                                                        <h:outputText  value="); " />
+                                                    </ui:repeat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
+                                                    <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
+                                                        <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="Additional Citation Metadata: " />
+                                                        <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
+                                                        <h:outputText  value=" " />
+                                                        <h:outputText  value="(" />
+                                                        <h:outputText rendered="#{blockNote[1] > 0}"  value="#{blockNote[1]} Added" />
+                                                        <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}"  value=", " />
+                                                        <h:outputText rendered="#{(blockNote[2]) > 0}"  value="#{blockNote[2]} Removed" />
+                                                        <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}"  value=", " />
+                                                        <h:outputText rendered="#{(blockNote[3]) > 0}"  value="#{blockNote[3]} Changed" />
+                                                        <h:outputText  value="); " />
+                                                    </ui:repeat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
+                                                    <h:outputLabel  value="#{versionTab.defaultVersionDifference.fileNote}" />
+                                                </ui:fragment>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
+                                                <ui:fragment rendered="#{versionTab.draft}">
+                                                    This is a draft version.
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{!versionTab.draft}">
+                                                    This is the first released version.
+                                                </ui:fragment>
+                                            </ui:fragment>
+                                            <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
+                                                           actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
+                                                           oncomplete="detailsBlocks.show();post_differences();"
+                                                           update=":datasetForm"
+                                                           value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
-                                        <p:column  > 
-                                            <f:facet name="header">
-                                                Version Date
-                                            </f:facet>
-                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" />
+                                        <p:column style="min-width:140px;">
+                                            <h:outputText value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
                             </p:tabView>
                         </div>
                     </ui:fragment>
-                    
+                    <p:confirmDialog id="compareTwo" message="You may only compare two versions." header="Please Select Two Versions" widgetVar="compareTwo">
+                    </p:confirmDialog>
+
+                    <ui:fragment id="detailsBlock">
+                        <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
+                            <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
+                            <div class="clearfix" style="margin-bottom:1em;">
+                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
+                                    Version: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
+                                    <!-- Last Updated: -->
+                                </div>
+                                <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
+                                    Version: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
+                                    <!-- Last Updated: -->
+                                </div>
+                                <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
+                                    &#160;
+                                </div>
+                            </div>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.detailDataByBlock)}">
+                                <ui:repeat value="#{DatasetPage.datasetVersionDifference.detailDataByBlock}" var="block">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading text-info">
+                                            <h:outputText value="#{block.get(0)[0].datasetFieldType.metadataBlock.displayName}" />
+                                        </div>
+                                        <p:dataTable id="byBlockInner" styleClass="dvnDifferanceTable" var="dsfArray" value="#{block}">
+                                            <p:column styleClass="versionValue">
+                                                <h:outputText value="#{dsfArray[0].datasetFieldType.title}" />
+                                            </p:column>
+                                            <p:column styleClass="versionDetails">
+                                                <h:outputText rendered="#{dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[0].datasetFieldType.primitive and !(dsfArray[0].isEmpty())}" value="#{dsfArray[0].compoundDisplayValue}" />
+                                            </p:column>
+                                            <p:column styleClass="versionDetails" >
+                                                <h:outputText rendered="#{dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].displayValue}" />
+                                                <h:outputText rendered="#{!dsfArray[1].datasetFieldType.primitive and !(dsfArray[1].isEmpty())}" value="#{dsfArray[1].compoundDisplayValue}" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </div>
+                                </ui:repeat>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
+                                        <h:outputText id="outputText" value="Files"/>
+                                    </div>
+                                    <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
+                                        <p:column styleClass="versionValue">
+                                            <h:outputText value="File ID: #{fileDiff.fileId}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
+                                            <h:outputText value="File Name: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
+                                            <h:outputText value="File Type: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
+                                            <h:outputText value="File Size: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
+                                            <h:outputText value="Category: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                            <h:outputText value="Description: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
+                                            &#160;
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
+                                            <h:outputText value="File Name: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
+                                            <h:outputText value="File Type: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
+                                            <h:outputText value="File Size: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
+                                            <h:outputText value="Category: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                            <h:outputText value="Description: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                        </p:column>
+                                        <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
+                                            &#160;
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </ui:fragment>
+                        </p:dialog>
+                    </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
                             Tip: You can add more metadata about this dataset after it's created.

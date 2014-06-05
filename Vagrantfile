@@ -18,10 +18,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision "shell", path: "scripts/setup/asadmin-setup.sh"
   config.vm.provision "shell", path: "scripts/vagrant/deploy.sh"
+  config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # accessing "localhost:8888" will access port 8080 on the guest machine.
   config.vm.network "forwarded_port", guest: 8080, host: 8888
 
   # Create a private network, which allows host-only access to the machine
@@ -41,10 +42,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
+  # FIXME: use /dataverse/downloads instead
   config.vm.synced_folder "downloads", "/downloads"
-  config.vm.synced_folder "target", "/builds"
+  # FIXME: use /dataverse/conf instead
   config.vm.synced_folder "conf", "/conf"
+  # FIXME: use /dataverse/scripts instead
   config.vm.synced_folder "scripts", "/scripts"
+  config.vm.synced_folder ".", "/dataverse"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.

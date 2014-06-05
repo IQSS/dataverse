@@ -4,34 +4,37 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import javax.json.JsonObject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -44,9 +47,9 @@ public class Datasets extends AbstractApiBean {
     DataverseServiceBean dataverseService;
 
     @GET
-    public String list(@QueryParam("key") String apiKey ) {
+    public Response list(@QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		// TODO filter by what the user can see.
 		
@@ -55,66 +58,63 @@ public class Datasets extends AbstractApiBean {
         for (Dataset dataset : datasets) {
            datasetsArrayBuilder.add( json(dataset) );
         }
-		return ok(datasetsArrayBuilder);
+		return okResponse(datasetsArrayBuilder);
         
     }
 	
 	@GET
 	@Path("{id}")
-    public String getDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+    public Response getDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
-		
-		// TODO filter by what the user can see.
+		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
-        return (ds != null) ? ok(json(ds))
-							: error("dataset not found");
-		
+        return (ds != null) ? okResponse(json(ds))
+							: notFound("dataset not found");
         
     }
 	
 	@DELETE
 	@Path("{id}")
-	public String deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+	public Response deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
-        if (ds == null) return error("dataset not found");
+        if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
 		
 		try {
 			engineSvc.submit( new DeleteDatasetCommand(ds, u));
-			return ok("Dataset " + id + " deleted");
+			return okResponse("Dataset " + id + " deleted");
 			
 		} catch (CommandExecutionException ex) {
 			// internal error
 			logger.log( Level.SEVERE, "Error deleting dataset " + id + ":  " + ex.getMessage(), ex );
-			return error( "Can't delete dataset: " + ex.getMessage() );
+			return errorResponse( Response.Status.FORBIDDEN, "Can't delete dataset: " + ex.getMessage() );
 			
 		} catch (CommandException ex) {
-			return error( "Can't delete dataset: " + ex.getMessage() );
+			return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Can't delete dataset: " + ex.getMessage() );
 		}
 		
 	}
 	
 	@GET
 	@Path("{id}/versions")
-    public String listVersions( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
+    public Response listVersions( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		// TODO filter by what the user can see.
 		
         Dataset ds = datasetService.find(id);
-        if (ds == null) return error("dataset not found");
+        if (ds == null) return notFound("dataset not found");
 		
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		for ( DatasetVersion dsv : ds.getVersions() ) {
 			bld.add( json(dsv) );
 		}
 		
-		return ok( bld );
+		return okResponse( bld );
     }
 	
 	@GET
@@ -196,9 +196,9 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
-	@Path("{id}/versions/{versionId}/metadata/{block}")
+	@Path("{id}/versions/{versionNumber}/metadata/{block}")
     public Response getVersionMetadataBlock( @PathParam("id") Long datasetId, 
-                                             @PathParam("versionId") String versionId, 
+                                             @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName,
                                              @QueryParam("key") String apiKey ) {
 		DataverseUser u = userSvc.findByUserName(apiKey);
@@ -210,7 +210,7 @@ public class Datasets extends AbstractApiBean {
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
 		DatasetVersion dsv = null;
-		switch (versionId) {
+		switch (versionNumber) {
 			case ":latest":
 				dsv = ds.getLatestVersion();
 				break;
@@ -219,15 +219,18 @@ public class Datasets extends AbstractApiBean {
 				break;
 			default:
 				try {
-					long versionNumericId = Long.parseLong(versionId);
+                    String[] comps = versionNumber.split("\\.");
+                    long majorVersion = Long.parseLong(comps[0]);
+                    long minorVersion = comps.length > 1 ? Long.parseLong(comps[1]) : 0;
 					for ( DatasetVersion aDsv : ds.getVersions() ) {
-						if ( aDsv.getId().equals(versionNumericId) ) {
+						if ( aDsv.getVersionNumber().equals(majorVersion) &&
+                              aDsv.getMinorVersionNumber().equals(minorVersion)) {
 							dsv = aDsv;
-							break; // for, not while
+							break; // for, not switch
 						}
 					}
 				} catch ( NumberFormatException nfe ) {
-					return errorResponse( Response.Status.BAD_REQUEST, "Illegal id number '" + versionId + "'");
+					return errorResponse( Response.Status.BAD_REQUEST, "Illegal version number '" + versionNumber + "'. Values are :latest, :edit and x.y");
 				}	
                 break;
 		}
@@ -239,7 +242,7 @@ public class Datasets extends AbstractApiBean {
                 return okResponse( JsonPrinter.json(p.getKey(), p.getValue()) );
             }
         }
-		return errorResponse(Response.Status.NOT_FOUND, "metadata block named " + blockName + " not found");
+		return notFound("metadata block named " + blockName + " not found");
     }
 	
 	@GET
@@ -249,100 +252,74 @@ public class Datasets extends AbstractApiBean {
 		return error("Not implemented yet");
 	}
 	
-	
-	@POST
-	@Path("{id}/versions")
-	public String addVersion( @PathParam("id") Long id, @QueryParam("key") String apikey, DatasetDTO dsDto ){
-		// CONTPOINT accept the dsDto and push it to the DB.
-		return null;
-	}
-	
-    // used to primarily to feed data into elasticsearch
-    @GET
-	@Deprecated
-    @Path("deprecated/{id}/{verb}")
-    public Dataset get(@PathParam("id") Long id, @PathParam("verb") String verb) {
-        logger.info("GET called");
-        if (verb.equals("dump")) {
-            Dataset dataset = datasetService.find(id);
-            if (dataset != null) {
-                logger.info("found " + dataset);
-                // prevent HTTP Status 500 - Internal Server Error
-                dataset.setFiles(null);
-                dataset.setAuthority(null);
-//                dataset.setDescription(null);
-                dataset.setIdentifier(null);
-                dataset.setProtocol(null);
-                dataset.setVersions(null);
-                // elasticsearch fails on "today" with
-                // MapperParsingException[failed to parse date field [today],
-                // tried both date format [dateOptionalTime], and timestamp number with locale []]
-                //dataset.setCitationDate(null);
-                // too much information
-                dataset.setOwner(null);
-                return dataset;
-            }
-        }
-        /**
-         * @todo return an error instead of "204 No Content"?
-         *
-         */
-        logger.info("GET attempted with dataset id " + id + " and verb " + verb);
-        return null;
-    }
-
-	@Path("deprecated/")
-    @POST
-	@Deprecated
-    public String add(Dataset dataset, @QueryParam("owner") String owner, @QueryParam("key") String apiKey) {
-        try {
-            DatasetVersion editVersion = new DatasetVersion();
-            editVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-            editVersion.setDataset(dataset);
-            Dataverse owningDataverse = dataverseService.findByAlias(owner);
-            dataset.setOwner(owningDataverse);
-            editVersion.setDatasetFields(editVersion.initDatasetFields());
-            dataset.getVersions().add(editVersion);
-            dataset.setIdentifier("myIdentifier");
-            dataset.setProtocol("myProtocol");
-            DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return error( "Invalid apikey '" + apiKey + "'");
-            engineSvc.submit( new CreateDatasetCommand(dataset, u));
-            return "dataset " + dataset.getId() + " created/updated (and probably indexed, check server.log)\n";
-        } catch (EJBException ex) {
-            Throwable cause = ex;
-            StringBuilder sb = new StringBuilder();
-            sb.append(ex + " ");
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause.getMessage() + " ");
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
-                    }
-//                } else if (cause instanceof NullPointerException) {
-                } else {
-                    for (int i = 0; i < 2; i++) {
-                        StackTraceElement stacktrace = cause.getStackTrace()[i];
-                        if (stacktrace != null) {
-                            String classCanonicalName = stacktrace.getClass().getCanonicalName();
-                            String methodName = stacktrace.getMethodName();
-                            int lineNumber = stacktrace.getLineNumber();
-                            String error = "at " + stacktrace.getClassName() + "." + stacktrace.getMethodName() + "(" + stacktrace.getFileName() + ":" + lineNumber + ") ";
-                            sb.append(error);
-                        }
-                    }
-                }
-            }
-            if (sb.toString().equals("javax.ejb.EJBException: Transaction aborted javax.transaction.RollbackException java.lang.IllegalStateException ")) {
-                return "indexing went as well as can be expected... got java.lang.IllegalStateException but some indexing may have happened anyway\n";
-            } else {
-                return Util.message2ApiError(sb.toString());
-            }
+    @PUT
+	@Path("{id}/versions/{versionId}")
+	public Response updateDraftVersion( String jsonBody, @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
+        
+        if ( ! ":edit".equals(versionId) ) 
+            return errorResponse( Response.Status.BAD_REQUEST, "Only the :edit version can be put on server");
+        
+        DataverseUser u = userSvc.findByUserName(apiKey);
+        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        Dataset ds = datasetService.find(id);
+        if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
+        
+        try ( StringReader rdr = new StringReader(jsonBody) ) {
+            JsonObject json = Json.createReader(rdr).readObject();
+            DatasetVersion version = jsonParser().parseDatasetVersion(json);
+            version.setDataset(ds);
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            DatasetVersion managedVersion = engineSvc.submit( updateDraft
+                                                                ? new UpdateDatasetVersionCommand(u, version)
+                                                                : new CreateDatasetVersionCommand(u, ds, version) );
+            return okResponse( json(managedVersion) );
+                    
         } catch (CommandException ex) {
-			return error( "Can't add dataset: " + ex.getMessage() );
-		}
+            logger.log(Level.SEVERE, "Error executing CreateDatasetVersionCommand: " + ex.getMessage(), ex);
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + ex.getMessage() );
+            
+        } catch (JsonParseException ex) {
+            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+        }
     }
+    
+    @POST
+    @Path("{id}/actions/:publish") 
+    public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("key") String apiKey ) {
+        try {
+            
+            if ( type == null ) return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
+            type = type.toLowerCase();
+            boolean isMinor;
+            switch ( type ) {
+                case "minor": isMinor = true; break;
+                case "major": isMinor = false; break;
+                default: return errorResponse( Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major' or 'minor'.");
+            }
+            long dsId=0;
+            try {
+                dsId = Long.parseLong(id);
+            } catch ( NumberFormatException nfe ) {
+                return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
+            }
+            
+            DataverseUser u = userSvc.findByUserName(apiKey);
+            if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+            
+            Dataset ds = datasetService.find(dsId);
+            if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
+            
+            ds = engineSvc.submit( new PublishDatasetCommand(ds, u, isMinor));
+            return okResponse( json(ds) );
+            
+        } catch (IllegalCommandException ex) {
+            return errorResponse( Response.Status.FORBIDDEN, "Error publishing the dataset: " + ex.getMessage() );
+            
+        } catch (CommandException ex) {
+            Logger.getLogger(Datasets.class.getName()).log(Level.SEVERE, "Error while publishing a Dataset", ex);
+            return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Error publishing the dataset: " + ex.getMessage() );
+        }
+    }
+    
 }

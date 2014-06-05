@@ -4,13 +4,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import edu.harvard.iq.dataverse.engine.Permission;
-import java.util.Set;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Permission test bean.
@@ -18,19 +17,17 @@ import javax.ws.rs.QueryParam;
  */
 @Path("permissions")
 public class Permissions extends AbstractApiBean {
-	private static final Logger logger = Logger.getLogger(Permissions.class.getName());
 	@EJB
 	PermissionServiceBean permissions;
 	
 	@GET
-	public String listPermissions( @QueryParam("user") String userIdtf, @QueryParam("on") String dvoIdtf ) {
+	public Response listPermissions( @QueryParam("user") String userIdtf, @QueryParam("on") String dvoIdtf ) {
 		DataverseUser u = findUser(userIdtf);
-		if ( u==null ) return error("Can't find user with identifier '" + userIdtf + "'");
+		if ( u==null ) return errorResponse( Status.FORBIDDEN, "Can't find user with identifier '" + userIdtf + "'");
 		
 		Dataverse d = findDataverse(dvoIdtf);
-		if ( d==null ) error( "Can't find dataverser with identifier '" + dvoIdtf );
+		if ( d==null ) notFound("Can't find dataverser with identifier '" + dvoIdtf );
 		
-		Set<Permission> granted = permissions.on(d).user(u).get();
-		return ok( json(granted) ) ;
+		return okResponse( json(permissions.on(d).user(u).get()) ) ;
 	}
 }

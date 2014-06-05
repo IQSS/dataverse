@@ -53,12 +53,11 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         }
         Date createDate = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setCreateTime(createDate);
+        theDataset.getEditVersion().setLastUpdateTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        String indexingResult = ctxt.index().indexDataset(savedDataset);
-        logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         
         DataverseRole manager = new DataverseRole();
         manager.addPermissions(EnumSet.allOf(Permission.class));
@@ -68,6 +67,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         manager.setOwner(savedDataset);
         ctxt.roles().save(manager);
         ctxt.roles().save(new RoleAssignment(manager, getUser(), savedDataset));
+        
+        try {
+            // TODO make async
+            String indexingResult = ctxt.index().indexDataset(savedDataset);
+            logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
+        } catch ( RuntimeException e ) {
+            logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
+        }
         return savedDataset;
     }
 

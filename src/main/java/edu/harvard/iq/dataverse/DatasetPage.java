@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReleaseDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -26,7 +26,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +52,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -108,6 +111,10 @@ public class DatasetPage implements java.io.Serializable {
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
     private String dropBoxSelection = "";
+    private DatasetVersionDifference datasetVersionDifference;
+    private Map<Long, Boolean> checked = new HashMap<>();
+
+
 
     private String displayCitation;
 
@@ -240,6 +247,7 @@ public class DatasetPage implements java.io.Serializable {
 
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(editVersion);
+            dataset.setIdentifier(datasetService.generateIdentifierSequence("doi", "10.5072/FK2"));
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
@@ -301,14 +309,14 @@ public class DatasetPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
-                cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
+                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
             } else {
-                cmd = new ReleaseDatasetCommand(dataset, session.getUser(), minor);
+                cmd = new PublishDatasetCommand(dataset, session.getUser(), minor);
             }
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
         }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
         FacesContext.getCurrentInstance().addMessage(null, message);
@@ -326,11 +334,11 @@ public class DatasetPage implements java.io.Serializable {
             DataFile dataFile = fileMetadata.getDataFile();
             // and see if any are marked as "ingest-in-progress":
             if (dataFile.isIngestInProgress()) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Refreshing the status of the file " + fileMetadata.getLabel() + "...");
+                logger.info("Refreshing the status of the file " + fileMetadata.getLabel() + "...");
                 // and if so, reload the file object from the database...
                 dataFile = datafileService.find(dataFile.getId());
                 if (!dataFile.isIngestInProgress()) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File " + fileMetadata.getLabel() + " finished ingesting.");
+                    logger.info("File " + fileMetadata.getLabel() + " finished ingesting.");
                     // and, if the status has changed - i.e., if the ingest has 
                     // completed, or failed, update the object in the list of 
                     // files visible to the page:
@@ -375,94 +383,25 @@ public class DatasetPage implements java.io.Serializable {
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
-        dataset.setIdentifier("5555");
-
+               
         /*
          * Save and/or ingest files, if there are any:
+        
+         * All the back end-specific ingest logic has been moved into 
+         * the IngestServiceBean! -- L.A.
+         * TODO: we still need to figure out how the ingestServiceBean is 
+         * going to communicate the information about ingest errors back to 
+         * the page, and what the page should be doing to alert the user. 
+         * (we may not do any communication/exceptions/etc. here - relying
+         * instead on the ingest/upload status properly set on each of the 
+         * individual files, and adding a mechanism to the page for displaying
+         * file-specific error reports - in pop-up windows maybe?)
          */
-        if (newFiles != null && newFiles.size() > 0) {
-            try {
-                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
-                    /* Note that "createDirectories()" must be used - not 
-                     * "createDirectory()", to make sure all the parent 
-                     * directories that may not yet exist are created as well. 
-                     */
-
-                    Files.createDirectories(dataset.getFileSystemDirectory());
-                }
-            } catch (IOException dirEx) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Failed to create study directory " + dataset.getFileSystemDirectory().toString());
-            }
-
-            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
-                for (DataFile dFile : newFiles) {
-                    String tempFileLocation = getFilesTempDirectory() + "/" + dFile.getFileSystemName();
-
-                    // These are all brand new files, so they should all have 
-                    // one filemetadata total. You do NOT want to use 
-                    // getLatestFilemetadata() here - because it relies on 
-                    // comparing the object IDs of the corresponding datasetversions...
-                    // Which may not have been persisted yet. 
-                    // -- L.A. 4.0 beta.
-                    FileMetadata fileMetadata = dFile.getFileMetadatas().get(0);
-                    String fileName = fileMetadata.getLabel();
-
-                    //boolean ingestedAsTabular = false;
-                    boolean metadataExtracted = false;
-
-                    datasetService.generateFileSystemName(dFile);
-
-                    if (ingestService.ingestableAsTabular(dFile)) {
-                        /*
-                         * Note that we don't try to ingest the file right away - 
-                         * instead we mark it as "scheduled for ingest", then at 
-                         * the end of the save process it will be queued for async. 
-                         * ingest in the background. In the meantime, the file 
-                         * will be ingested as a regular, non-tabular file, and 
-                         * appear as such to the user, until the ingest job is
-                         * finished with the Ingest Service.
-                         */
-                        dFile.SetIngestScheduled();
-                    } else if (ingestService.fileMetadataExtractable(dFile)) {
-
-                        try {
-                            dFile.setContentType("application/fits");
-                            metadataExtracted = ingestService.extractIndexableMetadata(tempFileLocation, dFile, editVersion);
-                        } catch (IOException mex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Caught exception trying to extract indexable metadata from file " + fileName, mex);
-                        }
-                        if (metadataExtracted) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Successfully extracted indexable metadata from file " + fileName);
-                        } else {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to extract indexable metadata from file " + fileName);
-                        }
-                    }
-
-                    // Try to save the file in its permanent location: 
-                    //if (!ingestedAsTabular) {
-                    try {
-
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the file as: " + dFile.getFileSystemLocation().toString());
-                        Files.copy(new FileInputStream(new File(tempFileLocation)), dFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-
-                        MD5Checksum md5Checksum = new MD5Checksum();
-                        try {
-                            dFile.setmd5(md5Checksum.CalculateMD5(dFile.getFileSystemLocation().toString()));
-                        } catch (Exception md5ex) {
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Could not calculate MD5 signature for the new file " + fileName);
-                        }
-
-                    } catch (IOException ioex) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemLocation());
-                    }
-                    //}
-
-                    // Any necessary post-processing: 
-                    ingestService.performPostProcessingTasks(dFile);
-                }
-            }
-        }
-
+        
+        ingestService.addFiles(editVersion, newFiles); 
+        
+        // Use the API to save the dataset: 
+        
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
@@ -489,44 +428,17 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe(ex.getMessage());
         }
         newFiles.clear();
         editMode = null;
 
-        // Queue the ingest jobs for asynchronous execution: 
-        for (DataFile dataFile : dataset.getFiles()) {
-            if (dataFile.isIngestScheduled()) {
-                dataFile.SetIngestInProgress();
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
-                ingestService.asyncIngestAsTabular(dataFile);
-            }
-        }
+        // Call Ingest Service one more time, to 
+        // queue the data ingest jobs for asynchronous execution: 
+        
+        ingestService.startIngestJobs(dataset);
 
-        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId()  + "&faces-redirect=true";
-    }
-
-    private String getFilesTempDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
-
-        String filesTempDirectory = filesRootDirectory + "/temp";
-
-        if (!Files.exists(Paths.get(filesTempDirectory))) {
-            /* Note that "createDirectories()" must be used - not 
-             * "createDirectory()", to make sure all the parent 
-             * directories that may not yet exist are created as well. 
-             */
-            try {
-                Files.createDirectories(Paths.get(filesTempDirectory));
-            } catch (IOException ex) {
-                return null;
-            }
-        }
-
-        return filesTempDirectory;
+        return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 
     public void cancel() {
@@ -557,7 +469,7 @@ public class DatasetPage implements java.io.Serializable {
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
 
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+            logger.info("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
 
             DataFile dFile = null;
 
@@ -569,25 +481,17 @@ public class DatasetPage implements java.io.Serializable {
                 status = getClient().executeMethod(dropBoxMethod);
                 if (status == 200) {
                     dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-                    dFile = new DataFile("application/octet-stream");
-                    dFile.setOwner(dataset);
-
-                    // save the file, in the temporary location for now: 
-                    datasetService.generateFileSystemName(dFile);
-                    if (getFilesTempDirectory() != null) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Will attempt to save the DropBox file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
-                        Files.copy(dropBoxStream, Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                        File tempFile = Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile();
-                        if (tempFile.exists()) {
-                            long writtenBytes = tempFile.length();
-                            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "File size, expected: " + fileSize + ", written: " + writtenBytes);
-                        } else {
-                            throw new IOException();
-                        }
-                    }
+                    
+                    // If we've made it this far, we must have been able to
+                    // make a successful HTTP call to the DropBox server and 
+                    // obtain an InputStream - so we can now create a new
+                    // DataFile object: 
+                    
+                    dFile = ingestService.createDataFile(editVersion, dropBoxStream, fileName, null);
+                    newFiles.add(dFile);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to access DropBox url: " + fileLink + "!");
+                logger.warning("Failed to access DropBox url: " + fileLink + "!");
                 continue;
             } finally {
                 if (dropBoxMethod != null) {
@@ -597,99 +501,24 @@ public class DatasetPage implements java.io.Serializable {
                     try {
                         dropBoxStream.close();
                     } catch (Exception ex) {
+                        //logger.whocares("...");
                     }
                 }
-            }
-
-            // If we've made it this far, we must have downloaded the file
-            // successfully, so let's finish processing it as a new DataFile
-            // object: 
-            FileMetadata fmd = new FileMetadata();
-            fmd.setDataFile(dFile);
-            dFile.getFileMetadatas().add(fmd);
-            fmd.setLabel(fileName);
-            fmd.setCategory(dFile.getContentType());
-            if (editVersion.getFileMetadatas() == null) {
-                editVersion.setFileMetadatas(new ArrayList());
-            }
-            editVersion.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(editVersion);
-            dataset.getFiles().add(dFile);
-
-            // When uploading files from dropBox, we don't get the benefit of 
-            // having the browser recognize the mime type of the file. So we'll 
-            // have to rely on our own utilities (Jhove, etc.) to try and determine
-            // what it is. 
-            String fileType = null;
-            try {
-                fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fileName);
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
-                if (fileType != null && !fileType.equals("")) {
-                    dFile.setContentType(fileType);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + fileName);
-            }
-
-            newFiles.add(dFile);
+            }            
         }
     }
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        DataFile dFile = new DataFile(uFile.getContentType());
-
-        FileMetadata fmd = new FileMetadata();
-        fmd.setLabel(uFile.getFileName());
-        fmd.setCategory(dFile.getContentType());
-
-        dFile.setOwner(dataset);
-        fmd.setDataFile(dFile);
-
-        dFile.getFileMetadatas().add(fmd);
-
-        if (editVersion.getFileMetadatas() == null) {
-            editVersion.setFileMetadatas(new ArrayList());
-        }
-        editVersion.getFileMetadatas().add(fmd);
-        fmd.setDatasetVersion(editVersion);
-        dataset.getFiles().add(dFile);
-
-        datasetService.generateFileSystemName(dFile);
-
-        // save the file, in the temporary location for now: 
-        if (getFilesTempDirectory() != null) {
-            try {
-
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Will attempt to save the file as: " + getFilesTempDirectory() + "/" + dFile.getFileSystemName());
-                Files.copy(uFile.getInputstream(), Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ioex) {
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to save the file  " + dFile.getFileSystemName());
-                return;
-            }
-        }
-
-        // Let's try our own utilities (Jhove, etc.) to determine the file type 
-        // of the uploaded file. (we may or may not do better than the browser,
-        // which may have already recognized the type correctly...)
-        String fileType = null;
+        DataFile dFile = null; 
+        
         try {
-            fileType = FileUtil.determineFileType(Paths.get(getFilesTempDirectory(), dFile.getFileSystemName()).toFile(), fmd.getLabel());
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "File utility recognized the file as " + fileType);
-            if (fileType != null && !fileType.equals("")) {
-                // let's look at the browser's guess regarding the mime type
-                // of the file: 
-                String bgType = dFile.getContentType();
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Browser recognized the file as " + bgType);
-
-                if (bgType == null || bgType.equals("") || bgType.equalsIgnoreCase("application/octet-stream")) {
-                    dFile.setContentType(fileType);
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.WARNING, "Failed to run the file utility mime type check on file " + fmd.getLabel());
+            dFile = ingestService.createDataFile(editVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
+        } catch (IOException ioex) {
+            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
         }
-
+        
         newFiles.add(dFile);
 
     }
@@ -706,6 +535,58 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
         this.versionTabList = versionTabList;
+    }
+    
+ 
+    private List<DatasetVersion> selectedVersions;
+    public List<DatasetVersion> getSelectedVersions() {
+        return selectedVersions;
+    }
+ 
+    public void setSelectedVersions(List<DatasetVersion> selectedVersions) {
+        this.selectedVersions = selectedVersions;
+    }
+
+
+    public DatasetVersionDifference getDatasetVersionDifference() {
+        return datasetVersionDifference;
+    }
+
+    public void setDatasetVersionDifference(DatasetVersionDifference datasetVersionDifference) {
+        this.datasetVersionDifference = datasetVersionDifference;
+    }
+
+    public void compareVersionDifferences() {
+        RequestContext requestContext = RequestContext.getCurrentInstance();
+        if (this.selectedVersions.size() != 2) {
+            requestContext.execute("openCompareTwo();");
+        } else {
+            //order depends on order of selection - needs to be chronological order
+            if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue() ){
+                updateVersionDifferences(this.selectedVersions.get(0), this.selectedVersions.get(1));
+            } else {
+                updateVersionDifferences(this.selectedVersions.get(1), this.selectedVersions.get(0));
+            }           
+        }
+    }
+
+    public void updateVersionDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        int count = 0;
+        int size = this.getDataset().getVersions().size();
+
+        if (originalVersion == null) {
+            for (DatasetVersion dsv : newVersion.getDataset().getVersions()) {
+                if (newVersion.equals(dsv)) {
+                    if ((count + 1) < size) {
+                        setDatasetVersionDifference(new DatasetVersionDifference(newVersion, newVersion.getDataset().getVersions().get(count + 1)));
+                        break;
+                    }
+                }
+                count++;
+            }
+        } else {
+            setDatasetVersionDifference(new DatasetVersionDifference(newVersion, originalVersion));
+        }
     }
 
     private boolean canIssueUpdateCommand() {
@@ -733,8 +614,6 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             return retList;
-
         }
     }
-
 }

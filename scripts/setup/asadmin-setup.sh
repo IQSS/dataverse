@@ -96,8 +96,12 @@ if [ $SUDO_USER == "vagrant" ]
   DB_NAME=dataverse_db
   DB_USER=dataverse_app
   DB_PASS=secret
+  echo "Configuring EPEL Maven repo "
+  cd /etc/yum.repos.d
+  wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
+  cd
   echo "Installing dependencies via yum"
-  yum install -y -q java-1.7.0-openjdk postgresql-server
+  yum install -y -q java-1.7.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl
   rpm -q postgresql-server
   echo "Starting PostgreSQL"
   chkconfig postgresql on
@@ -120,6 +124,7 @@ if [ $SUDO_USER == "vagrant" ]
   su $GLASSFISH_USER -s /bin/sh -c "cp $GLASSFISH_ZIP $GLASSFISH_USER_HOME"
   su $GLASSFISH_USER -s /bin/sh -c "cd $GLASSFISH_USER_HOME && unzip -q $GLASSFISH_ZIP"
   DEFAULT_GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
+  su $GLASSFISH_USER -s /bin/sh -c "/scripts/installer/glassfish-setup.sh"
 fi
 
 
@@ -172,6 +177,13 @@ if ! grep -qs postgres $DOMAIN_LIB/*
     echo postgresql driver already installed.
 fi
 
+if [ $SUDO_USER == "vagrant" ]
+  then
+  /scripts/installer/glassfish-setup.sh
+  echo "Done configuring Vagrant environment"
+  exit 0
+fi
+
 ###
 # Move to the glassfish dir
 pushd $GLASSFISH_BIN_DIR
@@ -187,9 +199,7 @@ if [  $(echo $DOMAIN_DOWN|wc -c) -ne 1  ];
     echo domain running
 fi
 
-# ONCE AGAIN, ASADMIN COMMANDS BELOW HAVE ALL BEEN MOVED INTO THIS SCRIPT:
-
-../installer/glassfish-setup.sh
+# ONCE AGAIN, ASADMIN COMMANDS BELOW HAVE ALL BEEN MOVED INTO scripts/installer/glassfish-setup.sh
 
 # TODO: diagnostics
 

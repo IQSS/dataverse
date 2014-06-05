@@ -6,8 +6,6 @@ import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +23,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Util API for managing roles. Might not make it to the production version.
@@ -43,78 +43,80 @@ public class Roles extends AbstractApiBean {
 	DataverseServiceBean dvSvc;
 	
 	@GET
-	public String list() {
+	public Response list() {
 		JsonArrayBuilder rolesArrayBuilder = Json.createArrayBuilder();
 		for ( DataverseRole role : rolesSvc.findAll() ) {
 			rolesArrayBuilder.add(json(role));
 		}
         
-        return Util.jsonArray2prettyString(rolesArrayBuilder.build());
+        return okResponse(rolesArrayBuilder);
 	}
 	
 	@GET
 	@Path("{id}")
-	public String viewRole( @PathParam("id") Long id ) {
+	public Response viewRole( @PathParam("id") Long id ) {
 		DataverseRole role = rolesSvc.find(id);
 		if ( role == null ) {
-			return error( "role with id " + id + " not found");
+			return notFound("role with id " + id + " not found");
 		} else  {
-			return ok( json(role).build() );
+			return okResponse( json(role) );
 		}
 	}
 	
 	@DELETE
 	@Path("{id}")
-	public String deleteRole( @PathParam("id") Long id ) {
+	public Response deleteRole( @PathParam("id") Long id ) {
 		DataverseRole role = rolesSvc.find(id);
 		if ( role == null ) {
-			return error( "role with id " + id + " not found");
+			return notFound( "role with id " + id + " not found");
 		} else  {
 			em.remove(role);
-			return "role " + id + " deleted.";
+			return okResponse("role " + id + " deleted.");
 		}
 	}
 	
 	@POST
 	@Path("assignments")
-	public String assignRole( @FormParam("username") String username, 
+	public Response assignRole( @FormParam("username") String username, 
 			@FormParam("roleId") long roleId, 
 			@FormParam("definitionPointId") long dvObjectId,
 			@QueryParam("key") String key ) {
-		DataverseUser u = usersSvc.findByUserName(username);
-		if ( u == null ) return error("no user with username " + username );
-		DataverseUser issuer = usersSvc.findByUserName(key);
-		if ( issuer == null ) return error("invalid api key '" + key +"'" );
+		
+        DataverseUser issuer = usersSvc.findByUserName(key);
+		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
+		
+        DataverseUser u = usersSvc.findByUserName(username);
+		if ( u == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
 		Dataverse d = dvSvc.find( dvObjectId );
-		if ( d == null ) return error("no DvObject with id " + dvObjectId );
+		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
 		DataverseRole r = rolesSvc.find(roleId);
-		if ( r == null ) return error("no role with id " + roleId );
+		if ( r == null ) return errorResponse( Status.BAD_REQUEST, "no role with id " + roleId );
 		
 		try {
-			RoleAssignment ra = engineSvc.submit( new AssignRoleCommand(u,r,d, issuer) );
-			return ok( json(ra).build() );
+			return okResponse( json(execCommand( new AssignRoleCommand(u,r,d, issuer), "Assign Role")) );
 			
-		} catch (CommandException ex) {
+		} catch (FailedCommandResult ex) {
 			logger.log( Level.WARNING, "Error Assigning role", ex );
-			return error("Assignment Faild: " + ex.getMessage() );
+			return ex.getResponse();
 		}
 	}
 	
 	@POST
-	public String createNewRole( RoleDTO roleDto,
+	public Response createNewRole( RoleDTO roleDto,
 								 @QueryParam("dvo") String dvoIdtf,
 								 @QueryParam("key") String key ) {
-		DataverseUser u = usersSvc.findByUserName(key);
-		if ( u == null ) return error("bad api key " + key );
+        
+        DataverseUser issuer = usersSvc.findByUserName(key);
+		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
+		
 		Dataverse d = findDataverse(dvoIdtf);
-		if ( d == null ) return error("no dataverse with id " + dvoIdtf );
+		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no dataverse with id " + dvoIdtf );
 		
 		try {
-			return ok(json(engineSvc.submit( new CreateRoleCommand(roleDto.asRole(), u, d) )));
-		} catch ( CommandException ce ) {
-			return error( ce.getMessage() );
+			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), issuer, d), "Create New Role")));
+		} catch ( FailedCommandResult ce ) {
+			return ce.getResponse();
 		}
 	}
-	
-	
+
 }

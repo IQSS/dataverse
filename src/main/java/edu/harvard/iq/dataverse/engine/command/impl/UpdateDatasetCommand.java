@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -24,10 +23,7 @@ import java.util.logging.Logger;
  *
  * @author skraffmiller
  */
-@RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.UndoableEdit),
-    @RequiredPermissions(dataverseName = "", value = Permission.EditMetadata)
-})
+@RequiredPermissions({Permission.UndoableEdit,Permission.EditMetadata} )
 public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
    private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());
     private final Dataset theDataset;
@@ -46,7 +42,6 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         save(ctxt);
     }
 
-
     public Dataset save(CommandContext ctxt) {
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
@@ -58,8 +53,8 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         while (dsfItSort.hasNext()) {
            dsfItSort.next().setValueDisplayOrder();
         }
-        Timestamp updateTime =  new Timestamp(new Date().getTime());
-        
+        Timestamp updateTime = new Timestamp(new Date().getTime());
+        theDataset.getEditVersion().setLastUpdateTime(updateTime);
         for (DataFile dataFile: theDataset.getFiles() ){
             if(dataFile.getCreateDate() == null){
                 dataFile.setCreateDate(updateTime);

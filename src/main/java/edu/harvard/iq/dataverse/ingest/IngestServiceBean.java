@@ -23,12 +23,14 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -55,6 +57,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -137,6 +140,195 @@ public class IngestServiceBean {
     // TODO: this constant should be provided by the Ingest Service Provder Registry;
     private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
     
+    
+    public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+        Dataset dataset = version.getDataset();
+        DataFile datafile;
+        
+        FileMetadata fmd = new FileMetadata();
+
+        if (contentType != null && !contentType.equals("")) {
+            datafile = new DataFile(contentType);
+            fmd.setCategory(contentType);
+        } else {
+            datafile = new DataFile("application/octet-stream"); 
+        }
+
+        fmd.setLabel(fileName);
+
+        datafile.setOwner(dataset);
+        fmd.setDataFile(datafile);
+
+        datafile.getFileMetadatas().add(fmd);
+
+        if (version.getFileMetadatas() == null) {
+            version.setFileMetadatas(new ArrayList());
+        }
+        version.getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(version);
+        dataset.getFiles().add(datafile);
+
+        datasetService.generateFileSystemName(datafile);
+
+        // save the file, in the temporary location for now: 
+        String tempFilesDirectory = getFilesTempDirectory();
+        if (tempFilesDirectory != null) {
+            //try {
+
+                logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
+                Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
+            //} catch (IOException ioex) {
+            //    logger.warning("Failed to save the file  " + datafile.getFileSystemName());
+            //    return;
+            //}
+        }
+
+        // Let's try our own utilities (Jhove, etc.) to determine the file type 
+        // of the uploaded file. (We may already have a mime type supplied for this
+        // file - maybe the type that the browser recognized on upload; or, if 
+        // it's a harvest, maybe the remote server has already given us the type
+        // for this file... with our own type utility we may or may not do better 
+        // than the type supplied:
+        //  -- L.A. 
+        String recognizedType = null;
+        try {
+            recognizedType = FileUtil.determineFileType(Paths.get(tempFilesDirectory, datafile.getFileSystemName()).toFile(), fmd.getLabel());
+            logger.fine("File utility recognized the file as " + recognizedType);
+            if (recognizedType != null && !recognizedType.equals("")) {
+                // is it any better than the type that was supplied to us,
+                // if any?
+
+                if (contentType == null || contentType.equals("") || contentType.equalsIgnoreCase("application/octet-stream")) {
+                    datafile.setContentType(recognizedType);
+                }
+            }
+        } catch (IOException ex) {
+            logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
+        }
+        
+        return datafile;
+    }
+    
+    public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
+        if (newFiles != null && newFiles.size() > 0) {
+            Dataset dataset = version.getDataset();
+            
+            try {
+                if (dataset.getFileSystemDirectory() != null && !Files.exists(dataset.getFileSystemDirectory())) {
+                    /* Note that "createDirectories()" must be used - not 
+                     * "createDirectory()", to make sure all the parent 
+                     * directories that may not yet exist are created as well. 
+                     */
+
+                    Files.createDirectories(dataset.getFileSystemDirectory());
+                }
+            } catch (IOException dirEx) {
+                logger.severe("Failed to create study directory " + dataset.getFileSystemDirectory().toString());
+                return; 
+                // TODO:
+                // Decide how we are communicating failure information back to 
+                // the page, and what the page should be doing to communicate
+                // it to the user - if anything. 
+                // -- L.A. 
+            }
+
+            if (dataset.getFileSystemDirectory() != null && Files.exists(dataset.getFileSystemDirectory())) {
+                for (DataFile dataFile : newFiles) {
+                    String tempFileLocation = getFilesTempDirectory() + "/" + dataFile.getFileSystemName();
+
+                    FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+                    String fileName = fileMetadata.getLabel();
+                    // These are all brand new files, so they should all have 
+                    // one filemetadata total. -- L.A. 
+                    boolean metadataExtracted = false;
+
+                    datasetService.generateFileSystemName(dataFile);
+
+                    if (ingestableAsTabular(dataFile)) {
+                        /*
+                         * Note that we don't try to ingest the file right away - 
+                         * instead we mark it as "scheduled for ingest", then at 
+                         * the end of the save process it will be queued for async. 
+                         * ingest in the background. In the meantime, the file 
+                         * will be ingested as a regular, non-tabular file, and 
+                         * appear as such to the user, until the ingest job is
+                         * finished with the Ingest Service.
+                         */
+                        dataFile.SetIngestScheduled();
+                    } else if (fileMetadataExtractable(dataFile)) {
+
+                        try {
+                            // FITS is the only type supported for metadata 
+                            // extraction, as of now. -- L.A. 4.0 
+                            dataFile.setContentType("application/fits");
+                            metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
+                        } catch (IOException mex) {
+                            logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
+                        }
+                        if (metadataExtracted) {
+                            logger.info("Successfully extracted indexable metadata from file " + fileName);
+                        } else {
+                            logger.info("Failed to extract indexable metadata from file " + fileName);
+                        }
+                    }
+
+                    // Try to save the file in its permanent location: 
+                    try {
+
+                        logger.info("Will attempt to save the file as: " + dataFile.getFileSystemLocation().toString());
+                        Files.copy(new FileInputStream(new File(tempFileLocation)), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+
+                        MD5Checksum md5Checksum = new MD5Checksum();
+                        try {
+                            dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
+                        } catch (Exception md5ex) {
+                            logger.warning("Could not calculate MD5 signature for the new file " + fileName);
+                        }
+
+                    } catch (IOException ioex) {
+                        logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
+                    }
+
+                    // Any necessary post-processing: 
+                    performPostProcessingTasks(dataFile);
+                }
+            }
+        }
+    }
+    
+    public String getFilesTempDirectory() {
+        String filesRootDirectory = System.getProperty("dataverse.files.directory");
+        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
+            filesRootDirectory = "/tmp/files";
+        }
+
+        String filesTempDirectory = filesRootDirectory + "/temp";
+
+        if (!Files.exists(Paths.get(filesTempDirectory))) {
+            /* Note that "createDirectories()" must be used - not 
+             * "createDirectory()", to make sure all the parent 
+             * directories that may not yet exist are created as well. 
+             */
+            try {
+                Files.createDirectories(Paths.get(filesTempDirectory));
+            } catch (IOException ex) {
+                return null;
+            }
+        }
+
+        return filesTempDirectory;
+    }
+    
+    public void startIngestJobs (Dataset dataset) {
+        for (DataFile dataFile : dataset.getFiles()) {
+            if (dataFile.isIngestScheduled()) {
+                dataFile.SetIngestInProgress();
+                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
+                asyncIngestAsTabular(dataFile);
+            }
+        }
+    }
+    
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
         //produceDiscreteNumericSummaryStatistics(dataFile); 
         produceContinuousSummaryStatistics(dataFile);
@@ -145,10 +337,24 @@ public class IngestServiceBean {
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
 
-        Double[][] variableVectors = subsetContinuousVectors(dataFile);
-
-        calculateContinuousSummaryStatistics(dataFile, variableVectors);
-
+        // quick, but memory-inefficient way:
+        // - this method just loads the entire file-worth of continuous vectors 
+        // into a Double[][] matrix. 
+        //Double[][] variableVectors = subsetContinuousVectors(dataFile);
+        //calculateContinuousSummaryStatistics(dataFile, variableVectors);
+        
+        // A more sophisticated way: this subsets one column at a time, using 
+        // the new optimized subsetting that does not have to read any extra 
+        // bytes from the file to extract the column:
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
+                Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
+                calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+            }
+        }
     }
     
     public boolean asyncIngestAsTabular(DataFile dataFile) {
@@ -383,7 +589,12 @@ public class IngestServiceBean {
         return false;
     }
     
-    public boolean extractIndexableMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
+    /* 
+     * extractMetadata: 
+     * framework for extracting metadata from uploaded files. The results will 
+     * be used to populate the metadata of the Dataset to which the file belongs. 
+    */
+    public boolean extractMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;
 
         FileInputStream tempFileInputStream = null; 
@@ -437,13 +648,14 @@ public class IngestServiceBean {
                 Map<String, Set<String>> fileMetadataMap = fileMetadataIngest.getMetadataMap();
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
                     if (dsft.isPrimitive()) {
+                        if (!dsft.isHasParent()) {
                         String dsfName = dsft.getName();
                         // See if the plugin has found anything for this field: 
                         if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
+                            
                             logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
                             // go through the existing fields:
                             for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
-                                String fName = dsf.getDatasetFieldType().getName();
                                 if (dsf.getDatasetFieldType().equals(dsft)) {
                                     // yep, this is our field!
                                     // let's go through the values that the ingest 
@@ -516,12 +728,90 @@ public class IngestServiceBean {
                                 }
                             }
                         }
+                        }
+                    } else {
+                        // A compound field: 
+                        // See if the plugin has found anything for the fields that 
+                        // make up this compound field; if we find at least one 
+                        // of the child values in the map of extracted values, we'll 
+                        // create a new compound field value and its child 
+                        // 
+                        DatasetFieldCompoundValue compoundDsfv = new DatasetFieldCompoundValue();
+                        int nonEmptyFields = 0; 
+                        for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
+                            String dsfName = cdsft.getName();
+                            if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {  
+                                logger.fine("Ingest Service: found extracted metadata for field " + dsfName + ", part of the compound field "+dsft.getName());
+                                
+                                if (cdsft.isPrimitive()) {
+                                    // probably an unnecessary check - child fields
+                                    // of compound fields are always primitive... 
+                                    // but maybe it'll change in the future. 
+                                    if (!cdsft.isControlledVocabulary()) {
+                                        // TODO: can we have controlled vocabulary
+                                        // sub-fields inside compound fields?
+                                        
+                                        DatasetField childDsf = new DatasetField();
+                                        childDsf.setDatasetFieldType(cdsft);
+                                        
+                                        DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
+                                        newDsfv.setValue((String)fileMetadataMap.get(dsfName).toArray()[0]);
+                                        childDsf.getDatasetFieldValues().add(newDsfv);
+                                        
+                                        childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
+                                        compoundDsfv.getChildDatasetFields().add(childDsf);
+                                        
+                                        nonEmptyFields++;
+                                    }
+                                } 
+                            }
+                        }
+                        
+                        if (nonEmptyFields > 0) {
+                            // let's go through this dataset's fields and find the 
+                            // actual parent for this sub-field: 
+                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                                if (dsf.getDatasetFieldType().equals(dsft)) {
+                                    
+                                    // Now let's check that the dataset version doesn't already have
+                                    // this compound value - we are only interested in aggregating 
+                                    // unique values. Note that we need to compare compound values 
+                                    // as sets! -- i.e. all the sub fields in 2 compound fields 
+                                    // must match in order for these 2 compounds to be recognized 
+                                    // as "the same":
+                                    
+                                    boolean alreadyExists = false; 
+                                    for (DatasetFieldCompoundValue dsfcv : dsf.getDatasetFieldCompoundValues()) {
+                                        int matches = 0; 
+
+                                        for (DatasetField cdsf : dsfcv.getChildDatasetFields()) {
+                                            String cdsfName = cdsf.getDatasetFieldType().getName();
+                                            String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
+                                            if (cdsfValue != null && !cdsfValue.equals("")) {
+                                                String extractedValue = (String)fileMetadataMap.get(cdsfName).toArray()[0];
+                                                logger.info("values: existing: "+cdsfValue+", extracted: "+extractedValue);
+                                                if (cdsfValue.equals(extractedValue)) {
+                                                    matches++;
+                                                }
+                                            }
+                                        }
+                                        if (matches == nonEmptyFields) {
+                                            alreadyExists = true; 
+                                            break;
+                                        }
+                                    }
+                                                                        
+                                    if (!alreadyExists) {
+                                        // save this compound value, by attaching it to the 
+                                        // version for proper cascading:
+                                        compoundDsfv.setParentDatasetField(dsf);
+                                        dsf.getDatasetFieldCompoundValues().add(compoundDsfv);
+                                    }
+                                }
+                            }
+                        }
                     }
-                } //else {
-                    // A compound field: 
-                    // - but that's not going to happen!
-                    // because ... (TODO: add explanation! -- L.A. 4.0 alpha
-                //}
+                } 
             }
         }  
     }
@@ -626,6 +916,11 @@ public class IngestServiceBean {
                 assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(i), sumStats);
             }
         }
+    }
+    
+    private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Double[] dataVector) throws IOException {
+        double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);
+        assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(varnum), sumStats);
     }
     
     private void assignContinuousSummaryStatistics(DataVariable variable, double[] sumStats) throws IOException {

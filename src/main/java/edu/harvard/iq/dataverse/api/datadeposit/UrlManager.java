@@ -28,8 +28,32 @@ public class UrlManager {
         } catch (URISyntaxException ex) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL syntax: " + url);
         }
+        /**
+         * @todo: figure out another way to check for http. We used to use
+         * javaNetUri.getScheme() but now that we are using "ProxyPass /
+         * ajp://localhost:8009/" in Apache it's always http rather than https.
+         *
+         * http://serverfault.com/questions/6128/how-do-i-force-apache-to-use-https-in-conjunction-with-ajp
+         * http://stackoverflow.com/questions/1685563/apache-webserver-jboss-ajp-connectivity-with-https
+         * http://stackoverflow.com/questions/12460422/how-do-ensure-that-apache-ajp-to-tomcat-connection-is-secure-encrypted
+         */
         if (!"https".equals(javaNetUri.getScheme())) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "https is required but protocol was " + javaNetUri.getScheme());
+            /**
+             * @todo figure out how to prevent this stackstrace from showing up
+             * in Glassfish logs:
+             *
+             * Unable to populate SSL attributes
+             * java.lang.IllegalStateException: SSLEngine is null at
+             * org.glassfish.grizzly.ssl.SSLSupportImpl
+             *
+             * SSLOptions +StdEnvVars +ExportCertData ?
+             *
+             * [#GLASSFISH-20694] Glassfish 4.0 and jk Unable to populate SSL
+             * attributes - Java.net JIRA -
+             * https://java.net/jira/browse/GLASSFISH-20694
+             */
+            logger.info("https is required but protocol was " + javaNetUri.getScheme());
+//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "https is required but protocol was " + javaNetUri.getScheme());
         }
         this.port = javaNetUri.getPort();
         String[] urlPartsArray = javaNetUri.getPath().split("/");

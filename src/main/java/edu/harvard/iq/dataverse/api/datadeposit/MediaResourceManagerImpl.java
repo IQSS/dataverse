@@ -1,25 +1,21 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +25,6 @@ import java.util.zip.ZipInputStream;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import org.swordapp.server.AuthCredentials;
@@ -53,6 +46,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
+    DataFileServiceBean dataFileService;
+    @EJB
     IngestServiceBean ingestService;
     @Inject
     SwordAuth swordAuth;
@@ -62,44 +57,37 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public MediaResource getMediaResourceRepresentation(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
 
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-//            EditStudyService editStudyService;
-            Context ctx;
-            try {
-                ctx = new InitialContext();
-//                editStudyService = (EditStudyService) ctx.lookup("java:comp/env/editStudy");
-            } catch (NamingException ex) {
-                logger.info("problem looking up editStudyService");
-                throw new SwordServerException("problem looking up editStudyService");
-            }
-            logger.fine("looking up study with globalId " + globalId);
-//            Study study = editStudyService.getStudyByGlobalId(globalId);
-            Dataset study = null;
-            if (study != null) {
+            logger.fine("looking up dataset with globalId " + globalId);
+            Dataset dataset = datasetService.findByGlobalId(globalId);
+            if (dataset != null) {
                 /**
-                 * @todo: support this
+                 * @todo: support downloading of files (SWORD 2.0 Profile 6.4. -
+                 * Retrieving the content)
+                 * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_retrievingcontent
+                 * https://redmine.hmdc.harvard.edu/issues/3595
                  */
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
-                    Dataverse dvThatOwnsStudy = study.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                        InputStream fixmeInputStream = new ByteArrayInputStream("FIXME: replace with zip of all study files".getBytes());
+                    Dataverse dvThatOwnsStudy = dataset.getOwner();
+                    if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsStudy)) {
+                        InputStream fixmeInputStream = new ByteArrayInputStream("FIXME: replace with zip of all dataset files".getBytes());
                         String contentType = "application/zip";
                         String packaging = UriRegistry.PACKAGE_SIMPLE_ZIP;
                         boolean isPackaged = true;
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to get a media resource representation of the dataset with global ID " + study.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Please use the Dataverse Network Data Sharing API instead");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://redmine.hmdc.harvard.edu/issues/3595");
                 }
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find study with global ID of " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't find dataset with global ID of " + globalId);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't dermine target type or identifier from URL: " + uri);
@@ -121,12 +109,12 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
          * and an empty zip uploaded. If no files are unzipped the user will see
          * a error about this but the files will still be deleted!
          */
-        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Replacing the files of a study is not supported. Please delete and add files separately instead.");
+        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Replacing the files of a dataset is not supported. Please delete and add files separately instead.");
     }
 
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -141,50 +129,41 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "File id must be a number, not '" + fileIdString + "'. URL was: " + uri);
                     }
                     if (fileIdLong != null) {
-                        logger.fine("preparing to delete file id " + fileIdLong);
-//                        StudyFile fileToDelete;
-                        try {
-//                            fileToDelete = studyFileService.getStudyFile(fileIdLong);
-                        } catch (EJBException ex) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong);
-                        }
-//                        if (fileToDelete != null) {
+                        logger.info("preparing to delete file id " + fileIdLong);
+                        DataFile fileToDelete = dataFileService.find(fileIdLong);
+                        if (fileToDelete != null) {
+                            /**
+                             * @todo test if StudyLock is necessary
+                             */
 //                            Study study = fileToDelete.getStudy();
 //                            StudyLock studyLock = study.getStudyLock();
 //                            if (studyLock != null) {
 //                                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
 //                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //                            }
-//                            String globalId = study.getGlobalId();
-//                            VDC dvThatOwnsFile = fileToDelete.getStudy().getOwner();
-//                            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsFile)) {
-//                                EditStudyFilesService editStudyFilesService;
-//                                try {
-//                                    Context ctx = new InitialContext();
-//                                    editStudyFilesService = (EditStudyFilesService) ctx.lookup("java:comp/env/editStudyFiles");
-//                                } catch (NamingException ex) {
-//                                    logger.info("problem looking up editStudyFilesService");
-//                                    throw new SwordServerException("problem looking up editStudyFilesService");
-//                                }
-//                                editStudyFilesService.setStudyVersionByGlobalId(globalId);
-//                                // editStudyFilesService.findStudyFileEditBeanById() would be nice
-//                                List studyFileEditBeans = editStudyFilesService.getCurrentFiles();
-//                                for (Iterator it = studyFileEditBeans.iterator(); it.hasNext();) {
-//                                    StudyFileEditBean studyFileEditBean = (StudyFileEditBean) it.next();
-//                                    if (studyFileEditBean.getStudyFile().getId().equals(fileToDelete.getId())) {
-//                                        logger.fine("marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-//                                        studyFileEditBean.setDeleteFlag(true);
-//                                    } else {
-//                                        logger.fine("not marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-//                                    }
-//                                }
-//                                editStudyFilesService.save(dvThatOwnsFile.getId(), vdcUser.getId());
-//                            } else {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsFile.getAlias());
-//                            }
-//                        } else {
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
-//                        }
+                            Dataset datasetThatOwnsFile = fileToDelete.getOwner();
+                            Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
+                            if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dataverseThatOwnsFile)) {
+                                try {
+                                    /**
+                                     * @todo with only one command, should we be
+                                     * falling back on the permissions system to
+                                     * enforce if the user can delete a file or
+                                     * not. If we do, a 403 Forbidden is
+                                     * returned. For now, we'll have belt and
+                                     * suspenders and do our normal sword auth
+                                     * check.
+                                     */
+                                    commandEngine.submit(new DeleteDataFileCommand(fileToDelete, dataverseUser));
+                                } catch (CommandException ex) {
+                                    throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
+                                }
+                            } else {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                            }
+                        } else {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
+                        }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id in URL: " + uri);
                     }
@@ -211,18 +190,9 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-//            EditStudyService editStudyService;
-            Context ctx;
-            try {
-                ctx = new InitialContext();
-//                editStudyService = (EditStudyService) ctx.lookup("java:comp/env/editStudy");
-            } catch (NamingException ex) {
-                logger.info("problem looking up editStudyService");
-                throw new SwordServerException("problem looking up editStudyService");
-            }
             logger.fine("looking up study with globalId " + globalId);
-            Dataset study = datasetService.findByGlobalId(globalId);
-            if (study == null) {
+            Dataset dataset = datasetService.findByGlobalId(globalId);
+            if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
             }
 //            StudyLock studyLock = study.getStudyLock();
@@ -230,138 +200,23 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 //                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //            }
-            Long studyId;
-            try {
-                studyId = study.getId();
-            } catch (NullPointerException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find study with global ID of " + globalId);
-            }
-            Dataverse dvThatOwnsStudy = study.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-//                editStudyService.setStudyVersion(studyId);
-//                editStudyService.save(dvThatOwnsStudy.getId(), vdcUser.getId());
-//
-//                EditStudyFilesService editStudyFilesService;
-//                try {
-//                    editStudyFilesService = (EditStudyFilesService) ctx.lookup("java:comp/env/editStudyFiles");
-//                } catch (NamingException ex) {
-//                    logger.info("problem looking up editStudyFilesService");
-//                    throw new SwordServerException("problem looking up editStudyFilesService");
-//                }
-//                editStudyFilesService.setStudyVersionByGlobalId(globalId);
-//                List studyFileEditBeans = editStudyFilesService.getCurrentFiles();
-                List<String> exisitingFilenames = new ArrayList<String>();
-//                for (Iterator it = studyFileEditBeans.iterator(); it.hasNext();) {
-//                    StudyFileEditBean studyFileEditBean = (StudyFileEditBean) it.next();
-                if (shouldReplace) {
-//                        studyFileEditBean.setDeleteFlag(true);
-//                        logger.fine("marked for deletion: " + studyFileEditBean.getStudyFile().getFileName());
-                } else {
-//                        String filename = studyFileEditBean.getStudyFile().getFileName();
-//                        exisitingFilenames.add(filename);
-                }
-            }
-//                editStudyFilesService.save(dvThatOwnsStudy.getId(), vdcUser.getId());
-
-            if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
-                throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
+            Dataverse dvThatOwnsDataset = dataset.getOwner();
+            if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsDataset)) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
-            // That's what the uploadDir was going to be for, but for now it's commented out
-            //
-            String importDirString;
-            File importDir;
-            String swordTempDirString = swordConfiguration.getTempDirectory();
-            if (swordTempDirString == null) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine temp directory");
-            } else {
-                importDirString = swordTempDirString + File.separator + "import" + File.separator + study.getId().toString();
-                importDir = new File(importDirString);
-                if (!importDir.exists()) {
-                    if (!importDir.mkdirs()) {
-                        logger.info("couldn't create directory: " + importDir.getAbsolutePath());
-                        throw new SwordServerException("couldn't create import directory");
-                    }
-                }
+            if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
+                throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
             }
 
-            if (true) {
-                DataFile dFile = new DataFile("application/octet-stream");
-                dFile.setOwner(study);
-                datasetService.generateFileSystemName(dFile);
-//                if (true) {
-//                    throw returnEarly("dataFile.getFileSystemName(): " + dFile.getFileSystemName());
-//                }
-                InputStream depositInputStream = deposit.getInputStream();
-                try {
-                    Files.copy(depositInputStream, Paths.get(importDirString, dFile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException ex) {
-                    throw new SwordError("problem running Files.copy");
-                }
-                study.getFiles().add(dFile);
-
-                DatasetVersion editVersion = study.getEditVersion();
-//                boolean metadataExtracted = false;
-//                try {
-//                    metadataExtracted = ingestService.extractIndexableMetadata(importDir.getAbsolutePath() + File.separator + dFile.getFileSystemName(), dFile, editVersion);
-//                } catch (IOException ex) {
-//                    throw returnEarly("couldn't extract metadata" + ex);
-//                }
-                FileMetadata fmd = new FileMetadata();
-                fmd.setDataFile(dFile);
-                fmd.setLabel("myLabel");
-                fmd.setDatasetVersion(editVersion);
-                dFile.getFileMetadatas().add(fmd);
-
-                Command<Dataset> cmd;
-                cmd = new UpdateDatasetCommand(study, vdcUser);
-                try {
-                    /**
-                     * @todo at update time indexing is run but the file is not
-                     * indexed. Why? Manually re-indexing later finds it. Fix
-                     * this. Related to
-                     * https://redmine.hmdc.harvard.edu/issues/3809 ?
-                     */
-                    study = commandEngine.submit(cmd);
-                } catch (CommandException ex) {
-                    throw returnEarly("couldn't update dataset");
-                } catch (EJBException ex) {
-                    Throwable cause = ex;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(ex.getLocalizedMessage());
-                    while (cause.getCause() != null) {
-                        cause = cause.getCause();
-                        sb.append(cause + " ");
-                        if (cause instanceof ConstraintViolationException) {
-                            ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                            for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                        .append(violation.getPropertyPath()).append(" at ")
-                                        .append(violation.getLeafBean()).append(" - ")
-                                        .append(violation.getMessage());
-                            }
-                        }
-                    }
-                    throw returnEarly("EJBException: " + sb.toString());
-                }
-
-            }
-
-            /**
-             * @todo remove this comment after confirming that the upstream jar
-             * now has our bugfix
-             */
-            // the first character of the filename is truncated with the official jar
-            // so we use include the bug fix at https://github.com/IQSS/swordv2-java-server-library/commit/aeaef83
-            // and use this jar: https://build.hmdc.harvard.edu:8443/job/swordv2-java-server-library-iqss/2/
             String uploadedZipFilename = deposit.getFilename();
             ZipInputStream ziStream = new ZipInputStream(deposit.getInputStream());
             ZipEntry zEntry;
-            FileOutputStream tempOutStream = null;
-//                List<StudyFileEditBean> fbList = new ArrayList<StudyFileEditBean>();
 
+            DatasetVersion editVersion = dataset.getEditVersion();
+            List<DataFile> newFiles = new ArrayList<>();
             try {
                 // copied from createStudyFilesFromZip in AddFilesPage
                 while ((zEntry = ziStream.getNextEntry()) != null) {
@@ -369,24 +224,25 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     // simply skip them:
                     if (!zEntry.isDirectory()) {
 
-                        String fileEntryName = zEntry.getName();
-                        logger.fine("file found: " + fileEntryName);
+                        String finalFileName = "UNKNOWN";
+                        if (zEntry.getName() != null) {
+                            String zentryFilename = zEntry.getName();
+                            int ind = zentryFilename.lastIndexOf('/');
 
-                        String dirName = null;
-                        String finalFileName = null;
-
-                        int ind = fileEntryName.lastIndexOf('/');
-
-                        if (ind > -1) {
-                            finalFileName = fileEntryName.substring(ind + 1);
-                            if (ind > 0) {
-                                dirName = fileEntryName.substring(0, ind);
-                                dirName = dirName.replace('/', '-');
+                            String dirName = "";
+                            if (ind > -1) {
+                                finalFileName = zentryFilename.substring(ind + 1);
+                                if (ind > 0) {
+                                    dirName = zentryFilename.substring(0, ind);
+                                    dirName = dirName.replace('/', '-');
+                                }
+                            } else {
+                                finalFileName = zentryFilename;
                             }
-                        } else {
-                            finalFileName = fileEntryName;
+
                         }
 
+                        // skip junk files
                         if (".DS_Store".equals(finalFileName)) {
                             continue;
                         }
@@ -396,91 +252,83 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             continue;
                         }
 
-                        File tempUploadedFile = new File(importDir, finalFileName);
-                        tempOutStream = new FileOutputStream(tempUploadedFile);
-
-                        byte[] dataBuffer = new byte[8192];
-                        int i = 0;
-
-                        while ((i = ziStream.read(dataBuffer)) > 0) {
-                            tempOutStream.write(dataBuffer, 0, i);
-                            tempOutStream.flush();
-                        }
-
-                        tempOutStream.close();
-
+                        /**
+                         * @todo confirm that this DVN 3.x zero-length file
+                         * check that was put in because of
+                         * https://redmine.hmdc.harvard.edu/issues/3273 is done
+                         * in the back end, if it's still important in 4.0.
+                         */
                         // We now have the unzipped file saved in the upload directory;
                         // zero-length dta files (for example) are skipped during zip
                         // upload in the GUI, so we'll skip them here as well
-                        if (tempUploadedFile.length() != 0) {
-
-                            if (true) {
-//                                tempUploadedFile;
-//                                UploadedFile uFile = tempUploadedFile;
-//                                DataFile dataFile = new DataFile();
-//                                throw new SwordError("let's create a file");
-                            }
-//                                StudyFileEditBean tempFileBean = new StudyFileEditBean(tempUploadedFile, studyService.generateFileSystemNameSequence(), study);
-//                                tempFileBean.setSizeFormatted(tempUploadedFile.length());
-                            String finalFileNameAfterReplace = finalFileName;
-//                                if (tempFileBean.getStudyFile() instanceof TabularDataFile) {
-                            // predict what the tabular file name will be
-//                                    finalFileNameAfterReplace = FileUtil.replaceExtension(finalFileName);
-//                                }
-
-//                                validateFileName(exisitingFilenames, finalFileNameAfterReplace, study);
-                            // And, if this file was in a legit (non-null) directory, 
-                            // we'll use its name as the file category: 
-                            if (dirName != null) {
-//                                    tempFileBean.getFileMetadata().setCategory(dirName);
-                            }
-
-//                                fbList.add(tempFileBean);
-                        }
+//                        if (tempUploadedFile.length() != 0) {
+                        /**
+                         * @todo set the category (or categories) for files once
+                         * we can: https://redmine.hmdc.harvard.edu/issues/3717
+                         */
+                        // And, if this file was in a legit (non-null) directory, 
+                        // we'll use its name as the file category: 
+//                        tempFileBean.getFileMetadata().setCategory(dirName);
+                        String guessContentTypeForMe = null;
+                        DataFile dFile = ingestService.createDataFile(editVersion, ziStream, finalFileName, guessContentTypeForMe);
+                        newFiles.add(dFile);
                     } else {
                         logger.fine("directory found: " + zEntry.getName());
                     }
                 }
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with file: " + uploadedZipFilename);
-            } finally {
-                /**
-                 * @todo shouldn't we delete this uploadDir? Commented out in
-                 * DVN 3.x
-                 */
-//                    if (!uploadDir.delete()) {
-//                        logger.fine("Unable to delete " + uploadDir.getAbsolutePath());
-//                    }
-            }
-//                if (fbList.size() > 0) {
-//                    StudyFileServiceLocal studyFileService;
-//                    try {
-//                        studyFileService = (StudyFileServiceLocal) ctx.lookup("java:comp/env/studyFileService");
-//                    } catch (NamingException ex) {
-//                        logger.info("problem looking up studyFileService");
-//                        throw new SwordServerException("problem looking up studyFileService");
-//                    }
-            try {
-//                        studyFileService.addFiles(study.getLatestVersion(), fbList, vdcUser);
             } catch (EJBException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to study: " + ex.getMessage());
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
+
+            if (newFiles.isEmpty()) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with zip file '" + uploadedZipFilename + "'. Number of files unzipped: " + newFiles.size());
+            }
+
+            ingestService.addFiles(editVersion, newFiles);
+
+            Command<Dataset> cmd;
+            cmd = new UpdateDatasetCommand(dataset, vdcUser);
+            try {
+                dataset = commandEngine.submit(cmd);
+            } catch (CommandException ex) {
+                throw returnEarly("couldn't update dataset");
+            } catch (EJBException ex) {
+                Throwable cause = ex;
+                StringBuilder sb = new StringBuilder();
+                sb.append(ex.getLocalizedMessage());
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    sb.append(cause + " ");
+                    if (cause instanceof ConstraintViolationException) {
+                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
+                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
+                            sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                    .append(violation.getPropertyPath()).append(" at ")
+                                    .append(violation.getLeafBean()).append(" - ")
+                                    .append(violation.getMessage());
+                        }
+                    }
+                }
+                throw returnEarly("EJBException: " + sb.toString());
+            }
+
+            ingestService.startIngestJobs(dataset);
+
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, study);
+            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
             return depositReceipt;
         } else {
-//                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with zip file '" + uploadedZipFilename + "'. Number of files unzipped: " + fbList.size());
+            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
         }
-//            } else {
-//                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify study with global ID " + study.getGlobalId());
-        return new DepositReceipt(); // added just to get this to compile 2014-05-14
     }
-//        } else {
-//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
-//        }
-//    }
 
+    /**
+     * @todo This validation was in DVN 3.x and should go into the 4.0 ingest
+     * service
+     */
     // copied from AddFilesPage
 //    private void validateFileName(List<String> existingFilenames, String fileName, Study study) throws SwordError {
 //        if (fileName.contains("\\")
@@ -505,6 +353,5 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
         StackTraceElement[] emptyStackTrace = new StackTraceElement[0];
         swordError.setStackTrace(emptyStackTrace);
         return swordError;
-
     }
 }

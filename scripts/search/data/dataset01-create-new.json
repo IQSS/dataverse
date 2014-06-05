@@ -1,0 +1,130 @@
+{
+  "authority": "10.5072/FK2",
+  "identifier": "17",
+  "persistentUrl": "http://dx.doi.org/10.5072/FK2/17",
+  "protocol": "doi",
+  "initialVersion": {
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Rings of Trees and Other Observations",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Tree, Tony",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorAffiliation": {
+                  "value": "Trees Inc.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              "tony@trees.com"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "distributorContact"
+          },
+          {
+            "value": "Trees have rings. Trees can be tall.",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "trees",
+              "rings",
+              "tall"
+            ],
+            "typeClass": "primitive",
+            "multiple": true,
+            "typeName": "keyword"
+          },
+          {
+            "value": [
+              "Medicine, Health & Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          },
+          {
+            "value": "Many notes have been taken about trees over the years.",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "notesText"
+          },
+          {
+            "value": [
+              {
+                "otherIdAgency": {
+                  "value": "NSF",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "otherIdAgency"
+                },
+                "otherIdValue": {
+                  "value": "NSF1234",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "otherIdValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "otherId"
+          },
+          {
+            "value": [
+              {
+                "contributorType": {
+                  "value": "Data Collector",
+                  "typeClass": "controlledVocabulary",
+                  "multiple": false,
+                  "typeName": "contributorType"
+                },
+                "contributorName": {
+                  "value": "Edward Trees Jr.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "contributorName"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "contributor"
+          }
+        ],
+        "displayName": "Citation Metadata"
+      }
+    },
+    "createTime": "2014-05-20 11:52:55 -04",
+    "UNF": "UNF",
+    "id": 1,
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "DRAFT",
+    "distributionDate": "Distribution Date",
+    "productionDate": "Production Date"
+  }
+}

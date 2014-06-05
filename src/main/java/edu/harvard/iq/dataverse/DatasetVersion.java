@@ -61,7 +61,11 @@ public class DatasetVersion implements Serializable {
 
     @Version
     private Long version;
-
+    
+    /**
+     * This is JPA's optimistic locking mechanism, and has no semantic meaning in the DV object model.
+     * @return the object db version
+     */
     public Long getVersion() {
         return this.version;
     }
@@ -195,6 +199,21 @@ public class DatasetVersion implements Serializable {
 
     public String getVersionNote() {
         return versionNote;
+    }
+    
+    public DatasetVersionDifference getDefaultVersionDifference(){
+        int count = 0;
+        int size = this.getDataset().getVersions().size();
+        for (DatasetVersion dsv: this.getDataset().getVersions()){
+            if (this.equals(dsv)){
+                if ((count + 1) < size){
+                    DatasetVersionDifference dvd = new DatasetVersionDifference(this, this.getDataset().getVersions().get(count+1));                   
+                    return dvd;
+                }
+            }
+            count++;
+        }
+        return null;
     }
 
     public void setVersionNote(String note) {
@@ -342,7 +361,7 @@ public class DatasetVersion implements Serializable {
         }
         return retVal;
     }
-
+    
     public String getProductionDate() {
         //todo get "Production Date" from datasetfieldvalue table
         return "Production Date";
@@ -614,6 +633,10 @@ public class DatasetVersion implements Serializable {
          * See also to v or not to v · Issue #1 · mojombo/semver -
          * https://github.com/mojombo/semver/issues/1#issuecomment-2605236
          */
-        return versionNumber + "." + minorVersionNumber;
+        if (this.isReleased()){
+            return versionNumber + "." + minorVersionNumber;
+        } else {
+            return "DRAFT";
+        }        
     }
 }

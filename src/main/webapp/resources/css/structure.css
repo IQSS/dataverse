@@ -27,6 +27,8 @@ body .ui-widget {font-size: inherit;}
 
 .panelgridLayoutTable, .panelgridFormTable {width:100%;}
 .panelgridFormTable > tbody > tr.ui-widget-content > td:first-child {width:20%;}
+.panelgridFormTable.ui-panelgrid td table.ui-picklist td {border: 0; padding:0;}
+.panelgridFormTable.ui-panelgrid td table.ui-picklist td ul.ui-widget-content.ui-corner-all {border:1px solid #DDDDDD; border-radius: 4px;}
 
 .panelLayoutButtonBlock button {margin-right:2em;}
 
@@ -85,8 +87,8 @@ form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.
 
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal div.form-group {vertical-align: middle;}
 
-div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box {margin: 4px 10px;}
-div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
+div.ui-chkbox.metadata-blocks-default div.ui-chkbox-box, div.ui-chkbox.facet-category-default div.ui-chkbox-box {margin: 4px 10px;}
+div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label, div.ui-chkbox.facet-category-default span.ui-chkbox-label {margin: 1px 10px 4px 10px;}
 
 table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
 table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
@@ -150,7 +152,6 @@ div[id$='facetCategoryList'] div.ui-datalist, div[id$='facetCategoryList'] div.u
         hyphens: auto;}
 a.facetLink {text-decoration:none;}
 a.facetLink.facetSelected, a.facetTypeLink.facetSelected {font-weight:bold;}
-.facetSelected.resultsTopBlock {background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
 a.facetLink.facetSelected span.glyphicon-remove {vertical-align:text-top; margin-top:1px; margin-left:.25em;}
 
 table.ui-panelgrid.facetsMoreLess {width:100%;}
@@ -159,7 +160,8 @@ table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 
 #dv-maincolumn div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;}
-#dv-maincolumn a.facetLink.facetSelected.resultsTopBlock {margin-right:1em;}
+#resultsFacetsTopBlock {margin-bottom:.5em;}
+#resultsFacetsTopBlock a.facetLink.facetSelected {display:inline-block; margin-bottom:.5em; margin-right:1em; background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
 
 #dv-maincolumn div.results-sort-pagination div.pagination {margin-left:1em;}
 #dv-maincolumn div.results-sort-pagination.results-bottom .pagination {margin-top:0; margin-bottom:0;}
@@ -216,6 +218,24 @@ div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: 
 
 div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}
 div[id$="versionsTable"] .ui-datatable-tablewrapper thead {display:none;}
+
+div[id$='versionsTab'] .ui-state-highlight .ui-icon {background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");}
+div[id$='versionsTab'] .ui-state-highlight .ui-commandlink {color:#FFFFFF;}
+
+div[id$='detailsBlocks'] {min-width:60%; max-height:60%;}
+div[id$='detailsBlocks'] .ui-dialog-content {overflow-y:scroll;}
+div[id$='detailsBlocks'] div.ui-dialog-buttonpane {border-top:0;}
+
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > thead {display:none;}
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody {border:0;}
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr:first-child, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr:first-child > td {border-top-width:0;}
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr:last-child, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr:last-child > td {border-bottom-width:0;}
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr > td:first-child {border-left-width:0;}
+div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr, div.dvnDifferanceTable > div.ui-datatable-tablewrapper > table > tbody > tr > td:last-child {border-right-width:0;}
+div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {width:30%;}
+div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
+
+div.dvnDifferanceTable .diffDetailBlock {display:block;}
 
 .dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 

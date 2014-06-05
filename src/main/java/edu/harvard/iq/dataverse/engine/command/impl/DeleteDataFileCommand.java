@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -30,8 +30,8 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
     private final DataFile doomed;
 
-    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser, Dataverse anAffectedDataverse) {
-        super(aUser, anAffectedDataverse);
+    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser) {
+        super(aUser, doomed);
         this.doomed = doomed;
     }
 
@@ -90,7 +90,34 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             }
 
             // Finally, delete the file from the DB.
-            ctxt.em().remove(doomed);
+            /**
+             * added merge to avoid this: java.lang.IllegalArgumentException:
+             * Entity must be managed to call remove: [DataFile id:42
+             * name:null], try merging the detached and try the remove again
+             */
+            DataFile doomedAndMerged = ctxt.em().merge(doomed);
+            ctxt.em().remove(doomedAndMerged);
+            /**
+             * @todo consider adding an em.flush here (despite the performance
+             * impact) if you need to operate on the dataset below. Without the
+             * flush, the dataset still thinks it has the file that was just
+             * deleted.
+             */
+             // ctxt.em().flush();
+
+            /**
+             * We *could* re-index the entire dataset but it's more efficient to
+             * target individual files for deletion, which should always be
+             * drafts.
+             *
+             * See also https://redmine.hmdc.harvard.edu/issues/3786
+             */
+            String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+            /**
+             * @todo check indexing result for success or failure. Really, we
+             * need an indexing queuing system:
+             * https://redmine.hmdc.harvard.edu/issues/3643
+             */
         }
     }
 

@@ -4,12 +4,16 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import java.io.File;
 import java.util.List;
@@ -39,6 +43,8 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @EJB
     protected EjbDataverseEngine engineSvc;
+    @EJB
+    DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
     @EJB
@@ -294,19 +300,42 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     if (study != null) {
                         Dataverse dvThatOwnsStudy = study.getOwner();
-                        if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                            DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
+                        if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
+                        }
+                        DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
+                        if (study.isReleased()) {
                             if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 logger.info("destroying working copy version of study " + study.getGlobalId());
                                 /**
                                  * @todo in DVN 3.x we had a convenient
-                                 * destroyWorkingCopyVersion method but the
-                                 * DeleteDatasetCommand is pretty scary... what
-                                 * if a released study has a new draft version?
-                                 * What we need is a
-                                 * DeleteDatasetVersionCommand, I suppose...
+                                 * destroyWorkingCopyVersion method. We have
+                                 * DeleteDatasetCommand but we need
+                                 * DeleteDatasetEditVersionCommand
                                  */
-//                                studyService.destroyWorkingCopyVersion(study.getLatestVersion().getId());
+                                // studyService.destroyWorkingCopyVersion(study.getLatestVersion().getId());
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "This dataset has been published and subsequently a draft has been created. You are trying to delete that draft but this is not yet supported: https://redmine.hmdc.harvard.edu/issues/4032");
+                            } else if (studyState.equals(DatasetVersion.VersionState.RELEASED)) {
+//                                logger.fine("deaccessioning latest version of study " + study.getGlobalId());
+//                                studyService.deaccessionStudy(study.getLatestVersion());
+                                /**
+                                 * @todo revisit this when deaccessioning is
+                                 * available in
+                                 * https://redmine.hmdc.harvard.edu/issues/4031
+                                 */
+                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "Deaccessioning a dataset is not yet supported: https://redmine.hmdc.harvard.edu/issues/4031");
+                            } else if (studyState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of dataset " + study.getGlobalId() + " has already been deaccessioned.");
+                            } else if (studyState.equals(DatasetVersion.VersionState.ARCHIVED)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
+                            } else if (studyState.equals(DatasetVersion.VersionState.IN_REVIEW)) {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " is in review and can not be deleted or deaccessioned.");
+                            } else {
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for study " + study.getGlobalId() + " in state " + studyState);
+                            }
+                        } else {
+                            // dataset has never been published, this is just a sanity check (should always be draft)
+                            if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 try {
                                     engineSvc.submit(new DeleteDatasetCommand(study, vdcUser));
                                     /**
@@ -320,23 +349,10 @@ public class ContainerManagerImpl implements ContainerManager {
                                 } catch (CommandException ex) {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset: " + ex.getMessage());
                                 }
-                                /**
-                                 * @todo think about how to handle non-drafts
-                                 */
-                            } else if (studyState.equals(DatasetVersion.VersionState.RELEASED)) {
-//                                logger.fine("deaccessioning latest version of study " + study.getGlobalId());
-//                                studyService.deaccessionStudy(study.getLatestVersion());
-                            } else if (studyState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has already been deaccessioned.");
-                            } else if (studyState.equals(DatasetVersion.VersionState.ARCHIVED)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " has been archived and can not be deleted or deaccessioned.");
-                            } else if (studyState.equals(DatasetVersion.VersionState.IN_REVIEW)) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Lastest version of study " + study.getGlobalId() + " is in review and can not be deleted or deaccessioned.");
                             } else {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Operation not valid for study " + study.getGlobalId() + " in state " + studyState);
+                                // we should never get here. throw an error explaining why
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataset is in illegal state (not released yet not in draft)");
                             }
-                        } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(404);
@@ -356,7 +372,7 @@ public class ContainerManagerImpl implements ContainerManager {
     public DepositReceipt useHeaders(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         logger.fine("uri was " + uri);
         logger.fine("isInProgress:" + deposit.isInProgress());
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
@@ -364,15 +380,15 @@ public class ContainerManagerImpl implements ContainerManager {
             if ("study".equals(targetType)) {
                 String globalId = urlManager.getTargetIdentifier();
                 if (globalId != null) {
-                    Dataset studyToRelease = null;
+                    Dataset dataset = null;
                     try {
-//                        studyToRelease = studyService.getStudyByGlobalId(globalId);
+                        dataset = datasetService.findByGlobalId(globalId);
                     } catch (EJBException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                     }
-                    if (studyToRelease != null) {
-                        Dataverse dvThatOwnsStudy = studyToRelease.getOwner();
-                        if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
+                    if (dataset != null) {
+                        Dataverse dvThatOwnsStudy = dataset.getOwner();
+                        if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsStudy)) {
                             if (!deposit.isInProgress()) {
                                 /**
                                  * We are considering a draft version of a study
@@ -393,16 +409,29 @@ public class ContainerManagerImpl implements ContainerManager {
                                  * that the deposit is complete." --
                                  * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#continueddeposit_incomplete
                                  */
-                                if (!studyToRelease.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
-                                    /**
-                                     * @todo DVN 3.x had
-                                     * studyService.setReleased... what should
-                                     * we do in 4.0?
-                                     */
-//                                    studyService.setReleased(studyToRelease.getId());
+                                if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
+                                    Command<Dataset> cmd;
+                                    try {
+                                        /**
+                                         * @todo We *could* attempt a minor
+                                         * version bump first and if it fails go
+                                         * ahead and re-try with a major version
+                                         * bump. For simplicity, we decided to
+                                         * always do a major version bump but
+                                         * the @todo is to think about this a
+                                         * bit more before we release 4.0.
+                                         */
+                                        boolean attemptMinorVersionBump = false;
+                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
+                                        dataset = engineSvc.submit(cmd);
+                                    } catch (CommandException ex) {
+                                        String msg = "Unable to publish dataset: " + ex;
+                                        logger.severe(msg + ": " + ex.getMessage());
+                                        throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
+                                    }
                                     ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                                    DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, studyToRelease);
+                                    DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
                                     return depositReceipt;
                                 } else {
                                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Latest version of dataset " + globalId + " has already been released.");
@@ -411,7 +440,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to release a study.");
                             }
                         } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study using globalId " + globalId);
@@ -421,73 +450,35 @@ public class ContainerManagerImpl implements ContainerManager {
                 }
             } else if ("dataverse".equals(targetType)) {
                 /**
-                 * @todo support releasing of dataverses via SWORD
+                 * @todo confirm we want to allow dataverses to be released via
+                 * SWORD. If so, document the curl example.
                  */
-//                String dvAlias = urlManager.getTargetIdentifier();
-//                if (dvAlias != null) {
-//                    VDC dvToRelease = vdcService.findByAlias(dvAlias);
-//                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvToRelease)) {
-//                        if (dvToRelease != null) {
-//                            String optionalPort = "";
-//                            URI u;
-//                            try {
-//                                u = new URI(uri);
-//                                int port = u.getPort();
-//                                if (port != -1) {
-//                                    // https often runs on port 8181 in dev
-//                                    optionalPort = ":" + port;
-//                                }
-//                            } catch (URISyntaxException ex) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unable to part URL");
-//                            }
-//                            String hostName = System.getProperty("dvn.inetAddress");
-//                            String dvHomePage = "https://" + hostName + optionalPort + "/dvn/dv/" + dvToRelease.getAlias();
-//                            if (deposit.isInProgress()) {
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Changing a dataverse to 'not released' is not supported. Please change to 'not released' from the web interface: " + dvHomePage);
-//                            } else {
-//                                try {
-//                                    getVDCRequestBean().setVdcNetwork(dvToRelease.getVdcNetwork());
-//                                } catch (ContextNotActiveException ex) {
-//                                    /**
-//                                     * todo: observe same rules about dataverse
-//                                     * release via web interface such as a study
-//                                     * or a collection must be release:
-//                                     * https://redmine.hmdc.harvard.edu/issues/3225
-//                                     */
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Releasing a dataverse is not yet supported. Please release from the web interface: " + dvHomePage);
-//                                }
-//                                OptionsPage optionsPage = new OptionsPage();
-//                                if (optionsPage.isReleasable()) {
-//                                    if (dvToRelease.isRestricted()) {
-//                                        logger.fine("releasing dataverse via SWORD: " + dvAlias);
-//                                        /**
-//                                         * @todo: tweet and send email about
-//                                         * release
-//                                         */
-//                                        dvToRelease.setReleaseDate(DateUtil.getTimestamp());
-//                                        dvToRelease.setRestricted(false);
-//                                        vdcService.edit(dvToRelease);
-                DepositReceipt fakeDepositReceipt = new DepositReceipt();
-//                                        IRI fakeIri = new IRI("fakeIriDvWasJustReleased");
-//                                        fakeDepositReceipt.setEditIRI(fakeIri);
-//                                        fakeDepositReceipt.setVerboseDescription("Dataverse alias: " + dvAlias);
-                return fakeDepositReceipt;
-//                                    } else {
-//                                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Dataverse has already been released: " + dvAlias);
-//                                    }
-//                                } else {
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "dataverse is not releaseable");
-//                                }
-//                            }
-//                        } else {
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse based on alias in URL: " + uri);
-//                        }
-//                    } else {
-//                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvAlias);
-//                    }
-//                } else {
-//                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find dataverse alias in URL: " + uri);
-//                }
+                String dvAlias = urlManager.getTargetIdentifier();
+                if (dvAlias != null) {
+                    Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
+                    if (dvToRelease != null) {
+                        if (!swordAuth.hasAccessToModifyDataverse(dataverseUser, dvToRelease)) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvAlias);
+                        }
+                        if (deposit.isInProgress()) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
+                        }
+                        PublishDataverseCommand cmd = new PublishDataverseCommand(dataverseUser, dvToRelease);
+                        try {
+                            engineSvc.submit(cmd);
+                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
+                            DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
+                            return depositReceipt;
+                        } catch (CommandException ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't publish dataverse " + dvAlias + ": " + ex);
+                        }
+                    } else {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse based on alias in URL: " + uri);
+                    }
+                } else {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find dataverse alias in URL: " + uri);
+                }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unsupported target type (" + targetType + ") in URL:" + uri);
             }

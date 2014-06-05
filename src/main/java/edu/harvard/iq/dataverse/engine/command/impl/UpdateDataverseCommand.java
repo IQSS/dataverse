@@ -27,20 +27,21 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 		this.facetList = new ArrayList<>(facetList);
 	}
 	
-	
-	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
 		
 		Dataverse result = ctxt.dataverses().save(editedDv);
 		
-		ctxt.facets().deleteFacetsFor(result);
-		int i=0;
-		for ( DatasetFieldType df : facetList ) {
-			ctxt.facets().create(i++, df.getId(), result.getId());
-		}
+        if ( facetList != null ) {
+            ctxt.facets().deleteFacetsFor(result);
+            int i=0;
+            for ( DatasetFieldType df : facetList ) {
+                ctxt.facets().create(i++, df.getId(), result.getId());
+            }
+        }
 		ctxt.index().indexDataverse(result);
-		return result;
+		
+        return result;
 	}
 	
 }
