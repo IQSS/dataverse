@@ -1,11 +1,15 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
 use Getopt::Long;
 use Socket;
 use File::Copy;
 
 my (%opts) = ();
 my ($rez) = GetOptions( \%opts, "pg_only!" );
+
+my $pg_only;
 
 my $postgresonly = 0;
 
@@ -97,7 +101,7 @@ my %POSTGRES_DRIVERS = (
 
 # user -- must be root:
 
-$user_real = `who am i`;
+my $user_real = `who am i`;
 chop $user_real;
 $user_real =~ s/ .*$//;
 
@@ -130,6 +134,7 @@ else {
 
 my @uname_tokens = split( " ", $uname_out );
 
+my $WORKING_OS;
 if ( $uname_tokens[0] eq "Darwin" ) {
     print "\nThis appears to be a MacOS X system; good.\n";
     # TODO: check the OS version
@@ -180,11 +185,11 @@ print "Please enter the following configuration values:\n";
 print "(hit [RETURN] to accept the default value)\n";
 print "\n";
 
-for $ENTRY (@CONFIG_VARIABLES) {
+for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": ";
     print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
 
-    $user_entry = <>;
+    my $user_entry = <>;
     chop $user_entry;
 
     if ( $user_entry ne "" ) {
@@ -198,7 +203,7 @@ for $ENTRY (@CONFIG_VARIABLES) {
 
 print "\nOK, please confirm what you've entered:\n\n";
 
-for $ENTRY (@CONFIG_VARIABLES) {
+for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
 }
 
@@ -234,7 +239,7 @@ unless ($postgresonly) {
     }
 
     if ($mail_server_status) {
-        $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
+        my $mail_server_paddr = sockaddr_in( 25, $mail_server_iaddr );
         $mail_server_proto = getprotobyname('tcp');
 
         unless ( socket( SOCK, PF_INET, SOCK_STREAM, $mail_server_proto )
@@ -279,8 +284,8 @@ chomp( $cwd = `pwd` );
 
 # 2b. CHECK IF THE SQL TEMPLATE IS IN PLACE AND CREATE THE SQL FILE
 
-$SQL_REFERENCE_DATA     = "reference_data_filtered.sql";
-$SQL_REFERENCE_TEMPLATE = "../database/reference_data.sql";
+my $SQL_REFERENCE_DATA     = "reference_data_filtered.sql";
+my $SQL_REFERENCE_TEMPLATE = "../database/reference_data.sql";
 
 unless ( -f $SQL_REFERENCE_TEMPLATE ) {
     $SQL_REFERENCE_TEMPLATE = "reference_data.sql";
@@ -307,7 +312,11 @@ close SQLDATAOUT;
 # 3. CHECK POSTGRES AVAILABILITY:
 
 my $pg_local_connection = 0;
+my $psql_exec;
+my $pg_major_version = 0;
+my $pg_minor_version = 0;
 
+my $POSTGRES_SYS_UID;
 if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
     $pg_local_connection = 1;
 
@@ -315,7 +324,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     print "\nChecking system user \"postgres\"... ";
 
-    $POSTGRES_SYS_NAME = "postgres";
+    my $POSTGRES_SYS_NAME = "postgres";
     $POSTGRES_SYS_UID  = ( getpwnam("postgres") )[2];
 
     if ( $POSTGRES_SYS_UID == undef ) {
@@ -330,30 +339,27 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 3b. LOCATE THE EXECUTABLE:
 
-    $sys_path = $ENV{'PATH'};
-    @sys_path_dirs = split( ":", $sys_path );
+    my $sys_path = $ENV{'PATH'};
+    my @sys_path_dirs = split( ":", $sys_path );
 
     $psql_exec = "";
 
-    for $sys_path_dir (@sys_path_dirs) {
+    for my $sys_path_dir (@sys_path_dirs) {
         if ( -x $sys_path_dir . "/psql" ) {
             $psql_exec = $sys_path_dir;
             last;
         }
     }
 
-    $pg_major_version = 0;
-    $pg_minor_version = 0;
-
-    $psql_major_version = 0;
-    $psql_minor_version = 0;
+    my $psql_major_version = 0;
+    my $psql_minor_version = 0;
 
     # 3c. IF PSQL WAS FOUND IN THE PATH, CHECK ITS VERSION:
 
     unless ( $psql_exec eq "" ) {
         open( PSQLOUT, $psql_exec . "/psql --version|" );
 
-        $psql_version_line = <PSQLOUT>;
+        my $psql_version_line = <PSQLOUT>;
         chop $psql_version_line;
         close PSQLOUT;
 
@@ -480,9 +486,9 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 4c. CHECK IF THIS DB ALREADY EXISTS:
 
-    $psql_command_dbcheck =
+    my $psql_command_dbcheck =
       $psql_exec . "/psql -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
-    if ( ( $exitcode = system($psql_command_dbcheck) ) == 0 ) {
+    if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) {
         $> = 0;
         $< = 0;
 
@@ -505,9 +511,9 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     # 4d. CHECK IF THIS USER ALREADY EXISTS:
 
-    $psql_command_rolecheck =
+    my $psql_command_rolecheck =
       $psql_exec . "/psql -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
-    if ( ( $exitcode = system($psql_command_rolecheck) ) == 0 ) {
+    if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) {
         print "User (role) . " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
         print "Proceeding.";
     }
@@ -519,7 +525,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
         open TMPCMD, ">/tmp/pgcmd.$$.tmp";
 
         # with md5-encrypted password:
-        $pg_password_md5 = &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
+        my $pg_password_md5 = &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
         my $sql_command =
             "CREATE ROLE \""
           . $CONFIG_DEFAULTS{'POSTGRES_USER'}
@@ -547,14 +553,14 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     print "\nCreating Postgres database:\n";
 
-    $psql_command =
+    my $psql_command =
         $psql_exec
       . "/createdb "
       . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
       . " --owner="
       . $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
-    unless ( ( $exitcode = system("$psql_command") ) == 0 ) {
+    unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
         print STDERR "Could not create Postgres database for the DVN app!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
@@ -619,8 +625,8 @@ else {
 
     # Find out what Postgres version is running remotely:
 
-    $pg_major_version = 9;
-    $pg_minor_version = 1;
+    my $pg_major_version = 9;
+    my $pg_minor_version = 1;
 
     print "What version of PostgresQL is installed on the remote server?\n ["
       . $pg_major_version . "."
@@ -688,13 +694,13 @@ print "OK!\n";
 
 # 5b. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
 
-$gf_heap_default = "2048m";
-$sys_mem_total   = 0;
+my $gf_heap_default = "2048m";
+my $sys_mem_total   = 0;
 
 if ( -e "/proc/meminfo" && open MEMINFO, "/proc/meminfo" ) {
     # Linux
 
-    while ( $mline = <MEMINFO> ) {
+    while ( my $mline = <MEMINFO> ) {
         if ( $mline =~ /MemTotal:[ \t]*([0-9]*) kB/ ) {
             $sys_mem_total = $1;
         }
@@ -778,6 +784,7 @@ print "\n";
 
 # start domain, if not running:
 
+my $DOMAIN; # FIXME: what is this supposed to be? It was never set.
 my $DOMAIN_DOWN =
   `$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
 print STDERR $DOMAIN_DOWN . "\n";
@@ -845,13 +852,13 @@ print "done!\n";
 
 unless (
     (
-        $exit_code =
+        my $exit_code =
         system( "cp -f " . $WARFILE_LOCATION . " " . $glassfish_dir . "/glassfish/domains/domain1/autodeploy" )
     ) == 0
   )
 {
     print STDERR "Could copy the application into the auto-deploy directory!\n";
-    print STDERR "(exit code: " . $exitcode . ")\n";
+    print STDERR "(exit code: " . $exit_code . ")\n";
     exit 1;
 }
 
@@ -872,9 +879,9 @@ if ($pg_local_connection) {
     chdir("/tmp");
     $<            = $POSTGRES_SYS_UID;
     $>            = $POSTGRES_SYS_UID;
-    $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
+    my $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
-    unless ( ( $exitcode = system("$psql_command") ) == 0 ) {
+    unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
         print STDERR "Could not populate Postgres database for the DVN app!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
@@ -924,11 +931,12 @@ unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-
     exit 1;
 }
 
-for $script ( "datasetfields.sh", "setup-users.sh", "setup-dvs.sh" ) {
+for my $script ( "datasetfields.sh", "setup-users.sh", "setup-dvs.sh" ) {
     print "Executing script " . $script . "...\n";
 
-    $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
+    my $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 
+    my $run_script;
     if ( $my_hostname ne "localhost" ) {
         system( "sed 's/localhost:8080/$my_hostname/g' < " . $script . " > tmpscript.sh; chmod +x tmpscript.sh" );
         $run_script = "tmpscript.sh";
@@ -937,7 +945,7 @@ for $script ( "datasetfields.sh", "setup-users.sh", "setup-dvs.sh" ) {
         $run_script = $script;
     }
 
-    unless ( $exit_code = system( "./" . $run_script ) == 0 ) {
+    unless ( my $exit_code = system( "./" . $run_script ) == 0 ) {
         print "\nERROR executing script " . $script . "!\n";
         exit 1;
     }
@@ -1037,15 +1045,16 @@ sub setup_glassfish {
 }
 
 sub create_pg_hash {
-    local $pg_username = shift @_;
-    local $pg_password = shift @_;
+    my $pg_username = shift @_;
+    my $pg_password = shift @_;
 
-    $encode_line = $pg_password . $pg_username;
+    my $encode_line = $pg_password . $pg_username;
 
     # for Redhat:
 
     ##print STDERR "executing /bin/echo -n $encode_line | md5sum\n";
 
+    my $hash;
     if ( $WORKING_OS eq "MacOSX" ) {
         $hash = `/bin/echo -n $encode_line | md5`;
     }
