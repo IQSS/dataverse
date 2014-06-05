@@ -54,7 +54,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
            dsfItSort.next().setValueDisplayOrder();
         }
         Timestamp updateTime = new Timestamp(new Date().getTime());
-        
+        theDataset.getEditVersion().setLastUpdateTime(updateTime);
         for (DataFile dataFile: theDataset.getFiles() ){
             if(dataFile.getCreateDate() == null){
                 dataFile.setCreateDate(updateTime);

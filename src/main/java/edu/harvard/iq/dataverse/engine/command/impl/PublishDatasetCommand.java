@@ -48,7 +48,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
-
+        
         if (theDataset.getReleasedVersion() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.setReleaseUser(getUser());
@@ -71,6 +71,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         Timestamp updateTime =  new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setReleaseTime(updateTime);
+        theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         
         for (DataFile dataFile: theDataset.getFiles() ){

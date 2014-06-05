@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,24 +42,24 @@ public class DatasetVersionDifference {
                 }
             }
             if (deleted && !dsfo.isEmpty()) {
-
-                    updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
-
+                updateBlockSummary(dsfo, 0, dsfo.getDatasetFieldValues().size(), 0);
                 addToSummary(dsfo, null);
             }
         }
-        for (DatasetField dsfn : newVersion.getDatasetFields()) {
+        for (DatasetField dsfn : newVersion.getDatasetFields()) {            
             boolean added = true;
-            for (DatasetField dsfo : originalVersion.getDatasetFields()) {
+            if (dsfn.getDatasetFieldType().isPrimitive()){
+                for (DatasetField dsfo : originalVersion.getDatasetFields()) {
                 if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
                     added = false;
                     break;
                 }
-            }
-            if (added && !dsfn.isEmpty()) {
+               } 
+                if (added && !dsfn.isEmpty()) {
                 updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
                 addToSummary(null, dsfn);
             }
+            }             
         }
 
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
@@ -220,7 +219,9 @@ public class DatasetVersionDifference {
                             newValue += dsfn.getDisplayValue() + ", ";
                         }
                     }
-                    if (!newValue.isEmpty() && !originalValue.isEmpty() && !originalValue.equals(newValue)) {
+                    if (originalValue.isEmpty() && !newValue.isEmpty()){
+                        totalAdded++;
+                    } else if (!newValue.isEmpty()  && !originalValue.equals(newValue)) {
                         totalChanged++;
                     }
                 }
