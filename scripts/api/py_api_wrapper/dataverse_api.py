@@ -8,14 +8,13 @@ Use Dataverse native APIs described here: https://github.com/IQSS/dataverse/tree
 Requires the python requests library:  http://docs.python-requests.org
 """
 import sys
-#import urllib 
-#import urllib2
 import json
 import requests
 from msg_util import *
 import types #import MethodType, FunctionType
 
 class SingleAPISpec:
+    """Convenience class when making API functions"""
     ATTR_NAMES = ['new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals']
     ID_VAL_IN_URL = '{{ID_VAL}}'
     
@@ -26,14 +25,29 @@ class SingleAPISpec:
         for idx, attr in enumerate(self.ATTR_NAMES):
             self.__dict__[attr] = spec_list[idx]
         
-    def get_url_path(self, id_val):
-        if self.use_id_val:
-            return self.url_path.replace(self.ID_VAL_IN_URL, '%s' % id_val)
+    #def get_url_path(self, id_val):
+    #    if self.use_id_val:
+    #        return self.url_path.replace(self.ID_VAL_IN_URL, '%s' % id_val)
             
         
 class DataverseAPILink:
     """Used to test the Dataverse API described in github:
         https://github.com/IQSS/dataverse/tree/master/scripts/api 
+    
+    Example:
+    from dataverse_api import DataverseAPILink
+    server_with_api = 'https://dvn-build.hmdc.harvard.edu'
+
+    dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
+    dat.set_return_mode_python()
+    print dat.list_users()
+    print dat.list_roles()
+    print dat.list_dataverses()
+    print dat.list_datasets()
+    print dat.view_dataverse_by_id_or_alias(5)
+    print dat.view_dataset_metadata_by_id_version(123, 57)
+    print dat.view_root_dataverse()
+    print dat.get_user_data(1)
     """
     RETURN_MODE_STR = 'RETURN_MODE_STR'
     RETURN_MODE_PYTHON = 'RETURN_MODE_PYTHON'
@@ -42,53 +56,33 @@ class DataverseAPILink:
     HTTP_DELETE = 'DELETE'
     HTTP_METHODS = [HTTP_GET, HTTP_POST, HTTP_DELETE]
     
+    # Each List corresponds to 'new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals'
+    #
+    API_SPECS = (    
+    # USERS
+       [ 'list_users', 'List Users', '/api/users', False, 0]\
+    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, False, 1]\
     
-    API_SPECS = (     [ 'list_users', 'List Users', '/api/users', False, 0]\
-                    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, False, 1]\
-                    
-                    ,  ['list_roles', 'List Roles', '/api/roles', False, 0]\
+    # ROLES
+    ,  ['list_roles', 'List Roles', '/api/roles', False, 0]\
 
-                    # Datasets
-                    ,  ['list_datasets', 'List Datasets', '/api/datasets', True, 0]\
-                    ,  ['view_dataset_by_id', 'View Dataset By ID' \
-                        , '/api/datasets/%s' % (SingleAPISpec.ID_VAL_IN_URL,), True, 1]\
-                    #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
-                    # Dataverses
-                    ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, 0]\
-                    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.ID_VAL_IN_URL,), False, 1]\
-                    ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, 0]\
-                    
-                    # Metadata
-                    ,  ['list_metadata_blocks', 'List metadata blocks', '/api/metadatablocks', False, 0]
-                    ,  ['view_dataset_metadata_by_id_version', 'View Dataset By ID'\
-                        , '/api/datasets/%s/versions/%s/metadata' % (SingleAPISpec.ID_VAL_IN_URL, SingleAPISpec.ID_VAL_IN_URL),  True, 2]\
-                )
-    '''
-    http://dvn-build.hmdc.harvard.edu/api/datasets/123/versions/57/metadata?key=pete
+    # Datasets
+    ,  ['list_datasets', 'List Datasets', '/api/datasets', True, 0]\
+    ,  ['view_dataset_by_id', 'View Dataset By ID' \
+        , '/api/datasets/%s' % (SingleAPISpec.ID_VAL_IN_URL,), True, 1]\
+    #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
+    # Dataverses
+    ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, 0]\
+    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.ID_VAL_IN_URL,), False, 1]\
+    ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, 0]\
     
-    def get_dataset_info(self, dataset_id, dataset_version=None):
-          """List all dataverses using GET http://{{SERVER}}/api/datasets/?key={{apikey}}
-          @return: JSON, list of dataverses
-          """
-          msgt('get_dataset_info')    
-          if not self.apikey:
-              msg('Sorry!  You need an api key!')
-              return
-          url_str = self.get_server_name() + '/api/datasets/%s' % dataset_id
-          if dataset_version:
-              url_str = self.get_server_name() + '/api/datasets/%s/versions/%s/metadata' % (dataset_id, dataset_version)
-          else:
-              url_str = self.get_server_name() + '/api/datasets/%s' % (dataset_id)    
-
-          url_str = '%s?key=%s' % (url_str, self.apikey)
-
-          return self.make_api_call(url_str, self.HTTP_GET)
-                def delete_dataverse_by_id(self, id_val):        
-                       msgt('delete_dataverse_by_id: %s' % id_val)    
-                       url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
-                       #kwargs = { 'key': self.apikey }
-                       return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
-                   '''    
+    # Metadata
+    ,  ['list_metadata_blocks', 'List metadata blocks', '/api/metadatablocks', False, 0]
+    ,  ['view_dataset_metadata_by_id_version', 'View Dataset By ID'\
+        , '/api/datasets/%s/versions/%s/metadata' % (SingleAPISpec.ID_VAL_IN_URL, SingleAPISpec.ID_VAL_IN_URL),  True, 2]\
+    )
+                
+    
     def __init__(self, server_name, use_https, apikey=None):
         """
         :param  server_name: e.g. dataverse.org, dvn-build.hmdc.harvard.edu, etc.
@@ -174,7 +168,6 @@ class DataverseAPILink:
             return r.json()
         return r.text
        
- 
         
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
