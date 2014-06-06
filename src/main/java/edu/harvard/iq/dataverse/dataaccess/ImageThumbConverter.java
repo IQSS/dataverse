@@ -238,7 +238,27 @@ public class ImageThumbConverter {
         
         if (new File(imageMagickExec).exists()) {
 
-            String ImageMagick = imageMagickExec + " pdf:" + fileLocation + "[0] -resize "+ size + "x" + size + " png:" + thumbFileLocation;
+            // Based on the lessons recently learned in production: 
+            //  - use "-thumbnail" instead of "-resize";
+            //  - use "-flatten"
+            //  - use "-strip"
+            //  - (maybe?) use jpeg instead of png - ?
+            //
+            // (what we observed in production - 3.6.3, June 2014 - was that 
+            // for very large TIFF images, when processed wihout the options
+            // above, thumbnails produced were still obscenely *huge*; for ex.,
+            // for a 100MB 3000x4000 px. TIFF file, the 275 px. PNG thumbnail 
+            // produced was 5MB! - which, for a page with multiple high-res 
+            // images (Grad. School of Design dv) resulted in taking forever 
+            // to load... JPG thumbnails, similarly produced, were smaller, but 
+            // still unnecessarily large. I was never able to figure out what 
+            // was going on (full-rez color profiles still stored in the 
+            // resized version - ??), but the combination above takes care of 
+            // it and brings down the thumbnail size to under 50K, were it 
+            // belongs. :)
+            //          -- L.A. June 2014
+            
+            String ImageMagick = imageMagickExec + " pdf:" + fileLocation + "[0] -thumbnail "+ size + "x" + size + " -flatten -strip png:" + thumbFileLocation;
             int exitValue = 1;
 
             try {
