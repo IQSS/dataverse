@@ -3,6 +3,7 @@ Use Dataverse native APIs described here: https://github.com/IQSS/dataverse/tree
 
 5/8/2013 - scratch work, examining API
 6/5/2013 - Back to implementing some API work
+6/6/2013 - Move function parameters into API_SPECS, create functions on init
 
 Requires the python requests library:  http://docs.python-requests.org
 """
@@ -12,7 +13,24 @@ import sys
 import json
 import requests
 from msg_util import *
+import types #import MethodType, FunctionType
 
+class SingleAPISpec:
+    ATTR_NAMES = ['new_function_name', 'name', 'url_path', 'use_api_key', 'use_id_val']
+    ID_VAL_IN_URL = '{{ID_VAL}}'
+    
+    def __init__(self, spec_list):
+        if not (type(spec_list) in (list,tuple) and len(spec_list) == 5):
+            raise Exception('Bad spec.  Expected list or tuple of 5 values')
+
+        for idx, attr in enumerate(self.ATTR_NAMES):
+            self.__dict__[attr] = spec_list[idx]
+        
+    def get_url_path(self, id_val):
+        if self.use_id_val:
+            return self.url_path.replace(self.ID_VAL_IN_URL, '%s' % id_val)
+            
+        
 class DataverseAPILink:
     """Used to test the Dataverse API described in github:
         https://github.com/IQSS/dataverse/tree/master/scripts/api 
@@ -24,6 +42,44 @@ class DataverseAPILink:
     HTTP_DELETE = 'DELETE'
     HTTP_METHODS = [HTTP_GET, HTTP_POST, HTTP_DELETE]
     
+    # 'new_function_name', 'name', 'url_path', 'use_api_key', 'use_id_val'
+    
+    API_SPECS = (     [ 'list_users', 'List Users', '/api/users', False, False]\
+                    ,  ['list_roles', 'List Roles', '/api/roles', False, False]\
+                    ,  ['list_datasets', 'List Datasets', '/api/datasets', True, False]\
+                    ,  ['view_dataset_by_id', 'View Dataset By ID', '/api/datasets', True, True]\
+                    #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
+                    ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, False]\
+                    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs', False, True]\
+                    ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, False]\
+                    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users', False, True]\
+                    ,  ['list_metadata_blocks', 'List metadata blocks', '/api/metadatablocks', False, False]
+
+                )
+    '''
+    def get_dataset_info(self, dataset_id, dataset_version=None):
+          """List all dataverses using GET http://{{SERVER}}/api/datasets/?key={{apikey}}
+          @return: JSON, list of dataverses
+          """
+          msgt('get_dataset_info')    
+          if not self.apikey:
+              msg('Sorry!  You need an api key!')
+              return
+          url_str = self.get_server_name() + '/api/datasets/%s' % dataset_id
+          if dataset_version:
+              url_str = self.get_server_name() + '/api/datasets/%s/versions/%s/metadata' % (dataset_id, dataset_version)
+          else:
+              url_str = self.get_server_name() + '/api/datasets/%s' % (dataset_id)    
+
+          url_str = '%s?key=%s' % (url_str, self.apikey)
+
+          return self.make_api_call(url_str, self.HTTP_GET)
+                def delete_dataverse_by_id(self, id_val):        
+                       msgt('delete_dataverse_by_id: %s' % id_val)    
+                       url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
+                       #kwargs = { 'key': self.apikey }
+                       return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
+                   '''    
     def __init__(self, server_name, use_https, apikey=None):
         """
         :param  server_name: e.g. dataverse.org, dvn-build.hmdc.harvard.edu, etc.
@@ -38,6 +94,7 @@ class DataverseAPILink:
         self.apikey = apikey
         self.update_server_name()
         self.return_mode = self.RETURN_MODE_STR
+        self.make_basic_functions()
         
     def set_return_mode_python(self):
         """API calls return JSON text response as a Python object
@@ -107,45 +164,8 @@ class DataverseAPILink:
         if self.return_mode == self.RETURN_MODE_PYTHON:
             return r.json()
         return r.text
-        """
-        request = urllib2.Request(url_str)
-        request.get_method = lambda:method  # GET, POST, DELETE
-        if kwargs:
-            request.add_data(urllib.urlencode(kwargs))
-
-        response = urllib2.urlopen(request)
-
-        print response.info()
-
-        if self.return_mode == self.RETURN_MODE_PYTHON:
-            json_response = json.loads(response.read())
-            response.close()  
-            return json_response
-
-        json_str = response.read()
-        response.close()  
-        return json_str
-        """
        
-    def get_dataverse_metadata(self, dv_id=None):
-        """List all dataverses using GET http://{{SERVER}}/api/dvs
-        :param dv_id: dataverse id or None.  None lists all dataverses
-        :type dv_id: int, None, ':root' 
-        :return: JSON, dataverses metadata
-        """
-        msgt('get_dataverse_metadata: [%s]' % dv_id)    
-        url_str = self.get_server_name() + '/api/dvs'
-        if dv_id is not None:
-            url_str += '/%s' % dv_id
-        return self.make_api_call(url_str, self.HTTP_GET)
-
-    def list_dataverses(self):
-        msgt('list_dataverses')    
-        return self.get_dataverse_metadata()
-        
-    def get_root_dataverse_metadata(self):
-        msgt('get_root_dataverse_metadata')    
-        return self.get_dataverse_metadata(':root')
+ 
         
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
@@ -199,64 +219,58 @@ class DataverseAPILink:
         return self.make_api_call(url_str, self.HTTP_GET)
         
 
-    def list_datasets(self):
-        """List all datadryd using GET http://{{SERVER}}/api/datasets?key={{apikey}}
-        @return: JSON, list of dataverses
-        """
-        msgt('list_datasets')    
-        if not self.apikey:
-            msg('Sorry!  You need an api key!')
-            return
-        url_str = self.get_server_name() + '/api/datasets?key=%s' % self.apikey
-        return self.make_api_call(url_str, self.HTTP_GET)
-    
-    
+    def show_api_info(self):
+        for spec in self.API_SPECS:
+            print spec[0]
+        
+        
 
+    def make_basic_functions(self):
+        """
+        Go through API_SPECS and add the functions to DataverseAPILink
+        """
+        for spec in self.API_SPECS:
+
+            # Load the params
+            spec_obj = SingleAPISpec(spec)
+
+            # Create the function
+            code = """
+def %s(self, id_val=None):
+    url_path = '%s'
+    if id_val:
+        url_path += '/' + str(id_val)
+
+    return self.make_get_api_call('%s', url_path, %s)""" \
+                            % (spec_obj.new_function_name\
+                                , spec_obj.url_path
+                                , spec_obj.name
+                                , spec_obj.use_api_key)
+            exec(code)
+
+            # Bind the function to this object
+            self.__dict__[spec_obj.new_function_name] = types.MethodType(eval(spec_obj.new_function_name), self)
+            
+            
+            
+    def make_get_api_call(self, call_name, url_path, use_api_key=False, id_val=None):
+        msgt(call_name)
+        if use_api_key:
+            url_str = '%s%s?key=%s' % (self.get_server_name(), url_path, self.apikey)
+        else:
+            url_str = '%s%s' % (self.get_server_name(), url_path)
+
+        return self.make_api_call(url_str, self.HTTP_GET)
+   
+    
     def delete_dataverse_by_id(self, id_val):        
         msgt('delete_dataverse_by_id: %s' % id_val)    
         url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
         #kwargs = { 'key': self.apikey }
         return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
 
-
-    def get_user_data(self, uid_or_username=None):
-        """Get metadata for a specific user
-        GET http://{{SERVER}}/api/users/{{uid}}
-        """
-        msgt('get_user_data: %s' % uid_or_username)    
-        url_str = self.get_server_name() + '/api/users/%s' % uid_or_username 
-        return self.make_api_call(url_str, self.HTTP_GET)
-
-    # Users
-    def list_users(self):
-        """List users
-        GET http://{{SERVER}}/api/users
-        """
-        msgt('list_users')    
-        
-        url_str = self.get_server_name() + '/api/users'
-        return self.make_api_call(url_str, self.HTTP_GET)
-    
-    # Roles
-    def list_roles(self):
-        """List roles
-        GET http://{{SERVER}}/api/roles
-        """
-        msgt('list_roles')    
-
-        url_str = self.get_server_name() + '/api/roles'
-        return self.make_api_call(url_str, self.HTTP_GET)
-    
-    # Roles
-    def list_metadata_blocks(self):
-        """List metadata blocks
-        GET http://{{SERVER}}/api/metadatablocks
-        """
-        msgt('list_metadata_blocks')    
-
-        url_str = self.get_server_name() + '/api/metadatablocks'
-        return self.make_api_call(url_str, self.HTTP_GET)
-
+   
+ 
     def get_metadata_for_dataset(self, dataset_id, version_id):
         """Lists all the metadata blocks and their content, for the given dataset and version.
 
@@ -324,10 +338,23 @@ if __name__=='__main__':
     
     server_with_api = 'https://dvn-build.hmdc.harvard.edu'
     
-    
     dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
     dat.set_return_mode_python()
-
+    #dat.hello('there')
+    
+    #dat.set_return_mode_string()
+    print dat.view_dataset_by_id(123)
+    """
+    print dat.list_users()
+    print dat.list_roles()
+    print dat.list_datasets()
+    print dat.list_dataverses()
+    print dat.view_dataverse_by_id_or_alias(5)
+    print dat.view_root_dataverse()
+    print dat.get_user_data(1)
+    print dat.list_metadata_blocks()
+    """
+    sys.exit(0)
     #json_text = dat.list_dataverses()
 
     #print json_text
@@ -373,4 +400,3 @@ if __name__=='__main__':
     #print dat.get_dataset_info(113,':latest')
     #print dat.make_dataverse('pete')
     #print dat.delete_dataverse_by_id()
-    
