@@ -6,35 +6,48 @@ use Getopt::Long;
 use Socket;
 use File::Copy;
 
-my (%opts) = ();
-my ($rez) = GetOptions( \%opts, "pg_only!" );
-
+my $verbose;
 my $pg_only;
+my $hostname;
+my $gfdir;
+my $yes;
+my $force;
+my $nogfpasswd;
+my ($rez) = GetOptions(
+    #"length=i" => \$length,    # numeric
+    #"file=s"   => \$data,      # string
+    "verbose"    => \$verbose,
+    "pg_only"    => \$pg_only,
+    "hostname=s" => \$hostname,
+    "gfdir=s"    => \$gfdir,
+    "y|yes"      => \$yes,
+    "f|force"    => \$force,
+    "nogfpasswd" => \$nogfpasswd,
+);
 
 my $postgresonly = 0;
 
-my @CONFIG_VARIABLES = ();
+my @CONFIG_VARIABLES = (
+    'HOST_DNS_ADDRESS',
+    'GLASSFISH_DIRECTORY',
+    'MAIL_SERVER',
 
-unless ( $opts{pg_only} ) {
-    @CONFIG_VARIABLES = (
-        'HOST_DNS_ADDRESS',
-        'GLASSFISH_DIRECTORY',
-        'MAIL_SERVER',
+    'POSTGRES_SERVER',
+    'POSTGRES_PORT',
+    'POSTGRES_DATABASE',
+    'POSTGRES_USER',
+    'POSTGRES_PASSWORD',
 
-        'POSTGRES_SERVER',
-        'POSTGRES_PORT',
-        'POSTGRES_DATABASE',
-        'POSTGRES_USER',
-        'POSTGRES_PASSWORD',
+    'RSERVE_HOST',
+    'RSERVE_PORT',
+    'RSERVE_USER',
+    'RSERVE_PASSWORD'
 
-        'RSERVE_HOST',
-        'RSERVE_PORT',
-        'RSERVE_USER',
-        'RSERVE_PASSWORD'
+);
 
-    );
-}
-else {
+if ($pg_only) {
+    print "pg only!!";
+    exit;
     @CONFIG_VARIABLES =
       ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD' );
 
@@ -119,7 +132,16 @@ my $uname_out = `uname -a`;
 my $hostname_from_cmdline = `hostname`;
 chop $hostname_from_cmdline;
 
-$CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname_from_cmdline;
+if ($hostname) {
+    $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname;
+}
+else {
+    $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname_from_cmdline;
+}
+
+if ($gfdir) {
+    $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} = $gfdir;
+}
 
 print "\nWelcome to the dataverse 4.0 beta installer.\n";
 unless ($postgresonly) {
@@ -162,8 +184,17 @@ else {
 
     print "Do you wish to continue?\n [y/n] ";
 
-    my $yesnocont = <>;
-    chop $yesnocont;
+    my $yesnocont;
+
+    if ($yes) {
+        $yesnocont = "y";
+    }
+    else {
+        print "here";
+        exit;
+        $yesnocont = <>;
+        chop $yesnocont;
+    }
 
     while ( $yesnocont ne "y" && $yesnocont ne "n" ) {
         print "Please enter 'y' or 'n'!\n";
@@ -189,8 +220,11 @@ for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": ";
     print "[" . $CONFIG_DEFAULTS{$ENTRY} . "] ";
 
-    my $user_entry = <>;
-    chop $user_entry;
+    my $user_entry;
+    unless ($yes) {
+        $user_entry = <>;
+        chop $user_entry;
+    }
 
     if ( $user_entry ne "" ) {
         $CONFIG_DEFAULTS{$ENTRY} = $user_entry;
@@ -207,10 +241,15 @@ for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
 }
 
-print "\nIs this correct? [y/n] ";
-
-my $yesno = <>;
-chop $yesno;
+my $yesno;
+if ($yes) {
+    $yesno = "y";
+}
+else {
+    print "\nIs this correct? [y/n] ";
+    $yesno = <>;
+    chop $yesno;
+}
 
 while ( $yesno ne "y" && $yesno ne "n" ) {
     print "Please enter 'y' or 'n'!\n";
@@ -325,10 +364,10 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
     print "\nChecking system user \"postgres\"... ";
 
     my $POSTGRES_SYS_NAME = "postgres";
-    $POSTGRES_SYS_UID  = ( getpwnam("postgres") )[2];
+    $POSTGRES_SYS_UID = ( getpwnam("postgres") )[2];
 
-    if ( $POSTGRES_SYS_UID == undef ) {
-        print STDERR "\nERROR: I haven't been able to find user \"postgres\" on the system!\n";
+    unless ($POSTGRES_SYS_UID) {
+        print STDERR "\nERROR: I haven't been able to find user \"postgres\" on the system! Is PostgreSQL installed?\n";
         print STDERR "(TODO: prompt the user instead to supply an alternative username, if\n";
         print STDERR "available)\n";
 
@@ -488,7 +527,12 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
     my $psql_command_dbcheck =
       $psql_exec . "/psql -c \"\" -d " . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . ">/dev/null 2>&1";
-    if ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) {
+    if ($force) {
+        print "WARNING! Database "
+          . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'}
+          . " already exists but --force given... continuing.\n";
+    }
+    elsif ( ( my $exitcode = system($psql_command_dbcheck) ) == 0 ) {
         $> = 0;
         $< = 0;
 
@@ -514,7 +558,7 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
     my $psql_command_rolecheck =
       $psql_exec . "/psql -c \"\" -d postgres " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " >/dev/null 2>&1";
     if ( ( my $exitcode = system($psql_command_rolecheck) ) == 0 ) {
-        print "User (role) . " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
+        print "User (role) " . $CONFIG_DEFAULTS{'POSTGRES_USER'} . " already exists;\n";
         print "Proceeding.";
     }
     else {
@@ -525,7 +569,8 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
         open TMPCMD, ">/tmp/pgcmd.$$.tmp";
 
         # with md5-encrypted password:
-        my $pg_password_md5 = &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
+        my $pg_password_md5 =
+          &create_pg_hash( $CONFIG_DEFAULTS{'POSTGRES_USER'}, $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} );
         my $sql_command =
             "CREATE ROLE \""
           . $CONFIG_DEFAULTS{'POSTGRES_USER'}
@@ -538,10 +583,13 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
 
         my $psql_commandline = $psql_exec . "/psql -f /tmp/pgcmd.$$.tmp >/dev/null 2>&1";
 
-        unless ( ( $exitcode = system($psql_commandline) ) == 0 ) {
+        my $out      = qx($psql_commandline 2>&1);
+        my $exitcode = $?;
+        unless ( $exitcode == 0 ) {
             print STDERR "Could not create the DVN Postgres user role!\n";
             print STDERR "(SQL: " . $sql_command . ")\n";
             print STDERR "(psql exit code: " . $exitcode . ")\n";
+            print STDERR "(STDERR and STDOUT was: " . $out . ")\n";
             exit 1;
         }
 
@@ -560,12 +608,20 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
       . " --owner="
       . $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
-    unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
+    my $out      = qx($psql_command 2>&1);
+    my $exitcode = $?;
+    unless ( $exitcode == 0 ) {
         print STDERR "Could not create Postgres database for the DVN app!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
-        print STDERR "\naborting the installation (sorry!)\n\n";
-        exit 1;
+        print STDERR "(STDOUT and STDERR: " . $out . ")\n";
+        if ($force) {
+            print STDERR "\n--force called, continuing\n";
+        }
+        else {
+            print STDERR "\naborting the installation (sorry!)\n\n";
+            exit 1;
+        }
     }
 
     # Changing back to root UID:
@@ -599,7 +655,7 @@ else {
         }
     }
 
-    if ( $opts{$pg_only} ) {
+    if ($pg_only) {
         print "The script must be run in the --pg_only mode ONLY locally,\n";
         print "i.e., on the server where PostgresQL is running.\n";
 
@@ -778,13 +834,22 @@ print "(which is \"admin\").\n";
 print "\nPress any key to continue...\n\n";
 
 system "stty cbreak </dev/tty >/dev/tty 2>&1";
-my $key = getc(STDIN);
+unless ($yes) {
+    my $key = getc(STDIN);
+}
 system "stty -cbreak </dev/tty >/dev/tty 2>&1";
 print "\n";
 
 # start domain, if not running:
 
-my $DOMAIN; # FIXME: what is this supposed to be? It was never set.
+my $javacheck = `java -version`;
+my $exitcode  = $?;
+unless ( $exitcode == 0 ) {
+    print STDERR "$javacheck\n" if $javacheck;
+    print STDERR "Do you have java installed?\n";
+    exit 1;
+}
+my $DOMAIN;    # FIXME: what is this supposed to be? It was never set.
 my $DOMAIN_DOWN =
   `$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
 print STDERR $DOMAIN_DOWN . "\n";
@@ -877,8 +942,8 @@ if ($pg_local_connection) {
     copy( $SQL_REFERENCE_DATA, "/tmp" ) or die "Could not copy $SQL_REFERENCE_DATA to /tmp: $!";
 
     chdir("/tmp");
-    $<            = $POSTGRES_SYS_UID;
-    $>            = $POSTGRES_SYS_UID;
+    $< = $POSTGRES_SYS_UID;
+    $> = $POSTGRES_SYS_UID;
     my $psql_command = $psql_exec . "/psql -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $SQL_REFERENCE_DATA";
 
     unless ( ( my $exitcode = system("$psql_command") ) == 0 ) {
@@ -917,6 +982,9 @@ $> = 0;
 $< = 0;
 chdir($cwd);
 print "\nOK, done!\n";
+
+# FIXME: don't just sleep... figure out if the app is up yet.
+sleep 180;
 
 # Populate the metadata block field values, create users
 # and dataverses:

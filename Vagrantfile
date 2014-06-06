@@ -16,8 +16,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # doesn't already exist on the user's system.
   config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-puppet.box"
 
-  config.vm.provision "shell", path: "scripts/setup/asadmin-setup.sh"
-  config.vm.provision "shell", path: "scripts/vagrant/deploy.sh"
+  config.vm.provision "shell", path: "scripts/vagrant/setup.sh"
+  config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
+  config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh"
+  #config.vm.provision "shell", path: "scripts/setup/asadmin-setup.sh"
+  #config.vm.provision "shell", path: "scripts/vagrant/deploy.sh"
   config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 
   # Create a forwarded port mapping which allows access to a specific port
