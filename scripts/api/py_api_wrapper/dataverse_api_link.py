@@ -51,12 +51,12 @@ class DataverseAPILink:
     HTTP_DELETE = 'DELETE'
     HTTP_METHODS = [HTTP_GET, HTTP_POST, HTTP_DELETE]
     
-    # Each List corresponds to 'new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals'
+    # Each List corresponds to 'new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals', 'use_params_dict'
     #
     API_READ_SPECS = (    
     # USERS
        [ 'list_users', 'List Users', '/api/users', False, 0]\
-    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, False, 1]\
+    ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1]\
     
     # ROLES
     ,  ['list_roles', 'List Roles', '/api/roles', False, 0]\
@@ -64,36 +64,38 @@ class DataverseAPILink:
     # Datasets
     ,  ['list_datasets', 'List Datasets', '/api/datasets', True, 0]\
     ,  ['view_dataset_by_id', 'View Dataset By ID' \
-        , '/api/datasets/%s' % (SingleAPISpec.ID_VAL_IN_URL,), True, 1]\
-    #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
+        , '/api/datasets/%s' % (SingleAPISpec.URL_PLACEHOLDER,), True, 1]\
+    #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
     # Dataverses
     ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, 0]\
-    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.ID_VAL_IN_URL,), False, 1]\
+    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.URL_PLACEHOLDER,), False, 1]\
     ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, 0]\
     
     # Metadata
     ,  ['list_metadata_blocks', 'List metadata blocks', '/api/metadatablocks', False, 0]
     ,  ['view_dataset_metadata_by_id_version', 'View Dataset By ID'\
-        , '/api/datasets/%s/versions/%s/metadata' % (SingleAPISpec.ID_VAL_IN_URL, SingleAPISpec.ID_VAL_IN_URL),  True, 2]\
+        , '/api/datasets/%s/versions/%s/metadata' % (SingleAPISpec.URL_PLACEHOLDER, SingleAPISpec.URL_PLACEHOLDER),  True, 2]\
+
     )
+
 
     API_WRITE_SPECS = (
         
         # Create a Dataverse
         #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
         #
-        [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True, True]\
+        #[ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.URL_PLACEHOLDER, True, 1, True]\
         
         # Create a User
         #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/users?password=pete"
         #
-        , [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.ID_VAL_IN_URL, False, True, True]\
+        [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
         ,
     )
                 
     API_DELETE_SPECS = (
         # Dataset
-        [ 'delete_dataset', 'Delete Dataset', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
+        [ 'delete_dataset', 'Delete Dataset', '/api/users/%s' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
         #DELETE http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
     )
     
@@ -176,9 +178,9 @@ class DataverseAPILink:
         elif method == self.HTTP_DELETE:
             r = requests.delete(url_str, data=params)
             
-        print r.status_code
-        print r.encoding
-        #print r.text
+        msg('Status Code: %s' % r.status_code)
+        msg('Encoding: %s' % r.encoding)
+        msg('Text: %s' % r.text)
         
         if self.return_mode == self.RETURN_MODE_PYTHON:
             return r.json()
@@ -191,7 +193,7 @@ class DataverseAPILink:
         return r.text
        
         
-    '''
+    
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
         POST http://{{SERVER}}/api/dvs/{{ parent_dv_name }}?key={{username}}
@@ -223,8 +225,22 @@ class DataverseAPILink:
         url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (parent_dv_alias_or_id, self.apikey)
         headers = {'content-type': 'application/json'}    
         return self.make_api_call(url_str, self.HTTP_POST, params=dv_params, headers=headers)
-    '''    
-
+        
+    def publish_dataverse(self, dv_id_or_name):
+        """
+        in progress
+        """
+        msgt('publish_dataverse')
+        print 'dv_id_or_name', dv_id_or_name
+        if dv_id_or_name is None:
+            msgx('dv_id_or_name is None')
+        
+        #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+        
+        url_str = self.get_server_name() + '/api/dvs/%s/actions/:publish?key=%s' % (dv_id_or_name, self.apikey)
+        headers = {'content-type': 'application/json'}    
+        return self.make_api_call(url_str, self.HTTP_POST)#, params=dv_params, headers=headers)
+        
     def show_api_info(self):
         for spec in self.API_READ_SPECS:
             print spec[0]
@@ -263,13 +279,13 @@ class DataverseAPILink:
 
             #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
             #
-            # [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True, True]\
+            # [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.URL_PLACEHOLDER, True, True, True]\
     
     
 
     def make_api_write_call(self, call_name, url_path, use_api_key=False, id_val=None, params_dict={}):
         msgt(call_name)
-
+        print 'params_dict', params_dict
         if not type(params_dict) is dict:
             msgx('params_dict is not a dict.  Found: %s' % type(params_dict))
 
@@ -323,16 +339,23 @@ class DataverseAPILink:
         if not os.path.isdir(output_dir):
             msgx('This directory does not exist: %s' % output_dir)
     
-        date_str = datetime.now().strftime('%Y-%m%d_%H%M')
+        #date_str = datetime.now().strftime('%Y-%m%d_%H%M')
+        date_str = datetime.now().strftime('%Y-%m%d_%H')
         
         self.set_return_mode_string()
 
         #---------------------------
         # Retrieve the users
         #---------------------------
-        user_json = self.list_roles()
+        user_json = self.list_users()
         self.save_to_file(os.path.join(output_dir, 'users_%s.json' % date_str), user_json)
-        
+
+        #---------------------------
+        # Retrieve the roles
+        #---------------------------
+        #roles_json = self.list_roles()
+        #self.save_to_file(os.path.join(output_dir, 'roles_%s.json' % date_str), roles_json)
+    
         #---------------------------
         # Retrieve the dataverses
         #---------------------------
@@ -346,26 +369,22 @@ class DataverseAPILink:
         self.save_to_file(os.path.join(output_dir, 'datasets_%s.json' % date_str), dset_json)        
 
     
-    #def delete_dataverse_by_id(self, id_val):        
-    #    msgt('delete_dataverse_by_id: %s' % id_val)    
-    #    url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
-    #kwargs = { 'key': self.apikey }
-    #    return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
+    def delete_dataverse_by_id(self, id_val):        
+        msgt('delete_dataverse_by_id: %s' % id_val)    
+        url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (id_val, self.apikey) 
+        return self.make_api_call(url_str, self.HTTP_DELETE)
 
     
 
     
 if __name__=='__main__':
+    import time
     
+    #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
     
     #server_with_api = 'https://dvn-build.hmdc.harvard.edu'
-    #dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
+    #sdat = DataverseAPILink(server_with_api, use_https=False, apikey='snoopy')
 
-    server_with_api = 'http://dataverse-demo.iq.harvard.edu/'
-    dat = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
-    dat.set_return_mode_python()
-    #print dat.list_roles()
-    dat.save_current_metadata('demo-data')
     sys.exit(0)
     #dat.set_return_mode_string()
     """ """
@@ -390,25 +409,4 @@ if __name__=='__main__':
     print dat.get_user_data(1)
     print dat.list_metadata_blocks()
     """
-    sys.exit(0)
-  
-    """
-    Test delete some dataverses
-    """
-    # List the dataverses
-    dv_json = dat.list_dataverses()
-    print dv_json
-    # Pull dataverse ids > 30
-    dv_ids = [dv['id'] for dv in dv_json.get("data") if dv['id'] > 30]
     
-    # reverse order ids
-    dv_ids.sort()
-    dv_ids.reverse()
-    
-    # delete them
-    for dv_id in dv_ids:
-        print dat.delete_dataverse_by_id(dv_id)
-    #print dat.list_datasets()
-    
-    
-  
