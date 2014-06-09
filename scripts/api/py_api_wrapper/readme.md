@@ -17,7 +17,7 @@ List the dataverses
 
 
 ```python
-from dataverse_api import DataverseAPILink
+from dataverse_api_link import DataverseAPILink
 
 server_with_api = 'dataverse-demo.iq.harvard.edu'
 dal = DataverseAPILink(server_with_api, use_https=False, apikey='admin')

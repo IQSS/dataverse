@@ -6,36 +6,31 @@ Use Dataverse native APIs described here: https://github.com/IQSS/dataverse/tree
 6/6/2013 - Move function parameters into API_SPECS, create functions on init
 
 Requires the python requests library:  http://docs.python-requests.org
+
 """
+import os
 import sys
 import json
 import requests
 from msg_util import *
 import types #import MethodType, FunctionType
+from datetime import datetime
+from single_api_spec import SingleAPISpec
 
-class SingleAPISpec:
-    """Convenience class when making API functions"""
-    ATTR_NAMES = ['new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals']
-    ID_VAL_IN_URL = '{{ID_VAL}}'
-    
-    def __init__(self, spec_list):
-        if not (type(spec_list) in (list,tuple) and len(spec_list) == 5):
-            raise Exception('Bad spec.  Expected list or tuple of 5 values\n%s' % spec_list)
+def msg(s): print s
+def dashes(char='-'): msg(40*char)
+def msgt(s): dashes(); msg(s); dashes()
+def msgx(s): dashes('\/'); msg(s); dashes('\/'); sys.exit(0)
 
-        for idx, attr in enumerate(self.ATTR_NAMES):
-            self.__dict__[attr] = spec_list[idx]
-        
-    #def get_url_path(self, id_val):
-    #    if self.use_id_val:
-    #        return self.url_path.replace(self.ID_VAL_IN_URL, '%s' % id_val)
-            
         
 class DataverseAPILink:
-    """Used to test the Dataverse API described in github:
+    """
+    Conveniece class to access the Dataverse API described in github:
+
         https://github.com/IQSS/dataverse/tree/master/scripts/api 
     
     Example:
-    from dataverse_api import DataverseAPILink
+    from dataverse_api_link import DataverseAPILink
     server_with_api = 'https://dvn-build.hmdc.harvard.edu'
 
     dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
@@ -58,7 +53,7 @@ class DataverseAPILink:
     
     # Each List corresponds to 'new_function_name', 'name', 'url_path', 'use_api_key', 'num_id_vals'
     #
-    API_SPECS = (    
+    API_READ_SPECS = (    
     # USERS
        [ 'list_users', 'List Users', '/api/users', False, 0]\
     ,  ['get_user_data', 'Get metadata for a specific user', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, False, 1]\
@@ -81,7 +76,26 @@ class DataverseAPILink:
     ,  ['view_dataset_metadata_by_id_version', 'View Dataset By ID'\
         , '/api/datasets/%s/versions/%s/metadata' % (SingleAPISpec.ID_VAL_IN_URL, SingleAPISpec.ID_VAL_IN_URL),  True, 2]\
     )
+
+    API_WRITE_SPECS = (
+        
+        # Create a Dataverse
+        #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
+        #
+        [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True, True]\
+        
+        # Create a User
+        #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/users?password=pete"
+        #
+        , [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.ID_VAL_IN_URL, False, True, True]\
+        ,
+    )
                 
+    API_DELETE_SPECS = (
+        # Dataset
+        [ 'delete_dataset', 'Delete Dataset', '/api/users/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True]\
+        #DELETE http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
+    )
     
     def __init__(self, server_name, use_https, apikey=None):
         """
@@ -93,11 +107,13 @@ class DataverseAPILink:
         self.server_name = server_name
         if len(self.server_name.split('//')) > 1:       # remove accidental additional of http:// or https://
             self.server_name = self.server_name.split('//')[-1]
+            if self.server_name.endswith('/'):
+                self.server_name = self.server_name[:-1]
         self.use_https = use_https
         self.apikey = apikey
         self.update_server_name()
         self.return_mode = self.RETURN_MODE_STR
-        self.make_basic_functions()
+        self.bind_basic_functions()
         
     def set_return_mode_python(self):
         """API calls return JSON text response as a Python object
@@ -166,9 +182,16 @@ class DataverseAPILink:
         
         if self.return_mode == self.RETURN_MODE_PYTHON:
             return r.json()
+        
+        #print json.dumps(json.loads(s), indent=4)
+        try:
+            return json.dumps(json.loads(r.text), indent=4)
+        except:
+            pass
         return r.text
        
         
+    '''
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
         POST http://{{SERVER}}/api/dvs/{{ parent_dv_name }}?key={{username}}
@@ -200,46 +223,65 @@ class DataverseAPILink:
         url_str = self.get_server_name() + '/api/dvs/%s?key=%s' % (parent_dv_alias_or_id, self.apikey)
         headers = {'content-type': 'application/json'}    
         return self.make_api_call(url_str, self.HTTP_POST, params=dv_params, headers=headers)
-    
-    
+    '''    
 
     def show_api_info(self):
-        for spec in self.API_SPECS:
+        for spec in self.API_READ_SPECS:
             print spec[0]
         
+
+    def bind_single_function(self, spec_list, function_name_for_api_call):
+        """
+        :param spec_list: list or tuple defining function sepcs
+        :param function_name_for_api_call: str naming coded function in the DataverseAPILink
+        """
+         # Load the function specs
+        single_api_spec = SingleAPISpec(spec_list)
+
+        # Pull the code to generate the function.  e.g. def function_name(params): etc, etc
+        code_str = single_api_spec.get_code_str(function_name_for_api_call)    # ---- GET ----
+        
+        # Create the function 
+        exec(code_str)
+
+        # Bind the function to this instance of DataverseAPILink
+        self.__dict__[single_api_spec.new_function_name] = types.MethodType(eval(single_api_spec.new_function_name), self)
         
 
-    def make_basic_functions(self):
+    def bind_basic_functions(self):
         """
-        Go through API_SPECS and add the functions to DataverseAPILink
+        Go through API specs and add the functions to DataverseAPILink
         """
-        for spec in self.API_SPECS:
+        
+        # Add read functions
+        for spec in self.API_READ_SPECS:
+            self.bind_single_function(spec, 'make_api_get_call')
+        
+        # Add write functions
+        for spec in self.API_WRITE_SPECS:
+            self.bind_single_function(spec, 'make_api_write_call')
 
-            # Load the params
-            spec_obj = SingleAPISpec(spec)
+            #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
+            #
+            # [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.ID_VAL_IN_URL, True, True, True]\
+    
+    
 
-            # Create the function
-            code_str = """
-def %s(self, *args):
-    url_path = '%s'
-    if args:
-        for val in args:
-            url_path = url_path.replace('%s', `val`, 1)
-        #url_path += '/' + str(id_val)
+    def make_api_write_call(self, call_name, url_path, use_api_key=False, id_val=None, params_dict={}):
+        msgt(call_name)
 
-    return self.make_api_get_call('%s', url_path, %s)""" \
-                            % (spec_obj.new_function_name\
-                                , spec_obj.url_path
-                                , SingleAPISpec.ID_VAL_IN_URL
-                                , spec_obj.name
-                                , spec_obj.use_api_key)
-            print code_str
-            exec(code_str)
+        if not type(params_dict) is dict:
+            msgx('params_dict is not a dict.  Found: %s' % type(params_dict))
 
-            # Bind the function to this object
-            self.__dict__[spec_obj.new_function_name] = types.MethodType(eval(spec_obj.new_function_name), self)
-            
-            
+        if use_api_key:
+            url_str = '%s%s?key=%s' % (self.get_server_name(), url_path, self.apikey)
+        else:
+            url_str = '%s%s' % (self.get_server_name(), url_path)
+
+        headers = {'content-type': 'application/json'}    
+        return self.make_api_call(url_str, self.HTTP_POST, params=params_dict, headers=headers)
+
+    
             
     def make_api_get_call(self, call_name, url_path, use_api_key=False, id_val=None):
         msgt(call_name)
@@ -251,13 +293,58 @@ def %s(self, *args):
         return self.make_api_call(url_str, self.HTTP_GET)
    
     def make_api_delete_call(self, call_name, url_path, use_api_key=False, id_val=None):
-        msgt(call_name)
-        if use_api_key:
-            url_str = '%s%s?key=%s' % (self.get_server_name(), url_path, self.apikey)
-        else:
-            url_str = '%s%s' % (self.get_server_name(), url_path)
+           msgt(call_name)
+           if use_api_key:
+               url_str = '%s%s?key=%s' % (self.get_server_name(), url_path, self.apikey)
+           else:
+               url_str = '%s%s' % (self.get_server_name(), url_path)
 
-        return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
+           return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
+
+
+    def save_to_file(self, fname, content):
+        dirname = os.path.dirname(fname)
+        if not os.path.isdir(dirname):
+            msgx('This directory does not exist: %s' % dirname)
+        fh = open(fname, 'w')
+        fh.write(content)
+        fh.close()
+        msg('File written: %s' % fname)
+        
+        
+    def save_current_metadata(self, output_dir):
+        """
+        For the current server, save JSON with information on:
+            - Users
+            - Dataverses
+            - Datasets
+        """
+        msgt('run_dataverse_backup')
+        if not os.path.isdir(output_dir):
+            msgx('This directory does not exist: %s' % output_dir)
+    
+        date_str = datetime.now().strftime('%Y-%m%d_%H%M')
+        
+        self.set_return_mode_string()
+
+        #---------------------------
+        # Retrieve the users
+        #---------------------------
+        user_json = self.list_roles()
+        self.save_to_file(os.path.join(output_dir, 'users_%s.json' % date_str), user_json)
+        
+        #---------------------------
+        # Retrieve the dataverses
+        #---------------------------
+        dv_json = self.list_dataverses()
+        self.save_to_file(os.path.join(output_dir, 'dataverses_%s.json' % date_str), dv_json)
+
+        #---------------------------
+        # Retrieve the datasets
+        #---------------------------
+        dset_json = self.list_datasets()
+        self.save_to_file(os.path.join(output_dir, 'datasets_%s.json' % date_str), dset_json)        
+
     
     #def delete_dataverse_by_id(self, id_val):        
     #    msgt('delete_dataverse_by_id: %s' % id_val)    
@@ -266,65 +353,33 @@ def %s(self, *args):
     #    return self.make_api_call(url_str, self.HTTP_DELETE)#, kwargs)
 
     
-    '''
-    def make_dataverse(self, username, dvn_info_as_dict, dv_id=None):
-        """Make a dataverse
-        POST http://{{SERVER}}/api/dvs?key={{username}}
-        """
-        msgt('make_dataverse: [username:%s]  [dv_id:%s]' % (username, dv_id))
-        url_str = self.get_server_name() + '/api/dvs?key=%s' % username 
-        #kwargs = {'key': username}
-        return self.make_api_call(url_str, self.HTTP_POST, dvn_info_as_dict)
-    '''   
-    
-def write_to_file(content, fname):
-    open(fname, 'w').write(content)
-    print 'file written: %s' % fname
-    
-def save_current_metadata(server_name, apikey):
-    dat = DataverseAPILink(server_name, use_https=False, apikey=apikey)
-    #dat.set_return_mode_python()
-    dat.set_return_mode_string()
-   
-    #---------------------------
-    # Retrieve the users
-    #---------------------------
-    user_json = dat.list_roles()
-    print user_json
-    #---------------------------
-    # Retrieve the dataverses
-    #---------------------------
-    dv_json = dat.list_dataverses()
-    print dv_json
 
-    #---------------------------
-    # Retrieve the datasets
-    #---------------------------
-    dset_json = dat.list_datasets()
-    print dset_json
-    
-    output_dir = 'demo-data'
-    
-    """                    
-    geo_list = []
-    for ds in dataset_ids:
-        did, vid = ds.split(':')
-        geo_meta = dat.get_dataset_info(did,':latest')
-        geo_list.append(geo_meta.strip())
-        write_to_file(geo_meta, '%s/2014_0513_dataset_id_%s.json' % (output_dir, did))
-    #geo_content = '\n'.join(geo_list)
-    """
     
 if __name__=='__main__':
     
     
-    server_with_api = 'https://dvn-build.hmdc.harvard.edu'
-    
-    dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
+    #server_with_api = 'https://dvn-build.hmdc.harvard.edu'
+    #dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
+
+    server_with_api = 'http://dataverse-demo.iq.harvard.edu/'
+    dat = DataverseAPILink(server_with_api, use_https=False, apikey='admin')
     dat.set_return_mode_python()
-    
+    #print dat.list_roles()
+    dat.save_current_metadata('demo-data')
+    sys.exit(0)
     #dat.set_return_mode_string()
     """ """
+    dv_params = {
+                    "alias":"hm_dv",
+                    "name":"Home, Home on the Dataverse",
+                    "affiliation":"Affiliation value",
+                    "contactEmail":"pete@mailinator.com",
+                    "permissionRoot":False,
+                    "description":"API testing"
+                    }
+    #print dat.create_dataverse('root', dv_params)
+    print dat.create_user('some_pw', dv_params)
+    """
     print dat.view_dataverse_by_id_or_alias(5)
     print dat.view_dataset_metadata_by_id_version(123, 57)
     print dat.list_users()
@@ -334,7 +389,7 @@ if __name__=='__main__':
     print dat.view_root_dataverse()
     print dat.get_user_data(1)
     print dat.list_metadata_blocks()
-    
+    """
     sys.exit(0)
   
     """
