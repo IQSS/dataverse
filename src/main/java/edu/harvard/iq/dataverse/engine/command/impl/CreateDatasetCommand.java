@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -57,6 +58,13 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
+        
+        DatasetVersionDatasetUser datasetVersionDataverseUser = new DatasetVersionDatasetUser();        
+        datasetVersionDataverseUser.setDataverseUser(getUser());
+        datasetVersionDataverseUser.setDatasetVersion(theDataset.getEditVersion());
+        datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate);
+        ctxt.em().merge(datasetVersionDataverseUser);
+        
         Dataset savedDataset = ctxt.em().merge(theDataset);
         
         DataverseRole manager = new DataverseRole();

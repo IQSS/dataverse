@@ -32,11 +32,11 @@ public class DatasetVersionDifference {
                 if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
                     deleted = false;
                     if (dsfo.getDatasetFieldType().isPrimitive()) {
-                        if (!dsfo.getDatasetFieldType().getFieldType().equals("email") ) {
-                                compareValues(dsfo, dsfn, false);
+                        if (!dsfo.getDatasetFieldType().getFieldType().equals("email")) {
+                            compareValues(dsfo, dsfn, false);
                         }
                     } else {
-                                compareValues(dsfo, dsfn, true);
+                        compareValues(dsfo, dsfn, true);
                     }
                     break; //if found go to next dataset field
                 }
@@ -46,20 +46,20 @@ public class DatasetVersionDifference {
                 addToSummary(dsfo, null);
             }
         }
-        for (DatasetField dsfn : newVersion.getDatasetFields()) {            
+        for (DatasetField dsfn : newVersion.getDatasetFields()) {
             boolean added = true;
-            if (dsfn.getDatasetFieldType().isPrimitive()){
+            if (dsfn.getDatasetFieldType().isPrimitive()) {
                 for (DatasetField dsfo : originalVersion.getDatasetFields()) {
-                if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
-                    added = false;
-                    break;
+                    if (dsfo.getDatasetFieldType().equals(dsfn.getDatasetFieldType())) {
+                        added = false;
+                        break;
+                    }
                 }
-               } 
                 if (added && !dsfn.isEmpty()) {
-                updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
-                addToSummary(null, dsfn);
+                    updateBlockSummary(dsfn, dsfn.getDatasetFieldValues().size(), 0, 0);
+                    addToSummary(null, dsfn);
+                }
             }
-            }             
         }
 
         for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
@@ -195,7 +195,6 @@ public class DatasetVersionDifference {
         return true;
     }
 
-
     private void compareValues(DatasetField originalField, DatasetField newField, boolean compound) {
         String originalValue = "";
         String newValue = "";
@@ -207,21 +206,21 @@ public class DatasetVersionDifference {
         int loopIndex = 0;
 
         if (compound) {
-            for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {                               
-                if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {                   
+            for (DatasetFieldCompoundValue datasetFieldCompoundValueOriginal : originalField.getDatasetFieldCompoundValues()) {
+                if (newField.getDatasetFieldCompoundValues().size() >= loopIndex + 1) {
                     for (DatasetField dsfo : datasetFieldCompoundValueOriginal.getChildDatasetFields()) {
                         if (!dsfo.getDisplayValue().isEmpty()) {
                             originalValue += dsfo.getDisplayValue() + ", ";
-                        }                        
-                    }                    
+                        }
+                    }
                     for (DatasetField dsfn : newField.getDatasetFieldCompoundValues().get(loopIndex).getChildDatasetFields()) {
                         if (!dsfn.getDisplayValue().isEmpty()) {
                             newValue += dsfn.getDisplayValue() + ", ";
                         }
                     }
-                    if (originalValue.isEmpty() && !newValue.isEmpty()){
+                    if (originalValue.isEmpty() && !newValue.isEmpty()) {
                         totalAdded++;
-                    } else if (!newValue.isEmpty()  && !originalValue.equals(newValue)) {
+                    } else if (!newValue.isEmpty() && !originalValue.equals(newValue)) {
                         totalChanged++;
                     }
                 }
@@ -241,7 +240,7 @@ public class DatasetVersionDifference {
                     countNew++;
                 }
             }
-            String nString = "";            
+            String nString = "";
             originalValue = originalField.getDisplayValue();
             newValue = newField.getDisplayValue();
             for (String oString : originalField.getValues()) {
@@ -252,11 +251,11 @@ public class DatasetVersionDifference {
                     totalChanged++;
                 }
             }
-            if (originalValue.equalsIgnoreCase(newValue)){
+            if (originalValue.equalsIgnoreCase(newValue)) {
                 totalChanged = 0;
             }
-
         }
+        
         if (countNew > countOriginal) {
             totalAdded = countNew - countOriginal;
         }
@@ -264,14 +263,14 @@ public class DatasetVersionDifference {
         if (countOriginal > countNew) {
             totalDeleted = countOriginal - countNew;
         }
-        if ((totalAdded +  totalDeleted +  totalChanged) > 0){
-                   if (originalField.getDatasetFieldType().isDisplayOnCreate() ) {
-            addToNoteSummary(originalField, totalAdded, totalDeleted, totalChanged);
-                                        addToSummary(originalField, newField);
-        } else {
-            updateBlockSummary(originalField, totalAdded, totalDeleted, totalChanged);
-            addToSummary(originalField, newField);
-        } 
+        if ((totalAdded + totalDeleted + totalChanged) > 0) {
+            if (originalField.getDatasetFieldType().isDisplayOnCreate()) {
+                addToNoteSummary(originalField, totalAdded, totalDeleted, totalChanged);
+                addToSummary(originalField, newField);
+            } else {
+                updateBlockSummary(originalField, totalAdded, totalDeleted, totalChanged);
+                addToSummary(originalField, newField);
+            }
         }
     }
 
@@ -476,10 +475,10 @@ public class DatasetVersionDifference {
         value2 = fm2.getLabel();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            value1 = "[Empty]";
+            value1 = "";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            value2 = "[Empty]";
+            value2 = "";
         }
 
         if (!value1.equals(value2)) {
@@ -491,10 +490,10 @@ public class DatasetVersionDifference {
         value2 = fm2.getDataFile().getFriendlyType();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            value1 = "[Empty]";
+            value1 = "";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            value2 = "[Empty]";
+            value2 = "";
         }
 
         if (!value1.equals(value2)) {
@@ -507,10 +506,10 @@ public class DatasetVersionDifference {
          value2 = FileUtil.byteCountToDisplaySize(new File(fm2.getStudyFile().getFileSystemLocation()).length());
 
          if (value1 == null || value1.equals("") || value1.equals(" ")) {
-         value1 = "[Empty]";
+         value1 = "";
          }
          if (value2 == null || value2.equals("") || value2.equals(" ")) {
-         value2 = "[Empty]";
+         value2 = "";
          }
 
          if(!value1.equals(value2)) {
@@ -522,10 +521,10 @@ public class DatasetVersionDifference {
         value2 = fm2.getCategory();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            value1 = "[Empty]";
+            value1 = "";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            value2 = "[Empty]";
+            value2 = "";
         }
 
         if (!value1.equals(value2)) {
@@ -537,10 +536,10 @@ public class DatasetVersionDifference {
         value2 = fm2.getDescription();
 
         if (value1 == null || value1.equals("") || value1.equals(" ")) {
-            value1 = "[Empty]";
+            value1 = "";
         }
         if (value2 == null || value2.equals("") || value2.equals(" ")) {
-            value2 = "[Empty]";
+            value2 = "";
         }
 
         if (!value1.equals(value2)) {
@@ -594,10 +593,10 @@ public class DatasetVersionDifference {
             value2 = fm2.getLabel();
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-                value1 = "[Empty]";
+                value1 = "";
             }
             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-                value2 = "[Empty]";
+                value2 = "";
             }
 
             if (!value1.equals(value2)) {
@@ -615,10 +614,10 @@ public class DatasetVersionDifference {
             value2 = fm2.getCategory();
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-                value1 = "[Empty]";
+                value1 = "";
             }
             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-                value2 = "[Empty]";
+                value2 = "";
             }
 
             if (!value1.equals(value2)) {
@@ -632,10 +631,10 @@ public class DatasetVersionDifference {
             value2 = fm2.getDescription();
 
             if (value1 == null || value1.equals("") || value1.equals(" ")) {
-                value1 = "[Empty]";
+                value1 = "";
             }
             if (value2 == null || value2.equals("") || value2.equals(" ")) {
-                value2 = "[Empty]";
+                value2 = "";
             }
 
             if (!value1.equals(value2)) {

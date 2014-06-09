@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.Permission;
@@ -78,7 +79,24 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             if(dataFile.getPublicationDate() == null){
                 dataFile.setPublicationDate(updateTime);
             }            
-        } 
+        }
+        
+        boolean updatedDatasetUser = false;
+        for (DatasetVersionDatasetUser ddu : theDataset.getEditVersion().getDatasetVersionDataverseUsers()) {
+            if (ddu.getDataverseUser().equals(this.getUser())) {
+                ddu.setLastUpdateDate(updateTime);
+                ctxt.em().merge(ddu);
+                updatedDatasetUser = true;
+            }
+        }
+
+        if (!updatedDatasetUser) {
+            DatasetVersionDatasetUser datasetDataverseUser = new DatasetVersionDatasetUser();
+            datasetDataverseUser.setDataverseUser(getUser());
+            datasetDataverseUser.setDatasetVersion(theDataset.getEditVersion());
+            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
+            ctxt.em().merge(datasetDataverseUser);
+        }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
         

@@ -1,12 +1,19 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -112,6 +119,21 @@ public class DataverseUser implements Serializable {
 	public boolean isGuest() {
 		return "__GUEST__".equals( getUserName() );
 	}
+        
+    @OneToMany(mappedBy = "dataverseUser")
+    private List<DatasetVersionDatasetUser> datasetDataverseUsers;
+    
+    public List<DatasetVersionDatasetUser> getDatasetDataverseUsers(){
+        return datasetDataverseUsers;
+    }
+    
+    public void setDatasetDataverseUsers(List<DatasetVersionDatasetUser> datasetDataverseUsers){
+        this.datasetDataverseUsers = datasetDataverseUsers;
+    }
+    
+    public String getDisplayName(){
+        return this.getFirstName() + " " + this.getLastName(); 
+    }
 	
     @Override
     public int hashCode() {

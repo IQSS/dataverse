@@ -489,7 +489,7 @@
                                                     This is a draft version.
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!versionTab.draft}">
-                                                    This is the first released version.
+                                                    This is the first published version.
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
@@ -499,7 +499,7 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-                                            <h:outputText value="#{versionTab.dataset.creator.lastName}, #{versionTab.dataset.creator.firstName}" />
+                                            <h:outputText value="#{versionTab.versionContributors}" />
                                         </p:column>
                                         <p:column>
                                             <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
@@ -518,11 +518,11 @@
                             <div class="clearfix" style="margin-bottom:1em;">
                                 <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
                                     Version: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                    <!-- Last Updated: -->
+                                    Last Updated: #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
                                 </div>
                                 <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
                                     Version: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                    <!-- Last Updated: -->
+                                    Last Updated: #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
                                 </div>
                                 <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
                                     &#160;

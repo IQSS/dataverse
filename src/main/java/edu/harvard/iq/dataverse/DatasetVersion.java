@@ -186,7 +186,10 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getVersionDate(){
-        return new SimpleDateFormat("MMMM d, yyyy").format(releaseTime);
+        if (lastUpdateTime == null){
+            return new SimpleDateFormat("MMMM d, yyyy").format(releaseTime);
+        }
+        return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
     }
 
     public Date getReleaseTime() {
@@ -196,7 +199,34 @@ public class DatasetVersion implements Serializable {
     public void setReleaseTime(Date releaseTime) {
         this.releaseTime = releaseTime;
     }
+    
+    @OneToMany(mappedBy = "datasetVersion")
+    private List<DatasetVersionDatasetUser> datasetVersionDataverseUsers;
+    
+    public List<DatasetVersionDatasetUser> getDatasetVersionDataverseUsers(){
+        return datasetVersionDataverseUsers;
+    }
+    
+    public void setUserDatasets(List<DatasetVersionDatasetUser> datasetVersionDataverseUsers){
+        this.datasetVersionDataverseUsers = datasetVersionDataverseUsers;
+    }
+    
+    public String getVersionContributors(){
+        String retString = ""; //= this.getDataset().getCreator().getDisplayName();
+        for (DatasetVersionDatasetUser contributor: this.getDatasetVersionDataverseUsers()){
+             if (retString.isEmpty()){
+                 retString = contributor.getDataverseUser().getDisplayName();
+             } else {
+                 retString += ", " + contributor.getDataverseUser().getDisplayName();
+             }
+        }
+        if (retString.isEmpty()){
+            retString = this.getDataset().getCreator().getDisplayName();
+        }
+        return retString;
+    }
 
+    
     public String getVersionNote() {
         return versionNote;
     }
