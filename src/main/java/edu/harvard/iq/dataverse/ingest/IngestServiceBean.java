@@ -323,7 +323,8 @@ public class IngestServiceBean {
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
-                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
+                dataFile = fileService.save(dataFile);
+                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
                 asyncIngestAsTabular(dataFile);
             }
         }
@@ -409,7 +410,12 @@ public class IngestServiceBean {
         return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
     }
     
-    public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) throws IOException {
+    public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) { //throws IOException {
+        // TODO: 
+        // (still work in progress)
+        // Error reporting, with descriptions of specific problems, is 
+        // being added here. 
+        // -- L.A. 10 June 2014
         boolean ingestSuccessful = false;
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
@@ -433,7 +439,8 @@ public class IngestServiceBean {
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-            throw new IOException("Could not find ingest plugin for the file " + fileName);
+            //throw new IOException("Could not find ingest plugin for the file " + fileName);
+            return false; 
         }
 
         FileInputStream tempFileInputStream = null; 
@@ -446,11 +453,23 @@ public class IngestServiceBean {
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-            throw new IOException("Could not open temp file "+tempFileLocation);
+            return false; 
+            //throw new IOException("Could not open temp file "+tempFileLocation);
         }
         
-        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+        TabularDataIngest tabDataIngest = null; 
+        try {
+            tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+        } catch (IOException ingestEx) {
+            dataFile.SetIngestProblem();
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            return false;
+        }
 
+        try {
         if (tabDataIngest != null) {
             File tabFile = tabDataIngest.getTabDelimitedFile();
 
@@ -488,27 +507,37 @@ public class IngestServiceBean {
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
                 
+                produceSummaryStatistics(dataFile);
+
+                
                 dataFile.setIngestDone();
                 dataFile = fileService.save(dataFile);
+                FacesMessage facesMessage = new FacesMessage("ingest done");
+                pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
                 
-                try {
-                    produceSummaryStatistics(dataFile);
-                } catch (IOException sumStatEx) {
-                    dataFile.SetIngestProblem();
-                    dataFile = fileService.save(dataFile);
-                    FacesMessage facesMessage = new FacesMessage("ingest failed");
-                    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-                    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
-                }
+                //try {
+                //} catch (IOException sumStatEx) {
+                //    dataFile.SetIngestProblem();
+                //    dataFile = fileService.save(dataFile);
+                //    FacesMessage facesMessage = new FacesMessage("ingest failed");
+                //    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+                //    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+                //    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
+                //}
                 
                 ingestSuccessful = true;                
             }
         }
+        } catch (IOException postIngestEx) {
+            dataFile.SetIngestProblem();
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: post-ingest tasks. Sent push notification to the page.");
+        }
         
-        FacesMessage facesMessage = new FacesMessage("ingest done");
-        pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest: Sent push notification to the page.");
+        
         return ingestSuccessful;
     }
 
