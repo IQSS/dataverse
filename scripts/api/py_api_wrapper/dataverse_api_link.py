@@ -13,7 +13,7 @@ import sys
 import json
 import requests
 from msg_util import *
-import types #import MethodType, FunctionType
+import types # MethodType, FunctionType
 from datetime import datetime
 from single_api_spec import SingleAPISpec
 
@@ -25,7 +25,7 @@ def msgx(s): dashes('\/'); msg(s); dashes('\/'); sys.exit(0)
         
 class DataverseAPILink:
     """
-    Conveniece class to access the Dataverse API described in github:
+    Convenience class to access the Dataverse API described in github:
 
         https://github.com/IQSS/dataverse/tree/master/scripts/api 
     
@@ -39,7 +39,7 @@ class DataverseAPILink:
     print dat.list_roles()
     print dat.list_dataverses()
     print dat.list_datasets()
-    print dat.view_dataverse_by_id_or_alias(5)
+    print dat.get_dataverse_by_id_or_alias(5)
     print dat.view_dataset_metadata_by_id_version(123, 57)
     print dat.view_root_dataverse()
     print dat.get_user_data(1)
@@ -68,7 +68,7 @@ class DataverseAPILink:
     #,  ['view_dataset_versions_by_id', 'View Dataset By ID', '/api/datasets/%s/versions' % SingleAPISpec.URL_PLACEHOLDER, True, True]\
     # Dataverses
     ,  ['list_dataverses', 'List Dataverses', '/api/dvs', False, 0]\
-    ,  ['view_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.URL_PLACEHOLDER,), False, 1]\
+    ,  ['get_dataverse_by_id_or_alias', 'View Dataverse by ID or Alias', '/api/dvs/%s' % (SingleAPISpec.URL_PLACEHOLDER,), False, 1]\
     ,  ['view_root_dataverse', 'View Root Dataverse', '/api/dvs/:root', False, 0]\
     
     # Metadata
@@ -89,8 +89,8 @@ class DataverseAPILink:
         # Create a User
         #   curl -H "Content-type:application/json" -X POST -d @data/userPete.json "http://localhost:8080/api/users?password=pete"
         #
-        [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
-        ,
+        #[ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
+        #,
     )
                 
     API_DELETE_SPECS = (
@@ -191,8 +191,25 @@ class DataverseAPILink:
         except:
             pass
         return r.text
-       
+    
+    
+    def create_user(self, dv_params, new_password):
+        """
+        Create a user
+
+        :param dv_params: dict containing the parameters for the new user
+        :param new_password: str for the user's password
+        """
+        msgt('create_user')
+        if not type(dv_params) is dict:
+            msgx('dv_params is None')
+
+        #    [ 'create_user', 'Create User', '/api/users?password=%s' % SingleAPISpec.URL_PLACEHOLDER, False, 1, True]\
         
+        url_str = self.get_server_name() + '/api/users?password=%s' % (new_password)
+        headers = {'content-type': 'application/json'}    
+        return self.make_api_call(url_str, self.HTTP_POST, params=dv_params, headers=headers)
+    
     
     def create_dataverse(self, parent_dv_alias_or_id, dv_params):
         """Create a dataverse
@@ -218,7 +235,6 @@ class DataverseAPILink:
         print dat.create_dataverse(parent_dv_alias_or_id, dv_params)
         """
         msgt('create_dataverse')
-        print 'dv_params', dv_params
         if not type(dv_params) is dict:
             msgx('dv_params is None')
             
@@ -228,18 +244,20 @@ class DataverseAPILink:
         
     def publish_dataverse(self, dv_id_or_name):
         """
-        in progress
+        Publish a dataverse based on its id or alias
+        #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
+        
+        :param dv_id_or_name: Dataverse id (str or int) or alias (str)
         """
         msgt('publish_dataverse')
         print 'dv_id_or_name', dv_id_or_name
         if dv_id_or_name is None:
             msgx('dv_id_or_name is None')
         
-        #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
-        
         url_str = self.get_server_name() + '/api/dvs/%s/actions/:publish?key=%s' % (dv_id_or_name, self.apikey)
         headers = {'content-type': 'application/json'}    
-        return self.make_api_call(url_str, self.HTTP_POST)#, params=dv_params, headers=headers)
+        return self.make_api_call(url_str, self.HTTP_POST)
+        
         
     def show_api_info(self):
         for spec in self.API_READ_SPECS:
@@ -273,14 +291,12 @@ class DataverseAPILink:
         for spec in self.API_READ_SPECS:
             self.bind_single_function(spec, 'make_api_get_call')
         
+        # Decided to explicitly write add functions for clarity
         # Add write functions
-        for spec in self.API_WRITE_SPECS:
-            self.bind_single_function(spec, 'make_api_write_call')
+        #for spec in self.API_WRITE_SPECS:
+        #    self.bind_single_function(spec, 'make_api_write_call')
 
-            #   curl -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "http://localhost:8080/api/dvs/root?key=pete"
-            #
-            # [ 'create_dataverse', 'Create Dataverse', '/api/dvs/%s' % SingleAPISpec.URL_PLACEHOLDER, True, True, True]\
-    
+         
     
 
     def make_api_write_call(self, call_name, url_path, use_api_key=False, id_val=None, params_dict={}):
@@ -307,6 +323,7 @@ class DataverseAPILink:
             url_str = '%s%s' % (self.get_server_name(), url_path)
 
         return self.make_api_call(url_str, self.HTTP_GET)
+   
    
     def make_api_delete_call(self, call_name, url_path, use_api_key=False, id_val=None):
            msgt(call_name)
@@ -382,9 +399,9 @@ if __name__=='__main__':
     
     #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
     
-    #server_with_api = 'https://dvn-build.hmdc.harvard.edu'
-    #sdat = DataverseAPILink(server_with_api, use_https=False, apikey='snoopy')
-
+    server_with_api = 'https://dvn-build.hmdc.harvard.edu'
+    dat = DataverseAPILink(server_with_api, use_https=False, apikey='snoopy')
+    dat.save_current_metadata('demo-data')
     sys.exit(0)
     #dat.set_return_mode_string()
     """ """
@@ -399,7 +416,7 @@ if __name__=='__main__':
     #print dat.create_dataverse('root', dv_params)
     print dat.create_user('some_pw', dv_params)
     """
-    print dat.view_dataverse_by_id_or_alias(5)
+    print dat.get_dataverse_by_id_or_alias(5)
     print dat.view_dataset_metadata_by_id_version(123, 57)
     print dat.list_users()
     print dat.list_roles()
