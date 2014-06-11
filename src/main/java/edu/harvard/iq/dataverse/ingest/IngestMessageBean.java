@@ -69,18 +69,17 @@ public class IngestMessageBean implements MessageListener {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
 
-            Iterator iter = ingestMessage.getFiles().iterator();
+            Iterator iter = ingestMessage.getFileIds().iterator();
             while (iter.hasNext()) {
-                DataFile dataFile = (DataFile) iter.next();
+                Long datafile_id = (Long) iter.next();
 
                 logger.info("Start ingest job;");
-                if (ingestService.ingestAsTabular(dataFile)) {
-                    //Thread.sleep(60000);
+                if (ingestService.ingestAsTabular(datafile_id)) {
+                    //Thread.sleep(10000);
                     logger.info("Finish ingest job;");
                 } else {
                     logger.info("Error occurred during ingest job!");
                 }
-                // do we still want to send notifications - ?
             }
 
         } catch (JMSException ex) {

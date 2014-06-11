@@ -324,8 +324,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void refresh(ActionEvent e) {
-        
+        refresh();
+    }
+    
+    public void refresh() {
         logger.info("refreshing");
+        // refresh the working copy of the DatasetVersion:
+        
         if (versionId == null) {
             if (!dataset.isReleased()) {
                 displayVersion = dataset.getLatestVersion();
@@ -336,31 +341,6 @@ public class DatasetPage implements java.io.Serializable {
             displayVersion = datasetVersionService.find(versionId);
         }
 
-        /*
-        int i = 0;
-        // Go through the list of the files on the page...
-        // (I've had to switch from going through the files via dataset.getFiles(), to 
-        // .getLatestVersion().getFileMetadatas() - because that's how the page is
-        // accessing them. -- L.A.)
-        //for (DataFile dataFile : dataset.getFiles()) {
-        for (FileMetadata fileMetadata : getDisplayVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            // and see if any are marked as "ingest-in-progress":
-            if (dataFile.isIngestInProgress()) {
-                logger.info("Refreshing the status of the file " + fileMetadata.getLabel() + " (" + fileMetadata.getDescription() + ")...");
-                // and if so, reload the file object from the database...
-                dataFile = datafileService.find(dataFile.getId());
-                if (!dataFile.isIngestInProgress()) {
-                    logger.info("File " + fileMetadata.getLabel() + " (" + fileMetadata.getDescription() + ") finished ingesting.");
-                    // and, if the status has changed - i.e., if the ingest has 
-                    // completed, or failed, update the object in the list of 
-                    // files visible to the page:
-                    fileMetadata.setDataFile(dataFile);
-                }
-            }
-            i++;
-        }
-        */
     }
 
     public String save() {
@@ -452,16 +432,6 @@ public class DatasetPage implements java.io.Serializable {
         
         ingestService.startIngestJobs(dataset);
         
-        if (versionId == null) {
-            if (!dataset.isReleased()) {
-                displayVersion = dataset.getLatestVersion();
-            } else {
-                displayVersion = dataset.getReleasedVersion();
-            }
-        } else {
-            displayVersion = datasetVersionService.find(versionId);
-        }
-
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 

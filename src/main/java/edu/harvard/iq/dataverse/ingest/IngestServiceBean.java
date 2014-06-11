@@ -137,9 +137,6 @@ public class IngestServiceBean {
     
     private static final String MIME_TYPE_FITS  = "application/fits";
       
-    // TODO: this constant should be provided by the Ingest Service Provder Registry;
-    private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
-    
     
     public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
         Dataset dataset = version.getDataset();
@@ -371,8 +368,8 @@ public class IngestServiceBean {
 
             IngestMessage ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
             //ingestMessage.addFile(new File(tempFileLocation));
-            ingestMessage.addFile(dataFile);
-
+            ingestMessage.addFileId(dataFile.getId());
+            
             Message message = session.createObjectMessage(ingestMessage);
 
             try {
@@ -406,8 +403,12 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
     
-    public boolean ingestAsTabular(DataFile dataFile) throws IOException {
-        return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
+    public boolean ingestAsTabular(Long datafile_id) { //DataFile dataFile) throws IOException {
+        DataFile dataFile = fileService.find(datafile_id);
+        if (dataFile != null) {
+            return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
+        }
+        return false;
     }
     
     public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) { //throws IOException {
