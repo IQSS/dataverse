@@ -45,11 +45,13 @@
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
-                            <p:panelGrid columns="2">
+                            <p:panelGrid columns="2" style="width:100%;">
                                 <ui:fragment>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <p:inputText id="name" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
-                                        <label class="control-label" for="name">Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
+                                    <div class="col-sm-12 form-group" style="margin-bottom:0;">
+                                        <div class="col-sm-6">
+                                            <p:inputText id="name" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
+                                        </div>
+                                        <label class="col-sm-6 control-label" for="name">Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                                         <p:watermark for="name" value="Enter name..."/>
                                     </div>
                                 </ui:fragment>
