@@ -64,64 +64,40 @@ public class IngestMessageBean implements MessageListener {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
-        DatasetVersion sv = null;
-        List successfulFiles = new ArrayList();
-        List problemFiles = new ArrayList();
-        
-        try {           
+
+        try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
-            
-            Iterator iter = ingestMessage.getFiles().iterator();
+
+            Iterator iter = ingestMessage.getFileIds().iterator();
             while (iter.hasNext()) {
-                DataFile dataFile = (DataFile) iter.next();
-                
-                try {
-                    logger.info("Start ingest job;");
-                        // do the ingest thing: 
-                    // parseXML( new DSBWrapper().ingest(fileBean) , fileBean.getFileMetadata() );
-                    // successfulFiles.add(fileBean);
-                    if (ingestService.ingestAsTabular(dataFile)) {
-                        //Thread.sleep(60000);
-                        logger.info("Finish ingest job;");
-                    } else {
-                        logger.info("Error occurred during ingest job!");
-                        problemFiles.add(dataFile);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    problemFiles.add(dataFile);
+                Long datafile_id = (Long) iter.next();
+
+                logger.info("Start ingest job;");
+                if (ingestService.ingestAsTabular(datafile_id)) {
+                    //Thread.sleep(10000);
+                    logger.info("Finish ingest job;");
+                } else {
+                    logger.info("Error occurred during ingest job!");
                 }
-                
             }
 
-            if (!successfulFiles.isEmpty()) {
-                // We used to send emails when jobs were completed:
-                //datasetFileService.addIngestedFiles(ingestMessage.getDatasetId(), ingestMessage.getVersionNote(), successfulFiles, ingestMessage.getIngestUserId());
-            }
-                    
-            
         } catch (JMSException ex) {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail
-            
-        } catch (Exception ex) { 
+
+        } catch (Exception ex) {
             ex.printStackTrace();
             // if a general exception is caught that means the entire upload failed
-            //if (ingestMessage.sendErrorMessage()) {
-            //    mailService.sendIngestCompletedNotification(ingestMessage, null, ingestMessage.getFileBeans());
-            //}
-            
+            // some form of a notification - ?
+
         } finally {
-            // when we're done, go ahead and remove the lock
+            // when we're done, go ahead and remove the lock (not yet)
             try {
                 //datasetService.removeDatasetLock( ingestMessage.getDatasetId() );
             } catch (Exception ex) {
                 ex.printStackTrace(); // application was unable to remove the datasetLock
             }
-            // We used to send emails when jobs were completed:
-            //if ( ingestMessage.sendInfoMessage() || ( problemFiles.size() >= 0 && ingestMessage.sendErrorMessage() ) ) {
-            //        mailService.sendIngestCompletedNotification(ingestMessage, successfulFiles, problemFiles);
-            //} 
+            // some form of a notification - ?
         }
     }
  

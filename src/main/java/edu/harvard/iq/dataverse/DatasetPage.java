@@ -324,29 +324,23 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void refresh(ActionEvent e) {
-        int i = 0;
-        // Go through the list of the files on the page...
-        // (I've had to switch from going through the files via dataset.getFiles(), to 
-        // .getLatestVersion().getFileMetadatas() - because that's how the page is
-        // accessing them. -- L.A.)
-        //for (DataFile dataFile : dataset.getFiles()) {
-        for (FileMetadata fileMetadata : getDisplayVersion().getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            // and see if any are marked as "ingest-in-progress":
-            if (dataFile.isIngestInProgress()) {
-                logger.info("Refreshing the status of the file " + fileMetadata.getLabel() + "...");
-                // and if so, reload the file object from the database...
-                dataFile = datafileService.find(dataFile.getId());
-                if (!dataFile.isIngestInProgress()) {
-                    logger.info("File " + fileMetadata.getLabel() + " finished ingesting.");
-                    // and, if the status has changed - i.e., if the ingest has 
-                    // completed, or failed, update the object in the list of 
-                    // files visible to the page:
-                    fileMetadata.setDataFile(dataFile);
-                }
+        refresh();
+    }
+    
+    public void refresh() {
+        logger.info("refreshing");
+        // refresh the working copy of the DatasetVersion:
+        
+        if (versionId == null) {
+            if (!dataset.isReleased()) {
+                displayVersion = dataset.getLatestVersion();
+            } else {
+                displayVersion = dataset.getReleasedVersion();
             }
-            i++;
+        } else {
+            displayVersion = datasetVersionService.find(versionId);
         }
+
     }
 
     public String save() {
@@ -437,7 +431,7 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         
         ingestService.startIngestJobs(dataset);
-
+        
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 
