@@ -14,32 +14,6 @@
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
             <ui:define name="body">
-
-                <script type="text/javascript">
-                    //<![CDATA[
-                    (function($) {
-                        $.fn.extend({
-                            updateCounter: function(limit, elem) {
-                                $(this).on("keyup focus", function() {
-                                    setCount(this, elem);
-                                });
-                                function setCount(src, elem) {
-                                    if (typeof src === "undefined") {
-                                        return;
-                                    }
-                                    var chars = src.value.length;
-                                    elem.html(limit - chars);
-                                }
-                                setCount($(this)[0], elem);
-                            }
-                        });
-                    })(jQuery);
-                    $(document).ready(function() {
-                        var elem = $("[id$='chars']");
-                        $("[id$='description']").updateCounter(1000, elem);
-                    });
-                    //]]>
-                </script>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
@@ -66,6 +40,7 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
+                    <p:focus context="dataverseForm"/>
 
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
@@ -74,7 +49,7 @@
                                 <ui:fragment>
                                     <div class="form-group" style="margin-bottom:0;">
                                         <p:inputText id="name" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
-                                        <label class="control-label" for="name">Dataverse <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                        <label class="control-label" for="name">Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                                         <p:watermark for="name" value="Enter name..."/>
                                     </div>
                                 </ui:fragment>
@@ -98,14 +73,14 @@
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
-                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">Alias <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">Alias <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
                                 </div>
-                                <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">E-mail <span class="glyphicon glyphicon-asterisk text-danger"></span></label>
+                                <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">E-mail <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
@@ -127,7 +102,7 @@
                                                      rows="5" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
-                                    <div><h:outputText id="chars"/> characters remaining</div>
+                                    <div><span id="chars"/> characters remaining</div>
                                 </div>
                                 <div class="col-sm-2 control-label">
                                     <p:message for="description"/>
@@ -137,13 +112,13 @@
                     </p:panel>
 
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
-                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                <p:outputLabel value="Metadata Elements"/>
-                                <ui:fragment>
-                                    <h:outputText style="display:block; margin-bottom:.5em;" value="Choose the sets of Metadata Elements for datasets in this Dataverse." />
+                        <div class="row form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="mdbSelect">Metadata Elements</label>
+                                <div class="col-sm-9">
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the sets of Metadata Elements for datasets in this Dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Use Metadata Elements from Host Dataverse">
+                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
                                             <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
@@ -154,28 +129,28 @@
                                                        itemLabel="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}"
                                                        itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
                                     </p:selectManyCheckbox>
-                                </ui:fragment>
-                            </p:panelGrid>
-                        </p:panelGrid>
+                                </div>
+                            </div>
+                        </div>
                     </p:panel>
                     
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
-                        <p:panelGrid styleClass="panelgridLayoutTable" columns="1">
-                            <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                <p:outputLabel value="Select Facets"/>
-                                <ui:fragment>
-                                    <h:outputText style="display:block; margin-bottom:.5em;" value="Choose the search result facets to display for this Dataverse." />
+                        <div class="row form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
+                                <div class="col-sm-9">
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the search result facets to display for this Dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Use Facets from Host Dataverse">
+                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
                                             <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
 
                                     <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                 itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
-                                </ui:fragment>
-                            </p:panelGrid>
-                        </p:panelGrid>
+                                </div>
+                            </div>
+                        </div>
                     </p:panel>
 
                     <!-- Description Panel / View Mode -->
@@ -205,7 +180,7 @@
                                             </li>
                                             <li class="divider" role="presentation"></li>
                                             <li>
-                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info()">
+                                                <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();characterCounter();">
                                                     <h:outputText value="General Information" />
                                                 </p:commandLink>
                                             </li>
@@ -315,7 +290,7 @@
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}"  action="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" action="#{DataversePage.save}" update="@all"/>
                         <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
                         <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </p:panel>
@@ -327,6 +302,34 @@
                         <ui:param name="showAdvancedSearchLink" value="true"/>
                     </ui:include>
                 </ui:fragment>
+                
+                <script type="text/javascript">
+                    //<![CDATA[
+                    
+                    characterCounter();
+                    
+                    function characterCounter() {
+                        $.fn.extend({
+                            updateCounter: function(limit, elem) {
+                                $(this).on("keyup focus", function() {
+                                    setCount(this, elem);
+                                });
+                                function setCount(src, elem) {
+                                    if (typeof src === "undefined") {
+                                        return;
+                                    }
+                                    var chars = src.value.length;
+                                    elem.html(limit - chars);
+                                }
+                                setCount($(this)[0], elem);
+                            }
+                        });
+                        
+                        var elem = $("#chars");
+                        $("textarea[id$='description']").updateCounter(1000, elem);
+                    }
+                    //]]>
+                </script>
 
             </ui:define>
         </ui:composition>
