@@ -103,8 +103,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long versionId;
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList();
-    private DatasetVersion editVersion = new DatasetVersion();
-    private DatasetVersion displayVersion;
+    private DatasetVersion workingVersion;
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private List<DatasetField> deleteRecords = new ArrayList();
     private int releaseRadio = 1;
@@ -142,8 +141,8 @@ public class DatasetPage implements java.io.Serializable {
         this.dataset = dataset;
     }
 
-    public DatasetVersion getDisplayVersion() {
-        return displayVersion;
+    public DatasetVersion getWorkingVersion() {
+        return workingVersion;
     }
 
     public EditMode getEditMode() {
@@ -152,14 +151,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setEditMode(EditMode editMode) {
         this.editMode = editMode;
-    }
-
-    public DatasetVersion getEditVersion() {
-        return editVersion;
-    }
-
-    public void setEditVersion(DatasetVersion editVersion) {
-        this.editVersion = editVersion;
     }
 
     public Long getOwnerId() {
@@ -215,12 +206,12 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
                 if (!dataset.isReleased()) {
-                    displayVersion = dataset.getLatestVersion();
+                    workingVersion = dataset.getLatestVersion();
                 } else {
-                    displayVersion = dataset.getReleasedVersion();
+                    workingVersion = dataset.getReleasedVersion();
                 }
             } else {
-                displayVersion = datasetVersionService.find(versionId);
+                workingVersion = datasetVersionService.find(versionId);
             }
 
             ownerId = dataset.getOwner().getId();
@@ -231,22 +222,22 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             try {
-                datasetVersionUI = new DatasetVersionUI(displayVersion);
+                datasetVersionUI = new DatasetVersionUI(workingVersion);
             } catch (NullPointerException npe) {
                 //This will happen when solr is down and will allow any link to be displayed.
                 throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
             }
 
-            displayCitation = dataset.getCitation(false, displayVersion);
+            displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
 
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            editVersion = dataset.getLatestVersion();
+            workingVersion = dataset.getLatestVersion();
 
             dataset.setOwner(dataverseService.find(ownerId));
-            datasetVersionUI = new DatasetVersionUI(editVersion);
+            datasetVersionUI = new DatasetVersionUI(workingVersion);
             dataset.setIdentifier(datasetService.generateIdentifierSequence("doi", "10.5072/FK2"));
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
@@ -273,7 +264,6 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
-            displayVersion = editVersion;
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }
@@ -281,14 +271,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void edit(EditMode editMode) {
         this.editMode = editMode;
+        workingVersion = dataset.getEditVersion();
+
         if (editMode == EditMode.INFO) {
-            editVersion = dataset.getEditVersion();
+            // ?
         } else if (editMode == EditMode.FILE) {
-            editVersion = dataset.getEditVersion();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
-            editVersion = dataset.getEditVersion();
-            datasetVersionUI = new DatasetVersionUI(editVersion);
+            datasetVersionUI = new DatasetVersionUI(workingVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }
@@ -330,15 +320,25 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh() {
         logger.info("refreshing");
         // refresh the working copy of the DatasetVersion:
-        
-        if (versionId == null) {
-            if (!dataset.isReleased()) {
-                displayVersion = dataset.getLatestVersion();
+
+        if (editMode == EditMode.FILE) {
+            logger.info("refreshing edit version");
+            if (versionId == null) {
+                workingVersion = dataset.getEditVersion();
             } else {
-                displayVersion = dataset.getReleasedVersion();
+                logger.info("refreshing edit version, from version id.");
+                workingVersion = datasetVersionService.find(versionId);
             }
         } else {
-            displayVersion = datasetVersionService.find(versionId);
+            if (versionId == null) {
+                if (!dataset.isReleased()) {
+                    workingVersion = dataset.getLatestVersion();
+                } else {
+                    workingVersion = dataset.getReleasedVersion();
+                }
+            } else {
+                workingVersion = datasetVersionService.find(versionId);
+            }
         }
 
     }
@@ -349,7 +349,7 @@ public class DatasetPage implements java.io.Serializable {
         boolean dontSave = false;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+        for (DatasetField dsf : workingVersion.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
             for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
@@ -392,7 +392,7 @@ public class DatasetPage implements java.io.Serializable {
          * file-specific error reports - in pop-up windows maybe?)
          */
         
-        ingestService.addFiles(editVersion, newFiles); 
+        ingestService.addFiles(workingVersion, newFiles); 
         
         // Use the API to save the dataset: 
         
@@ -481,7 +481,7 @@ public class DatasetPage implements java.io.Serializable {
                     // obtain an InputStream - so we can now create a new
                     // DataFile object: 
                     
-                    dFile = ingestService.createDataFile(editVersion, dropBoxStream, fileName, null);
+                    dFile = ingestService.createDataFile(workingVersion, dropBoxStream, fileName, null);
                     newFiles.add(dFile);
                 }
             } catch (IOException ex) {
@@ -507,7 +507,7 @@ public class DatasetPage implements java.io.Serializable {
         DataFile dFile = null; 
         
         try {
-            dFile = ingestService.createDataFile(editVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
+            dFile = ingestService.createDataFile(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;

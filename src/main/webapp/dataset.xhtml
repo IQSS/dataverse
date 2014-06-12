@@ -11,10 +11,10 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.displayVersion.title} - #{DatasetPage.dataset.owner.name}"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
-            <ui:param name="version" value="#{DatasetPage.displayVersion}"/>
+            <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
@@ -71,7 +71,7 @@
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
@@ -97,7 +97,7 @@
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released }">
@@ -139,7 +139,7 @@
                                         <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.displayVersion != DatasetPage.dataset.latestVersion
+                                    <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
@@ -147,7 +147,7 @@
                                             </h:outputLink>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion != DatasetPage.dataset.releasedVersion}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}">
                                                 <h:outputText value="View Published Version"/>
@@ -167,7 +167,7 @@
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.displayVersion.draft}"/>
+                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
                                         <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
@@ -176,7 +176,7 @@
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
                                             </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.displayVersion.draft}">
+                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
                                             </ui:fragment>
                                         </div>
@@ -253,7 +253,7 @@
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
                         <div id="contentTabs">
-                            <ui:fragment rendered="#{empty DatasetPage.editMode}">
+                            <ui:fragment> <!-- rendered="#{empty DatasetPage.editMode}" -->
                                 <p:commandButton id="refreshButton" widgetVar="refreshButton" actionListener="#{DatasetPage.refresh}" update="@all" style="display:none"/>
                                 <script type="text/javascript">
                                     function updateFilesTable(facesmessage) {
@@ -287,7 +287,7 @@
                                     </ui:fragment>
                                     <!-- View -->
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
@@ -299,7 +299,8 @@
                                             <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
                                         </p>-->
                                     </ui:fragment>
-                                    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.displayVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata">
+                                    <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
+                                    <p:dataTable id="filesTable" value="#{DatasetPage.workingVersion.fileMetadatas}" var="fileMetadata">
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
 
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
@@ -407,7 +408,7 @@
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
 
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.displayVersion == DatasetPage.dataset.latestVersion
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
