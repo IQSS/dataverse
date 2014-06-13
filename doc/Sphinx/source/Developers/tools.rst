@@ -29,3 +29,10 @@ From the root of the git repo, run ``vagrant up`` and eventually you
 should be able to reach an installation of Dataverse at
 http://localhost:8888 (or whatever forwarded_port indicates in the
 Vagrantfile)
+
+The Vagrant environment can also be used for Shibboleth testing in
+conjunction with PageKite configured like this:
+
+service_on = http:@kitename  : localhost:8888 : @kitesecret
+
+service_on = https:@kitename : localhost:9999 : @kitesecret

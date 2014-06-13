@@ -22,6 +22,14 @@ if [ ! -d $GLASSFISH_ROOT ]; then
 else
   echo "$GLASSFISH_ROOT already exists"
 fi
+service shibd start
 service httpd stop
 cp /dataverse/conf/httpd/conf.d/dataverse.conf /etc/httpd/conf.d/dataverse.conf
 service httpd start
+curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
+cp -a /etc/shibboleth/shibboleth2.xml /etc/shibboleth/shibboleth2.xml.orig
+# FIXME: automate this?
+#curl 'https://www.testshib.org/cgi-bin/sp2config.cgi?dist=Others&hostname=pdurbin.pagekite.me' > /etc/shibboleth/shibboleth2.xml
+#service shibd restart
+#curl -k --sslv3 https://pdurbin.pagekite.me/Shibboleth.sso/Metadata > /downloads/pdurbin.pagekite.me
+#service httpd restart
