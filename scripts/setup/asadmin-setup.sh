@@ -20,7 +20,7 @@
 
 ##
 # Default values - Change to suit your machine.
-DEFAULT_GLASSFISH_ROOT=/Applications/NetBeans/glassfish4
+DEFAULT_GLASSFISH_ROOT=/Applications/NetBeans/glassfish-4.0
 DEFAULT_DOMAIN=domain1
 DEFAULT_ASADMIN_OPTS=" "
 
@@ -77,7 +77,7 @@ fi
 # External dependencies
 PGSQL_DRIVER_URL=http://jdbc.postgresql.org/download/postgresql-9.3-1100.jdbc41.jar
 
-if [ $SUDO_USER == "vagrant" ]
+if [ "$SUDO_USER" = "vagrant" ]
   then
   echo "We are running in a Vagrant environment."
   cat /etc/redhat-release
@@ -177,7 +177,7 @@ if ! grep -qs postgres $DOMAIN_LIB/*
     echo postgresql driver already installed.
 fi
 
-if [ $SUDO_USER == "vagrant" ]
+if [ "$SUDO_USER" = "vagrant" ]
   then
   /scripts/installer/glassfish-setup.sh
   echo "Done configuring Vagrant environment"

@@ -47,21 +47,7 @@ public class Datasets extends AbstractApiBean {
     @EJB
     DataverseServiceBean dataverseService;
 
-    @GET
-    public Response list(@QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
-		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-		
-		// TODO filter by what the user can see.
-		
-        List<Dataset> datasets = datasetService.findAll();
-        JsonArrayBuilder datasetsArrayBuilder = Json.createArrayBuilder();
-        for (Dataset dataset : datasets) {
-           datasetsArrayBuilder.add( json(dataset) );
-        }
-		return okResponse(datasetsArrayBuilder);
-        
-    }
+    
 	
 	@GET
 	@Path("{id}")
