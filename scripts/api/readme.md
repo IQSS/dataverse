@@ -87,9 +87,6 @@ Publish the Dataverse pointed by `identifier`, which can either by the dataverse
 
 ### Datasets
 
-	GET http://{{SERVER}}/api/datasets/?key={{apikey}}
-
-List all datasets the apikey is allowed to see.
 
 	GET http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
 
