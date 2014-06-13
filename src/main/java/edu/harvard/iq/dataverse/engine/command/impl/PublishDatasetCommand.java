@@ -45,6 +45,10 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
+        
+        if ( theDataset.getLatestVersion().isReleased() ) {
+            throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
+        }
 
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
