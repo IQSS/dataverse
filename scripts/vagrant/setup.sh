@@ -1,7 +1,9 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
+echo "Adding Shibboleth yum repo"
+cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d/shibboleth.repo
 #yum install -y java-1.7.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl
-yum install -y java-1.7.0-openjdk-devel postgresql-server httpd mod_ssl
+yum install -y java-1.7.0-openjdk-devel postgresql-server httpd mod_ssl shibboleth
 service postgresql initdb
 service postgresql stop
 cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf
