@@ -20,7 +20,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
   config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh"
   #config.vm.provision "shell", path: "scripts/setup/asadmin-setup.sh"
-  #config.vm.provision "shell", path: "scripts/vagrant/deploy.sh"
   config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 
   # Create a forwarded port mapping which allows access to a specific port
