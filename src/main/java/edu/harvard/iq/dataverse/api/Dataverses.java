@@ -62,6 +62,7 @@ public class Dataverses extends AbstractApiBean {
 	
 	@GET
 	public String list() {
+        // TODO rethink this
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		for ( Dataverse d : dataverseSvc.findAll() ) {
 			bld.add(json(d));
@@ -324,6 +325,7 @@ public class Dataverses extends AbstractApiBean {
 
 			@Override
 			public Void visit(Dataset ds) {
+                // TODO: check for permission to view drafts
 				jab.add( json(ds).add("type", "dataset") );
 				return null;
 			}
