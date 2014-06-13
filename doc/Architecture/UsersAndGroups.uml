@@ -17,6 +17,7 @@ package existingCode {
 package assignees {
   class Assignee {
     + displayString()
+    + showInLists: Boolean
   }
 
   class User {
@@ -29,10 +30,11 @@ package assignees {
   }
 
   class GuestUser {
-    
+    showInLists: False
   }
+
   note bottom
-   Invariant:
+   Maintains invariant:
    we <b>always</b> have a user
   end note
 
