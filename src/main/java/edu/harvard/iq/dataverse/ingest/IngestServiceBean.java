@@ -316,9 +316,26 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
+    // TODO: consider deprecating this method in favor of the version 
+    // defined below, that takes datasetversion as the argument. 
+    // -- L.A. 4.0 post-beta. 
+    //@Deprecated
     public void startIngestJobs (Dataset dataset) {
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
+                dataFile.SetIngestInProgress();
+                dataFile = fileService.save(dataFile);
+                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
+                asyncIngestAsTabular(dataFile);
+            }
+        }
+    }
+    
+    public void startIngestJobs (DatasetVersion datasetVersion) {
+        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            
+            if (dataFile != null && dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
                 dataFile = fileService.save(dataFile);
                 logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
@@ -418,6 +435,7 @@ public class IngestServiceBean {
         // being added here. 
         // -- L.A. 10 June 2014
         boolean ingestSuccessful = false;
+        IngestReport errorReport = null;
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
         if (pushContext != null) {
@@ -436,7 +454,13 @@ public class IngestServiceBean {
 
         if (ingestPlugin == null) {
             dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("Tabular data ingest failed: No ingest plugin found for file type "+dataFile.getContentType());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
             dataFile = fileService.save(dataFile);
+            
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
@@ -450,6 +474,14 @@ public class IngestServiceBean {
             tempFileInputStream = new FileInputStream(new File(tempFileLocation));
         } catch (FileNotFoundException notfoundEx) {
             dataFile.SetIngestProblem();
+            
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("Tabular data ingest failed: IO Exception occured while trying to open the file for reading.");
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
@@ -463,6 +495,13 @@ public class IngestServiceBean {
             tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
         } catch (IOException ingestEx) {
             dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("Tabular data ingest failed: "+ingestEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);

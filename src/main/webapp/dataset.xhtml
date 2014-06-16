@@ -354,6 +354,13 @@
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">Explore</span>
                                                 </h:outputLink>
                                             </ui:fragment>
+                                            
+                                            <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
+                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-content="&lt;FONT COLOR=&#34;#cc3300&#34;&gt;ERROR OCCURRED:&lt;BR&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/FONT&gt;">
+                                                    <p:graphicImage value="/resources/images/icon_warning.png"/>
+                                                </a>
+                                            </ui:fragment>    
+                                            
 
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>

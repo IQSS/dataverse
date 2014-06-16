@@ -373,6 +373,9 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
+        // TODO: - ? 
+        // No need to repopulate these values if already set - ?
+        // -- L.A. June 13 2014
         dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
@@ -431,6 +434,7 @@ public class DatasetPage implements java.io.Serializable {
         // queue the data ingest jobs for asynchronous execution: 
         
         ingestService.startIngestJobs(dataset);
+        //ingestService.startIngestJobs(workingVersion);
         
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
