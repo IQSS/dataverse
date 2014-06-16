@@ -37,6 +37,11 @@ public class Shib implements java.io.Serializable {
      */
     List<String> shibAttrs = Arrays.asList(
             "Shib-Identity-Provider",
+            "uid",
+            "cn",
+            "sn",
+            "givenName",
+            "telephoneNumber",
             "eppn",
             "affiliation",
             "unscoped-affiliation",
