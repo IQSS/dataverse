@@ -11,12 +11,18 @@ import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author gdurand
  */
+@NamedQueries({
+	@NamedQuery( name="DataFile.removeFromDatasetVersion",
+		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId")
+})
 @Entity
 public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;

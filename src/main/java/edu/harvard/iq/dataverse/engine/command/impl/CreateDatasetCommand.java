@@ -58,15 +58,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
-        
-        DatasetVersionDatasetUser datasetVersionDataverseUser = new DatasetVersionDatasetUser();        
-        datasetVersionDataverseUser.setDataverseUser(getUser());
-        datasetVersionDataverseUser.setDatasetVersion(theDataset.getEditVersion());
-        datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate);
-        ctxt.em().merge(datasetVersionDataverseUser);
-        
+              
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        
+                
         DataverseRole manager = new DataverseRole();
         manager.addPermissions(EnumSet.allOf(Permission.class));
         manager.setAlias("manager");
@@ -83,6 +77,19 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
+        
+        DatasetVersionDatasetUser datasetVersionDataverseUser = new DatasetVersionDatasetUser();        
+        datasetVersionDataverseUser.setDataverseUser(getUser());
+        datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
+        datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate);  
+        if (savedDataset.getLatestVersion().getId() == null){
+            System.out.print("savedDataset version id is null");
+        } else {
+            datasetVersionDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId().intValue());
+        }       
+        datasetVersionDataverseUser.setDataverseuserid(getUser().getId().intValue());
+        ctxt.em().merge(datasetVersionDataverseUser); 
+        
         return savedDataset;
     }
 

@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -27,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,8 +115,6 @@ public class DatasetPage implements java.io.Serializable {
     private String dropBoxSelection = "";
     private DatasetVersionDifference datasetVersionDifference;
     private Map<Long, Boolean> checked = new HashMap<>();
-
-
 
     private String displayCitation;
 
@@ -316,7 +317,7 @@ public class DatasetPage implements java.io.Serializable {
     public void refresh(ActionEvent e) {
         refresh();
     }
-    
+
     public void refresh() {
         logger.info("refreshing");
         // refresh the working copy of the DatasetVersion:
@@ -341,6 +342,32 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+    }
+
+    public String deleteDataset() {
+
+        Command cmd;
+        try {
+            cmd = new DestroyDatasetCommand(dataset, session.getUser());
+            commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Delete Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataverse.xhtml?id=" + dataset.getOwner().getId() + "&faces-redirect=true";
+    }
+
+
+    private List<FileMetadata> selectedFiles;
+
+    public List<FileMetadata> getSelectedFiles() {
+        return selectedFiles;
+    }
+
+    public void setSelectedFiles(List<FileMetadata> selectedFiles) {
+        this.selectedFiles = selectedFiles;
     }
 
     public String save() {
@@ -373,14 +400,10 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        // TODO: - ? 
-        // No need to repopulate these values if already set - ?
-        // -- L.A. June 13 2014
-        dataset.setOwner(dataverseService.find(ownerId));
         //TODO get real application-wide protocol/authority
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
-               
+
         /*
          * Save and/or ingest files, if there are any:
         
@@ -394,11 +417,76 @@ public class DatasetPage implements java.io.Serializable {
          * individual files, and adding a mechanism to the page for displaying
          * file-specific error reports - in pop-up windows maybe?)
          */
-        
-        ingestService.addFiles(workingVersion, newFiles); 
-        
+        //First Remove Any that have never been ingested;
+        if (this.selectedFiles != null) {
+            Iterator<DataFile> dfIt = newFiles.iterator();
+            while (dfIt.hasNext()) {
+                DataFile dfn = dfIt.next();
+                for (FileMetadata markedForDelete : this.selectedFiles) {
+                    if (markedForDelete.getDataFile() == dfn) {
+                        dfIt.remove();
+                    }
+                }
+            }
+
+            dfIt = dataset.getFiles().iterator();
+            while (dfIt.hasNext()) {
+                DataFile dfn = dfIt.next();
+                for (FileMetadata markedForDelete : this.selectedFiles) {
+                    if (markedForDelete.getId() == null && markedForDelete.getDataFile() == dfn) {
+                        dfIt.remove();
+                    }
+                }
+            }
+
+            Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+
+            while (fmIt.hasNext()) {
+                FileMetadata dfn = fmIt.next();
+                for (FileMetadata markedForDelete : this.selectedFiles) {
+                    if (markedForDelete.getId() == null && compareFileMetadatas(markedForDelete, dfn)) {
+                        fmIt.remove();
+                        break;
+                    }
+                }
+            }
+
+            for (FileMetadata fmd : selectedFiles) {
+                if (!(fmd.getId() == null)) {
+                    System.out.print("fmd " + fmd.getLabel());
+                    Command cmd;
+                    fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
+                    while (fmIt.hasNext()) {
+                        FileMetadata dfn = fmIt.next();
+                        if (fmd.equals(dfn)) {
+                            try {
+                                for (DataFile toDelete : dataset.getFiles()) {
+                                    if (toDelete.equals(dfn.getDataFile())) {
+                                        fmIt.remove();
+                                        cmd = new DeleteDataFileCommand(dfn.getDataFile(), session.getUser());
+                                        Iterator<FileMetadata> tdIt = toDelete.getFileMetadatas().iterator();
+                                        while (tdIt.hasNext()){
+                                             FileMetadata dfnTest = tdIt.next();
+                                             if(dfn.equals(dfnTest)){
+                                                 tdIt.remove();
+                                             }
+                                        }                                       
+                                        commandEngine.submit(cmd);                                        
+                                    }                                 
+                                }
+                            } catch (CommandException ex) {
+                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
+                                logger.severe(ex.getMessage());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ingestService.addFiles(workingVersion, newFiles);
+
         // Use the API to save the dataset: 
-        
         Command<Dataset> cmd;
         try {
             if (editMode == EditMode.CREATE) {
@@ -432,10 +520,8 @@ public class DatasetPage implements java.io.Serializable {
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        
         ingestService.startIngestJobs(dataset);
-        //ingestService.startIngestJobs(workingVersion);
-        
+
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
 
@@ -479,12 +565,11 @@ public class DatasetPage implements java.io.Serializable {
                 status = getClient().executeMethod(dropBoxMethod);
                 if (status == 200) {
                     dropBoxStream = dropBoxMethod.getResponseBodyAsStream();
-                    
+
                     // If we've made it this far, we must have been able to
                     // make a successful HTTP call to the DropBox server and 
                     // obtain an InputStream - so we can now create a new
                     // DataFile object: 
-                    
                     dFile = ingestService.createDataFile(workingVersion, dropBoxStream, fileName, null);
                     newFiles.add(dFile);
                 }
@@ -502,21 +587,21 @@ public class DatasetPage implements java.io.Serializable {
                         //logger.whocares("...");
                     }
                 }
-            }            
+            }
         }
     }
 
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
-        DataFile dFile = null; 
-        
+        DataFile dFile = null;
+
         try {
             dFile = ingestService.createDataFile(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
-        
+
         newFiles.add(dFile);
 
     }
@@ -534,17 +619,16 @@ public class DatasetPage implements java.io.Serializable {
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
         this.versionTabList = versionTabList;
     }
-    
- 
+
     private List<DatasetVersion> selectedVersions;
+
     public List<DatasetVersion> getSelectedVersions() {
         return selectedVersions;
     }
- 
+
     public void setSelectedVersions(List<DatasetVersion> selectedVersions) {
         this.selectedVersions = selectedVersions;
     }
-
 
     public DatasetVersionDifference getDatasetVersionDifference() {
         return datasetVersionDifference;
@@ -560,11 +644,11 @@ public class DatasetPage implements java.io.Serializable {
             requestContext.execute("openCompareTwo();");
         } else {
             //order depends on order of selection - needs to be chronological order
-            if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue() ){
+            if (this.selectedVersions.get(0).getId().intValue() > this.selectedVersions.get(1).getId().intValue()) {
                 updateVersionDifferences(this.selectedVersions.get(0), this.selectedVersions.get(1));
             } else {
                 updateVersionDifferences(this.selectedVersions.get(1), this.selectedVersions.get(0));
-            }           
+            }
         }
     }
 
@@ -613,5 +697,19 @@ public class DatasetPage implements java.io.Serializable {
             }
             return retList;
         }
+    }
+
+    private boolean compareFileMetadatas(FileMetadata fm1, FileMetadata fm2) {
+        boolean retVal = false;
+        if (fm1.getId() == null && fm2.getId() == null) {
+            retVal = true;
+            retVal &= (fm1.getDataFile().getFilename().equals(fm2.getDataFile().getFilename()));
+            retVal &= (fm1.getCategory().equals(fm2.getCategory()));
+            retVal &= (fm1.getDescription().equals(fm2.getDescription()));
+            retVal &= (fm1.getLabel().equals(fm2.getLabel()));
+        } else {
+            return fm1.equals(fm2);
+        }
+        return retVal;
     }
 }

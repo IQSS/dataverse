@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
@@ -16,13 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.ArrayList; 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
+ *
  * @author michael
  */
 @RequiredPermissions(Permission.DestructiveEdit)
@@ -38,10 +40,22 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         if (doomed.isReleased()) {
+            if (ctxt.files().isPreviouslyPublished(doomed.getId())) {
+                //if previously published leave physical file alone for prior versions
+                FileMetadata fmr = doomed.getFileMetadatas().get(0);
+                for (FileMetadata testfmd : doomed.getFileMetadatas()) {
+                    if (testfmd.getId() > fmr.getId()) {
+                        fmr = testfmd;
+                    }
+                }
+                ctxt.files().deleteFromVersion(fmr.getDatasetVersion(), doomed);
+                String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+                return;
+            }
             throw new IllegalCommandException("Cannot delete a released file", this);
         }
 
-		// We need to delete a bunch of files from the file system;
+            	// We need to delete a bunch of files from the file system;
         // First we try to delete the data file itself; if that 
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
@@ -103,7 +117,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
              * flush, the dataset still thinks it has the file that was just
              * deleted.
              */
-             // ctxt.em().flush();
+            // ctxt.em().flush();
 
             /**
              * We *could* re-index the entire dataset but it's more efficient to
@@ -119,12 +133,13 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
              * https://redmine.hmdc.harvard.edu/issues/3643
              */
         }
+
     }
 
     private List<Path> listCachedFiles(DataFile dataFile) {
         List<Path> victims = new ArrayList<>();
 
-            // cached files for a given datafiles are stored on the filesystem
+        // cached files for a given datafiles are stored on the filesystem
         // as <filesystemname>.*; for example, <filename>.thumb64 or 
         // <filename>.RData.
         final String baseName = dataFile.getFileSystemName();
@@ -152,5 +167,5 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
         return victims;
     }
-	
+
 }

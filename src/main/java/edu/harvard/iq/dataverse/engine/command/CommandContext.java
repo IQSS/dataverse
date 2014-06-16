@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -41,5 +42,7 @@ public interface CommandContext {
 	public PermissionServiceBean permissions();
 	
 	public DataverseFacetServiceBean facets(); 
+        
+        public DataFileServiceBean files(); 
 	
 }

@@ -91,6 +91,24 @@ public class DatasetServiceBean {
        boolean u = em.createQuery(query).getResultList().size()==0;
        return u;
     }
+   
+   public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user){        
+       
+        DatasetVersionDatasetUser  ddu = null;       
+        Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
+                + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
+        query.setParameter("versionId", version.getId());
+        query.setParameter("userId", user.getId());
+        System.out.print("versionId: " +  version.getId());
+        System.out.print("userId: " +  user.getId());
+        System.out.print(query.toString());
+        try {
+            ddu = (DatasetVersionDatasetUser) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return ddu;
+   }
     
     /*
     public Study getStudyByGlobalId(String identifier) {

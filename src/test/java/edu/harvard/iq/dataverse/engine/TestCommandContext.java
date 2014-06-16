@@ -64,5 +64,10 @@ public class TestCommandContext implements CommandContext {
 	
 	@Override
 	public DataverseEngine engine() { return new TestDataverseEngine(this); }
+
+    @Override
+    public DataFileServiceBean files() {
+        return null;
+    }
 	
 }

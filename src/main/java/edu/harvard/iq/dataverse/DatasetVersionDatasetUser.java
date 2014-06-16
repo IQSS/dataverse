@@ -32,6 +32,22 @@ public class DatasetVersionDatasetUser implements Serializable{
     
     @Id
     private long datasetversionid;
+
+    public long getDataverseuserid() {
+        return dataverseuserid;
+    }
+
+    public void setDataverseuserid(long dataverseuserid) {
+        this.dataverseuserid = dataverseuserid;
+    }
+
+    public long getDatasetversionid() {
+        return datasetversionid;
+    }
+
+    public void setDatasetversionid(long datasetversionid) {
+        this.datasetversionid = datasetversionid;
+    }
     
     @ManyToOne
     @JoinColumn(name = "dataverseuser_id")

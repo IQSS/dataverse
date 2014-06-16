@@ -62,28 +62,24 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
                 dataFile.setCreateDate(updateTime);
             }
         }
-        //String indexingResult = ctxt.index().indexDataset(theDataset);
-        //logger.info("during dataset save, indexing result was: " + indexingResult);
-        boolean updatedDatasetUser = false;
-        for (DatasetVersionDatasetUser ddu : theDataset.getEditVersion().getDatasetVersionDataverseUsers()) {
-            if (ddu.getDataverseUser().equals(this.getUser())) {
-                ddu.setLastUpdateDate(updateTime);
-                ctxt.em().merge(ddu);
-                updatedDatasetUser = true;
-            }
-        }
-
-        if (!updatedDatasetUser) {
-            DatasetVersionDatasetUser datasetDataverseUser = new DatasetVersionDatasetUser();
-            datasetDataverseUser.setDataverseUser(getUser());
-            datasetDataverseUser.setDatasetVersion(theDataset.getEditVersion());
-            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
-            ctxt.em().merge(datasetDataverseUser);
-        }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
+        DatasetVersionDatasetUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(theDataset.getLatestVersion(), this.getUser());
+        
+        if (ddu != null){
+             ddu.setLastUpdateDate(updateTime);
+             ctxt.em().merge(ddu);
+        } else {
+            DatasetVersionDatasetUser datasetDataverseUser = new DatasetVersionDatasetUser();
+            datasetDataverseUser.setDataverseUser(getUser());
+            datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
+            datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
+            datasetDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId());
+            datasetDataverseUser.setDataverseuserid(getUser().getId());
+            ctxt.em().merge(datasetDataverseUser);
+        }
         return savedDataset;
     }
 

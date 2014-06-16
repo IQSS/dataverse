@@ -46,6 +46,7 @@ public class IndexServiceBean {
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
+    public static final String solrDocIdentifierDataset = "dataset_";
     public static final String draftSuffix = "_draft";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
@@ -240,7 +241,7 @@ public class IndexServiceBean {
         /**
          * remove solrIdPublishedStudy, use new IndexableDataset instead
          */
-        String solrIdPublishedStudy = "dataset_" + dataset.getId();
+        String solrIdPublishedStudy = solrDocIdentifierDataset + dataset.getId();
         StringBuilder sb = new StringBuilder();
         sb.append("\nrationale:\n");
         List<DatasetVersion> versions = dataset.getVersions();
