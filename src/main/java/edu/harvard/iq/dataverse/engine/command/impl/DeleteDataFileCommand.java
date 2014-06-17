@@ -44,11 +44,18 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 //if previously published leave physical file alone for prior versions
                 FileMetadata fmr = doomed.getFileMetadatas().get(0);
                 for (FileMetadata testfmd : doomed.getFileMetadatas()) {
-                    if (testfmd.getId() > fmr.getId()) {
+                    System.out.print("in loop fmr id" + fmr.getId() );
+                    System.out.print("in loop testfmd id" + testfmd.getId() );
+                    if (testfmd.getDatasetVersion().getId() > fmr.getDatasetVersion().getId()) {
                         fmr = testfmd;
                     }
                 }
-                ctxt.files().deleteFromVersion(fmr.getDatasetVersion(), doomed);
+               System.out.print("delete version id deleted " + fmr.getDatasetVersion().getId());
+               System.out.print("FM id deleted " + fmr.getId());
+              FileMetadata doomedAndMerged = ctxt.em().merge(fmr);
+                ctxt.em().remove(doomedAndMerged);
+               // ctxt.files().deleteFromVersion(fmr.getDatasetVersion(), doomed);
+                
                 String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
                 return;
             }

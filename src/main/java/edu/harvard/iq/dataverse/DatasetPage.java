@@ -450,30 +450,29 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
-
-            for (FileMetadata fmd : selectedFiles) {
+        
+            for (FileMetadata fmd : selectedFiles) {                
                 if (!(fmd.getId() == null)) {
-                    System.out.print("fmd " + fmd.getLabel());
                     Command cmd;
                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata dfn = fmIt.next();
                         if (fmd.equals(dfn)) {
                             try {
-                                for (DataFile toDelete : dataset.getFiles()) {
-                                    if (toDelete.equals(dfn.getDataFile())) {
-                                        fmIt.remove();
-                                        cmd = new DeleteDataFileCommand(dfn.getDataFile(), session.getUser());
-                                        Iterator<FileMetadata> tdIt = toDelete.getFileMetadatas().iterator();
-                                        while (tdIt.hasNext()){
-                                             FileMetadata dfnTest = tdIt.next();
-                                             if(dfn.equals(dfnTest)){
-                                                 tdIt.remove();
-                                             }
-                                        }                                       
-                                        commandEngine.submit(cmd);                                        
-                                    }                                 
-                                }
+                                Long idToRemove = dfn.getId();
+                                 cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());                                     
+                                 commandEngine.submit(cmd);  
+                                fmIt.remove();
+                                int i = dataset.getFiles().size();
+                                for (int j=0; j<i; j++){
+                                    Iterator<FileMetadata> tdIt = dataset.getFiles().get(j).getFileMetadatas().iterator();
+                                    while (tdIt.hasNext()){
+                                        FileMetadata dsTest = tdIt.next();
+                                        if(dsTest.getId().equals(idToRemove)){
+                                            tdIt.remove();
+                                        }                                            
+                                    }
+                                }                                                                                                                                   
                             } catch (CommandException ex) {
                                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
                                 logger.severe(ex.getMessage());
@@ -483,7 +482,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
-
+        
         ingestService.addFiles(workingVersion, newFiles);
 
         // Use the API to save the dataset: 
