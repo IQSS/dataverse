@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
@@ -357,6 +358,20 @@ public class DatasetPage implements java.io.Serializable {
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataverse.xhtml?id=" + dataset.getOwner().getId() + "&faces-redirect=true";
+    }
+    
+    public String deleteDatasetVersion() {
+        Command cmd;
+        try {
+            cmd = new DeleteDatasetVersionCommand( session.getUser(), dataset);
+            commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Version Delete Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
 

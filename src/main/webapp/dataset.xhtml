@@ -92,11 +92,20 @@
                                                         </p:commandLink>
                                                     </li>
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' }">
-                                                    <li>
-                                                        <p:commandLink id="delete" onclick="deleteConfirmation.show()">                                                          
-                                                            <h:outputText value="Delete Dataset" />
-                                                        </p:commandLink>
-                                                    </li>
+                                                        <li class="divider"></li>
+                                                        <li>
+                                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
+                                                                <h:outputText value="Delete Dataset" />
+                                                            </p:commandLink>
+                                                        </li>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' }">
+                                                        <li class="divider"></li>
+                                                        <li>
+                                                            <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">                                                          
+                                                                <h:outputText value="Delete Draft Version" />
+                                                            </p:commandLink>
+                                                        </li>
                                                     </ui:fragment>
                                                     <!--<li><a href="#" class="ui-commandlink ui-widget" style="pointer-events: none; color: grey;">Permissions</a></li>-->
                                                 </ul>
@@ -308,7 +317,7 @@
                                     </ui:fragment>
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
-                                                selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata}" var="fileMetadata">
+                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata}" var="fileMetadata">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
@@ -364,13 +373,13 @@
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">Explore</span>
                                                 </h:outputLink>
                                             </ui:fragment>
-                                            
+
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
                                                 <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-content="&lt;FONT COLOR=&#34;#cc3300&#34;&gt;ERROR OCCURRED:&lt;BR&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/FONT&gt;">
                                                     <p:graphicImage value="/resources/images/icon_warning.png"/>
                                                 </a>
                                             </ui:fragment>    
-                                            
+
 
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
@@ -520,7 +529,7 @@
                                             <h:outputText value="#{versionTab.versionContributors}" />
                                         </p:column>
                                         <p:column>
-                                            <h:outputText rendered="#{versionTab.released}" id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
+                                            <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
@@ -529,11 +538,16 @@
                     </ui:fragment>
                     <p:confirmDialog id="compareTwo" message="You may only compare two versions." header="Please Select Two Versions" widgetVar="compareTwo">
                     </p:confirmDialog>
-                                        <p:confirmDialog message="Are you sure you want to delete your dataset? This action may not be 'Undone'." header="Delete Dataset" widgetVar="deleteConfirmation">
-                                            <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}">
-                                            </p:commandButton>
-                                            <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
-                                        </p:confirmDialog>
+                    <p:confirmDialog message="Are you sure you want to delete your dataset? This action may not be 'Undone'." header="Delete Dataset" widgetVar="deleteConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                    <p:confirmDialog message="Are you sure you want to delete this draft version? This action may not be 'Undone'." header="Delete Draft Version" widgetVar="deleteVersionConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteVersionConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
