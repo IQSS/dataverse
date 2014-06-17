@@ -5,10 +5,14 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -110,6 +114,43 @@ public class DatasetServiceBean {
         return ddu;
    }
     
+   public List<DatasetLock> getDatasetLocks() {
+        String query = "SELECT sl FROM DatasetLock sl";
+        return (List<DatasetLock>) em.createQuery(query).getResultList();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void addDatasetLock(Long datasetId, Long userId, String info) {
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        DataverseUser user = em.find(DataverseUser.class, userId);
+
+        DatasetLock lock = new DatasetLock();
+        lock.setDataset(dataset);
+        lock.setUser(user);
+        lock.setInfo(info);
+        lock.setStartTime(new Date());
+
+        dataset.setDatasetLock(lock);
+        if (user.getDatasetLocks() == null) {
+            user.setDatasetLocks(new ArrayList());
+        }
+        user.getDatasetLocks().add(lock);
+
+        em.persist(lock);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void removeDatasetLock(Long datasetId) {
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        em.refresh(dataset);
+        DatasetLock lock = dataset.getDatasetLock();
+        if (lock != null) {
+            DataverseUser user = lock.getUser();
+            dataset.setDatasetLock(null);
+            user.getDatasetLocks().remove(lock);
+            em.remove(lock);
+        }
+    }
     /*
     public Study getStudyByGlobalId(String identifier) {
         String protocol = null;
