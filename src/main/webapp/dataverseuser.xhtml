@@ -128,7 +128,7 @@
                                         <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" style="color:#C55B28" />
                                     </h:outputLink>
                                     <h:outputText value=", has been added in the " />
-                                    <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
+                                    <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}">
                                         <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()}" style="color:#C55B28" />
                                     </h:outputLink>
                                     <h:outputText value=" Dataverse. Don't forget to publish it! " />
