@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -46,6 +47,12 @@ public class DataverseUser implements Serializable {
     private String encryptedPassword;
     private String affiliation;
     private String position;
+    
+    @OneToMany(mappedBy = "dataverseUser")
+    private List<DatasetVersionDatasetUser> datasetDataverseUsers;
+    
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<DatasetLock> datasetLocks;
 	
     public Long getId() {
         return id;
@@ -110,20 +117,25 @@ public class DataverseUser implements Serializable {
     public void setPosition(String position) {
         this.position = position;
     }
-
-	public boolean isGuest() {
-		return "__GUEST__".equals( getUserName() );
-	}
-        
-    @OneToMany(mappedBy = "dataverseUser")
-    private List<DatasetVersionDatasetUser> datasetDataverseUsers;
     
+    public boolean isGuest() {
+        return "__GUEST__".equals( getUserName() );
+    }
+        
     public List<DatasetVersionDatasetUser> getDatasetDataverseUsers(){
         return datasetDataverseUsers;
     }
     
     public void setDatasetDataverseUsers(List<DatasetVersionDatasetUser> datasetDataverseUsers){
         this.datasetDataverseUsers = datasetDataverseUsers;
+    }
+    
+    public List<DatasetLock> getDatasetLocks() {
+        return datasetLocks;
+    }
+
+    public void setDatasetLocks(List<DatasetLock> datasetLocks) {
+        this.datasetLocks = datasetLocks;
     }
     
     public String getDisplayName(){
