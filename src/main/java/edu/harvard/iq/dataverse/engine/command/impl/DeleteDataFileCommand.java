@@ -44,25 +44,19 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 //if previously published leave physical file alone for prior versions
                 FileMetadata fmr = doomed.getFileMetadatas().get(0);
                 for (FileMetadata testfmd : doomed.getFileMetadatas()) {
-                    System.out.print("in loop fmr id" + fmr.getId() );
-                    System.out.print("in loop testfmd id" + testfmd.getId() );
                     if (testfmd.getDatasetVersion().getId() > fmr.getDatasetVersion().getId()) {
                         fmr = testfmd;
                     }
                 }
-               System.out.print("delete version id deleted " + fmr.getDatasetVersion().getId());
-               System.out.print("FM id deleted " + fmr.getId());
-              FileMetadata doomedAndMerged = ctxt.em().merge(fmr);
+                FileMetadata doomedAndMerged = ctxt.em().merge(fmr);
                 ctxt.em().remove(doomedAndMerged);
-               // ctxt.files().deleteFromVersion(fmr.getDatasetVersion(), doomed);
-                
                 String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
                 return;
             }
             throw new IllegalCommandException("Cannot delete a released file", this);
         }
 
-            	// We need to delete a bunch of files from the file system;
+        // We need to delete a bunch of files from the file system;
         // First we try to delete the data file itself; if that 
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
