@@ -321,28 +321,24 @@ public class DatasetPage implements java.io.Serializable {
 
     public void refresh() {
         logger.info("refreshing");
-        // refresh the working copy of the DatasetVersion:
-
-        if (editMode == EditMode.FILE) {
-            logger.info("refreshing edit version");
-            if (versionId == null) {
+        // refresh the working copy of the Dataset and DatasetVersion:
+        dataset = datasetService.find(dataset.getId());
+        
+        logger.info("refreshing working version");
+        if (versionId == null) {
+            if (editMode == EditMode.FILE) {
                 workingVersion = dataset.getEditVersion();
             } else {
-                logger.info("refreshing edit version, from version id.");
-                workingVersion = datasetVersionService.find(versionId);
-            }
-        } else {
-            if (versionId == null) {
                 if (!dataset.isReleased()) {
                     workingVersion = dataset.getLatestVersion();
                 } else {
                     workingVersion = dataset.getReleasedVersion();
                 }
-            } else {
-                workingVersion = datasetVersionService.find(versionId);
             }
+        } else {
+            logger.info("refreshing working version, from version id.");
+            workingVersion = datasetVersionService.find(versionId);
         }
-
     }
 
     public String deleteDataset() {
@@ -534,7 +530,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset);
+        ingestService.startIngestJobs(dataset, session.getUser());
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
@@ -619,7 +615,26 @@ public class DatasetPage implements java.io.Serializable {
         newFiles.add(dFile);
 
     }
-
+    /*
+     (likely not needed!)
+    public boolean isLocked() {
+        if (dataset != null) {
+            logger.info("checking lock status of dataset "+dataset.getId());
+            Dataset lockedDataset = datasetService.find(dataset.getId());
+            DatasetLock datasetLock = null;
+            if (lockedDataset != null) {
+                logger.info("looked up dataset;");
+                datasetLock = lockedDataset.getDatasetLock();
+            }
+            if (datasetLock != null) {
+                logger.info("locked!");
+                return true;
+            }
+        }
+        return false;
+    }
+    */
+    
     public DatasetVersionUI getDatasetVersionUI() {
         return datasetVersionUI;
     }

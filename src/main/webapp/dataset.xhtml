@@ -80,7 +80,7 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                     <li>
-                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
+                                                        <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()" >
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                             <h:outputText value="Files (Upload + Edit)" />
                                                         </p:commandLink>
@@ -306,7 +306,8 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
+                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.dataset.locked}"/>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()" disabled="#{DatasetPage.dataset.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
                                             </p:commandLink>
@@ -437,7 +438,8 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
+                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.dataset.locked}"/>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.dataset.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
                                             </p:commandLink>

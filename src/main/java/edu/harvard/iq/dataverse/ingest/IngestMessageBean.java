@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile; 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 
 import java.io.File;
@@ -70,8 +71,9 @@ public class IngestMessageBean implements MessageListener {
             ingestMessage = (IngestMessage) om.getObject();
 
             Iterator iter = ingestMessage.getFileIds().iterator();
+            Long datafile_id = null; 
             while (iter.hasNext()) {
-                Long datafile_id = (Long) iter.next();
+                datafile_id = (Long) iter.next();
 
                 logger.info("Start ingest job;");
                 if (ingestService.ingestAsTabular(datafile_id)) {
@@ -81,6 +83,19 @@ public class IngestMessageBean implements MessageListener {
                     logger.info("Error occurred during ingest job!");
                 }
             }
+            
+            // Remove the dataset lock: 
+            // (note that the assumption here is that all of the datafiles
+            // packed into this IngestMessage belong to the same dataset) 
+            if (datafile_id != null) {
+                DataFile datafile = datafileService.find(datafile_id);
+                if (datafile != null) {
+                    Dataset dataset = datafile.getOwner();
+                    if (dataset != null && dataset.getId() != null) {
+                        datasetService.removeDatasetLock(dataset.getId());
+                    }
+                } 
+            } 
 
         } catch (JMSException ex) {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail

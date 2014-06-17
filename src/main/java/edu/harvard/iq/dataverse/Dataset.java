@@ -110,6 +110,12 @@ public class Dataset extends DvObjectContainer {
         this.datasetLock = datasetLock;
     }
     
+    public boolean isLocked() {
+        if (datasetLock != null) {
+            return true; 
+        }
+        return false; 
+    }
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);

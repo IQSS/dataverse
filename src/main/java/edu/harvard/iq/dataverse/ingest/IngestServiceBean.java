@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -316,17 +317,76 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
+    @Deprecated
+    public void startIngestJobs(Dataset dataset) {
+        startIngestJobs(dataset, null);
+    }
+    
     // TODO: consider deprecating this method in favor of the version 
     // defined below, that takes datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
     //@Deprecated
-    public void startIngestJobs (Dataset dataset) {
+    public void startIngestJobs(Dataset dataset, DataverseUser user) {
+        int count = 0;
+        IngestMessage ingestMessage = null;
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
                 dataFile = fileService.save(dataFile);
+
+                if (ingestMessage == null) {
+                    ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
+                }
+                ingestMessage.addFileId(dataFile.getId());
                 logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
-                asyncIngestAsTabular(dataFile);
+                //asyncIngestAsTabular(dataFile);
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            String info = "Attempting to ingest " + count + " tabular data file(s).";
+            if (user != null) {
+                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
+            } else {
+                datasetService.addDatasetLock(dataset.getId(), null, info);
+            }
+
+            QueueConnection conn = null;
+            QueueSession session = null;
+            QueueSender sender = null;
+            try {
+                conn = factory.createQueueConnection();
+                session = conn.createQueueSession(false, 0);
+                sender = session.createSender(queue);
+
+                //ingestMessage.addFile(new File(tempFileLocation));
+                Message message = session.createObjectMessage(ingestMessage);
+
+                //try {
+                    sender.send(message);
+                //} catch (JMSException ex) {
+                //    ex.printStackTrace();
+                //}
+
+            } catch (JMSException ex) {
+                ex.printStackTrace();
+                //throw new IOException(ex.getMessage());
+            } finally {
+                try {
+
+                    if (sender != null) {
+                        sender.close();
+                    }
+                    if (session != null) {
+                        session.close();
+                    }
+                    if (conn != null) {
+                        conn.close();
+                    }
+                } catch (JMSException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -342,6 +402,7 @@ public class IngestServiceBean {
                 asyncIngestAsTabular(dataFile);
             }
         }
+
     }
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {

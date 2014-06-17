@@ -17,6 +17,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TransactionRequiredException;
 
 /**
  *
@@ -121,36 +122,51 @@ public class DatasetServiceBean {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addDatasetLock(Long datasetId, Long userId, String info) {
+        
         Dataset dataset = em.find(Dataset.class, datasetId);
-        DataverseUser user = em.find(DataverseUser.class, userId);
-
         DatasetLock lock = new DatasetLock();
         lock.setDataset(dataset);
-        lock.setUser(user);
         lock.setInfo(info);
         lock.setStartTime(new Date());
 
-        dataset.setDatasetLock(lock);
-        if (user.getDatasetLocks() == null) {
-            user.setDatasetLocks(new ArrayList());
+        if (userId != null) {
+            DataverseUser user = em.find(DataverseUser.class, userId);
+            lock.setUser(user);
+            if (user.getDatasetLocks() == null) {
+                user.setDatasetLocks(new ArrayList());
+            }
+            user.getDatasetLocks().add(lock);
         }
-        user.getDatasetLocks().add(lock);
-
+        
+        dataset.setDatasetLock(lock);
         em.persist(lock);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void removeDatasetLock(Long datasetId) {
         Dataset dataset = em.find(Dataset.class, datasetId);
-        em.refresh(dataset);
+        //em.refresh(dataset); (?)
         DatasetLock lock = dataset.getDatasetLock();
         if (lock != null) {
             DataverseUser user = lock.getUser();
             dataset.setDatasetLock(null);
             user.getDatasetLocks().remove(lock);
+            /* 
+             * TODO - ?
+             * throw an exception if for whatever reason we can't remove the lock?
+            try {
+            */
             em.remove(lock);
+            /*
+            } catch (TransactionRequiredException te) {
+                ...
+            } catch (IllegalArgumentException iae) {
+                ...
+            }
+            */
         }
     }
+    
     /*
     public Study getStudyByGlobalId(String identifier) {
         String protocol = null;
