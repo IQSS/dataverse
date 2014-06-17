@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -96,17 +97,14 @@ public class StatementManagerImpl implements StatementManager {
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
                 Map<String, String> states = new HashMap<String, String>();
                 states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
-                /**
-                 * @todo DVN 3.x had a studyLock. What's the equivalent in 4.0?
-                 */
-//                StudyLock lock = study.getStudyLock();
-//                if (lock != null) {
-//                    states.put("locked", "true");
-//                    states.put("lockedDetail", lock.getDetail());
-//                    states.put("lockedStartTime", lock.getStartTime().toString());
-//                } else {
-//                    states.put("locked", "false");
-//                }
+                DatasetLock lock = dataset.getDatasetLock();
+                if (lock != null) {
+                    states.put("locked", "true");
+                    states.put("lockedDetail", lock.getInfo());
+                    states.put("lockedStartTime", lock.getStartTime().toString());
+                } else {
+                    states.put("locked", "false");
+                }
                 statement.setStates(states);
                 List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
                 for (FileMetadata fileMetadata : fileMetadatas) {

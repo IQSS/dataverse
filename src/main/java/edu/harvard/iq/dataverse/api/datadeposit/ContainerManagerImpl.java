@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -146,11 +147,11 @@ public class ContainerManagerImpl implements ContainerManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                 }
                 if (studyToLookup != null) {
-//                    StudyLock lockOnStudyLookedup = studyToLookup.getStudyLock();
-//                    if (lockOnStudyLookedup != null) {
-//                        String message = Util.getStudyLockMessage(lockOnStudyLookedup, studyToLookup.getGlobalId());
-//                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//                    }
+                    DatasetLock datasetLock = studyToLookup.getDatasetLock();
+                    if (datasetLock != null) {
+                        String message = datasetLock.getInfo();
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
+                    }
 //                    editStudyService.setStudyVersion(studyToLookup.getId());
 //                    Study studyToEdit = editStudyService.getStudyVersion().getStudy();
                     Dataset studyToEdit = null;

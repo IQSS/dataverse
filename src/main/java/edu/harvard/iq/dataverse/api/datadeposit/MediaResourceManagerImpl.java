@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -132,15 +133,17 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.info("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
-                            /**
-                             * @todo test if StudyLock is necessary
-                             */
-//                            Study study = fileToDelete.getStudy();
-//                            StudyLock studyLock = study.getStudyLock();
-//                            if (studyLock != null) {
-//                                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//                            }
+                            Dataset dataset = fileToDelete.getOwner();
+                            DatasetLock datasetLock = dataset.getDatasetLock();
+                            if (datasetLock != null) {
+                                /**
+                                 * @todo it seems like datasetLock is always
+                                 * null. re-test when DatasetLock is more
+                                 * finalized.
+                                 */
+                                String message = datasetLock.getInfo();
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
+                            }
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
                             if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dataverseThatOwnsFile)) {
@@ -195,11 +198,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
             }
-//            StudyLock studyLock = study.getStudyLock();
-//            if (studyLock != null) {
-//                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
-//                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//            }
+            DatasetLock datasetLock = dataset.getDatasetLock();
+            if (datasetLock != null) {
+                String message = datasetLock.getInfo();
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
+            }
             Dataverse dvThatOwnsDataset = dataset.getOwner();
             if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsDataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getUserName() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
