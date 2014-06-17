@@ -124,7 +124,7 @@
                                 </ui:fragment>
                                 <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                     <h:outputText value="The dataset, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                    <h:outputLink value="/dataset.xhtml?id=#{item.objectId}">
+                                    <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
                                         <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" style="color:#C55B28" />
                                     </h:outputLink>
                                     <h:outputText value=", has been added in the " />
