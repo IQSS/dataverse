@@ -38,7 +38,7 @@ public class Dataset extends DvObjectContainer {
     @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id DESC")
     private List<DatasetVersion> versions = new ArrayList();
-    @OneToOne(mappedBy = "study", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToOne(mappedBy = "dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
 
     public Dataset() {
