@@ -360,11 +360,6 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
-    @Deprecated
-    public void startIngestJobs(Dataset dataset) {
-        startIngestJobs(dataset, null);
-    }
-    
     // TODO: consider deprecating this method in favor of the version 
     // defined below, that takes datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
