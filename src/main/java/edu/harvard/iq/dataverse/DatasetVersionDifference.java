@@ -392,6 +392,26 @@ public class DatasetVersionDifference {
 
         FileMetadata fm1;
         FileMetadata fm2;
+        
+           Collections.sort(originalVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
+                public int compare(FileMetadata l1, FileMetadata l2) {
+                    FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
+                    FileMetadata fm2 = l2;
+                    int a = fm1.getDataFile().getId().intValue();
+                    int b = fm2.getDataFile().getId().intValue();
+                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                }
+            });
+           
+                      Collections.sort(newVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
+                public int compare(FileMetadata l1, FileMetadata l2) {
+                    FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
+                    FileMetadata fm2 = l2;
+                    int a = fm1.getDataFile().getId().intValue();
+                    int b = fm2.getDataFile().getId().intValue();
+                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                }
+            });
 
         while (i < originalVersion.getFileMetadatas().size()
                 && j < newVersion.getFileMetadatas().size()) {

@@ -42,7 +42,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
         if (doomed.isReleased()) {
             if (doomed.getLatestVersion().isDraft()) {
                 DatasetVersion doomedVersion = doomed.getLatestVersion();
-
+                Long versionId = doomedVersion.getId();
                 // Users
                 Iterator<DatasetVersionDatasetUser> duIt = doomedVersion.getDatasetVersionDataverseUsers().iterator();
 
@@ -65,6 +65,14 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 
                 DatasetVersion doomedAndMerged = ctxt.em().merge(doomedVersion);
                 ctxt.em().remove(doomedAndMerged);
+                
+                Iterator <DatasetVersion> dvIt = doomed.getVersions().iterator();
+                while (dvIt.hasNext()){
+                    DatasetVersion dv = dvIt.next();
+                    if(versionId.equals(dv.getId())){
+                          dvIt.remove();
+                    }
+                }
                 ctxt.index().indexDataset(doomed);
                 return;
             }
