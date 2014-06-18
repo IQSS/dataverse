@@ -20,7 +20,7 @@ function bind_bsui_components(){
     });
 
     // Permissions + Dataset Tooltips/Popovers                
-    $("a[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
+    $("[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
     $("a[data-toggle='popover']").popover();
 
 }
