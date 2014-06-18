@@ -118,10 +118,10 @@
                                             <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse" />
                                         </h:outputLink>
                                         <h:outputText value=", has been created in the " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse" />
                                         </h:outputLink>
-                                        <h:outputText value=" Dataverse. Don't forget to publish it! " />
+                                        <h:outputText value=". Don't forget to publish it! " />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
