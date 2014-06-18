@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -58,8 +59,8 @@ public class UserNotification implements Serializable {
         this.user = user;
     }
 
-    public Timestamp getSendDate() {
-        return sendDate;
+    public String getSendDate() {
+        return new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(sendDate);
     }
 
     public void setSendDate(Timestamp sendDate) {
