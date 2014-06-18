@@ -61,10 +61,12 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -99,6 +101,7 @@ import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import org.apache.commons.lang.StringUtils;
+import java.util.zip.GZIPInputStream;
 
 /**
  *
@@ -195,13 +198,53 @@ public class IngestServiceBean {
             if (recognizedType != null && !recognizedType.equals("")) {
                 // is it any better than the type that was supplied to us,
                 // if any?
-
-                if (contentType == null || contentType.equals("") || contentType.equalsIgnoreCase("application/octet-stream")) {
+                
+                if (contentType == null || 
+                        contentType.equals("") || 
+                        contentType.equalsIgnoreCase("application/octet-stream") ||
+                        recognizedType.equals("application/fits-gzipped")) {
                     datafile.setContentType(recognizedType);
                 }
             }
         } catch (IOException ex) {
             logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
+        }
+        
+        if (datafile.getContentType().equals("application/fits-gzipped")) {
+            // Uncompress the FITS stream, save and treat it as regular FITS:
+            InputStream uncompressedIn = null; 
+            BufferedOutputStream uncompressedOut = null;
+            String backupFilename = datafile.getFileSystemName();
+            try {
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                
+                datasetService.generateFileSystemName(datafile);
+                uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                
+                int bufsize = 8192;
+                byte[] bffr = new byte[bufsize];
+                while ((bufsize = uncompressedIn.read(bffr)) != -1) {
+                    uncompressedOut.write(bffr, 0, bufsize);
+                }
+
+            } catch (IOException ioex) {
+                datafile.setFileSystemName(backupFilename);
+                return datafile;
+            } finally {
+                if (uncompressedIn != null) {
+                    try {uncompressedIn.close();} catch (IOException e) {}
+                }
+                if (uncompressedOut != null) {
+                    try {uncompressedOut.close();} catch (IOException e) {}
+                }
+            }
+            
+            // finally, if the file name had the ".gz" extension, remove it, 
+            // since we have uncompressed it:
+            if (fileName != null && fileName.matches(".*\\.gz$")) {
+                datafile.getFileMetadatas().get(0).setLabel(fileName.replaceAll("\\.gz$", ""));
+            }
+            datafile.setContentType("application/fits");
         }
         
         return datafile;
@@ -962,7 +1005,7 @@ public class IngestServiceBean {
                 if (userEnteredFileDescription != null
                         && !(userEnteredFileDescription.equals(""))) {
 
-                    metadataSummary = userEnteredFileDescription.concat("\n" + metadataSummary);
+                    metadataSummary = userEnteredFileDescription.concat(";\n" + metadataSummary);
                 }
                 fileMetadata.setDescription(metadataSummary);
             }

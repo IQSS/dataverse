@@ -221,7 +221,7 @@ public class FileUtil implements java.io.Serializable  {
         // recognized formats that we want to support compressed:
 
         if ("application/x-gzip".equals(fileType)) {
-            logger.info("we'll run additional checks on this gzipped file.");
+            logger.fine("we'll run additional checks on this gzipped file.");
             // We want to be able to support gzipped FITS files, same way as
             // if they were just regular FITS files:
             FileInputStream gzippedIn = new FileInputStream(f);
@@ -230,9 +230,7 @@ public class FileUtil implements java.io.Serializable  {
             // file does exist and can be opened)
             InputStream uncompressedIn = null; 
             try {
-                logger.info("trying to open uncompressed stream.");
                 uncompressedIn = new GZIPInputStream(gzippedIn);
-                logger.info("trying FITS checker on uncompressed stream.");
                 if (isFITSFile(uncompressedIn)) {
                     fileType = "application/fits-gzipped";
                 }
@@ -245,7 +243,7 @@ public class FileUtil implements java.io.Serializable  {
             // A "shape file" check will go here: 
         } 
         
-        logger.info("returning fileType "+fileType);
+        logger.fine("returning fileType "+fileType);
         return fileType;
     }
     
@@ -283,14 +281,13 @@ public class FileUtil implements java.io.Serializable  {
 
         try {
             byte[] b = new byte[magicWordLength];
-            logger.info("attempting to read "+magicWordLength+" bytes from the FITS format candidate stream.");
+            logger.fine("attempting to read "+magicWordLength+" bytes from the FITS format candidate stream.");
             if (ins.read(b, 0, magicWordLength) != magicWordLength) {
-                logger.info("failed to read bytes!");
                 throw new IOException();
             }
 
             if (magicWord.equals(new String(b))) {
-                logger.info("yes, this is FITS file!");
+                logger.fine("yes, this is FITS file!");
                 isFITS = true;
             }
         } catch (IOException ex) {
