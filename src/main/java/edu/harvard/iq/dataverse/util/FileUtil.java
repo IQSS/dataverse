@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.nio.channels.FileChannel;
@@ -40,6 +41,7 @@ import javax.ejb.EJBException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.util.zip.GZIPInputStream;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -212,14 +214,45 @@ public class FileUtil implements java.io.Serializable  {
         } else {
             logger.fine("fileExtension is null");
         }
+        
+        // step 5: 
+        // if this is a compressed file - zip or gzip - we'll check the 
+        // file(s) inside the compressed stream and see if it's one of our
+        // recognized formats that we want to support compressed:
 
-        logger.fine("returning fileType "+fileType);
+        if ("application/x-gzip".equals(fileType)) {
+            logger.info("we'll run additional checks on this gzipped file.");
+            // We want to be able to support gzipped FITS files, same way as
+            // if they were just regular FITS files:
+            FileInputStream gzippedIn = new FileInputStream(f);
+            // (new FileInputStream() can throw a "filen not found" exception;
+            // however, if we've made it this far, it really means that the 
+            // file does exist and can be opened)
+            InputStream uncompressedIn = null; 
+            try {
+                logger.info("trying to open uncompressed stream.");
+                uncompressedIn = new GZIPInputStream(gzippedIn);
+                logger.info("trying FITS checker on uncompressed stream.");
+                if (isFITSFile(uncompressedIn)) {
+                    fileType = "application/fits-gzipped";
+                }
+            } catch (IOException ioex) {
+                if (uncompressedIn != null) {
+                    try {uncompressedIn.close();} catch (IOException e) {}
+                }
+            }
+        } if ("application/zip".equals(fileType)) {
+            // A "shape file" check will go here: 
+        } 
+        
+        logger.info("returning fileType "+fileType);
         return fileType;
     }
     
     public static String determineFileType(String fileName) {
         return MIME_TYPE_MAP.getContentType(fileName);
     }
+    
     
     /* 
      * Custom method for identifying FITS files: 
@@ -230,28 +263,38 @@ public class FileUtil implements java.io.Serializable  {
      * -- L.A. 4.0 alpha
     */
     private static boolean isFITSFile(File file) {
+        BufferedInputStream ins = null;
+
+        try {
+            ins = new BufferedInputStream(new FileInputStream(file));
+            return isFITSFile(ins);
+        } catch (IOException ex) {
+        } 
+        
+        return false;
+    }
+     
+    private static boolean isFITSFile(InputStream ins) {
         boolean isFITS = false;
 
         // number of header bytes read for identification: 
         int magicWordLength = 6;
         String magicWord = "SIMPLE";
 
-        BufferedInputStream ins = null;
-
         try {
-            ins = new BufferedInputStream(new FileInputStream(file));
-
             byte[] b = new byte[magicWordLength];
-
+            logger.info("attempting to read "+magicWordLength+" bytes from the FITS format candidate stream.");
             if (ins.read(b, 0, magicWordLength) != magicWordLength) {
+                logger.info("failed to read bytes!");
                 throw new IOException();
             }
 
             if (magicWord.equals(new String(b))) {
+                logger.info("yes, this is FITS file!");
                 isFITS = true;
             }
         } catch (IOException ex) {
-            isFITS = false;
+            isFITS = false; 
         } finally {
             if (ins != null) {
                 try {
@@ -260,7 +303,7 @@ public class FileUtil implements java.io.Serializable  {
                 }
             }
         }
-
+    
         return isFITS;
     }
     

@@ -320,11 +320,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void refresh() {
-        logger.info("refreshing");
+        logger.fine("refreshing");
         // refresh the working copy of the Dataset and DatasetVersion:
         dataset = datasetService.find(dataset.getId());
         
-        logger.info("refreshing working version");
+        logger.fine("refreshing working version");
         if (versionId == null) {
             if (editMode == EditMode.FILE) {
                 workingVersion = dataset.getEditVersion();
@@ -336,7 +336,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         } else {
-            logger.info("refreshing working version, from version id.");
+            logger.fine("refreshing working version, from version id.");
             workingVersion = datasetVersionService.find(versionId);
         }
     }
@@ -518,7 +518,7 @@ public class DatasetPage implements java.io.Serializable {
                 error.append(cause + " ");
                 error.append(cause.getMessage() + " ");
             }
-            logger.info("Couldn't save dataset: " + error.toString());
+            logger.fine("Couldn't save dataset: " + error.toString());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + error.toString()));
             return null;
         } catch (CommandException ex) {
@@ -564,7 +564,7 @@ public class DatasetPage implements java.io.Serializable {
             String fileName = dbObject.getString("name");
             int fileSize = dbObject.getInt("bytes");
 
-            logger.info("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
+            logger.fine("DropBox url: " + fileLink + ", filename: " + fileName + ", size: " + fileSize);
 
             DataFile dFile = null;
 
@@ -619,7 +619,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isLocked() {
         if (dataset != null) {
-            logger.info("checking lock status of dataset "+dataset.getId());
+            logger.fine("checking lock status of dataset "+dataset.getId());
             if (dataset.isLocked()) {
                 // refresh the dataset and version, if the current working
                 // version of the dataset is locked:
@@ -630,7 +630,7 @@ public class DatasetPage implements java.io.Serializable {
             if (lookedupDataset != null) {
                 datasetLock = lookedupDataset.getDatasetLock();
                 if (datasetLock != null) {
-                    logger.info("locked!");
+                    logger.fine("locked!");
                     return true;
                 }
             }
