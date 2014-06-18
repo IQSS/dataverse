@@ -391,6 +391,7 @@ public class IngestServiceBean {
         }
     }
     
+    /*
     public void startIngestJobs (DatasetVersion datasetVersion) {
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
@@ -404,6 +405,7 @@ public class IngestServiceBean {
         }
 
     }
+    */
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
         //produceDiscreteNumericSummaryStatistics(dataFile); 
@@ -432,7 +434,7 @@ public class IngestServiceBean {
             }
         }
     }
-    
+    /*
     public boolean asyncIngestAsTabular(DataFile dataFile) {
         boolean ingestSuccessful = true;
 
@@ -480,7 +482,7 @@ public class IngestServiceBean {
 
         return ingestSuccessful;
     }
-    
+    */
     public boolean ingestAsTabular(Long datafile_id) { //DataFile dataFile) throws IOException {
         DataFile dataFile = fileService.find(datafile_id);
         if (dataFile != null) {
@@ -571,73 +573,69 @@ public class IngestServiceBean {
         }
 
         try {
-        if (tabDataIngest != null) {
-            File tabFile = tabDataIngest.getTabDelimitedFile();
+            if (tabDataIngest != null) {
+                File tabFile = tabDataIngest.getTabDelimitedFile();
 
-            if (tabDataIngest.getDataTable() != null
-                    && tabFile != null
-                    && tabFile.exists()) {
+                if (tabDataIngest.getDataTable() != null
+                        && tabFile != null
+                        && tabFile.exists()) {
 
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
-                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
+                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
 
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
-                } else {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
-                }
-                
-                
-                // and we want to save the original of the ingested file: 
-                try {
-                    saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
-                } catch (IOException iox) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
-                }
-                
-                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                
+                    if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
+                    } else {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                    }
+
+                    // and we want to save the original of the ingested file: 
+                    try {
+                        saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
+                    } catch (IOException iox) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
+                    }
+
+                    Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+
                 // and change the mime type to "tabular" on the final datafile, 
-                // and replace (or add) the extension ".tab" to the filename: 
-                
-                dataFile.setContentType(MIME_TYPE_TAB);
-                dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));  
+                    // and replace (or add) the extension ".tab" to the filename: 
+                    dataFile.setContentType(MIME_TYPE_TAB);
+                    dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));
 
-                dataFile.setDataTable(tabDataIngest.getDataTable());
-                tabDataIngest.getDataTable().setDataFile(dataFile);
-                
-                produceSummaryStatistics(dataFile);
+                    dataFile.setDataTable(tabDataIngest.getDataTable());
+                    tabDataIngest.getDataTable().setDataFile(dataFile);
 
-                
-                dataFile.setIngestDone();
-                dataFile = fileService.save(dataFile);
-                FacesMessage facesMessage = new FacesMessage("ingest done");
-                pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
-                
+                    produceSummaryStatistics(dataFile);
+
+                    dataFile.setIngestDone();
+                    dataFile = fileService.save(dataFile);
+                    FacesMessage facesMessage = new FacesMessage("ingest done");
+                    pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
+
                 //try {
-                //} catch (IOException sumStatEx) {
-                //    dataFile.SetIngestProblem();
-                //    dataFile = fileService.save(dataFile);
-                //    FacesMessage facesMessage = new FacesMessage("ingest failed");
-                //    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-                //    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-                //    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
-                //}
-                
-                ingestSuccessful = true;                
+                    //} catch (IOException sumStatEx) {
+                    //    dataFile.SetIngestProblem();
+                    //    dataFile = fileService.save(dataFile);
+                    //    FacesMessage facesMessage = new FacesMessage("ingest failed");
+                    //    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+                    //    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+                    //    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
+                    //}
+                    ingestSuccessful = true;
+                }
             }
-        }
         } catch (IOException postIngestEx) {
             dataFile.SetIngestProblem();
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: post-ingest tasks. Sent push notification to the page.");
         }
-        
+
         
         return ingestSuccessful;
     }
