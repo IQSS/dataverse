@@ -138,7 +138,7 @@ function post_edit_files(){
 
 function addDeleteTooltip(){
     var fileChckbx = $('div[id$="filesTable"] table td.ui-selection-column div.ui-chkbox-box span.ui-chkbox-icon');
-    $(fileChckbx).wrapInner('<a href="#" data-toggle="tooltip" data-container="body" data-trigger="hover" data-placement="top" data-original-title="Delete file" style="width:16px;height:16px;display:block;"></a>');
+    $(fileChckbx).wrapInner('<a href="#" data-toggle="tooltip" data-container="body" data-trigger="hover" data-placement="top" data-original-title="Delete file" onclick="event.preventDefault();" style="width:16px;height:16px;display:block;"></a>');
     $(fileChckbx).children('a[data-toggle="tooltip"]').tooltip();
 }
 
