@@ -309,12 +309,6 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (study.isReleased()) {
                             if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 logger.info("destroying working copy version of study " + study.getGlobalId());
-                                /**
-                                 * @todo Bug #4129: Delete Dataset: Deleting a
-                                 * draft of a published dataset does not removed
-                                 * deleted draft from index.
-                                 * https://redmine.hmdc.harvard.edu/issues/4129
-                                 */
                                 try {
                                     engineSvc.submit(new DeleteDatasetVersionCommand(vdcUser, study));
                                 } catch (CommandException ex) {
