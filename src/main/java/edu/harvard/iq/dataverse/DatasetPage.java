@@ -539,6 +539,7 @@ public class DatasetPage implements java.io.Serializable {
         // reset values
         dataset = datasetService.find(dataset.getId());
         ownerId = dataset.getOwner().getId();
+        setVersionTabList(resetVersionTabList());
         newFiles.clear();
         editMode = null;
     }
