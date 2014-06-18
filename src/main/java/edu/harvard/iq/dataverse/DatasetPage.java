@@ -615,25 +615,27 @@ public class DatasetPage implements java.io.Serializable {
         newFiles.add(dFile);
 
     }
-    /*
-     (likely not needed!)
+
     public boolean isLocked() {
         if (dataset != null) {
             logger.info("checking lock status of dataset "+dataset.getId());
-            Dataset lockedDataset = datasetService.find(dataset.getId());
-            DatasetLock datasetLock = null;
-            if (lockedDataset != null) {
-                logger.info("looked up dataset;");
-                datasetLock = lockedDataset.getDatasetLock();
+            if (dataset.isLocked()) {
+                // refresh the dataset and version, if the current working
+                // version of the dataset is locked:
+                refresh();
             }
-            if (datasetLock != null) {
-                logger.info("locked!");
-                return true;
+            Dataset lookedupDataset = datasetService.find(dataset.getId());
+            DatasetLock datasetLock = null;
+            if (lookedupDataset != null) {
+                datasetLock = lookedupDataset.getDatasetLock();
+                if (datasetLock != null) {
+                    logger.info("locked!");
+                    return true;
+                }
             }
         }
         return false;
     }
-    */
     
     public DatasetVersionUI getDatasetVersionUI() {
         return datasetVersionUI;
