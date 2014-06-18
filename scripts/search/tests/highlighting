@@ -7,8 +7,9 @@
 #
 # Then this test should pass.
 #
-# Of course, you can't operate on it with SWORD anymore until this
-# ticket is resolved: https://redmine.hmdc.harvard.edu/issues/3993
+# FIXME: It would be great if we could specify the descriptions of
+# files in the zip file we upload to SWORD. See also
+# https://redmine.hmdc.harvard.edu/issues/3232
 #
 diff <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=nick') scripts/search/tests/expected/highlighting-nick-trees
 diff <(curl -s 'http://localhost:8080/api/search?q=trees&showrelevance=true&key=pete') scripts/search/tests/expected/highlighting-pete-trees
