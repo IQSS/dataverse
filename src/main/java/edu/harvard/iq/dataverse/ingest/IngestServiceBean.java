@@ -608,6 +608,23 @@ public class IngestServiceBean {
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
             return false;
+        } catch (Exception unknownEx) {
+            // this is a bit of a kludge, to make sure no unknown exceptions are
+            // left uncaught.
+            dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport(unknownEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            return false;
+            
         }
 
         try {
@@ -668,6 +685,11 @@ public class IngestServiceBean {
             }
         } catch (IOException postIngestEx) {
             dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport(postIngestEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
@@ -734,9 +756,9 @@ public class IngestServiceBean {
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            ingestPlugin = new DTAFileReader(new SAVFileReaderSpi());
+            ingestPlugin = new SAVFileReader(new SAVFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            ingestPlugin = new DTAFileReader(new PORFileReaderSpi());
+            ingestPlugin = new PORFileReader(new PORFileReaderSpi());
         }
 
         return ingestPlugin;

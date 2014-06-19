@@ -336,7 +336,12 @@ public class SAVFileReader  extends TabularDataFileReader{
         if (dataFile != null) {
             throw new IOException ("this plugin does not support external raw data files");
         }
-
+        
+        /* 
+         * this "try" block is for catching unknown/unexpected exceptions 
+         * thrown anywhere in the ingest code:
+         */
+        try {
          /* ingest happens here ... */ 
         
         // the following methods are now executed, in this order:
@@ -416,12 +421,12 @@ public class SAVFileReader  extends TabularDataFileReader{
 	    //Throwable cause = e.getCause();
 	    dbgLog.fine("***** SAVFileReader: ATTENTION: IllegalArgumentException thrown while executing "+methodCurrentlyExecuted);
 	    e.printStackTrace();
-	    throw new IllegalArgumentException ( "in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
+	    throw new IOException ( "IllegalArgumentException in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
 	} catch (IOException e) {
 	    dbgLog.fine("***** SAVFileReader: ATTENTION: IOException thrown while executing "+methodCurrentlyExecuted);
 	    e.printStackTrace();
-	    throw new IOException ( "in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
-	}
+	    throw new IOException ( "IO Exception in method "+methodCurrentlyExecuted+": "+e.getMessage() ); 
+	} 
 	
         /* 
          * Final variable type assignments;
@@ -431,6 +436,7 @@ public class SAVFileReader  extends TabularDataFileReader{
          * maps and lists here... -- L.A. 4.0 beta (?)
          */
 
+        
         for (int indx = 0; indx < variableTypelList.size(); indx++) {
             String varName = dataTable.getDataVariables().get(indx).getName(); 
             int simpleType = 0;
@@ -496,7 +502,17 @@ public class SAVFileReader  extends TabularDataFileReader{
         }        
         
         ingesteddata.setDataTable(dataTable);
-        
+        } catch (Exception ex) {
+            dbgLog.fine("***** SAVFileReader: ATTENTION: unknown exception thrown.");
+	    ex.printStackTrace();
+            String failureMessage = "Unknown exception in SPSS/SAV reader";
+            if (ex.getMessage() != null) {
+                failureMessage = failureMessage.concat(": "+ex.getMessage());
+            } else {
+                failureMessage = failureMessage.concat("; no further information is available.");
+            }
+	    throw new IOException (failureMessage);    
+        }
         dbgLog.info("SAVFileReader: read() end");
         return ingesteddata;
     }
