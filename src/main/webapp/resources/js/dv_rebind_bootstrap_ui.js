@@ -133,7 +133,7 @@ function post_edit_files(){
    hide_breadcrumb();
    bind_bsui_components();
    addDeleteTooltip();
-   show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
+   //show_info_msg('Upload + Edit Dataset Files', 'You can drag and drop your files from your desktop, directly into the upload widget.');
 }
 
 function addDeleteTooltip(){

@@ -286,20 +286,39 @@
                                     <!-- Upload -->
                                     <!--<p:message for="fileUpload" showDetail="true"/>-->
                                     <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
-                                        <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
+                                        <!--<ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                                             <div class="alert alert-info">
                                                 Tip: You can drag and drop your files from your desktop, directly into the upload widget.
                                             </div>
-                                        </ui:fragment>
+                                        </ui:fragment>-->
+                                        <script>
+                                            function uploadWidgetDropMsg() {
+                                                //$('div[id$="fileUpload"] div.ui-fileupload-content').wrapInner('<div>DROP</div>');
+                                                $('div[id$="fileUpload"] div.ui-fileupload-content').prepend('<div class="dropMsg" style="padding:20px;font-size:1.3em;color:#808080;text-align:center;">Drag and drop files here.</div>');
+                                                
+                                                $('div[id$="fileUpload"]').on('hover','div.dropMsg', function() {
+                                                    $(this).css('font-weight','bold');
+                                                });
+                                            }
+                                            function uploadWidgetDropRemoveMsg() {
+                                                $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
+                                            }
+                                            $(document).ready(function() {
+                                                uploadWidgetDropMsg();
+                                            });
+                                        </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add" oncomplete="javascript:bind_bsui_components();addDeleteTooltip();"/>
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add" 
+                                                      oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
-                                        <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                        <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
-                                        </p:commandButton>
-                                        <div style="margin:1em 0;">
-                                            <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                            <p class="help-block">You can also upload your files directly from your Dropbox.</p>
+                                        <div class="panel panel-default" style="margin-top:1em;">
+                                            <div class="panel-body">
+                                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
+                                                <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
+                                                </p:commandButton>
+                                                <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                                <p class="help-block">You can also upload your files directly from your Dropbox.</p>
+                                            </div>
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
@@ -308,7 +327,7 @@
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()" disabled="#{DatasetPage.locked}">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();uploadWidgetDropMsg();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
                                             </p:commandLink>
@@ -625,7 +644,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
-                            Tip: You can add more metadata about this dataset after it's created.
+                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata..
                         </div>
                     </ui:fragment>
 

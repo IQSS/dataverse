@@ -277,7 +277,7 @@ public class DatasetPage implements java.io.Serializable {
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
+            // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             datasetVersionUI = new DatasetVersionUI(workingVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
