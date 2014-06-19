@@ -56,6 +56,7 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
+import org.primefaces.model.SelectableDataModel;
 
 /**
  *
@@ -231,7 +232,6 @@ public class DatasetPage implements java.io.Serializable {
 
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
-
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -279,7 +279,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
-            datasetVersionUI = new DatasetVersionUI(workingVersion);
+            datasetVersionUI = new DatasetVersionUI(workingVersion);            
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }
@@ -322,7 +322,7 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("refreshing");
         // refresh the working copy of the Dataset and DatasetVersion:
         dataset = datasetService.find(dataset.getId());
-        
+
         logger.fine("refreshing working version");
         if (versionId == null) {
             if (editMode == EditMode.FILE) {
@@ -354,11 +354,11 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataverse.xhtml?id=" + dataset.getOwner().getId() + "&faces-redirect=true";
     }
-    
+
     public String deleteDatasetVersion() {
         Command cmd;
         try {
-            cmd = new DeleteDatasetVersionCommand( session.getUser(), dataset);
+            cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Version Delete Failed", " - " + ex.toString()));
@@ -368,7 +368,6 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
-
 
     private List<FileMetadata> selectedFiles;
 
@@ -433,7 +432,7 @@ public class DatasetPage implements java.io.Serializable {
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
                 for (FileMetadata markedForDelete : this.selectedFiles) {
-                    if (markedForDelete.getDataFile() == dfn) {
+                    if (compareFileMetadatas(markedForDelete, dfn.getFileMetadata())) {
                         dfIt.remove();
                     }
                 }
@@ -443,7 +442,7 @@ public class DatasetPage implements java.io.Serializable {
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
                 for (FileMetadata markedForDelete : this.selectedFiles) {
-                    if (markedForDelete.getId() == null && markedForDelete.getDataFile() == dfn) {
+                    if (markedForDelete.getId() == null && compareFileMetadatas(markedForDelete, dfn.getFileMetadata())) {
                         dfIt.remove();
                     }
                 }
@@ -460,29 +459,41 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
-        
-            for (FileMetadata fmd : selectedFiles) {                
-                if (!(fmd.getId() == null)) {
+//delete for files that have been injested....
+
+            for (FileMetadata fmd : selectedFiles) {
+                if (fmd.getId() != null && fmd.getId().intValue() > 0) {
                     Command cmd;
                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata dfn = fmIt.next();
-                        if (fmd.equals(dfn)) {
+                        if (fmd.getId().equals(dfn.getId())) {
                             try {
                                 Long idToRemove = dfn.getId();
-                                 cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());                                     
-                                 commandEngine.submit(cmd);  
+                                cmd = new DeleteDataFileCommand(fmd.getDataFile(), session.getUser());
+                                commandEngine.submit(cmd);
                                 fmIt.remove();
+                                Long fileIdToRemove = dfn.getDataFile().getId();
                                 int i = dataset.getFiles().size();
-                                for (int j=0; j<i; j++){
+                                for (int j = 0; j < i; j++) {
                                     Iterator<FileMetadata> tdIt = dataset.getFiles().get(j).getFileMetadatas().iterator();
-                                    while (tdIt.hasNext()){
+                                    while (tdIt.hasNext()) {
                                         FileMetadata dsTest = tdIt.next();
-                                        if(dsTest.getId().equals(idToRemove)){
+                                        if (dsTest.getId().equals(idToRemove)) {
                                             tdIt.remove();
-                                        }                                            
+                                        }
                                     }
-                                }                                                                                                                                   
+                                }
+                                if (!(dataset.isReleased())) {
+                                    Iterator<DataFile> dfrIt = dataset.getFiles().iterator();
+                                    while (dfrIt.hasNext()) {
+                                        DataFile dsTest = dfrIt.next();
+                                        if (dsTest.getId().equals(fileIdToRemove)) {
+                                            dfrIt.remove();
+                                        }
+                                    }
+                                }
+
                             } catch (CommandException ex) {
                                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
                                 logger.severe(ex.getMessage());
@@ -611,14 +622,14 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
-
+        
         newFiles.add(dFile);
 
     }
 
     public boolean isLocked() {
         if (dataset != null) {
-            logger.fine("checking lock status of dataset "+dataset.getId());
+            logger.fine("checking lock status of dataset " + dataset.getId());
             if (dataset.isLocked()) {
                 // refresh the dataset and version, if the current working
                 // version of the dataset is locked:
@@ -636,7 +647,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    
+
     public DatasetVersionUI getDatasetVersionUI() {
         return datasetVersionUI;
     }

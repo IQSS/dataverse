@@ -35,6 +35,14 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
+                    function checkFilesSelected() {
+                        var count = filesTable.getSelectedRowsCount();
+                        if (count > 0) {
+                            deleteFileConfirmation.show();
+                        } else {
+                            $('button[id$="datasetSave"]').trigger('click');
+                        }
+                    }
 
                     function openDropboxChooser() {
                         options = {
@@ -334,7 +342,8 @@
                                     </ui:fragment>
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
-                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata}" var="fileMetadata">
+                                                 rowIndexVar="rowNum" 
+                                                 selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
@@ -555,6 +564,14 @@
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteVersionConfirmation.hide()" type="button" />
                     </p:confirmDialog>
+                    <p:confirmDialog message="Are you sure you want to delete the selected files? This action may not be 'Undone'." header="Delete Files" widgetVar="deleteFileConfirmation">
+                        <ui:fragment rendered="#{DatasetPage.dataset.released}">
+                            Files will not be removed from previously published versions of the dataset.
+                        </ui:fragment>
+                        <p:commandButton value="Continue" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.save()}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
@@ -635,13 +652,18 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Add Dataset' : 'Save Changes'}" action="#{DatasetPage.save}" update="@all">
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Add Dataset' : 'Save Changes'}" onclick="checkFilesSelected();" >
                         </p:commandButton>
                         <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                     </p:panel>
+                    <p:commandButton value="Direct" id="datasetSave"
+                                     style="display:none"
+                                     update=":datasetForm"
+                                     action="#{DatasetPage.save}">
+                    </p:commandButton>
                 </h:form>
             </ui:define>
         </ui:composition>
