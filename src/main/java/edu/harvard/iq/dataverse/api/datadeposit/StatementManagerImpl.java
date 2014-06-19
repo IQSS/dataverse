@@ -122,11 +122,13 @@ public class StatementManagerImpl implements StatementManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL for file ( " + studyFileUrlString + " ) resulted in " + ex.getMessage());
                     }
                     ResourcePart resourcePart = new ResourcePart(studyFileUrl.toString());
-                    /**
-                     * @todo get this working. show the actual file type
-                     */
-//                    resourcePart.setMediaType(studyFile.getOriginalFileFormat());
-                    resourcePart.setMediaType("application/octet-stream");
+                    // default to something that doesn't throw a org.apache.abdera.util.MimeTypeParseException
+                    String finalFileFormat = "application/octet-stream";
+                    String contentType = dataFile.getContentType();
+                    if (contentType != null) {
+                        finalFileFormat = contentType;
+                    }
+                    resourcePart.setMediaType(finalFileFormat);
                     /**
                      * @todo: Why are properties set on a ResourcePart not
                      * exposed when you GET a Statement?
