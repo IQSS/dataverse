@@ -326,15 +326,11 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();uploadWidgetDropMsg();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-plus" style="margin-right:.3em;"/> Upload + Edit Files
+                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> Upload + Edit Files
                                             </p:commandLink>
                                         </div>
-                                        <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
-                                            <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
-                                        </p>-->
                                     </ui:fragment>
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
@@ -342,7 +338,6 @@
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
-
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
                                                 <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
@@ -396,11 +391,9 @@
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
-                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-trigger="hover" data-html="true" data-content="&lt;FONT COLOR=&#34;#cc3300&#34;&gt;ERROR OCCURRED:&lt;BR&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/FONT&gt;">
-                                                    <p:graphicImage value="/resources/images/icon_warning.png"/>
-                                                </a>
-                                            </ui:fragment>    
-
+                                                <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;Tabular Data Ingest Failed&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                                                    <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
+                                            </ui:fragment>
 
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
@@ -411,8 +404,6 @@
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
                                                 </a>
                                             </ui:fragment>
-
-<!--<p:button value="Download" disabled="#{empty fileMetadata.dataFile.id}" rendered="#{empty fileMetadata.dataFile.id}"/>-->
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div class="btn-group">
@@ -447,13 +438,11 @@
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <h:outputText id="txtInprogess" value="Ingest in progress..." styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
-
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA'}">
-
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
@@ -464,14 +453,10 @@
                                                 <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
                                             </p:commandLink>
                                         </div>
-                                        <!--<p class="bg-info" style="padding:1em; margin-right:200px;">
-                                            <h:outputText value="Use the Edit Dataverse button to edit or add metadata to this dataset." />
-                                        </p>-->
                                     </ui:fragment>
                                     <div style="clear:left;">
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
-
                                 </p:tab>
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                     <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
@@ -657,9 +642,7 @@
                         </p:commandButton>
                         <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
     </h:body>

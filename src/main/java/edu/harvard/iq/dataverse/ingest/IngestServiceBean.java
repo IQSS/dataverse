@@ -557,7 +557,7 @@ public class IngestServiceBean {
             dataFile.SetIngestProblem();
             errorReport = new IngestReport();
             errorReport.setFailure();
-            errorReport.setReport("Tabular data ingest failed: No ingest plugin found for file type "+dataFile.getContentType());
+            errorReport.setReport("No ingest plugin found for file type "+dataFile.getContentType());
             errorReport.setDataFile(dataFile);
             dataFile.setIngestReport(errorReport);
             dataFile = fileService.save(dataFile);
@@ -578,7 +578,7 @@ public class IngestServiceBean {
             
             errorReport = new IngestReport();
             errorReport.setFailure();
-            errorReport.setReport("Tabular data ingest failed: IO Exception occured while trying to open the file for reading.");
+            errorReport.setReport("IO Exception occured while trying to open the file for reading.");
             errorReport.setDataFile(dataFile);
             dataFile.setIngestReport(errorReport);
             dataFile = fileService.save(dataFile);
@@ -598,7 +598,7 @@ public class IngestServiceBean {
             dataFile.SetIngestProblem();
             errorReport = new IngestReport();
             errorReport.setFailure();
-            errorReport.setReport("Tabular data ingest failed: "+ingestEx.getMessage());
+            errorReport.setReport(ingestEx.getMessage());
             errorReport.setDataFile(dataFile);
             dataFile.setIngestReport(errorReport);
             dataFile = fileService.save(dataFile);
