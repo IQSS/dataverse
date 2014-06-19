@@ -51,14 +51,22 @@
                                         <div class="col-sm-6">
                                             <p:inputText id="name" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
                                         </div>
-                                        <label class="control-label" style="padding-right:1em;" for="name" data-container="body" data-toggle="popover" data-placement="right" data-content="The project, department, university, or professor this Dataverse will contain data for.">Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
+                                        <label class="control-label" style="padding-right:1em;" for="name">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The project, department, university, or professor this Dataverse will contain data for.">
+                                                Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                            </a>
+                                        </label>
                                         <p:watermark for="name" value="Enter name..."/>
                                     </div>
                                 </ui:fragment>
                                 <p:message for="name"/>
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
-                                <label class="control-label" style="padding-right:1em;" for="hostDataverse" data-container="body" data-toggle="popover" data-placement="right" data-content="The Dataverse which contains this data.">Host Dataverse</label>
+                                <label class="control-label" style="padding-right:1em;" for="hostDataverse">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">
+                                        Host Dataverse
+                                    </a>
+                                </label>
                                 <h:outputText value="#{ DataversePage.dataverse.getOwner().name }" />
                                 <h:inputHidden value="#{DataversePage.ownerId}" id="hostDataverse" />
                                 <ui:remove><!-- removed for beta -->
@@ -75,21 +83,33 @@
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
-                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;" data-container="body" data-toggle="popover" data-placement="right" data-content="Short name used for the URL of this Dataverse.">Alias <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Short name used for the URL of this Dataverse.">
+                                        Alias <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    </a>
+                                </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="alias" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}"/>
                                         <p:message for="alias"/>
                                     </p:panelGrid>
                                 </div>
-                                <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;" data-container="body" data-toggle="popover" data-placement="right" data-content="The e-mail address(es) of the contact(s) for the Dataverse.">E-mail <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span></label>
+                                <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The e-mail address(es) of the contact(s) for the Dataverse.">
+                                        E-mail <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    </a>
+                                </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="contactEmail" styleClass="form-control" value="#{DataversePage.dataverse.contactEmail}"/>
                                         <p:message for="contactEmail"/>
                                     </p:panelGrid>
                                 </div>
-                                <label class="col-sm-3 control-label" for="affiliation" style="white-space:nowrap;" data-container="body" data-toggle="popover" data-placement="right" data-content="The organization with which this Dataverse is affiliated.">Affiliation</label>
+                                <label class="col-sm-3 control-label" for="affiliation" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The organization with which this Dataverse is affiliated.">
+                                        Affiliation
+                                    </a>
+                                </label>
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
@@ -98,7 +118,11 @@
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group">
-                                <label class="col-sm-3 control-label" for="description" data-container="body" data-toggle="popover" data-placement="right" data-content="A summary describing the purpose, nature, or scope of this Dataverse.">Description</label>
+                                <label class="col-sm-3 control-label" for="description">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A summary describing the purpose, nature, or scope of this Dataverse.">
+                                        Description
+                                    </a>
+                                </label>
                                 <div class="col-sm-8">
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                      rows="5" cols="50"
