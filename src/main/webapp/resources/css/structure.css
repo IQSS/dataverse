@@ -191,7 +191,6 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #citation {padding:.5em; margin-bottom:.5em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
-#keywords {}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group {overflow: hidden;}
@@ -212,6 +211,8 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 #contentTabs div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
+
+#dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
 
 div.popover.fade.top.in {max-width: none;}
 div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}

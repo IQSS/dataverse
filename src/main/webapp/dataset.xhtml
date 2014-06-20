@@ -301,12 +301,13 @@
                                         </ui:fragment>-->
                                         <script>
                                             function uploadWidgetDropMsg() {
-                                                //$('div[id$="fileUpload"] div.ui-fileupload-content').wrapInner('<div>DROP</div>');
-                                                $('div[id$="fileUpload"] div.ui-fileupload-content').prepend('<div class="dropMsg" style="padding:20px;font-size:1.3em;color:#808080;text-align:center;">Drag and drop files here.</div>');
-                                                
-                                                $('div[id$="fileUpload"]').on('hover','div.dropMsg', function() {
-                                                    $(this).css('font-weight','bold');
-                                                });
+                                                var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
+                                                if($(fileUpload).children('#dragdropMsg').length) {
+                                                    // do nothing
+                                                }
+                                                else {
+                                                    $(fileUpload).prepend('<div id="dragdropMsg">Drag and drop files here.</div>');
+                                                }
                                             }
                                             function uploadWidgetDropRemoveMsg() {
                                                 $('div[id$="fileUpload"] div.ui-fileupload-content div.dropMsg').remove();
