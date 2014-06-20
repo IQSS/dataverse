@@ -65,7 +65,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 
                 DatasetVersion doomedAndMerged = ctxt.em().merge(doomedVersion);
                 ctxt.em().remove(doomedAndMerged);
-                
+                //remove version from ds obj before indexing....
                 Iterator <DatasetVersion> dvIt = doomed.getVersions().iterator();
                 while (dvIt.hasNext()){
                     DatasetVersion dv = dvIt.next();

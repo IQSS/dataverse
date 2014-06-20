@@ -18,8 +18,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -40,6 +42,11 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         if (doomed.isReleased()) {
+            /*
+             If the file has been released but also previously published handle here.
+             In this case we're only removing the link to the current version
+             we're not deleting the underlying data file
+             */
             if (ctxt.files().isPreviouslyPublished(doomed.getId())) {
                 //if previously published leave physical file alone for prior versions
                 FileMetadata fmr = doomed.getFileMetadatas().get(0);
@@ -104,12 +111,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error deleting physical file(s) " + failedFiles + " while deleting DataFile " + doomed.getName());
             }
 
-            // Finally, delete the file from the DB.
-            /**
-             * added merge to avoid this: java.lang.IllegalArgumentException:
-             * Entity must be managed to call remove: [DataFile id:42
-             * name:null], try merging the detached and try the remove again
-             */
             DataFile doomedAndMerged = ctxt.em().merge(doomed);
             ctxt.em().remove(doomedAndMerged);
             /**

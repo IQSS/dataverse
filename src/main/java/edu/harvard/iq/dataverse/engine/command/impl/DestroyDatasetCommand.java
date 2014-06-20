@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.engine.Permission;
@@ -14,6 +15,9 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.Iterator;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop it the dataset is
@@ -45,11 +49,16 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             ctxt.em().remove(ra);
         }
 
-        // files
-        for (DataFile df : managedDoomed.getFiles()) {
+        // files need to iterate through and remove 'by hand' to avoid
+        // optimistic lock issues....
+        
+        Iterator <DataFile> dfIt = doomed.getFiles().iterator();
+        while (dfIt.hasNext()){
+            DataFile df = dfIt.next();
             ctxt.engine().submit(new DeleteDataFileCommand(df, getUser()));
+            dfIt.remove();
         }
-
+        
         // version users and versions 
         for (DatasetVersion ver : managedDoomed.getVersions()) {
             for (DatasetVersionDatasetUser ddu : ver.getDatasetVersionDataverseUsers()) {
@@ -65,16 +74,14 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
          ctxt.em().remove( managed );
          }*/
 
-
-
         Dataverse toReIndex = managedDoomed.getOwner();
 
         // dataset
         ctxt.em().remove(managedDoomed);
-        
+
         //remove from index
         String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix);
-        
+
         ctxt.index().indexDataverse(toReIndex);
     }
 

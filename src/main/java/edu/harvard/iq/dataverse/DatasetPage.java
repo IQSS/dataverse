@@ -432,7 +432,7 @@ public class DatasetPage implements java.io.Serializable {
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
                 for (FileMetadata markedForDelete : this.selectedFiles) {
-                    if (compareFileMetadatas(markedForDelete, dfn.getFileMetadata())) {
+                    if (markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
                         dfIt.remove();
                     }
                 }
@@ -442,7 +442,7 @@ public class DatasetPage implements java.io.Serializable {
             while (dfIt.hasNext()) {
                 DataFile dfn = dfIt.next();
                 for (FileMetadata markedForDelete : this.selectedFiles) {
-                    if (markedForDelete.getId() == null && compareFileMetadatas(markedForDelete, dfn.getFileMetadata())) {
+                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getFileSystemName())) {
                         dfIt.remove();
                     }
                 }
@@ -453,7 +453,7 @@ public class DatasetPage implements java.io.Serializable {
             while (fmIt.hasNext()) {
                 FileMetadata dfn = fmIt.next();
                 for (FileMetadata markedForDelete : this.selectedFiles) {
-                    if (markedForDelete.getId() == null && compareFileMetadatas(markedForDelete, dfn)) {
+                    if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getDataFile().getFileSystemName())) {
                         fmIt.remove();
                         break;
                     }
@@ -739,19 +739,5 @@ public class DatasetPage implements java.io.Serializable {
             }
             return retList;
         }
-    }
-
-    private boolean compareFileMetadatas(FileMetadata fm1, FileMetadata fm2) {
-        boolean retVal = false;
-        if (fm1.getId() == null && fm2.getId() == null) {
-            retVal = true;
-            retVal &= (fm1.getDataFile().getFilename().equals(fm2.getDataFile().getFilename()));
-            retVal &= (fm1.getCategory().equals(fm2.getCategory()));
-            retVal &= (fm1.getDescription().equals(fm2.getDescription()));
-            retVal &= (fm1.getLabel().equals(fm2.getLabel()));
-        } else {
-            return fm1.equals(fm2);
-        }
-        return retVal;
     }
 }
