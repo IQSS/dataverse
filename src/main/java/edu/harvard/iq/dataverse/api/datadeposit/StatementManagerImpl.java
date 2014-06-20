@@ -73,12 +73,6 @@ public class StatementManagerImpl implements StatementManager {
                 if (lastUpdateTime != null) {
                     lastUpdatedFinal = lastUpdateTime;
                 } else {
-                    /**
-                     * @todo In DVN 3.x lastUpdated was set on the service bean:
-                     * https://github.com/IQSS/dvn/blob/8ca34aded90511730c35ca32ace844770c24c68e/DVN-root/DVN-web/src/main/java/edu/harvard/iq/dvn/core/study/StudyServiceBean.java#L1803
-                     *
-                     * In 4.0, lastUpdateTime is always null.
-                     */
                     logger.info("lastUpdateTime was null, trying createtime");
                     Date createtime = dataset.getLatestVersion().getCreateTime();
                     if (createtime != null) {
@@ -138,6 +132,13 @@ public class StatementManagerImpl implements StatementManager {
 //                    properties.put("UNF", studyFile.getUnf());
 //                    resourcePart.setProperties(properties);
                     statement.addResource(resourcePart);
+                    /**
+                     * @todo it's been noted at
+                     * https://redmine.hmdc.harvard.edu/issues/3271#note-2 that
+                     * at the file level the "updated" date is always "now",
+                     * which seems to be set here:
+                     * https://github.com/swordapp/JavaServer2.0/blob/sword2-server-1.0/src/main/java/org/swordapp/server/AtomStatement.java#L70
+                     */
                 }
                 return statement;
             } else {
