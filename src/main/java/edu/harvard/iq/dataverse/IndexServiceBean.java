@@ -77,23 +77,6 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        List<Dataverse> dataverses = dataverseService.findAll();
-        int dataverseIndexCount = 0;
-        for (Dataverse dataverse : dataverses) {
-            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + ": " + indexDataverse(dataverse));
-            dataverseIndexCount++;
-        }
-
-        int datasetIndexCount = 0;
-        List<Dataset> datasets = datasetService.findAll();
-        for (Dataset dataset : datasets) {
-            datasetIndexCount++;
-            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
-        }
-//        logger.info("advanced search fields: " + advancedSearchFields);
-//        logger.info("not advanced search fields: " + notAdvancedSearchFields);
-        logger.info("done iterating through all datasets");
-
         /**
          * @todo: replace hard-coded groups with real groups
          */
@@ -114,6 +97,22 @@ public class IndexServiceBean {
             userIndexCount++;
             logger.info("indexing user " + userIndexCount + " of several: " + indexUser(user));
         }
+        List<Dataverse> dataverses = dataverseService.findAll();
+        int dataverseIndexCount = 0;
+        for (Dataverse dataverse : dataverses) {
+            logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverses.size() + ": " + indexDataverse(dataverse));
+            dataverseIndexCount++;
+        }
+
+        int datasetIndexCount = 0;
+        List<Dataset> datasets = datasetService.findAll();
+        for (Dataset dataset : datasets) {
+            datasetIndexCount++;
+            logger.info("indexing dataset " + datasetIndexCount + " of " + datasets.size() + ": " + indexDataset(dataset));
+        }
+//        logger.info("advanced search fields: " + advancedSearchFields);
+//        logger.info("not advanced search fields: " + notAdvancedSearchFields);
+        logger.info("done iterating through all datasets");
 
         return dataverseIndexCount + " dataverses, " + datasetIndexCount + " datasets, " + groupIndexCount + " groups, and " + userIndexCount + " users indexed\n";
     }
