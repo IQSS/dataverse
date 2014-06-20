@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -60,10 +61,12 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -98,6 +101,7 @@ import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import org.apache.commons.lang.StringUtils;
+import java.util.zip.GZIPInputStream;
 
 /**
  *
@@ -137,9 +141,6 @@ public class IngestServiceBean {
     
     private static final String MIME_TYPE_FITS  = "application/fits";
       
-    // TODO: this constant should be provided by the Ingest Service Provder Registry;
-    private static final String METADATA_SUMMARY = "FILE_METADATA_SUMMARY_INFO";
-    
     
     public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
         Dataset dataset = version.getDataset();
@@ -197,13 +198,53 @@ public class IngestServiceBean {
             if (recognizedType != null && !recognizedType.equals("")) {
                 // is it any better than the type that was supplied to us,
                 // if any?
-
-                if (contentType == null || contentType.equals("") || contentType.equalsIgnoreCase("application/octet-stream")) {
+                
+                if (contentType == null || 
+                        contentType.equals("") || 
+                        contentType.equalsIgnoreCase("application/octet-stream") ||
+                        recognizedType.equals("application/fits-gzipped")) {
                     datafile.setContentType(recognizedType);
                 }
             }
         } catch (IOException ex) {
             logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
+        }
+        
+        if (datafile.getContentType().equals("application/fits-gzipped")) {
+            // Uncompress the FITS stream, save and treat it as regular FITS:
+            InputStream uncompressedIn = null; 
+            BufferedOutputStream uncompressedOut = null;
+            String backupFilename = datafile.getFileSystemName();
+            try {
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                
+                datasetService.generateFileSystemName(datafile);
+                uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                
+                int bufsize = 8192;
+                byte[] bffr = new byte[bufsize];
+                while ((bufsize = uncompressedIn.read(bffr)) != -1) {
+                    uncompressedOut.write(bffr, 0, bufsize);
+                }
+
+            } catch (IOException ioex) {
+                datafile.setFileSystemName(backupFilename);
+                return datafile;
+            } finally {
+                if (uncompressedIn != null) {
+                    try {uncompressedIn.close();} catch (IOException e) {}
+                }
+                if (uncompressedOut != null) {
+                    try {uncompressedOut.close();} catch (IOException e) {}
+                }
+            }
+            
+            // finally, if the file name had the ".gz" extension, remove it, 
+            // since we have uncompressed it:
+            if (fileName != null && fileName.matches(".*\\.gz$")) {
+                datafile.getFileMetadatas().get(0).setLabel(fileName.replaceAll("\\.gz$", ""));
+            }
+            datafile.setContentType("application/fits");
         }
         
         return datafile;
@@ -319,15 +360,90 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
-    public void startIngestJobs (Dataset dataset) {
+    // TODO: consider deprecating this method in favor of the version 
+    // defined below, that takes datasetversion as the argument. 
+    // -- L.A. 4.0 post-beta. 
+    //@Deprecated
+    public void startIngestJobs(Dataset dataset, DataverseUser user) {
+        int count = 0;
+        IngestMessage ingestMessage = null;
         for (DataFile dataFile : dataset.getFiles()) {
             if (dataFile.isIngestScheduled()) {
                 dataFile.SetIngestInProgress();
-                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + " for ingest.");
-                asyncIngestAsTabular(dataFile);
+                dataFile = fileService.save(dataFile);
+
+                if (ingestMessage == null) {
+                    ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
+                }
+                ingestMessage.addFileId(dataFile.getId());
+                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
+                //asyncIngestAsTabular(dataFile);
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            String info = "Attempting to ingest " + count + " tabular data file(s).";
+            if (user != null) {
+                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
+            } else {
+                datasetService.addDatasetLock(dataset.getId(), null, info);
+            }
+
+            QueueConnection conn = null;
+            QueueSession session = null;
+            QueueSender sender = null;
+            try {
+                conn = factory.createQueueConnection();
+                session = conn.createQueueSession(false, 0);
+                sender = session.createSender(queue);
+
+                //ingestMessage.addFile(new File(tempFileLocation));
+                Message message = session.createObjectMessage(ingestMessage);
+
+                //try {
+                    sender.send(message);
+                //} catch (JMSException ex) {
+                //    ex.printStackTrace();
+                //}
+
+            } catch (JMSException ex) {
+                ex.printStackTrace();
+                //throw new IOException(ex.getMessage());
+            } finally {
+                try {
+
+                    if (sender != null) {
+                        sender.close();
+                    }
+                    if (session != null) {
+                        session.close();
+                    }
+                    if (conn != null) {
+                        conn.close();
+                    }
+                } catch (JMSException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
+    
+    /*
+    public void startIngestJobs (DatasetVersion datasetVersion) {
+        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            
+            if (dataFile != null && dataFile.isIngestScheduled()) {
+                dataFile.SetIngestInProgress();
+                dataFile = fileService.save(dataFile);
+                logger.info("Attempting to queue the file " + dataFile.getFileMetadata().getLabel() + "(" + dataFile.getFileMetadata().getDescription() + ") for ingest.");
+                asyncIngestAsTabular(dataFile);
+            }
+        }
+
+    }
+    */
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
         //produceDiscreteNumericSummaryStatistics(dataFile); 
@@ -356,7 +472,7 @@ public class IngestServiceBean {
             }
         }
     }
-    
+    /*
     public boolean asyncIngestAsTabular(DataFile dataFile) {
         boolean ingestSuccessful = true;
 
@@ -370,8 +486,8 @@ public class IngestServiceBean {
 
             IngestMessage ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
             //ingestMessage.addFile(new File(tempFileLocation));
-            ingestMessage.addFile(dataFile);
-
+            ingestMessage.addFileId(dataFile.getId());
+            
             Message message = session.createObjectMessage(ingestMessage);
 
             try {
@@ -404,13 +520,23 @@ public class IngestServiceBean {
 
         return ingestSuccessful;
     }
-    
-    public boolean ingestAsTabular(DataFile dataFile) throws IOException {
-        return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
+    */
+    public boolean ingestAsTabular(Long datafile_id) { //DataFile dataFile) throws IOException {
+        DataFile dataFile = fileService.find(datafile_id);
+        if (dataFile != null) {
+            return ingestAsTabular(dataFile.getFileSystemLocation().toString(), dataFile); 
+        }
+        return false;
     }
     
-    public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) throws IOException {
+    public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) { //throws IOException {
+        // TODO: 
+        // (still work in progress)
+        // Error reporting, with descriptions of specific problems, is 
+        // being added here. 
+        // -- L.A. 10 June 2014
         boolean ingestSuccessful = false;
+        IngestReport errorReport = null;
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
         if (pushContext != null) {
@@ -429,11 +555,18 @@ public class IngestServiceBean {
 
         if (ingestPlugin == null) {
             dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("No ingest plugin found for file type "+dataFile.getContentType());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
             dataFile = fileService.save(dataFile);
+            
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-            throw new IOException("Could not find ingest plugin for the file " + fileName);
+            //throw new IOException("Could not find ingest plugin for the file " + fileName);
+            return false; 
         }
 
         FileInputStream tempFileInputStream = null; 
@@ -442,73 +575,128 @@ public class IngestServiceBean {
             tempFileInputStream = new FileInputStream(new File(tempFileLocation));
         } catch (FileNotFoundException notfoundEx) {
             dataFile.SetIngestProblem();
+            
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("IO Exception occured while trying to open the file for reading.");
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
             Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-            throw new IOException("Could not open temp file "+tempFileLocation);
+            return false; 
+            //throw new IOException("Could not open temp file "+tempFileLocation);
         }
         
-        TabularDataIngest tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+        TabularDataIngest tabDataIngest = null; 
+        try {
+            tabDataIngest = ingestPlugin.read(new BufferedInputStream(tempFileInputStream), null);
+        } catch (IOException ingestEx) {
+            dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport(ingestEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            return false;
+        } catch (Exception unknownEx) {
+            // this is a bit of a kludge, to make sure no unknown exceptions are
+            // left uncaught.
+            dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport(unknownEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            dataFile = fileService.save(dataFile);
+            
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            return false;
+            
+        }
 
-        if (tabDataIngest != null) {
-            File tabFile = tabDataIngest.getTabDelimitedFile();
+        try {
+            if (tabDataIngest != null) {
+                File tabFile = tabDataIngest.getTabDelimitedFile();
 
-            if (tabDataIngest.getDataTable() != null
-                    && tabFile != null
-                    && tabFile.exists()) {
+                if (tabDataIngest.getDataTable() != null
+                        && tabFile != null
+                        && tabFile.exists()) {
 
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
-                        + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
+                            + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
 
-                Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
-                if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
-                } else {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
-                }
-                
-                
-                // and we want to save the original of the ingested file: 
-                try {
-                    saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
-                } catch (IOException iox) {
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
-                }
-                
-                Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                
+                    if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
+                    } else {
+                        tabDataIngest.getDataTable().setOriginalFileFormat(dataFile.getContentType());
+                    }
+
+                    // and we want to save the original of the ingested file: 
+                    try {
+                        saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
+                    } catch (IOException iox) {
+                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
+                    }
+
+                    Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+
                 // and change the mime type to "tabular" on the final datafile, 
-                // and replace (or add) the extension ".tab" to the filename: 
-                
-                dataFile.setContentType(MIME_TYPE_TAB);
-                dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));  
+                    // and replace (or add) the extension ".tab" to the filename: 
+                    dataFile.setContentType(MIME_TYPE_TAB);
+                    dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));
 
-                dataFile.setDataTable(tabDataIngest.getDataTable());
-                tabDataIngest.getDataTable().setDataFile(dataFile);
-                
-                dataFile.setIngestDone();
-                dataFile = fileService.save(dataFile);
-                
-                try {
+                    dataFile.setDataTable(tabDataIngest.getDataTable());
+                    tabDataIngest.getDataTable().setDataFile(dataFile);
+
                     produceSummaryStatistics(dataFile);
-                } catch (IOException sumStatEx) {
-                    dataFile.SetIngestProblem();
+
+                    dataFile.setIngestDone();
                     dataFile = fileService.save(dataFile);
-                    FacesMessage facesMessage = new FacesMessage("ingest failed");
-                    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
-                    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
+                    FacesMessage facesMessage = new FacesMessage("ingest done");
+                    pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
+
+                //try {
+                    //} catch (IOException sumStatEx) {
+                    //    dataFile.SetIngestProblem();
+                    //    dataFile = fileService.save(dataFile);
+                    //    FacesMessage facesMessage = new FacesMessage("ingest failed");
+                    //    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
+                    //    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+                    //    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
+                    //}
+                    ingestSuccessful = true;
                 }
-                
-                ingestSuccessful = true;                
             }
+        } catch (IOException postIngestEx) {
+            dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport(postIngestEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            
+            dataFile = fileService.save(dataFile);
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: post-ingest tasks. Sent push notification to the page.");
         }
+
         
-        FacesMessage facesMessage = new FacesMessage("ingest done");
-        pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest: Sent push notification to the page.");
         return ingestSuccessful;
     }
 
@@ -568,9 +756,9 @@ public class IngestServiceBean {
         } else if (mimeType.equals(MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_SPSS_SAV)) {
-            ingestPlugin = new DTAFileReader(new SAVFileReaderSpi());
+            ingestPlugin = new SAVFileReader(new SAVFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_SPSS_POR)) {
-            ingestPlugin = new DTAFileReader(new PORFileReaderSpi());
+            ingestPlugin = new PORFileReader(new PORFileReaderSpi());
         }
 
         return ingestPlugin;
@@ -834,7 +1022,7 @@ public class IngestServiceBean {
                 if (userEnteredFileDescription != null
                         && !(userEnteredFileDescription.equals(""))) {
 
-                    metadataSummary = userEnteredFileDescription.concat("\n" + metadataSummary);
+                    metadataSummary = userEnteredFileDescription.concat(";\n" + metadataSummary);
                 }
                 fileMetadata.setDescription(metadataSummary);
             }

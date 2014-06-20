@@ -5,14 +5,19 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TransactionRequiredException;
 
 /**
  *
@@ -90,6 +95,76 @@ public class DatasetServiceBean {
        query += " and d.authority = '"+authority+"'";
        boolean u = em.createQuery(query).getResultList().size()==0;
        return u;
+    }
+   
+   public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user){        
+       
+        DatasetVersionDatasetUser  ddu = null;       
+        Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
+                + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
+        query.setParameter("versionId", version.getId());
+        query.setParameter("userId", user.getId());
+        System.out.print("versionId: " +  version.getId());
+        System.out.print("userId: " +  user.getId());
+        System.out.print(query.toString());
+        try {
+            ddu = (DatasetVersionDatasetUser) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            // DO nothing, just return null.
+        }
+        return ddu;
+   }
+    
+   public List<DatasetLock> getDatasetLocks() {
+        String query = "SELECT sl FROM DatasetLock sl";
+        return (List<DatasetLock>) em.createQuery(query).getResultList();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void addDatasetLock(Long datasetId, Long userId, String info) {
+        
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        DatasetLock lock = new DatasetLock();
+        lock.setDataset(dataset);
+        lock.setInfo(info);
+        lock.setStartTime(new Date());
+
+        if (userId != null) {
+            DataverseUser user = em.find(DataverseUser.class, userId);
+            lock.setUser(user);
+            if (user.getDatasetLocks() == null) {
+                user.setDatasetLocks(new ArrayList());
+            }
+            user.getDatasetLocks().add(lock);
+        }
+        
+        dataset.setDatasetLock(lock);
+        em.persist(lock);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void removeDatasetLock(Long datasetId) {
+        Dataset dataset = em.find(Dataset.class, datasetId);
+        //em.refresh(dataset); (?)
+        DatasetLock lock = dataset.getDatasetLock();
+        if (lock != null) {
+            DataverseUser user = lock.getUser();
+            dataset.setDatasetLock(null);
+            user.getDatasetLocks().remove(lock);
+            /* 
+             * TODO - ?
+             * throw an exception if for whatever reason we can't remove the lock?
+            try {
+            */
+            em.remove(lock);
+            /*
+            } catch (TransactionRequiredException te) {
+                ...
+            } catch (IllegalArgumentException iae) {
+                ...
+            }
+            */
+        }
     }
     
     /*

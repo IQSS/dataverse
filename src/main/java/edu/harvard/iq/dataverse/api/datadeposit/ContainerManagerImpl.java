@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
@@ -146,11 +147,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
                 }
                 if (studyToLookup != null) {
-//                    StudyLock lockOnStudyLookedup = studyToLookup.getStudyLock();
-//                    if (lockOnStudyLookedup != null) {
-//                        String message = Util.getStudyLockMessage(lockOnStudyLookedup, studyToLookup.getGlobalId());
-//                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//                    }
+                    SwordUtil.datasetLockCheck(studyToLookup);
 //                    editStudyService.setStudyVersion(studyToLookup.getId());
 //                    Study studyToEdit = editStudyService.getStudyVersion().getStudy();
                     Dataset studyToEdit = null;
@@ -307,14 +304,12 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (study.isReleased()) {
                             if (studyState.equals(DatasetVersion.VersionState.DRAFT)) {
                                 logger.info("destroying working copy version of study " + study.getGlobalId());
-                                /**
-                                 * @todo in DVN 3.x we had a convenient
-                                 * destroyWorkingCopyVersion method. We have
-                                 * DeleteDatasetCommand but we need
-                                 * DeleteDatasetEditVersionCommand
-                                 */
-                                // studyService.destroyWorkingCopyVersion(study.getLatestVersion().getId());
-                                throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_METHOD_NOT_ALLOWED, "This dataset has been published and subsequently a draft has been created. You are trying to delete that draft but this is not yet supported: https://redmine.hmdc.harvard.edu/issues/4032");
+                                try {
+                                    engineSvc.submit(new DeleteDatasetVersionCommand(vdcUser, study));
+                                } catch (CommandException ex) {
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't delete dataset version for " + study.getGlobalId() + ": " + ex);
+                                }
+                                logger.info("dataset version deleted for dataset id " + study.getId());
                             } else if (studyState.equals(DatasetVersion.VersionState.RELEASED)) {
 //                                logger.fine("deaccessioning latest version of study " + study.getGlobalId());
 //                                studyService.deaccessionStudy(study.getLatestVersion());

@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import org.hibernate.validator.constraints.NotBlank;
 //import org.springframework.format.annotation.DateTimeFormat;
@@ -34,6 +35,11 @@ public class Dataset extends DvObjectContainer {
     private String authority;
     @NotBlank(message = "Please enter an identifier for your dataset.")
     private String identifier;
+    @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OrderBy("id DESC")
+    private List<DatasetVersion> versions = new ArrayList();
+    @OneToOne(mappedBy = "dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private DatasetLock datasetLock;
 
     public Dataset() {
         //this.versions = new ArrayList();
@@ -96,9 +102,20 @@ public class Dataset extends DvObjectContainer {
         this.files = files;
     }
 
-    @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    @OrderBy("id DESC")
-    private List<DatasetVersion> versions = new ArrayList();
+    public DatasetLock getDatasetLock() {
+        return datasetLock;
+    }
+
+    public void setDatasetLock(DatasetLock datasetLock) {
+        this.datasetLock = datasetLock;
+    }
+    
+    public boolean isLocked() {
+        if (datasetLock != null) {
+            return true; 
+        }
+        return false; 
+    }
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);

@@ -6,8 +6,7 @@ if [ -z "$1" ]; then
   GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12,13`
 else
   GLOBAL_ID=$1
-  # https://redmine.hmdc.harvard.edu/issues/3993
-  #GLOBAL_ID=doi:10.5072/FK2/5555
+  #GLOBAL_ID=doi:10.5072/FK2/17
 fi
 #curl --insecure -X DELETE https://$DVN_SERVER/api/datasets/$DATABASE_ID?key=$USERNAME
 curl --insecure -i -X DELETE https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID

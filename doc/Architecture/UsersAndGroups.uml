@@ -1,0 +1,113 @@
+@startuml
+
+package existingCode {
+  class Role
+  class DvObject
+  class RoleAssignment
+  class Dataverse 
+
+  note as n1
+    A role can be assigned
+    at the DvObject where it 
+    is defined, or at any of
+    that DvObject's descendants
+  end note
+}
+
+package assignees {
+  class Assignee {
+    + displayString()
+    + showInLists: Boolean
+  }
+
+  class User {
+    + locator:String
+  }
+
+  class LocalUser {
+    + id:Long
+    + name:String
+  }
+
+  class GuestUser {
+    showInLists: False
+  }
+
+  note bottom
+   Maintains invariant:
+   we <b>always</b> have a user
+  end note
+
+  class RemoteUser {
+    + id
+    + origin:Data
+  }
+  note bottom
+    May be stored in 
+    the DB, if has some
+    long-lasting effect,
+    such as API Key
+  end note
+
+  class ApiKey {
+    + key:String
+    + title: String
+  }
+
+  class Group {
+    + contains( a:Assignee )
+  }
+
+  class ExplicitGroup {
+    + add( a:Assignee )
+    + remove( a:Assignee )
+    + list: Assignee[]
+  }
+
+  class LogicalGroup {
+    
+  }
+
+  class RegisteredUsers {
+    
+  }
+
+  class GuestUsers {
+    
+  }
+
+  class ExternalGroup {
+    
+  }
+  note bottom
+    Maps a set of
+    external credentials
+    to an internal 
+    Asignee object
+  end note
+}
+Assignee <|-- User
+Assignee <|-- Group
+User <|-- GuestUser
+User <|-- LocalUser
+User <|-- RemoteUser
+Group <|-- ExplicitGroup
+Group <|-- LogicalGroup
+Group <|-- ExternalGroup
+LogicalGroup <|-- RegisteredUsers
+LogicalGroup <|-- GuestUsers
+
+User "1" *- "0..*" ApiKey
+
+Role -> DvObject: Defined at
+RoleAssignment -up-> "1" DvObject: At
+RoleAssignment -up-> "1" Role: Assigns
+RoleAssignment --> "1" Assignee: To
+
+Group ..> Assignee: <<Contains>>
+ExplicitGroup o--> Assignee
+ExplicitGroup --> Dataverse: Defined At
+
+DvObject <|-- Dataverse
+
+@enduml

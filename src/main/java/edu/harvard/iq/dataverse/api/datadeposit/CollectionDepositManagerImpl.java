@@ -130,10 +130,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
                         /**
-                         * @todo don't hard code these! See also saving a
-                         * dataset in GUI changes globalId to hard coded value
-                         * (doi:10.5072/FK2/5555)
-                         * https://redmine.hmdc.harvard.edu/issues/3993
+                         * @todo don't hard code these!
                          */
                         dataset.setProtocol("doi");
                         dataset.setAuthority("10.5072/FK2");

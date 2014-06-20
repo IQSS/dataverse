@@ -132,15 +132,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         logger.info("preparing to delete file id " + fileIdLong);
                         DataFile fileToDelete = dataFileService.find(fileIdLong);
                         if (fileToDelete != null) {
-                            /**
-                             * @todo test if StudyLock is necessary
-                             */
-//                            Study study = fileToDelete.getStudy();
-//                            StudyLock studyLock = study.getStudyLock();
-//                            if (studyLock != null) {
-//                                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
-//                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//                            }
+                            Dataset dataset = fileToDelete.getOwner();
+                            SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
                             if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dataverseThatOwnsFile)) {
@@ -195,9 +188,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
             }
-//            StudyLock studyLock = study.getStudyLock();
-//            if (studyLock != null) {
-//                String message = Util.getStudyLockMessage(studyLock, study.getGlobalId());
+            SwordUtil.datasetLockCheck(dataset);
+//            DatasetLock datasetLock = dataset.getDatasetLock();
+//            if (datasetLock != null) {
+//                String message = "Unable to delete file due to dataset lock (" + datasetLock.getInfo() + "). Please try again later.";
 //                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
 //            }
             Dataverse dvThatOwnsDataset = dataset.getOwner();
@@ -314,7 +308,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw returnEarly("EJBException: " + sb.toString());
             }
 
-            ingestService.startIngestJobs(dataset);
+            ingestService.startIngestJobs(dataset, vdcUser);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);

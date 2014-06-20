@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.util.List;
 import java.util.ArrayList;
@@ -10,12 +11,18 @@ import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author gdurand
  */
+@NamedQueries({
+	@NamedQuery( name="DataFile.removeFromDatasetVersion",
+		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId")
+})
 @Entity
 public class DataFile extends DvObject {
     private static final long serialVersionUID = 1L;
@@ -41,6 +48,10 @@ public class DataFile extends DvObject {
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DataTable> dataTables;
+    
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<IngestReport> ingestReports;
+    
     
     @OneToMany(mappedBy="dataFile", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<FileMetadata> fileMetadatas;
@@ -100,6 +111,32 @@ public class DataFile extends DvObject {
         this.getDataTables().add(dt);
     }
     
+    public IngestReport getIngestReport() {
+        if ( ingestReports != null && ingestReports.size() > 0 ) {
+            return ingestReports.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void setIngestReport(IngestReport report) {
+        if (ingestReports == null) {
+            ingestReports = new ArrayList();
+        } else {
+            ingestReports.clear();
+        }
+
+        ingestReports.add(report);
+    }
+    
+    public String getIngestReportMessage() {
+        if ( ingestReports != null && ingestReports.size() > 0 ) {
+            if (ingestReports.get(0).getReport() != null && !"".equals(ingestReports.get(0).getReport())) {
+                return ingestReports.get(0).getReport();
+            }
+        }
+        return "Ingest failed. No further information is available.";
+    }
     public boolean isTabularData() {
         if ( getDataTables() != null && getDataTables().size() > 0 ) {
             return true; 

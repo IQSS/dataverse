@@ -15,7 +15,6 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:define name="body">
-
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
@@ -39,7 +38,6 @@
                     <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                     <f:viewAction action="#{SearchIncludeFragment.search(true)}" />                    
                 </f:metadata>
-
                 <h:form id="dataverseUserForm" style="margin-top:1em;">
                     <ui:fragment rendered="#{empty DataverseUserPage.editMode}">
                         <div class="clearfix">
@@ -110,55 +108,55 @@
                                </ui:fragment>  -->
                         </p:tab>
                         <p:tab id="notifications" title="Notifications">
-                            <p:dataList value="#{DataverseUserPage.notificationsList}" var="item">
-                                <ui:fragment rendered="#{item.type == 'CREATEDV'}">
-                                    <h:outputText value="The dataverse, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                    <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}">
-                                        <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()}" style="color:#C55B28" />
-                                    </h:outputLink>
-                                    <h:outputText value=", has been created in the " />
-                                    <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
-                                        <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()}" style="color:#C55B28" />
-                                    </h:outputLink>
-                                    <h:outputText value=" Dataverse. Don't forget to publish it! " />
-                                </ui:fragment>
-                                <ui:fragment rendered="#{item.type == 'CREATEDS'}">
-                                    <h:outputText value="The dataset, " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                    <h:outputLink value="/dataset.xhtml?id=#{item.objectId}">
-                                        <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" style="color:#C55B28" />
-                                    </h:outputLink>
-                                    <h:outputText value=", has been added in the " />
-                                    <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}">
-                                        <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()}" style="color:#C55B28" />
-                                    </h:outputLink>
-                                    <h:outputText value=" Dataverse. Don't forget to publish it! " />
-                                </ui:fragment>
-                                <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                    <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
-                                    <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
-                                        <h:outputText value="Google Group" style="color: blue" />
-                                    </h:outputLink>
-                                    <h:outputText value=" to leave feedback. " />
-                                </ui:fragment>
-                                <h:outputText value="#{item.sendDate} " />
-                                <h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
-                                <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />
-                                <h:commandLink action="#{DataverseUserPage.remove(item.id)}" value="Remove" />
-                            </p:dataList>
+                            <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
+                                <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
+                                    <ui:fragment rendered="#{item.type == 'CREATEDV'}">
+                                        <h:graphicImage value="/resources/images/icon_dataverse.png" alt="Dataverse" style="height:18px;margin-right:6px;" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse" />
+                                        </h:outputLink>
+                                        <h:outputText value=", was created in " />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse" />
+                                        </h:outputLink>
+                                        <h:outputText value=". Don't forget to publish it!" />
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'CREATEDS'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
+                                        <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
+                                        </h:outputLink>
+                                        <h:outputText value=", was added to " />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse" />
+                                        </h:outputLink>
+                                        <h:outputText value=". Don't forget to publish it!" />
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'CREATEACC'}">
+                                        <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                        <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
+                                            <h:outputText value="Google Group" style="color: blue" />
+                                        </h:outputLink>
+                                        <h:outputText value=" to leave feedback." />
+                                    </ui:fragment>
+                                    <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
+                                    <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
+                                    <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
+                                    <h:commandLink action="#{DataverseUserPage.remove(item.id)}" title="Remove notification" styleClass="pull-right">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </h:commandLink>
+                                </div>
+                            </ui:repeat>
                         </p:tab>
                     </p:tabView>
 
                     <p:tabView id="tabView1" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfo" title="Account Information">
-
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
-
                                 <div>
-
                                     <style type="text/css">
                                         .panelgridFormTable tr, .panelgridFormTable td {border:0;}
                                     </style>
-
                                     <p:panelGrid columns="2" styleClass="panelgridFormTable">
                                         <p:outputLabel value="Username *" for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
                                         <p:outputLabel value="Username" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
@@ -246,9 +244,7 @@
                                             </p:panelGrid>
                                         </ui:fragment>
                                     </p:panelGrid>
-
                                 </div>
-
                                 <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataverseUserPage.editMode}">
                                     <ui:fragment>
                                         <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE'?'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
@@ -258,7 +254,6 @@
                                         </p:commandButton>
                                     </ui:fragment>
                                 </p:panel>
-
                             </div>
                         </p:tab>
                     </p:tabView>

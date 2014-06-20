@@ -13,6 +13,7 @@
         <meta http-equiv="Content-Language" content="en"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
         <h:outputStylesheet library="bs" name="css/bootstrap.css" />
         <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
         <h:outputStylesheet library="css" name="ie-compat.css" />
@@ -32,8 +33,14 @@
         <div class="container" id="content">
             <ui:insert name="body">Default Body</ui:insert>
         </div>
-        <div class="container" id="footer" style="margin-top:3em;">
-            &#169; Copyright 1997-2014, President &#38; Fellows Harvard University. <!-- | <a href="#">Privacy</a> -->
+        <div class="container clearfix" id="footer" style="margin-top:3em;">
+            <div class="pull-left">
+                &#169; Copyright 1997-2014, President &#38; Fellows Harvard University. <!-- | <a href="#">Privacy</a> -->
+            </div>
+            <div class="pull-right clearfix">
+                <div class="poweredbylogo pull-left"><span style="color:#808080;font-size:.85em;margin-right:.3em;">Powered by</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" /></div>
+                <div class="version pull-right" style="margin-top:24px;font-size:.85em;color:#808080;">v. 4.0</div>
+            </div>
         </div>
         <p:ajaxStatus style="width:31px;height:31px;position:fixed;right:50%;bottom:50%;" id="ajaxStatusPanel">
             <f:facet name="start">

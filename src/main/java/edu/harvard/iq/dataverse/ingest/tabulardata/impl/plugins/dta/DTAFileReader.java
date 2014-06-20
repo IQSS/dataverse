@@ -533,7 +533,7 @@ public class DTAFileReader extends TabularDataFileReader{
         }
     }
 
-    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
+    public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         dbgLog.info("***** DTAFileReader: read() start *****");
 
         // shit ton of diagnostics needed here!!  -- L.A.
@@ -542,26 +542,20 @@ public class DTAFileReader extends TabularDataFileReader{
             throw new IOException ("this plugin does not support external raw data files");
         }
 
-        decodeHeader(stream);
-        decodeDescriptors(stream);
-        decodeVariableLabels(stream);
-        if (releaseNumber!=104) {
-            decodeExpansionFields(stream);
+        try {
+            decodeHeader(stream);
+            decodeDescriptors(stream);
+            decodeVariableLabels(stream);
+            if (releaseNumber!=104) {
+                decodeExpansionFields(stream);
+            }
+            decodeData(stream);
+            decodeValueLabels(stream);
+
+            ingesteddata.setDataTable(dataTable);
+        } catch (IllegalArgumentException iaex) {
+            throw new IOException(iaex.getMessage());
         }
-        decodeData(stream);
-        decodeValueLabels(stream);
-
-        /* The following lines modifying the smd object will need to be removed;
-         * All the information describing the variables should have been stored 
-         * in the newly-created DataVariables by now. -- L.A. 4.0
-         */
-        // smd.setVariableFormatName(formatNameTable);
-        // smd.setVariableFormatCategory(formatCategoryTable);
-        // smd.setValueLabelMappingTable(valueLabelSchemeMappingTable);
-        
-        // 4.0 smd.setVariableStorageType(variableTypesFinal);
-
-        ingesteddata.setDataTable(dataTable);
         
         dbgLog.info("***** DTAFileReader: read() end *****");
         return ingesteddata;
@@ -592,7 +586,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
-            throw new IllegalArgumentException("given file is not stata-dta type");
+            throw new IllegalArgumentException("The file is not in a STATA format that we can read or support.");
         } else if ((magic_number[1] != 1) && (magic_number[1] != 2)) {
             dbgLog.fine("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             throw new IllegalArgumentException("given file is not stata-dta type");

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -57,8 +58,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }
+              
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        
+                
         DataverseRole manager = new DataverseRole();
         manager.addPermissions(EnumSet.allOf(Permission.class));
         manager.setAlias("manager");
@@ -75,6 +77,19 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         } catch ( RuntimeException e ) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
+        
+        DatasetVersionDatasetUser datasetVersionDataverseUser = new DatasetVersionDatasetUser();        
+        datasetVersionDataverseUser.setDataverseUser(getUser());
+        datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
+        datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate);  
+        if (savedDataset.getLatestVersion().getId() == null){
+            System.out.print("savedDataset version id is null");
+        } else {
+            datasetVersionDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId().intValue());
+        }       
+        datasetVersionDataverseUser.setDataverseuserid(getUser().getId().intValue());
+        ctxt.em().merge(datasetVersionDataverseUser); 
+        
         return savedDataset;
     }
 

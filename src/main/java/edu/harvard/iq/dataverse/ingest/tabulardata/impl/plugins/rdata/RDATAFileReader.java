@@ -466,45 +466,49 @@ public class RDATAFileReader extends TabularDataFileReader {
         // Create Request object
         LOG.fine("RDATAFileReader: Creating RRequest object from RRequestBuilder object");
 
-        // Create R Workspace
-        mRWorkspace.stream(stream);
-        mRWorkspace.create();
-        mRWorkspace.saveRdataFile();
-        mRWorkspace.saveCsvFile();
+        try {
+            // Create R Workspace
+            mRWorkspace.stream(stream);
+            mRWorkspace.create();
+            mRWorkspace.saveRdataFile();
+            mRWorkspace.saveCsvFile();
 
-        // Copy CSV file to a local, temporary directory
-        // Additionally, this sets the "tabDelimitedDataFile" property of the FileInformation
-        File localCsvFile = transferCsvFile(mRWorkspace.mCsvDataFile);
+            // Copy CSV file to a local, temporary directory
+            // Additionally, this sets the "tabDelimitedDataFile" property of the FileInformation
+            File localCsvFile = transferCsvFile(mRWorkspace.mCsvDataFile);
 
-        // Generate and save all the information about data set; this creates all 
-        // the DataVariable objects, among other things:
-        getDataFrameInformation();
+            // Generate and save all the information about data set; this creates all 
+            // the DataVariable objects, among other things:
+            getDataFrameInformation();
 
-        // Read and parse the TAB-delimited file saved by R, above; do the 
-        // necessary post-processinga and filtering, and save the resulting 
-        // TAB file as tabFileDestination, below. This is the file we'll be 
-        // using to calculate the UNF, and for the storage/preservation of the
-        // dataset. 
-        // IMPORTANT: this must be done *after* the variable metadata has been 
-        // created!
-        // - L.A. 
-        RTabFileParser csvFileReader = new RTabFileParser('\t');
-        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile)));
+            // Read and parse the TAB-delimited file saved by R, above; do the 
+            // necessary post-processinga and filtering, and save the resulting 
+            // TAB file as tabFileDestination, below. This is the file we'll be 
+            // using to calculate the UNF, and for the storage/preservation of the
+            // dataset. 
+            // IMPORTANT: this must be done *after* the variable metadata has been 
+            // created!
+            // - L.A. 
+            RTabFileParser csvFileReader = new RTabFileParser('\t');
+            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile)));
 
-        File tabFileDestination = File.createTempFile("data-", ".tab");
-        PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
+            File tabFileDestination = File.createTempFile("data-", ".tab");
+            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
         
-        int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
+            int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
 
-        LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
+            LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
         
-        dataTable.setUnf("UNF:6:NOTCALCULATED");
+            dataTable.setUnf("UNF:6:NOTCALCULATED");
         
-        ingesteddata.setTabDelimitedFile(tabFileDestination);
-        ingesteddata.setDataTable(dataTable);
+            ingesteddata.setTabDelimitedFile(tabFileDestination);
+            ingesteddata.setDataTable(dataTable);
 
-        // Destroy R workspace
-        mRWorkspace.destroy();
+            // Destroy R workspace
+            mRWorkspace.destroy();
+        } catch (Exception ex) {
+            throw new IOException ("Unknown exception occured during ingest; "+ex.getMessage());
+        }
 
         LOG.fine("RDATAFileReader: Leaving \"read\" function");
 

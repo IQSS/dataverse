@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -19,11 +18,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
 import java.util.LinkedList;
@@ -33,8 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -43,7 +43,9 @@ import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -62,6 +64,7 @@ public class Dataverses extends AbstractApiBean {
 	
 	@GET
 	public String list() {
+        // TODO rethink this
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		for ( Dataverse d : dataverseSvc.findAll() ) {
 			bld.add(json(d));
@@ -180,10 +183,22 @@ public class Dataverses extends AbstractApiBean {
 	
 	@GET
 	@Path("{identifier}")
-	public Response viewDataverse( @PathParam("identifier") String idtf ) {
+	public Response viewDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
 		Dataverse d = findDataverse(idtf);
-		return ( d==null) ? errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'")
-						  : okResponse( json(d) );
+        if (d == null) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        
+        DataverseUser u = userSvc.findByUserName(apiKey);
+        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        
+        try {
+			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d), "Get Dataverse" );
+			return okResponse( json(retrieved));
+		} catch ( FailedCommandResult ex ) {
+			return ex.getResponse();
+		}
+        
+		/*return ( d==null) ? errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'")
+						  : okResponse( json(d) ); */
 	}
 	
 	@DELETE
@@ -324,6 +339,7 @@ public class Dataverses extends AbstractApiBean {
 
 			@Override
 			public Void visit(Dataset ds) {
+                // TODO: check for permission to view drafts
 				jab.add( json(ds).add("type", "dataset") );
 				return null;
 			}

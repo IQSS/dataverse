@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
@@ -64,10 +65,6 @@ public class StatementManagerImpl implements StatementManager {
             Dataverse dvThatOwnsDataset = dataset.getOwner();
             if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
-                /**
-                 * @todo did the format of getAuthorsStr() change? It looks more
-                 * or less the same.
-                 */
                 String author = dataset.getLatestVersion().getAuthorsStr();
                 String title = dataset.getLatestVersion().getTitle();
                 // in the statement, the element is called "updated"
@@ -76,12 +73,6 @@ public class StatementManagerImpl implements StatementManager {
                 if (lastUpdateTime != null) {
                     lastUpdatedFinal = lastUpdateTime;
                 } else {
-                    /**
-                     * @todo In DVN 3.x lastUpdated was set on the service bean:
-                     * https://github.com/IQSS/dvn/blob/8ca34aded90511730c35ca32ace844770c24c68e/DVN-root/DVN-web/src/main/java/edu/harvard/iq/dvn/core/study/StudyServiceBean.java#L1803
-                     *
-                     * In 4.0, lastUpdateTime is always null.
-                     */
                     logger.info("lastUpdateTime was null, trying createtime");
                     Date createtime = dataset.getLatestVersion().getCreateTime();
                     if (createtime != null) {
@@ -96,17 +87,14 @@ public class StatementManagerImpl implements StatementManager {
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
                 Map<String, String> states = new HashMap<String, String>();
                 states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
-                /**
-                 * @todo DVN 3.x had a studyLock. What's the equivalent in 4.0?
-                 */
-//                StudyLock lock = study.getStudyLock();
-//                if (lock != null) {
-//                    states.put("locked", "true");
-//                    states.put("lockedDetail", lock.getDetail());
-//                    states.put("lockedStartTime", lock.getStartTime().toString());
-//                } else {
-//                    states.put("locked", "false");
-//                }
+                DatasetLock lock = dataset.getDatasetLock();
+                if (lock != null) {
+                    states.put("locked", "true");
+                    states.put("lockedDetail", lock.getInfo());
+                    states.put("lockedStartTime", lock.getStartTime().toString());
+                } else {
+                    states.put("locked", "false");
+                }
                 statement.setStates(states);
                 List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
                 for (FileMetadata fileMetadata : fileMetadatas) {
@@ -124,14 +112,17 @@ public class StatementManagerImpl implements StatementManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL for file ( " + studyFileUrlString + " ) resulted in " + ex.getMessage());
                     }
                     ResourcePart resourcePart = new ResourcePart(studyFileUrl.toString());
-                    /**
-                     * @todo get this working. show the actual file type
-                     */
-//                    resourcePart.setMediaType(studyFile.getOriginalFileFormat());
-                    resourcePart.setMediaType("application/octet-stream");
+                    // default to something that doesn't throw a org.apache.abdera.util.MimeTypeParseException
+                    String finalFileFormat = "application/octet-stream";
+                    String contentType = dataFile.getContentType();
+                    if (contentType != null) {
+                        finalFileFormat = contentType;
+                    }
+                    resourcePart.setMediaType(finalFileFormat);
                     /**
                      * @todo: Why are properties set on a ResourcePart not
-                     * exposed when you GET a Statement?
+                     * exposed when you GET a Statement? Asked about this at
+                     * http://www.mail-archive.com/sword-app-tech@lists.sourceforge.net/msg00394.html
                      */
 //                    Map<String, String> properties = new HashMap<String, String>();
 //                    properties.put("filename", studyFile.getFileName());
@@ -141,6 +132,13 @@ public class StatementManagerImpl implements StatementManager {
 //                    properties.put("UNF", studyFile.getUnf());
 //                    resourcePart.setProperties(properties);
                     statement.addResource(resourcePart);
+                    /**
+                     * @todo it's been noted at
+                     * https://redmine.hmdc.harvard.edu/issues/3271#note-2 that
+                     * at the file level the "updated" date is always "now",
+                     * which seems to be set here:
+                     * https://github.com/swordapp/JavaServer2.0/blob/sword2-server-1.0/src/main/java/org/swordapp/server/AtomStatement.java#L70
+                     */
                 }
                 return statement;
             } else {

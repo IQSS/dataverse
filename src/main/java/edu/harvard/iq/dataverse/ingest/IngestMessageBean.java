@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFile; 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 
 import java.io.File;
@@ -64,64 +65,54 @@ public class IngestMessageBean implements MessageListener {
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         IngestMessage ingestMessage = null;
-        DatasetVersion sv = null;
-        List successfulFiles = new ArrayList();
-        List problemFiles = new ArrayList();
-        
-        try {           
+
+        try {
             ObjectMessage om = (ObjectMessage) message;
             ingestMessage = (IngestMessage) om.getObject();
-            
-            Iterator iter = ingestMessage.getFiles().iterator();
-            while (iter.hasNext()) {
-                DataFile dataFile = (DataFile) iter.next();
-                
-                try {
-                    logger.info("Start ingest job;");
-                        // do the ingest thing: 
-                    // parseXML( new DSBWrapper().ingest(fileBean) , fileBean.getFileMetadata() );
-                    // successfulFiles.add(fileBean);
-                    if (ingestService.ingestAsTabular(dataFile)) {
-                        //Thread.sleep(60000);
-                        logger.info("Finish ingest job;");
-                    } else {
-                        logger.info("Error occurred during ingest job!");
-                        problemFiles.add(dataFile);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    problemFiles.add(dataFile);
-                }
-                
-            }
 
-            if (!successfulFiles.isEmpty()) {
-                // We used to send emails when jobs were completed:
-                //datasetFileService.addIngestedFiles(ingestMessage.getDatasetId(), ingestMessage.getVersionNote(), successfulFiles, ingestMessage.getIngestUserId());
+            Iterator iter = ingestMessage.getFileIds().iterator();
+            Long datafile_id = null; 
+            while (iter.hasNext()) {
+                datafile_id = (Long) iter.next();
+
+                logger.info("Start ingest job;");
+                if (ingestService.ingestAsTabular(datafile_id)) {
+                    //Thread.sleep(10000);
+                    logger.info("Finish ingest job;");
+                } else {
+                    logger.info("Error occurred during ingest job!");
+                }
             }
-                    
             
+            // Remove the dataset lock: 
+            // (note that the assumption here is that all of the datafiles
+            // packed into this IngestMessage belong to the same dataset) 
+            if (datafile_id != null) {
+                DataFile datafile = datafileService.find(datafile_id);
+                if (datafile != null) {
+                    Dataset dataset = datafile.getOwner();
+                    if (dataset != null && dataset.getId() != null) {
+                        datasetService.removeDatasetLock(dataset.getId());
+                    }
+                } 
+            } 
+
         } catch (JMSException ex) {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail
-            
-        } catch (Exception ex) { 
+
+        } catch (Exception ex) {
             ex.printStackTrace();
             // if a general exception is caught that means the entire upload failed
-            //if (ingestMessage.sendErrorMessage()) {
-            //    mailService.sendIngestCompletedNotification(ingestMessage, null, ingestMessage.getFileBeans());
-            //}
-            
+            // some form of a notification - ?
+
         } finally {
-            // when we're done, go ahead and remove the lock
+            // when we're done, go ahead and remove the lock (not yet)
             try {
                 //datasetService.removeDatasetLock( ingestMessage.getDatasetId() );
             } catch (Exception ex) {
                 ex.printStackTrace(); // application was unable to remove the datasetLock
             }
-            // We used to send emails when jobs were completed:
-            //if ( ingestMessage.sendInfoMessage() || ( problemFiles.size() >= 0 && ingestMessage.sendErrorMessage() ) ) {
-            //        mailService.sendIngestCompletedNotification(ingestMessage, successfulFiles, problemFiles);
-            //} 
+            // some form of a notification - ?
         }
     }
  

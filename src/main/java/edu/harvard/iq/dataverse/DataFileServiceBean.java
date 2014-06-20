@@ -63,4 +63,17 @@ public class DataFileServiceBean {
         return savedDataFile;
     }
     
+    public Boolean isPreviouslyPublished(Long fileId){
+        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
+        query.setParameter("fileId", fileId);
+        List retList = query.getResultList();
+        return (retList.size() > 1);
+    }
+    
+    public void deleteFromVersion( DatasetVersion d, DataFile f ) {
+		em.createNamedQuery("DataFile.removeFromDatasetVersion")
+			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
+				.executeUpdate();
+    }
+        
 }
