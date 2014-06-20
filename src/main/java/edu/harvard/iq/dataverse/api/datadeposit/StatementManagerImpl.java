@@ -65,10 +65,6 @@ public class StatementManagerImpl implements StatementManager {
             Dataverse dvThatOwnsDataset = dataset.getOwner();
             if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
-                /**
-                 * @todo did the format of getAuthorsStr() change? It looks more
-                 * or less the same.
-                 */
                 String author = dataset.getLatestVersion().getAuthorsStr();
                 String title = dataset.getLatestVersion().getTitle();
                 // in the statement, the element is called "updated"
@@ -131,7 +127,8 @@ public class StatementManagerImpl implements StatementManager {
                     resourcePart.setMediaType(finalFileFormat);
                     /**
                      * @todo: Why are properties set on a ResourcePart not
-                     * exposed when you GET a Statement?
+                     * exposed when you GET a Statement? Asked about this at
+                     * http://www.mail-archive.com/sword-app-tech@lists.sourceforge.net/msg00394.html
                      */
 //                    Map<String, String> properties = new HashMap<String, String>();
 //                    properties.put("filename", studyFile.getFileName());
