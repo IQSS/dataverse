@@ -59,6 +59,7 @@ public class IndexServiceBean {
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
+    private Dataverse rootDataverseCached;
 
     public String indexAll() {
         /**
@@ -118,7 +119,7 @@ public class IndexServiceBean {
     }
 
     public String indexDataverse(Dataverse dataverse) {
-        Dataverse rootDataverse = dataverseService.findRootDataverse();
+        Dataverse rootDataverse = findRootDataverseCached();
         if (dataverse.getId() == rootDataverse.getId()) {
             /**
              * @todo: replace hard-coded groups with real groups
@@ -843,7 +844,8 @@ public class IndexServiceBean {
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
-        if (!dataverseService.findRootDataverse().equals(dataverse)) {
+        Dataverse rootDataverse = findRootDataverseCached();
+        if (!dataverse.equals(rootDataverse)) {
             // important when creating root dataverse
             if (dataverse.getOwner() != null) {
                 findPathSegments(dataverse.getOwner(), segments);
@@ -994,6 +996,19 @@ public class IndexServiceBean {
             logger.info("error in findSolrDocIdsForDraftFilesToDelete method: " + ex.toString());
         }
         return solrIdsOfFilesToDelete;
+    }
+
+    private Dataverse findRootDataverseCached() {
+        if (rootDataverseCached != null) {
+            return rootDataverseCached;
+        } else {
+            rootDataverseCached = dataverseService.findRootDataverse();
+            if (rootDataverseCached != null) {
+                return rootDataverseCached;
+            } else {
+                throw new RuntimeException("unable to determine root dataverse");
+            }
+        }
     }
 
 }
