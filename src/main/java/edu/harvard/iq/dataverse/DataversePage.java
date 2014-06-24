@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -248,6 +249,25 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
+    public String deleteDataverse() {
+        DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
+        try {
+            commandEngine.submit(cmd);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseDeleted", "Your dataverse ihas been deleted.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return "/dataverse.xhtml?id=" + dataverse.getOwner().getId() + "&faces-redirect=true";
+        } catch (CommandException ex) {
+            String msg = "There was a problem deleting your dataverse: " + ex;
+            logger.severe(msg);
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotDeleted", msg);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+            return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
+        }
+    }
+    
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
         /// for beta, we will just preview the first n fields
         StringBuilder mdbPreview = new StringBuilder();
@@ -268,6 +288,10 @@ public class DataversePage implements java.io.Serializable {
         }
 
         return mdbPreview.toString();
+    }
+    
+    public Boolean isEmptyDataverse(){
+        return !dataverseService.hasData(dataverse);
     }
 
     public void validateAlias(FacesContext context, UIComponent toValidate, Object value) {

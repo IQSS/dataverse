@@ -60,15 +60,12 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 		// FACETS
 		for ( DataverseFacet facet : doomed.getDataverseFacets(true) ) {
 			ctxt.em().remove(facet);
-		}
-        
-        // Remove from index
-        ctxt.index().delete(doomed);
+		}       
 		
         // DATAVERSE
-		ctxt.em().remove(doomed);
-		
-		
-	}
-	
+                Dataverse doomedAndMerged = ctxt.em().merge(doomed);
+		ctxt.em().remove(doomedAndMerged);
+                // Remove from index        
+                        ctxt.index().delete(doomed);
+	}	
 }

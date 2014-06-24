@@ -217,6 +217,14 @@
                                                     <f:param name="objectType" value="USERS" />
                                                 </h:link>
                                             </li>
+                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null) }">
+                                                        <li class="divider"></li>
+                                                        <li>
+                                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
+                                                                <h:outputText value="Delete Dataverse" />
+                                                            </p:commandLink>
+                                                        </li>
+                                           </ui:fragment>
                                         </ul>
                                     </div>
                                 </div>
@@ -261,7 +269,11 @@
                     </p:confirmDialog>
                     <p:confirmDialog message="This dataverse may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                     </p:confirmDialog>
-
+                     <p:confirmDialog message="Are you sure you want to delete your dataverse? This action may not be 'Undone'." header="Delete Dataverse" widgetVar="deleteConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
                     <!-- Dataverse Theme Panel -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
