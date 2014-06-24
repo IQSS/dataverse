@@ -29,7 +29,9 @@ see also https://redmine.hmdc.harvard.edu/issues/3246
    <dcterms:subject>caffeine</dcterms:subject>
    <!-- geographic coverage -->
    <dcterms:coverage>United States</dcterms:coverage>
+   <!-- geographicCoverage doesn't allowmultiples. Is this a backward-incompatible change?
    <dcterms:coverage>Canada</dcterms:coverage>
+   -->
    <!-- kind of data -->
    <dcterms:type>aggregate data</dcterms:type>
    <!-- List of sources of the data collection-->
