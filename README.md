@@ -12,3 +12,5 @@ The Dataverse code is *open-source* and *free*.
 
 Installation packages are in Sourceforge for installers. [Download the latest production stable 
 version of the Dataverse application] (http://sourceforge.net/projects/dvn/files/dvn/).
+
+[![Dataverse Project logo](src/main/webapp/resources/images/dataverseproject_logo.jpg?raw=true "Dataverse Project")](http://dataverse.org)
