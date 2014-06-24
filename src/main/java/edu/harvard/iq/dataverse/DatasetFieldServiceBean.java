@@ -26,8 +26,6 @@ public class DatasetFieldServiceBean {
     private EntityManager em;
     
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
-    private static final String FILEMETA_NAME_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName ";
-    private static final String FILEMETA_NAME_FORMAT_QUERY = "SELECT fmf from FileMetadataField fmf where fmf.name= :fieldName and fmf.fileFormatName= :fileFormatName ";
  
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
         return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id").getResultList();
@@ -70,6 +68,26 @@ public class DatasetFieldServiceBean {
         }
     }
     
+    /* 
+     * Similar method for looking up foreign metadata field mappings, for metadata
+     * imports. for these the uniquness of names isn't guaranteed (i.e., there 
+     * can be a field "author" in many different formats that we want to support), 
+     * so these have to be looked up by both the field name and the name of the 
+     * foreign format.
+     */
+    public ForeignMetadataFieldMapping findFieldMapping(String formatName, String pathName) {
+        try {
+            return em.createNamedQuery("ForeignMetadataFieldMapping.findByPath", ForeignMetadataFieldMapping.class)
+                    .setParameter("formatName", formatName)
+                    .setParameter("xPath", pathName)
+                    .getSingleResult();
+        } catch ( NoResultException nre ) {
+            return null;
+        }
+        
+        // TODO: 
+        // cache looked up results.
+    }    
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
         return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
     }        

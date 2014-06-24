@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -94,6 +95,8 @@ public class DatasetPage implements java.io.Serializable {
     VariableServiceBean variableService;
     @EJB
     IngestServiceBean ingestService;
+    @EJB
+    ForeignMetadataImportServiceBean metadataImportService;
     @EJB
     EjbDataverseEngine commandEngine;
     @Inject
