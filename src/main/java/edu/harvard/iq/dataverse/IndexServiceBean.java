@@ -119,6 +119,12 @@ public class IndexServiceBean {
     }
 
     public String indexDataverse(Dataverse dataverse) {
+        logger.info("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
+        if (dataverse.getId() == null) {
+            String msg = "unable to index dataverse. id was null (alias: " + dataverse.getAlias() + ")";
+            logger.info(msg);
+            return msg;
+        }
         Dataverse rootDataverse = findRootDataverseCached();
         if (dataverse.getId() == rootDataverse.getId()) {
             /**
