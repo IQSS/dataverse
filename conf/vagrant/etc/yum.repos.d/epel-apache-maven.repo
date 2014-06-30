@@ -1,0 +1,15 @@
+# Place this file in your /etc/yum.repos.d/ directory
+
+[epel-apache-maven]
+name=maven from apache foundation.
+baseurl=http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-$releasever/$basearch/
+enabled=1
+skip_if_unavailable=1
+gpgcheck=0
+
+[epel-apache-maven-source]
+name=maven from apache foundation. - Source
+baseurl=http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-$releasever/SRPMS
+enabled=0
+skip_if_unavailable=1
+gpgcheck=0
