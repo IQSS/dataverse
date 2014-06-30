@@ -413,8 +413,8 @@ if __name__=='__main__':
                     "permissionRoot":False,
                     "description":"API testing"
                     }
-    #print dat.create_dataverse('root', dv_params)
-    print dat.create_user('some_pw', dv_params)
+    print dat.create_dataverse('root', dv_params)
+    #print dat.create_user('some_pw', dv_params)
     """
     print dat.get_dataverse_by_id_or_alias(5)
     print dat.view_dataset_metadata_by_id_version(123, 57)
