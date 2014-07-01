@@ -24,30 +24,36 @@ package assignees {
     + locator:String
   }
 
-  class LocalUser {
-    + id:Long
-    + name:String
+  class SingleUser {
   }
 
-  class GuestUser {
-    showInLists: False
+  class IpUser {
   }
 
+  class AggregateUser {
+  }
   note bottom
    Maintains invariant:
    we <b>always</b> have a user
   end note
 
-  class RemoteUser {
-    + id
-    + origin:Data
+  class DatabaseUser {
+    + id:Long
+    + name:String
   }
-  note bottom
-    May be stored in 
-    the DB, if has some
-    long-lasting effect,
-    such as API Key
-  end note
+
+  class ShibUser {
+  }
+
+  class OauthUser {
+  }
+
+  class LdapUser {
+  }
+
+  class GuestUser {
+    showInLists: False
+  }
 
   class ApiKey {
     + key:String
@@ -62,10 +68,6 @@ package assignees {
     + add( a:Assignee )
     + remove( a:Assignee )
     + list: Assignee[]
-  }
-
-  class LogicalGroup {
-    
   }
 
   class RegisteredUsers {
@@ -85,17 +87,26 @@ package assignees {
     to an internal 
     Asignee object
   end note
+
+  class IpGroup {
+    
+  }
 }
 Assignee <|-- User
 Assignee <|-- Group
-User <|-- GuestUser
-User <|-- LocalUser
-User <|-- RemoteUser
+User <|-- SingleUser
+User <|-- AggregateUser
+AggregateUser <|-- GuestUser
+AggregateUser <|-- IpUser
+SingleUser <|-- DatabaseUser
+SingleUser <|-- ShibUser
+SingleUser <|-- OauthUser
+SingleUser <|-- LdapUser
 Group <|-- ExplicitGroup
-Group <|-- LogicalGroup
 Group <|-- ExternalGroup
-LogicalGroup <|-- RegisteredUsers
-LogicalGroup <|-- GuestUsers
+Group <|-- RegisteredUsers
+Group <|-- GuestUsers
+ExternalGroup <|-- IpGroup
 
 User "1" *- "0..*" ApiKey
 
