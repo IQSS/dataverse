@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.ContainerAPI;
 import org.swordapp.server.ContainerManager;
 import org.swordapp.server.StatementManager;
@@ -48,7 +49,15 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        this.api.put(req, resp);
+        try {
+            this.api.put(req, resp);
+        } catch (ParseException ex) {
+            /**
+             * @todo close https://redmine.hmdc.harvard.edu/issues/3305 if/when
+             * https://github.com/swordapp/JavaServer2.0/issues/6 is closed
+             */
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Attempt to upload an empty Atom entry? org.apache.abdera.parser.ParseException caught. See also https://redmine.hmdc.harvard.edu/issues/3305 and https://github.com/swordapp/JavaServer2.0/issues/6");
+        }
     }
 
     @Override
