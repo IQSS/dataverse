@@ -160,7 +160,7 @@
                         </div>
                     </p:panel>
                     
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                    <p:panel id="editFacets" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}" widgetVar="editFacets">
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
@@ -168,7 +168,7 @@
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the search result facets to display for this Dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                                         <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
-                                            <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
+                                            <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
 
