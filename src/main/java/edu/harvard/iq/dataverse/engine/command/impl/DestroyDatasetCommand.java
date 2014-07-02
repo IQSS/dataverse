@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
+import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Iterator;
 import javax.faces.application.FacesMessage;
@@ -31,7 +32,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     private final Dataset doomed;
 
     public DestroyDatasetCommand(Dataset doomed, DataverseUser aUser) {
-        super(aUser, doomed.getOwner());
+        super(aUser, doomed);
         this.doomed = doomed;
     }
 
