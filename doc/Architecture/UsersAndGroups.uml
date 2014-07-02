@@ -15,13 +15,18 @@ package existingCode {
 }
 
 package assignees {
-  class Assignee {
+  note as n2
+   Invariant: We <b>always</b> have a user
+   Local users are just users supplied by a local provider
+  end note
+
+  interface Assignee {
     + displayString()
     + showInLists: Boolean
   }
 
-  class User {
-    + locator:String
+  interface User {
+    + identifier:String
   }
 
   class SingleUser {
@@ -32,14 +37,15 @@ package assignees {
 
   class AggregateUser {
   }
-  note bottom
-   Maintains invariant:
-   we <b>always</b> have a user
-  end note
 
   class DatabaseUser {
     + id:Long
     + name:String
+  }
+
+  class UserRecord {
+    identifier: String
+    displayInfo: DisplayInfo
   }
 
   class ShibUser {
@@ -60,7 +66,7 @@ package assignees {
     + title: String
   }
 
-  class Group {
+  interface Group {
     + contains( a:Assignee )
   }
 
@@ -78,7 +84,7 @@ package assignees {
     
   }
 
-  class ExternalGroup {
+  Interface ExternalGroup {
     
   }
   note bottom
@@ -108,6 +114,8 @@ Group <|-- RegisteredUsers
 Group <|-- GuestUsers
 ExternalGroup <|-- IpGroup
 
+UserRecord ..> User : "Locates"
+
 User "1" *- "0..*" ApiKey
 
 Role -> DvObject: Defined at
@@ -120,5 +128,45 @@ ExplicitGroup o--> Assignee
 ExplicitGroup --> Dataverse: Defined At
 
 DvObject <|-- Dataverse
+
+package userprovider {
+  
+  class UserProviderManager {
+    providers[]
+    registerProvider( p:UserProvider )
+    listProviders: Collection<UserProvider>
+    getUser( idtf:String ) : User
+    getUser( req:HttpRequest ) : User
+  }
+
+  interface UserProvider {
+    + info : UserProviderInfo
+    acceptsUserIdentifier( idtf:String ): bool
+    getUser( idtf:String ) : User
+    getUser( req:HttpRequest ) : User
+  }
+
+  UserProviderManager *-- "*" UserProvider
+}
+
+package somewhereElseInDataverse {
+  class AccessRequest {
+    from: UserRecord
+    to: UserRecord
+    dvo: DvObject
+    metadata : Object
+  }
+
+}
+ 
+AccessRequest ..> UserRecord : "From, To"
+AccessRequest ..> DvObject : "about"
+
+UserProvider ..> Group : "Creates"
+note on link
+  We may also add a group provider,
+  but generating users and querying
+  their status seems highly cohesive
+end note
 
 @enduml
