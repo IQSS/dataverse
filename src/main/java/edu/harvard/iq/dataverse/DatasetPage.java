@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
@@ -29,10 +30,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +56,6 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
-import org.primefaces.model.SelectableDataModel;
 
 /**
  *
@@ -112,15 +110,23 @@ public class DatasetPage implements java.io.Serializable {
     private List<DataFile> newFiles = new ArrayList();
     private DatasetVersion workingVersion;
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
-    private List<DatasetField> deleteRecords = new ArrayList();
     private int releaseRadio = 1;
+    private int deaccessionRadio = 1;
+    private int deaccessionReasonRadio = 1;
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
     private String dropBoxSelection = "";
-    private DatasetVersionDifference datasetVersionDifference;
-    private Map<Long, Boolean> checked = new HashMap<>();
-
+    private String deaccessionReasonText = "";
     private String displayCitation;
+    private DatasetVersionDifference datasetVersionDifference;
+
+    public String getDeaccessionReasonText() {
+        return deaccessionReasonText;
+    }
+
+    public void setDeaccessionReasonText(String deaccessionReasonText) {
+        this.deaccessionReasonText = deaccessionReasonText;
+    }
 
     public String getDisplayCitation() {
         return displayCitation;
@@ -205,6 +211,21 @@ public class DatasetPage implements java.io.Serializable {
     public void setDatasetNextMinorVersion(String datasetNextMinorVersion) {
         this.datasetNextMinorVersion = datasetNextMinorVersion;
     }
+    
+    public int getDeaccessionReasonRadio() {
+        return deaccessionReasonRadio;
+    }
+
+    public void setDeaccessionReasonRadio(int deaccessionReasonRadio) {
+        this.deaccessionReasonRadio = deaccessionReasonRadio;
+    }
+    public int getDeaccessionRadio() {
+        return deaccessionRadio;
+    }
+
+    public void setDeaccessionRadio(int deaccessionRadio) {
+        this.deaccessionRadio = deaccessionRadio;
+    }
 
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
@@ -235,6 +256,7 @@ public class DatasetPage implements java.io.Serializable {
 
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
+            setReleasedVersionTabList(resetReleasedVersionTabList());
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -282,7 +304,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
-            datasetVersionUI = new DatasetVersionUI(workingVersion);            
+            datasetVersionUI = new DatasetVersionUI(workingVersion);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }
@@ -297,6 +319,49 @@ public class DatasetPage implements java.io.Serializable {
 
     public String releaseDataset() {
         return releaseDataset(false);
+    }
+
+    public String deaccessionDataset() {
+        Command<DatasetVersion> cmd;
+        System.out.print("before try " + deaccessionRadio);
+        try {
+            if (deaccessionRadio == 1) {
+                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dataset.getLatestVersion());
+                DatasetVersion datasetv = commandEngine.submit(cmd);
+            } else {
+                for (DatasetVersion dv : dataset.getVersions()) {
+                   System.out.print("radio 2");
+                    if (dv.isReleased() || dv.isArchived()) {
+                        System.out.print("before command " + dv.getId());
+                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dv);
+                        DatasetVersion datasetv = commandEngine.submit(cmd);
+                    }
+                }
+            }
+
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your dataset is now public.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
+
+    public String deaccessionVersions() {
+        Command<DatasetVersion> cmd;
+        try {
+            for (DatasetVersion dv : selectedDeaccessionVersions) {
+                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dv);
+                DatasetVersion datasetv = commandEngine.submit(cmd);
+            }
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your dataset is now public.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
 
     private String releaseDataset(boolean minor) {
@@ -349,6 +414,11 @@ public class DatasetPage implements java.io.Serializable {
         try {
             cmd = new DestroyDatasetCommand(dataset, session.getUser());
             commandEngine.submit(cmd);
+            /* - need to figure out what to do 
+             Update notification in Delete Dataset Method
+             for (UserNotification und : userNotificationService.findByDvObject(dataset.getId())){
+             userNotificationService.delete(und);
+             } */
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Delete Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
@@ -506,7 +576,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
-        
+
         ingestService.addFiles(workingVersion, newFiles);
 
         // Use the API to save the dataset: 
@@ -553,6 +623,7 @@ public class DatasetPage implements java.io.Serializable {
         dataset = datasetService.find(dataset.getId());
         ownerId = dataset.getOwner().getId();
         setVersionTabList(resetVersionTabList());
+        setReleasedVersionTabList(resetReleasedVersionTabList());
         newFiles.clear();
         editMode = null;
     }
@@ -625,7 +696,7 @@ public class DatasetPage implements java.io.Serializable {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
-        
+
         newFiles.add(dFile);
 
     }
@@ -665,6 +736,16 @@ public class DatasetPage implements java.io.Serializable {
         this.versionTabList = versionTabList;
     }
 
+    private List<DatasetVersion> releasedVersionTabList = new ArrayList();
+
+    public List<DatasetVersion> getReleasedVersionTabList() {
+        return releasedVersionTabList;
+    }
+
+    public void setReleasedVersionTabList(List<DatasetVersion> releasedVersionTabList) {
+        this.releasedVersionTabList = releasedVersionTabList;
+    }
+
     private List<DatasetVersion> selectedVersions;
 
     public List<DatasetVersion> getSelectedVersions() {
@@ -673,6 +754,16 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectedVersions(List<DatasetVersion> selectedVersions) {
         this.selectedVersions = selectedVersions;
+    }
+
+    private List<DatasetVersion> selectedDeaccessionVersions;
+
+    public List<DatasetVersion> getSelectedDeaccessionVersions() {
+        return selectedDeaccessionVersions;
+    }
+
+    public void setSelectedDeaccessionVersions(List<DatasetVersion> selectedDeaccessionVersions) {
+        this.selectedDeaccessionVersions = selectedDeaccessionVersions;
     }
 
     public DatasetVersionDifference getDatasetVersionDifference() {
@@ -686,6 +777,7 @@ public class DatasetPage implements java.io.Serializable {
     public void compareVersionDifferences() {
         RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
+            System.out.print("selected version size = " + this.selectedVersions.size());
             requestContext.execute("openCompareTwo();");
         } else {
             //order depends on order of selection - needs to be chronological order
@@ -694,23 +786,12 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 updateVersionDifferences(this.selectedVersions.get(1), this.selectedVersions.get(0));
             }
-        }
+    }
     }
 
     public void updateVersionDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
-        int count = 0;
-        int size = this.getDataset().getVersions().size();
-
         if (originalVersion == null) {
-            for (DatasetVersion dsv : newVersion.getDataset().getVersions()) {
-                if (newVersion.equals(dsv)) {
-                    if ((count + 1) < size) {
-                        setDatasetVersionDifference(new DatasetVersionDifference(newVersion, newVersion.getDataset().getVersions().get(count + 1)));
-                        break;
-                    }
-                }
-                count++;
-            }
+            setDatasetVersionDifference(newVersion.getDefaultVersionDifference());
         } else {
             setDatasetVersionDifference(new DatasetVersionDifference(newVersion, originalVersion));
         }
@@ -736,11 +817,21 @@ public class DatasetPage implements java.io.Serializable {
             return dataset.getVersions();
         } else {
             for (DatasetVersion version : dataset.getVersions()) {
-                if (version.isReleased()) {
+                if (version.isReleased() || version.isDeaccessioned()) {
                     retList.add(version);
                 }
             }
             return retList;
         }
+    }
+
+    private List<DatasetVersion> resetReleasedVersionTabList() {
+        List<DatasetVersion> retList = new ArrayList();
+        for (DatasetVersion version : dataset.getVersions()) {
+            if (version.isReleased() || version.isArchived()) {
+                retList.add(version);
+            }
+        }
+        return retList;
     }
 }

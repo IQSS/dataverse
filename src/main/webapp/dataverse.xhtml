@@ -217,7 +217,8 @@
                                                     <f:param name="objectType" value="USERS" />
                                                 </h:link>
                                             </li>
-                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null) }">
+                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null) 
+                                                                    and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          

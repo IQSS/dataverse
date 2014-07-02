@@ -120,6 +120,15 @@ public class Dataset extends DvObjectContainer {
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
     }
+    
+    public DatasetVersion getLatestVersionForCopy(){
+        for(DatasetVersion testDsv: getVersions()){
+            if (testDsv.isReleased() || testDsv.isArchived()){
+                return testDsv;
+            }
+        }
+        return getVersions().get(0);
+    }
 
     public List<DatasetVersion> getVersions() {
         return versions;
@@ -133,7 +142,7 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
-        DatasetVersion latestVersion = getLatestVersion();
+        DatasetVersion latestVersion = getLatestVersionForCopy();
         //if the latest version has values get them copied over
         if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
             dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));

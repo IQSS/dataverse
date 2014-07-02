@@ -212,7 +212,10 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getVersionContributors(){
-        String retString = ""; //= this.getDataset().getCreator().getDisplayName();
+        String retString = ""; 
+        if (this.getDatasetVersionDataverseUsers() == null){
+            return retString;
+        }
         for (DatasetVersionDatasetUser contributor: this.getDatasetVersionDataverseUsers()){
              if (retString.isEmpty()){
                  retString = contributor.getDataverseUser().getDisplayName();
@@ -231,17 +234,25 @@ public class DatasetVersion implements Serializable {
         return versionNote;
     }
     
-    public DatasetVersionDifference getDefaultVersionDifference(){
-        int count = 0;
+    public DatasetVersionDifference getDefaultVersionDifference() {
+        // if version is deaccessioned ignore it for differences purposes
+        int index = 0;
         int size = this.getDataset().getVersions().size();
-        for (DatasetVersion dsv: this.getDataset().getVersions()){
-            if (this.equals(dsv)){
-                if ((count + 1) < size){
-                    DatasetVersionDifference dvd = new DatasetVersionDifference(this, this.getDataset().getVersions().get(count+1));                   
-                    return dvd;
+        if (this.isDeaccessioned()) {
+            return null;
+        }
+        for (DatasetVersion dsv : this.getDataset().getVersions()) {
+            if (this.equals(dsv)) {
+                if ((index + 1) <= (size - 1)) {
+                    for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
+                        if (!dvTest.isDeaccessioned()) {
+                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
+                            return dvd;
+                        }
+                    }
                 }
             }
-            count++;
+            index++;
         }
         return null;
     }

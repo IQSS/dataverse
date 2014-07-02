@@ -35,6 +35,15 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
+                    function testVersionSelect(valIn) {    
+                        if (valIn !== 3) {
+                            deaccessionVersionBlock.hide();
+                            deaccessionBlock.show(); 
+                        } else {
+                            deaccessionBlock.hide();
+                            deaccessionVersionBlock.show(); 
+                        }
+                    }
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
@@ -100,7 +109,7 @@
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>
                                                     </li>
-                                                    <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' }">
+                                                    <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
@@ -108,11 +117,19 @@
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
-                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' }">
+                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">                                                          
                                                                 <h:outputText value="Delete Draft Version" />
+                                                            </p:commandLink>
+                                                        </li>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
+                                                        <li class="divider"></li>
+                                                        <li>
+                                                            <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">                                                          
+                                                                <h:outputText value="Deaccesion Dataset" />
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
@@ -480,16 +497,22 @@
                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
-                                                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" rowKey="#{versionTab}">
+                                                 rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.versionTabList.size() > 2}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column>
+                                            <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
                                             <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">
-                                                <h:outputText rendered="#{!versionTab.released}" value="#{versionTab.versionState}" />
-                                                <h:outputText rendered="#{versionTab.released}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                                <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
+                                                <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
                                                 <f:param name="id" value="#{versionTab.dataset.id}" />
                                                 <f:param name="versionId" value="#{versionTab.id}" />
                                             </h:link>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{versionTab.deaccessioned and  !(permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
+                                                <h:outputText rendered="#{!(versionTab.released or versionTab.deaccessioned)}" value="#{versionTab.versionState}" />
+                                                <h:outputText rendered="#{versionTab.released or versionTab.deaccessioned}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                            </ui:fragment>
                                         </p:column>
                                         <p:column>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
@@ -532,8 +555,11 @@
                                                 <ui:fragment rendered="#{versionTab.draft}">
                                                     This is a draft version.
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{!versionTab.draft}">
+                                                <ui:fragment rendered="#{versionTab.released}">
                                                     This is the first published version.
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{versionTab.deaccessioned}">
+                                                    This version has been deaccessioned.
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
@@ -573,6 +599,48 @@
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
+                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset/Versions" widgetVar="deaccessionBlock">
+                        <h:outputLabel value="What do you want to deaccession?" /> 
+                        <p:selectOneRadio id="deaccessionOptions" value="#{DatasetPage.deaccessionRadio}" 
+                                          widgetVar="deaccessionBlockRadio"  onchange="testVersionSelect(this.value)">
+                            <f:selectItem itemLabel="Deaccession current version" itemValue="1" />                            
+                            <f:selectItem itemLabel="Deaccession entire dataset" itemValue="2" />
+                            <f:selectItem itemLabel="Deaccession selected version(s)" itemValue="3" />
+                        </p:selectOneRadio>
+                        <ui:fragment rendered="true">
+                            <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
+                                         rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
+                                <p:column selectionMode="multiple" 
+                                          style="width:2%;text-align:center"/>
+                                <p:column>
+                                    <h:link id="versionLink" styleClass="ui-commandlink ui-widget" outcome="dataset">                    
+                                        <h:outputText rendered="#{versionTab.released}" value="#{versionTab.versionNumber}.#{versionTab.minorVersionNumber}" />
+                                        <f:param name="id" value="#{versionTab.dataset.id}" />
+                                        <f:param name="versionId" value="#{versionTab.id}" />
+                                    </h:link>
+                                </p:column>
+                            </p:dataTable>
+                        </ui:fragment>
+                        Reason for Deaccessioning
+                        <p:selectOneRadio id="reasonOptions" value="#{DatasetPage.deaccessionReasonRadio}" 
+                                          widgetVar="reasonBlockRadio"  >
+                            <f:selectItem itemLabel="Reason One" itemValue="1" />                            
+                            <f:selectItem itemLabel="Reason Two" itemValue="2" />
+                            <f:selectItem itemLabel="Other" itemValue="3" />
+                        </p:selectOneRadio>
+                        <ui:fragment rendered="true">
+                                                    <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                                        Other Reason for Deaccession
+                                                    </label>
+                                                    <p:inputTextarea  id="reasonForDeaccession" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}" style="margin-top:.5em;"/>
+                                                    
+                                                    <p:message for="reasonForDeaccession"/>
+                         </ui:fragment>
+                        <p:commandButton value="Continue" onclick="deaccessionBlock.hide()" action="#{DatasetPage.deaccessionDataset}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deaccessionBlock.hide()" type="button" />
+                    </p:dialog>
+                    <h:inputHidden value="#{DatasetPage.deaccessionRadio}" id="select_deaccessionOption"/>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
