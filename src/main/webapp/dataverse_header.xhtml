@@ -62,6 +62,9 @@
                             </li>
                         </ul>
                     </li>
+                    <li>
+                            <p:commandLink value="Feedback" onclick="feedbackForm.show()"/>
+                    </li>
                     <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
                             <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
@@ -182,7 +185,7 @@
                             </ui:fragment>
 
                             <ui:fragment rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
-                                <a id="breadcrumbLnkTree#{status.index}" title="Browse #{dv.name} Dataverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
+                                <a id="taverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
                                     <span class="glyphicon glyphicon-chevron-down"></span>
                                 </a>
                             </ui:fragment>
@@ -215,4 +218,24 @@
             <iqbs:messages id="messages" collapsible="true" />
         </div>
     </ui:fragment>
+    
+    <!-- Dialog Feedback Form -->
+    <p:dialog header="Send feedback to the Dataverse development team!" widgetVar="feedbackForm" modal="true">
+        <h:form>
+            <p>
+                To: Dataverse Support
+            </p>
+            <p>
+                From: <h:inputText id="userEmail" size="30" value="#{sendFeedbackDialog.userEmail}"/>
+            </p>
+            <p>
+                Subject: Dataverse 4.0 Beta Feedback
+            </p>
+            <p>
+                <h:inputTextarea id="userMessage" rows="10" cols="50" value="#{sendFeedbackDialog.userMessage}"/>
+            </p>
+            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-default" value="Send"/>
+            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">Cancel</button>
+        </h:form>
+    </p:dialog>
 </div>
