@@ -101,6 +101,11 @@ public class PermissionServiceBean {
             retVal.addAll(asmnt.getRole().permissions());
         }
 
+        // Every user can access released DvObjects
+        if (d.isReleased()) {
+            retVal.add(Permission.Access);
+        }
+        
 		// special case - All registered users can add to the root dv (no owner)
         // or if alias ends in "_open"
         if (d instanceof Dataverse) {
