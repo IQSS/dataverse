@@ -323,16 +323,13 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deaccessionDataset() {
         Command<DatasetVersion> cmd;
-        System.out.print("before try " + deaccessionRadio);
         try {
             if (deaccessionRadio == 1) {
                 cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dataset.getLatestVersion());
                 DatasetVersion datasetv = commandEngine.submit(cmd);
             } else {
                 for (DatasetVersion dv : dataset.getVersions()) {
-                   System.out.print("radio 2");
                     if (dv.isReleased() || dv.isArchived()) {
-                        System.out.print("before command " + dv.getId());
                         cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dv);
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
