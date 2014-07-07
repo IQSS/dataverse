@@ -225,9 +225,12 @@
             <p>
                 To: Dataverse Support
             </p>
-            <p>
-                From: <h:inputText id="userEmail" size="30" value="#{sendFeedbackDialog.userEmail}"/>
-            </p>
+            <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+                <p> From: #{sendFeedbackDialog.loggedInUserEmail()} </p>
+            </ui:fragment>
+            <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
+                <p> From: <h:inputText id="userEmail" size="30" value="#{sendFeedbackDialog.userEmail}"/> </p>
+            </ui:fragment>
             <p>
                 Subject: Dataverse 4.0 Beta Feedback
             </p>

@@ -39,15 +39,29 @@ public class SendFeedbackDialog {
         return userMessage;
     }
     
+    public boolean isLoggedIn() {
+        return !dataverseSession.getUser().isGuest();
+    }
+    
+    public String loggedInUserEmail() {
+        return dataverseSession.getUser().getEmail();
+    }
+    
     
     public String sendMessage() {
-        if (userEmail != null && userMessage != null) {
-            mailService.sendMail(userEmail, "support@thedata.org", "Dataverse 4.0 Beta Feedback", userMessage);
+        if (isLoggedIn()) {
+            mailService.sendMail(loggedInUserEmail(), "support@thedata.org", "Dataverse 4.0 Beta Feedback", userMessage);
             userMessage = "";
             return null;
         } else {
-            userMessage = "";
-            return null;
+            if (userEmail != null && userMessage != null) {
+                mailService.sendMail(userEmail, "support@thedata.org", "Dataverse 4.0 Beta Feedback", userMessage);
+                userMessage = "";
+                return null;
+            } else {
+                userMessage = "";
+                return null;
+            }
         }
     }
     
