@@ -45,6 +45,7 @@ public class SolrSearchResult {
 //    private boolean statePublished;
     private boolean unpublishedState;
     private boolean draftState;
+    private boolean deaccessionedState;
     private long datasetVersionId;
 
 //    public boolean isStatePublished() {
@@ -67,6 +68,14 @@ public class SolrSearchResult {
 
     public void setDraftState(boolean draftState) {
         this.draftState = draftState;
+    }
+
+    public boolean isDeaccessionedState() {
+        return deaccessionedState;
+    }
+
+    public void setDeaccessionedState(boolean deaccessionedState) {
+        this.deaccessionedState = deaccessionedState;
     }
     /**
      * @todo: used? remove

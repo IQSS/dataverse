@@ -57,7 +57,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 }
                 FileMetadata doomedAndMerged = ctxt.em().merge(fmr);
                 ctxt.em().remove(doomedAndMerged);
-                String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+                String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
                 return;
             }
             throw new IllegalCommandException("Cannot delete a released file", this);
@@ -128,7 +128,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
              *
              * See also https://redmine.hmdc.harvard.edu/issues/3786
              */
-            String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+            String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
             /**
              * @todo check indexing result for success or failure. Really, we
              * need an indexing queuing system:

@@ -81,7 +81,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         ctxt.em().remove(managedDoomed);
 
         //remove from index
-        String indexingResult = ctxt.index().removeDraftFromIndex(IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix);
+        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix);
 
         ctxt.index().indexDataverse(toReIndex);
     }

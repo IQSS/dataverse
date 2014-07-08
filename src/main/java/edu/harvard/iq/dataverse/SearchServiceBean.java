@@ -343,11 +343,15 @@ public class SearchServiceBean {
              * @todo put all this in the constructor?
              */
             List<String> states = (ArrayList<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
-            for (String state : states) {
-                if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
-                    solrSearchResult.setUnpublishedState(true);
-                } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
-                    solrSearchResult.setDraftState(true);
+            if (states != null) {
+                for (String state : states) {
+                    if (state.equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                        solrSearchResult.setUnpublishedState(true);
+                    } else if (state.equals(IndexServiceBean.getDRAFT_STRING())) {
+                        solrSearchResult.setDraftState(true);
+//                    } else if (state.equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+//                        solrSearchResult.setDeaccessionedState(true);
+                    }
                 }
             }
 //            logger.info(id + ": " + description);

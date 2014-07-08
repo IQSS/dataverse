@@ -323,6 +323,9 @@ public class SearchIncludeFragment {
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                        if (datasetVersion.isDeaccessioned()) {
+                            solrSearchResult.setDeaccessionedState(true);
+                        }
                         if (datasetVersion != null) {
                             String citation = datasetVersion.getCitation();
                             if (citation != null) {
@@ -854,6 +857,10 @@ public class SearchIncludeFragment {
 
     public String getDRAFT() {
         return IndexServiceBean.getDRAFT_STRING();
+    }
+
+    public String getDEACCESSIONED() {
+        return IndexServiceBean.getDEACCESSIONED_STRING();
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
