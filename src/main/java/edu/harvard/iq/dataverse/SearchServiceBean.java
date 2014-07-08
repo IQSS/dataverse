@@ -64,8 +64,8 @@ public class SearchServiceBean {
     };
 
     public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        return  search( dataverseUser, dataverse, query, filterQueries, sortField, sortOrder, paginationStart,  false);
-        }
+        return search(dataverseUser, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
+    }
 
     public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
@@ -89,7 +89,7 @@ public class SearchServiceBean {
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
-        Map<String,String> solrFieldsToHightlightOnMap = new HashMap<>();
+        Map<String, String> solrFieldsToHightlightOnMap = new HashMap<>();
         solrFieldsToHightlightOnMap.put(SearchFields.NAME, "Name");
         solrFieldsToHightlightOnMap.put(SearchFields.AFFILIATION, "Affiliation");
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_MIME, "File Type");
@@ -103,7 +103,7 @@ public class SearchServiceBean {
          */
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, "Filename Without Extension");
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
-        for (DatasetFieldType datasetFieldType: datasetFields) {
+        for (DatasetFieldType datasetFieldType : datasetFields) {
             String solrField = datasetFieldType.getSolrField().getNameSearchable();
             String displayName = datasetFieldType.getDisplayName();
             solrFieldsToHightlightOnMap.put(solrField, displayName);
@@ -149,7 +149,7 @@ public class SearchServiceBean {
                  */
                 if (dataverseUser.getPosition().equals("Signals Intelligence")) {
                     String publicPlusUserPrivateGroupPlusNSA = "("
-                        + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
                             + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
                             + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
                             + ")";
@@ -169,7 +169,6 @@ public class SearchServiceBean {
          */
 //        String dangerZone = null;
 //        permissionFilterQuery = dangerZone;
-
         solrQuery.addFilterQuery(permissionFilterQuery);
 
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
@@ -185,19 +184,20 @@ public class SearchServiceBean {
          * (retrieveFacetsByDataverse?) only show the facets that the dataverse
          * in question wants to show (and in the right order):
          * https://redmine.hmdc.harvard.edu/issues/3490
-         * 
+         *
          * also, findAll only returns advancedSearchField = true... we should
          * probably introduce the "isFacetable" boolean rather than caring about
          * if advancedSearchField is true or false
          *
          */
-        for (DataverseFacet dataverseFacet: dataverse.getDataverseFacets()) {
+        for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
             DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
             solrQuery.addFacetField(datasetField.getSolrField().getNameFacetable());
         }
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
-         * @todo: hide the extra line this shows in the GUI... at least it's last...
+         * @todo: hide the extra line this shows in the GUI... at least it's
+         * last...
          */
         solrQuery.addFacetField(SearchFields.TYPE);
         /**
@@ -226,9 +226,11 @@ public class SearchServiceBean {
         final int citationYearRangeEnd = thisYear;
         final int citationYearRangeSpan = 2;
         /**
-         * @todo: these are dates and should be "range facets" not "field facets"
-         * 
-         * right now they are lumped in with the datasetFieldService.findAll() above
+         * @todo: these are dates and should be "range facets" not "field
+         * facets"
+         *
+         * right now they are lumped in with the datasetFieldService.findAll()
+         * above
          */
 //        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
 //        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
@@ -371,8 +373,7 @@ public class SearchServiceBean {
                 if (title != null) {
 //                    solrSearchResult.setTitle((String) titles.get(0));
                     solrSearchResult.setTitle((String) title);
-                }
-                else {
+                } else {
                     solrSearchResult.setTitle("NULL: NO TITLE INDEXED OR PROBLEM FINDING TITLE DATASETFIELD");
                 }
             } else if (type.equals("files")) {

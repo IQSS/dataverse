@@ -50,11 +50,9 @@ public class SolrSearchResult {
 //    public boolean isStatePublished() {
 //        return statePublished;
 //    }
-
 //    public void setStatePublished(boolean statePublished) {
 //        this.statePublished = statePublished;
 //    }
-
     public boolean isUnpublishedState() {
         return unpublishedState;
     }
