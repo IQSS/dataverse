@@ -187,6 +187,9 @@ public class Dataset extends DvObjectContainer {
     
     public DatasetVersion getReleasedVersion() {
         for (DatasetVersion version : this.getVersions()){
+            /**
+             * @todo what about deaccessioned versions?
+             */
             if (!version.isWorkingCopy()){
                 return version;               
             }

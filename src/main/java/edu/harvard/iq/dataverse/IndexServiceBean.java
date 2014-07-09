@@ -265,21 +265,17 @@ public class IndexServiceBean {
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
             String semanticVersion = datasetVersion.getSemanticVersion();
-            String versionState = datasetVersion.getVersionState().name();
-            boolean versionIsReleased = datasetVersion.isReleased();
-            if (versionIsReleased) {
+            DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
+            if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
                 /**
                  * @todo for performance, should just query this rather than
                  * iterating. Would need a new SQL query/method
                  */
                 numReleasedVersions += 1;
             }
-            boolean versionIsWorkingCopy = datasetVersion.isWorkingCopy();
             debug.append("version found with database id " + versionDatabaseId + "\n");
             debug.append("- title: " + versionTitle + "\n");
-            debug.append("- semanticVersion-STATE: " + semanticVersion + "-" + versionState + "\n");
-            debug.append("- isWorkingCopy: " + versionIsWorkingCopy + "\n");
-            debug.append("- isReleased: " + versionIsReleased + "\n");
+            debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
             for (FileMetadata fileMetadata : fileMetadatas) {
@@ -295,6 +291,17 @@ public class IndexServiceBean {
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (releasedVersion != null) {
+            if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
+                DatasetVersion lookupAttempt2 = releasedVersion.getMostRecentlyReleasedVersion();
+                String message = "WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned (database id "
+                        + releasedVersion.getId()
+                        + "). (releasedVersion.getMostRecentlyReleasedVersion() returns database id "
+                        + lookupAttempt2.getId() + " so that method may be better?). Look out for strange indexing results.";
+                logger.severe(message);
+                debug.append(message);
+            }
+        }
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
          * @todo refactor all of this below and have a single method that takes
@@ -388,7 +395,8 @@ public class IndexServiceBean {
         } else if (numReleasedVersions > 0) {
             results.append("Released versions found: ").append(numReleasedVersions)
                     .append(". Will attempt to index as ").append(solrIdPublished).append(" (discoverable by anonymous)\n");
-            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
+            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
+                    || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
@@ -510,7 +518,7 @@ public class IndexServiceBean {
         if (majorVersionReleaseDate != null) {
             if (true) {
                 String msg = "major release date found: " + majorVersionReleaseDate.toString();
-                logger.info(msg);
+                logger.fine(msg);
             }
             datasetSortByDate = majorVersionReleaseDate;
         } else {
@@ -581,11 +589,11 @@ public class IndexServiceBean {
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
-                    logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
 //                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
                         String dateAsString = dsf.getValues().get(0);
-                        logger.info("date as string: " + dateAsString);
+                        logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
                             try {
@@ -593,11 +601,11 @@ public class IndexServiceBean {
                                  * @todo when bean validation is working we
                                  * won't have to convert strings into dates
                                  */
-                                logger.info("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
+                                logger.fine("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
                                 Date dateAsDate = inputDateyyyy.parse(dateAsString);
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
-                                logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
+                                logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
 //                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
                                 solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
                                 if (dsfType.getSolrField().isFacetable()) {
@@ -647,82 +655,6 @@ public class IndexServiceBean {
                         }
                     }
                 }
-                /**
-                 * @todo: review all code below... commented out old indexing of
-                 * hard coded fields. Also, should we respect the
-                 * isAdvancedSearchField boolean?
-                 */
-//                if (datasetField.isAdvancedSearchField()) {
-//                    advancedSearchFields.add(idDashName);
-//                    logger.info(idDashName + " is an advanced search field (" + title + ")");
-//                    if (name.equals(DatasetFieldConstant.title)) {
-//                        String toIndexTitle = datasetFieldValue.getStrValue();
-//                        if (toIndexTitle != null && !toIndexTitle.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.TITLE, toIndexTitle);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.authorName)) {
-//                        String toIndexAuthor = datasetFieldValue.getStrValue();
-//                        if (toIndexAuthor != null && !toIndexAuthor.isEmpty()) {
-//                            logger.info("index this author: " + toIndexAuthor);
-//                            solrInputDocument.addField(SearchFields.AUTHOR_STRING, toIndexAuthor);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.productionDate)) {
-//                        String toIndexProductionDateString = datasetFieldValue.getStrValue();
-//                        logger.info("production date: " + toIndexProductionDateString);
-//                        if (toIndexProductionDateString != null && !toIndexProductionDateString.isEmpty()) {
-//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-//                            try {
-//                                logger.info("Trying to convert " + toIndexProductionDateString + " to a YYYY date from dataset " + dataset.getId());
-//                                Date productionDate = inputDateyyyy.parse(toIndexProductionDateString);
-//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-//                                String productionYear = yearOnly.format(productionDate);
-//                                logger.info("YYYY only: " + productionYear);
-//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_YEAR_ONLY, Integer.parseInt(productionYear));
-//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_ORIGINAL, productionDate);
-//                            } catch (Exception ex) {
-//                                logger.info("unable to convert " + toIndexProductionDateString + " into YYYY format");
-//                            }
-//                        }
-//                        /**
-//                         * @todo: DRY! this is the same as above!
-//                         */
-//                    } else if (name.equals(DatasetFieldConstant.distributionDate)) {
-//                        String toIndexdistributionDateString = datasetFieldValue.getStrValue();
-//                        logger.info("distribution date: " + toIndexdistributionDateString);
-//                        if (toIndexdistributionDateString != null && !toIndexdistributionDateString.isEmpty()) {
-//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-//                            try {
-//                                logger.info("Trying to convert " + toIndexdistributionDateString + " to a YYYY date from dataset " + dataset.getId());
-//                                Date distributionDate = inputDateyyyy.parse(toIndexdistributionDateString);
-//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-//                                String distributionYear = yearOnly.format(distributionDate);
-//                                logger.info("YYYY only: " + distributionYear);
-//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, Integer.parseInt(distributionYear));
-//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_ORIGINAL, distributionDate);
-//                            } catch (Exception ex) {
-//                                logger.info("unable to convert " + toIndexdistributionDateString + " into YYYY format");
-//                            }
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.keywordValue)) {
-//                        String toIndexKeyword = datasetFieldValue.getStrValue();
-//                        if (toIndexKeyword != null && !toIndexKeyword.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.KEYWORD, toIndexKeyword);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.distributorName)) {
-//                        String toIndexDistributor = datasetFieldValue.getStrValue();
-//                        if (toIndexDistributor != null && !toIndexDistributor.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.DISTRIBUTOR, toIndexDistributor);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.description)) {
-//                        String toIndexDescription = datasetFieldValue.getStrValue();
-//                        if (toIndexDescription != null && !toIndexDescription.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.DESCRIPTION, toIndexDescription);
-//                        }
-//                    }
-//                } else {
-//                    notAdvancedSearchFields.add(idDashName);
-//                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
-//                }
             }
         }
 
