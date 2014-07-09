@@ -111,8 +111,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetVersion workingVersion;
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private int releaseRadio = 1;
-    private int deaccessionRadio = 1;
-    private int deaccessionReasonRadio = 1;
+    private int deaccessionRadio = 0;
+    private int deaccessionReasonRadio = 0;
     private String datasetNextMajorVersion = "1.0";
     private String datasetNextMinorVersion = "";
     private String dropBoxSelection = "";
