@@ -291,8 +291,16 @@ public class IndexServiceBean {
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
-        if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-            logger.severe("WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned. Look out for strange indexing results.");
+        if (releasedVersion != null) {
+            if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
+                DatasetVersion lookupAttempt2 = releasedVersion.getMostRecentlyReleasedVersion();
+                String message = "WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned (database id "
+                        + releasedVersion.getId()
+                        + "). (releasedVersion.getMostRecentlyReleasedVersion() returns database id "
+                        + lookupAttempt2.getId() + " so that method may be better?). Look out for strange indexing results.";
+                logger.severe(message);
+                debug.append(message);
+            }
         }
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
@@ -647,82 +655,6 @@ public class IndexServiceBean {
                         }
                     }
                 }
-                /**
-                 * @todo: review all code below... commented out old indexing of
-                 * hard coded fields. Also, should we respect the
-                 * isAdvancedSearchField boolean?
-                 */
-//                if (datasetField.isAdvancedSearchField()) {
-//                    advancedSearchFields.add(idDashName);
-//                    logger.info(idDashName + " is an advanced search field (" + title + ")");
-//                    if (name.equals(DatasetFieldConstant.title)) {
-//                        String toIndexTitle = datasetFieldValue.getStrValue();
-//                        if (toIndexTitle != null && !toIndexTitle.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.TITLE, toIndexTitle);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.authorName)) {
-//                        String toIndexAuthor = datasetFieldValue.getStrValue();
-//                        if (toIndexAuthor != null && !toIndexAuthor.isEmpty()) {
-//                            logger.info("index this author: " + toIndexAuthor);
-//                            solrInputDocument.addField(SearchFields.AUTHOR_STRING, toIndexAuthor);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.productionDate)) {
-//                        String toIndexProductionDateString = datasetFieldValue.getStrValue();
-//                        logger.info("production date: " + toIndexProductionDateString);
-//                        if (toIndexProductionDateString != null && !toIndexProductionDateString.isEmpty()) {
-//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-//                            try {
-//                                logger.info("Trying to convert " + toIndexProductionDateString + " to a YYYY date from dataset " + dataset.getId());
-//                                Date productionDate = inputDateyyyy.parse(toIndexProductionDateString);
-//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-//                                String productionYear = yearOnly.format(productionDate);
-//                                logger.info("YYYY only: " + productionYear);
-//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_YEAR_ONLY, Integer.parseInt(productionYear));
-//                                solrInputDocument.addField(SearchFields.PRODUCTION_DATE_ORIGINAL, productionDate);
-//                            } catch (Exception ex) {
-//                                logger.info("unable to convert " + toIndexProductionDateString + " into YYYY format");
-//                            }
-//                        }
-//                        /**
-//                         * @todo: DRY! this is the same as above!
-//                         */
-//                    } else if (name.equals(DatasetFieldConstant.distributionDate)) {
-//                        String toIndexdistributionDateString = datasetFieldValue.getStrValue();
-//                        logger.info("distribution date: " + toIndexdistributionDateString);
-//                        if (toIndexdistributionDateString != null && !toIndexdistributionDateString.isEmpty()) {
-//                            SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
-//                            try {
-//                                logger.info("Trying to convert " + toIndexdistributionDateString + " to a YYYY date from dataset " + dataset.getId());
-//                                Date distributionDate = inputDateyyyy.parse(toIndexdistributionDateString);
-//                                SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
-//                                String distributionYear = yearOnly.format(distributionDate);
-//                                logger.info("YYYY only: " + distributionYear);
-//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, Integer.parseInt(distributionYear));
-//                                solrInputDocument.addField(SearchFields.DISTRIBUTION_DATE_ORIGINAL, distributionDate);
-//                            } catch (Exception ex) {
-//                                logger.info("unable to convert " + toIndexdistributionDateString + " into YYYY format");
-//                            }
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.keywordValue)) {
-//                        String toIndexKeyword = datasetFieldValue.getStrValue();
-//                        if (toIndexKeyword != null && !toIndexKeyword.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.KEYWORD, toIndexKeyword);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.distributorName)) {
-//                        String toIndexDistributor = datasetFieldValue.getStrValue();
-//                        if (toIndexDistributor != null && !toIndexDistributor.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.DISTRIBUTOR, toIndexDistributor);
-//                        }
-//                    } else if (name.equals(DatasetFieldConstant.description)) {
-//                        String toIndexDescription = datasetFieldValue.getStrValue();
-//                        if (toIndexDescription != null && !toIndexDescription.isEmpty()) {
-//                            solrInputDocument.addField(SearchFields.DESCRIPTION, toIndexDescription);
-//                        }
-//                    }
-//                } else {
-//                    notAdvancedSearchFields.add(idDashName);
-//                    logger.info(idDashName + " is not an advanced search field (" + title + ")");
-//                }
             }
         }
 
