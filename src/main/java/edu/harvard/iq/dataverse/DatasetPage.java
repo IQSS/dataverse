@@ -211,7 +211,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setDatasetNextMinorVersion(String datasetNextMinorVersion) {
         this.datasetNextMinorVersion = datasetNextMinorVersion;
     }
-    
+
     public int getDeaccessionReasonRadio() {
         return deaccessionReasonRadio;
     }
@@ -219,6 +219,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setDeaccessionReasonRadio(int deaccessionReasonRadio) {
         this.deaccessionReasonRadio = deaccessionReasonRadio;
     }
+
     public int getDeaccessionRadio() {
         return deaccessionRadio;
     }
@@ -325,17 +326,16 @@ public class DatasetPage implements java.io.Serializable {
         Command<DatasetVersion> cmd;
         try {
             if (deaccessionRadio == 1) {
-                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dataset.getLatestVersion());
+                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReason(dataset.getLatestVersion()));
                 DatasetVersion datasetv = commandEngine.submit(cmd);
             } else {
                 for (DatasetVersion dv : dataset.getVersions()) {
                     if (dv.isReleased() || dv.isArchived()) {
-                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dv);
+                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReason(dv));
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             }
-
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
@@ -344,21 +344,49 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
-
+    
     public String deaccessionVersions() {
         Command<DatasetVersion> cmd;
         try {
             for (DatasetVersion dv : selectedDeaccessionVersions) {
-                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), dv);
+                cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReason(dv));
                 DatasetVersion datasetv = commandEngine.submit(cmd);
             }
         } catch (CommandException ex) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your dataset is now public.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your selected versions have been deaccessioned.");
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
+
+    private DatasetVersion setDatasetVersionDeaccessionReason(DatasetVersion dvIn) {
+        int deaccessionReasonCode = getDeaccessionReasonRadio();
+        switch (deaccessionReasonCode) {
+            case 1:
+                dvIn.setVersionNote("There is identifiable data in one or more files");
+                break;
+            case 2:
+                dvIn.setVersionNote("The research article has been retracted");
+                break;
+            case 3:
+                dvIn.setVersionNote("The dataset has been transferred to another repository");
+                break;
+            case 4:
+                dvIn.setVersionNote("IRB request");
+                break;
+            case 5:
+                dvIn.setVersionNote("Legal issue or Data Usage Agreement");
+                break;
+            case 6:
+                dvIn.setVersionNote("Not a valid dataset");
+                break;
+            case 7:
+                dvIn.setVersionNote(getDeaccessionReasonText());
+                break;
+        }
+        return dvIn;
     }
 
     private String releaseDataset(boolean minor) {
@@ -618,6 +646,7 @@ public class DatasetPage implements java.io.Serializable {
     public void cancel() {
         // reset values
         dataset = datasetService.find(dataset.getId());
+        workingVersion = dataset.getLatestVersion();
         ownerId = dataset.getOwner().getId();
         setVersionTabList(resetVersionTabList());
         setReleasedVersionTabList(resetReleasedVersionTabList());
@@ -783,7 +812,7 @@ public class DatasetPage implements java.io.Serializable {
             } else {
                 updateVersionDifferences(this.selectedVersions.get(1), this.selectedVersions.get(0));
             }
-    }
+        }
     }
 
     public void updateVersionDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
