@@ -265,21 +265,17 @@ public class IndexServiceBean {
             Long versionDatabaseId = datasetVersion.getId();
             String versionTitle = datasetVersion.getTitle();
             String semanticVersion = datasetVersion.getSemanticVersion();
-            String versionState = datasetVersion.getVersionState().name();
-            boolean versionIsReleased = datasetVersion.isReleased();
-            if (versionIsReleased) {
+            DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
+            if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
                 /**
                  * @todo for performance, should just query this rather than
                  * iterating. Would need a new SQL query/method
                  */
                 numReleasedVersions += 1;
             }
-            boolean versionIsWorkingCopy = datasetVersion.isWorkingCopy();
             debug.append("version found with database id " + versionDatabaseId + "\n");
             debug.append("- title: " + versionTitle + "\n");
-            debug.append("- semanticVersion-STATE: " + semanticVersion + "-" + versionState + "\n");
-            debug.append("- isWorkingCopy: " + versionIsWorkingCopy + "\n");
-            debug.append("- isReleased: " + versionIsReleased + "\n");
+            debug.append("- semanticVersion-VersionState: " + semanticVersion + "-" + versionState + "\n");
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
             List<String> fileInfo = new ArrayList<>();
             for (FileMetadata fileMetadata : fileMetadatas) {
@@ -295,6 +291,9 @@ public class IndexServiceBean {
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
+            logger.severe("WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned. Look out for strange indexing results.");
+        }
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
          * @todo refactor all of this below and have a single method that takes
@@ -388,7 +387,8 @@ public class IndexServiceBean {
         } else if (numReleasedVersions > 0) {
             results.append("Released versions found: ").append(numReleasedVersions)
                     .append(". Will attempt to index as ").append(solrIdPublished).append(" (discoverable by anonymous)\n");
-            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)) {
+            if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
+                    || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
@@ -510,7 +510,7 @@ public class IndexServiceBean {
         if (majorVersionReleaseDate != null) {
             if (true) {
                 String msg = "major release date found: " + majorVersionReleaseDate.toString();
-                logger.info(msg);
+                logger.fine(msg);
             }
             datasetSortByDate = majorVersionReleaseDate;
         } else {
@@ -581,11 +581,11 @@ public class IndexServiceBean {
                 String solrFieldFacetable = dsfType.getSolrField().getNameFacetable();
 
                 if (dsf.getValues() != null && !dsf.getValues().isEmpty() && dsf.getValues().get(0) != null && solrFieldSearchable != null) {
-                    logger.info("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
+                    logger.fine("indexing " + dsf.getDatasetFieldType().getName() + ":" + dsf.getValues() + " into " + solrFieldSearchable + " and maybe " + solrFieldFacetable);
 //                    if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.INTEGER)) {
                     if (dsfType.getSolrField().getSolrType().equals(SolrField.SolrType.DATE)) {
                         String dateAsString = dsf.getValues().get(0);
-                        logger.info("date as string: " + dateAsString);
+                        logger.fine("date as string: " + dateAsString);
                         if (dateAsString != null && !dateAsString.isEmpty()) {
                             SimpleDateFormat inputDateyyyy = new SimpleDateFormat("yyyy", Locale.ENGLISH);
                             try {
@@ -593,11 +593,11 @@ public class IndexServiceBean {
                                  * @todo when bean validation is working we
                                  * won't have to convert strings into dates
                                  */
-                                logger.info("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
+                                logger.fine("Trying to convert " + dateAsString + " to a YYYY date from dataset " + dataset.getId());
                                 Date dateAsDate = inputDateyyyy.parse(dateAsString);
                                 SimpleDateFormat yearOnly = new SimpleDateFormat("yyyy");
                                 String datasetFieldFlaggedAsDate = yearOnly.format(dateAsDate);
-                                logger.info("YYYY only: " + datasetFieldFlaggedAsDate);
+                                logger.fine("YYYY only: " + datasetFieldFlaggedAsDate);
 //                                solrInputDocument.addField(solrFieldSearchable, Integer.parseInt(datasetFieldFlaggedAsDate));
                                 solrInputDocument.addField(solrFieldSearchable, datasetFieldFlaggedAsDate);
                                 if (dsfType.getSolrField().isFacetable()) {
