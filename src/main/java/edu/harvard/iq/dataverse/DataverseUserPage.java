@@ -51,10 +51,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private DataverseUser dataverseUser;
     private EditMode editMode;
 
-    @NotBlank(message = "{validator.notBlank}")
+    @NotBlank(message = "{validator.enterPasswdMsg}")
     private String inputPassword;
 
-    @NotBlank(message = "{validator.notBlank}")
+    @NotBlank(message = "{validator.enterPasswdMsg}")
     private String currentPassword;
     private Long dataverseId;
     private String permissionType;
