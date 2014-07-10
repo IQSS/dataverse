@@ -67,11 +67,11 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         } else {
             if (!minorRelease) {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getReleasedVersion().getVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue() + 1));
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
             } else {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getReleasedVersion().getVersionNumber().intValue()));
-                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue()));
+                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber().intValue() + 1));
             }
         }
         

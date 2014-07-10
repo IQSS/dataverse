@@ -319,9 +319,13 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isMinorUpdate() {
-        /*
-         For now we will say that if there are the same number of files then it can be a minor release
-         */
+        if(this.dataset.getLatestVersion().isWorkingCopy()){
+            if (this.dataset.getVersions().size() > 1 && this.dataset.getVersions().get(1) != null){
+                if (this.dataset.getVersions().get(1).isDeaccessioned()){
+                     return false;
+                }
+            }
+        }
         if (this.getDataset().getReleasedVersion() != null) {
             return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
         }

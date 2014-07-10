@@ -35,10 +35,10 @@ public class Dataset extends DvObjectContainer {
     private String authority;
     @NotBlank(message = "Please enter an identifier for your dataset.")
     private String identifier;
-    @OneToMany(mappedBy = "dataset",orphanRemoval=true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id DESC")
     private List<DatasetVersion> versions = new ArrayList();
-    @OneToOne(mappedBy = "dataset", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
 
     public Dataset() {
@@ -51,7 +51,7 @@ public class Dataset extends DvObjectContainer {
         datasetVersion.setMinorVersionNumber(new Long(0));
         versions.add(datasetVersion);
     }
-    
+
     public String getProtocol() {
         return protocol;
     }
@@ -109,21 +109,21 @@ public class Dataset extends DvObjectContainer {
     public void setDatasetLock(DatasetLock datasetLock) {
         this.datasetLock = datasetLock;
     }
-    
+
     public boolean isLocked() {
         if (datasetLock != null) {
-            return true; 
+            return true;
         }
-        return false; 
+        return false;
     }
 
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
     }
-    
-    public DatasetVersion getLatestVersionForCopy(){
-        for(DatasetVersion testDsv: getVersions()){
-            if (testDsv.isReleased() || testDsv.isArchived()){
+
+    public DatasetVersion getLatestVersionForCopy() {
+        for (DatasetVersion testDsv : getVersions()) {
+            if (testDsv.isReleased() || testDsv.isArchived()) {
                 return testDsv;
             }
         }
@@ -175,23 +175,20 @@ public class Dataset extends DvObjectContainer {
             return latestVersion;
         }
     }
-    
-    public Date getMostRecentMajorVersionReleaseDate(){
-        for (DatasetVersion version : this.getVersions()){
-            if (version.isReleased()  && version.getMinorVersionNumber().equals(new Long(0))){               
+
+    public Date getMostRecentMajorVersionReleaseDate() {
+        for (DatasetVersion version : this.getVersions()) {
+            if (version.isReleased() && version.getMinorVersionNumber().equals(new Long(0))) {
                 return version.getReleaseTime();
-            } 
+            }
         }
         return null;
     }
-    
+
     public DatasetVersion getReleasedVersion() {
-        for (DatasetVersion version : this.getVersions()){
-            /**
-             * @todo what about deaccessioned versions?
-             */
-            if (!version.isWorkingCopy()){
-                return version;               
+        for (DatasetVersion version : this.getVersions()) {
+            if (version.isReleased()) {
+                return version;
             }
         }
         return null;
@@ -211,19 +208,55 @@ public class Dataset extends DvObjectContainer {
 
         return studyDir;
     }
+
+    public String getNextMajorVersionString() {
+        for (DatasetVersion dv : this.getVersions()) {
+            if (!dv.isWorkingCopy()) {
+                return new Integer(dv.getVersionNumber().intValue() + 1).toString() + ".0";
+            }
+        }
+        return "1.0";
+    }
+
+    public String getNextMinorVersionString() {
+        for (DatasetVersion dv : this.getVersions()) {
+            if (!dv.isWorkingCopy()) {
+                return new Integer(dv.getVersionNumber().intValue()).toString() + "."
+                        + new Integer(dv.getMinorVersionNumber().intValue() + 1).toString();
+            }
+        }
+        return "1.0";
+    }
     
-    
-   public String getCitation() {
+    public Integer getVersionNumber() {
+        for (DatasetVersion dv : this.getVersions()) {
+            if (!dv.isWorkingCopy()) {
+                return new Integer(dv.getVersionNumber().intValue());
+            }
+        }
+        return new Integer(1);
+    }
+
+    public Integer getMinorVersionNumber() {
+        for (DatasetVersion dv : this.getVersions()) {
+            if (!dv.isWorkingCopy()) {
+                return new Integer(dv.getMinorVersionNumber().intValue());
+            }
+        }
+        return 0;
+    }
+
+    public String getCitation() {
         return getCitation(false, getLatestVersion());
     }
-   
-   public String getCitation(DatasetVersion version){
-       return version.getCitation();      
-   }
+
+    public String getCitation(DatasetVersion version) {
+        return version.getCitation();
+    }
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
         return version.getCitation(isOnlineVersion);
-    }       
+    }
 
     @Override
     public boolean equals(Object object) {

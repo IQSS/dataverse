@@ -602,12 +602,6 @@
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
                         <div class="form-group">
                             <label for="deaccessionOptions">What do you want to deaccession?</label>
-                            <!--<p:selectOneRadio id="deaccessionOptions" value="#{DatasetPage.deaccessionRadio}" 
-                                              widgetVar="deaccessionBlockRadio"  onchange="testVersionSelect(this.value)">
-                                <f:selectItem itemLabel="Deaccession current version" itemValue="1" />                            
-                                <f:selectItem itemLabel="Deaccession entire dataset" itemValue="2" />
-                                <f:selectItem itemLabel="Deaccession selected version(s)" itemValue="3" />
-                            </p:selectOneRadio>-->
 
                             <p:selectOneMenu id="deaccessionOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionRadio}" 
                                               widgetVar="deaccessionBlockRadio"  onchange="testVersionSelect(this.value)">
@@ -632,17 +626,6 @@
                         
                         <div class="form-group" style="margin-bottom:.5em;">
                             <label for="deaccessionOptions">What is the reason for deaccession?</label>
-                            
-                            <!--<p:selectOneRadio id="reasonOptions" value="#{DatasetPage.deaccessionReasonRadio}" 
-                                              widgetVar="reasonBlockRadio"  >
-                                <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />                            
-                                <f:selectItem itemLabel="The research article has been retracted" itemValue="2" />
-                                <f:selectItem itemLabel="The dataset has been transferred to another repository" itemValue="3" />
-                                <f:selectItem itemLabel="IRB request" itemValue="4" />
-                                <f:selectItem itemLabel="Legal issue or Data Usage Agreement" itemValue="5" />
-                                <f:selectItem itemLabel="Not a valid dataset" itemValue="6" />
-                                <f:selectItem itemLabel="Other" itemValue="7" />
-                            </p:selectOneRadio>-->
                             
                             <p:selectOneMenu id="reasonOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionReasonRadio}" 
                                               widgetVar="reasonBlockRadio"  onchange="testVersionSelect(this.value)">
@@ -669,7 +652,7 @@
                                 <label class="control-label" ><!--for="forwardURLForDeaccession"-->
                                     Forward URL for Deaccession
                                 </label>
-                                <!--<p:inputText id="forwardURLForDeaccession" styleClass="form-control" value=""/> DatasetPage.deaccessionForwardURLFor-->
+                                <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}"/>
                                 <!--<p:message for="forwardURLForDeaccession"/>-->
                             </div>
                         </ui:fragment>
@@ -677,7 +660,6 @@
                         <h:commandButton styleClass="btn btn-success" value="Deaccession" onclick="deaccessionBlock.hide()" action="#{DatasetPage.deaccessionDataset}" />
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
                     </p:dialog>
-                    <h:inputHidden value="#{DatasetPage.deaccessionRadio}" id="select_deaccessionOption"/>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
