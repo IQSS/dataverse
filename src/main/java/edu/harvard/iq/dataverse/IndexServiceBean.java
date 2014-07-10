@@ -294,10 +294,14 @@ public class IndexServiceBean {
         if (releasedVersion != null) {
             if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
                 DatasetVersion lookupAttempt2 = releasedVersion.getMostRecentlyReleasedVersion();
+                String lookupAttemptId = "NONE";
+                if (lookupAttempt2 != null) {
+                    lookupAttemptId = lookupAttempt2.getId().toString();
+                }
                 String message = "WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned (database id "
                         + releasedVersion.getId()
                         + "). (releasedVersion.getMostRecentlyReleasedVersion() returns database id "
-                        + lookupAttempt2.getId() + " so that method may be better?). Look out for strange indexing results.";
+                        + lookupAttemptId + " so that method may be better?). Look out for strange indexing results.";
                 logger.severe(message);
                 debug.append(message);
             }
