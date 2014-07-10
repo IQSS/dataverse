@@ -211,6 +211,7 @@
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                         <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
                                         <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="Deaccession" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation" class="bg-info">
@@ -221,8 +222,19 @@
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
                                             </ui:fragment>
+                                            
+                                            <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION defintion/help text to be determined..."></span>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
+                                    
+                                    <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                        <div class="bg-danger" style="padding:4px;margin-bottom:.5em;">
+                                            Deaccession :: {ReasonWhy} {ForwardLink}
+                                        </div>
+                                    </ui:fragment>
+                                    
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.description.value}">
                                         <span id="description">#{DatasetPage.datasetVersionUI.description.value}</span>
                                     </ui:fragment>
