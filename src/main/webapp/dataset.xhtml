@@ -125,7 +125,7 @@
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
-                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
+                                                    <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">                                                          
@@ -600,6 +600,7 @@
                         <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
+                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                         <div class="form-group">
                             <label for="deaccessionOptions">What do you want to deaccession?</label>
 
@@ -608,7 +609,7 @@
                                 <f:selectItem itemLabel="Select one..." itemValue="0" />
                                 <f:selectItem itemLabel="Deaccession current version" itemValue="1" />                            
                                 <f:selectItem itemLabel="Deaccession entire dataset" itemValue="2" />
-                                <f:selectItem itemLabel="Deaccession selected version(s)" itemValue="3" />
+                                <f:selectItem itemLabel="Deaccession selected version(s)" itemValue="3" rendered="#{!empty(DatasetPage.releasedVersionTabList)}" />
                             </p:selectOneMenu>
                         
                             <p class="help-block">itemValue=0 :: Some text here the is a description of each of the options above</p>
@@ -623,7 +624,7 @@
                                 </p:column>
                             </p:dataTable>
                         </ui:fragment>
-                        
+                        </ui:fragment>
                         <div class="form-group" style="margin-bottom:.5em;">
                             <label for="deaccessionOptions">What is the reason for deaccession?</label>
                             

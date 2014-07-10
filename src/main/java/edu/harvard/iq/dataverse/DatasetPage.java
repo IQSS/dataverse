@@ -324,12 +324,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deaccessionDataset() {
         Command<DatasetVersion> cmd;
-        System.out.print("in command " + deaccessionRadio);
         try {
-            if (deaccessionRadio == 1) {
+            if (deaccessionRadio == 1 ) {
                 cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dataset.getLatestVersion()));
                 DatasetVersion datasetv = commandEngine.submit(cmd);
-            } else if (deaccessionRadio == 2) {
+            } else if (deaccessionRadio == 2 || getReleasedVersionTabList().size() == 1 ) {
                 for (DatasetVersion dv : dataset.getVersions()) {
                     if (dv.isReleased() || dv.isArchived()) {
                         cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv));
@@ -350,7 +349,6 @@ public class DatasetPage implements java.io.Serializable {
     
     public String deaccessionVersions() {
         Command<DatasetVersion> cmd;
-        System.out.print("deacession versions " + selectedDeaccessionVersions.size());
         try {
             for (DatasetVersion dv : selectedDeaccessionVersions) {
 
