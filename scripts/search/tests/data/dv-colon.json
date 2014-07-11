@@ -1,8 +1,0 @@
- {
-    "alias":"colon",
-    "name":"Colon",
-    "affiliation":"Affiliation value",
-    "contactEmail":"pete@mailinator.com",
-    "permissionRoot":false,
-    "description":"A dataverse with a : (a colon) in the description"
-}

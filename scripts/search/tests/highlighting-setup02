@@ -19,4 +19,4 @@
 #   Type: Data Collector
 #   Name: Edward Trees Jr.
 #
-curl -X POST -H "Content-type:application/json" -d @scripts/search/data/dataset01-create-new.json http://localhost:8080/api/dvs/11/datasets/?key=pete
+curl -s -X POST -H "Content-type:application/json" -d @scripts/search/data/dataset01-create-new.json http://localhost:8080/api/dvs/11/datasets/?key=pete

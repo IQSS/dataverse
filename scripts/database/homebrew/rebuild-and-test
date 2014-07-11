@@ -10,10 +10,28 @@ mvn package
 cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
 sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
+echo "---"
+echo "Running tests..."
 scripts/search/tests/permissions
-scripts/search/tests/delete-dataverse
 scripts/search/tests/query-unparseable
+scripts/search/tests/delete-dataverse
 scripts/search/tests/highlighting-setup01 > /dev/null
 scripts/search/tests/highlighting-setup02 > /dev/null
-scripts/search/tests/highlighting-setup03
+scripts/search/tests/highlighting-setup03 > /dev/null
 scripts/search/tests/highlighting
+scripts/search/tests/dataset-versioning01
+scripts/search/tests/dataset-versioning02-setup > /dev/null
+scripts/search/tests/dataset-versioning02
+scripts/search/tests/dataset-versioning03-setup > /dev/null
+scripts/search/tests/dataset-versioning03
+# TODO: get the equivalent of these old scripts working again.
+# They were taken out because we don't have a programmatic way
+# to change descriptions for files ( https://redmine.hmdc.harvard.edu/issues/3232 ):
+# 
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/permissions-datasets01
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/permissions-datasets02
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning04
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning05
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning06
+# https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/special-characters
+echo "Done running tests. Silence is golden."
