@@ -496,7 +496,7 @@ public class DatasetVersion implements Serializable {
                 str += ", ";
             }
             str += " " + rootDataverseName + " Dataverse";
-        }
+        }        
         if (this.isDraft()){
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
@@ -509,6 +509,13 @@ public class DatasetVersion implements Serializable {
             }
             str += " V" + this.getVersionNumber();
 
+        }
+        if (this.isDeaccessioned()){
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " DEACCESIONED VERSION ";
+            
         }
         /*UNF is not calculated yet
          if (!StringUtil.isEmpty(getUNF())) {

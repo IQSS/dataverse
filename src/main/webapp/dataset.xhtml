@@ -35,15 +35,7 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                    function testVersionSelect(valIn) {    
-                        if (valIn !== 3) {
-                            deaccessionVersionBlock.hide();
-                            deaccessionBlock.show(); 
-                        } else {
-                            deaccessionBlock.hide();
-                            deaccessionVersionBlock.show(); 
-                        }
-                    }
+                    
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
@@ -54,9 +46,18 @@
                     }
                     
                    function showDeaccessionConfirmationPopup() {
-                       deaccessionConfirmation.show();
+                            deaccessionConfirmation.show();
+                      
                     }
 
+                   function testDeaccessionVersionSelection() {
+                       var count = versionDeaccessionTable.getSelectedRowsCount();
+                        if (count === 0) {
+                            selectOne.show();
+                        } else {
+                            deaccessionConfirmation.show();
+                        }                       
+                    }
                     function openDropboxChooser() {
                         options = {
                             // Required. Called when a user selects an item in the Chooser.
@@ -641,7 +642,7 @@
                         <div class="form-group" style="margin-bottom:.5em;">
                             <label for="deaccessionOptions">What is the reason for deaccession?</label>                            
                             <h:selectOneMenu id="reasonOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionReasonRadio}" 
-                                               onchange="testVersionSelect(this.value)">
+                                               >
                                 <f:selectItem itemLabel="Select one..." itemValue="0" />
                                 <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />                            
                                 <f:selectItem itemLabel="The research article has been retracted" itemValue="2" />
@@ -669,8 +670,12 @@
                                 <!--<p:message for="forwardURLForDeaccession"/>-->
                             </div>
                         </ui:fragment >
-                        
-                        <button type="button" class="btn btn-success" value="Deaccession" onclick="showDeaccessionConfirmationPopup();">Deaccession</button>
+                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
+                        <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection();" >Deaccession</button>
+                        </ui:fragment>
+                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
+                        <button type="button" class="btn btn-success" value="Deaccession" onclick="showDeaccessionConfirmationPopup();" >Deaccession</button>
+                        </ui:fragment>
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
                     </p:dialog>
                     <p:dialog id="deaccessionConfirmation" header="Deaccession Dataset" widgetVar="deaccessionConfirmation" modal="true">
@@ -678,6 +683,7 @@
                         <h:commandButton styleClass="btn btn-success" value="Continue" onclick="deaccessionConfirmation.hide();deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionConfirmation.hide()">Cancel</button> 
                     </p:dialog>
+                    <p:confirmDialog id="selectOne" message="Please select version(s) for deaccessioning." header="Please Select Version(s)" widgetVar="selectOne"> </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
