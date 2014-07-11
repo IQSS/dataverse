@@ -52,6 +52,10 @@
                             $('button[id$="datasetSave"]').trigger('click');
                         }
                     }
+                    
+                   function showDeaccessionConfirmationPopup() {
+                       deaccessionConfirmation.show();
+                    }
 
                     function openDropboxChooser() {
                         options = {
@@ -189,9 +193,10 @@
                                             </h:outputLink>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion}">
+                                    <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion != DatasetPage.dataset.releasedVersion
+                                               and !empty(DatasetPage.releasedVersionTabList)}">
                                         <div style="float:right; margin-left:1em;">
-                                            <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}">
+                                            <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
                                                 <h:outputText value="View Published Version"/>
                                             </h:outputLink>
                                         </div>
@@ -614,17 +619,7 @@
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                         <div class="form-group">
-                            <label for="deaccessionOptions">What do you want to deaccession?</label>
-
-                            <p:selectOneMenu id="deaccessionOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionRadio}" 
-                                              widgetVar="deaccessionBlockRadio"  onchange="testVersionSelect(this.value)">
-                                <f:selectItem itemLabel="Select one..." itemValue="0" />
-                                <f:selectItem itemLabel="Deaccession current version" itemValue="1" />                            
-                                <f:selectItem itemLabel="Deaccession entire dataset" itemValue="2" />
-                                <f:selectItem itemLabel="Deaccession selected version(s)" itemValue="3" rendered="#{!empty(DatasetPage.releasedVersionTabList)}" />
-                            </p:selectOneMenu>
-                        
-                            <p class="help-block">itemValue=0 :: Some text here the is a description of each of the options above</p>
+                            <label for="deaccessionOptions">Which version(s) do you want to deaccession?</label>                        
                         </div>
                         
                         <ui:fragment rendered="true">
@@ -637,11 +632,16 @@
                             </p:dataTable>
                         </ui:fragment>
                         </ui:fragment>
+                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
+                        <div class="form-group">
+                            <label for="deaccessionOptions">Once you deaccession your dataset it will not be viewable by the public</label>                        
+                        </div>
+                       
+                        </ui:fragment>
                         <div class="form-group" style="margin-bottom:.5em;">
-                            <label for="deaccessionOptions">What is the reason for deaccession?</label>
-                            
-                            <p:selectOneMenu id="reasonOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionReasonRadio}" 
-                                              widgetVar="reasonBlockRadio"  onchange="testVersionSelect(this.value)">
+                            <label for="deaccessionOptions">What is the reason for deaccession?</label>                            
+                            <h:selectOneMenu id="reasonOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionReasonRadio}" 
+                                               onchange="testVersionSelect(this.value)">
                                 <f:selectItem itemLabel="Select one..." itemValue="0" />
                                 <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />                            
                                 <f:selectItem itemLabel="The research article has been retracted" itemValue="2" />
@@ -649,29 +649,34 @@
                                 <f:selectItem itemLabel="IRB request" itemValue="4" />
                                 <f:selectItem itemLabel="Legal issue or Data Usage Agreement" itemValue="5" />
                                 <f:selectItem itemLabel="Not a valid dataset" itemValue="6" />
-                                <f:selectItem itemLabel="Other" itemValue="7" />
-                            </p:selectOneMenu>
+                                <f:selectItem itemLabel="Other (Please type reason in space provided below)" itemValue="7" />
+                            </h:selectOneMenu>
                         </div>
                         
                         <ui:fragment rendered="true">
                             <div class="form-group">
                                 <label class="control-label" for="fileDescription">
-                                    Other Reason for Deaccession
+                                    Additional information about reason to deaccession
                                 </label>
                                 <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}"/>
                                 <p:message for="reasonForDeaccession"/>
                             </div>
                             <div class="form-group">
                                 <label class="control-label" ><!--for="forwardURLForDeaccession"-->
-                                    Forward URL for Deaccession
+                                    If applicable, please leave a URL where this dataset can be accessed after deaccessioning.
                                 </label>
                                 <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}"/>
                                 <!--<p:message for="forwardURLForDeaccession"/>-->
                             </div>
-                        </ui:fragment>
+                        </ui:fragment >
                         
-                        <h:commandButton styleClass="btn btn-success" value="Deaccession" onclick="deaccessionBlock.hide()" action="#{DatasetPage.deaccessionDataset}" />
+                        <button type="button" class="btn btn-success" value="Deaccession" onclick="showDeaccessionConfirmationPopup();">Deaccession</button>
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
+                    </p:dialog>
+                    <p:dialog id="deaccessionConfirmation" header="Deaccession Dataset" widgetVar="deaccessionConfirmation" modal="true">
+                        Are you sure you want to deaccession.  The selected version(s) will no longer be viewable by the public
+                        <h:commandButton styleClass="btn btn-success" value="Continue" onclick="deaccessionConfirmation.hide();deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
+                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionConfirmation.hide()">Cancel</button> 
                     </p:dialog>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
