@@ -180,7 +180,7 @@ Group ..> RoleAssigneeProvider : "Created By"
 Group <.. RoleAssigneeProvider : "Creates"
 User  <.. RoleAssigneeProvider : "Creates"
 
-package somewhereElseInDataverse {
+package somewhere_else_in_dataverse {
   class AccessRequest< DB > {
     from: RoleAssigneeRecord
     dvo: DvObject

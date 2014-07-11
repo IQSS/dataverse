@@ -1,0 +1,25 @@
+@startuml
+
+title Loading the Groups at Application Start
+
+participant RoleAssigneeManager
+participant RoleAssigneeProvider
+participant JPA
+participant UserBean
+
+loop for every provider
+  RoleAssigneeManager --> RoleAssigneeProvider: new()
+  RoleAssigneeProvider --> RoleAssigneeManager: register( this )
+end
+
+RoleAssigneeManager --> JPA: listGroupRows
+RoleAssigneeManager <-- JPA: rows
+
+loop for each group row in rows
+  RoleAssigneeManager --> RoleAssigneeManager: p = providerFor( row.providerId )
+  RoleAssigneeManager --> RoleAssigneeProvider: createGroup( row )
+  RoleAssigneeManager <-- RoleAssigneeProvider: group
+  RoleAssigneeManager --> UserBean: addGroup( group )
+end
+
+@enduml
