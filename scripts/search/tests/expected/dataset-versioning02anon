@@ -10,13 +10,8 @@
     "relevance":[
         {
             "id":"datafile_18",
-            "matched_fields":"[description, filename_without_extension_en]",
+            "matched_fields":"[filename_without_extension_en]",
             "detailsArray":[
-                {
-                    "description":[
-                        "<span class=\"search-term-match\">Trees</span> are lovely."
-                    ]
-                },
                 {
                     "filename_without_extension_en":[
                         "<span class=\"search-term-match\">trees</span>"
