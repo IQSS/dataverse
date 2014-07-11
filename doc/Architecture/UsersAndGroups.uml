@@ -1,11 +1,14 @@
 @startuml
 
+'uncomment for higher dpi 
+'skinparam dpi 300
+
 note as n2
   Invariant: We <b>always</b> have a user
   Local users are just users supplied by a local provider
   Non-explicit groups, maps a set of
   HTTP request properties
-  to an internal RoleAsignee object
+  to an internal RoleAssignee object
 end note
 
 
