@@ -21,6 +21,16 @@
 * Assignees have "URL"s, the first part of which identifies the `RoleAssigneeProvider` that created the user. The suffix of the URL may allow the `RoleAssigneeProvider` to generate the user (e.g. `DatabaseUserProvider`).
 * DvObject access request are sent from `AutehnticatedUser`s. The "to" field is inferred - everyone that has a `Permission.GrantPermissions` permission on said DvObject.
 
+## Issues
+* API keys permissions are an issue - permissions from groups whose memberships can't be validated at the time of the API call
+* Add `Everyone` group
+* Add use cases for users logging in from various places
+* Add option for actively querying user providers
+    - e.g. to allow admins to pro-actively assign roles to users on remote directories
+    - Might require storage for `RoleAssigneeProvider`
+* Update display login on `RoleAssigneeRecord`s when their role assignee logs in.
+* 
+
 ## Pluggability - for 4.0
 * Pull-request based (not full .jar based plugins in a `plugin` directory)
 * No "special cases" for different user providers at the back end (*including database schema*)

@@ -85,7 +85,8 @@ end note
     + list: RoleAssignee[]
   }
 
-  class NonGuestUsers
+  class AuthenticatedUsers
+  class AllUsers
   class ShibGroup {
     headerMatchers: Map<String, Regex>
   }
@@ -101,7 +102,8 @@ AuthenticatedUser <|-- ShibUser
 AuthenticatedUser <|-- OauthUser
 AuthenticatedUser <|-- LdapUser
 Group <|-- ExplicitGroup
-Group <|-- NonGuestUsers
+Group <|-- AuthenticatedUsers
+Group <|-- AllUsers
 Group <|-- ShibGroup
 Group <|-- IpGroup
 
@@ -140,6 +142,7 @@ package roleassigneeprovider {
   interface GroupCreator {
     + createGroup : Group
   }
+
   interface UserLister {
     + listUsers() : List<User>
     + findUsers( queryString ) : List<User>
