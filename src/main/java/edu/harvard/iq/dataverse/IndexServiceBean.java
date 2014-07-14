@@ -259,7 +259,7 @@ public class IndexServiceBean {
         String solrIdDeaccessioned = determineDeaccesionedDatasetId(dataset);
         StringBuilder debug = new StringBuilder();
         debug.append("\ndebug:\n");
-        int numReleasedVersions = 0;
+        int numPublishedVersions = 0;
         List<DatasetVersion> versions = dataset.getVersions();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
@@ -267,11 +267,7 @@ public class IndexServiceBean {
             String semanticVersion = datasetVersion.getSemanticVersion();
             DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
             if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
-                /**
-                 * @todo for performance, should just query this rather than
-                 * iterating. Would need a new SQL query/method
-                 */
-                numReleasedVersions += 1;
+                numPublishedVersions += 1;
             }
             debug.append("version found with database id " + versionDatabaseId + "\n");
             debug.append("- title: " + versionTitle + "\n");
@@ -287,24 +283,16 @@ public class IndexServiceBean {
             }
             debug.append("- files: " + numFiles + " " + fileInfo.toString() + "\n");
         }
+        debug.append("numPublishedVersions: " + numPublishedVersions + "\n");
         DatasetVersion latestVersion = dataset.getLatestVersion();
         String latestVersionStateString = latestVersion.getVersionState().name();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
+        boolean atLeastOnePublishedVersion = false;
         if (releasedVersion != null) {
-            if (releasedVersion.getVersionState().equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-                DatasetVersion lookupAttempt2 = releasedVersion.getMostRecentlyReleasedVersion();
-                String lookupAttemptId = "NONE";
-                if (lookupAttempt2 != null) {
-                    lookupAttemptId = lookupAttempt2.getId().toString();
-                }
-                String message = "WARNING: called dataset.getReleasedVersion() but version returned was deaccessioned (database id "
-                        + releasedVersion.getId()
-                        + "). (releasedVersion.getMostRecentlyReleasedVersion() returns database id "
-                        + lookupAttemptId + " so that method may be better?). Look out for strange indexing results.";
-                logger.severe(message);
-                debug.append(message);
-            }
+            atLeastOnePublishedVersion = true;
+        } else {
+            atLeastOnePublishedVersion = false;
         }
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         /**
@@ -314,7 +302,7 @@ public class IndexServiceBean {
          * desired state.
          */
         StringBuilder results = new StringBuilder();
-        if (numReleasedVersions == 0) {
+        if (atLeastOnePublishedVersion == false) {
             results.append("No published version, nothing will be indexed as ")
                     .append(solrIdPublished).append("\n");
             if (latestVersionState.equals(DatasetVersion.VersionState.DRAFT)) {
@@ -330,12 +318,13 @@ public class IndexServiceBean {
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
                 String deleteDeaccessionedResult = removeDeaccessioned(dataset);
                 results.append("Draft exists, no need for deaccessioned version. Deletion attempted for ")
-                        .append(solrIdDeaccessioned).append(" (and files). Result: ").append(deleteDeaccessionedResult);
+                        .append(solrIdDeaccessioned).append(" (and files). Result: ")
+                        .append(deleteDeaccessionedResult).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
-                /**
-                 * @todo delete published?
-                 */
+                String deletePublishedResults = removePublished(dataset);
+                results.append("No published version. Attempting to delete traces of published version from index. Result: ").
+                        append(deletePublishedResults).append("\n");
                 /**
                  * Desired state for existence of cards: {DRAFT=true,
                  * DEACCESSIONED=false, RELEASED=false}
@@ -351,8 +340,15 @@ public class IndexServiceBean {
                  * attempted for dataset_17_deaccessioned (and files). Result:
                  * Attempted to delete dataset_17_deaccessioned from Solr index.
                  * updateReponse was:
-                 * {responseHeader={status=0,QTime=0}}Attempted to delete
+                 * {responseHeader={status=0,QTime=1}}Attempted to delete
                  * datafile_18_deaccessioned from Solr index. updateReponse was:
+                 * {responseHeader={status=0,QTime=1}}
+                 *
+                 * No published version. Attempting to delete traces of
+                 * published version from index. Result: Attempted to delete
+                 * dataset_17 from Solr index. updateReponse was:
+                 * {responseHeader={status=0,QTime=1}}Attempted to delete
+                 * datafile_18 from Solr index. updateReponse was:
                  * {responseHeader={status=0,QTime=0}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
@@ -367,12 +363,23 @@ public class IndexServiceBean {
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, false);
                 String deletePublishedResults = removePublished(dataset);
-                results.append("No published version. Attempting to delete traces of published version from index. Result: ").append(deletePublishedResults);
+                results.append("No published version. Attempting to delete traces of published version from index. Result: ").
+                        append(deletePublishedResults).append("\n");
 
                 desiredCards.put(DatasetVersion.VersionState.DRAFT, false);
                 /**
-                 * @todo delete drafts?
+                 * @todo: DRY! refactor this copied code into a common method
                  */
+                List<String> solrDocIdsForDraftFilesToDelete = findSolrDocIdsForDraftFilesToDelete(dataset);
+                String deleteDraftDatasetVersionResult = removeSolrDocFromIndex(solrIdDraftDataset);
+                StringBuilder deleteDraftFilesResults = new StringBuilder();
+                for (String doomed : solrDocIdsForDraftFilesToDelete) {
+                    String result = removeSolrDocFromIndex(doomed);
+                    deleteDraftFilesResults.append(result);
+                }
+                results.append("Attempting to delete traces of drafts. Result: ")
+                        .append(deleteDraftDatasetVersionResult).append(deleteDraftFilesResults).append("\n");
+
                 /**
                  * Desired state for existence of cards: {DEACCESSIONED=true,
                  * RELEASED=false, DRAFT=false}
@@ -386,9 +393,13 @@ public class IndexServiceBean {
                  * No published version. Attempting to delete traces of
                  * published version from index. Result: Attempted to delete
                  * dataset_17 from Solr index. updateReponse was:
-                 * {responseHeader={status=0,QTime=1}}Attempted to delete
+                 * {responseHeader={status=0,QTime=0}}Attempted to delete
                  * datafile_18 from Solr index. updateReponse was:
-                 * {responseHeader={status=0,QTime=0}}
+                 * {responseHeader={status=0,QTime=3}}
+                 *
+                 * Attempting to delete traces of drafts. Result: Attempted to
+                 * delete dataset_17_draft from Solr index. updateReponse was:
+                 * {responseHeader={status=0,QTime=1}}
                  */
                 String result = getDesiredCardState(desiredCards) + results.toString() + debug.toString();
                 logger.info(result);
@@ -396,9 +407,9 @@ public class IndexServiceBean {
             } else {
                 return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccesioned";
             }
-        } else if (numReleasedVersions > 0) {
-            results.append("Released versions found: ").append(numReleasedVersions)
-                    .append(". Will attempt to index as ").append(solrIdPublished).append(" (discoverable by anonymous)\n");
+        } else if (atLeastOnePublishedVersion == true) {
+            results.append("Published versions found. ")
+                    .append("Will attempt to index as ").append(solrIdPublished).append(" (discoverable by anonymous)\n");
             if (latestVersionState.equals(DatasetVersion.VersionState.RELEASED)
                     || latestVersionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
 
@@ -494,7 +505,7 @@ public class IndexServiceBean {
                 return "No-op. Unexpected condition reached: There is at least one published version but the latest version is neither published nor draft";
             }
         } else {
-            return "No-op. Unexpected condition reached: Negative number of released versions? Count was: " + numReleasedVersions;
+            return "No-op. Unexpected condition reached: Has a version been published or not?";
         }
     }
 
