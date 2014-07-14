@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author leonidandreev
+ * @author Leonid Andreev
  */
 public class ImageThumbConverter {
     public static int DEFAULT_CARDIMAGE_SIZE = 48;

@@ -38,6 +38,8 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.dataaccess.DataStoreObject;
+import edu.harvard.iq.dataverse.dataaccess.FileStoreObject;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -174,14 +176,12 @@ public class IngestServiceBean {
         // save the file, in the temporary location for now: 
         String tempFilesDirectory = getFilesTempDirectory();
         if (tempFilesDirectory != null) {
-            //try {
-
-                logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
-                Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-            //} catch (IOException ioex) {
-            //    logger.warning("Failed to save the file  " + datafile.getFileSystemName());
-            //    return;
-            //}
+            // "temporary" location is the key here; this is why we are not using 
+            // the DataStore framework for this - the assumption is that 
+            // temp files will always be stored on the local filesystem. 
+            //          -- L.A. Jul. 2014
+            logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
+            Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
         }
 
         // Let's try our own utilities (Jhove, etc.) to determine the file type 
@@ -216,8 +216,17 @@ public class IngestServiceBean {
             BufferedOutputStream uncompressedOut = null;
             String backupFilename = datafile.getFileSystemName();
             try {
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                // Once again, at this point we are dealing with *temp*
+                // files only; these are always stored on the local filesystem, 
+                // so we are using FileInput/Output Streams to read and write
+                // these directly, instead of going through the Data Access 
+                // framework. 
+                //      -- L.A. 
+                // (TODO: (?) - hide this code in a separate method neatly; 
+                // or maybe this could wait until we have to add similar 
+                // treatment for zip files)
                 
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
                 datasetService.generateFileSystemName(datafile);
                 uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
                 
@@ -283,6 +292,13 @@ public class IngestServiceBean {
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
 
+                    // Hmm. Why exactly am I incrementing the filename sequence
+                    // here? I could just save the file in the permanent location
+                    // under the same name as the temp version... 
+                    // Could be a moot point - this filename sequence has to 
+                    // go away anyway... On the inside, it's too PostgresQL-specific;
+                    // and it's too filesystem-specific architecturally. 
+                    // -- L.A. Jul. 11 2014
                     datasetService.generateFileSystemName(dataFile);
 
                     if (ingestableAsTabular(dataFile)) {
@@ -317,10 +333,14 @@ public class IngestServiceBean {
                     try {
 
                         logger.info("Will attempt to save the file as: " + dataFile.getFileSystemLocation().toString());
+                        
+                        
+                        
                         Files.copy(new FileInputStream(new File(tempFileLocation)), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
 
                         MD5Checksum md5Checksum = new MD5Checksum();
                         try {
+                            
                             dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
                         } catch (Exception md5ex) {
                             logger.warning("Could not calculate MD5 signature for the new file " + fileName);
@@ -360,10 +380,9 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
-    // TODO: consider deprecating this method in favor of the version 
-    // defined below, that takes datasetversion as the argument. 
+    // TODO: consider creating a version of this method that would take 
+    // datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
-    //@Deprecated
     public void startIngestJobs(Dataset dataset, DataverseUser user) {
         int count = 0;
         IngestMessage ingestMessage = null;

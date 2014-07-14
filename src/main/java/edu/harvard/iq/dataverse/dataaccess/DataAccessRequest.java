@@ -34,7 +34,7 @@ import edu.harvard.iq.dataverse.DataFile;
  */
 
 public class DataAccessRequest {
-
+    
     public DataAccessRequest () {
         this(null);
     }
