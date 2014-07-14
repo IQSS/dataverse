@@ -45,35 +45,35 @@
                         }
                     }
 
-                    function showDeaccessionConfirmationPopup() {
+                    function testDeaccessionVersionSelection(testVersion) {
+                        var deaccessionText = $('input[id$="reasonForDeaccession"]').text();
                         var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
-                        var validURL = false;
-                        if (validateURL(urlEntry) === false) {
-                            enterForwardUrl.show();
-                        } else {
-                            validURL = true;
+                        var valid = true;
+                        if (testVersion === true){
+                            var count = versionDeaccessionTable.getSelectedRowsCount(); 
                         }
-                        if (validURL === true) {
-                            if ($("select[id$='reasonOptions'] option:selected").val() === '0') {
-                                selectDeaccessionReason.show();
-                            } else {
-                                deaccessionAllConfirmation.show();
+
+                        if (validateURL(urlEntry) === false) {
+                            valid = false;
+                            enterForwardUrl.show();
+                        }
+                        if (valid === true) {
+                            if ($("select[id$='reasonOptions'] option:selected").val() === '7') {
+                                if (deaccessionText === '') {
+                                    valid = false;
+                                    enterOtherReason.show();
+                                }
                             }
                         }
-                    }
-
-                    function testDeaccessionVersionSelection() {
-                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
-                        var count = versionDeaccessionTable.getSelectedRowsCount();
-                        var validURL = false;
-                        if (validateURL(urlEntry) === false) {
-                            enterForwardUrl.show();
-                        } else {
-                            validURL = true;
-                        }
-                        if (validURL === true) {
+                        if (valid === true) {
                             if ($("select[id$='reasonOptions'] option:selected").val() === '0') {
+                                valid = false;
                                 selectDeaccessionReason.show();
+                            }
+                        }
+                        if (valid === true) {
+                            if (testVersion === false) {
+                                deaccessionAllConfirmation.show();
                             } else {
                                 if (count === 0) {
                                     selectDeaccessionVersion.show();
@@ -693,7 +693,7 @@
                                 <label class="control-label" for="fileDescription">
                                     Additional information about reason to deaccession
                                 </label>
-                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}"/>
+                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
                                 <p:message for="reasonForDeaccession"/>
                             </div>
                             <div class="form-group">
@@ -705,10 +705,10 @@
                             </div>
                         </ui:fragment >
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection();" >Deaccession</button>
+                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(true);" >Deaccession</button>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="showDeaccessionConfirmationPopup();" >Deaccession</button>
+                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(false);" >Deaccession</button>
                         </ui:fragment>
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
                     </p:dialog>
@@ -727,6 +727,7 @@
                     <p:confirmDialog id="selectDeaccessionVersion" message="Please select version(s) for deaccessioning." header="Please Select Version(s)" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
                     <p:confirmDialog id="selectDeaccessionReason" message="Please select reason for deaccessioning." header="Please Select Reason" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
                     <p:confirmDialog id="enterForwardUrl" message="Please enter valid forwarding URL." header="Invalid URL" widgetVar="enterForwardUrl"> </p:confirmDialog>
+                    <p:confirmDialog id="enterOtherReason" message="Please enter text for reason for deaccessioning." header="Enter additional information" widgetVar="enterOtherReason"> </p:confirmDialog>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
                             <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
