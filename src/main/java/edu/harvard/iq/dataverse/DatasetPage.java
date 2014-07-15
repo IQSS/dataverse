@@ -766,6 +766,16 @@ public class DatasetPage implements java.io.Serializable {
     public List<DatasetVersion> getVersionTabList() {
         return versionTabList;
     }
+    
+    public Integer getCompareVersionsCount(){
+        Integer retVal = 0;
+        for (DatasetVersion dvTest: dataset.getVersions()){
+            if(!dvTest.isDeaccessioned()){
+                retVal++;
+            }
+        }
+        return retVal;
+    }
 
     public void setVersionTabList(List<DatasetVersion> versionTabList) {
         this.versionTabList = versionTabList;

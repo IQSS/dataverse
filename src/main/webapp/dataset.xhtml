@@ -553,7 +553,7 @@
                                 <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
                                     <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
                                                      onclick="testCheckBoxes();"
-                                                     rendered="#{DatasetPage.versionTabList.size() > 2}">
+                                                     rendered="#{DatasetPage.compareVersionsCount > 2}">
                                     </p:commandButton>
                                     <p:commandButton value="Direct" id="compareVersions"
                                                      style="display:none"
@@ -563,7 +563,7 @@
                                     </p:commandButton>
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
-                                        <p:column selectionMode="multiple" rendered="#{DatasetPage.versionTabList.size() > 2}"
+                                        <p:column selectionMode="multiple" rendered="#{DatasetPage.compareVersionsCount > 2}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column>
                                             <ui:fragment rendered="#{versionTab.released or ((versionTab.deaccessioned or versionTab.draft) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand'))}">
