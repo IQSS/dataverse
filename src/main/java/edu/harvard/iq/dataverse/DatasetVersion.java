@@ -533,7 +533,7 @@ public class DatasetVersion implements Serializable {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
-            str += " DEACCESIONED VERSION ";
+            str += " DEACCESSIONED VERSION ";
             
         }
         /*UNF is not calculated yet

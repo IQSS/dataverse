@@ -256,7 +256,7 @@ public class IndexServiceBean {
         String solrIdPublished = determinePublishedDatasetSolrDocId(dataset);
         String solrIdDraftDataset = IndexableObject.IndexableTypes.DATASET.getName() + "_" + dataset.getId() + IndexableDataset.DatasetState.WORKING_COPY.getSuffix();
 //        String solrIdDeaccessioned = IndexableObject.IndexableTypes.DATASET.getName() + "_" + dataset.getId() + IndexableDataset.DatasetState.DEACCESSIONED.getSuffix();
-        String solrIdDeaccessioned = determineDeaccesionedDatasetId(dataset);
+        String solrIdDeaccessioned = determineDeaccessionedDatasetId(dataset);
         StringBuilder debug = new StringBuilder();
         debug.append("\ndebug:\n");
         int numPublishedVersions = 0;
@@ -405,7 +405,7 @@ public class IndexServiceBean {
                 logger.info(result);
                 return result;
             } else {
-                return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccesioned";
+                return "No-op. Unexpected condition reached: No released version and latest version is neither draft nor deaccessioned";
             }
         } else if (atLeastOnePublishedVersion == true) {
             results.append("Published versions found. ")
@@ -1116,13 +1116,13 @@ public class IndexServiceBean {
         return IndexableObject.IndexableTypes.DATASET.getName() + "_" + dataset.getId() + IndexableDataset.DatasetState.PUBLISHED.getSuffix();
     }
 
-    private String determineDeaccesionedDatasetId(Dataset dataset) {
+    private String determineDeaccessionedDatasetId(Dataset dataset) {
         return IndexableObject.IndexableTypes.DATASET.getName() + "_" + dataset.getId() + IndexableDataset.DatasetState.DEACCESSIONED.getSuffix();
     }
 
     private String removeDeaccessioned(Dataset dataset) {
         StringBuilder result = new StringBuilder();
-        String deleteDeaccessionedResult = removeSolrDocFromIndex(determineDeaccesionedDatasetId(dataset));
+        String deleteDeaccessionedResult = removeSolrDocFromIndex(determineDeaccessionedDatasetId(dataset));
         result.append(deleteDeaccessionedResult);
         List<String> docIds = findSolrDocIdsForFilesToDelete(dataset, IndexableDataset.DatasetState.DEACCESSIONED);
         String deleteFilesResult = removeMultipleSolrDocs(docIds);

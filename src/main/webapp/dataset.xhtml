@@ -50,7 +50,7 @@
                         var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
                         var valid = true;
                         if (testVersion === true){
-                            var count = versionDeaccessionTable.getSelectedRowsCount(); 
+                            var count = versionDeaccessionTable.getSelectedRowsCount();
                         }
 
                         if (validateURL(urlEntry) === false) {
@@ -151,7 +151,7 @@
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
-                                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
+                                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
                                                                 <h:outputText value="Delete Dataset" />
                                                             </p:commandLink>
                                                         </li>
@@ -159,7 +159,7 @@
                                                     <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
-                                                            <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">                                                          
+                                                            <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">
                                                                 <h:outputText value="Delete Draft Version" />
                                                             </p:commandLink>
                                                         </li>
@@ -167,7 +167,7 @@
                                                     <ui:fragment rendered="#{DatasetPage.dataset.released and !empty(DatasetPage.releasedVersionTabList) and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
-                                                            <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">                                                          
+                                                            <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
                                                                 <h:outputText value="Deaccession Dataset" />
                                                             </p:commandLink>
                                                         </li>
@@ -251,7 +251,7 @@
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
                                         <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
                                         <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
-                                        <h:outputText value="Deaccession" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div id="citation" class="bg-info">
@@ -262,16 +262,18 @@
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
                                                 <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
                                             </ui:fragment>
-
                                             <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION defintion/help text to be determined..."></span>
+                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
                                             </ui:fragment>
                                         </div>
                                     </ui:fragment>
 
                                     <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                         <div class="bg-danger" style="padding:4px;margin-bottom:.5em;">
-                                            Deaccessioned : #{DatasetPage.workingVersion.versionNote}  #{DatasetPage.workingVersion.archiveNote}
+                                            <p><strong>Deaccession Reason:</strong> #{DatasetPage.workingVersion.versionNote}</p>
+                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
+                                                <p>You can now access the dataset at: <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a>.</p>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
 
@@ -386,7 +388,7 @@
                                             });
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add" 
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
                                         <div class="panel panel-default" style="margin-top:1em;">
@@ -412,7 +414,7 @@
                                     </ui:fragment>
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
                                     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
-                                                 rowIndexVar="rowNum" 
+                                                 rowIndexVar="rowNum"
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
@@ -569,11 +571,9 @@
                                         <p:column>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
-                                                    <h:outputLabel  value="Citation Metadata: " />
+                                                    <h:outputLabel value="Citation Metadata: " />
                                                     <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
-                                                        <h:outputText  value=" " />
-                                                        <h:outputText  value="#{summaryNote[0].datasetFieldType.displayName} " />
-                                                        <h:outputText  value="(" />
+                                                        <h:outputText value=" #{summaryNote[0].datasetFieldType.displayName} (" />
                                                         <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} Added" />
                                                         <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Added" />
                                                         <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " />
@@ -582,25 +582,24 @@
                                                         <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value=", " />
                                                         <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} Changed" />
                                                         <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Changed" />
-                                                        <h:outputText  value="); " />
+                                                        <h:outputText value="); " />
                                                     </ui:repeat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
                                                     <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
                                                         <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="Additional Citation Metadata: " />
                                                         <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
-                                                        <h:outputText  value=" " />
-                                                        <h:outputText  value="(" />
-                                                        <h:outputText rendered="#{blockNote[1] > 0}"  value="#{blockNote[1]} Added" />
-                                                        <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}"  value=", " />
-                                                        <h:outputText rendered="#{(blockNote[2]) > 0}"  value="#{blockNote[2]} Removed" />
-                                                        <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}"  value=", " />
-                                                        <h:outputText rendered="#{(blockNote[3]) > 0}"  value="#{blockNote[3]} Changed" />
-                                                        <h:outputText  value="); " />
+                                                        <h:outputText value=" (" />
+                                                        <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} Added" />
+                                                        <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}" value=", " />
+                                                        <h:outputText rendered="#{(blockNote[2]) > 0}" value="#{blockNote[2]} Removed" />
+                                                        <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}" value=", " />
+                                                        <h:outputText rendered="#{(blockNote[3]) > 0}" value="#{blockNote[3]} Changed" />
+                                                        <h:outputText value="); " />
                                                     </ui:repeat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.fileNote)}">
-                                                    <h:outputLabel  value="#{versionTab.defaultVersionDifference.fileNote}" />
+                                                    <h:outputLabel value="#{versionTab.defaultVersionDifference.fileNote}" />
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
@@ -655,33 +654,24 @@
                         <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
-                                <label for="deaccessionOptions">Which version(s) do you want to deaccession?</label>                        
-                            </div>
-
-                            <ui:fragment rendered="true">
+                                <label for="deaccessionOptions">Which version(s) do you want to deaccession?</label>
                                 <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
-                                    <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
+                                    <p:column selectionMode="multiple" style="width:2%;text-align:center;"/>
                                     <p:column>
                                         <h:outputText value="Version #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
                                     </p:column>
                                 </p:dataTable>
-                            </ui:fragment>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
-                            <div class="form-group">
-                                <label for="deaccessionOptions">Once you deaccession your dataset it will not be viewable by the public</label>                        
                             </div>
-
                         </ui:fragment>
-                        <div class="form-group" style="margin-bottom:.5em;">
-                            <label for="deaccessionOptions">What is the reason for deaccession?</label>                            
-                            <h:selectOneMenu id="reasonOptions" styleClass="form-control" style="display:block;width:auto;" value="#{DatasetPage.deaccessionReasonRadio}" 
-                                             >
+                        <div class="form-group">
+                            <label for="deaccessionOptions">What is the reason for deaccession?</label>
+                            <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
                                 <f:selectItem itemLabel="Select one..." itemValue="0" />
-                                <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />                            
+                                <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />
                                 <f:selectItem itemLabel="The research article has been retracted" itemValue="2" />
                                 <f:selectItem itemLabel="The dataset has been transferred to another repository" itemValue="3" />
                                 <f:selectItem itemLabel="IRB request" itemValue="4" />
@@ -691,41 +681,39 @@
                             </h:selectOneMenu>
                         </div>
 
-                        <ui:fragment rendered="true">
-                            <div class="form-group">
-                                <label class="control-label" for="fileDescription">
-                                    Additional information about reason to deaccession
-                                </label>
-                                <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
-                                <p:message for="reasonForDeaccession"/>
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label" ><!--for="forwardURLForDeaccession"-->
-                                    If applicable, please leave a URL where this dataset can be accessed after deaccessioning.
-                                </label>
-                                <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"/>
-                                <!--<p:message for="forwardURLForDeaccession"/>-->
-                            </div>
-                        </ui:fragment >
+                        <div class="form-group">
+                            <label class="control-label" for="fileDescription">
+                                Please enter additional information about the reason for deaccession.
+                            </label>
+                            <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
+                            <p:message for="reasonForDeaccession"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" ><!--for="forwardURLForDeaccession"-->
+                                If applicable, please leave a URL where this dataset can be accessed after deaccessioning.
+                            </label>
+                            <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"/>
+                            <!--<p:message for="forwardURLForDeaccession"/>-->
+                        </div>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(true);" >Deaccession</button>
+                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(true);">Deaccession</button>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(false);" >Deaccession</button>
+                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(false);">Deaccession</button>
                         </ui:fragment>
                         <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
                     </p:dialog>
                     <p:dialog id="deaccessionConfirmation" header="Deaccession Dataset" widgetVar="deaccessionConfirmation" modal="true">
-                        Are you sure you want to deaccession.  The selected version(s) will no longer be viewable by the public
-                        <h:commandButton styleClass="btn btn-success" value="Continue" onclick="deaccessionConfirmation.hide();
+                        <p>Are you sure you want to deaccession? The selected version(s) will no longer be viewable by the public.</p>
+                        <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionConfirmation.hide();
                                 deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionConfirmation.hide()">Cancel</button> 
+                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionConfirmation.hide()">No</button>
                     </p:dialog>
                     <p:dialog id="deaccessionAllConfirmation" header="Deaccession Dataset" widgetVar="deaccessionAllConfirmation" modal="true">
-                        Are you sure you want to deaccession your dataset.  It will no longer be viewable by the public.
-                        <h:commandButton styleClass="btn btn-success" value="Continue" onclick="deaccessionAllConfirmation.hide();
+                        <p>Are you sure you want to deaccession your dataset? It will no longer be viewable by the public.</p>
+                        <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
                                 deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionAllConfirmation.hide()">Cancel</button> 
+                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">No</button>
                     </p:dialog>
                     <p:confirmDialog id="selectDeaccessionVersion" message="Please select version(s) for deaccessioning." header="Please Select Version(s)" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
                     <p:confirmDialog id="selectDeaccessionReason" message="Please select reason for deaccessioning." header="Please Select Reason" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
