@@ -256,6 +256,25 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
+    
+    public VersionState getPriorVersionState(){
+                int index = 0;
+        int size = this.getDataset().getVersions().size();
+        if (this.isDeaccessioned()) {
+            return null;
+        }
+        for (DatasetVersion dsv : this.getDataset().getVersions()) {
+            if (this.equals(dsv)) {
+                if ((index + 1) <= (size - 1)) {
+                    for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
+                        return dvTest.getVersionState();
+                    }
+                }
+            }
+            index++;
+        }
+        return null;
+    }
 
     public void setVersionNote(String note) {
         if (note != null && note.length() > VERSION_NOTE_MAX_LENGTH) {

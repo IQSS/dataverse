@@ -271,7 +271,7 @@
 
                                     <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                         <div class="bg-danger" style="padding:4px;margin-bottom:.5em;">
-                                            Deaccession :: {ReasonWhy} {ForwardLink}
+                                            Deaccessioned : #{DatasetPage.workingVersion.versionNote}  #{DatasetPage.workingVersion.archiveNote}
                                         </div>
                                     </ui:fragment>
 
@@ -607,11 +607,14 @@
                                                 <ui:fragment rendered="#{versionTab.draft}">
                                                     This is a draft version.
                                                 </ui:fragment>
-                                                <ui:fragment rendered="#{versionTab.released}">
-                                                    No prior version available for comparison.
+                                                <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == 'DEACCESSIONED'}">
+                                                    Due to the previous version being deaccessioned, there are no difference notes for this published version.
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == null}">
+                                                    This is the first published version.
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.deaccessioned}">
-                                                    This version has been deaccessioned.
+                                                    Deaccessioned: #{versionTab.versionNote}  #{versionTab.archiveNote}
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
