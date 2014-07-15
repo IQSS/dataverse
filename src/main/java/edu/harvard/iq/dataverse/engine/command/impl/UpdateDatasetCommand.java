@@ -64,6 +64,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
 
         Dataset savedDataset = ctxt.em().merge(theDataset);
+        ctxt.em().flush();
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
         DatasetVersionDatasetUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(theDataset.getLatestVersion(), this.getUser());
