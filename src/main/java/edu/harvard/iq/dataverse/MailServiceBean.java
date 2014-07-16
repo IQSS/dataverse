@@ -25,6 +25,9 @@ import javax.mail.internet.MimeMessage;
 @Stateless
 public class MailServiceBean implements java.io.Serializable {
 
+    private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    
     /**
      * Creates a new instance of MailServiceBean
      */
@@ -79,7 +82,13 @@ public class MailServiceBean implements java.io.Serializable {
     public void sendMail(String from, String to, String subject, String messageText, Map extraHeaders) {
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(from));
+            if (from.matches(EMAIL_PATTERN)) {
+                msg.setFrom(new InternetAddress(from));
+            } else {
+                // set fake from address; instead, add it as part of the message
+                msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
+                messageText = "From: " + from + "\n\n" + messageText;
+            }
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
             msg.setSubject(subject);
