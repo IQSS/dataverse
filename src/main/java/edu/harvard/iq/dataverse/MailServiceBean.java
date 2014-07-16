@@ -82,7 +82,8 @@ public class MailServiceBean implements java.io.Serializable {
             try {
                 msg.setFrom(new InternetAddress(from));
             } catch (AddressException ae) {
-                // don't set from address; instead, add it as part of the message
+                // set fake from address; instead, add it as part of the message
+                msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
                 messageText = "From: " + from + "\n\n" + messageText;
             }
             msg.setRecipients(Message.RecipientType.TO,
