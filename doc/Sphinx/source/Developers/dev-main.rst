@@ -47,7 +47,7 @@ Rebuilding your dev environment
 (NOTE: this has also changed!) If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps: 
 
 - drop your old database
-- clear out your existing Solr index: ``curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type: application/json' -X POST -d '{"delete": { "query":"*:*" }}'``
+- clear out your existing Solr index: ``scripts/search/clear``
 - run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
 - confirm you are using the latest Dataverse-specific Solr schema.xml per the "Installing and Running Solr" section of this guide
 - confirm http://localhost:8080 is up
