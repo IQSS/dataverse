@@ -79,7 +79,11 @@ public class MailServiceBean implements java.io.Serializable {
     public void sendMail(String from, String to, String subject, String messageText, Map extraHeaders) {
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(from));
+            try {
+                msg.setFrom(new InternetAddress(from));
+            } catch (AddressException ae) {
+                // don't set from
+            }
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
             msg.setSubject(subject);
