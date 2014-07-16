@@ -625,7 +625,7 @@
                                                     This is the first published version.
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.deaccessioned}">
-                                                    Deaccessioned Reason: #{versionTab.versionNote} <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">The dataset can now be accessed at: <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
+                                                    Deaccessioned Reason: #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">The dataset can now be accessed at: <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
