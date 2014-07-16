@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     private static final Logger logger = Logger.getLogger(CollectionDepositManagerImpl.class.getCanonicalName());
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DatasetServiceBean datasetService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -48,6 +52,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     EjbDataverseEngine engineSvc;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
+    @EJB
+    ForeignMetadataImportServiceBean foreignMetadataImportService;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
@@ -78,7 +84,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         // require title *and* exercise the SWORD jar a bit
                         Map<String, List<String>> dublinCore = deposit.getSwordEntry().getDublinCore();
                         if (dublinCore.get("title") == null || dublinCore.get("title").get(0) == null || dublinCore.get("title").get(0).isEmpty()) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
+//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
                         }
 
                         if (dublinCore.get("date") != null) {
@@ -130,32 +136,34 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
                         /**
-                         * @todo don't hard code these!
+                         * @todo don't hard code these! copied from DatasetPage.
                          */
-                        dataset.setProtocol("doi");
-                        dataset.setAuthority("10.5072/FK2");
-                        // temporary, will change identifer to database id of dataset after we know it
-                        dataset.setIdentifier(UUID.randomUUID().toString());
+                        String fixMeDontHardCodeProtocol = "doi";
+                        String fixMeDontHardCodeAuthority = "10.5072/FK2";
+                        dataset.setProtocol(fixMeDontHardCodeProtocol);
+                        dataset.setAuthority(fixMeDontHardCodeAuthority);
+                        /**
+                         * @todo why is generateIdentifierSequence off by one?
+                         * I'm getting doi:10.5072/FK2/43 when I expect
+                         * doi:10.5072/FK2/43 dataset.getPersistentURL() seems
+                         * to return the expected value.
+                         */
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
 
                         DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
-                        newDatasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-
-                        List<DatasetField> datasetFields = new ArrayList<>();
-                        DatasetField titleDatasetField = new DatasetField();
-                        DatasetFieldType titleDatasetFieldType = datasetFieldService.findByName("title");
-                        titleDatasetField.setDatasetFieldType(titleDatasetFieldType);
-                        List<DatasetFieldValue> datasetFieldValues = new ArrayList<>();
-                        DatasetFieldValue titleDatasetFieldValue = new DatasetFieldValue(titleDatasetField, dublinCore.get("title").get(0));
-                        datasetFieldValues.add(titleDatasetFieldValue);
-                        titleDatasetField.setDatasetFieldValues(datasetFieldValues);
-                        datasetFields.add(titleDatasetField);
-
-                        newDatasetVersion.setDatasetFields(datasetFields);
+                        /**
+                         * @todo should this really be hard coded? And is
+                         * "dcterms" descriptive enough?
+                         */
+                        String foreignFormat = "dcterms";
+                        try {
+                            foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
+                        } catch (Exception ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                        }
 
                         Dataset createdDataset = null;
                         try {
-                            // there is no importStudy method in 4.0 :(
-                            // study = studyService.importStudy(tmpFile, dcmiTermsFormatId, dvThatWillOwnStudy.getId(), vdcUser.getId());
                             createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, dataverseUser));
                         } catch (Exception ex) {
 //                            StringWriter stringWriter = new StringWriter();
@@ -188,20 +196,10 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             tmpFile.delete();
                             uploadDir.delete();
                         }
-                        if (createdDataset != null) {
-                            try {
-                                createdDataset.setIdentifier(createdDataset.getId().toString());
-                                engineSvc.submit(new UpdateDatasetCommand(createdDataset, dataverseUser));
-                            } catch (CommandException ex) {
-                                throw new SwordError("Dataset created but identifier was not changed to database id from " + dataset.getIdentifier() + " " + ex);
-                            }
-                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
-                            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
-                            return depositReceipt;
-                        } else {
-                            throw new SwordError("Dataset created but identifier was not changed to database id from " + dataset.getIdentifier());
-                        }
+                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
+                        DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
+                        return depositReceipt;
                     } else if (deposit.isBinaryOnly()) {
                         // get here with this:
                         // curl --insecure -s --data-binary "@example.zip" -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/

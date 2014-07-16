@@ -9,8 +9,16 @@ def msgt(s): dashes(); msg(s); dashes()
 def msgx(s): dashes('\/'); msg(s); dashes('\/'); sys.exit(0)
 
 def get_dataverse_link_object(apikey='pete'):
-    server_with_api = 'https://dvn-build.hmdc.harvard.edu'
+    server_with_api = 'http://localhost:8080/'
+    #server_with_api = 'https://dvn-build.hmdc.harvard.edu'
     return DataverseAPILink(server_with_api, use_https=False, apikey=apikey)
+
+def check_dv():    
+    dat = get_dataverse_link_object()
+    dat.save_current_metadata('local-data')
+
+    #add_and_publish_dataverses('local-data/dataverses_2014-0612_11.json','pete')
+    add_and_publish_dataverses('demo-data/dataverses_2014-0609_16.json','pete')
 
 def load_users_from_api_file(fname):
     """
@@ -84,7 +92,7 @@ def add_and_publish_dataverses(fname, apikey):
             if new_id is not None:
                 dv_lnk_obj.publish_dataverse(new_id)
         previous_alias = current_dv_info.get("alias", "root")
-        break
+        #break
             
 def add_dataverses(name, cnt=1, parent_dv_name_or_id=1, apikey='snoopy'):
     # get the DataverseAPILink
@@ -134,10 +142,11 @@ def delete_dataverses_id_greather_than(id_num, apikey):
      #print dat.list_datasets()
      
 if __name__ == '__main__':
+    check_dv()
     #load_users_from_api_file('demo-data/users_2014-0609_14.json')
     #load_users_from_api_file('demo-data/rp_users.json')
     #add_and_publish_dataverses('demo-data/dataverses_2014-0609_14.json', 'gromit')
-    add_and_publish_dataverses('demo-data/rp_dataverses.json', 'gromit')
+    #add_and_publish_dataverses('demo-data/rp_dataverses.json', 'gromit')
     
     #add_dataverses('Other DV #', 17, 23, 'snoopy')
     #add_dataverses('Uma\'s Other Retricted DVs #', 7, 8, 'pete')

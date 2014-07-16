@@ -29,7 +29,8 @@ import java.util.logging.Logger;
     @RequiredPermissions(dataverseName = "", value = Permission.Publish)
 })
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
-   private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
+
+    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
     boolean minorRelease = false;
     Dataset theDataset;
 
@@ -45,16 +46,16 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
         if (!theDataset.getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + theDataset.getOwner().getAlias() + ") has not been published.", this);
         }
-        
-        if ( theDataset.getLatestVersion().isReleased() ) {
+
+        if (theDataset.getLatestVersion().isReleased()) {
             throw new IllegalCommandException("Latest version of dataset " + theDataset.getIdentifier() + " is already released. Only draft versions can be released.", this);
         }
 
         if (minorRelease && !theDataset.getLatestVersion().isMinorUpdate()) {
             throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
         }
-        
-        if (theDataset.getReleasedVersion() == null) {
+
+        if (theDataset.getPublicationDate() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
             theDataset.setReleaseUser(getUser());
             if (!minorRelease) {
@@ -66,34 +67,34 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             }
         } else {
             if (!minorRelease) {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getReleasedVersion().getVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue() + 1));
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
             } else {
-                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getReleasedVersion().getVersionNumber().intValue()));
-                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getReleasedVersion().getMinorVersionNumber().intValue() + 1));
+                theDataset.getEditVersion().setVersionNumber(new Long(theDataset.getVersionNumber().intValue()));
+                theDataset.getEditVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber().intValue() + 1));
             }
         }
-
-        Timestamp updateTime =  new Timestamp(new Date().getTime());
+        
+        Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setReleaseTime(updateTime);
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
         theDataset.getEditVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
-        
-        for (DataFile dataFile: theDataset.getFiles() ){
-            if(dataFile.getPublicationDate() == null){
+
+        for (DataFile dataFile : theDataset.getFiles()) {
+            if (dataFile.getPublicationDate() == null) {
                 dataFile.setPublicationDate(updateTime);
-            }            
+            }
         }
-        
+
         Dataset savedDataset = ctxt.em().merge(theDataset);
-        
+
         ctxt.index().indexDataset(savedDataset);
-        
+
         DatasetVersionDatasetUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(savedDataset.getLatestVersion(), this.getUser());
-        
-        if (ddu != null){
-             ddu.setLastUpdateDate(updateTime);
-             ctxt.em().merge(ddu);
+
+        if (ddu != null) {
+            ddu.setLastUpdateDate(updateTime);
+            ctxt.em().merge(ddu);
         } else {
             DatasetVersionDatasetUser datasetDataverseUser = new DatasetVersionDatasetUser();
             datasetDataverseUser.setDataverseUser(getUser());
@@ -103,7 +104,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setDataverseuserid(getUser().getId());
             ctxt.em().merge(datasetDataverseUser);
         }
-        
+
         return savedDataset;
     }
 

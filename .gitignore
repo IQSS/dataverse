@@ -15,3 +15,4 @@ Thumbs.db
 *.pyc
 scripts/api/py_api_wrapper/demo-data/*
 scripts/api/py_api_wrapper/test_data/*
+scripts/api/py_api_wrapper/local-data/*

@@ -36,3 +36,8 @@ conjunction with PageKite configured like this:
 service_on = http:@kitename  : localhost:8888 : @kitesecret
 
 service_on = https:@kitename : localhost:9999 : @kitesecret
+
+Please note that before running ``vagrant up`` for the first time,
+you'll need to ensure that required software (GlassFish, Solr, etc.)
+is available within Vagrant. If you type ``cd downloads`` and
+``./download.sh`` the software should be properly downloaded.

@@ -1,0 +1,2 @@
+#!/bin/sh
+~/.homebrew/bin/psql dataverse_db -c "INSERT INTO foreignmetadataformatmapping(id, name, startelement) VALUES (1, 'dcterms', 'entry');"

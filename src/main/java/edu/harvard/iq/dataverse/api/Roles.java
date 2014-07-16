@@ -87,7 +87,9 @@ public class Roles extends AbstractApiBean {
 		
         DataverseUser u = usersSvc.findByUserName(username);
 		if ( u == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
-		Dataverse d = dvSvc.find( dvObjectId );
+		
+        // FIXME should get a DvObject
+        Dataverse d = dvSvc.find( dvObjectId );
 		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
 		DataverseRole r = rolesSvc.find(roleId);
 		if ( r == null ) return errorResponse( Status.BAD_REQUEST, "no role with id " + roleId );

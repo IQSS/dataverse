@@ -7,11 +7,18 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListVersionsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -26,6 +33,7 @@ import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -56,8 +64,17 @@ public class Datasets extends AbstractApiBean {
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
-        return (ds != null) ? okResponse(json(ds))
-							: notFound("dataset not found");
+        if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
+        
+        try {
+            Dataset retrieved = execCommand(new GetDatasetCommand(u, ds), "Getting dataset");
+            DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(u, ds), "Getting latest dataset version");
+            final JsonObjectBuilder jsonbuilder = json(retrieved);
+            
+            return okResponse(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
+        } catch ( FailedCommandResult ex ) {
+			return ex.getResponse();
+		}
         
     }
 	
@@ -91,17 +108,20 @@ public class Datasets extends AbstractApiBean {
 		DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
-		// TODO filter by what the user can see.
 		
         Dataset ds = datasetService.find(id);
         if (ds == null) return notFound("dataset not found");
 		
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-		for ( DatasetVersion dsv : ds.getVersions() ) {
-			bld.add( json(dsv) );
-		}
-		
-		return okResponse( bld );
+        try {
+            List<DatasetVersion> retrieved = execCommand(new ListVersionsCommand(u, ds), "Listing Dataset versions");
+            JsonArrayBuilder bld = Json.createArrayBuilder();
+            for ( DatasetVersion dsv : retrieved ) {
+                bld.add( json(dsv) );
+            }
+            return okResponse( bld );
+        } catch (FailedCommandResult ex) {
+            return ex.getResponse();
+        }
     }
 	
 	@GET
@@ -110,37 +130,45 @@ public class Datasets extends AbstractApiBean {
 		DataverseUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
-		// TODO filter by what the user can see.
 		
         Dataset ds = datasetService.find(datasetId);
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
-		DatasetVersion dsv = null;
+        Command<DatasetVersion> cmd;
+        
 		switch (versionId) {
 			case ":latest":
-				dsv = ds.getLatestVersion();
-				break;
-			case ":edit":
-				dsv = ds.getEditVersion();
-				break;
+                cmd = new GetLatestAccessibleDatasetVersionCommand(u, ds);
+                break;	
+			case ":draft":
+                cmd = new GetDraftDatasetVersionCommand(u, ds);
+                break;
+            case ":latest-published":
+                cmd = new GetLatestPublishedDatasetVersionCommand(u, ds);
+                break;
 			default:
 				try {
-					long versionNumericId = Long.parseLong(versionId);
-					for ( DatasetVersion aDsv : ds.getVersions() ) {
-						if ( aDsv.getId().equals(versionNumericId) ) {
-							dsv = aDsv;
-							break; // for, not while
-						}
-					}
+                    String[] versions = versionId.split("\\.");
+                    if (versions.length == 1) {
+                        cmd = new GetSpecificPublishedDatasetVersionCommand(u, ds, Long.parseLong(versions[0]), (long)0.0);
+                    } else if (versions.length == 2) {
+                        cmd = new GetSpecificPublishedDatasetVersionCommand(u, ds, Long.parseLong(versions[0]), Long.parseLong(versions[1]));
+                    } else {
+                        return errorResponse( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'");
+                    }
 				} catch ( NumberFormatException nfe ) {
-					return errorResponse( Response.Status.BAD_REQUEST, "Illegal id number '" + versionId + "'");
-				}	
-                break;
+					return errorResponse( Response.Status.BAD_REQUEST, "Illegal version identifier '" + versionId + "'");
+                }
 		}
 		
-		return (dsv==null)
-				? errorResponse(Response.Status.NOT_FOUND, "dataset version not found")
-				: okResponse( json(dsv)  );
+        try {
+            DatasetVersion dsv = execCommand(cmd, versionId);
+            return (dsv == null || dsv.getId() == null)
+                    ? errorResponse(Response.Status.NOT_FOUND, "Dataset version not found")
+                    : okResponse(json(dsv));
+        } catch (FailedCommandResult ex) {
+            return ex.getResponse();
+        }
     }
     
     @GET

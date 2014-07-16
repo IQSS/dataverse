@@ -19,8 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  * @author michael
  */
 @RequiredPermissionsMap({
-	@RequiredPermissions( dataverseName = "doomed", value = Permission.DestructiveEdit ),
-	@RequiredPermissions( dataverseName = "owner", value = Permission.DestructiveEdit )
+	@RequiredPermissions( dataverseName = "doomed", value = Permission.DestructiveEdit )
 })
 public class DeleteDataverseCommand extends AbstractVoidCommand {
 	
@@ -60,15 +59,12 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
 		// FACETS
 		for ( DataverseFacet facet : doomed.getDataverseFacets(true) ) {
 			ctxt.em().remove(facet);
-		}
-        
-        // Remove from index
-        ctxt.index().delete(doomed);
+		}       
 		
         // DATAVERSE
-		ctxt.em().remove(doomed);
-		
-		
-	}
-	
+                Dataverse doomedAndMerged = ctxt.em().merge(doomed);
+		ctxt.em().remove(doomedAndMerged);
+                // Remove from index        
+                        ctxt.index().delete(doomed);
+	}	
 }

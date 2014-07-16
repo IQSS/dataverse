@@ -33,7 +33,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 /**
  *
- * @author landreev
+ * @author Leonid Andreev
  */
 
 public abstract class DataAccessObject {

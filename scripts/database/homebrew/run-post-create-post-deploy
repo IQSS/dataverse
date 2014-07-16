@@ -1,6 +1,8 @@
 #!/bin/sh
 scripts/database/homebrew/run-reference_data.sql
 scripts/database/homebrew/run-non-dvnApp-role
+scripts/database/homebrew/run-dcterms-import
+scripts/database/homebrew/run-dcterm_import_mapping.sql
 cd scripts/api
 ./datasetfields.sh
 ./setup-users.sh

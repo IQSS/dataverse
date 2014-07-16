@@ -126,7 +126,9 @@ public abstract class AbstractApiBean {
             
         } catch (IllegalCommandException ex) {
             throw new FailedCommandResult( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
-                    
+          
+        } catch (PermissionException ex) {
+            throw new FailedCommandResult(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
             throw new FailedCommandResult(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));

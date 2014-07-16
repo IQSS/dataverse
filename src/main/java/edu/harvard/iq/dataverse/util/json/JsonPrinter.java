@@ -111,18 +111,12 @@ public class JsonPrinter {
 	}
 	
 	public static JsonObjectBuilder json( Dataset ds ) {
-		int versionCount = ds.getVersions().size();
 		return jsonObjectBuilder()
 				.add( "id", ds.getId() )
 				.add( "identifier", ds.getIdentifier() )
 				.add( "persistentUrl", ds.getPersistentURL() )
 				.add( "protocol", ds.getProtocol() )
-				.add( "authority", ds.getAuthority() )
-				.add( "versions", jsonObjectBuilder()
-									.add("count", versionCount)
-									.add("latest", brief.json(ds.getLatestVersion()))
-									.add("edit", ds.getEditVersion().getId()!=null ? brief.json(ds.getEditVersion()) : null )
-				);
+				.add( "authority", ds.getAuthority() );
 	}
 	
 	public static JsonObjectBuilder json( DatasetVersion dsv ) {
@@ -313,7 +307,9 @@ public class JsonPrinter {
 
         @Override
         public void primitiveValue(DatasetFieldValue dsfv) {
-            valueArrStack.peek().add( dsfv.getValue() );
+            if (dsfv.getValue() != null) {
+                valueArrStack.peek().add( dsfv.getValue() );
+            }
         }
 
         @Override

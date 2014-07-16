@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.IndexServiceBean;
+
 public abstract class IndexableObject {
 
     private String type;
@@ -14,6 +16,9 @@ public abstract class IndexableObject {
 
     public enum IndexableTypes {
 
+        /**
+         * @todo reconcile with IndexServiceBean.solrDocIdentifierDataset et al.
+         */
         DATAVERSE("dataverse"), DATASET("dataset"), DATAFILE("datafile"), GROUP("group");
 
         private String name;

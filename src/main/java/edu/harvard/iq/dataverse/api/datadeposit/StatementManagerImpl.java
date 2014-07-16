@@ -65,7 +65,15 @@ public class StatementManagerImpl implements StatementManager {
             Dataverse dvThatOwnsDataset = dataset.getOwner();
             if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
-                String author = dataset.getLatestVersion().getAuthorsStr();
+                String author = null;
+                try {
+                    author = dataset.getLatestVersion().getAuthorsStr();
+                } catch (NullPointerException ex) {
+                    /**
+                     * @todo why is this throwing an NPE?
+                     */
+                    logger.info("caught NullPointerException calling dataset.getLatestVersion().getAuthorsStr()");
+                }
                 String title = dataset.getLatestVersion().getTitle();
                 // in the statement, the element is called "updated"
                 Date lastUpdatedFinal = new Date();

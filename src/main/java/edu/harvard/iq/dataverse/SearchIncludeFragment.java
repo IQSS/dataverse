@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
-import edu.harvard.iq.dataverse.engine.Permission;
-import edu.harvard.iq.dataverse.search.IndexableDataset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -76,7 +74,7 @@ public class SearchIncludeFragment {
     private Long facetCountDataverses = 0L;
     private Long facetCountDatasets = 0L;
     private Long facetCountFiles = 0L;
-    Map<String,Long> previewCountbyType = new HashMap<>();
+    Map<String, Long> previewCountbyType = new HashMap<>();
     private SolrQueryResponse solrQueryResponseAllTypes;
     private String sortField;
     private String sortOrder;
@@ -160,14 +158,14 @@ public class SearchIncludeFragment {
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "dataverse.xhtml" : dataverseRedirectPage;
         String optionalDataverseScope = dataverse.getId().equals(dataverseService.findRootDataverse().getId()) ? "" : "&id=" + dataverse.getId();
 
-        return dataverseRedirectPage + "?faces-redirect=true&q=" + query + optionalDataverseScope ;
+        return dataverseRedirectPage + "?faces-redirect=true&q=" + query + optionalDataverseScope;
 
     }
 
     public void search() {
         search(false);
-    }    
-    
+    }
+
     public void search(boolean onlyDataRelatedToMe) {
         logger.info("search called");
 
@@ -253,7 +251,8 @@ public class SearchIncludeFragment {
         /**
          * @todo
          *
-         * design/make room for sort widget drop down: https://redmine.hmdc.harvard.edu/issues/3482
+         * design/make room for sort widget drop down:
+         * https://redmine.hmdc.harvard.edu/issues/3482
          *
          */
 
@@ -291,7 +290,7 @@ public class SearchIncludeFragment {
             this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
             this.errorFromSolr = solrQueryResponse.getError();
             paginationGuiStart = paginationStart + 1;
-            paginationGuiEnd = Math.min(page * paginationGuiRows,searchResultsCount);            
+            paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
             /**
@@ -324,6 +323,9 @@ public class SearchIncludeFragment {
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
+                        if (datasetVersion.isDeaccessioned()) {
+                            solrSearchResult.setDeaccessionedState(true);
+                        }
                         if (datasetVersion != null) {
                             String citation = datasetVersion.getCitation();
                             if (citation != null) {
@@ -381,7 +383,6 @@ public class SearchIncludeFragment {
 //    public void setShowUnpublished(boolean showUnpublished) {
 //        this.showUnpublished = showUnpublished;
 //    }
-
     public String getBrowseModeString() {
         return browseModeString;
     }
@@ -404,7 +405,6 @@ public class SearchIncludeFragment {
         }
         return numFacets;
     }
-
 
     public void incrementFacets(String name, int incrementNum) {
         Integer numFacets = numberOfFacets.get(name);
@@ -437,7 +437,7 @@ public class SearchIncludeFragment {
          * @todo is this the right permission to check?
          */
         // being explicit about the user, could just call permissionService.on(dataverse)
-       
+
         // TODO: decide on rules for this button and check actual permissions
         return session.getUser() != null && !session.getUser().isGuest();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
@@ -605,7 +605,6 @@ public class SearchIncludeFragment {
 //    public void setDataverseSubtreeContext(String dataverseSubtreeContext) {
 //        this.dataverseSubtreeContext = dataverseSubtreeContext;
 //    }
-
     public String getSelectedTypesString() {
         return selectedTypesString;
     }
@@ -653,7 +652,6 @@ public class SearchIncludeFragment {
 //    public void setSearchFieldHostDataverse(String searchFieldHostDataverse) {
 //        this.searchFieldHostDataverse = searchFieldHostDataverse;
 //    }
-
     public String getTypeFilterQuery() {
         return typeFilterQuery;
     }
@@ -769,9 +767,8 @@ public class SearchIncludeFragment {
 
     // helper method
     public int getTotalPages() {
-        return ( (searchResultsCount - 1) / paginationGuiRows) + 1;
-    } 
-
+        return ((searchResultsCount - 1) / paginationGuiRows) + 1;
+    }
 
     public int getPaginationGuiStart() {
         return paginationGuiStart;
@@ -826,7 +823,7 @@ public class SearchIncludeFragment {
     }
 
     public boolean userLoggedIn() {
-        DataverseUser dataverseUser =session.getUser();
+        DataverseUser dataverseUser = session.getUser();
         if (dataverseUser != null) {
             if (dataverseUser.isGuest()) {
                 return false;
@@ -837,7 +834,7 @@ public class SearchIncludeFragment {
             return false;
         }
     }
-    
+
     public boolean publishedSelected() {
         String expected = SearchFields.PUBLICATION_STATUS + ":\"" + getPUBLISHED() + "\"";
         logger.info("published expected: " + expected + " actual: " + selectedTypesList);
@@ -860,6 +857,10 @@ public class SearchIncludeFragment {
 
     public String getDRAFT() {
         return IndexServiceBean.getDRAFT_STRING();
+    }
+
+    public String getDEACCESSIONED() {
+        return IndexServiceBean.getDEACCESSIONED_STRING();
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
@@ -914,5 +915,5 @@ public class SearchIncludeFragment {
     public void setErrorFromSolr(String errorFromSolr) {
         this.errorFromSolr = errorFromSolr;
     }
-    
+
 }
