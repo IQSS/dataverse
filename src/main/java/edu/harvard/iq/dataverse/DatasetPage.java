@@ -656,6 +656,9 @@ public class DatasetPage implements java.io.Serializable {
         // reset values
         dataset = datasetService.find(dataset.getId());
         workingVersion = dataset.getLatestVersion();
+        if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null){
+           workingVersion =  dataset.getReleasedVersion();
+        }
         ownerId = dataset.getOwner().getId();
         setVersionTabList(resetVersionTabList());
         setReleasedVersionTabList(resetReleasedVersionTabList());

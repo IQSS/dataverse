@@ -135,7 +135,8 @@
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                             and (DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released)
+                                                             or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
                                                              and !DatasetPage.locked}">
                                         <div style="float:right; margin-left:1em;">
