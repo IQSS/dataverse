@@ -1,17 +1,16 @@
 package edu.harvard.iq.dataverse;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.hibernate.validator.constraints.Email;
 
 /**
  *
  * @author Naomi
  */
-@Stateless
+@ViewScoped
 @Named
 public class SendFeedbackDialog {
 
