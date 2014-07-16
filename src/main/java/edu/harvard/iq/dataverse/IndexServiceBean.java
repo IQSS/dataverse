@@ -46,6 +46,8 @@ public class IndexServiceBean {
     DatasetServiceBean datasetService;
     @EJB
     DataverseUserServiceBean dataverseUserServiceBean;
+    @EJB
+    PermissionServiceBean permissionService;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -167,6 +169,28 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
 
+        /**
+         * @todo check if you are at a permission root. If not, go up the
+         * dataverse hierarchy until you reach a permission root (may be the
+         * root dataverse).
+         *
+         * Below are approaches toward going beyond non-creator indexing
+         * permissions for https://github.com/IQSS/dataverse/issues/734
+         */
+        // this is the dumb way... iterate through every user each time
+//        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
+//            if (permissionService.isUserAllowedOn(user, UpdateDataverseCommand.class, dataverse)) {
+//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
+//            }
+//        }
+        // this should be the more performant way... given a dataverse, figure out who has the access in question
+//        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
+//        for (RoleAssignment roleAssignment : assignmentsOn) {
+//            if (roleAssignment.getRole().permissions().contains(Permission.Access)) {
+//                final DataverseUser user = roleAssignment.getUser();
+//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
+//            }
+//        }
         if (dataverse.getCreator() != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
             /**
