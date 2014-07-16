@@ -74,7 +74,6 @@ public class MoveDataverseCommandTest {
 	
 	/**
 	 * Moving ChildA to its child (illegal).
-	 * @throws Exception - should not throw an exception
 	 */
 	@Test( expected=IllegalCommandException.class )
 	public void testInvalidMove() throws Exception {
