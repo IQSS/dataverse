@@ -281,7 +281,7 @@
                                         <div class="bg-danger" style="padding:4px;margin-bottom:.5em;">
                                             <p><strong>Deaccession Reason:</strong> #{DatasetPage.workingVersion.versionNote}</p>
                                             <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                                <p>You can now access the dataset at: <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a>.</p>
+                                                <p>The dataset can now be accessed at: <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
                                             </ui:fragment>
                                         </div>
                                     </ui:fragment>
@@ -409,7 +409,7 @@
                                                 <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
                                                 </p:commandButton>
                                                 <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                                <p class="help-block">You can also upload your files directly from your Dropbox.</p>
+                                                <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -625,7 +625,7 @@
                                                     This is the first published version.
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.deaccessioned}">
-                                                    Deaccessioned: #{versionTab.versionNote}  #{versionTab.archiveNote}
+                                                    Deaccessioned Reason: #{versionTab.versionNote} The dataset can now be accessed at: <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a>
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
