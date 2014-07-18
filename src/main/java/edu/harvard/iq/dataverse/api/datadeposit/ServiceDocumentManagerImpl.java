@@ -33,7 +33,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             throws SwordError, SwordServerException, SwordAuthException {
 
         DataverseUser vdcUser = swordAuth.auth(authCredentials);
-        urlManager.processUrl(sdUri);
+        String warning = urlManager.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
         Dataverse rootDataverse = dataverseService.findRootDataverse();
@@ -42,6 +42,9 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             if (name != null) {
                 swordWorkspace.setTitle(name);
             }
+        }
+        if (warning != null) {
+            swordWorkspace.getWrappedWorkspace().setAttributeValue("warning", warning);
         }
         service.setMaxUploadSize(config.getMaxUploadSize());
         String hostnamePlusBaseUrl = urlManager.getHostnamePlusBaseUrlPath(sdUri);
@@ -66,8 +69,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
                     swordCollection.addAcceptPackaging(UriRegistry.PACKAGE_SIMPLE_ZIP);
                     /**
                      * @todo for backwards-compatibility with DVN 3.x, display
-                     * terms of uses for root dataverse and the dataverse we
-                     * are iterating over. What if the root dataverse is not the
+                     * terms of uses for root dataverse and the dataverse we are
+                     * iterating over. What if the root dataverse is not the
                      * direct parent of the dataverse we're iterating over? Show
                      * the terms of use each generation back to the root?
                      *
