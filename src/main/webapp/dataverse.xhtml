@@ -211,6 +211,11 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
+                                                <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">                                                          
+                                                    <h:outputText value="Browsing Options" />
+                                                </p:commandLink>
+                                            </li>
+                                            <li>
                                                 <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
                                                     <h:outputText value="Roles + Permissions" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
@@ -257,12 +262,76 @@
                             </p:confirmDialog>                                                                
                         </div>
                         <ui:fragment rendered="#{empty DataversePage.editMode}">
-                            <div style="margin-bottom:1em;">
+                            <div id="dataverseDesc" style="margin-bottom:1em;">
                                 <h:outputText value="#{DataversePage.dataverse.description}"/>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="false">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Featured Dataverses</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev1" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="typeDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                    <div class="item"><img src="/resources/images/icon_dataverse.png" style="height:60px;" border="0" alt="Dataverse"/></div>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next1" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="false">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Dataverses by Type</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev2" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>Researchers</div>
+                                    <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>Research Projects</div>
+                                    <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>Journals</div>
+                                    <div class="item"><span class="glyphicon glyphicon-home" style="font-size:2.5em;"></span><br/>Organizations &amp; Institutions</div>
+                                    <div class="item"><span class="glyphicon glyphicon-tree-conifer" style="font-size:2.5em;"></span><br/>Teaching &amp; Courses</div>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next2" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
                             </div>
                         </ui:fragment>
                     </ui:fragment>
 
+                    <!-- Dialog Feedback Form -->
+                    <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
+                        <h:form class="form-horizontal">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/> Display "Dataverse by Type" Carousel on Front Page
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox"/> Display "Featured Dataverses" Carousel on Front Page
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputFile">Featured Dataverses</label>
+                                <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
+                                <!--<p:pickList id="featuredDataverseList" value="#{do.something}" var="featureddataverselist" itemLabel="#{featureddataverselist}" itemValue="#{featureddataverselist}"
+                                        showSourceFilter="true" showTargetFilter="true" />-->
+                            </div>
+                            <h:commandButton type="submit" action="#{do.something}" class="btn btn-success" value="Save Changes"/>
+                            <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
+                        </h:form>
+                    </p:dialog>
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
                         <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
                         </p:commandButton>
@@ -347,6 +416,41 @@
                     $(document).ready(function() {
                         initPopover();
                         characterCounter();
+                        
+                        var owl1 = $("#typeDataversesList");
+                        var owl2 = $("#featuredDataversesList");
+     
+                        owl1.owlCarousel({
+                            items : 4, //10 items above 1000px browser width
+                            itemsDesktop : [1140,4], //5 items between 1000px and 901px
+                            itemsDesktopSmall : [940,3], // betweem 900px and 601px
+                            itemsTablet: [720,3], //2 items between 600 and 0
+                            itemsMobile : false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+
+                        // Custom Navigation Events
+                        $(".next1").click(function(){
+                            owl1.trigger('owl.next');
+                        });
+                        $(".prev1").click(function(){
+                            owl1.trigger('owl.prev');
+                        });
+     
+                        owl2.owlCarousel({
+                            items : 4, //10 items above 1000px browser width
+                            itemsDesktop : [1140,4], //5 items between 1000px and 901px
+                            itemsDesktopSmall : [940,3], // betweem 900px and 601px
+                            itemsTablet: [720,3], //2 items between 600 and 0
+                            itemsMobile : false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+
+                        // Custom Navigation Events
+                        $(".next2").click(function(){
+                            owl2.trigger('owl.next');
+                        });
+                        $(".prev2").click(function(){
+                            owl2.trigger('owl.prev');
+                        });
                     });
                     
                     function initPopover() {
