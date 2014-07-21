@@ -7,6 +7,8 @@ import org.swordapp.server.UriRegistry;
 
 public class SwordUtil {
 
+    static String DCTERMS = "http://purl.org/dc/terms/";
+
     public static SwordError throwSpecialSwordErrorWithoutStackTrace(String SwordUriRegistryError, String error) {
         if (SwordUriRegistryError == null) {
             SwordUriRegistryError = UriRegistry.ERROR_BAD_REQUEST;

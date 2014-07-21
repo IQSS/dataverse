@@ -25,6 +25,11 @@ import edu.harvard.iq.dataverse.DataFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 import org.apache.commons.httpclient.Header;
@@ -68,6 +73,7 @@ public abstract class DataAccessObject {
 
         private String location;
         private InputStream in;
+        protected Channel channel; 
 
         private String mimeType;
         private String fileName;
@@ -96,8 +102,19 @@ public abstract class DataAccessObject {
         public abstract void open () throws IOException;
         //public abstract void open (String location) throws IOException;
         //public abstract void open (String location, Object args[]) throws IOException;
+        
+        public abstract void openChannel(DataAccessOption... option) throws IOException; 
 
         public abstract boolean canAccess (String location) throws IOException;
+        
+        public abstract boolean canRead();
+        public abstract boolean canWrite(); 
+        
+        public abstract String getStorageLocation() throws IOException;
+        
+        // Tis method will return a Path, if the storage method is a 
+        // local filesystem. Otherwise should throw an IOException. 
+        public abstract Path getFileSystemPath() throws IOException; 
 
         // getters:
 
@@ -125,6 +142,26 @@ public abstract class DataAccessObject {
             return in;
         }
 
+        public Channel getChannel() {
+            return channel; 
+        }
+        
+        public WritableByteChannel getWriteChannel() throws IOException {
+            if (canWrite() && channel != null && channel instanceof WritableByteChannel) {
+                return (WritableByteChannel)channel; 
+            }
+            
+            throw new IOException("No data write access in this DataAccessObject.");
+        }
+        
+        public ReadableByteChannel getReadChannel() throws IOException {
+            if (!canRead() || channel == null || !(channel instanceof ReadableByteChannel)) {
+                throw new IOException("No data read access in this DataAccessObject.");
+            }
+            
+            return (ReadableByteChannel)channel; 
+        }
+        
         public String getMimeType () {
             return mimeType;
         }

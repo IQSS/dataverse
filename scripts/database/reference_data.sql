@@ -28,3 +28,20 @@ CREATE SEQUENCE filesystemname_seq
   START 2
   CACHE 1;
 ALTER TABLE filesystemname_seq OWNER TO "dvnApp";
+
+-- using http://dublincore.org/schemas/xmls/qdc/dcterms.xsd because at http://dublincore.org/schemas/xmls/ it's the schema location for http://purl.org/dc/terms/ which is referenced in http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
+INSERT INTO foreignmetadataformatmapping(id, name, startelement, displayName, schemalocation) VALUES (1, 'http://purl.org/dc/terms/', 'entry', 'dcterms: DCMI Metadata Terms', 'http://dublincore.org/schemas/xmls/qdc/dcterms.xsd');
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (1, ':title', 'citation', 'title', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (2, ':identifier', 'citation', 'otherIdValue', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (3, ':creator', 'citation', 'authorName', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (4, ':date', 'citation', 'productionDate', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (5, ':subject', 'citation', 'keyword', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (6, ':description', 'citation', 'dsDescription', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (7, ':relation', 'citation', 'relatedMaterial', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (8, ':isReferencedBy', 'citation', 'publicationCitation', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (9, 'holdingsURI', 'citation', 'publicationURL', TRUE, 8, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (10, 'agency', 'citation', 'publicationIDType', TRUE, 8, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (11, 'IDNo', 'citation', 'publicationIDNumber', TRUE, 8, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (12, ':coverage', 'socialscience', 'geographicCoverage', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (13, ':type', 'socialscience', 'kindOfData', FALSE, NULL, 1 );
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (14, ':source', 'socialscience', 'dataSources', FALSE, NULL, 1 );

@@ -152,10 +152,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
                         /**
-                         * @todo should this really be hard coded? And is
-                         * "dcterms" descriptive enough?
+                         * @todo should this really be hard coded?
                          */
-                        String foreignFormat = "dcterms";
+                        String foreignFormat = SwordUtil.DCTERMS;
                         try {
                             foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                         } catch (Exception ex) {
