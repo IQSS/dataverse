@@ -6,7 +6,9 @@
 
 package edu.harvard.iq.dataverse;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -74,6 +76,57 @@ public class DataFileServiceBean {
 		em.createNamedQuery("DataFile.removeFromDatasetVersion")
 			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
 				.executeUpdate();
+    }
+    
+    /*
+    public String generateSequentialIdentifier() {
+        Long result = null; 
+        
+        try {
+            // Warning! 
+            // The code below is very postgres-specific (relies on a proprietary
+            // postgres sequence; that needs to be created in the database ahead
+            // of time.  
+            // TODO: there's a ticket (github issue #314) for replacing it with 
+            // something non-database specific. 
+            
+            result = (Long) em.createNativeQuery("select nextval('filesystemname_seq')").getSingleResult();
+        } catch (Exception ex) {
+            return null;
+        }
+        if (result != null) {
+            return result.toString();
+        }
+        
+        return null; 
+    }
+    */
+
+    public void generateStorageIdentifier(DataFile dataFile) {
+        dataFile.setFileSystemName(generateStorageIdentifier());
+    }
+    
+    public String generateStorageIdentifier() {
+        String storageIdentifier = null; 
+        
+        UUID uid = UUID.randomUUID();
+                
+        logger.info("UUID value: "+uid.toString());
+        
+        // last 6 bytes, of the random UUID, in hex: 
+        
+        String hexRandom = uid.toString().substring(24);
+        
+        logger.info("UUID (last 6 bytes, 12 hex digits): "+hexRandom);
+        
+        String hexTimestamp = Long.toHexString(new Date().getTime());
+        
+        logger.info("(not UUID) timestamp in hex: "+hexTimestamp);
+            
+        storageIdentifier = hexTimestamp + "-" + hexRandom;
+        
+        logger.info("timestamp/UUID hybrid: "+storageIdentifier);
+        return storageIdentifier; 
     }
         
 }

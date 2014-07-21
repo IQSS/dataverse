@@ -18,6 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TransactionRequiredException;
+//import javax.persistence.SequenceGenerator;
 
 /**
  *
@@ -25,6 +26,7 @@ import javax.persistence.TransactionRequiredException;
  */
 @Stateless
 @Named
+//@SequenceGenerator(name="EMP_SEQ", allocationSize=25)
 public class DatasetServiceBean {
 
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());

@@ -36,10 +36,10 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
-import edu.harvard.iq.dataverse.dataaccess.DataStoreObject;
-import edu.harvard.iq.dataverse.dataaccess.FileStoreObject;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -70,6 +70,8 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,6 +106,7 @@ import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import org.apache.commons.lang.StringUtils;
 import java.util.zip.GZIPInputStream;
+import java.util.UUID; 
 
 /**
  *
@@ -171,7 +174,8 @@ public class IngestServiceBean {
         fmd.setDatasetVersion(version);
         dataset.getFiles().add(datafile);
 
-        datasetService.generateFileSystemName(datafile);
+        //datasetService.generateFileSystemName(datafile)
+        fileService.generateStorageIdentifier(datafile);
 
         // save the file, in the temporary location for now: 
         String tempFilesDirectory = getFilesTempDirectory();
@@ -214,7 +218,7 @@ public class IngestServiceBean {
             // Uncompress the FITS stream, save and treat it as regular FITS:
             InputStream uncompressedIn = null; 
             BufferedOutputStream uncompressedOut = null;
-            String backupFilename = datafile.getFileSystemName();
+            String gzippedFilename = datafile.getFileSystemName();
             try {
                 // Once again, at this point we are dealing with *temp*
                 // files only; these are always stored on the local filesystem, 
@@ -227,7 +231,8 @@ public class IngestServiceBean {
                 // treatment for zip files)
                 
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
-                datasetService.generateFileSystemName(datafile);
+                //datasetService.generateFileSystemName(datafile);
+                fileService.generateStorageIdentifier(datafile);
                 uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
                 
                 int bufsize = 8192;
@@ -237,7 +242,7 @@ public class IngestServiceBean {
                 }
 
             } catch (IOException ioex) {
-                datafile.setFileSystemName(backupFilename);
+                datafile.setFileSystemName(gzippedFilename);
                 return datafile;
             } finally {
                 if (uncompressedIn != null) {
@@ -247,6 +252,14 @@ public class IngestServiceBean {
                     try {uncompressedOut.close();} catch (IOException e) {}
                 }
             }
+            // remove the compressed temp file: 
+            try {
+                new File(tempFilesDirectory + "/" +gzippedFilename).delete();
+            } catch (SecurityException ex) {
+                // (this is very non-fatal)
+                logger.warning("Failed to delete temporary file "+tempFilesDirectory + "/" +gzippedFilename);
+            }
+            
             
             // finally, if the file name had the ".gz" extension, remove it, 
             // since we have uncompressed it:
@@ -292,6 +305,7 @@ public class IngestServiceBean {
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
 
+                    /*
                     // Hmm. Why exactly am I incrementing the filename sequence
                     // here? I could just save the file in the permanent location
                     // under the same name as the temp version... 
@@ -300,7 +314,8 @@ public class IngestServiceBean {
                     // and it's too filesystem-specific architecturally. 
                     // -- L.A. Jul. 11 2014
                     datasetService.generateFileSystemName(dataFile);
-
+                    */
+                    
                     if (ingestableAsTabular(dataFile)) {
                         /*
                          * Note that we don't try to ingest the file right away - 
@@ -330,17 +345,41 @@ public class IngestServiceBean {
                     }
 
                     // Try to save the file in its permanent location: 
+                    Path tempLocationPath = Paths.get(getFilesTempDirectory() + "/" + dataFile.getFileSystemName());
+                    WritableByteChannel writeChannel = null;
+                    FileChannel readChannel = null;
+                    
                     try {
 
-                        logger.info("Will attempt to save the file as: " + dataFile.getFileSystemLocation().toString());
+                        DataAccessObject dataAccess = dataFile.getAccessObject();
                         
-                        
-                        
-                        Files.copy(new FileInputStream(new File(tempFileLocation)), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                        dataAccess.openChannel(DataAccessOption.WRITE_ACCESS);
+                                                
+                        writeChannel = dataAccess.getWriteChannel();
+                        readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
+                                                
+                        long bytesPerIteration = 16 * 1024; // 16K bytes
+                        long start = 0;
+                        while ( start < readChannel.size() ) {
+                            readChannel.transferTo(start, bytesPerIteration, writeChannel);
+                            start += bytesPerIteration;
+                        }
+                        /* 
+                            TODO: - ?
+                            May want to provide a simplified alternative clause for when the 
+                            storage method is local filesystem; in that case DataAccess
+                            can return a Path object, and then we can just do something 
+                            like this: 
+                            Files.copy(tempLocationPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
+                            -- L.A. Jul. 20 2014
+                            Files.copy(tempLocationPath, dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                        */
 
+                        // MD5:
+                        // TODO: replace the direct filesystem access with a DataAccess 
+                        // call. -- L.A. Jul. 20 2014. 
                         MD5Checksum md5Checksum = new MD5Checksum();
                         try {
-                            
                             dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
                         } catch (Exception md5ex) {
                             logger.warning("Could not calculate MD5 signature for the new file " + fileName);
@@ -348,8 +387,18 @@ public class IngestServiceBean {
 
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
+                    } finally {
+                        if (readChannel != null) {try{readChannel.close();}catch(IOException e){}}
+                        if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
+                    try {
+                        logger.info("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        Files.delete(tempLocationPath);
+                    } catch (IOException ex) {
+                        // (non-fatal)
+                        logger.warning("Failed to delete temp file "+tempLocationPath.toString());
+                    }
                     // Any necessary post-processing: 
                     performPostProcessingTasks(dataFile);
                 }
