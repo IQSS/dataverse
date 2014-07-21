@@ -1,0 +1,34 @@
+@startuml
+
+title Authentication in Dataverse 4.0
+autonumber "<font color=blue>"
+
+actor User
+participant Dataverse
+participant RoleAssigneeManager
+participant RoleAssigneeProvider as "RoleAssigneeProvider: authSystem"
+participant UserBean
+database db
+
+User --> Dataverse : GET /
+User <-- Dataverse : "Select Login System"
+User --> Dataverse : authSystem, credentials (e.g. username, password)
+Dataverse --> RoleAssigneeManager: get( authSystem )
+Dataverse <-- RoleAssigneeManager: authSystem
+Dataverse --> RoleAssigneeProvider : authenticateUser( credentials )
+Dataverse <-- RoleAssigneeProvider : user
+Dataverse --> UserBean : setUser( user )
+UserBean --> db : lookupAuthenticatedUser( user.id )
+
+alt id found
+  UserBean <-- db : authenticatedUser
+  UserBean --> db : update( authenticatedUser )
+
+else id not found
+  UserBean <-- db : "user not found"
+  UserBean --> db : createAuthenticatedUser( user )
+  UserBean <-- db : authenticatedUser
+  UserBean --> db : updateLookupTable( user.id, authenticatedUser.id )
+end
+
+@enduml

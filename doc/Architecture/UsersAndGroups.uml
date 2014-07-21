@@ -3,15 +3,6 @@
 'uncomment for higher dpi 
 'skinparam dpi 300
 
-note as n2
-  Invariant: We <b>always</b> have a user
-  Local users are just users supplied by a local provider
-  Non-explicit groups, maps a set of
-  HTTP request properties
-  to an internal RoleAssignee object
-end note
-
-
 package existingCode {
   class Role< DB >
   class DvObject< DB >
@@ -37,34 +28,19 @@ package assignees {
   interface User {
   }
 
-  class AuthenticatedUser {
+  class AuthenticatedUser< DB > {
+
   }
 
   class IpGroup {
     range: IpRange[]
   }
 
-  class DatabaseUser< DB > {
-    + id:Long
-    + name:String
-  }
-
   class RoleAssigneeRecord< DB > {
     identifier: String
     displayInfo: TBD
   }
-note left
- Locally persistent proxy for the assignee
-end note
 
-
-  class  ShibUser {
-    persisstentId: String
-    shibIdp: String
-  }
-
-  class OauthUser
-  class LdapUser 
   class GuestUser {
     showInLists: False
   }
@@ -90,6 +66,7 @@ end note
 
   class AuthenticatedUsers
   class AllUsers
+
   class ShibGroup {
     headerMatchers: Map<String, Regex>
   }
@@ -100,10 +77,6 @@ RoleAssignee <|-- User
 RoleAssignee <|-- Group
 User <|-- AuthenticatedUser
 User <|-- GuestUser
-AuthenticatedUser <|-- DatabaseUser
-AuthenticatedUser <|-- ShibUser
-AuthenticatedUser <|-- OauthUser
-AuthenticatedUser <|-- LdapUser
 Group <|-- ExplicitGroup
 Group <|-- AuthenticatedUsers
 Group <|-- AllUsers
@@ -137,6 +110,7 @@ package roleassigneeprovider {
 
   interface RoleAssigneeProvider {
     + info : RoleAssigneeProviderInfo
+    isQueryable(): Boolean
     acceptsRoleAssigneeIdentifier( idtf:String ): bool
     getRoleAssignee( idtf:String ) : RoleAssignee
     getRoleAssignee( req:HttpRequest ) : RoleAssignee
@@ -161,8 +135,8 @@ package roleassigneeprovider {
   class DatabaseAssigneeProvider 
   class ShibAssigneeProvider
   class IpAddressAssigneeProvider
-  class LdapAssigneeProvider
-  class OAuthAssigneeProvider
+  class LdapAssigneeProvider < future >
+  class OAuthAssigneeProvider < future >
 
   RoleAssigneeManager *-->  "1..*" RoleAssigneeProvider
   RoleAssigneeProvider <|.. OAuthAssigneeProvider
@@ -182,9 +156,8 @@ package roleassigneeprovider {
 
 }
 
-Group ..> RoleAssigneeProvider : "Created By"
 Group <.. RoleAssigneeProvider : "Creates"
-User  <.. RoleAssigneeProvider : "Creates"
+AuthenticatedUser  <.. RoleAssigneeProvider : "Creates/Updates"
 
 package somewhere_else_in_dataverse {
   class AccessRequest< DB > {
