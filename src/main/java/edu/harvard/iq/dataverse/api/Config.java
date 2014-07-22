@@ -2,15 +2,19 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.SolrField;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 @Path("config")
 public class Config extends AbstractApiBean {
+
+    private static final Logger logger = Logger.getLogger(Config.class.getCanonicalName());
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -23,7 +27,17 @@ public class Config extends AbstractApiBean {
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
             String nameSearchable = datasetField.getSolrField().getNameSearchable();
-            String type = datasetField.getSolrField().getSolrType().getType();
+            SolrField.SolrType solrType = datasetField.getSolrField().getSolrType();
+            String type = solrType.getType();
+            if (solrType.equals(SolrField.SolrType.EMAIL)) {
+                /**
+                 * @todo should we also remove all "email" field types (e.g.
+                 * distributorContact) from schema.xml? We are explicitly not
+                 * indexing them for
+                 * https://github.com/IQSS/dataverse/issues/747
+                 */
+                logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
+            }
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
             sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
