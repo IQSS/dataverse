@@ -1,4 +1,4 @@
-# Pluggable Authentication and 
+# Pluggable Authentication
 
 ## System goals
 
