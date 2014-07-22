@@ -85,13 +85,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 //                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
                         }
 
-                        if (dublinCore.get("date") != null) {
-                            /**
-                             * @todo have DatasetFieldValueValidator tell the
-                             * user which dates are valid.
-                             */
-                        }
-
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
 
