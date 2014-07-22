@@ -34,7 +34,15 @@ public class Config extends AbstractApiBean {
                  * @todo should we also remove all "email" field types (e.g.
                  * distributorContact) from schema.xml? We are explicitly not
                  * indexing them for
-                 * https://github.com/IQSS/dataverse/issues/747
+                 * https://github.com/IQSS/dataverse/issues/759
+                 *
+                 * "The list of potential collaborators should be searchable"
+                 * according to https://github.com/IQSS/dataverse/issues/747 but
+                 * it's not clear yet if this means a Solr or database search.
+                 * For now we'll keep schema.xml as it is to avoid people having
+                 * to update it. If anything, we can remove the email field type
+                 * when we do a big schema.xml update for
+                 * https://github.com/IQSS/dataverse/issues/754
                  */
                 logger.info("email type detected (" + nameSearchable + ") See also https://github.com/IQSS/dataverse/issues/759");
             }
