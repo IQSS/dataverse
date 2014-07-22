@@ -32,7 +32,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        DataverseUser user = swordAuth.auth(authCredentials);
         String warning = urlManager.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
@@ -60,7 +60,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
          */
         List<Dataverse> allDataverses = dataverseService.findAll();
         for (Dataverse dataverse : allDataverses) {
-            if (swordAuth.hasAccessToModifyDataverse(vdcUser, dataverse)) {
+            if (swordAuth.hasAccessToModifyDataverse(user, dataverse)) {
                 String dvAlias = dataverse.getAlias();
                 if (dvAlias != null && !dvAlias.isEmpty()) {
                     SwordCollection swordCollection = new SwordCollection();
@@ -74,7 +74,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
                      * direct parent of the dataverse we're iterating over? Show
                      * the terms of use each generation back to the root?
                      *
-                     * See also https://redmine.hmdc.harvard.edu/issues/3967
+                     * See also https://github.com/IQSS/dataverse/issues/551
                      */
                     // swordCollection.setCollectionPolicy(dvnNetworkName + " deposit terms of use: " + vdcNetworkService.findRootNetwork().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
                     swordWorkspace.addCollection(swordCollection);

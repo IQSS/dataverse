@@ -1,0 +1,9 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+DVN_SERVER=localhost:8181
+if [ -z "$1" ]; then
+  echo "Please provide a URL to GET"
+  exit 1
+fi
+curl --insecure -s -u $USERNAME:$PASSWORD $1 | xmllint -format -
