@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -9,9 +13,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -112,6 +119,47 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                        }
+
+                        List<String> requiredFields = new ArrayList<>();
+                        final List<DatasetFieldType> requiredDatasetFieldTypes = datasetFieldService.findAllRequiredFields();
+                        for (DatasetFieldType requiredField : requiredDatasetFieldTypes) {
+                            requiredFields.add(requiredField.getName());
+                        }
+                        logger.info("required fields: " + requiredFields);
+
+                        DatasetField emailDatasetField = new DatasetField();
+                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName("distributorContact");
+                        List<DatasetFieldValue> values = new ArrayList<>();
+                        values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
+                        emailDatasetField.setDatasetFieldValues(values);
+                        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
+                        List<DatasetField> fieldList = newDatasetVersion.getDatasetFields();
+                        fieldList.add(emailDatasetField);
+
+                        List<String> createdFields = new ArrayList<>();
+                        final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
+                        for (DatasetField createdField : createdDatasetFields) {
+                            createdFields.add(createdField.getDatasetFieldType().getName());
+                            logger.info(createdField.getDatasetFieldType().getName() + ":" + createdField.getValue());
+                        }
+                        logger.info("created fields: " + createdFields);
+
+                        boolean doRequiredFieldCheck = true;
+                        if (doRequiredFieldCheck) {
+                            for (String requiredField : requiredFields) {
+                                if (requiredField.equals("subject")) {
+                                    /**
+                                     * @todo the plan, for now anyway, is to
+                                     * silently choose "Other" for the user
+                                     */
+                                    logger.info("WARNING: required field \"subject\" not populated!");
+                                    break;
+                                }
+                                if (!createdFields.contains(requiredField)) {
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't create/update dataset. " + SwordUtil.DCTERMS + " equivalent of required field not found: " + requiredField);
+                                }
+                            }
                         }
 
                         Dataset createdDataset = null;
