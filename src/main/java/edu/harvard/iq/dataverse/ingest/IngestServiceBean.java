@@ -62,6 +62,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReade
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
+import edu.harvard.iq.dvn.unf.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -537,6 +538,8 @@ public class IngestServiceBean {
             if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
                 Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                 calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
             }
         }
     }
@@ -1196,5 +1199,19 @@ public class IngestServiceBean {
             variable.getSummaryStatistics().add(ss);
         }
 
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, Double[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
     }
 }
