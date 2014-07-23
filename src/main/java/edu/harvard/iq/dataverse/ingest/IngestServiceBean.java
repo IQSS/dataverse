@@ -515,9 +515,11 @@ public class IngestServiceBean {
     */
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
-        //produceDiscreteNumericSummaryStatistics(dataFile); 
+        produceDiscreteNumericSummaryStatistics(dataFile); 
         produceContinuousSummaryStatistics(dataFile);
-        //produceCharacterSummaryStatistics(dataFile);
+        produceCharacterSummaryStatistics(dataFile);
+        
+        recalculateDataFileUNF(dataFile);
     }
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
@@ -543,6 +545,74 @@ public class IngestServiceBean {
             }
         }
     }
+    
+    public void produceDiscreteNumericSummaryStatistics(DataFile dataFile) throws IOException {
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
+                    && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
+                // We are discussing calculating the same summary stats for 
+                // all numerics (the same kind of sumstats that we've been calculating
+                // for numeric continuous type)  -- L.A. Jul. 2014
+                //calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
+            }
+        }
+    }
+    
+    public void produceCharacterSummaryStatistics(DataFile dataFile) throws IOException {
+
+        /* 
+            At this point it's still not clear what kinds of summary stats we
+            want for character types. Though we are pretty confident we don't 
+            want to keep doing what we used to do in the past, i.e. simply 
+            store the total counts for all the unique values; even if it's a 
+            very long vector, and *every* value in it is unique. (As a result 
+            of this, our Categorical Variable Value table is the single 
+            largest in the production database. With no evidence whatsoever, 
+            that this information is at all useful. 
+                -- L.A. Jul. 2014 
+        */
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("character".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
+                //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
+                // TODO: (!)
+                // Make sure the UNFs for date/times are properly calculated!
+                // -- L.A. Jul. 23 2014
+            }
+        }
+    }
+    
+    public void recalculateDataFileUNF(DataFile dataFile) {
+        String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
+        String fileUnfValue = null; 
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            String varunf = dataFile.getDataTable().getDataVariables().get(i).getUnf();
+            unfValues[i] = varunf; 
+        }
+        
+        try {
+            fileUnfValue = UNF5Util.calculateUNF(unfValues);
+        } catch (IOException ex) {
+            logger.warning("Failed to recalculate the UNF for the datafile id="+dataFile.getId());
+        }
+        
+        if (fileUnfValue != null) {
+            dataFile.getDataTable().setUnf(fileUnfValue);
+        }
+    }
+    
     /*
     public boolean asyncIngestAsTabular(DataFile dataFile) {
         boolean ingestSuccessful = true;
@@ -1206,7 +1276,35 @@ public class IngestServiceBean {
         try {
             unf = UNF5Util.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for variable " + varnum);
+            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, Long[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, String[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for (character) variable " + varnum);
         }
         if (unf != null) {
             dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
