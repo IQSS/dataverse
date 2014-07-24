@@ -38,7 +38,10 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @Override
     public boolean returnStackTraceInError() {
-        return true;
+        /**
+         * @todo make this a JVM option
+         */
+        return false;
     }
 
     @Override

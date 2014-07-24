@@ -35,6 +35,10 @@ public class DatasetFieldServiceBean {
         return em.createQuery("select object(o) from DatasetFieldType as o where o.facetable = true and o.title != '' order by o.id").getResultList();
     } 
 
+    public List<DatasetFieldType> findAllRequiredFields() {
+        return em.createQuery("select object(o) from DatasetFieldType as o where o.required = true order by o.id").getResultList();
+    }
+
     public List<DatasetFieldType> findAllOrderedById() {
         return em.createQuery("select object(o) from DatasetFieldType as o order by o.id").getResultList();
     }

@@ -1,10 +1,26 @@
 # Pluggable Authentication and Authorization
+## TODO
 
 ## System goals
 
 > Go from (User, DvObject, Request) to a set of permissions
 
 > For DvObject - who holds what permissions
+
+## Concepts
+<dl>
+    <dt>DvObject</dt>
+    <dd>Short for "Dataverse Object". One of Dataverse, Dataset, or Data File.</dd>
+    <dt>Role</dt>
+    <dd>Assumed by assignees on a given <code>DvObject</code>. A role entitles its assignees to a set of permissions.</dd>
+    <dt>Assignee</dt>
+    <dd>An entity that can be assigned a role on a given <code>DvObject</code>.</dd>
+    <dt>User</dt>
+    <dd>A type of Assignee. An entity that can issue commands. Normally refers to a real person, but can also refer to a group (e.g. <code>GuestUser</code>).</dd>
+    <dt>Group</dt>
+    <dd>A set of Assignees. A group may hold explicit reference to its content (e.g. the <code>ExplicitGroup</code> class). A group may also use logic do determine membership (e.g. an <code>IPGroup</code> will look at the IP address the request is coming from, <code>AuthenticatedUsers</code> will check that the user is not a <code>GuestUser</code> instance, a Shibboleth group will match against Shibb headers in the HTTP request). <br/>
+    A Group is a type of Assignee. This means that groups can contain other groups, which makes them a powerful user management tool.</dd>
+</dl>
 
 ## Notes About the Design
 * Invariant - there's always a user
@@ -60,6 +76,7 @@ See all involved classes
 
 ###User login process
 ![User login](userLogin.png)
+Note that Dataverse 4.0 will ship with an internal identity provider, for which the authentication process will be simpler. However, it will follow the same semantics. 
 
 ###Loading groups
 This diagram shows how groups are loaded. Note how the system handles the `RoleAssigneeProvier`s' different data structures in an a opaque way - as far as the system knows, these are just strings that should be passed to the provider.

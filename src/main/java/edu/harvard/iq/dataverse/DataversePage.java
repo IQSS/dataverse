@@ -60,11 +60,16 @@ public class DataversePage implements java.io.Serializable {
     DataverseFacetServiceBean dataverseFacetService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    FeaturedDataverseServiceBean featuredDataverseService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
     private DualListModel<DatasetFieldType> facets;
+    private DualListModel<Dataverse> featuredDataverses;
+
+    
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
 
     public Dataverse getDataverse() {
@@ -135,6 +140,27 @@ public class DataversePage implements java.io.Serializable {
             facetsSource.remove(dsfType);
         }
         facets = new DualListModel<>(facetsSource, facetsTarget);
+        
+        List<Dataverse> featuredSource = new ArrayList<>();
+        List<Dataverse> featuredTarget = new ArrayList<>();
+        featuredSource.addAll(dataverseService.findAllByOwnerId(dataverse.getId()));
+        List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
+        for(DataverseFeaturedDataverse dfd:featuredList ){
+            Dataverse fd = dfd.getFeaturedDataverse();
+            featuredTarget.add(fd);
+            featuredSource.remove(fd);           
+        }
+        featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
+    }
+    
+    public List<Dataverse> getCarouselFeaturedDataverses(){
+        List <Dataverse> retList = new ArrayList();
+        List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
+        for(DataverseFeaturedDataverse dfd:featuredList ){
+            Dataverse fd = dfd.getFeaturedDataverse();
+            retList.add(fd);         
+        }
+        return retList;
     }
 
     public List getContents() {
@@ -159,7 +185,7 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             cmd = new CreateDataverseCommand(dataverse, session.getUser());
         } else {
-            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
+            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser());
         }
 
         try {
@@ -228,6 +254,14 @@ public class DataversePage implements java.io.Serializable {
 
     public void setFacets(DualListModel<DatasetFieldType> facets) {
         this.facets = facets;
+    }
+    
+    public DualListModel<Dataverse> getFeaturedDataverses() {
+        return featuredDataverses;
+    }
+
+    public void setFeaturedDataverses(DualListModel<Dataverse> featuredDataverses) {
+        this.featuredDataverses = featuredDataverses;
     }
 
     public String releaseDataverse() {
