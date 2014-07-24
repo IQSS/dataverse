@@ -45,6 +45,10 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		if ( created.getCreator() == null ) {
 			created.setCreator(getUser());
 		}
+                
+                if (created.getDataverseType() == null){
+                    created.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
+                }
 		
 		// Save the dataverse
 		Dataverse managedDv = ctxt.dataverses().save(created);
