@@ -12,7 +12,11 @@ chkconfig postgresql on
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
-GLASSFISH_ZIP=`ls /dataverse/downloads/glassfish*zip`
+GLASSFISH_ZIP='/dataverse/downloads/glassfish-4.0.zip'
+if [ ! -f $GLASSFISH_ZIP ]; then
+    echo "Couldn't find $GLASSFISH_ZIP! Please run the script in the \"downloads\" directory followed by \"vagrant destroy\". Then try \"vagrant up\" again." >&2
+    exit 1
+fi
 GLASSFISH_USER_HOME=~glassfish
 GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
 if [ ! -d $GLASSFISH_ROOT ]; then
