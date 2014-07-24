@@ -314,7 +314,8 @@ public class SearchIncludeFragment {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     if (dataverseInCard != null) {
-                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId());
+                        //Omit deaccessioned datasets
+                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId(), true);
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
