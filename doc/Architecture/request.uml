@@ -1,0 +1,28 @@
+@startuml
+
+title Determine the User and Global Groups for an HTTP Request
+autonumber "<font color=blue>"
+
+actor User
+participant JsfPage
+participant UserBean
+participant RoleAssigneeProvider
+participant Group
+
+User --> JsfPage: HTTP GET <page>
+JsfPage --> UserBean: findUserAndGroups
+
+loop for each role assignee provider, until we get a user
+  UserBean --> RoleAssigneeProvider : createUser( HttpRequest )
+  RoleAssigneeProvider --> UserBean : user
+end loop
+
+loop for each global group
+  UserBean --> Group : isMemberOf( user, HttpRequest )
+  Group --> UserBean : true/false
+end loop
+
+UserBean --> JsfPage: ( user, groups )
+
+
+@enduml

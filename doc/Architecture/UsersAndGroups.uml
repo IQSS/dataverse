@@ -1,10 +1,13 @@
 @startuml
 
+'uncomment for higher dpi 
+'skinparam dpi 300
+
 package existingCode {
-  class Role
-  class DvObject
-  class RoleAssignment
-  class Dataverse 
+  class Role< DB >
+  class DvObject< DB >
+  class RoleAssignment< DB >
+  class Dataverse< DB >
 
   note as n1
     A role can be assigned
@@ -15,99 +18,165 @@ package existingCode {
 }
 
 package assignees {
-  class Assignee {
-    + displayString()
+
+  interface RoleAssignee {
+    + identifier:String
+    + displayInfo() : TBD
     + showInLists: Boolean
   }
 
-  class User {
-    + locator:String
+  interface User {
   }
 
-  class LocalUser {
-    + id:Long
-    + name:String
+  class AuthenticatedUser< DB > {
+
+  }
+
+  class IpGroup {
+    range: IpRange[]
+  }
+
+  class RoleAssigneeRecord< DB > {
+    identifier: String
+    displayInfo: TBD
   }
 
   class GuestUser {
     showInLists: False
   }
 
-  note bottom
-   Maintains invariant:
-   we <b>always</b> have a user
-  end note
-
-  class RemoteUser {
-    + id
-    + origin:Data
-  }
-  note bottom
-    May be stored in 
-    the DB, if has some
-    long-lasting effect,
-    such as API Key
-  end note
-
-  class ApiKey {
+  class ApiKey< DB > {
     + key:String
     + title: String
   }
 
-  class Group {
-    + contains( a:Assignee )
+  interface Group< DB > {
+    + name: String
+    + description : String
+    + data: Blob
+    + provider: RoleAssigneeProvider
+    + contains( a:RoleAssignee )
   }
 
-  class ExplicitGroup {
-    + add( a:Assignee )
-    + remove( a:Assignee )
-    + list: Assignee[]
+  class ExplicitGroup< DB > {
+    + add( a:RoleAssignee )
+    + remove( a:RoleAssignee )
+    + list: RoleAssignee[]
   }
 
-  class LogicalGroup {
-    
+  class AuthenticatedUsers
+  class AllUsers
+
+  class ShibGroup {
+    headerMatchers: Map<String, Regex>
   }
 
-  class RegisteredUsers {
-    
-  }
-
-  class GuestUsers {
-    
-  }
-
-  class ExternalGroup {
-    
-  }
-  note bottom
-    Maps a set of
-    external credentials
-    to an internal 
-    Asignee object
-  end note
 }
-Assignee <|-- User
-Assignee <|-- Group
-User <|-- GuestUser
-User <|-- LocalUser
-User <|-- RemoteUser
-Group <|-- ExplicitGroup
-Group <|-- LogicalGroup
-Group <|-- ExternalGroup
-LogicalGroup <|-- RegisteredUsers
-LogicalGroup <|-- GuestUsers
 
-User "1" *- "0..*" ApiKey
+RoleAssignee <|-- User
+RoleAssignee <|-- Group
+User <|-- AuthenticatedUser
+User <|-- GuestUser
+Group <|-- ExplicitGroup
+Group <|-- AuthenticatedUsers
+Group <|-- AllUsers
+Group <|-- ShibGroup
+Group <|-- IpGroup
+
+RoleAssigneeRecord ..> RoleAssignee : "Locates"
+
+AuthenticatedUser "1" *- "0..*" ApiKey
 
 Role -> DvObject: Defined at
 RoleAssignment -up-> "1" DvObject: At
 RoleAssignment -up-> "1" Role: Assigns
-RoleAssignment --> "1" Assignee: To
+RoleAssignment --> "1" RoleAssigneeRecord: To
 
-Group ..> Assignee: <<Contains>>
-ExplicitGroup o--> Assignee
-ExplicitGroup --> Dataverse: Defined At
+ExplicitGroup ..> RoleAssignee: Contains
+ExplicitGroup o--> RoleAssigneeRecord
+ExplicitGroup "0..*" <--* "1" Dataverse
 
 DvObject <|-- Dataverse
+
+package roleassigneeprovider {
+  
+  class RoleAssigneeManager<Singleton> {
+    assigneeProviders: Collection<AssigneeProvider>
+
+    registerProvider( p:AssigneeProvider )
+    getRoleAssignee( idtf:String ) : RoleAssignee
+    getRoleAssignee( req:HttpRequest ) : RoleAssignee
+  }
+
+  interface RoleAssigneeProvider {
+    + info : RoleAssigneeProviderInfo
+    isQueryable(): Boolean
+    acceptsRoleAssigneeIdentifier( idtf:String ): bool
+    getRoleAssignee( idtf:String ) : RoleAssignee
+    getRoleAssignee( req:HttpRequest ) : RoleAssignee
+  }
+
+  interface GroupCreator {
+    + createGroup : Group
+  }
+
+  interface UserLister {
+    + listUsers() : List<User>
+    + findUsers( queryString ) : List<User>
+  }
+
+  class RoleAssigneeProviderInfo {
+    + name
+    + description
+    + icon?
+    + ...
+  }
+
+  class DatabaseAssigneeProvider 
+  class ShibAssigneeProvider
+  class IpAddressAssigneeProvider
+  class LdapAssigneeProvider < future >
+  class OAuthAssigneeProvider < future >
+
+  RoleAssigneeManager *-->  "1..*" RoleAssigneeProvider
+  RoleAssigneeProvider <|.. OAuthAssigneeProvider
+
+  RoleAssigneeProvider <|-- UserLister   
+  RoleAssigneeProvider <|-- GroupCreator 
+
+  UserLister   <|-- DatabaseAssigneeProvider
+  GroupCreator <|-- DatabaseAssigneeProvider
+  UserLister   <|-- LdapAssigneeProvider
+  GroupCreator <|-- LdapAssigneeProvider
+
+  GroupCreator <|-- ShibAssigneeProvider
+  GroupCreator <|-- IpAddressAssigneeProvider
+
+  RoleAssigneeProvider *-> RoleAssigneeProviderInfo
+
+}
+
+Group <.. RoleAssigneeProvider : "Creates"
+AuthenticatedUser  <.. RoleAssigneeProvider : "Creates/Updates"
+
+package somewhere_else_in_dataverse {
+  class AccessRequest< DB > {
+    from: RoleAssigneeRecord
+    dvo: DvObject
+    metadata : TBD
+  }
+
+  interface Command {
+    issuedBy: User
+    effects: DvObject[]
+  }
+
+}
+ 
+AccessRequest ..> RoleAssigneeRecord : "From"
+AccessRequest ..> DvObject : "about"
+
+Command "0..*" ..> "1" User : Issued By
+Command ..> "1..*" DvObject : effects
 
 @enduml

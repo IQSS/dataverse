@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.IndexServiceBean;
 public class IndexableDataset extends IndexableObject {
 
     DatasetState datasetState;
+    boolean filesShouldBeIndexed;
 
     private final DatasetVersion datasetVersion;
 
@@ -14,9 +15,18 @@ public class IndexableDataset extends IndexableObject {
         super.setType(IndexableObject.IndexableTypes.DATASET.getName());
         if (datasetVersion.isWorkingCopy()) {
             this.datasetState = DatasetState.WORKING_COPY;
-        } else {
+            this.filesShouldBeIndexed = true;
+        } else if (datasetVersion.isReleased()) {
             this.datasetState = DatasetState.PUBLISHED;
+            this.filesShouldBeIndexed = true;
+        } else if (datasetVersion.isDeaccessioned()) {
+            this.datasetState = DatasetState.DEACCESSIONED;
+            this.filesShouldBeIndexed = false;
         }
+    }
+
+    public boolean isFilesShouldBeIndexed() {
+        return filesShouldBeIndexed;
     }
 
     public DatasetVersion getDatasetVersion() {
@@ -33,7 +43,7 @@ public class IndexableDataset extends IndexableObject {
 
     public enum DatasetState {
 
-        WORKING_COPY(IndexServiceBean.draftSuffix), PUBLISHED("");
+        WORKING_COPY(IndexServiceBean.draftSuffix), PUBLISHED(""), DEACCESSIONED(IndexServiceBean.deaccessionedSuffix);
 
         private String suffix;
 

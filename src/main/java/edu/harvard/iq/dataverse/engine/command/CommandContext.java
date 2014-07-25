@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
@@ -42,6 +43,8 @@ public interface CommandContext {
 	public PermissionServiceBean permissions();
 	
 	public DataverseFacetServiceBean facets(); 
+        
+        public FeaturedDataverseServiceBean featuredDataverses();
         
         public DataFileServiceBean files(); 
 	

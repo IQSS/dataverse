@@ -166,69 +166,75 @@
 	     <version>1.2.0</version>
 	</dependency> 
 	<!-- fits.jar, not available from network repos, supplied in local_lib -->
-       <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
-        </dependency>
-       <!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
-       <!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
-       <dependency>
-	 <groupId>org.nuiton.thirdparty</groupId>
-	 <artifactId>REngine</artifactId>
-	 <version>0.6-1</version>
-       </dependency>
-       <dependency>
-	 <groupId>org.nuiton.thirdparty</groupId>
-	 <artifactId>Rserve</artifactId>
-	 <version>0.6-1</version>
-       </dependency>
-       <!-- Apache POI - used by ingest to parse MS Excel xslx files -->
-       <dependency>
-	 <groupId>org.apache.poi</groupId>
-	 <artifactId>poi</artifactId>
-	 <version>3.10-FINAL</version>
-       </dependency>
-       <dependency>
-	 <groupId>org.apache.poi</groupId>
-	 <artifactId>poi-ooxml</artifactId>
-	 <version>3.10-FINAL</version>
-       </dependency>
-       <dependency>
-	 <groupId>org.apache.poi</groupId>
-	 <artifactId>poi-examples</artifactId>
-	 <version>3.10-FINAL</version>
-       </dependency>
-       <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
+	<dependency>
+             <groupId>nom.tam.fits</groupId>
+             <artifactId>fits</artifactId>
+	     <version>2012-10-25-generated</version>
+	</dependency>
+	<!-- UNF v5 (buggy), being added for testing ingest against DVN v3  - L.A. -->
+	<dependency>
+	     <groupId>edu.harvard.iq.dvn</groupId>
+	     <artifactId>unf5</artifactId>
+	     <version>5.0</version>
+	</dependency>
+	<!-- Rosuda Rengine and Rserve, packaged by org.nuiton.thirdparty -->
+	<!-- TODO: see if there's another, better maintained maven repository for Rosuda libraries? - L.A. -->
+	<dependency>
+	     <groupId>org.nuiton.thirdparty</groupId>
+	     <artifactId>REngine</artifactId>
+	     <version>0.6-1</version>
+	</dependency>
+	<dependency>
+	     <groupId>org.nuiton.thirdparty</groupId>
+	     <artifactId>Rserve</artifactId>
+	     <version>0.6-1</version>
+	</dependency>
+	<!-- Apache POI - used by ingest to parse MS Excel xslx files -->
+	<dependency>
+	     <groupId>org.apache.poi</groupId>
+	     <artifactId>poi</artifactId>
+	     <version>3.10-FINAL</version>
+	</dependency>
+	<dependency>
+	     <groupId>org.apache.poi</groupId>
+	     <artifactId>poi-ooxml</artifactId>
+	     <version>3.10-FINAL</version>
+	</dependency>
+	<dependency>
+	     <groupId>org.apache.poi</groupId>
+	     <artifactId>poi-examples</artifactId>
+	     <version>3.10-FINAL</version>
+	</dependency>
+	<dependency>
+             <groupId>edu.harvard.hul.ois.jhove</groupId>
+             <artifactId>jhove</artifactId>
+             <version>1.11.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
+             <groupId>edu.harvard.hul.ois.jhove</groupId>
+             <artifactId>jhove-module</artifactId>
+             <version>1.11.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
+             <groupId>edu.harvard.hul.ois.jhove</groupId>
+             <artifactId>jhove-handler</artifactId>
+             <version>1.11.0</version>
         </dependency>
 	<!-- JAI (Java Advanced Imaging) jars: -->
 	<dependency>
-	  <groupId>javax.media</groupId>
-	  <artifactId>jai_imageio</artifactId>
-	  <version>1.1.1</version>
+	     <groupId>javax.media</groupId>
+	     <artifactId>jai_imageio</artifactId>
+	     <version>1.1.1</version>
 	</dependency>
 	<dependency>
-	  <groupId>javax.media</groupId>
-	  <artifactId>jai_core</artifactId>
-	  <version>1.1.3</version>
+	     <groupId>javax.media</groupId>
+	     <artifactId>jai_core</artifactId>
+	     <version>1.1.3</version>
 	</dependency>
 	<dependency>
-	  <groupId>javax.media</groupId>
-	  <artifactId>jai_codec</artifactId>
-	  <version>1.1.3</version>
+	     <groupId>javax.media</groupId>
+	     <artifactId>jai_codec</artifactId>
+	     <version>1.1.3</version>
 	</dependency>
 
     </dependencies>

@@ -36,6 +36,8 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
@@ -60,6 +62,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReade
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
+import edu.harvard.iq.dvn.unf.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -68,6 +71,8 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -102,6 +107,7 @@ import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
 import org.apache.commons.lang.StringUtils;
 import java.util.zip.GZIPInputStream;
+import java.util.UUID; 
 
 /**
  *
@@ -169,19 +175,18 @@ public class IngestServiceBean {
         fmd.setDatasetVersion(version);
         dataset.getFiles().add(datafile);
 
-        datasetService.generateFileSystemName(datafile);
+        //datasetService.generateFileSystemName(datafile)
+        fileService.generateStorageIdentifier(datafile);
 
         // save the file, in the temporary location for now: 
         String tempFilesDirectory = getFilesTempDirectory();
         if (tempFilesDirectory != null) {
-            //try {
-
-                logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
-                Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-            //} catch (IOException ioex) {
-            //    logger.warning("Failed to save the file  " + datafile.getFileSystemName());
-            //    return;
-            //}
+            // "temporary" location is the key here; this is why we are not using 
+            // the DataStore framework for this - the assumption is that 
+            // temp files will always be stored on the local filesystem. 
+            //          -- L.A. Jul. 2014
+            logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
+            Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
         }
 
         // Let's try our own utilities (Jhove, etc.) to determine the file type 
@@ -214,11 +219,21 @@ public class IngestServiceBean {
             // Uncompress the FITS stream, save and treat it as regular FITS:
             InputStream uncompressedIn = null; 
             BufferedOutputStream uncompressedOut = null;
-            String backupFilename = datafile.getFileSystemName();
+            String gzippedFilename = datafile.getFileSystemName();
             try {
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                // Once again, at this point we are dealing with *temp*
+                // files only; these are always stored on the local filesystem, 
+                // so we are using FileInput/Output Streams to read and write
+                // these directly, instead of going through the Data Access 
+                // framework. 
+                //      -- L.A. 
+                // (TODO: (?) - hide this code in a separate method neatly; 
+                // or maybe this could wait until we have to add similar 
+                // treatment for zip files)
                 
-                datasetService.generateFileSystemName(datafile);
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
+                //datasetService.generateFileSystemName(datafile);
+                fileService.generateStorageIdentifier(datafile);
                 uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
                 
                 int bufsize = 8192;
@@ -228,7 +243,7 @@ public class IngestServiceBean {
                 }
 
             } catch (IOException ioex) {
-                datafile.setFileSystemName(backupFilename);
+                datafile.setFileSystemName(gzippedFilename);
                 return datafile;
             } finally {
                 if (uncompressedIn != null) {
@@ -238,6 +253,14 @@ public class IngestServiceBean {
                     try {uncompressedOut.close();} catch (IOException e) {}
                 }
             }
+            // remove the compressed temp file: 
+            try {
+                new File(tempFilesDirectory + "/" +gzippedFilename).delete();
+            } catch (SecurityException ex) {
+                // (this is very non-fatal)
+                logger.warning("Failed to delete temporary file "+tempFilesDirectory + "/" +gzippedFilename);
+            }
+            
             
             // finally, if the file name had the ".gz" extension, remove it, 
             // since we have uncompressed it:
@@ -283,8 +306,17 @@ public class IngestServiceBean {
                     // one filemetadata total. -- L.A. 
                     boolean metadataExtracted = false;
 
+                    /*
+                    // Hmm. Why exactly am I incrementing the filename sequence
+                    // here? I could just save the file in the permanent location
+                    // under the same name as the temp version... 
+                    // Could be a moot point - this filename sequence has to 
+                    // go away anyway... On the inside, it's too PostgresQL-specific;
+                    // and it's too filesystem-specific architecturally. 
+                    // -- L.A. Jul. 11 2014
                     datasetService.generateFileSystemName(dataFile);
-
+                    */
+                    
                     if (ingestableAsTabular(dataFile)) {
                         /*
                          * Note that we don't try to ingest the file right away - 
@@ -314,11 +346,39 @@ public class IngestServiceBean {
                     }
 
                     // Try to save the file in its permanent location: 
+                    Path tempLocationPath = Paths.get(getFilesTempDirectory() + "/" + dataFile.getFileSystemName());
+                    WritableByteChannel writeChannel = null;
+                    FileChannel readChannel = null;
+                    
                     try {
 
-                        logger.info("Will attempt to save the file as: " + dataFile.getFileSystemLocation().toString());
-                        Files.copy(new FileInputStream(new File(tempFileLocation)), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                        DataAccessObject dataAccess = dataFile.getAccessObject();
+                        
+                        dataAccess.openChannel(DataAccessOption.WRITE_ACCESS);
+                                                
+                        writeChannel = dataAccess.getWriteChannel();
+                        readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
+                                                
+                        long bytesPerIteration = 16 * 1024; // 16K bytes
+                        long start = 0;
+                        while ( start < readChannel.size() ) {
+                            readChannel.transferTo(start, bytesPerIteration, writeChannel);
+                            start += bytesPerIteration;
+                        }
+                        /* 
+                            TODO: - ?
+                            May want to provide a simplified alternative clause for when the 
+                            storage method is local filesystem; in that case DataAccess
+                            can return a Path object, and then we can just do something 
+                            like this: 
+                            Files.copy(tempLocationPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
+                            -- L.A. Jul. 20 2014
+                            Files.copy(tempLocationPath, dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
+                        */
 
+                        // MD5:
+                        // TODO: replace the direct filesystem access with a DataAccess 
+                        // call. -- L.A. Jul. 20 2014. 
                         MD5Checksum md5Checksum = new MD5Checksum();
                         try {
                             dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
@@ -328,8 +388,18 @@ public class IngestServiceBean {
 
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
+                    } finally {
+                        if (readChannel != null) {try{readChannel.close();}catch(IOException e){}}
+                        if (writeChannel != null) {try{writeChannel.close();}catch(IOException e){}}
                     }
 
+                    try {
+                        logger.info("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        Files.delete(tempLocationPath);
+                    } catch (IOException ex) {
+                        // (non-fatal)
+                        logger.warning("Failed to delete temp file "+tempLocationPath.toString());
+                    }
                     // Any necessary post-processing: 
                     performPostProcessingTasks(dataFile);
                 }
@@ -360,10 +430,9 @@ public class IngestServiceBean {
         return filesTempDirectory;
     }
     
-    // TODO: consider deprecating this method in favor of the version 
-    // defined below, that takes datasetversion as the argument. 
+    // TODO: consider creating a version of this method that would take 
+    // datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
-    //@Deprecated
     public void startIngestJobs(Dataset dataset, DataverseUser user) {
         int count = 0;
         IngestMessage ingestMessage = null;
@@ -446,9 +515,11 @@ public class IngestServiceBean {
     */
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
-        //produceDiscreteNumericSummaryStatistics(dataFile); 
+        produceDiscreteNumericSummaryStatistics(dataFile); 
         produceContinuousSummaryStatistics(dataFile);
-        //produceCharacterSummaryStatistics(dataFile);
+        produceCharacterSummaryStatistics(dataFile);
+        
+        recalculateDataFileUNF(dataFile);
     }
     
     public void produceContinuousSummaryStatistics(DataFile dataFile) throws IOException {
@@ -469,9 +540,79 @@ public class IngestServiceBean {
             if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
                 Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                 calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
             }
         }
     }
+    
+    public void produceDiscreteNumericSummaryStatistics(DataFile dataFile) throws IOException {
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
+                    && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
+                // We are discussing calculating the same summary stats for 
+                // all numerics (the same kind of sumstats that we've been calculating
+                // for numeric continuous type)  -- L.A. Jul. 2014
+                //calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
+            }
+        }
+    }
+    
+    public void produceCharacterSummaryStatistics(DataFile dataFile) throws IOException {
+
+        /* 
+            At this point it's still not clear what kinds of summary stats we
+            want for character types. Though we are pretty confident we don't 
+            want to keep doing what we used to do in the past, i.e. simply 
+            store the total counts for all the unique values; even if it's a 
+            very long vector, and *every* value in it is unique. (As a result 
+            of this, our Categorical Variable Value table is the single 
+            largest in the production database. With no evidence whatsoever, 
+            that this information is at all useful. 
+                -- L.A. Jul. 2014 
+        */
+        
+        TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            if ("character".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
+                //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
+                // calculate the UNF while we are at it:
+                calculateUNF(dataFile, i, variableVector);
+                // TODO: (!)
+                // Make sure the UNFs for date/times are properly calculated!
+                // -- L.A. Jul. 23 2014
+            }
+        }
+    }
+    
+    public void recalculateDataFileUNF(DataFile dataFile) {
+        String[] unfValues = new String[dataFile.getDataTable().getVarQuantity().intValue()];
+        String fileUnfValue = null; 
+        
+        for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
+            String varunf = dataFile.getDataTable().getDataVariables().get(i).getUnf();
+            unfValues[i] = varunf; 
+        }
+        
+        try {
+            fileUnfValue = UNF5Util.calculateUNF(unfValues);
+        } catch (IOException ex) {
+            logger.warning("Failed to recalculate the UNF for the datafile id="+dataFile.getId());
+        }
+        
+        if (fileUnfValue != null) {
+            dataFile.getDataTable().setUnf(fileUnfValue);
+        }
+    }
+    
     /*
     public boolean asyncIngestAsTabular(DataFile dataFile) {
         boolean ingestSuccessful = true;
@@ -1128,5 +1269,47 @@ public class IngestServiceBean {
             variable.getSummaryStatistics().add(ss);
         }
 
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, Double[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, Long[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
+    }
+    
+    private void calculateUNF(DataFile dataFile, int varnum, String[] dataVector) {
+        String unf = null;
+        try {
+            unf = UNF5Util.calculateUNF(dataVector);
+        } catch (IOException iex) {
+            logger.warning("exception thrown when attempted to calculate UNF signature for (character) variable " + varnum);
+        }
+        if (unf != null) {
+            dataFile.getDataTable().getDataVariables().get(varnum).setUnf(unf);
+        } else {
+            logger.warning("failed to calculate UNF signature for variable " + varnum);
+        }
     }
 }

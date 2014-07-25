@@ -118,6 +118,24 @@
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group">
+
+                                <label class="col-sm-3 control-label" for="dataverseType">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The type that most closely reflects this Dataverse.">
+                                        Dataverse Type <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    </a>
+                                </label>  
+                                <div class="col-sm-8">
+                                    <h:selectOneMenu id="dataverseType" value="#{DataversePage.dataverse.dataverseType}">
+                                        <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
+                                        <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
+                                        <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
+                                        <f:selectItem id="dvJournals" itemLabel="Journals" itemValue="JOURNALS" />
+                                        <f:selectItem id="dvOrgInst" itemLabel="Organizations and Institutions" itemValue="ORGANIZATIONS_INSTITUTIONS" />
+                                        <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
+                                        <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
+                                    </h:selectOneMenu>
+                                </div>
+
                                 <label class="col-sm-3 control-label" for="description">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A summary describing the purpose, nature, or scope of this Dataverse.">
                                         Description
@@ -159,8 +177,8 @@
                             </div>
                         </div>
                     </p:panel>
-                    
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+
+                    <p:panel id="editFacets" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}" widgetVar="editFacets">
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
@@ -168,12 +186,13 @@
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the search result facets to display for this Dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                                         <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
-                                            <p:ajax update="@form" listener="#{DataversePage.editFacets}"/>
+                                            <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
 
                                     <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
-                                                itemLabel="#{facet.displayName}" itemValue="#{facet}" rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
+                                                itemLabel="#{facet.displayName}" itemValue="#{facet}" 
+                                                rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
                                 </div>
                             </div>
                         </div>
@@ -210,6 +229,13 @@
                                                     <h:outputText value="General Information" />
                                                 </p:commandLink>
                                             </li>
+                                            <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source  or !empty DataversePage.featuredDataverses.target}">
+                                                <li>
+                                                    <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">                                                          
+                                                        <h:outputText value="Browsing Options" />
+                                                    </p:commandLink>
+                                                </li>
+                                            </ui:fragment>
                                             <li>
                                                 <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
                                                     <h:outputText value="Roles + Permissions" />
@@ -217,14 +243,15 @@
                                                     <f:param name="objectType" value="USERS" />
                                                 </h:link>
                                             </li>
-                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null) }">
-                                                        <li class="divider"></li>
-                                                        <li>
-                                                            <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
-                                                                <h:outputText value="Delete Dataverse" />
-                                                            </p:commandLink>
-                                                        </li>
-                                           </ui:fragment>
+                                            <ui:fragment rendered="#{DataversePage.isEmptyDataverse() and !(DataversePage.dataverse.owner == null) 
+                                                                     and permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('DeleteDataverseCommand')}">
+                                                <li class="divider"></li>
+                                                <li>
+                                                    <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
+                                                        <h:outputText value="Delete Dataverse" />
+                                                    </p:commandLink>
+                                                </li>
+                                            </ui:fragment>
                                         </ul>
                                     </div>
                                 </div>
@@ -256,11 +283,70 @@
                             </p:confirmDialog>                                                                
                         </div>
                         <ui:fragment rendered="#{empty DataversePage.editMode}">
-                            <div style="margin-bottom:1em;">
+                            <div id="dataverseDesc" style="margin-bottom:1em;">
                                 <h:outputText value="#{DataversePage.dataverse.description}"/>
                             </div>
                         </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Featured Dataverses</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev1" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="typeDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
+                                        <div class="item">
+                                            <img src="#{dv.logo}" style="height:60px;" border="0" alt="Dataverse" rendered="#{!empty dv.logo}"/>
+                                            <a  href="/dataverse.xhtml?id=#{dv.id}">
+                                                <h:outputText value="#{dv.name} Dataverse"/>
+                                            </a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next1" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.dataverse.displayByType}">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Dataverses by Type</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev2" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>Researchers</div>
+                                    <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>Research Projects</div>
+                                    <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>Journals</div>
+                                    <div class="item"><span class="glyphicon glyphicon-home" style="font-size:2.5em;"></span><br/>Organizations &amp; Institutions</div>
+                                    <div class="item"><span class="glyphicon glyphicon-tree-conifer" style="font-size:2.5em;"></span><br/>Teaching &amp; Courses</div>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next2" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                            </div>
+                        </ui:fragment>
                     </ui:fragment>
+
+                    <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
+                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.dataverse.displayByType}" 
+                                                 itemLabel="Display 'Dataverse by Type' Carousel on Front Page"/>
+                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.dataverse.displayFeatured}" 
+                                                 itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                        <div class="form-group">
+                            <label for="exampleInputFile">Featured Dataverses</label>
+                            <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
+                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse" 
+                                        itemLabel="#{featureddataverse.name}" 
+                                        itemValue="#{featureddataverse}" converter="dataverseConverter"
+                                        showSourceFilter="true" showTargetFilter="true" />
+                        </div>
+
+                        <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
+                    </p:dialog>
+
+                    <!-- Dialog Feedback Form -->
 
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
                         <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
@@ -269,7 +355,7 @@
                     </p:confirmDialog>
                     <p:confirmDialog message="This dataverse may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
                     </p:confirmDialog>
-                     <p:confirmDialog message="Are you sure you want to delete your dataverse? This action may not be 'Undone'." header="Delete Dataverse" widgetVar="deleteConfirmation">
+                    <p:confirmDialog message="Are you sure you want to delete your dataverse? This action may not be 'Undone'." header="Delete Dataverse" widgetVar="deleteConfirmation">
                         <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}">
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
@@ -287,7 +373,7 @@
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
-                            
+
                             <h:outputLabel value="Logo Alignment"/>
                             <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
                                 <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
@@ -295,7 +381,7 @@
                                 <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
                             </p:selectOneMenu>
                             <p:message for="logoFormat"/>
-                            
+
                             <h:outputLabel value="Logo Background Color"/>
                             <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
                             <p:message for="logoBackgroundColor"/>
@@ -340,18 +426,53 @@
                         <ui:param name="showAdvancedSearchLink" value="true"/>
                     </ui:include>
                 </ui:fragment>
-                
+
                 <script type="text/javascript">
                     //<![CDATA[
                     $(document).ready(function() {
                         initPopover();
                         characterCounter();
+
+                        var owl1 = $("#typeDataversesList");
+                        var owl2 = $("#featuredDataversesList");
+
+                        owl1.owlCarousel({
+                            items: 4, //10 items above 1000px browser width
+                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
+                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
+                            itemsTablet: [720, 3], //2 items between 600 and 0
+                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+
+                        // Custom Navigation Events
+                        $(".next1").click(function() {
+                            owl1.trigger('owl.next');
+                        });
+                        $(".prev1").click(function() {
+                            owl1.trigger('owl.prev');
+                        });
+
+                        owl2.owlCarousel({
+                            items: 4, //10 items above 1000px browser width
+                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
+                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
+                            itemsTablet: [720, 3], //2 items between 600 and 0
+                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+
+                        // Custom Navigation Events
+                        $(".next2").click(function() {
+                            owl2.trigger('owl.next');
+                        });
+                        $(".prev2").click(function() {
+                            owl2.trigger('owl.prev');
+                        });
                     });
-                    
+
                     function initPopover() {
                         $('#content label.control-label[data-toggle="popover"]').popover();
-                        $('body').on('click', function (e) {
-                            $('label[data-toggle="popover"]').each(function () {
+                        $('body').on('click', function(e) {
+                            $('label[data-toggle="popover"]').each(function() {
                                 //the 'is' for buttons that trigger popups
                                 //the 'has' for icons within a button that triggers a popup
                                 if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
@@ -360,7 +481,7 @@
                             });
                         });
                     }
-                    
+
                     function characterCounter() {
                         $.fn.extend({
                             updateCounter: function(limit, elem) {
@@ -377,7 +498,7 @@
                                 setCount($(this)[0], elem);
                             }
                         });
-                        
+
                         var elem = $("#chars");
                         $("textarea[id$='description']").updateCounter(1000, elem);
                     }

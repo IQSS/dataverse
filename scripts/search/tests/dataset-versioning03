@@ -5,6 +5,7 @@
 # Title: Rings of Trees and Other Observations
 # to
 # Title: Rings of Conifers and Other Observations
+# by running dataset-versioning03-setup
 #
 # expected log information for indexing while in this state:
 #indexFilesResults for dataset_17_draft, filesIndexed: [datafile_18_draft], indexReleasedVersionResult:indexed dataset 17 as dataset_17

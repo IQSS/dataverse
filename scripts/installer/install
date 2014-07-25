@@ -10,19 +10,21 @@ my $verbose;
 my $pg_only;
 my $hostname;
 my $gfdir;
+my $mailserver;
 my $yes;
 my $force;
 my $nogfpasswd;
 my ($rez) = GetOptions(
     #"length=i" => \$length,    # numeric
     #"file=s"   => \$data,      # string
-    "verbose"    => \$verbose,
-    "pg_only"    => \$pg_only,
-    "hostname=s" => \$hostname,
-    "gfdir=s"    => \$gfdir,
-    "y|yes"      => \$yes,
-    "f|force"    => \$force,
-    "nogfpasswd" => \$nogfpasswd,
+    "verbose"      => \$verbose,
+    "pg_only"      => \$pg_only,
+    "hostname=s"   => \$hostname,
+    "gfdir=s"      => \$gfdir,
+    "mailserver=s" => \$mailserver,
+    "y|yes"        => \$yes,
+    "f|force"      => \$force,
+    "nogfpasswd"   => \$nogfpasswd,
 );
 
 my $postgresonly = 0;
@@ -137,6 +139,10 @@ if ($hostname) {
 }
 else {
     $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'} = $hostname_from_cmdline;
+}
+
+if ($mailserver) {
+    $CONFIG_DEFAULTS{'MAIL_SERVER'} = $mailserver;
 }
 
 if ($gfdir) {

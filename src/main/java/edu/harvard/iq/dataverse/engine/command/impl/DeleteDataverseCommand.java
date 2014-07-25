@@ -19,8 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  * @author michael
  */
 @RequiredPermissionsMap({
-	@RequiredPermissions( dataverseName = "doomed", value = Permission.DestructiveEdit ),
-	@RequiredPermissions( dataverseName = "owner", value = Permission.DestructiveEdit )
+	@RequiredPermissions( dataverseName = "doomed", value = Permission.DestructiveEdit )
 })
 public class DeleteDataverseCommand extends AbstractVoidCommand {
 	

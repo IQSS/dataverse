@@ -51,8 +51,9 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             if (!valid) {
                 valid = isValidDate(value.getValue(), "yyyy-MM");
             }
+            String YYYYformat = "yyyy";
             if (!valid ) {
-                valid = isValidDate(value.getValue(), "yyyy");
+                valid = isValidDate(value.getValue(), YYYYformat);
             }
             if (!valid) {
                 // TODO: 
@@ -68,7 +69,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                 
             }
             if (!valid ) {
-                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid date.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " is not a valid date. \""+ YYYYformat + "\" is a supported format.").addConstraintViolation();
                 return false;
             }
         } 

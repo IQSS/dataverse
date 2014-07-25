@@ -199,12 +199,20 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return (Double[])subsetObjectVector(datafile, column, COLUMN_TYPE_DOUBLE);
     }
     
+    public Long[] subsetLongVector(DataFile datafile, int column) throws IOException {
+        return (Long[])subsetObjectVector(datafile, column, COLUMN_TYPE_LONG);
+    }
+    
     public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (String[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_STRING);
     }
     
     public Double[] subsetDoubleVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Double[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_DOUBLE);
+    }
+    
+    public Long[] subsetLongVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (Long[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_LONG);
     }
     
     public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
@@ -230,18 +238,19 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         boolean isString = false; 
         boolean isDouble = false;
+        boolean isLong   = false; 
         
         if (columntype == COLUMN_TYPE_STRING) {
             isString = true; 
+            retVector = new String[casecount];
         } else if (columntype == COLUMN_TYPE_DOUBLE) {
             isDouble = true; 
+            retVector = new Double[casecount];
+        } else if (columntype == COLUMN_TYPE_LONG) {
+            isLong = true; 
+            retVector = new Long[casecount];
         } else {
             throw new IOException("Unsupported column type: "+columntype);
-        }
-        if (isString) {
-            retVector = new String[casecount];
-        } else if (isDouble) {
-            retVector = new Double[casecount];
         }
         
         File rotatedImageFile = getRotatedImage(tabfile, varcount, casecount);
@@ -290,6 +299,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     }
                     
                     if (isString) {
+                        token = token.replaceFirst("^\\\"", "");
+                        token = token.replaceFirst("\\\"$", "");
                         retVector[caseindex] = token;
                     } else if (isDouble) {
                         try {
@@ -298,6 +309,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             retVector[caseindex] = new Double(token);
                         } catch (NumberFormatException ex) {
                             retVector[caseindex] = null; // missing value
+                        }
+                    } else if (isLong) {
+                        try {
+                            retVector[caseindex] = new Long(token);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseindex] = null; // assume missing value
                         }
                     }
                     caseindex++;

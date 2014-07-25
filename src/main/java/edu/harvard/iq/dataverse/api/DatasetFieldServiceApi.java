@@ -32,7 +32,7 @@ public class DatasetFieldServiceApi {
 
     @EJB
     DataverseServiceBean dataverseService;
-    
+
     @EJB
     MetadataBlockServiceBean metadataBlockService;
 
@@ -52,8 +52,9 @@ public class DatasetFieldServiceApi {
                     listOfIsAllowsMultiplesFalse.add(dsf.getName());
                 }
             }
+            final List<DatasetFieldType> requiredFields = datasetFieldService.findAllRequiredFields();
             return "have parents: " + listOfIsHasParentsTrue + "\n\n" + "no parent: " + listOfIsHasParentsFalse + "\n\n"
-                    + "allows multiples: " + listOfIsAllowsMultiplesTrue + "\n\n" + "doesn't allow multiples: " + listOfIsAllowsMultiplesFalse + "\n";
+                    + "allows multiples: " + listOfIsAllowsMultiplesTrue + "\n\n" + "doesn't allow multiples: " + listOfIsAllowsMultiplesFalse + "\n\n" + "required fields: " + requiredFields + "\n";
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -86,6 +87,7 @@ public class DatasetFieldServiceApi {
             String metadataBlock = dsf.getMetadataBlock().getName();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
+            boolean isRequired = dsf.isRequired();
             String parentAllowsMultiplesDisplay = "N/A (no parent)";
             Boolean parentAllowsMultiplesBoolean = false;
             if (hasParent) {
@@ -103,6 +105,7 @@ public class DatasetFieldServiceApi {
                     + "- parentAllowsMultiples: " + parentAllowsMultiplesDisplay + "\n"
                     + "- solrFieldSearchable: " + solrFieldSearchable + "\n"
                     + "- solrFieldFacetable: " + solrFieldFacetable + "\n"
+                    + "- isRequired: " + isRequired + "\n"
                     + "";
         } catch (EJBException | NullPointerException ex) {
             Throwable cause = ex;

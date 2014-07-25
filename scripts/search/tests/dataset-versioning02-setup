@@ -1,0 +1,4 @@
+#!/bin/bash
+curl -s -X POST "http://localhost:8080/api/dvs/1/actions/:publish?key=pete"
+curl -s -X POST "http://localhost:8080/api/dvs/11/actions/:publish?key=pete"
+cat /dev/null | curl -s -i --insecure -X POST -H 'In-Progress: false' --data-binary @- https://pete:pete@localhost:8181/dvn/api/data-deposit/v1/swordv2/edit/study/doi:10.5072/FK2/17

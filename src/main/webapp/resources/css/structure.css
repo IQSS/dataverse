@@ -93,6 +93,9 @@ div.ui-chkbox.metadata-blocks-default span.ui-chkbox-label, div.ui-chkbox.facet-
 table.ui-selectmanycheckbox.metadata-blocks-select label {font-weight:normal; margin-top:1px;}
 table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {background:inherit;}
 
+.owl-carousel {margin-bottom:1em;}
+.owl-carousel .item {text-align: center; padding: 10px; border: 1px solid #e3e3e3; border-radius: 4px; margin: 10px;}
+
 /* -------- SEARCH -------- */
 .panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;padding:0;}
 .panelLayoutBlock.panelSerchForm input.ui-inputfield {margin-right:1em;}
