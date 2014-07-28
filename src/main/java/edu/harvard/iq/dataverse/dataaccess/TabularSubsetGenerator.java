@@ -52,6 +52,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     private static int COLUMN_TYPE_STRING = 1;
     private static int COLUMN_TYPE_LONG   = 2;
     private static int COLUMN_TYPE_DOUBLE = 3; 
+    private static int COLUMN_TYPE_FLOAT = 4; 
     
        
     public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases) {
@@ -203,6 +204,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return (Long[])subsetObjectVector(datafile, column, COLUMN_TYPE_LONG);
     }
     
+    // Float methods are temporary; 
+    // In normal operations we'll be treating all the floating point types as 
+    // doubles. I need to be able to handle floats for some 4.0 vs 3.* ingest
+    // tests. -- L.A. 
+    
+    public Float[] subsetFloatVector(DataFile datafile, int column) throws IOException {
+        return (Float[])subsetObjectVector(datafile, column, COLUMN_TYPE_FLOAT);
+    }
+    
     public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (String[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_STRING);
     }
@@ -213,6 +223,10 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     public Long[] subsetLongVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Long[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_LONG);
+    }
+    
+    public Float[] subsetFloatVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (Float[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_FLOAT);
     }
     
     public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
@@ -239,6 +253,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         boolean isString = false; 
         boolean isDouble = false;
         boolean isLong   = false; 
+        boolean isFloat  = false; 
         
         if (columntype == COLUMN_TYPE_STRING) {
             isString = true; 
@@ -249,6 +264,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         } else if (columntype == COLUMN_TYPE_LONG) {
             isLong = true; 
             retVector = new Long[casecount];
+        } else if (columntype == COLUMN_TYPE_FLOAT){
+            isFloat = true;
+            retVector = new Float[casecount];
         } else {
             throw new IOException("Unsupported column type: "+columntype);
         }
@@ -299,9 +317,15 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     }
                     
                     if (isString) {
-                        token = token.replaceFirst("^\\\"", "");
-                        token = token.replaceFirst("\\\"$", "");
-                        retVector[caseindex] = token;
+                        if ("".equals(token)) {
+                            // An empty string is a string missing value!
+                            // An empty string in quotes is an empty string!
+                            retVector[caseindex] = null;
+                        } else {
+                            token = token.replaceFirst("^\\\"", "");
+                            token = token.replaceFirst("\\\"$", "");
+                            retVector[caseindex] = token;
+                        }
                     } else if (isDouble) {
                         try {
                             // TODO: verify that NaN and +-Inf are 
@@ -313,6 +337,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     } else if (isLong) {
                         try {
                             retVector[caseindex] = new Long(token);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseindex] = null; // assume missing value
+                        }
+                    } else if (isFloat) {
+                        try {
+                            retVector[caseindex] = new Float(token);
                         } catch (NumberFormatException ex) {
                             retVector[caseindex] = null; // assume missing value
                         }
