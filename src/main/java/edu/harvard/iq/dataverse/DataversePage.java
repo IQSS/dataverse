@@ -69,9 +69,7 @@ public class DataversePage implements java.io.Serializable {
     private DualListModel<DatasetFieldType> facets;
     private DualListModel<Dataverse> featuredDataverses;
 
-    
 //    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
-
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -140,25 +138,25 @@ public class DataversePage implements java.io.Serializable {
             facetsSource.remove(dsfType);
         }
         facets = new DualListModel<>(facetsSource, facetsTarget);
-        
+
         List<Dataverse> featuredSource = new ArrayList<>();
         List<Dataverse> featuredTarget = new ArrayList<>();
-        featuredSource.addAll(dataverseService.findAllByOwnerId(dataverse.getId()));
+        featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
-        for(DataverseFeaturedDataverse dfd:featuredList ){
+        for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
             featuredTarget.add(fd);
-            featuredSource.remove(fd);           
+            featuredSource.remove(fd);
         }
         featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
     }
-    
-    public List<Dataverse> getCarouselFeaturedDataverses(){
-        List <Dataverse> retList = new ArrayList();
+
+    public List<Dataverse> getCarouselFeaturedDataverses() {
+        List<Dataverse> retList = new ArrayList();
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
-        for(DataverseFeaturedDataverse dfd:featuredList ){
+        for (DataverseFeaturedDataverse dfd : featuredList) {
             Dataverse fd = dfd.getFeaturedDataverse();
-            retList.add(fd);         
+            retList.add(fd);
         }
         return retList;
     }
@@ -255,7 +253,7 @@ public class DataversePage implements java.io.Serializable {
     public void setFacets(DualListModel<DatasetFieldType> facets) {
         this.facets = facets;
     }
-    
+
     public DualListModel<Dataverse> getFeaturedDataverses() {
         return featuredDataverses;
     }
@@ -301,7 +299,7 @@ public class DataversePage implements java.io.Serializable {
             return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
         }
     }
-    
+
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
         /// for beta, we will just preview the first n fields
         StringBuilder mdbPreview = new StringBuilder();
@@ -323,8 +321,8 @@ public class DataversePage implements java.io.Serializable {
 
         return mdbPreview.toString();
     }
-    
-    public Boolean isEmptyDataverse(){
+
+    public Boolean isEmptyDataverse() {
         return !dataverseService.hasData(dataverse);
     }
 
