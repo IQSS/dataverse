@@ -90,6 +90,18 @@ public class ShapefileHandler{
     /*
         Constructor, start with FileInputStream
     */
+    public ShapefileHandler(FileInputStream zip_file_stream, String output_folder, String rezipped_folder){
+        //processZipfile(zip_file_stream);
+        this.outputFolder = output_folder;
+        this.rezippedFolder = rezipped_folder;
+        examineZipfile(zip_file_stream);
+        //showFileNamesSizes();
+        showFileGroups();
+    }
+
+     /*
+        Constructor, start with FileInputStream
+    */
     public ShapefileHandler(FileInputStream zip_file_stream){
         //processZipfile(zip_file_stream);
         
@@ -97,7 +109,6 @@ public class ShapefileHandler{
         //showFileNamesSizes();
         showFileGroups();
     }
-
     /*
         Create a directory, if one doesn"t exist
     */
@@ -251,7 +262,7 @@ public class ShapefileHandler{
         Make a folder with the extracted files
         Except: separately rezip shapefile sets
     */
-    private boolean rezipShapefileSets(){
+    public boolean rezipShapefileSets(){
         
         msgt("rezipShapefileSets");
         if (!containsShapefile()){

@@ -7,7 +7,8 @@
 package edu.harvard.iq.dataverse.util;
 
 
-import edu.harvard.iq.dataverse.util.ZipMaker;
+//import edu.harvard.iq.dataverse.util.ZipMaker;
+import edu.harvard.iq.dataverse.util.ShapefileHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -92,34 +93,57 @@ public class ShapefileHandlerTest {
 
         // Create four files 
         String file_basename = "income_areas";
-        List<String> filenames = Arrays.asList("shp", "shx", "dbf", "prj");
+        List<String> file_extensions = Arrays.asList("shp", "shx", "dbf", "prj");
         
         Collection<File> fileCollection = new ArrayList<File>();
-        for (String ext_name : filenames) {
+        for (String ext_name : file_extensions) {
            //System.out.println("ext: " + ext_name);
            File shpPart = this.createBlankFile(file_basename + "." +  ext_name);
            fileCollection.add(shpPart);
            System.out.println("File created: " + shpPart.getName());
            
         }
-        
-        
+         
         /* -----------------------------------
            Add the files to a .zip
         ----------------------------------- */
-
         // create a  ZipOutputStream
         String zippedShapefileName = file_basename + ".zip";
-        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(this.tempFolder.newFile(zippedShapefileName)));
+        File zip_file_obj = this.tempFolder.newFile(zippedShapefileName);
+        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj));
         System.out.println("\nCreate zipped shapefile: " + zippedShapefileName);
         // Iterate through File objects and add them to the ZipOutputStream
         for (File file_obj : fileCollection) {
              this.addToZipFile(file_obj.getName(), file_obj, zip_stream);
         }
 
+         /* -----------------------------------
+           Delete single files that were added to .zip
+        ----------------------------------- */
+        for (File file_obj : fileCollection) {
+             file_obj.delete();
+        }
         
+         /* -----------------------------------
+           Check this .zipped shapefile
+        ----------------------------------- */
+        String tmp_output_folder_for_unzipping = this.tempFolder.newFolder("scratch-space").getAbsolutePath();
+        String output_folder_for_new_zip = this.tempFolder.newFolder("newly-zipped").getAbsolutePath();
+        ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zip_file_obj), tmp_output_folder_for_unzipping, output_folder_for_new_zip);
         
-  //  assertEquals(fcontents, "");
+        System.out.println("Contains shapefile?: " + shp_handler.containsShapefile());
+
+        assertEquals(shp_handler.containsShapefile(), true);
+
+        if (!shp_handler.containsShapefile()){
+               System.out.println("--------- FAIL -------------");
+               System.out.println(shp_handler.errorMessage);
+       //        System.out.println("Contains shapefile? " + zpt.containsShapefile());
+           }else{
+           
+        //    shp_handler.rezipShapefileSets();
+        }
+        
   }
     
        private boolean addToZipFile(String fileName, File fileToZip, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
