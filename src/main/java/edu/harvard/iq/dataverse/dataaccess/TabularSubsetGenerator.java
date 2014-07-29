@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.regex.Matcher;
 
 
 import org.apache.commons.lang.*;
@@ -322,8 +323,22 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             // An empty string in quotes is an empty string!
                             retVector[caseindex] = null;
                         } else {
+                            // Strip the outer quotes:
                             token = token.replaceFirst("^\\\"", "");
                             token = token.replaceFirst("\\\"$", "");
+                            // Restore the special characters that 
+                            // are stored in tab files escaped -
+                            // quotes, new lines and tabs:
+                            token = token.replaceAll(Matcher.quoteReplacement("\\\""), "\"");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\t"), "\t");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\n"), "\n");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                            // TODO: 
+                            // Make (some of?) the above optional; for ex., we 
+                            // only need to restore the newlines when calculating UNFs;
+                            // If we are subsetting these vectors in order to 
+                            // create a new tab-delimited file, they will 
+                            // actually break things! -- L.A. Jul. 28 2014
                             retVector[caseindex] = token;
                         }
                     } else if (isDouble) {
