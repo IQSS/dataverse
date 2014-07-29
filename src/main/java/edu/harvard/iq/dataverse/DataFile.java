@@ -259,7 +259,10 @@ public class DataFile extends DvObject {
     }
 
     public Path getFileSystemLocation() {
-        
+        // TEMPORARY HACK!
+        if (this.fileSystemName != null && this.fileSystemName.startsWith("/")) {
+            return Paths.get(this.fileSystemName);
+        }
         
         Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
         if (studyDirectoryPath == null) {

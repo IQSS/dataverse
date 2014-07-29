@@ -438,6 +438,8 @@ public class DTAFileReader extends TabularDataFileReader{
     */ 
     private String[] variableTypes=null;
     
+    private String[] dateVariableFormats=null; 
+    
     // 4.0 private String[] variableTypesFinal= null;
     
     // 4.0 private boolean[] isDateTimeDatumList = null;
@@ -685,6 +687,8 @@ public class DTAFileReader extends TabularDataFileReader{
 
         // setup variableTypeList
         variableTypes = new String[nvar];
+        // and the date/time format list:
+        dateVariableFormats = new String[nvar];
 
         // 2. number of observations: int (4 bytes)
         ByteBuffer nobs = ByteBuffer.wrap(header, NVAR_FIELD_LENGTH,
@@ -1046,8 +1050,6 @@ public class DTAFileReader extends TabularDataFileReader{
         if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_var_format_list=" + length_var_format_list);
 
         byte[] variableFormatList = new byte[length_var_format_list];
-        // 4.0 variableFormats = new String[nvar];
-        // 4.0 isDateTimeDatumList = new boolean[nvar];
 
         int nbytes = stream.read(variableFormatList, 0, length_var_format_list);
 
@@ -1083,15 +1085,16 @@ public class DTAFileReader extends TabularDataFileReader{
              * -- L.A. 4.0
              */
             if (DATE_TIME_FORMAT_TABLE.containsKey(variableFormatKey)) {
-                //formatNameTable.put(variableNameList.get(i), variableFormat);
-                dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
-                //formatCategoryTable.put(variableNameList.get(i), DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
+                // TODO: revisit the whole "formatschemaname" thing; -- L.A. 
+                // Instead of populating this field with the Stata's internal 
+                // format token (??), we should put the actual format of the 
+                // values that we store in the tab file. And the internal 
+                // STATA format we'll keep in this array for now: 
+                dateVariableFormats[i] = variableFormat; 
+                //dataTable.getDataVariables().get(i).setFormatSchemaName(variableFormat);
                 dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                // 4.0 isDateTimeDatumList[i] = true;
                 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "th var: category=" +
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                // 4.0 variableTypesFinal[i] = "String";
-                // 4.0: convert the DVN variable to String/Discrete: 
                 dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
                 dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
             } // 4.0 else {
@@ -1762,8 +1765,13 @@ public class DTAFileReader extends TabularDataFileReader{
          * TODO: review and confirm that, in the 3.* implementation, every
          * entry in dateFormat[nvar][*] is indeed the same - except for the 
          * missing value entries. -- L.A. 4.0
+          (OK, I got rid of the dateFormat; instead I kinda sorta assume
+          that the format is the same for every value in a column, save for 
+          the missing values... like this: 
+          dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
+          BUT, this needs to be reviewed/confirmed etc! 
          */
-        String[][] dateFormat = new String[nvar][nobs];
+        //String[][] dateFormat = new String[nvar][nobs];
 
         for (int i = 0; i < nobs; i++) {
             byte[] dataRowBytes = new byte[bytes_per_row];
@@ -1794,7 +1802,8 @@ public class DTAFileReader extends TabularDataFileReader{
                 }
                 // 4.0 String variableFormat = variableFormats[columnCounter];
                 // 4.0 variableFormat: used for time and date values:
-                String variableFormat = dataTable.getDataVariables().get(columnCounter).getFormatSchemaName();
+                //String variableFormat = dataTable.getDataVariables().get(columnCounter).getFormatSchemaName();
+                String variableFormat = dateVariableFormats[columnCounter];
 
                 switch (varType != null ? varType : 256) {
                     case -5:
@@ -1812,10 +1821,8 @@ public class DTAFileReader extends TabularDataFileReader{
                                         + "=th column byte MV=" + byte_datum);
                             }
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
                         } else {
                             dataRow[columnCounter] = byte_datum;
-                            /* REMOVE dataTable2[columnCounter][i] = byte_datum; */
                         }
 
                         byte_offset++;
@@ -1855,11 +1862,10 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dateFormat[columnCounter][i] = ddt.format;
-                                /* REMOVE dataTable2[columnCounter][i] = dataRow[columnCounter]; */
+                                //dateFormat[columnCounter][i] = ddt.format;
+                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                             } else {
-                                /* REMOVE dataTable2[columnCounter][i] = short_datum; */
                                 dataRow[columnCounter] = short_datum;
                             }
                         }
@@ -1900,11 +1906,10 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dateFormat[columnCounter][i] = ddt.format;
-                                /* REMOVE dataTable2[columnCounter][i] = dataRow[columnCounter]; */
+                                //dateFormat[columnCounter][i] = ddt.format;
+                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                             } else {
-                                /* REMOVE dataTable2[columnCounter][i] = int_datum; */
                                 dataRow[columnCounter] = int_datum;
                             }
 
@@ -1945,11 +1950,17 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dateFormat[columnCounter][i] = ddt.format;
+                                //dateFormat[columnCounter][i] = ddt.format;
+                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                                 /* REMOVE dataTable2[columnCounter][i] = dataRow[columnCounter]; */
                             } else {
                                 /* REMOVE dataTable2[columnCounter][i] = float_datum;*/
                                 dataRow[columnCounter] = float_datum;
+                                // This may be temporary - but for now (as in, while I'm testing 
+                                // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
+                                // floating point value was a single, or double float in the 
+                                // original STATA file: -- L.A. Jul. 2014
+                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName("float");
                             }
 
                         }
@@ -1984,10 +1995,9 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                dateFormat[columnCounter][i] = ddt.format;
-                                /* REMOVE dataTable2[columnCounter][i] = dataRow[columnCounter]; */
+                                //dateFormat[columnCounter][i] = ddt.format;
+                                dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                             } else {
-                                /* REMOVE dataTable2[columnCounter][i] = double_datum; */
                                 dataRow[columnCounter] = doubleNumberFormatter.format(double_datum);
                             }
 
@@ -2016,7 +2026,6 @@ public class DTAFileReader extends TabularDataFileReader{
                              * -- L.A. 4.0
                              */
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
                         } else {
                             String escapedString = string_datum.replaceAll("\"", Matcher.quoteReplacement("\\\""));
                             /*
@@ -2063,13 +2072,13 @@ public class DTAFileReader extends TabularDataFileReader{
 
         pwout.close();
 
-        if (dbgLog.isLoggable(Level.FINER)) {
+        //if (dbgLog.isLoggable(Level.FINER)) {
             /* REMOVE 
              dbgLog.finer("\ndataTable2(variable-wise):\n");
              dbgLog.finer(Arrays.deepToString(dataTable2)); */
-            dbgLog.finer("\ndateFormat(variable-wise):\n");
-            dbgLog.finer(Arrays.deepToString(dateFormat));
-        }
+            //dbgLog.finer("\ndateFormat(variable-wise):\n");
+            //dbgLog.finer(Arrays.deepToString(dateFormat));
+        //}
         if (dbgLog.isLoggable(Level.FINE)) {
             dbgLog.fine("variableTypes:\n" + Arrays.deepToString(variableTypes));
             // dbgLog.fine("variableTypesFinal:\n" + Arrays.deepToString(variableTypesFinal));
