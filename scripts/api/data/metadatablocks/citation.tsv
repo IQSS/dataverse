@@ -25,7 +25,7 @@
 	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	21	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		text	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	producerName	Name	Producer name		text	24	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
+	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	24	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
 	producerAffiliation	Affilitation	The organization with which the producer is affiliated.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	26	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	27	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
@@ -37,14 +37,15 @@
 	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	33	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
 	grantNumberAgency	Grant Agency	Grant Number Agency		text	34	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
 	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		text	35	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	distributorName	Name	Distributor name		text	36	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
+	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	36	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
 	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	37	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	38	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
 	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	39	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	40	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	41	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	42	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	43	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		textbox	41	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	42	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	43	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	44	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	displayOrder											
 	subject	Arts and Humanities	0											
 	subject	Astronomy and Astrophysics	1											
@@ -146,12 +147,12 @@
 	language	Galician	49											
 	language	Georgian	50											
 	language	German	51											
-	language	Greek(modern)	52											
+	language	Greek (modern)	52											
 	language	Guaraní	53											
 	language	Gujarati	54											
 	language	Haitian, Haitian Creole	55											
 	language	Hausa	56											
-	language	Hebrew(modern)	57											
+	language	Hebrew (modern)	57											
 	language	Herero	58											
 	language	Hindi	59											
 	language	Hiri Motu	60											
@@ -256,7 +257,7 @@
 	language	Turkmen	159											
 	language	Tagalog	160											
 	language	Tswana	161											
-	language	Tonga(Tonga Islands)	162											
+	language	Tonga (Tonga Islands)	162											
 	language	Turkish	163											
 	language	Tsonga	164											
 	language	Tatar	165											
