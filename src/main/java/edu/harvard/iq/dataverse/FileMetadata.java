@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotBlank;
 public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "Please specify a file name.")
+    @NotBlank(message = "{specifyFileNameMsg}")
     private String label = "";
     @Column(columnDefinition = "TEXT")
     private String description = "";

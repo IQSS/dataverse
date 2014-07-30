@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.NoResultException;
 import org.hibernate.validator.constraints.NotBlank;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -33,11 +34,12 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     DataverseUserServiceBean dataverseUserService;
     
-
-    @NotBlank(message = "Please enter a username.")    
+    ResourceBundle rBundle=ResourceBundle.getBundle("LoginBundle");
+    
+    @NotBlank(message = "{enterUsernameMsg}")    
     private String userName;
 
-    @NotBlank(message = "Please enter a password.")    
+    @NotBlank(message = "{enterPasswdMsg}")    
     private String password;
     
     public void init() {
@@ -87,7 +89,7 @@ public class LoginPage implements java.io.Serializable {
     public String login() {
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Login failed", " - Please check your username and password and try again."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,rBundle.getString("loginFailedSummary"), rBundle.getString("checkUsernameOrPasswdDetail")));
             return null;
         } else {
             session.setUser(user);

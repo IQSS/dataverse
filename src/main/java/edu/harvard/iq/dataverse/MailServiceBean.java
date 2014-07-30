@@ -17,6 +17,8 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
 
 /**
  *
@@ -53,6 +55,8 @@ public class MailServiceBean implements java.io.Serializable {
 
     @Resource(name = "mail/notifyMailSession")
     private Session session;
+    
+    ResourceBundle rBundle=ResourceBundle.getBundle("MailServiceBundle");
 
     public void sendDoNotReplyMail(String to, String subject, String messageText) {
         try {
@@ -62,7 +66,7 @@ public class MailServiceBean implements java.io.Serializable {
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
             msg.setSubject(subject);
-            msg.setText(messageText + "\n\nPlease do not reply to this email.\nThank you,\nThe Dataverse Network Project");
+            msg.setText(messageText + rBundle.getString("donotReplyTip"));
             Transport.send(msg);
         } catch (AddressException ae) {
             ae.printStackTrace(System.out);
@@ -103,9 +107,8 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     public void sendCreateDataverseNotification(String dataverseCreatorEmail, String dataverseName, String dataverseOwner) {
-        String subject = "Dataverse: Your dataverse has been created";
-        String messageText = "Hello, \nYour new dataverse named '" + dataverseName + "' was"
-                + " created in the " + dataverseOwner + " Dataverse. Remember to release your dataverse.";
+        String subject = rBundle.getString("mailSubject");
+        String messageText = MessageFormat.format(rBundle.getString("mailMsgText"), "'"+dataverseName+"'",dataverseOwner);                
         sendDoNotReplyMail(dataverseCreatorEmail, subject, messageText);
     }
 }

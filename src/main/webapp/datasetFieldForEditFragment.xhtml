@@ -37,7 +37,7 @@
 
     <!-- This button / script is for replication data for the title field and is client side only -->                         
     <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE' }">
-        <input type="button" id="replicationDataButton" class="btn btn-default" value="Add &#34;Replication Data for&#34; to Title" onclick="replicationFor();
+        <input type="button" id="replicationDataButton" class="btn btn-default" value="#{datasetBundle.addReplicationButton}" onclick="replicationFor();
                 return false;"/>
 
         <script type="text/javascript">

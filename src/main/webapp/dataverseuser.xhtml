@@ -9,9 +9,9 @@
     </h:head>
 
     <h:body>
-        <ui:composition template="/dataverse_template.xhtml">
+        <ui:composition template="/dataverse_template.xhtml">          
             <f:loadBundle basename="DataverseUserBundle" var="dataverseUserBundle"/>                       
-            <ui:param name="pageTitle" value="#{dataverseUserBundle.pageTitleText}"/>
+            <ui:param name="pageTitle" value="#{dataverseUserBundle.userPageTitle}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
@@ -114,12 +114,12 @@
                                 <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
                                     <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                         <h:graphicImage value="/resources/images/icon_dataverse.png" alt="Dataverse" style="height:18px;margin-right:6px;" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
                                         <h:outputText value="#{dataverseUserBundle.wasCreatedInText}" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
                                         <h:outputText value="#{dataverseUserBundle.toPublishText}" />
                                     </ui:fragment>
@@ -129,8 +129,8 @@
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
                                         <h:outputText value="#{dataverseUserBundle.wasAddedToText}" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
                                         <h:outputText value="#{dataverseUserBundle.toPublishText}" />
                                     </ui:fragment>

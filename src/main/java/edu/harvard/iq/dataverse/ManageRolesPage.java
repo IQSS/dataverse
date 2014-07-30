@@ -27,6 +27,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
 
 /**
  * 
@@ -35,7 +37,9 @@ import javax.persistence.PersistenceContext;
 @ViewScoped
 @Named
 public class ManageRolesPage implements java.io.Serializable {
-    
+        
+        ResourceBundle rBundle=ResourceBundle.getBundle("ManageRolesBundle");
+
 	private static final Logger logger = Logger.getLogger(ManageRolesPage.class.getName());
 	
     @Inject DataverseSession session;     
@@ -81,8 +85,8 @@ public class ManageRolesPage implements java.io.Serializable {
 			// enter view mode
 			setRole( rolesService.find(viewRoleId) );
 			if ( getRole() == null ) {
-				JH.addMessage(FacesMessage.SEVERITY_WARN, "Can't find role with id '" + viewRoleId + "'",
-								"The role might have existed once, but was deleted");
+				JH.addMessage(FacesMessage.SEVERITY_WARN, MessageFormat.format(rBundle.getString("cannotFindRoleSummary"), "'"+ viewRoleId + "'"),
+								rBundle.getString("roleMayExistedDetail"));
 			} 
 		} else {
             setRole( new DataverseRole() );
@@ -148,9 +152,9 @@ public class ManageRolesPage implements java.io.Serializable {
 		try {
 			engineService.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
 			engineService.submit( new UpdateDataversePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
-			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
+			JH.addMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("dataverseDataUpdatedMsg"));
 		} catch (CommandException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, MessageFormat.format(rBundle.getString("updateFailedMsg"), ex.getMessage()));
 		}
 	}
 	
@@ -162,9 +166,9 @@ public class ManageRolesPage implements java.io.Serializable {
 		}
         try {
             setRole( engineService.submit( new CreateRoleCommand(role, session.getUser(), getDataverse())) );
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+            JH.addMessage(FacesMessage.SEVERITY_INFO, MessageFormat.format(rBundle.getString("roleNameSave"), "'"+role.getName()+"'"));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage() );
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("cannotSaveRoleSummary"), ex.getMessage() );
             Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
         }
 	}
@@ -222,9 +226,9 @@ public class ManageRolesPage implements java.io.Serializable {
 		
         try {
 			engineService.submit( new AssignRoleCommand(u, r, getDataverse(), session.getUser()));
-			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + u.getFirstName() + " " + u.getLastName() + " on " + getDataverse().getName() );
+			JH.addMessage(FacesMessage.SEVERITY_INFO, MessageFormat.format("roleNameAssigntoDataverseSummary", r.getName(),u.getFirstName(),u.getLastName(),getDataverse().getName()));
 		} catch (CommandException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage() );
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, MessageFormat.format("cannotAssignRoleSummary", ex.getMessage()));
 		}
 	}
 	
@@ -245,13 +249,13 @@ public class ManageRolesPage implements java.io.Serializable {
 	public void revokeRole( Long roleAssignmentId ) {
 		try {
 			engineService.submit( new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
-			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
+			JH.addMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("revokedSuccessfullySummary"));
 		} catch (PermissionException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment - you're missing permission", ex.getRequiredPermissions().toString());
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("cannotRevokedSummary"), ex.getRequiredPermissions().toString());
 			logger.log( Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex );
 			
 		} catch (CommandException ex) {
-			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment: " + ex.getMessage());
+			JH.addMessage(FacesMessage.SEVERITY_ERROR, MessageFormat.format(rBundle.getString("cannotRevokeMsg"), ex.getMessage()));
 			logger.log( Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex );
 		}
 	}

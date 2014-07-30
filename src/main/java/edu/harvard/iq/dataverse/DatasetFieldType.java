@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.persistence.*;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -20,7 +21,7 @@ import javax.persistence.*;
 })
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
-
+       
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -56,7 +57,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     @Transient
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
-    
+      
     public DatasetFieldType() {}
 
     public DatasetFieldType(String name, String fieldType, boolean allowMultiples) {
@@ -88,7 +89,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return title;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(String title) {        
         this.title = title;
     }
 
@@ -332,9 +333,12 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     public String getDisplayName() {
+        ResourceBundle rBundle = ResourceBundle.getBundle("Test");        
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-        return parentDatasetFieldType.getTitle() + " " + title;
-        } else {
+            title=rBundle.getString(title.replace(" ", "")); 
+            String pdftTitle=parentDatasetFieldType.getTitle();
+            return rBundle.getString(pdftTitle.replace(" ", "")) + " " + title;
+        } else {             
             return title;
         }
     }
