@@ -116,16 +116,14 @@
                                         <p:message for="affiliation"/>
                                     </p:panelGrid>
                                 </div>
-                            </div>
-                            <div class="col-xs-6 form-group">
-
-                                <label class="col-sm-3 control-label" for="dataverseType">
+                                
+                                <label class="col-sm-3 control-label" for="dataverseCategory">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The type that most closely reflects this Dataverse.">
-                                        Dataverse Type <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                        Category <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
                                     </a>
                                 </label>  
-                                <div class="col-sm-8">
-                                    <h:selectOneMenu id="dataverseType" value="#{DataversePage.dataverse.dataverseType}">
+                                <div class="col-sm-6">
+                                    <h:selectOneMenu id="dataverseCategory" styleClass="form-control" style="margin:4px 10px;" value="#{DataversePage.dataverse.dataverseType}">
                                         <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
                                         <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
                                         <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
@@ -135,15 +133,16 @@
                                         <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
                                     </h:selectOneMenu>
                                 </div>
-
+                            </div>
+                            <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="description">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A summary describing the purpose, nature, or scope of this Dataverse.">
                                         Description
                                     </a>
                                 </label>
-                                <div class="col-sm-8">
+                                <div class="col-sm-9">
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
-                                                     rows="5" cols="50"
+                                                     rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
                                     <div><span id="chars"/> characters remaining</div>
@@ -282,23 +281,32 @@
                             <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataverse contacts. Look for this feature in Dataverse 4.0!" header="Email Dataverse Contact" widgetVar="contact_confirmation">                                           
                             </p:confirmDialog>                                                                
                         </div>
+                        <!--<ui:fragment rendered="">
+                            empty DataversePage.editMode or (SearchIncludeFragment.filterQueries.size() != 0 or SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString
+                            Not: edit, search, browse
+                        </ui:fragment>-->
                         <ui:fragment rendered="#{empty DataversePage.editMode}">
                             <div id="dataverseDesc" style="margin-bottom:1em;">
                                 <h:outputText value="#{DataversePage.dataverse.description}"/>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
-                            <div style="overflow: hidden;">
+                            <div id="featuredDataversesBlock" style="overflow: hidden;">
                                 <div class="clearfix"><strong>Featured Dataverses</strong></div>
                                 <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
                                     <a class="btn prev1" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
                                 </div>
-                                <div id="typeDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
                                     <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
-                                        <div class="item">
-                                            <img src="#{dv.logo}" style="height:60px;" border="0" alt="Dataverse" rendered="#{!empty dv.logo}"/>
-                                            <a  href="/dataverse.xhtml?id=#{dv.id}">
-                                                <h:outputText value="#{dv.name} Dataverse"/>
+                                        <div class="item" style="min-height:80px;">
+                                            <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'SQUARE'}">
+                                                <img src="/logos/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'RECTANGLE'}">
+                                                <img src="/logos/#{dv.logo}" style="max-width:240px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                            </ui:fragment>
+                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse">
+                                               <h:outputText value="#{dv.name} Dataverse"/>
                                             </a>
                                         </div>
                                     </ui:repeat>
@@ -309,12 +317,12 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DataversePage.dataverse.displayByType}">
-                            <div style="overflow: hidden;">
-                                <div class="clearfix"><strong>Dataverses by Type</strong></div>
+                            <div id="categoryDataversesBlock" style="overflow: hidden;">
+                                <div class="clearfix"><strong>Dataverses by Category</strong></div>
                                 <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
                                     <a class="btn prev2" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
                                 </div>
-                                <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                <div id="categoryDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
                                     <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>Researchers</div>
                                     <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>Research Projects</div>
                                     <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>Journals</div>
@@ -432,42 +440,57 @@
                     $(document).ready(function() {
                         initPopover();
                         characterCounter();
-
-                        var owl1 = $("#typeDataversesList");
-                        var owl2 = $("#featuredDataversesList");
-
-                        owl1.owlCarousel({
-                            items: 4, //10 items above 1000px browser width
-                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
-                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
-                            itemsTablet: [720, 3], //2 items between 600 and 0
-                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
-                        });
-
-                        // Custom Navigation Events
-                        $(".next1").click(function() {
-                            owl1.trigger('owl.next');
-                        });
-                        $(".prev1").click(function() {
-                            owl1.trigger('owl.prev');
-                        });
-
-                        owl2.owlCarousel({
-                            items: 4, //10 items above 1000px browser width
-                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
-                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
-                            itemsTablet: [720, 3], //2 items between 600 and 0
-                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
-                        });
-
-                        // Custom Navigation Events
-                        $(".next2").click(function() {
-                            owl2.trigger('owl.next');
-                        });
-                        $(".prev2").click(function() {
-                            owl2.trigger('owl.prev');
-                        });
+                        initCarousel(); 
                     });
+                    
+                    function initCarousel() {
+                        var owl1 = $("#featuredDataversesList");
+                        var owl2 = $("#categoryDataversesList");
+                        
+                        owl1.owlCarousel({
+                            pagination: false,
+                            navigation: false,
+                            // navigationText: ["<span class=\"glyphicon glyphicon-chevron-left\" style=\"color:#999999;font-size:2em;\"></span>","<span class=\"glyphicon glyphicon-chevron-right\" style=\"color:#999999;font-size:2em;\"></span>"],
+                            items: 4, //10 items above 1000px browser width
+                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
+                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
+                            itemsTablet: [720, 2], //2 items between 600 and 0
+                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+                        if (owl1.find('div.owl-item').length > 4) {
+                            // Custom Navigation Events
+                            $(".next1").click(function() {
+                                owl1.trigger('owl.next');
+                            });
+                            $(".prev1").click(function() {
+                                owl1.trigger('owl.prev');
+                            });
+                        } else {
+                            $("#featuredDataversesBlock .customNavigation a.btn").hide();
+                        }
+                        
+                        owl2.owlCarousel({
+                            pagination: false,
+                            navigation: false,
+                            // navigationText: ["<span class=\"glyphicon glyphicon-chevron-left\" style=\"color:#999999;font-size:2em;\"></span>","<span class=\"glyphicon glyphicon-chevron-right\" style=\"color:#999999;font-size:2em;\"></span>"],
+                            items: 4, //10 items above 1000px browser width
+                            itemsDesktop: [1140, 4], //5 items between 1000px and 901px
+                            itemsDesktopSmall: [940, 3], // betweem 900px and 601px
+                            itemsTablet: [720, 2], //2 items between 600 and 0
+                            itemsMobile: false // itemsMobile disabled - inherit from itemsTablet option
+                        });
+                        if (owl2.find('div.owl-item').length > 4) {
+                            // Custom Navigation Events
+                            $(".next2").click(function() {
+                                owl2.trigger('owl.next');
+                            });
+                            $(".prev2").click(function() {
+                                owl2.trigger('owl.prev');
+                            });
+                        } else {
+                            $("#categoryDataversesBlock .customNavigation a.btn").hide();
+                        }
+                    }
 
                     function initPopover() {
                         $('#content label.control-label[data-toggle="popover"]').popover();
