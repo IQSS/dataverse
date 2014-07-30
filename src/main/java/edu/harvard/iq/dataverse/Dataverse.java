@@ -19,10 +19,13 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -34,7 +37,9 @@ import org.hibernate.validator.constraints.NotBlank;
 })
 @Entity
 public class Dataverse extends DvObjectContainer {
-       
+    public enum DataverseType {
+        RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
+    };
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "{enterNameMsg}")
@@ -53,7 +58,20 @@ public class Dataverse extends DvObjectContainer {
     @NotBlank(message = "{enterEmailMsg}")
     @Email(message = "{enterEmailMsg}")
     private String contactEmail;
+    
+    @NotNull(message = "Please select a type for your dataverse.")
+    @Enumerated(EnumType.STRING)
+    private DataverseType dataverseType;
 
+    public DataverseType getDataverseType() {
+        return dataverseType;
+    }
+
+    public void setDataverseType(DataverseType dataverseType) {
+        this.dataverseType = dataverseType;
+    }
+    
+    
     private String affiliation;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
@@ -70,6 +88,8 @@ public class Dataverse extends DvObjectContainer {
     private boolean permissionRoot;
     private boolean metadataBlockRoot;
     private boolean facetRoot;
+    private boolean displayByType;
+    private boolean displayFeatured;
 
     @OneToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList();
@@ -106,7 +126,7 @@ public class Dataverse extends DvObjectContainer {
             return getOwner().getMetadataBlocks();
         }
     }
-
+    
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
     }
@@ -194,7 +214,23 @@ public class Dataverse extends DvObjectContainer {
     public void setFacetRoot(boolean facetRoot) {
         this.facetRoot = facetRoot;
     }
+    
+    public boolean isDisplayByType() {
+        return displayByType;
+    }
 
+    public void setDisplayByType(boolean displayByType) {
+        this.displayByType = displayByType;
+    }
+
+    public boolean isDisplayFeatured() {
+        return displayFeatured;
+    }
+
+    public void setDisplayFeatured(boolean displayFeatured) {
+        this.displayFeatured = displayFeatured;
+    }
+    
     public ImageFormat getLogoFormat() {
         return logoFormat;
     }

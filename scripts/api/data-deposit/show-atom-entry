@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 USERNAME=pete
 PASSWORD=pete
 DVN_SERVER=localhost:8181
@@ -8,5 +8,5 @@ else
   GLOBAL_ID=$1
   #GLOBAL_ID=doi:10.5072/FK2/5555
 fi
-curl --insecure -s https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID \
+curl --insecure -s -u $USERNAME:$PASSWORD https://$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID \
 | xmllint -format -

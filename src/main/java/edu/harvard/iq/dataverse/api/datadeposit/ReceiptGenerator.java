@@ -18,7 +18,7 @@ public class ReceiptGenerator {
         DepositReceipt depositReceipt = new DepositReceipt();
         /**
          * @todo is dataset.getGlobalId() being populated properly?
-         * https://redmine.hmdc.harvard.edu/issues/3988 ?
+         * https://github.com/IQSS/dataverse/issues/569 ?
          */
         String globalId = dataset.getGlobalId();
         /**
@@ -39,7 +39,7 @@ public class ReceiptGenerator {
         depositReceipt.addDublinCore("bibliographicCitation", dataset.getLatestVersion().getCitation());
         /**
          * @todo is dataset.getPersistentURL() still returning the database id?
-         * https://redmine.hmdc.harvard.edu/issues/3988 ?
+         * https://github.com/IQSS/dataverse/issues/569 ?
          */
         depositReceipt.setSplashUri(dataset.getPersistentURL());
         return depositReceipt;

@@ -11,6 +11,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 /**
  * A role of a user in a Dataverse. A User may have many roles in a given Dataverse.
@@ -35,12 +36,15 @@ public class RoleAssignment implements java.io.Serializable {
 	private Long id;
 	
 	@ManyToOne( cascade = CascadeType.MERGE )
+    @NotNull
 	private DataverseUser user;
 		
 	@ManyToOne( cascade = CascadeType.MERGE )
+    @NotNull
 	private DataverseRole role;
 	
 	@ManyToOne( cascade = CascadeType.MERGE ) 
+    @NotNull
 	private DvObject definitionPoint;
 	
 	public RoleAssignment() {}

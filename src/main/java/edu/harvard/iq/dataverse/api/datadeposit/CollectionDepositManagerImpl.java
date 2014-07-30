@@ -2,31 +2,31 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
+import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import org.apache.commons.io.FileUtils;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.Deposit;
@@ -84,106 +84,107 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         // require title *and* exercise the SWORD jar a bit
                         Map<String, List<String>> dublinCore = deposit.getSwordEntry().getDublinCore();
                         if (dublinCore.get("title") == null || dublinCore.get("title").get(0) == null || dublinCore.get("title").get(0).isEmpty()) {
+                            /**
+                             * @todo make sure business rules such as required
+                             * fields are enforced deeper in the system:
+                             * https://github.com/IQSS/dataverse/issues/605
+                             */
 //                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
                         }
 
-                        if (dublinCore.get("date") != null) {
-                            String date = dublinCore.get("date").get(0);
-                            if (date != null) {
-                                /**
-                                 * @todo re-enable this. use
-                                 * datasetFieldValidator.isValid?
-                                 */
-//                                boolean isValid = DateUtil.validateDate(date);
-//                                if (!isValid) {
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid date: '" + date + "'.  Valid formats are YYYY-MM-DD, YYYY-MM, or YYYY.");
-//                                }
-                            }
-                        }
-
-                        /**
-                         * @todo think about the implications of no longer using
-                         * importStudy(), such as the comment below... do we
-                         * really need to write the XML to disk?
-                         */
-                        // instead of writing a tmp file, maybe importStudy() could accept an InputStream?
-                        String tmpDirectory = config.getTempDirectory();
-                        if (tmpDirectory == null) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine temp directory");
-                        }
-                        String uploadDirPath = tmpDirectory + File.separator + "import" + File.separator + dvThatWillOwnDataset.getId();
-                        File uploadDir = new File(uploadDirPath);
-                        if (!uploadDir.exists()) {
-                            if (!uploadDir.mkdirs()) {
-                                logger.info("couldn't create directory: " + uploadDir.getAbsolutePath());
-                                throw new SwordServerException("Couldn't create upload directory.");
-                            }
-                        }
-                        String tmpFilePath = uploadDirPath + File.separator + "newStudyViaSwordv2.xml";
-                        File tmpFile = new File(tmpFilePath);
-                        try {
-                            FileUtils.writeStringToFile(tmpFile, deposit.getSwordEntry().getEntry().toString());
-                        } catch (IOException ex) {
-                            logger.info("couldn't write temporary file: " + tmpFile.getAbsolutePath());
-                            throw new SwordServerException("Couldn't write temporary file");
-                        } finally {
-                            uploadDir.delete();
-                        }
-
-                        /**
-                         * @todo properly create a dataset and datasetVersion
-                         */
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
+
                         /**
-                         * @todo don't hard code these! copied from DatasetPage.
+                         * @todo check in on DatasetPage to see when it stops
+                         * hard coding protocol and authority. For now, re-use
+                         * the exact strings it uses. The ticket to get away
+                         * from these hard-coded protocol and authority values:
+                         * https://github.com/IQSS/dataverse/issues/757
                          */
-                        String fixMeDontHardCodeProtocol = "doi";
-                        String fixMeDontHardCodeAuthority = "10.5072/FK2";
-                        dataset.setProtocol(fixMeDontHardCodeProtocol);
-                        dataset.setAuthority(fixMeDontHardCodeAuthority);
+                        dataset.setProtocol(DatasetPage.fixMeDontHardCodeProtocol);
+                        dataset.setAuthority(DatasetPage.fixMeDontHardCodeAuthority);
+
                         /**
                          * @todo why is generateIdentifierSequence off by one?
-                         * I'm getting doi:10.5072/FK2/43 when I expect
-                         * doi:10.5072/FK2/43 dataset.getPersistentURL() seems
-                         * to return the expected value.
+                         * (10 vs. 9):
+                         * https://github.com/IQSS/dataverse/issues/758
                          */
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.fixMeDontHardCodeProtocol, DatasetPage.fixMeDontHardCodeAuthority));
 
-                        DatasetVersion newDatasetVersion = dataset.getVersions().get(0);
-                        /**
-                         * @todo should this really be hard coded? And is
-                         * "dcterms" descriptive enough?
-                         */
-                        String foreignFormat = "dcterms";
+                        DatasetVersion newDatasetVersion = dataset.getEditVersion();
+
+                        String foreignFormat = SwordUtil.DCTERMS;
                         try {
                             foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
 
+                        List<String> requiredFields = new ArrayList<>();
+                        final List<DatasetFieldType> requiredDatasetFieldTypes = datasetFieldService.findAllRequiredFields();
+                        for (DatasetFieldType requiredField : requiredDatasetFieldTypes) {
+                            requiredFields.add(requiredField.getName());
+                        }
+                        logger.info("required fields: " + requiredFields);
+
+                        DatasetField emailDatasetField = new DatasetField();
+                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName("distributorContact");
+                        List<DatasetFieldValue> values = new ArrayList<>();
+                        values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
+                        emailDatasetField.setDatasetFieldValues(values);
+                        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
+                        List<DatasetField> fieldList = newDatasetVersion.getDatasetFields();
+                        fieldList.add(emailDatasetField);
+
+                        List<String> createdFields = new ArrayList<>();
+                        final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
+                        for (DatasetField createdField : createdDatasetFields) {
+                            createdFields.add(createdField.getDatasetFieldType().getName());
+                            logger.info(createdField.getDatasetFieldType().getName() + ":" + createdField.getValue());
+                        }
+                        logger.info("created fields: " + createdFields);
+
+                        boolean doRequiredFieldCheck = true;
+                        if (doRequiredFieldCheck) {
+                            for (String requiredField : requiredFields) {
+                                if (requiredField.equals("subject")) {
+                                    /**
+                                     * @todo the plan, for now anyway, is to
+                                     * silently choose "Other" for the user
+                                     */
+                                    logger.info("WARNING: required field \"subject\" not populated!");
+                                    break;
+                                }
+                                if (!createdFields.contains(requiredField)) {
+                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't create/update dataset. " + SwordUtil.DCTERMS + " equivalent of required field not found: " + requiredField);
+                                }
+                            }
+                        }
+
                         Dataset createdDataset = null;
                         try {
                             createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, dataverseUser));
-                        } catch (Exception ex) {
-//                            StringWriter stringWriter = new StringWriter();
-//                            ex.printStackTrace(new PrintWriter(stringWriter));
-//                            String stackTrace = stringWriter.toString();
-                            /**
-                             * @todo in DVN 3.x we printed the whole stack trace
-                             * here. Is that really necessary?
-                             */
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't import study: " + stackTrace);
-
+                        } catch (EJBException | CommandException ex) {
                             Throwable cause = ex;
                             StringBuilder sb = new StringBuilder();
                             sb.append(ex.getLocalizedMessage());
                             while (cause.getCause() != null) {
                                 cause = cause.getCause();
+                                /**
+                                 * @todo move this ConstraintViolationException
+                                 * check to CreateDatasetCommand. Can be
+                                 * triggered if you don't call
+                                 * dataset.setIdentifier() or if you feed it
+                                 * date format we don't like. Once this is done
+                                 * we should be able to drop EJBException from
+                                 * the catch above and only catch
+                                 * CommandException
+                                 */
                                 if (cause instanceof ConstraintViolationException) {
                                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
+                                        sb.append(" Invalid value: '").append(violation.getInvalidValue()).append("' for ")
                                                 .append(violation.getPropertyPath()).append(" at ")
                                                 .append(violation.getLeafBean()).append(" - ")
                                                 .append(violation.getMessage());
@@ -192,14 +193,15 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             }
                             logger.info(sb.toString());
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't create dataset: " + sb.toString());
-                        } finally {
-                            tmpFile.delete();
-                            uploadDir.delete();
                         }
-                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
-                        String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
-                        DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
-                        return depositReceipt;
+                        if (createdDataset != null) {
+                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                            String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
+                            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
+                            return depositReceipt;
+                        } else {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem creating dataset. Null returned.");
+                        }
                     } else if (deposit.isBinaryOnly()) {
                         // get here with this:
                         // curl --insecure -s --data-binary "@example.zip" -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" https://sword:sword@localhost:8181/dvn/api/data-deposit/v1/swordv2/collection/dataverse/sword/

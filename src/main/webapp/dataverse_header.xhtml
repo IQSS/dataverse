@@ -64,6 +64,9 @@
                             </li>
                         </ul>
                     </li>
+                    <li>
+                            <p:commandLink value="Feedback" onclick="feedbackForm.show()"/>
+                    </li>
                     <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
                             <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
@@ -184,7 +187,7 @@
                             </ui:fragment>
 
                             <ui:fragment rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
-                                <a id="breadcrumbLnkTree#{status.index}" title="#{headerBundle.browse_Title} #{dv.name} #{headerBundle.dataverseText}" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
+                                <a id="taverse" styleClass="#{dataverse.id == dv.id ? 'breadcrumbActive' : ''}" role="button">
                                     <span class="glyphicon glyphicon-chevron-down"></span>
                                 </a>
                             </ui:fragment>
@@ -217,4 +220,47 @@
             <iqbs:messages id="messages" collapsible="true" />
         </div>
     </ui:fragment>
+    
+    <!-- Dialog Feedback Form -->
+    <p:dialog header="Send feedback to the Dataverse development team!" widgetVar="feedbackForm" modal="true">
+        <h:form class="form-horizontal">
+            <div class="form-group">
+                <label for="messageTo" class="col-sm-2 control-label">To</label>
+                <div class="col-sm-10">
+                    <p id="messageTo" class="form-control-static">Dataverse Support</p>
+                </div>
+            </div>
+            <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
+                <div class="form-group">
+                    <label for="userEmailStatic" class="col-sm-2 control-label">From</label>
+                    <div class="col-sm-10">
+                        <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
+                    </div>
+                </div>
+            </ui:fragment>
+            <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
+                <div class="form-group">
+                    <label for="userEmail" class="col-sm-2 control-label">From</label>
+                    <div class="col-sm-10">
+                        <h:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
+                    </div>
+                </div>
+            </ui:fragment>
+            <div class="form-group">
+                <label for="messageSubject" class="col-sm-2 control-label">Subject</label>
+                <div class="col-sm-10">
+                    <p id="messageSubject" class="form-control-static">Dataverse 4.0 Beta Feedback</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="userMessage" class="col-sm-2 control-label">Message</label>
+                <div class="col-sm-10">
+                    <h:inputTextarea id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
+                </div>
+            </div>
+            
+            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="Send Message"/>
+            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">Cancel</button>
+        </h:form>
+    </p:dialog>
 </div>

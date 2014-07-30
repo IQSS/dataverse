@@ -186,9 +186,6 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getVersionDate(){
-        if (lastUpdateTime == null){
-            return new SimpleDateFormat("MMMM d, yyyy").format(releaseTime);
-        }
         return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
     }
 
@@ -212,7 +209,10 @@ public class DatasetVersion implements Serializable {
     }
     
     public String getVersionContributors(){
-        String retString = ""; //= this.getDataset().getCreator().getDisplayName();
+        String retString = ""; 
+        if (this.getDatasetVersionDataverseUsers() == null){
+            return retString;
+        }
         for (DatasetVersionDatasetUser contributor: this.getDatasetVersionDataverseUsers()){
              if (retString.isEmpty()){
                  retString = contributor.getDataverseUser().getDisplayName();
@@ -231,17 +231,44 @@ public class DatasetVersion implements Serializable {
         return versionNote;
     }
     
-    public DatasetVersionDifference getDefaultVersionDifference(){
-        int count = 0;
+    public DatasetVersionDifference getDefaultVersionDifference() {
+        // if version is deaccessioned ignore it for differences purposes
+        int index = 0;
         int size = this.getDataset().getVersions().size();
-        for (DatasetVersion dsv: this.getDataset().getVersions()){
-            if (this.equals(dsv)){
-                if ((count + 1) < size){
-                    DatasetVersionDifference dvd = new DatasetVersionDifference(this, this.getDataset().getVersions().get(count+1));                   
-                    return dvd;
+        if (this.isDeaccessioned()) {
+            return null;
+        }
+        for (DatasetVersion dsv : this.getDataset().getVersions()) {
+            if (this.equals(dsv)) {
+                if ((index + 1) <= (size - 1)) {
+                    for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
+                        if (!dvTest.isDeaccessioned()) {
+                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
+                            return dvd;
+                        }
+                    }
                 }
             }
-            count++;
+            index++;
+        }
+        return null;
+    }
+    
+    public VersionState getPriorVersionState(){
+                int index = 0;
+        int size = this.getDataset().getVersions().size();
+        if (this.isDeaccessioned()) {
+            return null;
+        }
+        for (DatasetVersion dsv : this.getDataset().getVersions()) {
+            if (this.equals(dsv)) {
+                if ((index + 1) <= (size - 1)) {
+                    for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
+                        return dvTest.getVersionState();
+                    }
+                }
+            }
+            index++;
         }
         return null;
     }
@@ -308,9 +335,13 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isMinorUpdate() {
-        /*
-         For now we will say that if there are the same number of files then it can be a minor release
-         */
+        if(this.dataset.getLatestVersion().isWorkingCopy()){
+            if (this.dataset.getVersions().size() > 1 && this.dataset.getVersions().get(1) != null){
+                if (this.dataset.getVersions().get(1).isDeaccessioned()){
+                     return false;
+                }
+            }
+        }
         if (this.getDataset().getReleasedVersion() != null) {
             return this.getFileMetadatas().size() == this.getDataset().getReleasedVersion().getFileMetadatas().size();
         }
@@ -481,7 +512,7 @@ public class DatasetVersion implements Serializable {
                 str += ", ";
             }
             str += " " + rootDataverseName + " Dataverse";
-        }
+        }        
         if (this.isDraft()){
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
@@ -494,6 +525,13 @@ public class DatasetVersion implements Serializable {
             }
             str += " V" + this.getVersionNumber();
 
+        }
+        if (this.isDeaccessioned()){
+            if (!StringUtil.isEmpty(str)) {
+                str += ", ";
+            }
+            str += " DEACCESSIONED VERSION ";
+            
         }
         /*UNF is not calculated yet
          if (!StringUtil.isEmpty(getUNF())) {

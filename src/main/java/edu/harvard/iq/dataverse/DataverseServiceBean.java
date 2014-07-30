@@ -60,6 +60,39 @@ public class DataverseServiceBean {
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }
+    
+    public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
+        List<Dataverse> retVal = new ArrayList();
+        boolean keepGoing = false;
+        List<Dataverse> previousLevel = findByOwnerId(ownerId);
+
+        if (!previousLevel.isEmpty()) {
+            keepGoing = true;
+            for (Dataverse dvf : previousLevel) {
+                if (dvf.isReleased()) {
+                    retVal.add(dvf);
+                }
+            }
+        }
+
+        while (keepGoing) {
+            List<Dataverse> thisLevel = new ArrayList();
+            for (Dataverse dv : previousLevel) {
+                List<Dataverse> children = findByOwnerId(dv.getId());
+                for (Dataverse dvl : children) {
+                    if (dvl.isReleased()) {
+                        thisLevel.add(dvl);
+                        retVal.add(dvl);
+                    }
+                }
+            }
+            if (thisLevel.isEmpty()) {
+                keepGoing = false;
+            }
+            previousLevel = thisLevel;
+        }
+        return retVal;
+    }
 
     public Dataverse findByAlias(String anAlias) {
         try {

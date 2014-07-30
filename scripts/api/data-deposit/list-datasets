@@ -8,5 +8,5 @@ if [ -z "$1" ]; then
 else
   DATAVERSE_ALIAS=$1
 fi
-curl --insecure -s https://$USERNAME:$PASSWORD@$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/collection/dataverse/$DATAVERSE_ALIAS \
+curl --insecure -s -u $USERNAME:$PASSWORD https://$DVN_SERVER/dvn/api/data-deposit/v1/swordv2/collection/dataverse/$DATAVERSE_ALIAS \
 | xmllint -format -

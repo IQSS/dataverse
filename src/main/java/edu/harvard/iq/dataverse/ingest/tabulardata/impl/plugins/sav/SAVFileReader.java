@@ -574,7 +574,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
 
     void decodeRecordType1(BufferedInputStream stream) throws IOException {
-        dbgLog.fine("***** decodeRecordType1(): start *****");
+        dbgLog.info("***** decodeRecordType1(): start *****");
 
         if (stream ==null){
             throw new IllegalArgumentException("stream == null!");
@@ -608,7 +608,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             String productInfo = new String(Arrays.copyOfRange(recordType1, offset_start,
                 offset_end),"US-ASCII");
                 
-            dbgLog.fine("productInfo:\n"+productInfo+"\n");
+            dbgLog.info("productInfo:\n"+productInfo+"\n");
             
             // try to parse out the SPSS version that created this data
             // file: 
@@ -620,7 +620,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             Matcher matcher = versionTagPattern.matcher(productInfo);
             if ( matcher.find() ) {
                 spssVersionNumberTag = matcher.group(1); 
-                dbgLog.fine("SPSS Version Number: "+spssVersionNumberTag); 
+                dbgLog.info("SPSS Version Number: "+spssVersionNumberTag); 
                 dataTable.setOriginalFormatVersion(spssVersionNumberTag);
             }
             
@@ -660,7 +660,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             int int2test = byteOderTest.getInt();
             
             if (int2test == 2 || int2test == 3){
-                dbgLog.fine("integer == "+int2test+": the byte-oder of the writer is the same "+
+                dbgLog.info("integer == "+int2test+": the byte-oder of the writer is the same "+
                 "as the counterpart of Java: Big Endian");
             } else {
                 // Because Java's byte-order is always big endian, 
@@ -672,8 +672,8 @@ public class SAVFileReader  extends TabularDataFileReader{
 		int2test = bb_fileLayout_code.getInt();
 
                 if (int2test == 2 || int2test == 3){
-                    dbgLog.fine("The sav file was saved on a little endian machine");
-                    dbgLog.fine("Reveral of the bytes is necessary to decode "+
+                    dbgLog.info("The sav file was saved on a little endian machine");
+                    dbgLog.info("Reveral of the bytes is necessary to decode "+
                             "multi-byte, non-string blocks");
                             
                     isLittleEndian = true;
@@ -683,7 +683,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                 }
             }
 
-            dbgLog.fine("Endian of this platform:"+ByteOrder.nativeOrder().toString());
+            dbgLog.info("Endian of this platform:"+ByteOrder.nativeOrder().toString());
 
             // 1.3 4-byte Number_Of_OBS_Units_Per_Case 
             // (= how many RT2 records => how many varilables)
@@ -701,7 +701,7 @@ public class SAVFileReader  extends TabularDataFileReader{
             
             OBSUnitsPerCase = bb_OBS_units_per_case.getInt();
             
-            dbgLog.fine("RT1: OBSUnitsPerCase="+OBSUnitsPerCase);
+            dbgLog.info("RT1: OBSUnitsPerCase="+OBSUnitsPerCase);
 
             // 1.4 4-byte Compression_Switch
             
@@ -719,9 +719,9 @@ public class SAVFileReader  extends TabularDataFileReader{
             if ( compression_switch == 0){
                 // data section is not compressed
                 isDataSectionCompressed = false;
-                dbgLog.fine("data section is not compressed");
+                dbgLog.info("data section is not compressed");
             } else {
-                dbgLog.fine("data section is compressed:"+compression_switch);
+                dbgLog.info("data section is compressed:"+compression_switch);
             }
             
             // 1.5 4-byte Case-Weight Variable Index
@@ -758,14 +758,14 @@ public class SAVFileReader  extends TabularDataFileReader{
                 bb_Number_Of_Cases.order(ByteOrder.LITTLE_ENDIAN);
             }
             
-            Long numberOfCases = bb_Number_Of_Cases.getLong();
+            int numberOfCases = bb_Number_Of_Cases.getInt();
             
             if ( numberOfCases < 0){
                 // -1 if numberOfCases is unknown
                 throw new RuntimeException("number of cases is not recorded in the header");
             } else {
                 dbgLog.fine("RT1: number of cases is recorded= "+numberOfCases);
-                dataTable.setCaseQuantity(numberOfCases);
+                dataTable.setCaseQuantity(new Long(numberOfCases));
                 ///caseQnty = numberOfCases;
                 ///smd.getFileInformation().put("caseQnty", numberOfCases);
             }

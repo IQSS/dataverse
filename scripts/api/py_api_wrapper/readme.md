@@ -1,3 +1,6 @@
+## note: not yet updated to work with new permissions
+----
+
 # Python API Wrapper Guide
 
 (6/5/2014 - work in progress)

@@ -31,6 +31,12 @@ public class UserNotificationServiceBean {
         return query.getResultList();
     }
     
+    public List<UserNotification> findByDvObject(Long dvObjId) {
+        Query query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:dvObjId order by o.sendDate desc");
+        query.setParameter("dvObjId", dvObjId);
+        return query.getResultList();
+    }
+    
     public List<UserNotification> findUnreadByUser(Long userId) {
         Query query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId and o.readNotification = 'false' order by o.sendDate desc");
         query.setParameter("userId", userId);

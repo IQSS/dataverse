@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import org.swordapp.server.SwordConfiguration;
 
@@ -8,8 +10,25 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
-    String getBaseUrlPath() {
+    String getBaseUrlPathCurrent() {
+        // see also url-pattern in web.xml
+        return getBaseUrlPathV1dot1();
+    }
+
+    List<String> getBaseUrlPathsValid() {
+        return Arrays.asList(getBaseUrlPathV1(), getBaseUrlPathV1dot1());
+    }
+
+    List<String> getBaseUrlPathsDeprecated() {
+        return Arrays.asList(getBaseUrlPathV1());
+    }
+
+    String getBaseUrlPathV1() {
         return "/dvn/api/data-deposit/v1/swordv2";
+    }
+
+    String getBaseUrlPathV1dot1() {
+        return "/dvn/api/data-deposit/v1.1/swordv2";
     }
 
     @Override
@@ -19,7 +38,10 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
     @Override
     public boolean returnStackTraceInError() {
-        return true;
+        /**
+         * @todo make this a JVM option
+         */
+        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -15,8 +16,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
-import java.io.File;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -53,7 +55,7 @@ public class ContainerManagerImpl implements ContainerManager {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
     @EJB
-    DDIExportServiceBean ddiService;
+    ForeignMetadataImportServiceBean foreignMetadataImportService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -112,90 +114,50 @@ public class ContainerManagerImpl implements ContainerManager {
             if ("dataverse".equals(targetType)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Metadata replace of dataverse is not supported.");
             } else if ("study".equals(targetType)) {
-                logger.fine("replacing metadata for study");
+                logger.fine("replacing metadata for dataset");
                 logger.fine("deposit XML received by replaceMetadata():\n" + deposit.getSwordEntry());
 
                 String globalId = urlManager.getTargetIdentifier();
+                Dataset dataset = datasetService.findByGlobalId(globalId);
+                if (dataset != null) {
+                    SwordUtil.datasetLockCheck(dataset);
+                    Dataverse dvThatOwnsDataset = dataset.getOwner();
+                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsDataset)) {
+                        DatasetVersion datasetVersion = dataset.getEditVersion();
+                        // erase all metadata before creating populating dataset version
+                        List<DatasetField> emptyDatasetFields = new ArrayList<>();
+                        datasetVersion.setDatasetFields(emptyDatasetFields);
 
-//                EditStudyService editStudyService;
-                Context ctx;
-                try {
-                    ctx = new InitialContext();
-//                    editStudyService = (EditStudyService) ctx.lookup("java:comp/env/editStudy");
-                } catch (NamingException ex) {
-                    logger.info("problem looking up editStudyService");
-                    throw new SwordServerException("problem looking up editStudyService");
-                }
-//                StudyServiceLocal studyService;
-                try {
-                    ctx = new InitialContext();
-//                    studyService = (StudyServiceLocal) ctx.lookup("java:comp/env/studyService");
-                } catch (NamingException ex) {
-                    logger.info("problem looking up studyService");
-                    throw new SwordServerException("problem looking up studyService");
-                }
-//                Study studyToLookup;
-                Dataset studyToLookup = null;
-                try {
-                    /**
-                     * @todo: why doesn't
-                     * editStudyService.setStudyVersionByGlobalId(globalId)
-                     * work?
-                     */
-//                    studyToLookup = studyService.getStudyByGlobalId(globalId);
-                } catch (EJBException ex) {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
-                }
-                if (studyToLookup != null) {
-                    SwordUtil.datasetLockCheck(studyToLookup);
-//                    editStudyService.setStudyVersion(studyToLookup.getId());
-//                    Study studyToEdit = editStudyService.getStudyVersion().getStudy();
-                    Dataset studyToEdit = null;
-                    Dataverse dvThatOwnsStudy = studyToEdit.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                        Map<String, List<String>> dublinCore = deposit.getSwordEntry().getDublinCore();
-                        if (dublinCore.get("title") == null || dublinCore.get("title").get(0) == null || dublinCore.get("title").get(0).isEmpty()) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
-                        }
-                        if (dublinCore.get("date") != null) {
-                            String date = dublinCore.get("date").get(0);
-                            if (date != null) {
-//                                boolean isValid = DateUtil.validateDate(date);
-//                                if (!isValid) {
-//                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid date: '" + date + "'.  Valid formats are YYYY-MM-DD, YYYY-MM, or YYYY.");
-//                                }
-                            }
-                        }
-                        String tmpDirectory = swordConfiguration.getTempDirectory();
-                        if (tmpDirectory == null) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine temp directory");
-                        }
-                        String uploadDirPath = tmpDirectory + File.separator + "import" + File.separator + studyToEdit.getId();
-                        Long dcmiTermsHarvetsFormatId = new Long(4);
-//                        HarvestFormatType dcmiTermsHarvestFormatType = em.find(HarvestFormatType.class, dcmiTermsHarvetsFormatId);
-                        String xmlAtomEntry = deposit.getSwordEntry().getEntry().toString();
-//                        File ddiFile = studyService.transformToDDI(xmlAtomEntry, dcmiTermsHarvestFormatType.getStylesheetFileName(), uploadDirPath);
-                        // erase all metadata before running ddiService.mapDDI() because
-                        // for multivalued fields (such as author) that function appends
-                        // values rather than replacing them
                         /**
-                         * @todo how best to replace metadata on a dataset in
-                         * 4.0?
+                         * @todo ensure this ticket has been closed. Enforcement
+                         * of required fields such as "title" will be handled by
+                         * it:
+                         *
+                         * Feature #4036: Validation: Create infrastucture so
+                         * APIs can call a method to validate required fields
+                         * without the field objects needing to being created.
+                         * https://redmine.hmdc.harvard.edu/issues/4036
+                         *
+                         * If users forget to put a title in the Atom entry XML,
+                         * we'll just pass the validation exception to them.
                          */
-//                        studyToEdit.getLatestVersion().setMetadata(new Metadata());
-//                        ddiService.mapDDI(ddiFile, studyToEdit.getLatestVersion(), true);
+                        String foreignFormat = SwordUtil.DCTERMS;
                         try {
-//                            editStudyService.save(dvThatOwnsStudy.getId(), vdcUser.getId());
-                        } catch (EJBException ex) {
-                            // OptimisticLockException
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to replace cataloging information for study " + studyToEdit.getGlobalId() + " (may be locked). Please try again later.");
+                            foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
+                        } catch (Exception ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
+                        }
+                        try {
+                            engineSvc.submit(new UpdateDatasetCommand(dataset, vdcUser));
+                        } catch (CommandException ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
                         }
                         ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                         String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-                        DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, studyToEdit);
+                        DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
                         return depositReceipt;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
