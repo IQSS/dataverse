@@ -56,41 +56,28 @@ public class DataverseServiceBean {
         query.setParameter("ownerId", ownerId);
         return query.getResultList();
     }
+    
+    public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
+        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name");
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
+    }
 
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
-        List<Dataverse> retVal = new ArrayList();
-        boolean keepGoing = false;
-        List<Dataverse> previousLevel = findByOwnerId(ownerId);
-
+        List<Dataverse> retVal = new ArrayList();       
+        List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
+        
+        retVal.addAll(previousLevel);
+        /*
         if (!previousLevel.isEmpty()) {
-            keepGoing = true;
-            for (Dataverse dvf : previousLevel) {
-                if (dvf.isReleased()) {
-                    retVal.add(dvf);
-                }
-            }
-        }
-
-        while (keepGoing) {
-            List<Dataverse> thisLevel = new ArrayList();
             for (Dataverse dv : previousLevel) {
-                List<Dataverse> children = findByOwnerId(dv.getId());
-                for (Dataverse dvl : children) {
-                    if (dvl.isReleased()) {
-                        thisLevel.add(dvl);
-                        retVal.add(dvl);
-                    }
-                }
+                retVal.addAll(findPublishedByOwnerId(dv.getId()));
             }
-            if (thisLevel.isEmpty()) {
-                keepGoing = false;
-            }
-            previousLevel = thisLevel;
-        }
+        }*/
         return retVal;
     }
 
