@@ -91,7 +91,7 @@ public class MailServiceBean implements java.io.Serializable {
             } else {
                 // set fake from address; instead, add it as part of the message
                 msg.setFrom(new InternetAddress("invalid.email.address@mailinator.com"));
-                messageText = "From: " + from + "\n\n" + messageText;
+                messageText = rBundle.getString("fromText") + from + "\n\n" + messageText;
             }
             msg.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(to, false));
