@@ -12,8 +12,8 @@
     </render-kit>
     <application>
         <locale-config>
-            <default-locale>zh_CN</default-locale>
-            <supported-locale>en</supported-locale>            
+            <default-locale>en</default-locale>
+            <supported-locale>zh_CN</supported-locale>            
         </locale-config>        
     </application>
 </faces-config>
