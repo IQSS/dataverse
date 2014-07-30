@@ -63,6 +63,8 @@ public class DataversePage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     FeaturedDataverseServiceBean featuredDataverseService;
+    
+    ResourceBundle rBundle=ResourceBundle.getBundle("DataverseBundle");
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
