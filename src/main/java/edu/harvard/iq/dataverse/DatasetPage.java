@@ -56,9 +56,6 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
-import org.primefaces.model.SelectableDataModel;
-import java.util.ResourceBundle;
-import java.text.MessageFormat;
 
 /**
  *
@@ -334,8 +331,8 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
-            datasetVersionUI = new DatasetVersionUI(workingVersion);            
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("editDatasetMetadataSummary"), rBundle.getString("editDatasetMetadataDetail")));
+            datasetVersionUI = new DatasetVersionUI(workingVersion);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }
 
@@ -349,6 +346,64 @@ public class DatasetPage implements java.io.Serializable {
 
     public String releaseDataset() {
         return releaseDataset(false);
+    }
+
+    public String deaccessionDataset() {
+        return "";
+    }
+
+    public String deaccessionVersions() {
+        Command<DatasetVersion> cmd;
+        try {
+            if (selectedDeaccessionVersions == null) {
+                for (DatasetVersion dv : this.dataset.getVersions()) {
+                    if (dv.isReleased()) {
+                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv));
+                        DatasetVersion datasetv = commandEngine.submit(cmd);
+                    }
+                }
+            } else {
+                for (DatasetVersion dv : selectedDeaccessionVersions) {
+                    cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv));
+                    DatasetVersion datasetv = commandEngine.submit(cmd);
+                }
+            }
+        } catch (CommandException ex) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            logger.severe(ex.getMessage());
+        }
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your selected versions have been deaccessioned.");
+        FacesContext.getCurrentInstance().addMessage(null, message);
+        return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
+    }
+
+    private DatasetVersion setDatasetVersionDeaccessionReasonAndURL(DatasetVersion dvIn) {
+        int deaccessionReasonCode = getDeaccessionReasonRadio();
+        switch (deaccessionReasonCode) {
+            case 1:
+                dvIn.setVersionNote("There is identifiable data in one or more files. " + getDeaccessionReasonText());
+                break;
+            case 2:
+                dvIn.setVersionNote("The research article has been retracted. " + getDeaccessionReasonText());
+                break;
+            case 3:
+                dvIn.setVersionNote("The dataset has been transferred to another repository. " + getDeaccessionReasonText());
+                break;
+            case 4:
+                dvIn.setVersionNote("IRB request. " + getDeaccessionReasonText());
+                break;
+            case 5:
+                dvIn.setVersionNote("Legal issue or Data Usage Agreement. " + getDeaccessionReasonText());
+                break;
+            case 6:
+                dvIn.setVersionNote("Not a valid dataset. " + getDeaccessionReasonText());
+                break;
+            case 7:
+                dvIn.setVersionNote(getDeaccessionReasonText());
+                break;
+        }
+        dvIn.setArchiveNote(getDeaccessionForwardURLFor());
+        return dvIn;
     }
 
     public String deaccessionDataset() {

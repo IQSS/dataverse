@@ -327,7 +327,66 @@
                                 </div>
                             </div>
                         </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.dataverse.displayFeatured and (!empty DataversePage.carouselFeaturedDataverses)}">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Featured Dataverses</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev1" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="typeDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
+                                        <div class="item">
+                                            <img src="#{dv.logo}" style="height:60px;" border="0" alt="Dataverse" rendered="#{!empty dv.logo}"/>
+                                            <a  href="/dataverse.xhtml?id=#{dv.id}">
+                                                <h:outputText value="#{dv.name} Dataverse"/>
+                                            </a>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next1" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.dataverse.displayByType}">
+                            <div style="overflow: hidden;">
+                                <div class="clearfix"><strong>Dataverses by Type</strong></div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn prev2" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                                <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
+                                    <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>Researchers</div>
+                                    <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>Research Projects</div>
+                                    <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>Journals</div>
+                                    <div class="item"><span class="glyphicon glyphicon-home" style="font-size:2.5em;"></span><br/>Organizations &amp; Institutions</div>
+                                    <div class="item"><span class="glyphicon glyphicon-tree-conifer" style="font-size:2.5em;"></span><br/>Teaching &amp; Courses</div>
+                                </div>
+                                <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
+                                    <a class="btn next2" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                </div>
+                            </div>
+                        </ui:fragment>
                     </ui:fragment>
+
+                    <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
+                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.dataverse.displayByType}" 
+                                                 itemLabel="Display 'Dataverse by Type' Carousel on Front Page"/>
+                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.dataverse.displayFeatured}" 
+                                                 itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                        <div class="form-group">
+                            <label for="exampleInputFile">Featured Dataverses</label>
+                            <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
+                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse" 
+                                        itemLabel="#{featureddataverse.name}" 
+                                        itemValue="#{featureddataverse}" converter="dataverseConverter"
+                                        showSourceFilter="true" showTargetFilter="true" />
+                        </div>
+
+                        <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
+                    </p:dialog>
+
+                    <!-- Dialog Feedback Form -->
 
                     <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
                         <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.dataverse.displayByType}" 
