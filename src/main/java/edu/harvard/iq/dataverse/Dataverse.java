@@ -59,7 +59,7 @@ public class Dataverse extends DvObjectContainer {
     @Email(message = "Please enter a valid email address.")
     private String contactEmail;
     
-    @NotNull(message = "Please select a type for your dataverse.")
+    @NotNull(message = "Please select a category for your dataverse.")
     @Enumerated(EnumType.STRING)
     private DataverseType dataverseType;
 

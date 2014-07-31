@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -149,10 +150,7 @@ public class UrlManager {
             optionalPort = ":" + port;
         }
         String requestedHostname = u.getHost();
-        /**
-         * @todo do we need the equivalent of dvn.inetAddress in 4.0?
-         */
-        String hostName = System.getProperty("dataverse.datadeposit.hostname");
+        String hostName = System.getProperty(SystemConfig.FQDN);
         if (hostName == null) {
             hostName = "localhost";
         }
