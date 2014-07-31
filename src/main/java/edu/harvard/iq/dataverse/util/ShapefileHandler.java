@@ -109,7 +109,7 @@ public class ShapefileHandler{
         
         this.examineZipfile(zip_file_stream);
         //showFileNamesSizes();
-        showFileGroups();
+        //showFileGroups();
     }
     /*
         Create a directory, if one doesn"t exist
@@ -382,7 +382,6 @@ public class ShapefileHandler{
         if ((basename==null)||(ext==null)){
             return;
         }
-        msg("addToFileGroupHash.  basename [" + basename + "]  ext [" + ext + "]");
         List<String> extension_list = fileGroups.get(basename);
         if (extension_list==null) {
             extension_list = new ArrayList<>();
@@ -431,7 +430,7 @@ public class ShapefileHandler{
      * @param FileInputStream zip_file_stream
      */
     private boolean examineZipfile(FileInputStream zip_file_stream){
-        msgt("examineZipfile");
+       // msgt("examineZipfile");
         
         if (zip_file_stream==null){
                this.errorMessage = "The zip file stream was null";
@@ -450,7 +449,7 @@ public class ShapefileHandler{
             while((entry = zip_stream.getNextEntry())!=null){
 
                  String zentry_file_name = entry.getName();
-                 msg("zip entry: " + entry.getName());
+                 //msg("zip entry: " + entry.getName());
                  // Skip files or folders starting with __
                  if (zentry_file_name.startsWith("__")){
                      continue;
