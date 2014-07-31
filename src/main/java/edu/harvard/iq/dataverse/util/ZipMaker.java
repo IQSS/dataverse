@@ -50,7 +50,7 @@ public class ZipMaker{
     }
 
 
-	public static void addToZipFile(String fileName, String fullFilepath, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
+public static void addToZipFile(String fileName, String fullFilepath, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
 
         if (DEBUG){
 		    System.out.println("Writing '" + fileName + "' to zip file");

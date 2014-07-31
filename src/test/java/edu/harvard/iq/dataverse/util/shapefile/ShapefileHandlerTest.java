@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -50,9 +51,17 @@ public class ShapefileHandlerTest {
         
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
- 
+   
     
-  
+    public void msg(String s){
+            System.out.println(s);
+    }
+    
+    public void msgt(String s){
+        msg("-------------------------------");
+        msg(s);
+        msg("-------------------------------");
+    }
 
     //@Test
     public void testWrite() throws IOException {
@@ -69,8 +78,8 @@ public class ShapefileHandlerTest {
  
     // Check that what was written is correct.
     String fcontents = FileUtils.readFileToString(tempFile);
-    System.out.println(fcontents);
-    System.out.println("-----------   ShapefileHandlerTest  -----------");
+    msgt(fcontents);
+    msgt("-----------   ShapefileHandlerTest  -----------");
 
     assertEquals(fcontents, "hello world");
    // assertThat("hello world", is(s));
@@ -86,6 +95,22 @@ public class ShapefileHandlerTest {
     }
     
 
+    private void showFilesInFolder(String m, String folder_name) throws IOException{
+        msgt(m);
+        File folder = new File(folder_name);
+        for (File f : folder.listFiles() ){
+            this.msg("fname: " + f.getCanonicalPath());
+        }
+    } 
+         
+    private void showFilesInTempFolder(String m) throws IOException{
+        this.showFilesInFolder(m, this.tempFolder.getRoot().getAbsolutePath());
+     //   msgt(m);
+       // for (File f : this.tempFolder.getRoot().listFiles() ){
+         //   this.msg("fname: " + f.getCanonicalPath());
+       // }
+    } 
+     
     @Test
     public void testCreateZippedShapefile() throws IOException {
     
@@ -100,10 +125,16 @@ public class ShapefileHandlerTest {
            //System.out.println("ext: " + ext_name);
            File shpPart = this.createBlankFile(file_basename + "." +  ext_name);
            fileCollection.add(shpPart);
-           System.out.println("File created: " + shpPart.getName());
+           msg("File created: " + shpPart.getName());
            
         }
-         
+        
+        // debug
+        showFilesInTempFolder("Show files in temp folder 1");
+        
+        
+        //ArrayList<File> files = new ArrayList<File>(Arrays.asList(f.listFiles()));
+        
         /* -----------------------------------
            Add the files to a .zip
         ----------------------------------- */
@@ -111,11 +142,14 @@ public class ShapefileHandlerTest {
         String zippedShapefileName = file_basename + ".zip";
         File zip_file_obj = this.tempFolder.newFile(zippedShapefileName);
         ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj));
-        System.out.println("\nCreate zipped shapefile: " + zippedShapefileName);
+        msg("\nCreate zipped shapefile: " + zippedShapefileName);
         // Iterate through File objects and add them to the ZipOutputStream
         for (File file_obj : fileCollection) {
              this.addToZipFile(file_obj.getName(), file_obj, zip_stream);
         }
+
+        // debug
+        showFilesInTempFolder("Show files in temp folder 2");
 
          /* -----------------------------------
            Delete single files that were added to .zip
@@ -123,28 +157,49 @@ public class ShapefileHandlerTest {
         for (File file_obj : fileCollection) {
              file_obj.delete();
         }
+        showFilesInTempFolder("Show files in temp folder 3");
+
         
          /* -----------------------------------
            Check this .zipped shapefile
         ----------------------------------- */
-        String tmp_output_folder_for_unzipping = this.tempFolder.newFolder("scratch-space").getAbsolutePath();
-        String output_folder_for_new_zip = this.tempFolder.newFolder("newly-zipped").getAbsolutePath();
-        ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zip_file_obj), tmp_output_folder_for_unzipping, output_folder_for_new_zip);
-        
-        System.out.println("Contains shapefile?: " + shp_handler.containsShapefile());
+        //String tmp_output_folder_for_unzipping = this.tempFolder.newFolder("scratch-space").getAbsolutePath();
+        //String output_folder_for_new_zip = this.tempFolder.newFolder("newly-zipped").getAbsolutePath();
+        File output_folder_to_unzip = this.tempFolder.newFolder("folder_to_unzip");
+        File output_folder_to_rezip = this.tempFolder.newFolder("rezip");
 
+        msg("Temp folder location: " + this.tempFolder.getRoot().getAbsolutePath());
+        
+        msg("output_folder_to_rezip: " + output_folder_to_rezip.getAbsolutePath());
+        ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zip_file_obj)
+                                            , output_folder_to_unzip.getAbsolutePath()
+                                            , output_folder_to_rezip.getAbsolutePath());
+        
+        msg("Contains shapefile?: " + shp_handler.containsShapefile());
+
+        
         assertEquals(shp_handler.containsShapefile(), true);
-
-        if (!shp_handler.containsShapefile()){
-               System.out.println("--------- FAIL -------------");
-               System.out.println(shp_handler.errorMessage);
-       //        System.out.println("Contains shapefile? " + zpt.containsShapefile());
-           }else{
-           
-        //    shp_handler.rezipShapefileSets();
-        }
         
+        /*
+            Get a dict with the following contents
+                  key: "income_areas"
+                  value: Arrays.asList("shp", "shx", "dbf", "prj")
+        */
+        Map<String, List<String>> file_groups = shp_handler.getFileGroups();
+        
+        // The dict should not be empty
+        assertEquals(file_groups.isEmpty(), false);
+
+        // Verify the key
+        assertEquals(file_groups.containsKey("income_areas"), true);
+        
+        // Verify the value
+        assertEquals(file_groups.get("income_areas"), Arrays.asList("shp", "shx", "dbf", "prj"));
+      
   }
+    
+    
+    
     
        private boolean addToZipFile(String fileName, File fileToZip, ZipOutputStream zip_output_stream) throws FileNotFoundException, IOException {
 
@@ -162,7 +217,7 @@ public class ShapefileHandlerTest {
             zip_output_stream.closeEntry();
             file_input_stream.close();
 
-            System.out.println("File [" + fileName + "] added to .zip");
+            msg("File [" + fileName + "] added to .zip");
 
             return true;
 	} // end: addToZipFile
