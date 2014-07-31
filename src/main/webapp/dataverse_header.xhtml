@@ -225,14 +225,14 @@
     <p:dialog header="#{headerBundle.sendFeedbackHeader}" widgetVar="feedbackForm" modal="true">
         <h:form class="form-horizontal">
             <div class="form-group">
-                <label for="messageTo" class="col-sm-2 control-label">#{datasetBundle.toText}</label>
+                <label for="messageTo" class="col-sm-2 control-label">#{headerBundle.toText}</label>
                 <div class="col-sm-10">
-                    <p id="messageTo" class="form-control-static">#{datasetBundle.dataverseSupportText}</p>
+                    <p id="messageTo" class="form-control-static">#{headerBundle.dataverseSupportText}</p>
                 </div>
             </div>
             <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
                 <div class="form-group">
-                    <label for="userEmailStatic" class="col-sm-2 control-label">#{datasetBundle.fromText}</label>
+                    <label for="userEmailStatic" class="col-sm-2 control-label">#{headerBundle.fromText}</label>
                     <div class="col-sm-10">
                         <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
                     </div>
@@ -240,27 +240,27 @@
             </ui:fragment>
             <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
                 <div class="form-group">
-                    <label for="userEmail" class="col-sm-2 control-label">#{datasetBundle.fromText}</label>
+                    <label for="userEmail" class="col-sm-2 control-label">#{headerBundle.fromText}</label>
                     <div class="col-sm-10">
                         <h:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"/>
                     </div>
                 </div>
             </ui:fragment>
             <div class="form-group">
-                <label for="messageSubject" class="col-sm-2 control-label">#{datasetBundle.subjectText}</label>
+                <label for="messageSubject" class="col-sm-2 control-label">#{headerBundle.subjectText}</label>
                 <div class="col-sm-10">
-                    <p id="messageSubject" class="form-control-static">#{datasetBundle.feedbackTitle}</p>
+                    <p id="messageSubject" class="form-control-static">#{headerBundle.feedbackTitle}</p>
                 </div>
             </div>
             <div class="form-group">
-                <label for="userMessage" class="col-sm-2 control-label">#{datasetBundle.messageText}</label>
+                <label for="userMessage" class="col-sm-2 control-label">#{headerBundle.messageText}</label>
                 <div class="col-sm-10">
                     <h:inputTextarea id="userMessage" styleClass="form-control" rows="10" value="#{sendFeedbackDialog.userMessage}"/>
                 </div>
             </div>
             
-            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{datasetBundle.sendMessageButton}"/>
-            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{datasetBundle.cancelButton}</button>
+            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{headerBundle.sendMessageButton}"/>
+            <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{headerBundle.cancelButton}</button>
         </h:form>
     </p:dialog>
 </div>
