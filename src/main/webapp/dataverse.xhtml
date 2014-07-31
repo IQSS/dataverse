@@ -122,16 +122,19 @@
                                         Category <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
                                     </a>
                                 </label>  
-                                <div class="col-sm-6">
-                                    <h:selectOneMenu id="dataverseCategory" styleClass="form-control" style="margin:4px 10px;" value="#{DataversePage.dataverse.dataverseType}">
-                                        <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
-                                        <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
-                                        <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
-                                        <f:selectItem id="dvJournals" itemLabel="Journals" itemValue="JOURNALS" />
-                                        <f:selectItem id="dvOrgInst" itemLabel="Organizations and Institutions" itemValue="ORGANIZATIONS_INSTITUTIONS" />
-                                        <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
-                                        <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
-                                    </h:selectOneMenu>
+                                <div class="col-sm-9">
+                                    <p:panelGrid columns="2">
+                                        <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
+                                            <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
+                                            <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
+                                            <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
+                                            <f:selectItem id="dvJournals" itemLabel="Journals" itemValue="JOURNALS" />
+                                            <f:selectItem id="dvOrgInst" itemLabel="Organizations &amp; Institutions" itemValue="ORGANIZATIONS_INSTITUTIONS" />
+                                            <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
+                                            <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
+                                        </h:selectOneMenu>
+                                        <p:message for="dataverseCategory"/>
+                                    </p:panelGrid>
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group">
