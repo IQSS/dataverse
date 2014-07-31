@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -19,8 +20,9 @@ public class UrlManager {
     String targetIdentifier;
     int port;
 
-    void processUrl(String url) throws SwordError {
+    String processUrl(String url) throws SwordError {
         logger.fine("URL was: " + url);
+        String warning = null;
         this.originalUrl = url;
         URI javaNetUri;
         try {
@@ -68,8 +70,13 @@ public class UrlManager {
         } catch (IndexOutOfBoundsException ex) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Error processing URL: " + url);
         }
-        if (!dataDepositApiBasePath.equals(swordConfiguration.getBaseUrlPath())) {
-            throw new SwordError(dataDepositApiBasePath + " found but " + swordConfiguration.getBaseUrlPath() + " expected");
+        if (!swordConfiguration.getBaseUrlPathsValid().contains(dataDepositApiBasePath)) {
+            throw new SwordError(dataDepositApiBasePath + " found but one of these required: " + swordConfiguration.getBaseUrlPathsValid() + ". Current version is " + swordConfiguration.getBaseUrlPathCurrent());
+        } else {
+            if (swordConfiguration.getBaseUrlPathsDeprecated().contains(dataDepositApiBasePath)) {
+                String msg = "Deprecated version used for Data Deposit API. The current version expects '" + swordConfiguration.getBaseUrlPathCurrent() + "'. URL passed in: " + url;
+                warning = msg;
+            }
         }
         try {
             this.servlet = urlParts.get(6);
@@ -123,6 +130,10 @@ public class UrlManager {
             logger.fine("target type: " + targetType);
             logger.fine("target identifier: " + targetIdentifier);
         }
+        if (warning != null) {
+            logger.info(warning);
+        }
+        return warning;
     }
 
     String getHostnamePlusBaseUrlPath(String url) throws SwordError {
@@ -130,22 +141,34 @@ public class UrlManager {
         URI u;
         try {
             u = new URI(url);
-            int port = u.getPort();
-            if (port != -1) {
-                // https often runs on port 8181 in dev
-                optionalPort = ":" + port;
-            }
         } catch (URISyntaxException ex) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "unable to part URL");
         }
-        /**
-         * @todo do we need the equivalent of dvn.inetAddress in 4.0?
-         */
-        String hostName = System.getProperty("dataverse.datadeposit.hostname");
+        int port = u.getPort();
+        if (port != -1) {
+            // https often runs on port 8181 in dev
+            optionalPort = ":" + port;
+        }
+        String requestedHostname = u.getHost();
+        String hostName = System.getProperty(SystemConfig.FQDN);
         if (hostName == null) {
             hostName = "localhost";
         }
-        return "https://" + hostName + optionalPort + swordConfiguration.getBaseUrlPath();
+        /**
+         * @todo should this be configurable? In dev it's convenient to override
+         * the JVM option and force traffic to localhost.
+         */
+        if (requestedHostname.equals("localhost")) {
+            hostName = "localhost";
+        }
+        /**
+         * @todo Any problem with returning the current API version rather than
+         * the version that was operated on? Both should work. If SWORD API
+         * users are operating on the URLs returned (as they should) returning
+         * the current version will avoid deprecation warnings on the Dataverse
+         * side.
+         */
+        return "https://" + hostName + optionalPort + swordConfiguration.getBaseUrlPathCurrent();
     }
 
     public String getOriginalUrl() {

@@ -12,7 +12,14 @@ chkconfig postgresql on
 GLASSFISH_USER=glassfish
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
-GLASSFISH_ZIP=`ls /dataverse/downloads/glassfish*zip`
+DOWNLOAD_DIR='/dataverse/downloads'
+GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.0.zip"
+SOLR_TGZ="$DOWNLOAD_DIR/solr-4.6.0.tgz"
+if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
+    echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
+    cd $DOWNLOAD_DIR && ./download.sh && cd
+    echo "Done running download script."
+fi
 GLASSFISH_USER_HOME=~glassfish
 GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
 if [ ! -d $GLASSFISH_ROOT ]; then

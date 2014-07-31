@@ -55,6 +55,9 @@ public class EjbDataverseEngine {
 	
 	@EJB
 	DataverseFacetServiceBean dataverseFacetService; 
+
+        @EJB
+	FeaturedDataverseServiceBean featuredDataverseService; 
         
         @EJB
 	DataFileServiceBean dataFileService; 
@@ -138,7 +141,12 @@ public class EjbDataverseEngine {
 				public DataverseFacetServiceBean facets() {
 					return dataverseFacetService;
 				}
-				
+                                
+				@Override
+				public FeaturedDataverseServiceBean featuredDataverses() {
+					return featuredDataverseService;
+				}
+                                
 				@Override
 				public DataverseEngine engine() { 
 					return new DataverseEngine() {

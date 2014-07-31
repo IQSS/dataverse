@@ -141,7 +141,7 @@ public class ContainerManagerImpl implements ContainerManager {
                          * If users forget to put a title in the Atom entry XML,
                          * we'll just pass the validation exception to them.
                          */
-                        String foreignFormat = "dcterms";
+                        String foreignFormat = SwordUtil.DCTERMS;
                         try {
                             foreignMetadataImportService.importXML(deposit.getSwordEntry().toString(), foreignFormat, datasetVersion);
                         } catch (Exception ex) {

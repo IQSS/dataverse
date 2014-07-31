@@ -400,10 +400,11 @@ if __name__=='__main__':
     #POST http://{{SERVER}}/api/dvs/{{identifier}}/actions/:publish?key={{apikey}}
     
     server_with_api = 'https://dvn-build.hmdc.harvard.edu'
-    dat = DataverseAPILink(server_with_api, use_https=False, apikey='snoopy')
-    dat.save_current_metadata('demo-data')
-    sys.exit(0)
+    dat = DataverseAPILink(server_with_api, use_https=False, apikey='pete')
+    #dat.save_current_metadata('demo-data')
+    #sys.exit(0)
     #dat.set_return_mode_string()
+    
     """ """
     dv_params = {
                     "alias":"hm_dv",

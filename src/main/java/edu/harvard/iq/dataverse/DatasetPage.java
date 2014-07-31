@@ -120,6 +120,12 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
+    /**
+     * @todo ticket to get away from these hard-coded protocol and authority
+     * values: https://github.com/IQSS/dataverse/issues/757
+     */
+    public static String fixMeDontHardCodeProtocol = "doi";
+    public static String fixMeDontHardCodeAuthority = "10.5072/FK2";
 
     public String getShowVersionList() {
         return showVersionList;
@@ -283,7 +289,7 @@ public class DatasetPage implements java.io.Serializable {
 
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(workingVersion);
-            dataset.setIdentifier(datasetService.generateIdentifierSequence("doi", "10.5072/FK2"));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
@@ -516,9 +522,9 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        //TODO get real application-wide protocol/authority
-        dataset.setProtocol("doi");
-        dataset.setAuthority("10.5072/FK2");
+        //TODO get real application-wide protocol/authority https://github.com/IQSS/dataverse/issues/757
+        dataset.setProtocol(fixMeDontHardCodeProtocol);
+        dataset.setAuthority(fixMeDontHardCodeAuthority);
 
         /*
          * Save and/or ingest files, if there are any:

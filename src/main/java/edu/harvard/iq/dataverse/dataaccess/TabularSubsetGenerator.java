@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.regex.Matcher;
 
 
 import org.apache.commons.lang.*;
@@ -52,6 +53,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     private static int COLUMN_TYPE_STRING = 1;
     private static int COLUMN_TYPE_LONG   = 2;
     private static int COLUMN_TYPE_DOUBLE = 3; 
+    private static int COLUMN_TYPE_FLOAT = 4; 
     
        
     public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases) {
@@ -199,12 +201,33 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return (Double[])subsetObjectVector(datafile, column, COLUMN_TYPE_DOUBLE);
     }
     
+    public Long[] subsetLongVector(DataFile datafile, int column) throws IOException {
+        return (Long[])subsetObjectVector(datafile, column, COLUMN_TYPE_LONG);
+    }
+    
+    // Float methods are temporary; 
+    // In normal operations we'll be treating all the floating point types as 
+    // doubles. I need to be able to handle floats for some 4.0 vs 3.* ingest
+    // tests. -- L.A. 
+    
+    public Float[] subsetFloatVector(DataFile datafile, int column) throws IOException {
+        return (Float[])subsetObjectVector(datafile, column, COLUMN_TYPE_FLOAT);
+    }
+    
     public String[] subsetStringVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (String[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_STRING);
     }
     
     public Double[] subsetDoubleVector(File tabfile, int column, int varcount, int casecount) throws IOException {
         return (Double[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_DOUBLE);
+    }
+    
+    public Long[] subsetLongVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (Long[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_LONG);
+    }
+    
+    public Float[] subsetFloatVector(File tabfile, int column, int varcount, int casecount) throws IOException {
+        return (Float[])subsetObjectVector(tabfile, column, varcount, casecount, COLUMN_TYPE_FLOAT);
     }
     
     public Object[] subsetObjectVector(DataFile dataFile, int column, int columntype) throws IOException {
@@ -230,18 +253,23 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         boolean isString = false; 
         boolean isDouble = false;
+        boolean isLong   = false; 
+        boolean isFloat  = false; 
         
         if (columntype == COLUMN_TYPE_STRING) {
             isString = true; 
+            retVector = new String[casecount];
         } else if (columntype == COLUMN_TYPE_DOUBLE) {
             isDouble = true; 
+            retVector = new Double[casecount];
+        } else if (columntype == COLUMN_TYPE_LONG) {
+            isLong = true; 
+            retVector = new Long[casecount];
+        } else if (columntype == COLUMN_TYPE_FLOAT){
+            isFloat = true;
+            retVector = new Float[casecount];
         } else {
             throw new IOException("Unsupported column type: "+columntype);
-        }
-        if (isString) {
-            retVector = new String[casecount];
-        } else if (isDouble) {
-            retVector = new Double[casecount];
         }
         
         File rotatedImageFile = getRotatedImage(tabfile, varcount, casecount);
@@ -290,7 +318,29 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     }
                     
                     if (isString) {
-                        retVector[caseindex] = token;
+                        if ("".equals(token)) {
+                            // An empty string is a string missing value!
+                            // An empty string in quotes is an empty string!
+                            retVector[caseindex] = null;
+                        } else {
+                            // Strip the outer quotes:
+                            token = token.replaceFirst("^\\\"", "");
+                            token = token.replaceFirst("\\\"$", "");
+                            // Restore the special characters that 
+                            // are stored in tab files escaped -
+                            // quotes, new lines and tabs:
+                            token = token.replaceAll(Matcher.quoteReplacement("\\\""), "\"");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\t"), "\t");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\n"), "\n");
+                            token = token.replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                            // TODO: 
+                            // Make (some of?) the above optional; for ex., we 
+                            // only need to restore the newlines when calculating UNFs;
+                            // If we are subsetting these vectors in order to 
+                            // create a new tab-delimited file, they will 
+                            // actually break things! -- L.A. Jul. 28 2014
+                            retVector[caseindex] = token;
+                        }
                     } else if (isDouble) {
                         try {
                             // TODO: verify that NaN and +-Inf are 
@@ -298,6 +348,18 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             retVector[caseindex] = new Double(token);
                         } catch (NumberFormatException ex) {
                             retVector[caseindex] = null; // missing value
+                        }
+                    } else if (isLong) {
+                        try {
+                            retVector[caseindex] = new Long(token);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseindex] = null; // assume missing value
+                        }
+                    } else if (isFloat) {
+                        try {
+                            retVector[caseindex] = new Float(token);
+                        } catch (NumberFormatException ex) {
+                            retVector[caseindex] = null; // assume missing value
                         }
                     }
                     caseindex++;

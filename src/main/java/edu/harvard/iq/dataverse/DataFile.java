@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -256,7 +259,10 @@ public class DataFile extends DvObject {
     }
 
     public Path getFileSystemLocation() {
-        
+        // TEMPORARY HACK!
+        if (this.fileSystemName != null && this.fileSystemName.startsWith("/")) {
+            return Paths.get(this.fileSystemName);
+        }
         
         Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
         if (studyDirectoryPath == null) {
@@ -264,15 +270,17 @@ public class DataFile extends DvObject {
         }
         String studyDirectory = studyDirectoryPath.toString();
  
-        if (this.fileSystemName == null || this.fileSystemName.equals("")) {
-            // *temporary* legacy hack - so that the files saved with their
-            // user-supplied file names can still be downloaded; 
-            // TODO: -- remove this as soon as it's no longer needed. 
-            // -- L.A., 4.0 alpha 1
-            
-            return Paths.get(studyDirectory, this.name);
-        }
         return Paths.get(studyDirectory, this.fileSystemName);
+    }
+    
+    public DataAccessObject getAccessObject() throws IOException {
+        DataAccessObject dataAccess =  DataAccess.createDataAccessObject(this);
+        
+        if (dataAccess == null) {
+            throw new IOException("Failed to create access object for datafile.");
+        }
+        
+        return dataAccess; 
     }
     
     public Path getSavedOriginalFile() {

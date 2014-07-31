@@ -33,6 +33,11 @@ import java.util.Iterator;
 import edu.harvard.iq.dataverse.DataFile;
 //mport edu.harvard.iq.dataverse.TabularDataFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import java.io.FileOutputStream;
+import java.nio.channels.Channel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileAccessObject extends DataAccessObject {
 
@@ -60,16 +65,30 @@ public class FileAccessObject extends DataAccessObject {
         this.setIsDownloadSupported(true);
         this.setIsNIOSupported(true);
     }
-
+    
+    private boolean isReadAccess = false;
+    private boolean isWriteAccess = false; 
+    
+    @Override
     public boolean canAccess (String location) throws IOException{
         return true;
     }
 
+    @Override
+    public boolean canRead () {
+        return isReadAccess;
+    }
+    
+    @Override
+    public boolean canWrite () {
+        return isWriteAccess; 
+    }
     //public void open (String location) throws IOException{
 
     //}
 
     //private void open (DataFile file, Object req) throws IOException {
+    @Override
     public void open () throws IOException {
 
         DataFile file = this.getFile();
@@ -121,8 +140,100 @@ public class FileAccessObject extends DataAccessObject {
         this.setStatus(200);
     } // End of initiateLocalDownload;
 
-    // Auxilary helper methods, filesystem access-specific:
+    @Override
+    public String getStorageLocation() {
+        
+            Path studyDirectoryPath = this.getFile().getOwner().getFileSystemDirectory();
+            
+            if (studyDirectoryPath == null) {
+                return null;
+            }
+            String studyDirectory = studyDirectoryPath.toString();
+ 
+            return Paths.get(studyDirectory, this.getFile().getFileSystemName()).toString();
+        }
+    
+    @Override
+    public Path getFileSystemPath() throws IOException {
+        if (this.getFile() == null) {
+            throw new IOException("No datafile defined in the Data Access Object");
+        }
+        
+        if (this.getFile().getOwner() == null) {
+            throw new IOException("Data Access: no parent dataset defined for this datafile");
+        }
+        
+        Path studyDirectoryPath = this.getFile().getOwner().getFileSystemDirectory();
 
+        if (studyDirectoryPath == null) {
+            throw new IOException("Could not determine the filesystem directory of the parent dataset.");
+        }
+        String datasetDirectory = studyDirectoryPath.toString();
+        
+        if (this.getFile().getFileSystemName() == null || "".equals(this.getFile().getFileSystemName())) {
+            throw new IOException("Data Access: No local storage identifier defined for this datafile.");
+        }
+
+        return Paths.get(datasetDirectory, this.getFile().getFileSystemName());
+
+    }
+    
+    @Override
+    public void openChannel (DataAccessOption... options) throws IOException {
+        
+        for (DataAccessOption option: options) {
+            // In the future we may need to be able to open read-write 
+            // Channels; no support, or use case for that as of now. 
+            
+            if (option == DataAccessOption.READ_ACCESS) {
+                isReadAccess = true;
+                continue;
+            }
+
+            if (option == DataAccessOption.WRITE_ACCESS) {
+                isWriteAccess = true;
+                continue;
+            }
+        }
+        
+        if (!isReadAccess && !isWriteAccess) {
+            isReadAccess = true; 
+        }
+        
+        if (isReadAccess) {
+            // TODO: 
+            // Make sure all the tasks performed by the old-style, InputStream-based
+            // method are still taken care of. 
+            openReadableChannel(); 
+        } else if (isWriteAccess) {
+            openWritableChannel();
+        }
+        
+    }
+    
+    private void openWritableChannel () throws IOException {
+        DataFile datafile = this.getFile();
+        
+        if (datafile == null) {
+            throw new IOException ("Data Access: No Datafile defined in the DataAccessObject.");
+        }
+                
+        channel = new FileOutputStream(getFileSystemPath().toFile()).getChannel();
+  
+    }
+    
+    private void openReadableChannel () throws IOException {
+        DataFile datafile = this.getFile();
+        
+        if (datafile == null) {
+            throw new IOException ("Data Access: No Datafile defined in the DataAccessObject.");
+        }
+                
+        channel = openLocalFileAsStream(datafile).getChannel();
+    }
+     
+    // Auxilary helper methods, filesystem access-specific:
+    
     public long getLocalFileSize (DataFile file) {
         long fileSize = -1;
         File testFile = null;
@@ -139,8 +250,8 @@ public class FileAccessObject extends DataAccessObject {
         return fileSize;
     }
 
-    public InputStream openLocalFileAsStream (DataFile file) {
-        InputStream in;
+    public FileInputStream openLocalFileAsStream (DataFile file) {
+        FileInputStream in;
 
         try {
             in = new FileInputStream(file.getFileSystemLocation().toFile());

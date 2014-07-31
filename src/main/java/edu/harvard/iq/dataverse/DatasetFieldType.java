@@ -349,6 +349,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
              */
             if (fieldType.equals("date")) {
                 solrType = SolrField.SolrType.DATE;
+            } else if (fieldType.equals("email")) {
+                solrType = SolrField.SolrType.EMAIL;
             }
 
             Boolean parentAllowsMultiplesBoolean = false;

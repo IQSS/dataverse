@@ -1,0 +1,41 @@
+@startuml
+
+title Authentication in Dataverse 4.0
+autonumber "<font color=blue>"
+
+actor User
+participant AuthSystem as "AuthSystem\nMay be external"
+box "DataverseSystem" #DDD
+  participant DataverseUI
+  participant RoleAssigneeManager
+  participant RoleAssigneeProvider
+  participant UserBean
+  database db
+end box
+
+User --> DataverseUI : GET /
+User <-- DataverseUI : "Select Login System"
+User --> DataverseUI : authSystem
+DataverseUI --> RoleAssigneeManager: get( authSystem )
+DataverseUI <-- RoleAssigneeManager: authSystem
+User <-- DataverseUI: redirect to authSystem
+User --> AuthSystem : credentials
+User <-- AuthSystem : Ok, back to DataverseUI
+User --> DataverseUI : autenticated( data )
+DataverseUI --> RoleAssigneeProvider: getUserObj( data )
+DataverseUI <-- RoleAssigneeProvider: userObj
+DataverseUI --> UserBean : setUser( userObj )
+UserBean --> db : lookupAuthenticatedUser( userObj.id )
+
+alt id found
+  UserBean <-- db : authenticatedUser
+  UserBean --> db : update( authenticatedUser, userObj )
+
+else id not found
+  UserBean <-- db : "user not found"
+  UserBean --> db : createAuthenticatedUser( userObj )
+  UserBean <-- db : authenticatedUser
+  UserBean --> db : updateLookupTable( userObj.id, authenticatedUser.id )
+end
+
+@enduml

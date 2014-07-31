@@ -5,22 +5,21 @@
 	  xmlns:ui="http://java.sun.com/jsf/facelets"
 	  xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
-	<cc:interface>
-		<cc:attribute name="collapsible" default="false" />
-	</cc:interface>
+    <cc:interface>
+        <cc:attribute name="collapsible" default="false" />
+    </cc:interface>
 
-	<cc:implementation>
-		<ui:repeat value="#{facesContext.messageList}" var="msg" >
-			#{level = fn:split(msg.severity,' ')[0]; "" }
-			#{bsClass = (level eq 'INFO' ? 'info' : (level eq 'WARN' ? 'warning' : 'danger')); ""}
-			<div class="alert #{cc.attrs.collapsible ? 'alert-dismissable' :''} alert-#{bsClass}">
-				<ui:fragment rendered="#{cc.attrs.collapsible}">
-					<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-				</ui:fragment>
-				<span class="glyphicon glyphicon-info-sign"></span> <strong>#{msg.summary}</strong>
-				<h:outputText value="#{msg.detail}" rendered="#{not empty msg.detail}"/>
-			</div>
-			#{msg.rendered()}
-		</ui:repeat>
-	</cc:implementation>
+    <cc:implementation>
+        <ui:repeat value="#{facesContext.messageList}" var="msg">
+            #{level = fn:split(msg.severity,' ')[0]; "" }
+            #{bsClass = (level eq 'INFO' ? 'info' : (level eq 'WARN' ? 'warning' : 'danger')); ""}
+            <div class="alert #{cc.attrs.collapsible ? 'alert-dismissable' :''} alert-#{bsClass}">
+                <ui:fragment rendered="#{cc.attrs.collapsible}">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                </ui:fragment>
+                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{msg.summary}</strong>&#160;<h:outputText value="#{msg.detail}" rendered="#{!empty msg.detail and (msg.detail != msg.summary)}"/>
+            </div>
+            #{msg.rendered()}
+        </ui:repeat>
+    </cc:implementation>
 </html>

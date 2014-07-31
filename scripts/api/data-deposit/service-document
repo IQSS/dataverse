@@ -8,5 +8,5 @@ else
 fi
 URL=https://$HOSTNAME/dvn/api/data-deposit/v1/swordv2/service-document
 echo Retrieving service document from $URL >&2
-curl --insecure -u $USERNAME:$PASSWORD $URL \
+curl -s --insecure -u $USERNAME:$PASSWORD $URL \
 | xmllint -format -

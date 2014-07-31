@@ -56,9 +56,29 @@ public class DataverseServiceBean {
         query.setParameter("ownerId", ownerId);
         return query.getResultList();
     }
+    
+    public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
+        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name");
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
+    }
 
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
+    }
+    
+    public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
+        List<Dataverse> retVal = new ArrayList();       
+        List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
+        
+        retVal.addAll(previousLevel);
+        /*
+        if (!previousLevel.isEmpty()) {
+            for (Dataverse dv : previousLevel) {
+                retVal.addAll(findPublishedByOwnerId(dv.getId()));
+            }
+        }*/
+        return retVal;
     }
 
     public Dataverse findByAlias(String anAlias) {
