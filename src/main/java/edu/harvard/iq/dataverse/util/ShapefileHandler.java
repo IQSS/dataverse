@@ -94,9 +94,11 @@ public class ShapefileHandler{
         //processZipfile(zip_file_stream);
         this.outputFolder = output_folder;
         this.rezippedFolder = rezipped_folder;
-        examineZipfile(zip_file_stream);
+        msg("rezippedFolder " + this.rezippedFolder );
+        msg("Exists " + new File(this.rezippedFolder).exists() );
+        this.examineZipfile(zip_file_stream);
         //showFileNamesSizes();
-        showFileGroups();
+        this.showFileGroups();
     }
 
      /*
@@ -105,9 +107,9 @@ public class ShapefileHandler{
     public ShapefileHandler(FileInputStream zip_file_stream){
         //processZipfile(zip_file_stream);
         
-        examineZipfile(zip_file_stream);
+        this.examineZipfile(zip_file_stream);
         //showFileNamesSizes();
-        showFileGroups();
+        //showFileGroups();
     }
     /*
         Create a directory, if one doesn"t exist
@@ -117,6 +119,7 @@ public class ShapefileHandler{
             return false;
         }
       	File folder_obj = new File(fname);
+        msg("ShapefileHandler. Folder created: " + folder_obj.getAbsolutePath());
       	return createDirectory(folder_obj);
       	
     } // createDirectory
@@ -157,6 +160,10 @@ public class ShapefileHandler{
         }
     } // end showFileNamesSizes
     
+    
+    public Map getFileGroups(){
+        return this.fileGroups;
+    }
 
     /*
         Iterate through Hash of file base names and extensions
@@ -166,7 +173,7 @@ public class ShapefileHandler{
         msgt("Hash: file base names + extensions");
         
         for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
-            msg("Key: " + entry.getKey() + " Ext List: " + entry.getValue());
+            msg("Key: [" + entry.getKey() + "] Ext List: " + entry.getValue());
             if (doesListContainShapefileExtensions(entry.getValue())){
                 msg(" >>>> GOT IT! <<<<<<<<");
             }
@@ -177,28 +184,31 @@ public class ShapefileHandler{
         
     
     /*    
-        Process the .zip file!  
+        Given the path to a zip file, do the following:
+    
+        - Unzip the contents to a directory
+        - check 
     */
     public void processZipfile(String zip_filename){
         if (zip_filename==null){
             this.errorMessage = "The .zip filename was not given";
             return;
         }
-        // Examine the file
         
-        if (!this.zipFileProcessed){
-            msgt("not processed?");
+        File zip_file = new File(zip_filename);
+        if (!zip_file.isFile()){
+            this.errorMessage = "This is not a file: " + zip_file.getAbsolutePath();
             return;
         }
-        msgt("What have we got!");
-        for (String element : filesListInDir) {
-            msg(element);
+        FileInputStream zip_filestream;
+        try{
+            zip_filestream = new FileInputStream(zip_file);
+        }catch(FileNotFoundException e){
+            this.errorMessage = "FileNotFoundException: " + zip_file.getAbsolutePath();
+            return;
         }
+        this.processZipfile(zip_filestream);
         
-        rezipShapefileSets();
-        
-        showFileNamesSizes();
-        showFileGroups();
     }
     
     
@@ -242,6 +252,8 @@ public class ShapefileHandler{
     
     
     private boolean deleteDirectory(String dirname){
+        return true;
+        /*
         if (dirname==null){
             return false;
         }
@@ -249,13 +261,17 @@ public class ShapefileHandler{
         if (!(dir_obj.exists())){
             return true;
         }
-       String[]entries = dir_obj.list();
-       for(String s: entries){
-          File currentFile = new File(dir_obj.getPath(),s);
-          currentFile.delete();
+       File[] entries = dir_obj.listFiles();
+       msgt("deleteDirectory");
+       if (entries==null){
+           return true;
+       }
+       for(File f: entries){
+          f.delete();
        }
        dir_obj.delete();
        return true;
+        */
     }
     
     /*
@@ -293,7 +309,9 @@ public class ShapefileHandler{
                     namesToZip.add(key + "." + ext);
                 }
                 String shpZippedName = rezippedFolder + "/" + key + ".zip";
-                ZipMaker zip_maker = new ZipMaker(namesToZip, outputFolder, shpZippedName);
+                this.msg("shpZippedName: "+ shpZippedName);
+                this.msg("outputFolder: "+ this.outputFolder);
+                ZipMaker zip_maker = new ZipMaker(namesToZip, this.outputFolder, shpZippedName);
                 // rezip it
                 
                 
@@ -401,10 +419,6 @@ public class ShapefileHandler{
 
         }else if (tokens.length==2){
             addToFileGroupHash(tokens[0], tokens[1]);  // file basename, extension
-            String basename = tokens[0];
-            String ext = tokens[1];
-            //msg("basename: " + basename + " ext:" + ext);
-            addToFileGroupHash(basename, ext);
         }
     } // end updateFileGroupHash
     
@@ -416,12 +430,18 @@ public class ShapefileHandler{
      * @param FileInputStream zip_file_stream
      */
     private boolean examineZipfile(FileInputStream zip_file_stream){
-
+       // msgt("examineZipfile");
+        
         if (zip_file_stream==null){
                this.errorMessage = "The zip file stream was null";
                return false;
            }
         
+       // Clear out file lists
+       this.filesListInDir.clear();
+       this.filesizeHash.clear();
+       this.fileGroups.clear();
+       
        try{
             ZipInputStream zip_stream = new ZipInputStream(zip_file_stream);
             ZipEntry entry;
@@ -429,15 +449,15 @@ public class ShapefileHandler{
             while((entry = zip_stream.getNextEntry())!=null){
 
                  String zentry_file_name = entry.getName();
-
+                 //msg("zip entry: " + entry.getName());
                  // Skip files or folders starting with __
                  if (zentry_file_name.startsWith("__")){
                      continue;
                  }
 
                 if (entry.isDirectory()) {
-                   String dirpath = outputFolder + "/" + zentry_file_name;
-                   createDirectory(dirpath);
+                   //String dirpath = outputFolder + "/" + zentry_file_name;
+                   //createDirectory(dirpath);
                    continue;       
                 }
                 
@@ -445,31 +465,31 @@ public class ShapefileHandler{
                                    entry.getName(), entry.getSize(),
                                    new Date(entry.getTime()));
 
-                filesListInDir.add(s);
+                this.filesListInDir.add(s);
                 updateFileGroupHash(zentry_file_name);
-                filesizeHash.put(zentry_file_name, entry.getSize());
+                this.filesizeHash.put(zentry_file_name, entry.getSize());
            } // end while
            
            if(zip_stream!=null){
                zip_stream.close();
            } 
 
-           if (filesListInDir.isEmpty()){
+           if (this.filesListInDir.isEmpty()){
                errorMessage = "No files in zip_stream";
                return false;
            }
 
-           zipFileProcessed = true;
+           this.zipFileProcessed = true;
            return true;
 
        }catch(ZipException ex){
-               errorMessage = "ZipException";
+               this.errorMessage = "ZipException";
                msgt("ZipException");
                return false;
 
        }catch(IOException ex){
            //ex.printStackTrace(); 
-           errorMessage = "IOException File name";
+           this.errorMessage = "IOException File name";
            msgt("IOException");
            return false;
        }finally{
@@ -536,7 +556,7 @@ public class ShapefileHandler{
     }
     
     private boolean examineAndUnzipFile(FileInputStream zip_file_stream){
-        //msgt("examineAndUnzipFile: " + filename);
+        msgt("examineAndUnzipFile: " + zip_file_stream.toString());
          if (zip_file_stream==null){
                 this.errorMessage = "The zip file stream was null";
                 return false;
@@ -583,6 +603,7 @@ public class ShapefileHandler{
                 // positioned read to read the raw data, and we keep
                 // reading until read returns 0 or less.
                 String outpath = outputFolder + "/" + entry.getName();
+                msg("Write zip file" + outpath);
                 FileOutputStream output = null;
                 try{           
                     long fsize = 0;
