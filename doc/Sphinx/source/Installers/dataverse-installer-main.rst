@@ -6,6 +6,14 @@ Installers Guide
 
 **Introduction**
 
+JVM Options
++++++++++++
+
+If you need to change the hostname the Data Deposit API returns:
+
+``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
+
+``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
 **Enforce SSL on SWORD**
 
