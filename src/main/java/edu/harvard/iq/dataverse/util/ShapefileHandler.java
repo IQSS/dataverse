@@ -16,9 +16,11 @@ import java.util.HashMap;
 import java.util.*;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 //import java.nio.file.Path;
 
 /**
@@ -309,7 +311,7 @@ public class ShapefileHandler{
         }
         
        ZipInputStream zip_stream = new ZipInputStream(zipfile_input_stream);
-                
+              
         ZipEntry orig_entry;
         byte[] buffer = new byte[2048];
         while((orig_entry = zip_stream.getNextEntry())!=null){
@@ -368,70 +370,109 @@ public class ShapefileHandler{
             msgt("There are no shapefiles to re-zip");
             return false;
         }
+        
+        // Create target directory for unzipping files
         String dirname_for_unzipping;
         File dir_for_unzipping;
         
         dirname_for_unzipping = rezippedFolder.getAbsolutePath() + "/" + "scratch-for-unzip-12345";
         dir_for_unzipping = new File(dirname_for_unzipping);
         dir_for_unzipping.mkdirs();
-        this.unzipFilesToDirectory(zipfile_input_stream, dir_for_unzipping);
-        
-        if (true){
-            
-            return true;
+
+        for (String elem_name : dir_for_unzipping.list()){
+            msg("dir contents: " + elem_name);
         }
         
-      if (false){
-          msg("unzipped directory: " + dir_for_unzipping.getAbsolutePath());
-        return true;
-          
-      } 
+        // Unzip files!
+        if (!this.unzipFilesToDirectory(zipfile_input_stream, dir_for_unzipping)){
+            this.addErrorMessage("Failed to unzip files.");
+            return false;
+        }
+      
+        // Redistribute files!
+        String target_dirname = rezippedFolder.getAbsolutePath();
+        boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
      
-      String target_dirname = rezippedFolder.getAbsolutePath();
-       // START: Redistribute files!
-       for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
-            
-            String key = entry.getKey();
-            msg("\n" + key);
-            List<String> ext_list = entry.getValue();
-            msg(Arrays.toString(ext_list.toArray()));
+        // Delete unzipped files in scratch directory
+        FileUtils.deleteDirectory(dir_for_unzipping);
         
+        
+        return redistribute_success;
+            
+    }
+    
+    
+    /*
+        Create new zipped shapefile
+    
+    
+    */
+    private boolean redistributeFilesFromZip(String source_dirname, String target_dirname){
+      
+        int cnt =0;
+       /* START: Redistribute files by iterating through the Map of basenames + extensions
+        
+        example key: "shape1"
+        example ext_list: ["shp", "shx", "dbf", "prj"]
+       */
+       for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
+            cnt++;
+            String key = entry.getKey();
+            List<String> ext_list = entry.getValue();
+
+            msg("\n(" + cnt + ") Basename: " + key);
+            msg("Extensions: " + Arrays.toString(ext_list.toArray()));
+            
+            // Is this a shapefile?  If so, rezip it
             if (doesListContainShapefileExtensions(ext_list)){
+    
                 List<String> namesToZip = new ArrayList<>();
                 
-                for (String ext : ext_list) {
-                    namesToZip.add(key + "." + ext);
+                for (String ext_name : ext_list) {
+                    if (!this.isShapefileExtension(ext_name)){
+                        // Another file with similar basename as shapefile.  
+                        // e.g. if shapefile basename is "census", this might be "census.xls", "census.pdf", or another non-shapefile extension
+                        String source_file_fullpath = source_dirname + "/" + key + "." + ext_name;
+                        String target_file_fullpath = target_dirname + "/" + key + "." + ext_name;
+                        this.straightFileCopy(source_file_fullpath, target_file_fullpath);
+                    }else{
+                        namesToZip.add(key + "." + ext_name);
+                
+                    }
                 }
+            
                 String target_zipfile_name = target_dirname + "/" + key + ".zip";
                 this.msg("target_zipfile_name: "+ target_zipfile_name);
-                this.msg("source_dirname: "+ dirname_for_unzipping);
+                this.msg("source_dirname: "+ source_dirname);
                 
-                msgt("copy shapefile");
-                ZipMaker zip_maker = new ZipMaker(namesToZip, dirname_for_unzipping, target_zipfile_name);
+                msgt("create zipped shapefile");
+                ZipMaker zip_maker = new ZipMaker(namesToZip, source_dirname, target_zipfile_name);
                 // rezip it
-                
-                
+                                
             }else{
-                for (String ext : ext_list) {
-                    File source_file = new File(dir_for_unzipping + "/" + key + "." + ext);
-                    File target_file = new File(target_dirname + "/" + key + "." + ext);
+                // Non-shapefiles
+                for (String ext_name : ext_list) {
+                    String source_file_fullpath = source_dirname + "/" + key + "." + ext_name;
+                    String target_file_fullpath = target_dirname + "/" + key + "." + ext_name;
+                    this.straightFileCopy(source_file_fullpath, target_file_fullpath);
+/*                    File source_file = new File(source_dirname + "/" + key + "." + ext_name);
+                    File target_file = new File(target_dirname + "/" + key + "." + ext_name);
                     msg("-- copy non shapefile --");
                     msg("Source file: " + source_file.getAbsolutePath());
                     msg("Target file: " + target_file.getAbsolutePath());
                     
                     File target_file_dir = target_file.getParentFile();
                     createDirectory(target_file_dir);
-    
                    try{
                         Files.copy(source_file.toPath(), target_file.toPath(), REPLACE_EXISTING);    
                         msg("File copied: " + source_file.toPath() + " To: " + target_file.toPath());
                     }catch(java.nio.file.NoSuchFileException ex){
-                        this.addErrorMessage("Failed to copy file. NoSuchFileException: [" + key + "."+ ext);
+                        this.addErrorMessage("Failed to copy file. NoSuchFileException: [" + key + "."+ ext_name);
                         return false;
                     }catch(IOException ex){
-                        this.addErrorMessage("Failed to copy file. IOException: [" + key + "."+ ext);
+                        this.addErrorMessage("Failed to copy file. IOException: [" + key + "."+ ext_name);
                         return false;
-                    }
+                    }*/
                 }
             }
         }
@@ -439,7 +480,29 @@ public class ShapefileHandler{
        // END: Redistribute files
        
         return true;
+    }  // end: redistributeFilesFromZip
+    
+    
+    private boolean straightFileCopy(String sourceFileName, String targetFileName){
+        
+        if ((sourceFileName == null)||(targetFileName==null)){
+            this.addErrorMessage("The source or target file was null.\nSource: " + sourceFileName +"\nTarget: " + targetFileName);
+            return false;
+        }
+        
+        File source_file = new File(sourceFileName);
+        File target_file = new File(targetFileName);
+        try {
+            Files.copy(source_file.toPath(), target_file.toPath(), REPLACE_EXISTING);    
+        } catch (IOException ex) {
+            this.addErrorMessage("Failed to copy file. IOException\nSource: " +  sourceFileName +"\nTarget: " + targetFileName);
+            return false;
+        }
+       
+        return true;
+        
     }
+    
     /*
         Make a folder with the extracted files
         Except: separately rezip shapefile sets
@@ -532,7 +595,12 @@ public class ShapefileHandler{
         return false;
     }
     
-    
+    private boolean isShapefileExtension(String ext_name){
+        if (ext_name == null){
+            return false;
+        }
+        return this.SHAPEFILE_ALL_EXTENSIONS.contains(ext_name);
+    }
     /*
         Does a list of file extensions match those required for a shapefile set?
     */
