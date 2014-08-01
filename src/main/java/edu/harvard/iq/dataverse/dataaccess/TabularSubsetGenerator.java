@@ -365,7 +365,12 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             // going to be transformed to unescaped tab and 
                             // new line characters!
                             
-                            String[] splitTokens = token.split(Matcher.quoteReplacement("\\\\"));
+                            String[] splitTokens = token.split(Matcher.quoteReplacement("\\\\"), -2);
+                            
+                            // (note that it's important to use the 2-argument version 
+                            // of String.split(), and set the limit argument to a
+                            // negative value; otherwise any trailing backslashes 
+                            // are lost.)
                             
                             for (int i = 0; i < splitTokens.length; i++) {
                                 splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
@@ -375,8 +380,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             }
                             // TODO: 
                             // Make (some of?) the above optional; for ex., we 
-                            // only need to restore the newlines when calculating UNFs;
-                            // If we are subsetting these vectors in order to 
+                            // do need to restore the newlines when calculating UNFs;
+                            // But if we are subsetting these vectors in order to 
                             // create a new tab-delimited file, they will 
                             // actually break things! -- L.A. Jul. 28 2014
                             
