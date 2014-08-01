@@ -2009,6 +2009,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         int strVarLength = StringLengthTable.get(columnCounter);
                         String raw_datum = new String(Arrays.copyOfRange(dataRowBytes, byte_offset,
                                 (byte_offset + strVarLength)), "ISO-8859-1");
+                        // TODO: 
+                        // is it the right thing to do, to default to "ISO-8859-1"?
+                        // (it may be; since there's no mechanism for specifying
+                        // alternative encodings in Stata, this may be their default;
+                        // it just needs to be verified. -- L.A. Jul. 2014)
                         String string_datum = getNullStrippedString(raw_datum);
                         if (dbgLog.isLoggable(Level.FINER)) {
                             dbgLog.finer(i + "-th row " + columnCounter
@@ -2027,29 +2032,28 @@ public class DTAFileReader extends TabularDataFileReader{
                              */
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                         } else {
-                            String escapedString = string_datum.replaceAll("\"", Matcher.quoteReplacement("\\\""));
                             /*
-                             * Fixing the bug we've had in the Stata reader for 
-                             * a longest time: new lines and tabs need to 
-                             * be escaped too - otherwise it breaks our 
-                             * TAB file structure! -- L.A. 
+                             * Some special characters, like new lines and tabs need to 
+                             * be escaped - otherwise they will break our TAB file 
+                             * structure! 
+                             * But before we escape anything, all the back slashes 
+                             * already in the string need to be escaped themselves.
                              */
+                            String escapedString = string_datum.replace("\\", "\\\\");
+                            // escape quotes: 
+                            escapedString = escapedString.replaceAll("\"", Matcher.quoteReplacement("\\\""));
+                            // escape tabs and new lines:
                             escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
                             escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
                             escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
-                            // the escaped version of the string will be 
-                            // stored in the tab file: 
+                            // the escaped version of the string is stored in the tab file 
+                            // enclosed in double-quotes; this is in order to be able 
+                            // to differentiate between an empty string (tab-delimited empty string in 
+                            // double quotes) and a missing value (tab-delimited empty string). 
+                            // Although the question still remains - is it even possible 
+                            // to store an empty string, that's not a missing value, in Stata? 
+                            // - see the comment in the missing value case above. -- L.A. 4.0
                             dataRow[columnCounter] = "\"" + escapedString + "\"";
-                            /* TODO: figure out what we are going to do with these escaped tabs and newlines
-                             * on the application side, when we calculate the UNF for the variable...
-                             * Are we going to try and convert these back to the unescaped version?..
-                             * (we'll probably want to escape the back slash itself - "\"
-                             * before we escape anything else)
-                             * -- L.A. 4.0
-                             */
-                            // but note that the "raw" version of it is 
-                            // used for the UNF:
-                            /* REMOVE dataTable2[columnCounter][i] = string_datum; */
                         }
                         byte_offset += strVarLength;
                         break;

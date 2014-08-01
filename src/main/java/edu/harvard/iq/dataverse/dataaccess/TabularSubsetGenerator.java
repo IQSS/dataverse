@@ -309,12 +309,39 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             
             while (bytecount < bytesRead) {
                 if (columnBytes[bytecount] == '\n') {
-                    String token = new String(columnBytes, byteoffset, bytecount-byteoffset);
+                    /*
+                    String token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
 
                     if (leftover != null) {
-                        String leftoverString = new String (leftover);
+                        String leftoverString = new String (leftover, "UTF8");
                         token = leftoverString + token;
                         leftover = null;
+                    }
+                    */
+                    /* 
+                     * Note that the way I was doing it at first - above - 
+                     * was not quite the correct way - because I was creating UTF8
+                     * strings from the leftover bytes, and the bytes in the 
+                     * current buffer *separately*; which means, if a multi-byte
+                     * UTF8 character got split in the middle between one buffer
+                     * and the next, both chunks of it would become junk 
+                     * characters, on each side!
+                     * The correct way of doing it, of course, is to create a
+                     * merged byte buffer, and then turn it into a UTF8 string. 
+                     *      -- L.A. 4.0
+                     */
+                    String token = null; 
+                    
+                    if (leftover == null) {
+                        token = new String(columnBytes, byteoffset, bytecount-byteoffset, "UTF8");
+                    } else {
+                        byte[] merged = new byte[leftover.length + bytecount-byteoffset];
+                        
+                        System.arraycopy(leftover, 0, merged, 0, leftover.length);
+                        System.arraycopy(columnBytes, byteoffset, merged, leftover.length, bytecount-byteoffset);
+                        token = new String (merged, "UTF8");
+                        leftover = null;
+                        merged = null; 
                     }
                     
                     if (isString) {
@@ -326,20 +353,34 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             // Strip the outer quotes:
                             token = token.replaceFirst("^\\\"", "");
                             token = token.replaceFirst("\\\"$", "");
-                            // Restore the special characters that 
-                            // are stored in tab files escaped -
-                            // quotes, new lines and tabs:
-                            token = token.replaceAll(Matcher.quoteReplacement("\\\""), "\"");
-                            token = token.replaceAll(Matcher.quoteReplacement("\\t"), "\t");
-                            token = token.replaceAll(Matcher.quoteReplacement("\\n"), "\n");
-                            token = token.replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                            
+                            // We need to restore the special characters that 
+                            // are stored in tab files escaped - quotes, new lines 
+                            // and tabs. Before we do that however, we need to 
+                            // take care of any escaped backslashes stored in 
+                            // the tab file. I.e., "foo\t" should be transformed 
+                            // to "foo<TAB>"; but "foo\\t" should be transformed 
+                            // to "foo\t". This way new lines and tabs that were
+                            // already escaped in the original data are not 
+                            // going to be transformed to unescaped tab and 
+                            // new line characters!
+                            
+                            String[] splitTokens = token.split(Matcher.quoteReplacement("\\\\"));
+                            
+                            for (int i = 0; i < splitTokens.length; i++) {
+                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
+                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\t"), "\t");
+                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
+                                splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
+                            }
                             // TODO: 
                             // Make (some of?) the above optional; for ex., we 
                             // only need to restore the newlines when calculating UNFs;
                             // If we are subsetting these vectors in order to 
                             // create a new tab-delimited file, they will 
                             // actually break things! -- L.A. Jul. 28 2014
-                            retVector[caseindex] = token;
+                            
+                            retVector[caseindex] = StringUtils.join(splitTokens, '\\');
                         }
                     } else if (isDouble) {
                         try {
@@ -698,6 +739,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         int varcount = new Integer(args[1]).intValue();
         int casecount = new Integer(args[2]).intValue();
         int column = new Integer(args[3]).intValue();
+        String type = args[4];
         
         File tabFile = new File(tabFileName);
         File rotatedImageFile = null; 
@@ -722,15 +764,23 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         try {
             //subsetGenerator.reverseRotatedImage(rotatedImageFile, varcount, casecount);
             //String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
-            Double[] columns = subsetGenerator.subsetDoubleVector(tabFile, column, varcount, casecount);
-            for (int i = 0; i < casecount; i++) {
-                if (columns[i] != null) {
-                    BigDecimal outBigDecimal = new BigDecimal(columns[i], doubleMathContext);
-                    System.out.println(String.format(FORMAT_IEEE754, outBigDecimal));
-                } else {
-                    System.out.println("NA");
+            if ("string".equals(type)) {
+                String[] columns = subsetGenerator.subsetStringVector(tabFile, column, varcount, casecount);
+                for (int i = 0; i < casecount; i++) {
+                    System.out.println(columns[i]);
                 }
-                //System.out.println(columns[i]);
+            } else {
+
+                Double[] columns = subsetGenerator.subsetDoubleVector(tabFile, column, varcount, casecount);
+                for (int i = 0; i < casecount; i++) {
+                    if (columns[i] != null) {
+                        BigDecimal outBigDecimal = new BigDecimal(columns[i], doubleMathContext);
+                        System.out.println(String.format(FORMAT_IEEE754, outBigDecimal));
+                    } else {
+                        System.out.println("NA");
+                    }
+                    //System.out.println(columns[i]);
+                }
             }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
