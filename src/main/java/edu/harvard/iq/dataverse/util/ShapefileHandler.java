@@ -23,17 +23,42 @@ import org.apache.commons.io.FileUtils;
 
 /**
  *  Used to identify, "repackage", and extract data from Shapefiles in .zip format
- * 
+ *
  *  (1) Identify if a .zip contains a shapefile: 
  *          boolean containsShapefile(FileInputStream zip_stream) or boolean containsShapefile(FileInputStream zip_filename) 
  *
+ *
+ * 
  *  (2) Unpack/"Repackage" .zip:
  *          (a) All files extracted
  *          (b) Each group of files that make up a shapefile are made into individual .zip files
- *          (c) Non shapefile related files left on their own
+ *          (c) Non shapefile-related files left on their own
  *
- * (3) For shapefile sets, described in (2)(b), create a text file describing the contents of the zipped shapefile
+ *      If the original .zip contains:  "shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.ain",  "shape1.aih",
+ *                                      "shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj",
+ *                                      "shape1.pdf", "README.md", "shape_notes.txt"
+ *      The repackaging results in a folder containing: 
+ *                                  "shape1.zip", 
+ *                                  "shape2.zip",
+ *                                  "shape1.pdf", "README.md", "shape_notes.txt"
  * 
+ *  Code Example:  
+ *          FileInputStream shp_file_input_stream = new FileInputStream(new File("zipped_shapefile.zip"))
+ *          ShapefileHandler shp_handler = new ShapefileHandler(shp_file_input_stream);
+ *          if (shp_handler.containsShapefile()){
+ *              File rezip_folder = new File("~/folder_for_rezipping");
+ *              boolean rezip_success = shp_handler.rezipShapefileSets(shp_file_input_stream, rezip_folder );
+ *              if (!rezip_success){
+ *                  // rezip failed, should be an error message (String) available
+                    System.out.println(shp_handler.error_message);
+ *              }
+ *          }else{              
+ *              if (shp_handler.errorFound){
+ *                  System.out.println("Error message: " + shp_handler.error_message;
+ *              }
+ *          }
+ *         
+ *
  * @author Raman Prasad
  * 
  */
@@ -92,7 +117,6 @@ public class ShapefileHandler{
             return;
         }
         
-        
         FileInputStream zip_file_stream;
         try {
             zip_file_stream = new FileInputStream(new File(filename));
@@ -110,11 +134,12 @@ public class ShapefileHandler{
         Constructor, start with FileInputStream
     */
     public ShapefileHandler(FileInputStream zip_file_stream){
-        //processZipfile(zip_file_stream);
-        
+
+        if (zip_file_stream==null){
+            this.addErrorMessage("The zip_file_stream was null");
+            return;
+        }
         this.examineZipfile(zip_file_stream);
-        //showFileNamesSizes();
-        //showFileGroups();
     }
     
     private void addErrorMessage(String m){
@@ -187,9 +212,11 @@ public class ShapefileHandler{
         msgt("Hash: file base names + extensions");
         
         for (Map.Entry<String, List<String>> entry : fileGroups.entrySet()){
-            msg("Key: [" + entry.getKey() + "] Ext List: " + entry.getValue());
+            msg("\nKey: [" + entry.getKey() + "] Ext List: " + entry.getValue());
             if (doesListContainShapefileExtensions(entry.getValue())){
-                msg(" >>>> GOT IT! <<<<<<<<");
+                msg(" >>>> YES, This is a shapefile!");
+            }else{
+                msg(" >>>> Not a shapefile");
             }
         }
        
@@ -284,7 +311,14 @@ public class ShapefileHandler{
     public boolean rezipShapefileSets(FileInputStream zipfile_input_stream, File rezippedFolder) throws IOException{
         
         //msgt("rezipShapefileSets");
-        
+        if (!this.zipFileProcessed){
+             this.addErrorMessage("First use 'examineZipFile' (called in the constructor)");
+            return false;
+        }
+        if (!this.containsShapefile()){
+             this.addErrorMessage("There are no shapefiles here!");
+            return false;
+        }
         if (zipfile_input_stream== null){
             this.addErrorMessage("The zipfile_input_stream is null.");
             return false;
