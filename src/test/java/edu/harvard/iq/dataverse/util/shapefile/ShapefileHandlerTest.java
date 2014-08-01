@@ -176,6 +176,8 @@ public class ShapefileHandlerTest {
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), false);
 
         // get file_groups Map
@@ -192,6 +194,7 @@ public class ShapefileHandlerTest {
         
         this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
 
+        
         // Delete .zip
         zipfile_obj.delete();
         
@@ -210,6 +213,9 @@ public class ShapefileHandlerTest {
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+        
+        
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), true);
 
         // get file_groups Map
@@ -228,6 +234,14 @@ public class ShapefileHandlerTest {
         
         this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
 
+        //shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), this.tempFolder.newFolder("test_unzip").getAbsoluteFile());
+        shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), new File("/Users/rmp553/Desktop/blah"));
+        
+        if (shp_handler.errorFound){
+            msgt("Error found!");
+            msg(shp_handler.errorMessage);
+        }
+        
         // Delete .zip
         zipfile_obj.delete();
         
@@ -235,7 +249,7 @@ public class ShapefileHandlerTest {
     }
     
     
-    @Test
+    //@Test
     public void testZippedShapefileWithExtraFiles() throws IOException{
         msgt("(3) testZippedShapefileWithExtraFiles");
                 
@@ -245,6 +259,9 @@ public class ShapefileHandlerTest {
 
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+        
+        
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), true);
 
         // get file_groups Map
@@ -270,7 +287,7 @@ public class ShapefileHandlerTest {
     }
     
     
-    @Test
+    //@Test
     public void testCreateZippedShapefile() throws IOException {
     
         msgt("(4) testCreateZippedShapefile");
