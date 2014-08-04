@@ -384,7 +384,7 @@ public class IngestServiceBean {
                         // 
                         try {
                             dataFile.setFilesize(readChannel.size());
-                        } catch (IOException md5ex) {
+                        } catch (IOException fsize_ex) {
                             logger.warning("Could not calculate the size of new file: " + fileName);
                         }
                         
@@ -397,9 +397,6 @@ public class IngestServiceBean {
                         } catch (Exception md5ex) {
                             logger.warning("Could not calculate MD5 signature for the new file " + fileName);
                         }
-                        
-                        
-                        
                         
                         
                     } catch (IOException ioex) {
