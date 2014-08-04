@@ -239,8 +239,15 @@ public class FileUtil implements java.io.Serializable  {
                     try {uncompressedIn.close();} catch (IOException e) {}
                 }
             }
-        } if ("application/zip".equals(fileType)) {
-            // A "shape file" check will go here: 
+        } 
+        if ("application/zip".equals(fileType)) {
+            
+            // Is this a zipped Shapefile?
+            // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
+            ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
+             if (shp_handler.containsShapefile()){
+                 fileType = "application/zipped-shapefile";
+             }
         } 
         
         logger.fine("returning fileType "+fileType);
