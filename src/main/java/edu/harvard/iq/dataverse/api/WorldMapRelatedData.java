@@ -14,16 +14,26 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.MapLayerMetadata;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
+import java.io.StringReader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import org.atmosphere.config.service.Post;
+import org.atmosphere.config.service.Put;
+import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -35,6 +45,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
 
     @EJB
+    MapLayerMetadataServiceBean mapLayerMetadataService;
+
+    @EJB
     DatasetServiceBean datasetService;
 
     @EJB
@@ -43,7 +56,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     
     @GET
     //@Path("{id}")
-    @Path("datafile/{id}")
+    @Path("datafile/{datafile_id}")
     /*
         For WorldMap/GeoConnect Usage
         Return detailed Datafile information including latest Dataset and Dataverse data
@@ -51,7 +64,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         !! Does not yet implement permissions/command checks
         !! Change to POST with check for hidden WorldMap key; IP check, etc
     */
-    public Response getWorldMapDatafile(@PathParam("id") Long id, @QueryParam("key") String apiKey) {
+    public Response getWorldMapDatafile(@PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
         
         // Temp: Check if the user exists
         // Change this to WorldMap API check!!
@@ -61,9 +74,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (1) Attempt to retrieve DataFile indicated by id
-        DataFile dfile = dataFileService.find(id);
+        DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found");
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
         FileMetadata dfile_meta = dfile.getFileMetadata();
         if (dfile_meta==null){
@@ -108,7 +121,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("filename", dfile_meta.getLabel());
         dfile_json.add("datafile_label", dfile_meta.getLabel());
         dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
-        dfile_json.add("filesize", 123456); // Size not available! 
+        dfile_json.add("filesize", dfile.getFilesize()); 
         dfile_json.add("datafile_type", dfile.getContentType());
         dfile_json.add("created", dfile.getCreateDate().toString());
         
@@ -125,9 +138,79 @@ public class WorldMapRelatedData extends AbstractApiBean {
     }
    
     
-    @GET
-    @Path("layer-update/{id}")
-    public Response updateWorldMapLayerData(@PathParam("id") Long id, @QueryParam("key") String apiKey){
-        return okResponse("In process");
+    @POST
+    @Path("layer-update/{datafile_id}")
+    /*
+        For WorldMap/GeoConnect Usage
+        Create a MayLayerMetadata object for a given Datafile id
+        
+        !! Does not yet implement permissions/command checks
+        !! Change to check for hidden WorldMap key; IP check, etc
+    
+        Example of jsonLayerData String:
+        {
+             "layerName": "geonode:boston_census_blocks_zip_cr9"
+            , "layerLink": "http://localhost:8000/data/geonode:boston_census_blocks_zip_cr9"
+            , "embedMapLink": "http://localhost:8000/maps/embed/?layer=geonode:boston_census_blocks_zip_cr9"
+            , "worldmapUsername": "dv_pete"
+        }
+    */
+    public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
+        
+        // Temp: Check if the user exists
+        // Change this to WorldMap API check!!
+        DataverseUser dv_user = userSvc.findByUserName(apiKey);
+        if (dv_user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        }
+        
+        // (1) Attempt to retrieve DataFile indicated by id
+        DataFile dfile = dataFileService.find(datafile_id);
+        if (dfile==null){
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
+        }
+        
+        // (2) Parse the json message
+        JsonObject json;
+        try ( StringReader rdr = new StringReader(jsonLayerData) ) {
+            json = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonLayerData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        // (3) Make sure the json message has all of the required attributes
+        for (String attr : MapLayerMetadataServiceBean.MANDATORY_JSON_FIELDS ){
+            if (!json.containsKey(attr)){
+                return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadataServiceBean.MANDATORY_JSON_FIELDS  );
+            }
+        }
+        
+        
+        MapLayerMetadata mapLayer;
+        // See if a MapLayerMetadata already exists
+        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(json.getString("layerName"));//, dfile);
+        if (mapLayer == null){
+            mapLayer = new MapLayerMetadata();
+        }
+
+        // Create/Update new MapLayerMetadata object and save it
+        mapLayer.setDataFile(dfile);
+        mapLayer.setDataset(dfile.getOwner());
+        mapLayer.setLayerName(json.getString("layerName"));
+        mapLayer.setLayerLink(json.getString("layerLink"));
+        mapLayer.setEmbedMapLink(json.getString("embedMapLink"));
+        mapLayer.setWorldmapUsername(json.getString("worldmapUsername"));
+
+        //mapLayer.save();
+        MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayer);
+        if (saved_map_layer==null){
+            logger.log(Level.SEVERE, "Json: " + jsonLayerData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
+        }
+        return okResponse("map layer object saved!");
+
+        
+//        return okResponse("In process");
     }
 }
