@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
@@ -44,6 +45,9 @@ public class DataFile extends DvObject {
 
     private String md5;
 
+    @Column(nullable=true)
+    private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
+
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -60,6 +64,7 @@ public class DataFile extends DvObject {
     private List<FileMetadata> fileMetadatas;
     
     private char ingestStatus = INGEST_STATUS_NONE; 
+    
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -249,7 +254,29 @@ public class DataFile extends DvObject {
         return fmd;
     }
     
-    
+    /**
+     * Get property filesize, number of bytes
+     * @return value of property filesize.
+     */
+    public long getFilesize() {
+        return this.filesize;
+    }
+
+    /**
+     * Set property filesize in bytes
+     * 
+     * Allow nulls, but not negative numbers.
+     * 
+     * @param filesize new value of property filesize.
+     */
+    public void setFilesize(long filesize) {
+        if (filesize < 0){
+            return;
+        }
+       this.filesize = filesize;
+    }
+
+
     public String getmd5() { 
         return this.md5; 
     }
