@@ -380,6 +380,14 @@ public class IngestServiceBean {
                             Files.copy(tempLocationPath, dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
                         */
 
+                        // Set filesize in bytes
+                        // 
+                        try {
+                            dataFile.setFilesize(readChannel.size());
+                        } catch (IOException md5ex) {
+                            logger.warning("Could not calculate the size of new file: " + fileName);
+                        }
+                        
                         // MD5:
                         // TODO: replace the direct filesystem access with a DataAccess 
                         // call. -- L.A. Jul. 20 2014. 
@@ -389,7 +397,11 @@ public class IngestServiceBean {
                         } catch (Exception md5ex) {
                             logger.warning("Could not calculate MD5 signature for the new file " + fileName);
                         }
-
+                        
+                        
+                        
+                        
+                        
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
                     } finally {
