@@ -5,13 +5,16 @@
 
 ' package "edu.harvard.iq.dataverse.authorization"
 class AccessRequest
+class AllUsers
 class ApiKey
 class AuthenticatedUser
+class AuthenticatedUsers
 interface AuthenticationManager
 interface AuthenticationProvider
 class ExplicitGroup
 interface Group
 interface GroupCreator
+class GuestUser
 class IpGroup
 class LocalAuthenticationProvider
 interface RoleAssignee
@@ -24,21 +27,6 @@ interface UserLister
 ' content
 ' -------
 
-' AuthenticationManager:
-AuthenticationManager : Collection authenticationProviders
-AuthenticationManager : void registerProvider(AuthenticationProvider)
-
-' GroupCreator:
-GroupCreator : Group createGroup()
-
-' UserLister:
-UserLister : List listUsers()
-
-' Group:
-Group : String name
-Group : String description
-Group : Collection roleAssignees
-
 ' LocalAuthenticationProvider:
 AuthenticationProvider <|.. LocalAuthenticationProvider
 UserLister <|.. LocalAuthenticationProvider
@@ -47,28 +35,11 @@ LocalAuthenticationProvider : RoleAssignee getRoleAssignee(String)
 LocalAuthenticationProvider : List listUsers()
 LocalAuthenticationProvider : Group createGroup()
 
-' User:
-
-' RoleAssignee:
-RoleAssignee : String identifier
-RoleAssignee : boolean showInLists
-RoleAssignee : String displayInfo()
-
-' ShibGroup:
-Group <|.. ShibGroup
-ShibGroup : Map getHeaderMatches()
-
-' ExplicitGroup:
-Group <|.. ExplicitGroup
-ExplicitGroup : void add(RoleAssignee)
-ExplicitGroup : void remove(RoleAssignee)
-ExplicitGroup : List getRoleAssignees()
+' AllUsers:
+Group <|.. AllUsers
 
 ' AuthenticationProvider:
 AuthenticationProvider : RoleAssignee getRoleAssignee(String)
-
-' AccessRequest:
-AccessRequest --> "1" AuthenticatedUser
 
 ' ShibAuthenticationProvider:
 AuthenticationProvider <|.. ShibAuthenticationProvider
@@ -76,14 +47,55 @@ GroupCreator <|.. ShibAuthenticationProvider
 ShibAuthenticationProvider : RoleAssignee getRoleAssignee(String)
 ShibAuthenticationProvider : Group createGroup()
 
-' AuthenticatedUser:
-User <|.. AuthenticatedUser
+' AuthenticationManager:
+AuthenticationManager : Collection authenticationProviders
+AuthenticationManager : void registerProvider(AuthenticationProvider)
+
+' IpGroup:
+Group <|.. IpGroup
+
+' Group:
+Group : String name
+Group : String description
+Group : Collection roleAssignees
 
 ' ApiKey:
 ApiKey : String getKey()
 ApiKey : String getTitle()
 
-' IpGroup:
-Group <|.. IpGroup
+' GroupCreator:
+GroupCreator : Group createGroup()
+
+' AuthenticatedUsers:
+Group <|.. AuthenticatedUsers
+
+' ShibGroup:
+Group <|.. ShibGroup
+ShibGroup : Map getHeaderMatches()
+
+' RoleAssignee:
+RoleAssignee : String identifier
+RoleAssignee : boolean showInLists
+RoleAssignee : String displayInfo()
+
+' AuthenticatedUser:
+User <|.. AuthenticatedUser
+
+' AccessRequest:
+AccessRequest --> "1" AuthenticatedUser
+
+' User:
+
+' UserLister:
+UserLister : List listUsers()
+
+' ExplicitGroup:
+Group <|.. ExplicitGroup
+ExplicitGroup : void add(RoleAssignee)
+ExplicitGroup : void remove(RoleAssignee)
+ExplicitGroup : List getRoleAssignees()
+
+' GuestUser:
+User <|.. GuestUser
 
 @enduml
