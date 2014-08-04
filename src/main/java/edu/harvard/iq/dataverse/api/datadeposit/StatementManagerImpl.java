@@ -95,6 +95,8 @@ public class StatementManagerImpl implements StatementManager {
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
                 Map<String, String> states = new HashMap<String, String>();
                 states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
+//                Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
+//                states.put("isMinorUpdate", isMinorUpdate.toString());
                 DatasetLock lock = dataset.getDatasetLock();
                 if (lock != null) {
                     states.put("locked", "true");
