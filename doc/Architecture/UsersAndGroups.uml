@@ -151,7 +151,7 @@ AuthenticatedUser  <.. AuthenticationProvider : "Creates/Updates"
 
 package somewhere_else_in_dataverse {
   class AccessRequest< DB > {
-    from: RoleAssignee
+    from: AuthenticatedUser
     dvo: DvObject
     metadata : TBD
   }
