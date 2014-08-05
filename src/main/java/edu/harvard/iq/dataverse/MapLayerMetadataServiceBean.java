@@ -23,10 +23,7 @@ import javax.persistence.Query;
 @Named
 public class MapLayerMetadataServiceBean {
     
-
-    public final static List<String> MANDATORY_JSON_FIELDS = Arrays.asList("layerName", "layerLink", "embedMapLink", "worldmapUsername");
-
-    
+   
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     

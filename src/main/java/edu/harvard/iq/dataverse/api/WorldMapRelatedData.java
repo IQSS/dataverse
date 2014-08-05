@@ -180,9 +180,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (3) Make sure the json message has all of the required attributes
-        for (String attr : MapLayerMetadataServiceBean.MANDATORY_JSON_FIELDS ){
+        for (String attr : MapLayerMetadata.MANDATORY_JSON_FIELDS ){
             if (!json.containsKey(attr)){
-                return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadataServiceBean.MANDATORY_JSON_FIELDS  );
+                return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadata.MANDATORY_JSON_FIELDS  );
             }
         }
         

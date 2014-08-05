@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -26,6 +27,9 @@ import org.hibernate.validator.constraints.NotBlank;
  */
 @Entity
 public class MapLayerMetadata implements Serializable {
+
+    @Transient
+    public final static List<String> MANDATORY_JSON_FIELDS = Arrays.asList("layerName", "layerLink", "embedMapLink", "worldmapUsername");
 
    
     private static final long serialVersionUID = 1L;
