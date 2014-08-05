@@ -26,7 +26,7 @@
 	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
 	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		text	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	24	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
-	producerAffiliation	Affilitation	The organization with which the producer is affiliated.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	26	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	27	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
 	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	28	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
