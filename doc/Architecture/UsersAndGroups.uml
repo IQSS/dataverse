@@ -88,7 +88,7 @@ ExplicitGroup ..> RoleAssignee: Contains
 ExplicitGroup o--> RoleAssignee
 ExplicitGroup "0..*" <--* "1" DvObject : Defines
 
-package roleassigneeprovider {
+package authenticationprovider {
   
   class AuthenticationManager<Singleton> {
     authenticationProviders: Collection<AuthenticationProvider>
