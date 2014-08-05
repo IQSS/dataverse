@@ -66,6 +66,7 @@ public class ShapefileHandler{
 
     // Reference for these extensions: http://en.wikipedia.org/wiki/Shapefile
     public final static String SHAPEFILE_FILE_TYPE = "application/zipped-shapefile";
+    public final static String SHAPEFILE_FILE_TYPE_FRIENDLY_NAME = "shapefile";
     public final static List<String> SHAPEFILE_MANDATORY_EXTENSIONS = Arrays.asList("shp", "shx", "dbf", "prj");
     public final static String SHP_XML_EXTENSION = "shp.xml";
     public final static String BLANK_EXTENSION = "__PLACEHOLDER-FOR-BLANK-EXTENSION__";

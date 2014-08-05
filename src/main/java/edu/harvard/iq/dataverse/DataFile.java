@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -337,6 +338,16 @@ public class DataFile extends DvObject {
         }
         String fileSystemPath = studyDirectory + "/" + this.fileSystemName;
         return fileSystemPath.replaceAll("/", "%2F");
+    }
+    
+    /*
+        Does the contentType indicate a shapefile?
+    */
+    public boolean isShapefileType(){
+        if (this.contentType==null){
+            return false;
+        }
+        return ShapefileHandler.SHAPEFILE_FILE_TYPE.equalsIgnoreCase(this.contentType);
     }
     
     public boolean isImage() {

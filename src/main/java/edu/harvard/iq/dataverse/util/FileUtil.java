@@ -118,7 +118,9 @@ public class FileUtil implements java.io.Serializable  {
             if (fileType.indexOf(";") != -1) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
-
+            if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
+                return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
+            }
             try {
                 return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
             } catch (MissingResourceException e) {
