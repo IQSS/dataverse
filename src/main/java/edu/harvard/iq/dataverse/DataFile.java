@@ -401,7 +401,7 @@ public class DataFile extends DvObject {
     //
     public String getMapItURL(){
         
-        return WorldMapRelatedData.MAP_IT_API_PATH + this.getmd5();
+        return WorldMapRelatedData.MAP_IT_API_PATH + this.getId();
     }
     
     /*

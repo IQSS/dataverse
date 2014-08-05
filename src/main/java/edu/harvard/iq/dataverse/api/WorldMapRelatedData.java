@@ -60,13 +60,16 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String GET_WORLDMAP_DATAFILE_API_PATH =  BASE_PATH + GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT;
     
     
-    public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "layer-update/"; 
+    public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata"; 
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
 
     // for testing, move to config file
     //
     private static final String GEOCONNECT_URL = "http://127.0.0.1:8070/shapefile/map-it";
+    private static final String GEOCONNECT_TOKEN_KEY = "GEOCONNECT_TOKEN";
     
+    private static final String GEOCONNECT_TOKEN_VALUE = "howdy";  // for testing
+
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
@@ -83,13 +86,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
     
     */
     @GET
-    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_md5}")
-    public Response mapDataFile(@Context HttpServletRequest request, @PathParam("datafile_md5") String datafile_md5){
+    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_id}")
+    public Response mapDataFile(@Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id){
         
         // Check if this file exists
-        DataFile dfile = dataFileService.findByMD5(datafile_md5);
+        DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for md5: " + datafile_md5);
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for md5: " + datafile_id);
         }
         
         // Redirect to geoconnect url
@@ -115,9 +118,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         !! Does not yet implement permissions/command checks
         !! Change to POST with check for hidden WorldMap key; IP check, etc
     */
-    @GET
+    @POST
     @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT + "{datafile_id}")
-    public Response getWorldMapDatafile(@Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
+    public Response getWorldMapDatafile(String jsonTokenData, @Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
         
         //            + "<br /> getRemoteAddr: " + request.getRemoteAddr()         
         //            + "<br /> X-FORWARDED-FOR: " + request.getHeader("X-FORWARDED-FOR")
@@ -128,6 +131,27 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (dv_user == null) {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         }
+        //----------------------------------
+        // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
+        //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db, etc.
+        //----------------------------------
+
+        JsonObject json_token_info;
+        try ( StringReader rdr = new StringReader(jsonTokenData) ) {
+            json_token_info = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonTokenData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        if (!json_token_info.containsKey(GEOCONNECT_TOKEN_KEY)){
+            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (1)");
+            //return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + GEOCONNECT_TOKEN_KEY + "]");
+        }
+        if (!(json_token_info.getString(GEOCONNECT_TOKEN_KEY).equalsIgnoreCase(GEOCONNECT_TOKEN_VALUE))){
+            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (2)");
+        }
+        //-----------------------------------
 
         // (1) Attempt to retrieve DataFile indicated by id
         DataFile dfile = dataFileService.find(datafile_id);
@@ -228,8 +252,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
     */
     @POST
-    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT + "{datafile_id}")
-    public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
+    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT) // + "{datafile_id}")
+    //public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
+    public Response updateWorldMapLayerData(String jsonLayerData, @QueryParam("key") String apiKey){
         
         // Temp: Check if the user exists
         // Change this to WorldMap API check!!
@@ -238,32 +263,52 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         }
         
-        // (1) Attempt to retrieve DataFile indicated by id
-        DataFile dfile = dataFileService.find(datafile_id);
-        if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
-        }
         
-        // (2) Parse the json message
-        JsonObject json;
+        // (1) Parse the json message
+        JsonObject json_info;
         try ( StringReader rdr = new StringReader(jsonLayerData) ) {
-            json = Json.createReader(rdr).readObject();
+            json_info = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
-        // (3) Make sure the json message has all of the required attributes
+        // (1a) Check for the correct token
+        // Next step: dynamic token, etc.
+        /*
+        if (!json_info.containsKey(GEOCONNECT_TOKEN_KEY)){
+            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (1)");
+            //return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + GEOCONNECT_TOKEN_KEY + "]");
+        }
+        if (!(json_info.getString(GEOCONNECT_TOKEN_KEY).equalsIgnoreCase(GEOCONNECT_TOKEN_VALUE))){
+            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (2)");
+        }
+        */
+        
+        
+        
+        // (2) Make sure the json message has all of the required attributes
         for (String attr : MapLayerMetadata.MANDATORY_JSON_FIELDS ){
-            if (!json.containsKey(attr)){
+            if (!json_info.containsKey(attr)){
                 return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadata.MANDATORY_JSON_FIELDS  );
             }
         }
         
+        // (2) Attempt to retrieve DataFile indicated by id
+        Integer datafileID = json_info.getInt("datafileID");
+        if (datafileID==null){
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile id not found in JSON: " + json_info);
+        }
+        
+        DataFile dfile = dataFileService.find(datafileID.longValue());
+        if (dfile==null){
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafileID);
+        }
+
         
         MapLayerMetadata mapLayer;
         // See if a MapLayerMetadata already exists
-        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(json.getString("layerName"));//, dfile);
+        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(json_info.getString("layerName"));//, dfile);
         if (mapLayer == null){
             mapLayer = new MapLayerMetadata();
         }
@@ -271,10 +316,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Create/Update new MapLayerMetadata object and save it
         mapLayer.setDataFile(dfile);
         mapLayer.setDataset(dfile.getOwner());
-        mapLayer.setLayerName(json.getString("layerName"));
-        mapLayer.setLayerLink(json.getString("layerLink"));
-        mapLayer.setEmbedMapLink(json.getString("embedMapLink"));
-        mapLayer.setWorldmapUsername(json.getString("worldmapUsername"));
+        mapLayer.setLayerName(json_info.getString("layerName"));
+        mapLayer.setLayerLink(json_info.getString("layerLink"));
+        mapLayer.setEmbedMapLink(json_info.getString("embedMapLink"));
+        mapLayer.setWorldmapUsername(json_info.getString("worldmapUsername"));
 
         //mapLayer.save();
         MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayer);

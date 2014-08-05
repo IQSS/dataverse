@@ -40,7 +40,7 @@ public class DataFileServiceBean {
         return (DataFile) em.find(DataFile.class, pk);
     }   
     
-    public DataFile findByMD5(String md5Value){
+    /*public DataFile findByMD5(String md5Value){
         if (md5Value == null){
             return null;
         }
@@ -48,7 +48,7 @@ public class DataFileServiceBean {
         query.setParameter("md5Value", md5Value);
         return (DataFile)query.getSingleResult();
         
-    }
+    }*/
     
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
