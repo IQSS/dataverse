@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;

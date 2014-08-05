@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.engine.UserRoleAssignments;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.UserRoleAssignments;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;

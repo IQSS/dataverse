@@ -16,9 +16,9 @@ package existingCode {
   end note
 }
 
-package assignees {
+package "assignees" {
 
-  interface RoleAssignee< DB > {
+  interface RoleAssignee {
     + identifier:String
     + displayInfo() : TBD
   }
@@ -34,8 +34,8 @@ package assignees {
     range: IpRange[]
   }
 
-  class GuestUser {
-    showInLists: False
+  class GuestUser< Singleton > {
+    {static} get: GuestUser
   }
 
   class ApiKey< DB > {
@@ -51,10 +51,26 @@ package assignees {
     + contains( a:RoleAssignee )
   }
 
-  class ExplicitGroup {
+  class ExplicitGroup< DB > {
+    # includesGuest: boolean
     + add( a:RoleAssignee )
     + remove( a:RoleAssignee )
     + list: RoleAssignee[]
+  }
+
+  class GroupRow< DB > {
+    + id:Long
+    + alias:String
+    + creatorId: String
+    + ... common fields ...
+    + data:BLOB
+  }
+
+  class GroupManager< @Bean > {
+    + registerGroup( Group )
+    + getGroup( alias ): Group
+    + getGroup( groupRow ): Group
+    + registerGroupCreator( groupCreator )
   }
 
   class AuthenticatedUsers
@@ -83,8 +99,9 @@ RoleAssignment -up-> "1" DvObject: At
 RoleAssignment -up-> "1" Role: Assigns
 RoleAssignment --> "1" RoleAssignee: To
 
-ExplicitGroup ..> RoleAssignee: Contains
-ExplicitGroup o--> RoleAssignee
+ExplicitGroup ..> RoleAssignee: "Contains"
+ExplicitGroup o--> AuthenticatedUser
+ExplicitGroup o--> GroupRow
 ExplicitGroup "0..*" <--* "1" DvObject : Defines
 
 package authenticationprovider {

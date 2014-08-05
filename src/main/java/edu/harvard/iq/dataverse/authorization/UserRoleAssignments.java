@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.engine;
+package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;

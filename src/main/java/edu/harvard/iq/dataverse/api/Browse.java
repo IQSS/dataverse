@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;

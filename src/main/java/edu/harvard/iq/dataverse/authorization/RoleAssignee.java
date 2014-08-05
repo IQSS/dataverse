@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.authorization;
 
 public interface RoleAssignee {
 
-    String identifier = new String();
+    String identifier = "";
     boolean showInLists = false;
 
     public String displayInfo();

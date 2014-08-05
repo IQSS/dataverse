@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization;
+package edu.harvard.iq.dataverse.authorization.groups;
 
 public interface GroupCreator {
 

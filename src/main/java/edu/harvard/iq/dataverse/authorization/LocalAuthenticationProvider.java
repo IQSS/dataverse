@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import java.util.List;
 
 public class LocalAuthenticationProvider implements AuthenticationProvider, UserLister, GroupCreator {

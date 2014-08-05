@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
+
 public class ShibAuthenticationProvider implements AuthenticationProvider, GroupCreator {
 
     @Override

@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
