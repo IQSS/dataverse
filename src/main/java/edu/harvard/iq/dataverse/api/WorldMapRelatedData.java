@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
@@ -17,6 +16,9 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -25,11 +27,15 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.stream.JsonParsingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import org.atmosphere.config.service.Post;
 import org.atmosphere.config.service.Put;
@@ -44,6 +50,23 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
 
+    
+    private static final String BASE_PATH = "/api/worldmap/";
+    
+    public static final String MAP_IT_API_PATH_FRAGMENT =  "map-it/";  
+    public static final String MAP_IT_API_PATH = BASE_PATH + MAP_IT_API_PATH_FRAGMENT;
+    
+    public static final String GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT =  "datafile/";  
+    public static final String GET_WORLDMAP_DATAFILE_API_PATH =  BASE_PATH + GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT;
+    
+    
+    public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "layer-update/"; 
+    public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
+
+    // for testing, move to config file
+    //
+    private static final String GEOCONNECT_URL = "http://127.0.0.1:8070/shapefile/map-it";
+    
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
@@ -53,18 +76,51 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     DataFileServiceBean dataFileService;
     
+
+    /*
+        Link used within Dataverse for MapIt button
+        Sends file link to GeoConnect using a Redirect
     
+    */
     @GET
-    //@Path("{id}")
-    @Path("datafile/{datafile_id}")
+    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_md5}")
+    public Response mapDataFile(@Context HttpServletRequest request, @PathParam("datafile_md5") String datafile_md5){
+        
+        // Check if this file exists
+        DataFile dfile = dataFileService.findByMD5(datafile_md5);
+        if (dfile==null){
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for md5: " + datafile_md5);
+        }
+        
+        // Redirect to geoconnect url
+        String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
+        String redirect_url_str = WorldMapRelatedData.GEOCONNECT_URL + "?cb=" +  URLEncoder.encode(callback_url);
+        URI redirect_uri;
+        try {
+            redirect_uri = new URI(redirect_url_str);
+        } catch (URISyntaxException ex) {
+             return errorResponse(Response.Status.NOT_FOUND, "Faile to create URI from: " + redirect_url_str);
+        }
+//        Response.
+        return Response.seeOther(redirect_uri).build();
+        
+    }
+    
     /*
         For WorldMap/GeoConnect Usage
         Return detailed Datafile information including latest Dataset and Dataverse data
         
+        e.g. http://localhost:8080/api/worldmap/datafile/33?key=some-key
+
         !! Does not yet implement permissions/command checks
         !! Change to POST with check for hidden WorldMap key; IP check, etc
     */
-    public Response getWorldMapDatafile(@PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
+    @GET
+    @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT + "{datafile_id}")
+    public Response getWorldMapDatafile(@Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
+        
+        //            + "<br /> getRemoteAddr: " + request.getRemoteAddr()         
+        //            + "<br /> X-FORWARDED-FOR: " + request.getHeader("X-FORWARDED-FOR")
         
         // Temp: Check if the user exists
         // Change this to WorldMap API check!!
@@ -72,7 +128,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (dv_user == null) {
             return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         }
-        
+
         // (1) Attempt to retrieve DataFile indicated by id
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
@@ -105,7 +161,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         // (4) Roll it all up in a JSON response
         final JsonObjectBuilder dfile_json = Json.createObjectBuilder();
-      
+        
         // Dataverse
         dfile_json.add("dv_id", dverse.getId());
         dfile_json.add("dv_name", dverse.getName());
@@ -124,22 +180,38 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("filesize", dfile.getFilesize()); 
         dfile_json.add("datafile_type", dfile.getContentType());
         dfile_json.add("created", dfile.getCreateDate().toString());
+                      
+        String server_name =  this.getServerNamePort(request);
+        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(server_name));
+       
         
         // DataverseUser Info
         dfile_json.add("dv_user_email", dv_user.getEmail());
         dfile_json.add("dv_username", dv_user.getUserName());
         dfile_json.add("dv_user_id", dv_user.getId());
+                
         
-        /*       
-        "datafile_download_url": "http://127.0.0.1:8090/media/datafile/2014/06/26/boston_census_blocks_1.zip",
-        */
         return okResponse(dfile_json);
  
     }
    
     
-    @POST
-    @Path("layer-update/{datafile_id}")
+    private String getServerNamePort(HttpServletRequest request){
+        if (request == null){
+            return "";
+        }
+        String serverName = request.getServerName();
+        if (serverName==null){
+             return "";
+        }
+        int portNumber = request.getServerPort();
+        if (portNumber==80){
+           return "http://" + serverName;
+        }
+        return "http://" + serverName + ":" + portNumber;
+               
+    }
+    
     /*
         For WorldMap/GeoConnect Usage
         Create a MayLayerMetadata object for a given Datafile id
@@ -155,6 +227,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
             , "worldmapUsername": "dv_pete"
         }
     */
+    @POST
+    @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT + "{datafile_id}")
     public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
         
         // Temp: Check if the user exists

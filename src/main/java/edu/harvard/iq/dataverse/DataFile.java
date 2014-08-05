@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
@@ -395,6 +396,24 @@ public class DataFile extends DvObject {
     public int getIngestStatus() {
         return ingestStatus; 
     }
+    
+    // URL to use with the WorldMapRelatedData API
+    //
+    public String getMapItURL(){
+        
+        return WorldMapRelatedData.MAP_IT_API_PATH + this.getmd5();
+    }
+    
+    /*
+        8/10/2014 - Using the current "open access" url
+    */
+    public String getMapItFileDownloadURL(String serverName){
+        if ((this.getId() == null)||(serverName == null)){
+            return null;
+        }        
+        return serverName + "/api/access/datafile/" + this.getId();
+    }
+    
     /* 
      * If this is tabular data, the corresponding dataTable may have a UNF -
      * "numeric fingerprint" signature - generated:
