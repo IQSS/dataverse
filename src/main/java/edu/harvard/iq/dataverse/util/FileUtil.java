@@ -244,9 +244,12 @@ public class FileUtil implements java.io.Serializable  {
             
             // Is this a zipped Shapefile?
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
+            //logger.info("Checking for shapefile");
+
             ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
              if (shp_handler.containsShapefile()){
-                 fileType = "application/zipped-shapefile";
+              //  logger.info("------- shapefile FOUND ----------");
+                 fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
              }
         } 
         

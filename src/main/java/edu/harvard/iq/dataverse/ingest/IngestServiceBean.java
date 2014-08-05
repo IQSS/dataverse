@@ -62,6 +62,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.MD5Checksum;
+import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dvn.unf.*;
 import java.io.BufferedInputStream;
@@ -203,12 +204,15 @@ public class IngestServiceBean {
         String recognizedType = null;
         try {
             recognizedType = FileUtil.determineFileType(Paths.get(tempFilesDirectory, datafile.getFileSystemName()).toFile(), fmd.getLabel());
+            //logger.info("File utility recognized the file as " + recognizedType);
             logger.fine("File utility recognized the file as " + recognizedType);
             if (recognizedType != null && !recognizedType.equals("")) {
                 // is it any better than the type that was supplied to us,
                 // if any?
-                
-                if (contentType == null || 
+                if (recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
+                    // logger.info("ShapefileHandler.SHAPEFILE_FILE_TYPE recognized");
+                    datafile.setContentType(recognizedType);
+                }else if (contentType == null || 
                         contentType.equals("") || 
                         contentType.equalsIgnoreCase("application/octet-stream") ||
                         recognizedType.equals("application/fits-gzipped")) {
