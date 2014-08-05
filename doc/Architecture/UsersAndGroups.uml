@@ -21,7 +21,6 @@ package assignees {
   interface RoleAssignee< DB > {
     + identifier:String
     + displayInfo() : TBD
-    + showInLists: Boolean
   }
 
   class User {
@@ -132,7 +131,6 @@ package authenticationprovider {
   AuthenticationProvider <|.. OAuthAuthenticationProvider
 
   AuthenticationProvider <|-- UserLister   
-  AuthenticationProvider <|-- GroupCreator 
 
   UserLister   <|-- LocalAuthenticationProvider
   GroupCreator <|-- LocalAuthenticationProvider
