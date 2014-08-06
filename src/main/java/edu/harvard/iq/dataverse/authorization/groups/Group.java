@@ -11,7 +11,7 @@ import javax.servlet.ServletRequest;
  * 
  * @author michael
  */
-public interface Group {
+public interface Group extends RoleAssignee {
     
     
     /**

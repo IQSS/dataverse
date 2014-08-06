@@ -28,4 +28,14 @@ public class AuthenticatedUsers extends AbstractGroup {
         return null;
     }
 
+    @Override
+    public String getIdentifier() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getDisplayInfo() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

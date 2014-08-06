@@ -21,7 +21,17 @@ public class IpGroup extends AbstractGroup {
 
     @Override
     public GroupCreator getCreator() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getIdentifier() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getDisplayInfo() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

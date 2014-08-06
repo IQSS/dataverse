@@ -11,4 +11,12 @@ public class AccessRequest {
         this.authenticatedUser = authenticatedUser;
         this.dvObject = dvObject;
     }
+
+    public AuthenticatedUser getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    public DvObject getDvObject() {
+        return dvObject;
+    }
 }

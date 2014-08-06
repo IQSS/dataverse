@@ -1,5 +1,11 @@
 package edu.harvard.iq.dataverse.authorization;
 
-public interface User {
+import java.io.Serializable;
+
+/**
+ * @todo make into an abstract class to override getIdentifier method (prepend
+ * "u:").
+ */
+public interface User extends RoleAssignee, Serializable {
 
 }
