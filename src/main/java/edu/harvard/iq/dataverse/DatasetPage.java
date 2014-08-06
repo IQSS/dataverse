@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +102,9 @@ public class DatasetPage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     UserNotificationServiceBean userNotificationService;
-
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadataService;
+    
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -120,6 +123,9 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
+    
+    private final HashMap<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
+
     /**
      * @todo ticket to get away from these hard-coded protocol and authority
      * values: https://github.com/IQSS/dataverse/issues/757
@@ -261,6 +267,46 @@ public class DatasetPage implements java.io.Serializable {
         this.deaccessionRadio = deaccessionRadio;
     }
 
+
+    public boolean hasMapLayerMetadata(DataFile df){
+        if (df==null){
+            return false;
+        }
+        return hasMapLayerMetadata(df.getId());
+    }
+    
+    public boolean hasMapLayerMetadata(long datafile_pk){
+        return this.mapLayerMetadataLookup.containsKey(datafile_pk);
+    }
+   
+    public MapLayerMetadata getMapLayerMetadata(DataFile df){
+        if (df==null){
+            return null;
+        }
+        return this.mapLayerMetadataLookup.get(df.getId());
+    }
+    
+    public MapLayerMetadata getMapLayerMetadata(long datafile_pk){
+        return this.mapLayerMetadataLookup.get(datafile_pk);
+    }
+    
+    private void loadMapLayerMetadataLookup(){
+        if (this.dataset==null){
+            return;
+        }
+        
+        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
+        if (mapLayerMetadataList==null){
+            return;
+        }
+        for (MapLayerMetadata layer_metadata : mapLayerMetadataList){
+            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+        }
+
+    }// A DataFile may have a related MapLayerMetadata object
+     
+    
+    
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
@@ -282,6 +328,10 @@ public class DatasetPage implements java.io.Serializable {
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
             setReleasedVersionTabList(resetReleasedVersionTabList());
+            
+            // populate MapLayerMetadata
+            this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
+
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;

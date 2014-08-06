@@ -61,14 +61,17 @@ public class MapLayerMetadataServiceBean {
         } catch ( NoResultException nre ) {
             return null;
         }    
- //       "select d from Dataverse d WHERE d.alias=:alias",
-        //query.setParameter("layerName", layerName);
-       // query.setParameter("datafileID", datafile.getId());
-        
-        //return this.find(query.getFirstResult());
-        //return query.getFirstResult();
-       // return query.getResultList();
     }
+    
+    
+    public List<MapLayerMetadata> getMapLayerMetadataForDataset(Dataset dataset){
+        if (dataset == null){
+            return null;
+        }
+        Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
+        query.setParameter("dataset", dataset);
+        return query.getResultList();
+    }    
     
 }
 

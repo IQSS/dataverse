@@ -167,7 +167,7 @@ public class MapLayerMetadata implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.FileMetadata[id=" + this.id + "]";
+        return "edu.harvard.iq.dataverse.MaplayerMetadata[id=" + this.id + "]";
 
         //return "WorldMap Layer: " + this.layerName + " for DataFile: " + this.dataFile.toString();
     }
