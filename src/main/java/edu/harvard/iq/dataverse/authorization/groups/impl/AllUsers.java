@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.User;
 import javax.servlet.ServletRequest;
 
 public class AllUsers extends AbstractGroup {
@@ -13,7 +13,7 @@ public class AllUsers extends AbstractGroup {
     }
         
     @Override
-    public boolean contains(RoleAssignee anAssignee, ServletRequest aRequest) {
+    public boolean contains(User aUser, ServletRequest aRequest) {
         return true;
     }
 

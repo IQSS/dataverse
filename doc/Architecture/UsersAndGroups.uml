@@ -48,7 +48,7 @@ package "assignees" {
     + description : String
     + data: Blob
     + provider: AuthenticationProvider
-    + contains( a:RoleAssignee )
+    + contains( u:User )
   }
 
   class ExplicitGroup< DB > {

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.groups.impl.AbstractGroup;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class ShibGroup extends AbstractGroup {
     }
 
     @Override
-    public boolean contains(RoleAssignee anAssignee, ServletRequest aRequest) {
+    public boolean contains(User aUser, ServletRequest aRequest) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

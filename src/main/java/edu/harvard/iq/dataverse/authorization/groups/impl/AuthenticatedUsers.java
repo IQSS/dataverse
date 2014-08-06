@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import javax.servlet.ServletRequest;
 
@@ -14,8 +14,8 @@ public class AuthenticatedUsers extends AbstractGroup {
     }
     
     @Override
-    public boolean contains(RoleAssignee anAssignee, ServletRequest aRequest) {
-        return (anAssignee instanceof AuthenticatedUser);
+    public boolean contains(User aUser, ServletRequest aRequest) {
+        return (aUser instanceof AuthenticatedUser);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.groups.impl.AbstractGroup;
 import java.util.Set;
 import javax.servlet.ServletRequest;
 
@@ -33,14 +35,14 @@ public interface Group extends RoleAssignee {
     public String getDescription();
     
     /**
-     * Tests to see whether the {@code anAssignee} is a part of {@code this} group, based on the assignee itself and the request.
+     * Tests to see whether the {@code aUser} is a part of {@code this} group, based on the user itself and the request.
      * Some groups may determine membership based on request properties, such as IP address.
      * 
-     * @param anAssignee The assignee 
+     * @param aUser The user whose inclusion we test 
      * @param aRequest The request the assignee issued.
      * @return {@code true} iff {@code anAssignee} is in this group; {@code false} otherwise.
      */
-    public boolean contains( RoleAssignee anAssignee, ServletRequest aRequest );
+    public boolean contains(  User aUser, ServletRequest aRequest );
     
     public boolean isEditable();
     
