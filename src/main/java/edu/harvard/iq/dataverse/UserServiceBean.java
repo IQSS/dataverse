@@ -63,4 +63,16 @@ public class UserServiceBean {
         TypedQuery<ApiKey> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiKey o", ApiKey.class);
         return typedQuery.getResultList();
     }
+
+    public ApiKey findApiKey(String key) {
+        TypedQuery<ApiKey> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiKey o where o.key = :apiKey", ApiKey.class);
+        typedQuery.setParameter("apiKey", key);
+        ApiKey apiKey = null;
+        try {
+            apiKey = typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            logger.info("caught " + ex.getClass() + " querying for " + key);
+        }
+        return apiKey;
+    }
 }

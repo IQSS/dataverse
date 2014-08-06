@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -36,6 +37,13 @@ public class Auth extends AbstractApiBean {
         for (ApiKey apiKey : apiKeys) {
             userStuff.add(apiKey.getKey());
         }
+        /**
+         * [jsmith:John Smith, jasmith:John Smith,
+         * B4D449E0-561E-493D-B514-96781D70CD18,
+         * 5D080DBB-73AE-47FE-9D11-C9960C93D59A,
+         * shib:idp.testshib.org:0109C89C-4BA2-42A5-969D-BB43D47DB409,
+         * local:jsmith, 3ef969eb-a7f5-46f5-b999-669a763893dc]
+         */
         return ok(userStuff.toString());
     }
 
@@ -46,7 +54,7 @@ public class Auth extends AbstractApiBean {
         if (user != null) {
             JsonObjectBuilder userObject = Json.createObjectBuilder();
             userObject
-                    .add("username", user.getIdentifier())
+                    .add("identifier", user.getIdentifier())
                     .add("displayInfo", user.getDisplayInfo());
             return ok(userObject.build());
         } else {
@@ -57,7 +65,6 @@ public class Auth extends AbstractApiBean {
     @GET
     @Path("lookup/{id}")
     public String getAuthenticatedUser(@PathParam("id") String id) {
-
         AuthenticatedUserLookup userIdLookupString = userService.findByPersitentIdFromIdp(id);
         if (userIdLookupString != null) {
             AuthenticatedUser user = userIdLookupString.getAuthenticatedUser();
@@ -68,6 +75,32 @@ public class Auth extends AbstractApiBean {
             }
         } else {
             return error("Couldn't find user based on " + id);
+        }
+    }
+
+    @GET
+    @Path("apikey/{key}")
+    public String getApiKeyInfo(@PathParam("key") String key) {
+        ApiKey apiKey = userService.findApiKey(key);
+        if (apiKey != null) {
+            AuthenticatedUser user = apiKey.getAuthenticatedUser();
+            if (user != null) {
+                JsonObjectBuilder userObject = Json.createObjectBuilder();
+                userObject
+                        .add("identifier", user.getIdentifier())
+                        .add("displayInfo", user.getDisplayInfo());
+                JsonObjectBuilder keyInfo = Json.createObjectBuilder();
+                keyInfo
+                        .add("owner", userObject)
+                        .add("disabled", apiKey.isDisabled())
+                        .add("created", apiKey.getExpireTime().toString())
+                        .add("expires", apiKey.getExpireTime().toString());
+                return ok(keyInfo.build());
+            } else {
+                return error("Couldn't find user based on " + key);
+            }
+        } else {
+            return error("Couldn't find user based on " + key);
         }
     }
 }
