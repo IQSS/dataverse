@@ -91,10 +91,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import org.primefaces.model.UploadedFile;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
@@ -107,9 +103,9 @@ import javax.faces.bean.ManagedBean;
 import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
-import org.apache.commons.lang.StringUtils;
 import java.util.zip.GZIPInputStream;
-import java.util.UUID; 
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  *
@@ -154,7 +150,242 @@ public class IngestServiceBean {
       
     
     public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+        List<DataFile> fileList = createDataFiles(version, inputStream, fileName, contentType);
+        
+        if (fileList == null) {
+            return null; 
+        }
+        
+        return fileList.get(0);
+    }
+    
+    public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
+        List<DataFile> datafiles = new ArrayList<DataFile>(); 
+        
+        // save the file, in the temporary location for now: 
+        Path tempFile = null; 
+        
+        
+        if (getFilesTempDirectory() != null) {
+            tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
+            // "temporary" location is the key here; this is why we are not using 
+            // the DataStore framework for this - the assumption is that 
+            // temp files will always be stored on the local filesystem. 
+            //          -- L.A. Jul. 2014
+            logger.fine("Will attempt to save the file as: " + tempFile.toString());
+            Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            throw new IOException ("Temp directory is not configured.");
+        }
+        
+        // Let's try our own utilities (Jhove, etc.) to determine the file type 
+        // of the uploaded file. (We may already have a mime type supplied for this
+        // file - maybe the type that the browser recognized on upload; or, if 
+        // it's a harvest, maybe the remote server has already given us the type
+        // for this file... with our own type utility we may or may not do better 
+        // than the type supplied:
+        //  -- L.A. 
+        String recognizedType = null;
+        String finalType = null; 
+        try {
+            recognizedType = FileUtil.determineFileType(tempFile.toFile(), fileName);
+            logger.fine("File utility recognized the file as " + recognizedType);
+            if (recognizedType != null && !recognizedType.equals("")) {
+                // is it any better than the type that was supplied to us,
+                // if any?
+                if (contentType == null
+                        || contentType.equals("")
+                        || contentType.equalsIgnoreCase("application/octet-stream")
+                        || recognizedType.equals("application/fits-gzipped")
+                        || recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+                    finalType = recognizedType;
+                }
+            }
+            
+        } catch (IOException ex) {
+            logger.warning("Failed to run the file utility mime type check on file " + fileName);
+        }
+        
+        if (finalType == null) {
+            finalType = contentType;
+        }
+        
         Dataset dataset = version.getDataset();
+        
+        // A few special cases: 
+        
+        // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
+        // a regular FITS file:
+        
+        if (finalType.equals("application/fits-gzipped")) {
+            // Uncompress the FITS stream, save and treat it as regular FITS:
+            InputStream uncompressedIn = null;
+            BufferedOutputStream uncompressedOut = null;
+            DataFile datafile = new DataFile("application/fits");
+            FileMetadata fmd = new FileMetadata();
+            fmd.setCategory(contentType);
+            fmd.setLabel(fileName);
+            
+            // if the file name had the ".gz" extension, remove it, 
+            // since we are going to uncompress it:
+            if (fileName != null && fileName.matches(".*\\.gz$")) {
+                fmd.setLabel(fileName.replaceAll("\\.gz$", ""));
+            }
+            datafile.setOwner(dataset);
+            fmd.setDataFile(datafile);
+            datafile.getFileMetadatas().add(fmd);
+            if (version.getFileMetadatas() == null) {
+                version.setFileMetadatas(new ArrayList());
+            }
+            version.getFileMetadatas().add(fmd);
+            fmd.setDatasetVersion(version);
+            dataset.getFiles().add(datafile);
+                
+            try {
+                // Once again, at this point we are dealing with *temp*
+                // files only; these are always stored on the local filesystem, 
+                // so we are using FileInput/Output Streams to read and write
+                // these directly, instead of going through the Data Access 
+                // framework. 
+                //      -- L.A. 
+                // (TODO: (?) - hide this code in a separate method neatly; 
+                // or maybe this could wait until we have to add similar 
+                // treatment for zip files)
+                
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));                
+
+                fileService.generateStorageIdentifier(datafile);
+                uncompressedOut = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+                
+                int bufsize = 8192;
+                byte[] bffr = new byte[bufsize];
+                while ((bufsize = uncompressedIn.read(bffr)) != -1) {
+                    uncompressedOut.write(bffr, 0, bufsize);
+                }
+
+            } catch (IOException ioex) {
+                datafile = null;
+            } finally {
+                if (uncompressedIn != null) {
+                    try {uncompressedIn.close();} catch (IOException e) {}
+                }
+                if (uncompressedOut != null) {
+                    try {uncompressedOut.close();} catch (IOException e) {}
+                }
+            }
+            
+            // If we were able to produce an uncompressed file, we'll use it 
+            // to create and return a final DataFile; if not, we're not going
+            // to do anything - and then a new DataFile will be created further 
+            // down, from the original, uncompressed file.
+            if (datafile != null) {
+                // remove the compressed temp file: 
+                try {
+                    tempFile.toFile().delete();
+                } catch (SecurityException ex) {
+                    // (this is very non-fatal)
+                    logger.warning("Failed to delete temporary file "+tempFile.toString());
+                }
+                
+                datafiles.add(datafile);
+                return datafiles;
+            }
+                
+        } else if (finalType.equals("application/zip")) {
+            // We are going to unpack the file, and create multiple DataFile
+            // objects from its contents:
+            
+            ZipInputStream unZippedIn = null; 
+            ZipEntry zipEntry = null; 
+            BufferedOutputStream unZippedOut = null;
+            try {
+                unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
+
+                if (unZippedIn == null) {
+                    return null;
+                }
+                while ((zipEntry = unZippedIn.getNextEntry()) != null) {
+                    // Note that some zip entries may be directories - we 
+                    // simply skip them:
+                    
+                    if (!zipEntry.isDirectory()) {
+
+                        String fileEntryName = zipEntry.getName();
+
+                        if (fileEntryName != null && !fileEntryName.equals("")) {
+
+                            fileEntryName = fileEntryName.replaceFirst("^.*[\\/]", "");
+
+                            if (!fileEntryName.startsWith("._")) {
+                                // OK, this seems like an OK file entry - we'll try 
+                                // to read it and create a DataFile with it:
+
+                                DataFile datafile = new DataFile("application/octet-stream");
+                                // TODO: 
+                                // Need to try to identify mime types for the individual 
+                                // files inside the ZIP archive. -- L.A.
+                                FileMetadata fmd = new FileMetadata();
+                                fmd.setLabel(fileEntryName);
+
+                                datafile.setOwner(dataset);
+                                fmd.setDataFile(datafile);
+                                datafile.getFileMetadatas().add(fmd);
+                                if (version.getFileMetadatas() == null) {
+                                    version.setFileMetadatas(new ArrayList());
+                                }
+                                version.getFileMetadatas().add(fmd);
+                                fmd.setDatasetVersion(version);
+                                dataset.getFiles().add(datafile);
+                
+                                fileService.generateStorageIdentifier(datafile);
+                                unZippedOut = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+                               
+
+                                byte[] dataBuffer = new byte[8192];
+                                int i = 0;
+
+                                while ((i = unZippedIn.read(dataBuffer)) > 0) {
+                                    unZippedOut.write(dataBuffer, 0, i);
+                                    unZippedOut.flush();
+                                }
+
+                                unZippedOut.close();
+                                datafiles.add(datafile);
+                            }
+                        }
+                    }
+                    unZippedIn.closeEntry(); 
+                }
+                
+            } catch (IOException ioex) {
+                // just clear the datafiles list and let 
+                // ingest default to creating a single DataFile out
+                // of the unzipped file. 
+                datafiles.clear();
+            } finally {
+                if (unZippedIn != null) {
+                    try {unZippedIn.close();} catch (Exception zEx) {}
+                }
+                if (unZippedOut != null) {
+                    try {unZippedOut.close();} catch (Exception ioEx) {}
+                }
+            }
+            if (datafiles.size() > 0) {
+                return datafiles;
+            }
+            
+        } else if (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
+            // Shape files may have to be split into multiple files, 
+            // one zip archive per each complete set of shape files:
+            
+            
+            
+        }
+        
+        // Finally, if none of the special cases above were applicable (or 
+        // if we were unable to unpack an uploaded file, etc.), we'll just 
+        // create and return a single DataFile:
+        
         DataFile datafile;
         
         FileMetadata fmd = new FileMetadata();
@@ -180,105 +411,17 @@ public class IngestServiceBean {
         fmd.setDatasetVersion(version);
         dataset.getFiles().add(datafile);
 
-        //datasetService.generateFileSystemName(datafile)
         fileService.generateStorageIdentifier(datafile);
-
-        // save the file, in the temporary location for now: 
-        String tempFilesDirectory = getFilesTempDirectory();
-        if (tempFilesDirectory != null) {
-            // "temporary" location is the key here; this is why we are not using 
-            // the DataStore framework for this - the assumption is that 
-            // temp files will always be stored on the local filesystem. 
-            //          -- L.A. Jul. 2014
-            logger.fine("Will attempt to save the file as: " + tempFilesDirectory + "/" + datafile.getFileSystemName());
-            Files.copy(inputStream, Paths.get(tempFilesDirectory, datafile.getFileSystemName()), StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // Let's try our own utilities (Jhove, etc.) to determine the file type 
-        // of the uploaded file. (We may already have a mime type supplied for this
-        // file - maybe the type that the browser recognized on upload; or, if 
-        // it's a harvest, maybe the remote server has already given us the type
-        // for this file... with our own type utility we may or may not do better 
-        // than the type supplied:
-        //  -- L.A. 
-        String recognizedType = null;
-        try {
-            recognizedType = FileUtil.determineFileType(Paths.get(tempFilesDirectory, datafile.getFileSystemName()).toFile(), fmd.getLabel());
-            //logger.info("File utility recognized the file as " + recognizedType);
-            logger.fine("File utility recognized the file as " + recognizedType);
-            if (recognizedType != null && !recognizedType.equals("")) {
-                // is it any better than the type that was supplied to us,
-                // if any?
-                if (recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
-                    // logger.info("ShapefileHandler.SHAPEFILE_FILE_TYPE recognized");
-                    datafile.setContentType(recognizedType);
-                }else if (contentType == null || 
-                        contentType.equals("") || 
-                        contentType.equalsIgnoreCase("application/octet-stream") ||
-                        recognizedType.equals("application/fits-gzipped")) {
-                    datafile.setContentType(recognizedType);
-                }
-            }
-        } catch (IOException ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fmd.getLabel());
+        if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getFileSystemName()))) {
+            datafile = null; 
         }
         
-        if (datafile.getContentType().equals("application/fits-gzipped")) {
-            // Uncompress the FITS stream, save and treat it as regular FITS:
-            InputStream uncompressedIn = null; 
-            BufferedOutputStream uncompressedOut = null;
-            String gzippedFilename = datafile.getFileSystemName();
-            try {
-                // Once again, at this point we are dealing with *temp*
-                // files only; these are always stored on the local filesystem, 
-                // so we are using FileInput/Output Streams to read and write
-                // these directly, instead of going through the Data Access 
-                // framework. 
-                //      -- L.A. 
-                // (TODO: (?) - hide this code in a separate method neatly; 
-                // or maybe this could wait until we have to add similar 
-                // treatment for zip files)
-                
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
-                //datasetService.generateFileSystemName(datafile);
-                fileService.generateStorageIdentifier(datafile);
-                uncompressedOut = new BufferedOutputStream(new FileOutputStream(tempFilesDirectory + "/" + datafile.getFileSystemName()));
-                
-                int bufsize = 8192;
-                byte[] bffr = new byte[bufsize];
-                while ((bufsize = uncompressedIn.read(bffr)) != -1) {
-                    uncompressedOut.write(bffr, 0, bufsize);
-                }
-
-            } catch (IOException ioex) {
-                datafile.setFileSystemName(gzippedFilename);
-                return datafile;
-            } finally {
-                if (uncompressedIn != null) {
-                    try {uncompressedIn.close();} catch (IOException e) {}
-                }
-                if (uncompressedOut != null) {
-                    try {uncompressedOut.close();} catch (IOException e) {}
-                }
-            }
-            // remove the compressed temp file: 
-            try {
-                new File(tempFilesDirectory + "/" +gzippedFilename).delete();
-            } catch (SecurityException ex) {
-                // (this is very non-fatal)
-                logger.warning("Failed to delete temporary file "+tempFilesDirectory + "/" +gzippedFilename);
-            }
-            
-            
-            // finally, if the file name had the ".gz" extension, remove it, 
-            // since we have uncompressed it:
-            if (fileName != null && fileName.matches(".*\\.gz$")) {
-                datafile.getFileMetadatas().get(0).setLabel(fileName.replaceAll("\\.gz$", ""));
-            }
-            datafile.setContentType("application/fits");
+        if (datafile != null) {
+            datafiles.add(datafile);
+            return datafiles;
         }
         
-        return datafile;
+        return null;
     }
     
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
@@ -532,6 +675,9 @@ public class IngestServiceBean {
     */
     
     public void produceSummaryStatistics(DataFile dataFile) throws IOException {
+        /*
+        logger.info("Skipping summary statistics and UNF.");
+         */
         produceDiscreteNumericSummaryStatistics(dataFile); 
         produceContinuousSummaryStatistics(dataFile);
         produceCharacterSummaryStatistics(dataFile);
@@ -555,18 +701,25 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {
+                logger.fine("subsetting continuous vector");
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormatSchemaName())) {
                     Float[] variableVector = subsetGenerator.subsetFloatVector(dataFile, i);
-                    //skip calculating summary stats (that requires Double[])
-                    //calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    logger.fine("Calculating summary statistics on a Float vector (skipping);");
+                    ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
+                    logger.fine("Calculating UNF on a Float vector (skipping);");
                     calculateUNF(dataFile, i, variableVector);
+                    variableVector = null; 
                 } else {
                     Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
-                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    logger.fine("Calculating summary statistics on a Double vector (skipping);");
+                    ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
+                    logger.fine("Calculating UNF on a Double vector (skipping);");
                     calculateUNF(dataFile, i, variableVector);
+                    variableVector = null; 
                 }
+                logger.fine("Done! (continuous);");
             }
         }
     }
@@ -578,13 +731,17 @@ public class IngestServiceBean {
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
                     && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                logger.fine("subsetting discrete-numeric vector");
                 Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
-                //calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
+                logger.fine("Calculating UNF on a Long vector (skipping)");
                 calculateUNF(dataFile, i, variableVector);
+                logger.fine("Done! (discrete numeric)");
+                variableVector = null; 
             }
         }
     }
@@ -607,13 +764,14 @@ public class IngestServiceBean {
         
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if ("character".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
+                logger.fine("subsetting character vector");
                 String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
+                logger.fine("Calculating UNF on a String vector (skipping)");
                 calculateUNF(dataFile, i, variableVector);
-                // TODO: (!)
-                // Make sure the UNFs for date/times are properly calculated!
-                // -- L.A. Jul. 23 2014
+                logger.fine("Done! (character)");
+                variableVector = null; 
             }
         }
     }
@@ -1143,7 +1301,7 @@ public class IngestServiceBean {
                                             String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
                                             if (cdsfValue != null && !cdsfValue.equals("")) {
                                                 String extractedValue = (String)fileMetadataMap.get(cdsfName).toArray()[0];
-                                                logger.info("values: existing: "+cdsfValue+", extracted: "+extractedValue);
+                                                logger.fine("values: existing: "+cdsfValue+", extracted: "+extractedValue);
                                                 if (cdsfValue.equals(extractedValue)) {
                                                     matches++;
                                                 }
@@ -1272,7 +1430,7 @@ public class IngestServiceBean {
         }
     }
     
-    private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Double[] dataVector) throws IOException {
+    private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Number[] dataVector) throws IOException {
         double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);
         assignContinuousSummaryStatistics(dataFile.getDataTable().getDataVariables().get(varnum), sumStats);
     }

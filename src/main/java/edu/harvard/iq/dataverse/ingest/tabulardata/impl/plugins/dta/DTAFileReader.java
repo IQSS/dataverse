@@ -359,30 +359,23 @@ public class DTAFileReader extends TabularDataFileReader{
 
 
 
-    // instance fields -------------------------------------------------------//
+    // instance fields //
 
     private static Logger dbgLog = Logger.getLogger(DTAFileReader.class.getPackage().getName());
 
+    
+    // TODO: 
+    // add a comment explaining what this table is for: 
+    // -- L.A. 4.0
+    private String[] valueLabelsLookupTable = null; 
+    
     /* 
-     * TODO: figure out what this map is for; (is this for some weird 2-stage
-     * value label lookup that the old SMD object uses?)
-     * Answer: yes, seems to be the case. look for labelName further down in 
-     * the code. 
-     * -- L.A. 4.0
-     */
-    // private Map<String, String> valueLabelSchemeMappingTable = new LinkedHashMap<String, String>();
-    /* TODO: add a comment */
-    
-    private Map<String, Integer> valueLabelsLookupMap = new LinkedHashMap<String, Integer>();
-    
-    /* StrinLengthTable stores the byte lengths of string variables (these are 
+     * StrinLengthTable stores the byte lengths of string variables (these are 
      * the same fixed values for every string column). 
      * -- L.A. 4.0
      */
     private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<Integer, Integer>();
     
-    // private Map<String, Map<String, String>> valueLabelTable =
-    //         new LinkedHashMap<String, Map<String, String>>();
 
     private Map<String, Integer> typeOffsetTable ;
 
@@ -398,14 +391,8 @@ public class DTAFileReader extends TabularDataFileReader{
 
     private NumberFormat doubleNumberFormatter = new DecimalFormat();
 
-    //private SDIOMetadata smd = new DTAMetadata();
     TabularDataIngest ingesteddata = new TabularDataIngest();
 
-    /* 
-     * stataDataSection was the old "DataTable" - the proprietary object
-     * used by DVN-ingest. 
-     */
-    //private DataTable stataDataSection = new DataTable();
     private DataTable dataTable = new DataTable();
 
     private int releaseNumber;
@@ -432,36 +419,15 @@ public class DTAFileReader extends TabularDataFileReader{
      * for example, the time/data values are stored as binary numeric values 
      * in Stata files, but we'll be storing them as strings in the DVN tabular
      * files.
-     * TODO: we'll probably be able to get away without variableTypesFinal, since
-     * we should be able to store the type information correctly in the actual
-     * DataVariable objects. -- L.A. 4.0
-    */ 
+     */
+    
     private String[] variableTypes=null;
     
     private String[] dateVariableFormats=null; 
-    
-    // 4.0 private String[] variableTypesFinal= null;
-    
-    // 4.0 private boolean[] isDateTimeDatumList = null;
-
+  
     private int value_label_table_length;
     
     private String fileUnfValue = null;
-
-    /* 
-     * TODO: variableNameList should probably be dropped, since we are 
-     * adding the names directly to the DataVariable objects that we are 
-     * creating. There are few places throughout this class where the 
-     * list is used anyway. -- L.A. 4.0
-     */
-    // private List<String> variableNameList = new ArrayList<String>();
-
-    
-    /* 
-     * This map was used by the old SMD object to store variable labels.
-     * -- L.A. 4.0
-     */
-    // private Map<String, String> variableLabelMap = new LinkedHashMap<String, String>();
     
     private static final String MissingValueForTabDelimitedFile = "";
   
@@ -601,11 +567,6 @@ public class DTAFileReader extends TabularDataFileReader{
             releaseNumber = (int) magic_number[0];
             init();
 
-            // smd.getFileInformation().put("releaseNumber", releaseNumber);
-            // smd.getFileInformation().put("byteOrder", (int)magic_number[1]);
-            // smd.getFileInformation().put("OSByteOrder", ByteOrder.nativeOrder().toString());
-            // smd.getFileInformation().put("mimeType", MIME_TYPE[0]);
-            // smd.getFileInformation().put("fileFormat", MIME_TYPE[0]);
             dataTable.setOriginalFileFormat(MIME_TYPE[0]);
             /* 
              * releaseNumber: 
@@ -643,7 +604,6 @@ public class DTAFileReader extends TabularDataFileReader{
 
         byte[] header = new byte[headerLength];
         nbytes = stream.read(header, 0, headerLength);
-        //printHexDump(header, "header:\n");
 
         // 1. number of variables: short (2 bytes)
         ByteBuffer bbnvar = ByteBuffer.wrap(header, 0, NVAR_FIELD_LENGTH);
@@ -659,15 +619,14 @@ public class DTAFileReader extends TabularDataFileReader{
         }
 
         short shrt_nvar = bbnvar.getShort();
-        // smd.getFileInformation().put("varQnty", new Integer(shrt_nvar));
         dataTable.setVarQuantity(new Long(shrt_nvar));
         int nvar = shrt_nvar;
         
-        if (dbgLog.isLoggable(Level.FINE)) {
-            dbgLog.fine("number of variables(nvar)=" + nvar);
+        if (dbgLog.isLoggable(Level.INFO)) {
+            dbgLog.info("number of variables(nvar)=" + nvar);
         }
 
-        // 4.0 Initialize variables: 
+        // 4.0 Initialize dataverse variable objects: 
         List<DataVariable> variableList = new ArrayList<DataVariable>();
 
         for (int i = 0; i < nvar; i++) {
@@ -768,22 +727,6 @@ public class DTAFileReader extends TabularDataFileReader{
                 dbgLog.fine("timeStamp=[" + timeStamp + "]");
             }
 
-            /* All these time/date stamps - I don't think we are using 
-             them anywhere. -- L.A. 4.0
-             */
-            // smd.getFileInformation().put("timeStamp", timeStamp);
-            // smd.getFileInformation().put("fileDate", timeStamp);
-            // smd.getFileInformation().put("fileTime", timeStamp);
-            /* As for the "varformat schema" - storing this information was 
-             * largely redundant, since we know that all the variables in 
-             * this data table come from a Stata file. -- L.A. 4.0
-             */
-            // smd.getFileInformation().put("varFormat_schema", "STATA");
-        }
-
-        if (dbgLog.isLoggable(Level.FINE)) {
-            // dbgLog.fine("smd dump:"+smd.toString());
-            dbgLog.fine("***** decodeHeader(): end *****");
         }
     }
 
@@ -791,12 +734,11 @@ public class DTAFileReader extends TabularDataFileReader{
 
     private void decodeDescriptors(BufferedInputStream stream) throws IOException {
 
-        dbgLog.fine("***** decodeDescriptors(): start *****");
+        dbgLog.fine("decodeDescriptors(): start");
 
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
-        //int nvar = (Integer)smd.getFileInformation().get("varQnty");
         int nvar = dataTable.getVarQuantity().intValue();
 
         // part 1: variable type list
@@ -820,8 +762,7 @@ public class DTAFileReader extends TabularDataFileReader{
         decodeDescriptorValueLabel(stream, nvar);
 
         if (dbgLog.isLoggable(Level.FINE)) {
-            //dbgLog.fine("smd dump (Descriptor):\n"+smd.toString());
-            dbgLog.fine("***** decodeDescriptors(): end *****");
+            dbgLog.fine("decodeDescriptors(): end");
         }
 
     }
@@ -954,16 +895,6 @@ public class DTAFileReader extends TabularDataFileReader{
             dbgLog.fine("variableTypes:\n" + Arrays.deepToString(variableTypes));
             dbgLog.fine("StringLengthTable=" + StringLengthTable);
         }
-        
-        /* For now, we are just going to populate the varaibleTypesFinal with 
-         * the exact values from variableTypes; later these values may change 
-         * (see the comment where variableTypesFinal was declared).
-         * TODO: we'll likely be getting rid of the "Final" version. -- L.A. 4.0
-         */
-        // 4.0 variableTypesFinal = new String[nvar];
-        // 4.0 for (int i = 0; i < variableTypes.length; i++) {
-        //     variableTypesFinal[i] = new String(variableTypes[i]);
-        // }
 
     }
 
@@ -989,17 +920,11 @@ public class DTAFileReader extends TabularDataFileReader{
             offset_end += length_var_name;
             String vari = new String(Arrays.copyOfRange(variableNameBytes, offset_start,
                     offset_end), "ISO-8859-1");
-            // 4.0 variableNameList.add(getNullStrippedString(vari));
             String varName = getNullStrippedString(vari);
             dataTable.getDataVariables().get(i).setName(varName);
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th name=[" + varName + "]");
+            dbgLog.fine(i + "-th name=[" + varName + "]");
             offset_start = offset_end;
         }
-        // 4.0 if (dbgLog.isLoggable(Level.FINE)) {
-        //    dbgLog.fine("variableNameList=\n" + StringUtils.join(variableNameList, ",\n") + "\n");
-        // }
-
-        //smd.setVariableName(variableNameList.toArray(new String[variableNameList.size()]));
     }
 
     private void decodeDescriptorVarSortList(BufferedInputStream stream, int nvar) throws IOException {
@@ -1041,8 +966,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
 
     /* Variable Formats are used exclusively for time and date variables. 
-     * TODO: try to get rid of the maps and tables populated here, by properly
-     * configuring the corresponding DataVariables. -- L.A. 4.0
+     *      -- L.A. 4.0
      */
     private void decodeDescriptorVariableFormat(BufferedInputStream stream, int nvar) throws IOException {
         int length_var_format = constantTable.get("FORMAT");
@@ -1097,22 +1021,21 @@ public class DTAFileReader extends TabularDataFileReader{
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
                 dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
-            } // 4.0 else {
-            // 4.0     isDateTimeDatumList[i] = false;
-            // 4.0 }
+            } 
 
             
             offset_start = offset_end;
         }
-        // 4.0 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("variableFormats=\n" + StringUtils.join(variableFormats, ",\n") + "\n");
 
 
     }
     
     private void decodeDescriptorValueLabel(BufferedInputStream stream, int nvar) throws IOException {
+        valueLabelsLookupTable = new String[nvar];
+        
         int length_label_name = constantTable.get("NAME");
         int length_label_name_list = length_label_name * nvar;
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("length_label_name=" + length_label_name_list);
+        dbgLog.info("length_label_name=" + length_label_name_list);
 
         byte[] labelNameList = new byte[length_label_name_list];
         String[] labelNames = new String[nvar];
@@ -1129,24 +1052,22 @@ public class DTAFileReader extends TabularDataFileReader{
             String vari = new String(Arrays.copyOfRange(labelNameList, offset_start,
                     offset_end), "ISO-8859-1");
             labelNames[i] = getNullStrippedString(vari);
-            if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine(i + "-th label=[" + labelNames[i] + "]");
+            dbgLog.fine(i + "-th label=[" + labelNames[i] + "]");
             offset_start = offset_end;
         }
-        if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
+        dbgLog.info("labelNames=\n" + StringUtils.join(labelNames, ",\n") + "\n");
 
         for (int i = 0; i < nvar; i++) {
             if ((labelNames[i] != null) && (!labelNames[i].equals(""))) {
-                // valueLabelSchemeMappingTable.put(variableNameList.get(i), labelNames[i]);
-                valueLabelsLookupMap.put(labelNames[i], i);
+                valueLabelsLookupTable[i] = labelNames[i];
             }
         }
-        // 4.0 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("valueLabelSchemeMappingTable:\n" + valueLabelSchemeMappingTable);
     }
 
 
     private void decodeVariableLabels(BufferedInputStream stream) throws IOException {
 
-        dbgLog.fine("***** decodeVariableLabels(): start *****");
+        dbgLog.fine("decodeVariableLabels(): start");
 
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
@@ -1166,7 +1087,6 @@ public class DTAFileReader extends TabularDataFileReader{
         byte[] variableLabelBytes = new byte[length_var_label_list];
         int nbytes = stream.read(variableLabelBytes, 0, length_var_label_list);
 
-        //printHexDump(variableLabelList, "variableLabelList");
         if (nbytes == 0) {
             throw new IOException("reading variable label list: no label was read");
         }
@@ -1176,20 +1096,17 @@ public class DTAFileReader extends TabularDataFileReader{
             offset_end += length_var_label;
             String vari = new String(Arrays.copyOfRange(variableLabelBytes, offset_start,
                     offset_end), "ISO-8859-1");
-            //variableLabelMap.put(variableNameList.get(i), getNullStrippedString(vari));
+            
             String variableLabelParsed = getNullStrippedString(vari);
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine(i + "-th label=[" + variableLabelParsed + "]");
             }
             offset_start = offset_end;
 
-            // 4.0: 
             dataTable.getDataVariables().get(i).setLabel(variableLabelParsed);
         }
 
-        // smd.setVariableLabel(variableLabelMap);
-        // if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("smd dump (variable label):\n"+smd.toString());
-        dbgLog.fine("***** decodeVariableLabels(): end *****");
+        dbgLog.fine("decodeVariableLabels(): end");
 
     }
     
@@ -1199,6 +1116,7 @@ public class DTAFileReader extends TabularDataFileReader{
      * they are; but we need to read the section, to skip to the next one in 
      * the byte stream, if nothing else. 
      * -- L.A. 4.0
+     * TODO: ok, need to figure out what these are. -- AUG 6 2014
      */
     private void decodeExpansionFields(BufferedInputStream stream) throws IOException {
 
@@ -1251,7 +1169,7 @@ public class DTAFileReader extends TabularDataFileReader{
             }
         }
 
-        dbgLog.fine("***** decodeExpansionFields(): end *****");
+        dbgLog.fine("decodeExpansionFields(): end");
 
     }
     
@@ -1261,7 +1179,7 @@ public class DTAFileReader extends TabularDataFileReader{
      */
     private void decodeValueLabels(BufferedInputStream stream) throws IOException {
 
-        dbgLog.fine("***** decodeValueLabels(): start *****");
+        dbgLog.fine("decodeValueLabels(): start");
 
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
@@ -1275,15 +1193,14 @@ public class DTAFileReader extends TabularDataFileReader{
             }
         } else {
             dbgLog.fine("no value-label table: end of file");
-
         }
-        dbgLog.fine("***** decodeValueLabels(): end *****");
+        dbgLog.fine("decodeValueLabels(): end");
     }
     
     
     void parseValueLabelsRelease105(BufferedInputStream stream) throws IOException {
 
-        dbgLog.fine("***** parseValueLabelsRelease105(): start *****");
+        dbgLog.fine("parseValueLabelsRelease105(): start");
 
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
@@ -1314,6 +1231,18 @@ public class DTAFileReader extends TabularDataFileReader{
          2-1. values         2*n    int[]
          2-2. labels         8*n    char
          */
+        
+        // This map will hold a temporary lookup table for all the categorical
+        // value-label groups we are going to find here:
+        // These groups have unique names, and a group *may be shared* between
+        // multiple variables. In the method decodeDescriptorValueLabel above
+        // we have populated a lookup table where variables are linked to the 
+        // corresponding value-label groups by name. Thus we must fully populate 
+        // the full map of all the variable groups, then go through the list 
+        // of variables and create the dataverse variable categories from 
+        // them. -- L.A. 4.0       
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+        
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("\n\n" + i + "th value-label table header");
@@ -1362,7 +1291,7 @@ public class DTAFileReader extends TabularDataFileReader{
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine(i + "-th value-label table");
             }
-                // Part 2: reading the value-label table
+            // Part 2: reading the value-label table
             // the length of the value-label table is: 2*m + 8*m = 10*m
             int length_value_label_table = (value_label_table_length
                     + length_lable_name_field) * no_value_label_pairs;
@@ -1378,7 +1307,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 throw new IOException("reading value label table: no datum");
             }
 
-                // 2-1. 2-byte-integer array (2*m): value array (sorted)
+            // 2-1. 2-byte-integer array (2*m): value array (sorted)
             short[] valueList = new short[no_value_label_pairs];
             int offset_value = 0;
 
@@ -1399,7 +1328,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 dbgLog.fine("value_list=" + Arrays.toString(valueList) + "\n");
             }
 
-                // 2-2. 8-byte chars that store label data (m units of labels)
+            // 2-2. 8-byte chars that store label data (m units of labels)
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("current offset_value=" + offset_value);
             }
@@ -1424,69 +1353,70 @@ public class DTAFileReader extends TabularDataFileReader{
                 offset_end += length_lable_name_field;
             }
 
-            Map<String, String> tmpValueLabelTable = new LinkedHashMap<String, String>();
-
-            int realVarNumber = valueLabelsLookupMap.get(labelName);
-
+            // Finally, we've reached the actual value-label pairs. We'll go 
+            // through them and put them on the temporary lookup map: 
+            
+            tempValueLabelTable.put(labelName, new LinkedHashMap<String, String>());
+            
             for (int j = 0; j < no_value_label_pairs; j++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
                     dbgLog.fine(j + "-th pair:" + valueList[j] + "[" + labelList[j] + "]");
                 }
-                // tmpValueLabelTable.put(Integer.toString(valueList[j]), labelList[j]);
-
-                /* TODO:
-                 * instead, we should be creating Variable categories here. 
-                 * -- L.A. 4.0. 
-                 * (note the 2-stage lookup mechanism - the labelName below
-                 * may not necessarily be the same as the variable name!
-                 */
-                VariableCategory cat = new VariableCategory();
-                cat.setValue(Integer.toString(valueList[j]));
-                cat.setLabel(labelList[j]);
-
-                /* cross-link the variable and category to each other: */
-                cat.setDataVariable(dataTable.getDataVariables().get(realVarNumber));
-                dataTable.getDataVariables().get(realVarNumber).getCategories().add(cat);
-
+                
+                // TODO: do we need any null/empty string checks here? -- L.A. 4.0
+                tempValueLabelTable.get(labelName).put(Integer.toString(valueList[j]), labelList[j]);
             }
-            /* TODO: 
-             * once the above has been done (variable categories created)
-             * the valueLabelTable can be removed...
-             */
-            // valueLabelTable.put(labelName, tmpValueLabelTable);
+            
 
             if (stream.available() == 0) {
-                    // reached the end of this file
-                // do exit-processing
+                // reached the end of the file
                 if (dbgLog.isLoggable(Level.FINE)) {
-                    dbgLog.fine("***** reached the end of the file at " + i
-                            + "th value-label Table *****");
+                    dbgLog.fine("reached the end of file at " + i + "th value-label Table.");
                 }
                 break;
             }
 
         } // for nvar loop
 
-        // 4.0 if (dbgLog.isLoggable(Level.FINE)) {
-        //     dbgLog.fine("valueLabelTable:\n" + valueLabelTable);
-        // }
+        // And now we can go through the list of variables, see if any have 
+        // value-label groups linked, then build dataverse VariableCategory 
+        // objects for them, using the values stored in the temporary map 
+        // we've just built:
+       
+        for (int i = 0; i < nvar; i++) {
+            if (valueLabelsLookupTable[i] != null) {
+                if (tempValueLabelTable.get(valueLabelsLookupTable[i]) != null) {
+                    // What if it is null? -- is it a legit condition, that 
+                    // a variable was advertised as having categorical values,
+                    // but no such cat value group exists under this name?
+                    // -- L.A.
+                    for (String value : tempValueLabelTable.get(valueLabelsLookupTable[i]).keySet()) {
+                        VariableCategory cat = new VariableCategory();
+                        
+                        cat.setValue(value);
+                        cat.setLabel(tempValueLabelTable.get(valueLabelsLookupTable[i]).get(value));
 
-        //smd.setValueLabelTable(valueLabelTable);
+                        /* cross-link the variable and category to each other: */
+                        cat.setDataVariable(dataTable.getDataVariables().get(i));
+                        dataTable.getDataVariables().get(i).getCategories().add(cat);
+                    }
+                }
+            }
+        }
 
-        dbgLog.fine("***** parseValueLabelsRelease105(): end *****");
+        dbgLog.fine("parseValueLabelsRelease105(): end");
 
     }
 
 
     private void parseValueLabelsReleasel108(BufferedInputStream stream) throws IOException {
 
-        dbgLog.fine("***** parseValueLabelsRelease108(): start *****");
+        dbgLog.fine("parseValueLabelsRelease108(): start");
 
         if (stream == null) {
             throw new IllegalArgumentException("stream == null!");
         }
 
-        // int nvar = (Integer)smd.getFileInformation().get("varQnty");
         int nvar = dataTable.getVarQuantity().intValue();
         int length_label_name = constantTable.get("NAME");
         int length_value_label_header = value_label_table_length
@@ -1513,6 +1443,19 @@ public class DTAFileReader extends TabularDataFileReader{
          2-5. labels           m    char
          */
 
+        // This map will hold a temporary lookup table for all the categorical
+        // value-label groups:
+        // These groups have unique names, and a group *may be shared* between
+        // multiple variables. In the method decodeDescriptorValueLabel above
+        // we have populated a lookup table where variables are linked to the 
+        // corresponding value-label groups by name. Thus we must fully populate 
+        // the full map of all the variable group, then go through the list 
+        // of variables and create the dataverse variable categories from 
+        // them. -- L.A. 4.0
+        
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+
+        
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
                 dbgLog.fine("\n\n" + i + "th value-label table header");
@@ -1593,8 +1536,8 @@ public class DTAFileReader extends TabularDataFileReader{
             int length_label_segment = bb_length_label_segment.getInt();
             valueLabelTable_offset += value_label_table_length;
 
-                // 2-3. 4-byte-integer array (4xm): offset values for the label sec.
-                // these "label offsets" actually appear to represent the byte
+            // 2-3. 4-byte-integer array (4xm): offset values for the label sec.
+            // these "label offsets" actually appear to represent the byte
             // offsets of the label strings, as stored in the next section.
             // as of now, these are not used for anything, and the code
             // below assumes that the labels are already in the same
@@ -1619,7 +1562,7 @@ public class DTAFileReader extends TabularDataFileReader{
 
             }
 
-                // 2-4. 4-byte-integer array (4xm): value array (sorted)
+            // 2-4. 4-byte-integer array (4xm): value array (sorted)
             dbgLog.fine("value array");
 
             int[] valueList = new int[no_value_label_pairs];
@@ -1639,17 +1582,17 @@ public class DTAFileReader extends TabularDataFileReader{
 
             }
 
-                // 2-5. m-byte chars that store label data (m units of labels)
+            // 2-5. m-byte chars that store label data (m units of labels)
             String label_segment = new String(
                     Arrays.copyOfRange(valueLabelTable_i,
                             offset_value,
                             (length_label_segment + offset_value)), "ISO-8859-1");
 
-                // L.A. -- 2011.2.25:
+            // L.A. -- 2011.2.25:
             // This assumes that the labels are already stored in the right
             // order: (see my comment for the section 2.3 above)
-                //String[] labelList = label_segment.split("\0");
-                // Instead, we should be using the offset values obtained in
+            //String[] labelList = label_segment.split("\0");
+            // Instead, we should be using the offset values obtained in
             // the section 2.3 above, and select the corresponding
             // substrings:
             String[] labelList = new String[no_value_label_pairs];
@@ -1669,42 +1612,62 @@ public class DTAFileReader extends TabularDataFileReader{
                 labelList[l] = lblString;
             }
 
-                // this should work! -- L.A.
+            // this should work! -- L.A.
             // (TODO: check the v105 value label parsing method, to see if
             // something similar applies there)
-            Map<String, String> tmpValueLabelTable = new LinkedHashMap<String, String>();
-            int realVarNumber = valueLabelsLookupMap.get(labelName);
+            
+            // Finally, we've reached the actual value-label pairs. We'll go 
+            // through them and put them on the temporary lookup map: 
+            
+            tempValueLabelTable.put(labelName, new LinkedHashMap<String, String>());
 
             for (int l = 0; l < no_value_label_pairs; l++) {
                 if (dbgLog.isLoggable(Level.FINE)) {
                     dbgLog.fine(l + "-th pair:" + valueList[l] + "[" + labelList[l] + "]");
                 }
 
-                tmpValueLabelTable.put(Integer.toString(valueList[l]), labelList[l]);
-
-                VariableCategory cat = new VariableCategory();
-                cat.setValue(Integer.toString(valueList[l]));
-                cat.setLabel(labelList[l]);
-
-                /* cross-link the variable and category to each other: */
-                cat.setDataVariable(dataTable.getDataVariables().get(realVarNumber));
-                dataTable.getDataVariables().get(realVarNumber).getCategories().add(cat);
+                // TODO: do we need any null/empty string checks here? -- L.A. 4.0
+                tempValueLabelTable.get(labelName).put(Integer.toString(valueList[l]), labelList[l]);
             }
 
-                //valueLabelTable.put(labelName, tmpValueLabelTable);
             if (stream.available() == 0) {
-                    // reached the end of this file
-                // do exit-processing
-                dbgLog.fine("***** reached the end of the file at " + i
-                        + "th value-label Table *****");
+                // reached the end of the file
+                dbgLog.fine("reached the end of the file at " + i + "th value-label Table");
                 break;
             }
 
         }  // for nvar loop
 
-        // 4.0 if (dbgLog.isLoggable(Level.FINE)) dbgLog.fine("valueLabelTable:\n"+valueLabelTable);
-        //smd.setValueLabelTable(valueLabelTable);
-        dbgLog.fine("***** parseValueLabelsRelease108(): end *****");
+        // And now we can go through the list of variables, see if any have 
+        // value-label groups linked, then build dataverse VariableCategory 
+        // objects for them, using the values stored in the temporary map 
+        // we've just built:
+       
+        // TODO: this code is duplicated between this, and the "105 version" of
+        // this method, above. Maybe it should be isolated in its own method.
+        // -- L.A. 4.0
+        for (int i = 0; i < nvar; i++) {
+            if (valueLabelsLookupTable[i] != null) {
+                if (tempValueLabelTable.get(valueLabelsLookupTable[i]) != null) {
+                    // What if it is null? -- is it a legit condition, that 
+                    // a variable was advertised as having categorical values,
+                    // but no such cat value group exists under this name?
+                    // -- L.A.
+                    for (String value : tempValueLabelTable.get(valueLabelsLookupTable[i]).keySet()) {
+                        VariableCategory cat = new VariableCategory();
+                        
+                        cat.setValue(value);
+                        cat.setLabel(tempValueLabelTable.get(valueLabelsLookupTable[i]).get(value));
+
+                        /* cross-link the variable and category to each other: */
+                        cat.setDataVariable(dataTable.getDataVariables().get(i));
+                        dataTable.getDataVariables().get(i).getCategories().add(cat);
+                    }
+                }
+            }
+        }
+        
+        dbgLog.fine("parseValueLabelsRelease108(): end");
     }
 
     private void decodeData(BufferedInputStream stream) throws IOException {
@@ -1738,25 +1701,14 @@ public class DTAFileReader extends TabularDataFileReader{
         FileOutputStream fileOutTab = null;
         PrintWriter pwout = null;
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
-        String tabDelimitedDataFileName = tabDelimitedDataFile.getAbsolutePath();
 
         // save the temp tab-delimited file in the return ingest object:        
-        // smd.getFileInformation().put("tabDelimitedDataFileLocation", tabDelimitedDataFileName);
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
 
         fileOutTab = new FileOutputStream(tabDelimitedDataFile);
         pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
 
-        // data storage
-        // Object[][] dataTable = new Object[nobs][nvar];
-        // for later variable-wise calculations of statistics
-        // dataTable2 sotres cut-out data columnwise
-        /*
-         commenting out datatable2: one of the goals of reimplementing 
-         ingest is to stop storing the entire data file in memory!
-         Object[][] dataTable2 = new Object[nvar][nobs];
-         */
-        /* Similarly, should we lose this dateFormat thing as well? 
+        /* Should we lose this dateFormat thing in 4.0? 
          * the UNF should be calculatable on the app side solely from the data
          * stored in the tab file and the type information stored the dataVariable
          * object. 
@@ -1796,13 +1748,10 @@ public class DTAFileReader extends TabularDataFileReader{
                 // 4.0 Check if this is a time/date variable: 
                 boolean isDateTimeDatum = false; 
                 String formatCategory = dataTable.getDataVariables().get(columnCounter).getFormatCategory();
-                // REMOVED 4.0 boolean isDateTimeDatum = isDateTimeDatumList[columnCounter];
                 if (formatCategory != null && (formatCategory.equals("time") || formatCategory.equals("date"))) {
                     isDateTimeDatum = true; 
                 }
-                // 4.0 String variableFormat = variableFormats[columnCounter];
-                // 4.0 variableFormat: used for time and date values:
-                //String variableFormat = dataTable.getDataVariables().get(columnCounter).getFormatSchemaName();
+
                 String variableFormat = dateVariableFormats[columnCounter];
 
                 switch (varType != null ? varType : 256) {
@@ -1847,12 +1796,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                 dbgLog.finer(i + "-th row " + columnCounter
                                         + "=th column stata long missing value=" + short_datum);
                             }
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
-                            // 4.0 if (isDateTimeDatum) {
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            // 4.0 } else {
-                            // 4.0     dataRow[columnCounter] = MissingValueForTextDataFileNumeric;
-                            // 4.0 }
                         } else {
 
                             if (isDateTimeDatum) {
@@ -1893,12 +1837,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                 //dbgLog.fine(i + "-th row " + columnCounter
                                 //        + "=th column stata long missing value=" + int_datum);
                             }
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
-                            // 4.0 if (isDateTimeDatum) {
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            // 4.0 } else {
-                            //     dataRow[columnCounter] = MissingValueForTextDataFileNumeric;
-                            // }
                         } else {
                             if (isDateTimeDatum) {
                                 DecodedDateTime ddt = decodeDateTimeData("int", variableFormat, Integer.toString(int_datum));
@@ -1906,7 +1845,6 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                //dateFormat[columnCounter][i] = ddt.format;
                                 dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                             } else {
@@ -1935,12 +1873,7 @@ public class DTAFileReader extends TabularDataFileReader{
                                 dbgLog.finer(i + "-th row " + columnCounter
                                         + "=th column float missing value=" + float_datum);
                             }
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
-                            // 4.0 if (isDateTimeDatum) {
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            // 4.0 } else {
-                            //    dataRow[columnCounter] = MissingValueForTextDataFileNumeric;
-                            // }
 
                         } else {
 
@@ -1950,11 +1883,8 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                //dateFormat[columnCounter][i] = ddt.format;
                                 dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
-                                /* REMOVE dataTable2[columnCounter][i] = dataRow[columnCounter]; */
                             } else {
-                                /* REMOVE dataTable2[columnCounter][i] = float_datum;*/
                                 dataRow[columnCounter] = float_datum;
                                 // This may be temporary - but for now (as in, while I'm testing 
                                 // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
@@ -1977,16 +1907,11 @@ public class DTAFileReader extends TabularDataFileReader{
                         double double_datum = double_buffer.getDouble();
 
                         if (DOUBLE_MISSING_VALUE_SET.contains(double_datum)) {
-                            /* REMOVE dataTable2[columnCounter][i] = null;  //use null reference to indicate missing value in data that is passed to UNF */
                             if (dbgLog.isLoggable(Level.FINER)) {
                                 dbgLog.finer(i + "-th row " + columnCounter
                                         + "=th column double missing value=" + double_datum);
                             }
-                            // 4.0 if (isDateTimeDatum) {
                             dataRow[columnCounter] = MissingValueForTabDelimitedFile;
-                            // 4.0 } else {
-                            //     dataRow[columnCounter] = MissingValueForTextDataFileNumeric;
-                            // }
                         } else {
 
                             if (isDateTimeDatum) {
@@ -1995,7 +1920,6 @@ public class DTAFileReader extends TabularDataFileReader{
                                     dbgLog.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                                 }
                                 dataRow[columnCounter] = ddt.decodedDateTime;
-                                //dateFormat[columnCounter][i] = ddt.format;
                                 dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                             } else {
                                 dataRow[columnCounter] = doubleNumberFormatter.format(double_datum);
@@ -2065,7 +1989,7 @@ public class DTAFileReader extends TabularDataFileReader{
                 } // switch
             } // for-columnCounter
 
-            // dump the row of data to the external file
+            // Dump the row of data to the tab-delimited file we are producing:
             pwout.println(StringUtils.join(dataRow, "\t"));
 
             if (dbgLog.isLoggable(Level.FINE)) {
@@ -2076,16 +2000,8 @@ public class DTAFileReader extends TabularDataFileReader{
 
         pwout.close();
 
-        //if (dbgLog.isLoggable(Level.FINER)) {
-            /* REMOVE 
-             dbgLog.finer("\ndataTable2(variable-wise):\n");
-             dbgLog.finer(Arrays.deepToString(dataTable2)); */
-            //dbgLog.finer("\ndateFormat(variable-wise):\n");
-            //dbgLog.finer(Arrays.deepToString(dateFormat));
-        //}
         if (dbgLog.isLoggable(Level.FINE)) {
             dbgLog.fine("variableTypes:\n" + Arrays.deepToString(variableTypes));
-            // dbgLog.fine("variableTypesFinal:\n" + Arrays.deepToString(variableTypesFinal));
         }
 
         dbgLog.fine("DTA Ingest: decodeData(): end.");

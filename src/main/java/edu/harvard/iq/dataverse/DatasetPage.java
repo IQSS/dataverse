@@ -783,16 +783,21 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = null;
+        List<DataFile> dFileList = null; 
 
         try {
-            dFile = ingestService.createDataFile(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
+            dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
 
-        newFiles.add(dFile);
-
+        if (dFileList != null) {
+            for (int i = 0; i < dFileList.size(); i++) {
+                dFile = dFileList.get(i);
+                newFiles.add(dFile);
+            }
+        }
     }
 
     public boolean isLocked() {
