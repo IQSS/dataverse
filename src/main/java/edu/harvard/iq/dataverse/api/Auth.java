@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import java.math.BigDecimal;
+import edu.harvard.iq.dataverse.authorization.AuthenticationManager;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -44,7 +44,11 @@ public class Auth extends AbstractApiBean {
          * shib:idp.testshib.org:0109C89C-4BA2-42A5-969D-BB43D47DB409,
          * local:jsmith, 3ef969eb-a7f5-46f5-b999-669a763893dc]
          */
-        return ok(userStuff.toString());
+        JsonObjectBuilder info = Json.createObjectBuilder();
+        info
+                .add("userStuff", userStuff.toString())
+                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size());
+        return ok(info.build());
     }
 
     @GET
