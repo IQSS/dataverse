@@ -148,7 +148,9 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
       
-    
+    @Deprecated
+    // All the parts of the app should use the createDataFiles() method instead, 
+    // that returns a list of DataFiles. 
     public DataFile createDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
         List<DataFile> fileList = createDataFiles(version, inputStream, fileName, contentType);
         
@@ -207,70 +209,35 @@ public class IngestServiceBean {
         }
         
         if (finalType == null) {
-            finalType = contentType;
+            finalType = (contentType == null || contentType.equals("")) 
+                ? "application/octet-stream" 
+                : contentType;
         }
-        
-        Dataset dataset = version.getDataset();
-        
+                
         // A few special cases: 
         
         // if this is a gzipped FITS file, we'll uncompress it, and ingest it as
         // a regular FITS file:
         
         if (finalType.equals("application/fits-gzipped")) {
-            // Uncompress the FITS stream, save and treat it as regular FITS:
+
             InputStream uncompressedIn = null;
-            BufferedOutputStream uncompressedOut = null;
-            DataFile datafile = new DataFile("application/fits");
-            FileMetadata fmd = new FileMetadata();
-            fmd.setCategory(contentType);
-            fmd.setLabel(fileName);
-            
+            String finalFileName = fileName;
             // if the file name had the ".gz" extension, remove it, 
             // since we are going to uncompress it:
             if (fileName != null && fileName.matches(".*\\.gz$")) {
-                fmd.setLabel(fileName.replaceAll("\\.gz$", ""));
+                finalFileName = fileName.replaceAll("\\.gz$", "");
             }
-            datafile.setOwner(dataset);
-            fmd.setDataFile(datafile);
-            datafile.getFileMetadatas().add(fmd);
-            if (version.getFileMetadatas() == null) {
-                version.setFileMetadatas(new ArrayList());
-            }
-            version.getFileMetadatas().add(fmd);
-            fmd.setDatasetVersion(version);
-            dataset.getFiles().add(datafile);
-                
-            try {
-                // Once again, at this point we are dealing with *temp*
-                // files only; these are always stored on the local filesystem, 
-                // so we are using FileInput/Output Streams to read and write
-                // these directly, instead of going through the Data Access 
-                // framework. 
-                //      -- L.A. 
-                // (TODO: (?) - hide this code in a separate method neatly; 
-                // or maybe this could wait until we have to add similar 
-                // treatment for zip files)
-                
-                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));                
-
-                fileService.generateStorageIdentifier(datafile);
-                uncompressedOut = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
-                
-                int bufsize = 8192;
-                byte[] bffr = new byte[bufsize];
-                while ((bufsize = uncompressedIn.read(bffr)) != -1) {
-                    uncompressedOut.write(bffr, 0, bufsize);
-                }
-
+            
+            DataFile datafile = null; 
+            try {                
+                uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));  
+                datafile = createSingleDataFile(version, uncompressedIn, finalFileName, "application/octet-stream");
             } catch (IOException ioex) {
                 datafile = null;
             } finally {
                 if (uncompressedIn != null) {
                     try {uncompressedIn.close();} catch (IOException e) {}
-                }
-                if (uncompressedOut != null) {
-                    try {uncompressedOut.close();} catch (IOException e) {}
                 }
             }
             
@@ -291,13 +258,12 @@ public class IngestServiceBean {
                 return datafiles;
             }
                 
-        } else if (finalType.equals("application/zip")) {
-            // We are going to unpack the file, and create multiple DataFile
-            // objects from its contents:
+        // If it's a ZIP file, we are going to unpack it and create multiple 
+        // DataFile objects from its contents:
+        } else if (finalType.equals("application/zip")) {   
             
             ZipInputStream unZippedIn = null; 
             ZipEntry zipEntry = null; 
-            BufferedOutputStream unZippedOut = null;
             try {
                 unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
 
@@ -316,41 +282,21 @@ public class IngestServiceBean {
 
                             fileEntryName = fileEntryName.replaceFirst("^.*[\\/]", "");
 
+                            // Check if it's a "fake" file - a zip archive entry 
+                            // created for a MacOS X filesystem element: (these 
+                            // start with "._")
                             if (!fileEntryName.startsWith("._")) {
                                 // OK, this seems like an OK file entry - we'll try 
                                 // to read it and create a DataFile with it:
 
-                                DataFile datafile = new DataFile("application/octet-stream");
+                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, "application/octet-stream");
                                 // TODO: 
                                 // Need to try to identify mime types for the individual 
-                                // files inside the ZIP archive. -- L.A.
-                                FileMetadata fmd = new FileMetadata();
-                                fmd.setLabel(fileEntryName);
-
-                                datafile.setOwner(dataset);
-                                fmd.setDataFile(datafile);
-                                datafile.getFileMetadatas().add(fmd);
-                                if (version.getFileMetadatas() == null) {
-                                    version.setFileMetadatas(new ArrayList());
+                                // files inside the ZIP archive! -- L.A.
+                                
+                                if (datafile != null) {
+                                    datafiles.add(datafile);
                                 }
-                                version.getFileMetadatas().add(fmd);
-                                fmd.setDatasetVersion(version);
-                                dataset.getFiles().add(datafile);
-                
-                                fileService.generateStorageIdentifier(datafile);
-                                unZippedOut = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
-                               
-
-                                byte[] dataBuffer = new byte[8192];
-                                int i = 0;
-
-                                while ((i = unZippedIn.read(dataBuffer)) > 0) {
-                                    unZippedOut.write(dataBuffer, 0, i);
-                                    unZippedOut.flush();
-                                }
-
-                                unZippedOut.close();
-                                datafiles.add(datafile);
                             }
                         }
                     }
@@ -365,9 +311,6 @@ public class IngestServiceBean {
             } finally {
                 if (unZippedIn != null) {
                     try {unZippedIn.close();} catch (Exception zEx) {}
-                }
-                if (unZippedOut != null) {
-                    try {unZippedOut.close();} catch (Exception ioEx) {}
                 }
             }
             if (datafiles.size() > 0) {
@@ -385,43 +328,87 @@ public class IngestServiceBean {
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
         // create and return a single DataFile:
+        // (Note that we are passing null for the InputStream; that's because
+        // we already have the file saved; we'll just need to rename it, below)
         
-        DataFile datafile;
-        
-        FileMetadata fmd = new FileMetadata();
-
-        if (contentType != null && !contentType.equals("")) {
-            datafile = new DataFile(contentType);
-            fmd.setCategory(contentType);
-        } else {
-            datafile = new DataFile("application/octet-stream"); 
-        }
-
-        fmd.setLabel(fileName);
-
-        datafile.setOwner(dataset);
-        fmd.setDataFile(datafile);
-
-        datafile.getFileMetadatas().add(fmd);
-
-        if (version.getFileMetadatas() == null) {
-            version.setFileMetadatas(new ArrayList());
-        }
-        version.getFileMetadatas().add(fmd);
-        fmd.setDatasetVersion(version);
-        dataset.getFiles().add(datafile);
-
-        fileService.generateStorageIdentifier(datafile);
-        if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getFileSystemName()))) {
-            datafile = null; 
-        }
+        DataFile datafile = createSingleDataFile(version, null, fileName, finalType);;
         
         if (datafile != null) {
+            fileService.generateStorageIdentifier(datafile);
+            if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getFileSystemName()))) {
+                return null; 
+            }
+        
             datafiles.add(datafile);
             return datafiles;
         }
         
         return null;
+    }
+    
+    /* 
+     * This method creates a DataFile, and also saves the bytes from the suppplied 
+     * InputStream in the temporary location. 
+     * This method should only be called by the upper-level methods that handle 
+     * file upload and creation for individual use cases - a single file upload, 
+     * an upload of a zip archive that needs to be unpacked and turned into 
+     * individual files, etc., and once the file name and mime type have already 
+     * been figured out. 
+    */
+    
+    private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) {
+
+        DataFile datafile = new DataFile(contentType);
+        FileMetadata fmd = new FileMetadata();
+        
+        fmd.setLabel(fileName);
+
+        datafile.setOwner(version.getDataset());
+        fmd.setDataFile(datafile);
+        datafile.getFileMetadatas().add(fmd);
+        if (version.getFileMetadatas() == null) {
+            version.setFileMetadatas(new ArrayList());
+        }
+        version.getFileMetadatas().add(fmd);
+        fmd.setDatasetVersion(version);
+        version.getDataset().getFiles().add(datafile);
+
+        // And save the file - but only if the InputStream is not null; 
+        // (the temp file may be saved already - if this is a single
+        // file upload case)
+        
+        if (inputStream != null) {
+        
+            fileService.generateStorageIdentifier(datafile);
+            BufferedOutputStream outputStream = null;
+
+            // Once again, at this point we are dealing with *temp*
+            // files only; these are always stored on the local filesystem, 
+            // so we are using FileInput/Output Streams to read and write
+            // these directly, instead of going through the Data Access 
+            // framework. 
+            //      -- L.A.
+            
+            try {
+                outputStream = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+
+                byte[] dataBuffer = new byte[8192];
+                int i = 0;
+
+                while ((i = inputStream.read(dataBuffer)) > 0) {
+                    outputStream.write(dataBuffer, 0, i);
+                    outputStream.flush();
+                }
+            } catch (IOException ioex) {
+                datafile = null; 
+            } finally {
+                try {
+                    outputStream.close();
+                } catch (IOException ioex) {}
+            }
+        }
+        
+        return datafile;
     }
     
     public void addFiles (DatasetVersion version, List<DataFile> newFiles) {
