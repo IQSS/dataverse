@@ -3,19 +3,8 @@
 ' definitions
 ' -----------
 
-' package "edu.harvard.iq.dataverse.engine.command"
-interface Command
-' end package
-
-' package "edu.harvard.iq.dataverse.authorization.providers.shib"
-class ShibGroup
-' end package
-
-' package "edu.harvard.iq.dataverse.authorization.groups"
-interface Group
-interface GroupCreator
-class GroupException
-class GroupRow
+' package "edu.harvard.iq.dataverse.authorization.providers.ipaddress"
+class IpGroup
 ' end package
 
 ' package "edu.harvard.iq.dataverse.authorization"
@@ -23,7 +12,7 @@ class AccessRequest
 class ApiKey
 class AuthenticatedUser
 class AuthenticatedUserLookup
-interface AuthenticationManager
+class AuthenticationManager
 interface AuthenticationProvider
 class DataverseRole
 class GuestUser
@@ -45,118 +34,39 @@ class ExplicitGroup
 class ExplicitGroupCreator
 ' end package
 
+' package "edu.harvard.iq.dataverse.engine.command.impl"
+class AssignRoleCommand
+class CreateRoleCommand
+' end package
+
+' package "edu.harvard.iq.dataverse.engine.command"
+interface Command
+abstract AbstractCommand
+' end package
+
+' package "edu.harvard.iq.dataverse.authorization.providers.shib"
+class ShibGroup
+' end package
+
 ' package "edu.harvard.iq.dataverse"
 class DataverseUser
 abstract DvObject
 interface Visitor
+class RoleAssignment
 ' end package
 
-' package "edu.harvard.iq.dataverse.authorization.providers.ipaddress"
-class IpGroup
+' package "edu.harvard.iq.dataverse.authorization.groups"
+interface Group
+interface GroupCreator
+class GroupException
+class GroupRow
 ' end package
 
 ' content
 ' -------
 
-' Group:
-RoleAssignee <|.. Group
-Group : String getAlias()
-Group : String getName()
-Group : String getDescription()
-Group : boolean contains(User, ServletRequest)
-Group : boolean isEditable()
-Group : GroupCreator getCreator()
-Group : Set getDirectSubGroups()
-
-' ShibGroup:
-AbstractGroup <|-- ShibGroup
-ShibGroup : Map getHeaderMatches()
-ShibGroup : boolean contains(User, ServletRequest)
-ShibGroup : boolean isEditable()
-ShibGroup : GroupCreator getCreator()
-ShibGroup : String getIdentifier()
-ShibGroup : String getDisplayInfo()
-
-' AbstractGroup:
-Group <|.. AbstractGroup
-AbstractGroup : String getAlias()
-AbstractGroup : String getName()
-AbstractGroup : String getDescription()
-AbstractGroup : Set getDirectSubGroups()
-
-' GroupException:
-GroupException --> "1" Group
-GroupException : Group getGroup()
-GroupException : String toString()
-
-' GroupCreator:
-GroupCreator : Group createGroup()
-
-' GroupRow:
-
-' AuthenticatedUserLookup:
-AuthenticatedUserLookup --> "1" AuthenticatedUser
-AuthenticatedUserLookup : String getPersistentUserIdFromIdp()
-AuthenticatedUserLookup : AuthenticatedUser getAuthenticatedUser()
-
-' LocalAuthenticationProvider:
-AuthenticationProvider <|.. LocalAuthenticationProvider
-UserLister <|.. LocalAuthenticationProvider
-GroupCreator <|.. LocalAuthenticationProvider
-LocalAuthenticationProvider --> "1" RoleAssignee
-LocalAuthenticationProvider : RoleAssignee getRoleAssignee(String)
-LocalAuthenticationProvider : List listUsers()
-LocalAuthenticationProvider : Group createGroup()
-
-' Permission:
-Permission : Permission Access
-Permission : Permission AccessUnpublishedContent
-Permission : Permission AccessRestrictedMetadata
-Permission : Permission UndoableEdit
-Permission : Permission DestructiveEdit
-Permission : Permission EditMetadata
-Permission : Permission AddDataverse
-Permission : Permission AddDataset
-Permission : Permission AddDatasetVersion
-Permission : Permission ChooseTemplate
-Permission : Permission ChooseFacets
-Permission : Permission Publish
-Permission : Permission Style
-Permission : Permission GrantPermissions
-Permission : Permission Tracking
-Permission : Permission CreateTemplates
-Permission : Permission RestrictFile
-Permission : Permission RestrictMetadata
-Permission : Permission values()
-Permission : Permission valueOf(String)
-Permission : String getHumanName()
-Permission : boolean appliesTo(Class)
-
-' User:
-RoleAssignee <|.. User
-
-' ShibAuthenticationProvider:
-AuthenticationProvider <|.. ShibAuthenticationProvider
-GroupCreator <|.. ShibAuthenticationProvider
-ShibAuthenticationProvider --> "1" RoleAssignee
-ShibAuthenticationProvider : RoleAssignee getRoleAssignee(String)
-ShibAuthenticationProvider : Group createGroup()
-
-' Command:
-Command : Object execute(CommandContext)
-Command : Map getAffectedDvObjects()
-Command : DataverseUser getUser()
-
-' UserLister:
-UserLister : List listUsers()
-
-' AuthenticatedUsers:
-AbstractGroup <|-- AuthenticatedUsers
-AuthenticatedUsers : boolean contains(User, ServletRequest)
-AuthenticatedUsers : boolean isEditable()
-AuthenticatedUsers : GroupCreator getCreator()
-AuthenticatedUsers : String getIdentifier()
-AuthenticatedUsers : String getDisplayInfo()
+' AuthenticationProvider:
+AuthenticationProvider : RoleAssignee getRoleAssignee(String)
 
 ' ExplicitGroup:
 Group <|.. ExplicitGroup
@@ -174,49 +84,25 @@ ExplicitGroup : Set getDirectSubGroups()
 ExplicitGroup : String getIdentifier()
 ExplicitGroup : String getDisplayInfo()
 
-' AuthenticatedUser:
-User <|.. AuthenticatedUser
-AuthenticatedUser : String getIdentifier()
-AuthenticatedUser : String getDisplayInfo()
+' User:
+RoleAssignee <|.. User
 
-' Visitor:
-Visitor : Object visit(Dataverse)
-Visitor : Object visit(Dataset)
-Visitor : Object visit(DataFile)
+' UserLister:
+UserLister : List listUsers()
 
-' GuestUser:
-User <|.. GuestUser
-GuestUser --> "1" GuestUser
-GuestUser : GuestUser get()
-GuestUser : String getIdentifier()
-GuestUser : String getDisplayInfo()
+' ExplicitGroupCreator:
+GroupCreator <|.. ExplicitGroupCreator
+ExplicitGroupCreator : ExplicitGroup createGroup()
+ExplicitGroupCreator : Group getGroup(String)
 
-' Permission:
-
-' AccessRequest:
-AccessRequest --> "1" AuthenticatedUser
-AccessRequest --> "1" DvObject
-AccessRequest : AuthenticatedUser getAuthenticatedUser()
-AccessRequest : DvObject getDvObject()
-
-' AuthenticationManager:
-AuthenticationManager : Collection authenticationProviders
-AuthenticationManager : void registerProvider(AuthenticationProvider)
-
-' ApiKey:
-ApiKey --> "1" AuthenticatedUser
-ApiKey : Long getId()
-ApiKey : void setId(Long)
-ApiKey : String getKey()
-ApiKey : void setKey(String)
-ApiKey : AuthenticatedUser getAuthenticatedUser()
-ApiKey : boolean isDisabled()
-ApiKey : Timestamp getCreateTime()
-ApiKey : Timestamp getExpireTime()
-
-' RoleAssignee:
-RoleAssignee : String getIdentifier()
-RoleAssignee : String getDisplayInfo()
+' LocalAuthenticationProvider:
+AuthenticationProvider <|.. LocalAuthenticationProvider
+UserLister <|.. LocalAuthenticationProvider
+GroupCreator <|.. LocalAuthenticationProvider
+LocalAuthenticationProvider --> "1" RoleAssignee
+LocalAuthenticationProvider : RoleAssignee getRoleAssignee(String)
+LocalAuthenticationProvider : List listUsers()
+LocalAuthenticationProvider : Group createGroup()
 
 ' AllUsers:
 AbstractGroup <|-- AllUsers
@@ -226,27 +112,44 @@ AllUsers : GroupCreator getCreator()
 AllUsers : String getIdentifier()
 AllUsers : String getDisplayInfo()
 
-' DvObject:
-DvObject : DvObject.Visitor NamePrinter
-DvObject --> "1" Visitor
-DvObject --> "1" DataverseUser
-DvObject --> "1" DataverseUser
-DvObject : DvObjectContainer getOwner()
-DvObject : Long getId()
-DvObject : void setId(Long)
-DvObject : Timestamp getPublicationDate()
-DvObject : void setPublicationDate(Timestamp)
-DvObject : DataverseUser getReleaseUser()
-DvObject : void setReleaseUser(DataverseUser)
-DvObject : boolean isReleased()
-DvObject : Timestamp getCreateDate()
-DvObject : void setCreateDate(Timestamp)
-DvObject : DataverseUser getCreator()
-DvObject : void setCreator(DataverseUser)
-DvObject : Object accept(DvObject.Visitor)
-DvObject : int hashCode()
-DvObject : boolean equals(Object)
-DvObject : String toString()
+' AuthenticationManager:
+AuthenticationManager --> "1" AuthenticationManager
+AuthenticationManager : AuthenticationManager getInstance()
+AuthenticationManager : void registerProvider(AuthenticationProvider)
+AuthenticationManager : Collection getAuthenticationProviders()
+
+' Permission:
+
+' AbstractCommand:
+Command <|.. AbstractCommand
+AbstractCommand --> "1" DataverseUser
+AbstractCommand : Map getAffectedDvObjects()
+AbstractCommand : DataverseUser getUser()
+
+' AuthenticatedUsers:
+AbstractGroup <|-- AuthenticatedUsers
+AuthenticatedUsers : boolean contains(User, ServletRequest)
+AuthenticatedUsers : boolean isEditable()
+AuthenticatedUsers : GroupCreator getCreator()
+AuthenticatedUsers : String getIdentifier()
+AuthenticatedUsers : String getDisplayInfo()
+
+' ShibAuthenticationProvider:
+AuthenticationProvider <|.. ShibAuthenticationProvider
+GroupCreator <|.. ShibAuthenticationProvider
+ShibAuthenticationProvider --> "1" RoleAssignee
+ShibAuthenticationProvider : RoleAssignee getRoleAssignee(String)
+ShibAuthenticationProvider : Group createGroup()
+
+' CreateRoleCommand:
+AbstractCommand <|-- CreateRoleCommand
+CreateRoleCommand --> "1" DataverseRole
+CreateRoleCommand : DataverseRole execute(CommandContext)
+
+' AuthenticatedUserLookup:
+AuthenticatedUserLookup --> "1" AuthenticatedUser
+AuthenticatedUserLookup : String getPersistentUserIdFromIdp()
+AuthenticatedUserLookup : AuthenticatedUser getAuthenticatedUser()
 
 ' DataverseRole:
 DataverseRole : Comparator CMP_BY_NAME
@@ -271,13 +174,42 @@ DataverseRole : String toString()
 DataverseRole : int hashCode()
 DataverseRole : boolean equals(Object)
 
-' IpGroup:
-AbstractGroup <|-- IpGroup
-IpGroup : boolean contains(User, ServletRequest)
-IpGroup : boolean isEditable()
-IpGroup : GroupCreator getCreator()
-IpGroup : String getIdentifier()
-IpGroup : String getDisplayInfo()
+' GroupRow:
+
+' RoleAssignment:
+RoleAssignment --> "1" DataverseUser
+RoleAssignment --> "1" DataverseRole
+RoleAssignment --> "1" DvObject
+RoleAssignment : Long getId()
+RoleAssignment : void setId(Long)
+RoleAssignment : DataverseUser getUser()
+RoleAssignment : void setUser(DataverseUser)
+RoleAssignment : DataverseRole getRole()
+RoleAssignment : void setRole(DataverseRole)
+RoleAssignment : DvObject getDefinitionPoint()
+RoleAssignment : void setDefinitionPoint(DvObject)
+RoleAssignment : int hashCode()
+RoleAssignment : boolean equals(Object)
+RoleAssignment : String toString()
+
+' ApiKey:
+ApiKey --> "1" AuthenticatedUser
+ApiKey : Long getId()
+ApiKey : void setId(Long)
+ApiKey : String getKey()
+ApiKey : void setKey(String)
+ApiKey : AuthenticatedUser getAuthenticatedUser()
+ApiKey : boolean isDisabled()
+ApiKey : Timestamp getCreateTime()
+ApiKey : Timestamp getExpireTime()
+
+' GroupCreator:
+GroupCreator : Group createGroup()
+
+' GroupException:
+GroupException --> "1" Group
+GroupException : Group getGroup()
+GroupException : String toString()
 
 ' DataverseUser:
 DataverseUser : Long getId()
@@ -306,6 +238,93 @@ DataverseUser : int hashCode()
 DataverseUser : boolean equals(Object)
 DataverseUser : String toString()
 
+' Permission:
+Permission : Permission Access
+Permission : Permission AccessUnpublishedContent
+Permission : Permission AccessRestrictedMetadata
+Permission : Permission UndoableEdit
+Permission : Permission DestructiveEdit
+Permission : Permission EditMetadata
+Permission : Permission AddDataverse
+Permission : Permission AddDataset
+Permission : Permission AddDatasetVersion
+Permission : Permission ChooseTemplate
+Permission : Permission ChooseFacets
+Permission : Permission Publish
+Permission : Permission Style
+Permission : Permission GrantPermissions
+Permission : Permission Tracking
+Permission : Permission CreateTemplates
+Permission : Permission RestrictFile
+Permission : Permission RestrictMetadata
+Permission : Permission values()
+Permission : Permission valueOf(String)
+Permission : String getHumanName()
+Permission : boolean appliesTo(Class)
+
+' GuestUser:
+User <|.. GuestUser
+GuestUser --> "1" GuestUser
+GuestUser : GuestUser get()
+GuestUser : String getIdentifier()
+GuestUser : String getDisplayInfo()
+
+' ShibGroup:
+AbstractGroup <|-- ShibGroup
+ShibGroup : Map getHeaderMatches()
+ShibGroup : boolean contains(User, ServletRequest)
+ShibGroup : boolean isEditable()
+ShibGroup : GroupCreator getCreator()
+ShibGroup : String getIdentifier()
+ShibGroup : String getDisplayInfo()
+
+' IpGroup:
+AbstractGroup <|-- IpGroup
+IpGroup : boolean contains(User, ServletRequest)
+IpGroup : boolean isEditable()
+IpGroup : GroupCreator getCreator()
+IpGroup : String getIdentifier()
+IpGroup : String getDisplayInfo()
+
+' DvObject:
+DvObject : DvObject.Visitor NamePrinter
+DvObject --> "1" Visitor
+DvObject --> "1" DataverseUser
+DvObject --> "1" DataverseUser
+DvObject : DvObjectContainer getOwner()
+DvObject : Long getId()
+DvObject : void setId(Long)
+DvObject : Timestamp getPublicationDate()
+DvObject : void setPublicationDate(Timestamp)
+DvObject : DataverseUser getReleaseUser()
+DvObject : void setReleaseUser(DataverseUser)
+DvObject : boolean isReleased()
+DvObject : Timestamp getCreateDate()
+DvObject : void setCreateDate(Timestamp)
+DvObject : DataverseUser getCreator()
+DvObject : void setCreator(DataverseUser)
+DvObject : Object accept(DvObject.Visitor)
+DvObject : int hashCode()
+DvObject : boolean equals(Object)
+DvObject : String toString()
+
+' Command:
+Command : Object execute(CommandContext)
+Command : Map getAffectedDvObjects()
+Command : DataverseUser getUser()
+
+' AbstractGroup:
+Group <|.. AbstractGroup
+AbstractGroup : String getAlias()
+AbstractGroup : String getName()
+AbstractGroup : String getDescription()
+AbstractGroup : Set getDirectSubGroups()
+
+' Visitor:
+Visitor : Object visit(Dataverse)
+Visitor : Object visit(Dataset)
+Visitor : Object visit(DataFile)
+
 ' UserRoleAssignments:
 UserRoleAssignments --> "1" DataverseUser
 UserRoleAssignments : void add(Iterable)
@@ -316,12 +335,36 @@ UserRoleAssignments : Set getAssignments()
 UserRoleAssignments : Iterator iterator()
 UserRoleAssignments : boolean isEmpty()
 
-' AuthenticationProvider:
-AuthenticationProvider : RoleAssignee getRoleAssignee(String)
+' Group:
+RoleAssignee <|.. Group
+Group : String getAlias()
+Group : String getName()
+Group : String getDescription()
+Group : boolean contains(User, ServletRequest)
+Group : boolean isEditable()
+Group : GroupCreator getCreator()
+Group : Set getDirectSubGroups()
 
-' ExplicitGroupCreator:
-GroupCreator <|.. ExplicitGroupCreator
-ExplicitGroupCreator : ExplicitGroup createGroup()
-ExplicitGroupCreator : Group getGroup(String)
+' AuthenticatedUser:
+User <|.. AuthenticatedUser
+AuthenticatedUser : String getIdentifier()
+AuthenticatedUser : String getDisplayInfo()
+
+' AssignRoleCommand:
+AbstractCommand <|-- AssignRoleCommand
+AssignRoleCommand --> "1" DataverseRole
+AssignRoleCommand --> "1" DataverseUser
+AssignRoleCommand --> "1" DvObject
+AssignRoleCommand : RoleAssignment execute(CommandContext)
+
+' AccessRequest:
+AccessRequest --> "1" AuthenticatedUser
+AccessRequest --> "1" DvObject
+AccessRequest : AuthenticatedUser getAuthenticatedUser()
+AccessRequest : DvObject getDvObject()
+
+' RoleAssignee:
+RoleAssignee : String getIdentifier()
+RoleAssignee : String getDisplayInfo()
 
 @enduml
