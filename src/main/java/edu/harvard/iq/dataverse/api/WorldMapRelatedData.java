@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -79,7 +81,8 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @EJB
     DataFileServiceBean dataFileService;
     
-
+    @EJB
+    UserNotificationServiceBean userNotificationService;
     /*
         Link used within Dataverse for MapIt button
         Sends file link to GeoConnect using a Redirect
@@ -201,7 +204,12 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("filename", dfile_meta.getLabel());
         dfile_json.add("datafile_label", dfile_meta.getLabel());
         dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
-        dfile_json.add("filesize", dfile.getFilesize()); 
+        Long fsize = dfile.getFilesize();
+        if (fsize == null){
+            fsize= new Long(-1);
+        }
+            
+        dfile_json.add("filesize", fsize); 
         dfile_json.add("datafile_type", dfile.getContentType());
         dfile_json.add("created", dfile.getCreateDate().toString());
                       
@@ -327,6 +335,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Failed to save map layer!  Original JSON: ");
         }
+        
+        // notify user
+     //   userNotificationService.sendN
+      //userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), UserNotification.Type.CREATEDV, dataverse.getId());
+
         return okResponse("map layer object saved!");
 
         
