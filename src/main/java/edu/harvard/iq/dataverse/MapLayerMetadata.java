@@ -26,8 +26,12 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author rmp553
  */
 @Entity
-public class MapLayerMetadata implements Serializable {
+public class MapLayerMetadata extends MapLayerMetadataHolder implements Serializable {
 
+      
+    @Transient
+    public final static String dataType = "MapLayerMetadata";
+    
     @Transient
     public final static List<String> MANDATORY_JSON_FIELDS = Arrays.asList("layerName", "layerLink", "embedMapLink", "worldmapUsername");
 

@@ -267,29 +267,67 @@ public class DatasetPage implements java.io.Serializable {
         this.deaccessionRadio = deaccessionRadio;
     }
 
-
-    public boolean hasMapLayerMetadata(DataFile df){
+    
+    public boolean isShapefileType(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        if (fm.getDataFile()==null){
+            return false;
+        }
+        
+        return fm.getDataFile().isShapefileType();
+    }
+    
+    /*
+        Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */
+    public boolean hasMapLayerMetadata(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        if (fm.getDataFile()==null){
+            return false;
+        }
+        return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
+    }
+    
+    
+     /*
+        Check if a DataFile has an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */    
+    private boolean doesDataFileHaveMapLayerMetadata(DataFile df){
         if (df==null){
             return false;
         }
-        return hasMapLayerMetadata(df.getId());
-    }
-    
-    public boolean hasMapLayerMetadata(long datafile_pk){
-        return this.mapLayerMetadataLookup.containsKey(datafile_pk);
+        if (df.getId()==null){
+            return false;
+        }
+        return this.mapLayerMetadataLookup.containsKey(df.getId());
     }
    
-    public MapLayerMetadata getMapLayerMetadata(DataFile df){
+   /*
+        Using a DataFile id, retreive an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */ 
+    private MapLayerMetadata getMapLayerMetadata(DataFile df){
         if (df==null){
             return null;
         }
         return this.mapLayerMetadataLookup.get(df.getId());
     }
     
-    public MapLayerMetadata getMapLayerMetadata(long datafile_pk){
-        return this.mapLayerMetadataLookup.get(datafile_pk);
-    }
+
+    /*
+        Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
     
+        Very few DataFiles will have associated MapLayerMetadata objects so only use 1 query to get them
+    */
     private void loadMapLayerMetadataLookup(){
         if (this.dataset==null){
             return;

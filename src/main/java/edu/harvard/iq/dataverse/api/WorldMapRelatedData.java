@@ -92,6 +92,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_id}")
     public Response mapDataFile(@Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id){
         
+        if (true){
+            return okResponse("Current deactivated");
+        }
         // Check if this file exists
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
