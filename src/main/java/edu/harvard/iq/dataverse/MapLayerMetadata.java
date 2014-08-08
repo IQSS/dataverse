@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotBlank;
  * @author rmp553
  */
 @Entity
-public class MapLayerMetadata extends MapLayerMetadataHolder implements Serializable {
+public class MapLayerMetadata implements Serializable {
 
       
     @Transient
