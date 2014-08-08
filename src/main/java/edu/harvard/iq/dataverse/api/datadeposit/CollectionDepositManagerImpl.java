@@ -129,7 +129,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         logger.info("required fields: " + requiredFields);
 
                         DatasetField emailDatasetField = new DatasetField();
-                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName("distributorContact");
+                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
                         List<DatasetFieldValue> values = new ArrayList<>();
                         values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
                         emailDatasetField.setDatasetFieldValues(values);

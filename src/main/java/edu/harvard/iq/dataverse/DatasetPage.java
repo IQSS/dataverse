@@ -386,7 +386,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
                     dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
                 }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorContact)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
                     dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
