@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 @Path("auth")
 public class Auth extends AbstractApiBean {
@@ -47,13 +50,38 @@ public class Auth extends AbstractApiBean {
         JsonObjectBuilder info = Json.createObjectBuilder();
         info
                 .add("userStuff", userStuff.toString())
-                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size());
+                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size())
+                .add("endpoints", Json.createArrayBuilder()
+                        .add(usernameEndpoint)
+                        .add(lookupEndpoint)
+                        .add(apiKeyEndpoint));
         return ok(info.build());
     }
 
     @GET
-    @Path("username/{username}")
-    public String getAuthenicatedUserFromUsername(@PathParam("username") String username) {
+    @Path("foo")
+    public Response getFoo(@QueryParam("pretty") boolean prettyPrintResponse) {
+        JsonArrayBuilder bar = Json.createArrayBuilder().add("foo").add("bar");
+        if (prettyPrintResponse) {
+            return okResponse(bar, Format.PRETTY);
+        } else {
+            return okResponse(bar);
+        }
+    }
+
+    private final String usernameEndpoint = "username";
+    private final String usernameParam = "username";
+    private final String usernameEndpointSignature = usernameEndpoint + "/{" + usernameParam + "}";
+
+    @GET
+    @Path(usernameEndpoint)
+    public String getUsername() {
+        return error("Please provide a username. The endpoint expects " + usernameEndpointSignature);
+    }
+
+    @GET
+    @Path(usernameEndpointSignature)
+    public String getAuthenicatedUserFromUsername(@PathParam(usernameParam) String username) {
         AuthenticatedUser user = userService.findByUsername(username);
         if (user != null) {
             JsonObjectBuilder userObject = Json.createObjectBuilder();
@@ -66,8 +94,10 @@ public class Auth extends AbstractApiBean {
         }
     }
 
+    private final String lookupEndpoint = "lookup";
+
     @GET
-    @Path("lookup/{id}")
+    @Path(lookupEndpoint + "/{id}")
     public String getAuthenticatedUser(@PathParam("id") String id) {
         AuthenticatedUserLookup userIdLookupString = userService.findByPersitentIdFromIdp(id);
         if (userIdLookupString != null) {
@@ -82,10 +112,13 @@ public class Auth extends AbstractApiBean {
         }
     }
 
+    private final String apiKeyEndpoint = "apikey";
+
     @GET
-    @Path("apikey/{key}")
+    @Path(apiKeyEndpoint + "/{key}")
     public String getApiKeyInfo(@PathParam("key") String key) {
         ApiKey apiKey = userService.findApiKey(key);
+        Response notFound = errorResponse(Response.Status.NOT_FOUND, "Couldn't find a key based on " + key);
         if (apiKey != null) {
             AuthenticatedUser user = apiKey.getAuthenticatedUser();
             if (user != null) {
@@ -101,10 +134,10 @@ public class Auth extends AbstractApiBean {
                         .add("expires", apiKey.getExpireTime().toString());
                 return ok(keyInfo.build());
             } else {
-                return error("Couldn't find user based on " + key);
+                return notFound.toString();
             }
         } else {
-            return error("Couldn't find user based on " + key);
+            return error("Couldn't find a key based on " + key);
         }
     }
 }
