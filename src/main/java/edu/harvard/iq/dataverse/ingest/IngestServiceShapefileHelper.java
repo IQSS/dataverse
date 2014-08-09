@@ -190,6 +190,7 @@ public class IngestServiceShapefileHelper {
     /*
         Note: This creates DataFile objects, the files themselves already exist!
     */
+    /*
     private boolean createDataFiles(File rezipFolder){
         if (!isValidFolder(rezipFolder)){
             return false;
@@ -210,108 +211,7 @@ public class IngestServiceShapefileHelper {
         
         return false;
     }
-    
-    /*
-        Note: This creates a DataFile object and a related FileMetadata object
-        -> The files themselves already exist!
     */
-    private DataFile createSingleDataFile(File inputFile){
-        if (!this.isValidFile(inputFile)){
-            logger.warning("createSingleDataFile: fileObject was not a file.");
-            return null;
-        }
-        
-        // (1) Get file name
-        String fileName = inputFile.getName();
-        if (fileName==null){
-           logger.warning("Unusual: inputFile.getName() returned null");
-            return null;
-        }
-        
-        // (2) Determine file type
-        String contentType;
-        try {
-            contentType = FileUtil.determineFileType(inputFile, fileName);
-        } catch (IOException ex) {
-            logger.fine("FileUtil.determineFileType failed for file with name: " + fileName);
-            contentType = null;
-        }
-        
-        if ((contentType==null)||(contentType=="")){
-            contentType = "application/octet-stream";
-        }
-        
-        // (3) - Start making a DataFile
-        DataFile datafile = new DataFile(contentType);
-        
-
-        // Set the data file owner
-        Dataset dataFileOwner = this.datasetVersion.getDataset();
-        if (dataFileOwner == null){
-          logger.severe("method call failed: this.datasetVersion.getDataset()");
-          return null;
-        }        
-        datafile.setOwner(dataFileOwner);
-        
-        // (3a) - Start making the FileMetadata
-        FileMetadata fileMetadata= new FileMetadata();
-        
-        // set the FileMetadata label
-        fileMetadata.setLabel(fileName);
-        fileMetadata.setDataFile(datafile);
-        
-        // Add file fileMetadata to the new datafile
-        datafile.getFileMetadatas().add(fileMetadata);
-
-        // Add file fileMetadata to the datasetVersion
-        if (this.datasetVersion.getFileMetadatas() == null) {
-            this.datasetVersion.setFileMetadatas(new ArrayList());
-        }
-        this.datasetVersion.getFileMetadatas().add(fileMetadata);
-
-        // Add the datasetVersion to the fileMetadata
-        fileMetadata.setDatasetVersion(this.datasetVersion);
-        
-        // Add the data file to the datasetVersion
-        this.datasetVersion.getDataset().getFiles().add(datafile);
-
-        // Generate Storage Identifier
-        fileService.generateStorageIdentifier(datafile);
-        
-        return datafile;
-/*
-        BufferedOutputStream outputStream = null;
-
-            // Once again, at this point we are dealing with *temp*
-            // files only; these are always stored on the local filesystem, 
-            // so we are using FileInput/Output Streams to read and write
-            // these directly, instead of going through the Data Access 
-            // framework. 
-            //      -- L.A.
-
-        try {
-            outputStream = new BufferedOutputStream(new FileOutputStream(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
-
-            byte[] dataBuffer = new byte[8192];
-            int i = 0;
-
-            while ((i = inputStream.read(dataBuffer)) > 0) {
-                outputStream.write(dataBuffer, 0, i);
-                outputStream.flush();
-            }
-        } catch (IOException ioex) {
-            datafile = null; 
-        } finally {
-            try {
-                outputStream.close();
-            } catch (IOException ioex) {}
-        }
-
-        
-        // End: Read in the actual file contents
-        
-        return datafile;
-        */
-    };
+    
     
 }

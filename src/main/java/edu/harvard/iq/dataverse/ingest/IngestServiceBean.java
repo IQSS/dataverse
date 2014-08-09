@@ -79,8 +79,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -106,6 +108,7 @@ import javax.faces.application.FacesMessage;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -145,6 +148,7 @@ public class IngestServiceBean {
     
     private static final String MIME_TYPE_FITS  = "application/fits";
     
+    private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
       
@@ -197,7 +201,7 @@ public class IngestServiceBean {
                 // if any?
                 if (contentType == null
                         || contentType.equals("")
-                        || contentType.equalsIgnoreCase("application/octet-stream")
+                        || contentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
                         || recognizedType.equals("application/fits-gzipped")
                         || recognizedType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
                     finalType = recognizedType;
@@ -210,7 +214,7 @@ public class IngestServiceBean {
         
         if (finalType == null) {
             finalType = (contentType == null || contentType.equals("")) 
-                ? "application/octet-stream" 
+                ? MIME_TYPE_UNDETERMINED_DEFAULT
                 : contentType;
         }
                 
@@ -232,7 +236,7 @@ public class IngestServiceBean {
             DataFile datafile = null; 
             try {                
                 uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));  
-                datafile = createSingleDataFile(version, uncompressedIn, finalFileName, "application/octet-stream");
+                datafile = createSingleDataFile(version, uncompressedIn, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT);
             } catch (IOException ioex) {
                 datafile = null;
             } finally {
@@ -260,7 +264,8 @@ public class IngestServiceBean {
                 
         // If it's a ZIP file, we are going to unpack it and create multiple 
         // DataFile objects from its contents:
-        } else if (finalType.equals("application/zip")) {   
+       // } else if (( finalType.equals("application/zip")) || (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE))) {   
+          } else if (finalType.equals("application/zip")) {   
             
             ZipInputStream unZippedIn = null; 
             ZipEntry zipEntry = null; 
@@ -289,7 +294,7 @@ public class IngestServiceBean {
                                 // OK, this seems like an OK file entry - we'll try 
                                 // to read it and create a DataFile with it:
 
-                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, "application/octet-stream");
+                                DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT);
                                 // TODO: 
                                 // Need to try to identify mime types for the individual 
                                 // files inside the ZIP archive! -- L.A.
@@ -320,10 +325,51 @@ public class IngestServiceBean {
         } else if (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files, 
             // one zip archive per each complete set of shape files:
+                       
+            //File rezipFolder = new File(this.getFilesTempDirectory());
+            File rezipFolder = this.getShapefileUnzipTempDirectory();
             
+            IngestServiceShapefileHelper shpIngestHelper;
+            shpIngestHelper = new IngestServiceShapefileHelper(tempFile.toFile(), rezipFolder);
+
+            boolean didProcessWork = shpIngestHelper.processFile();
+            if (!(didProcessWork)){            
+                logger.severe("Processing of zipped shapefile failed.");
+                return null;
+            }
+            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
+                FileInputStream finalFileInputStream = new FileInputStream(finalFile);
+                finalType = this.getContentType(finalFile);
+                if (finalType==null){
+                    logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
+                    continue; 
+                }               
+                DataFile new_datafile = createSingleDataFile(version, finalFileInputStream, finalFile.getName(), finalType);
+                if (new_datafile != null) {
+                  datafiles.add(new_datafile);
+                }
+                finalFileInputStream.close();                
+             
+            }
             
+            // Delete the temp directory used for unzipping
+            logger.fine("Delete temp shapefile unzip directory: " + rezipFolder.getAbsolutePath());
+            FileUtils.deleteDirectory(rezipFolder);
+
+            // Delete rezipped files
+            for (File finalFile : shpIngestHelper.getFinalRezippedFiles()){
+                if (finalFile.isFile()){
+                    finalFile.delete();
+                }
+            }
             
+            if (datafiles.size() > 0) {
+                return datafiles;
+            }
+            return null;
+           
         }
+
         
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
@@ -344,8 +390,31 @@ public class IngestServiceBean {
         }
         
         return null;
-    }
+    }   // end createDataFiles
     
+    
+    /**
+     *  Returns a content type string for a FileObject
+     * 
+     */
+    private String getContentType(File fileObject){
+        if (fileObject==null){
+            return null;
+        }
+        String contentType;
+        try {
+            contentType = FileUtil.determineFileType(fileObject, fileObject.getName());
+        } catch (IOException ex) {
+            logger.info("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
+            contentType = null;
+        }
+
+        if ((contentType==null)||(contentType=="")){
+            contentType = "MIME_TYPE_UNDETERMINED_DEFAULT";
+        }
+        return contentType;
+        
+    }
     /* 
      * This method creates a DataFile, and also saves the bytes from the suppplied 
      * InputStream in the temporary location. 
@@ -552,6 +621,30 @@ public class IngestServiceBean {
                 }
             }
         }
+    }
+    
+    private File getShapefileUnzipTempDirectory(){
+        
+        String tempDirectory = this.getFilesTempDirectory();
+        if (tempDirectory == null){
+            return null;
+        }
+        String datestampedFileName =  "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
+        String datestampedFolderName = tempDirectory + "/" + datestampedFileName;
+        
+        File datestampedFolder = new File(datestampedFolderName);
+        if (!datestampedFolder.isDirectory()) {
+            /* Note that "createDirectories()" must be used - not 
+             * "createDirectory()", to make sure all the parent 
+             * directories that may not yet exist are created as well. 
+             */
+            try {
+                Files.createDirectories(Paths.get(datestampedFolderName));
+            } catch (IOException ex) {
+                return null;
+            }
+        }
+        return datestampedFolder;        
     }
     
     public String getFilesTempDirectory() {
