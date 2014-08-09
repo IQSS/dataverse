@@ -99,14 +99,14 @@ public class IngestServiceShapefileHelper {
     /*
         Constructor that accepts a file object
     */
-   IngestServiceShapefileHelper(File zippedShapefile, File rezipFolder, DatasetVersion version){
+   IngestServiceShapefileHelper(File zippedShapefile, File rezipFolder){
         
         if ((!isValidFile(zippedShapefile))||(!isValidFolder(rezipFolder))){
             return;
         }
         this.zippedShapefile = zippedShapefile;
         this.rezipFolder = rezipFolder;
-        this.datasetVersion = version;
+        //this.datasetVersion = version;
 
         //this.processFile(zippedShapefile, rezipFolder);
 
@@ -137,10 +137,6 @@ public class IngestServiceShapefileHelper {
    
     public boolean processFile() {
        
-        if (this.datasetVersion==null){
-            logger.severe("datasetVersion is null!!");
-            return false;
-        }
        if ((!isValidFile(this.zippedShapefile))||(!isValidFolder(this.rezipFolder))){
             return false;
         }
@@ -167,9 +163,9 @@ public class IngestServiceShapefileHelper {
             return false;
         }
 
-        boolean rezip_success;
+        boolean rezipSuccess;
         try {
-            rezip_success = shpHandler.rezipShapefileSets(shpfileInputStream, rezipFolder);
+            rezipSuccess = shpHandler.rezipShapefileSets(shpfileInputStream, rezipFolder);
         } catch (IOException ex) {
             logger.severe("Shapefile was not correctly unpacked/repacked");
             logger.severe("shpHandler message: " + shpHandler.errorMessage);
@@ -178,13 +174,19 @@ public class IngestServiceShapefileHelper {
         
         this.closeFileInputStream(shpfileInputStream);
         
-        if (!rezip_success){
-            return false;
-        }
-        return createDataFiles(rezipFolder);
+        return rezipSuccess;
+     
+        //   return createDataFiles(rezipFolder);
         
     }
     
+    
+    public List<File> getFinalRezippedFiles(){
+        if (this.shpHandler==null){
+            return null;
+        }
+        return this.shpHandler.getFinalRezippedFiles();
+    }
     /*
         Note: This creates DataFile objects, the files themselves already exist!
     */
