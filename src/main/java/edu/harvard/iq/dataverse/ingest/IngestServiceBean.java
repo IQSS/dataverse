@@ -623,6 +623,12 @@ public class IngestServiceBean {
         }
     }
     
+    /**
+        For the restructuring of zipped shapefiles, create a timestamped directory.
+        This directory is deleted after successful restructuring.
+    
+        Naming convention: getFilesTempDirectory() + "shp_" + "yyyy-MM-dd-hh-mm-ss-SSS"
+    */
     private File getShapefileUnzipTempDirectory(){
         
         String tempDirectory = this.getFilesTempDirectory();
