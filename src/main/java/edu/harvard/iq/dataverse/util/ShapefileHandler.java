@@ -103,7 +103,7 @@ public class ShapefileHandler{
 
     // Debug helper
     private void msg(String s){
-        logger.info(s);
+        //logger.info(s);
         if (DEBUG){
             System.out.println(s);
         }
@@ -304,7 +304,7 @@ public class ShapefileHandler{
     
     */
     private boolean unzipFilesToDirectory(FileInputStream zipfile_input_stream, File target_directory){
-        logger.info("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
+        //logger.info("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
 
         if (zipfile_input_stream== null){
             this.addErrorMessage("unzipFilesToDirectory. The zipfile_input_stream is null.");
@@ -314,6 +314,9 @@ public class ShapefileHandler{
              this.addErrorMessage("This directory does not exist: " + target_directory.getAbsolutePath());
             return false;
         }
+
+       List<String> unzippedFileNames = new ArrayList<>(); 
+       
        ZipInputStream zipStream = new ZipInputStream(zipfile_input_stream);
 
        ZipEntry origEntry;
@@ -322,7 +325,7 @@ public class ShapefileHandler{
             while((origEntry = zipStream.getNextEntry())!=null){
                 
                 String zentryFileName = origEntry.getName();
-                logger.info("\nOriginal entry name: " + origEntry);
+                //logger.info("\nOriginal entry name: " + origEntry);
                 
                  if (this.isFileToSkip(zentryFileName)){
                     logger.fine("Skip file");
@@ -331,13 +334,13 @@ public class ShapefileHandler{
                 
                 // Create sub directory, if needed
                 if (origEntry.isDirectory()) {
-                    logger.info("Subdirectory found!");
+                    //logger.info("Subdirectory found!");
                     logger.fine("Skip directory");
                     //String dirpath = target_directory.getAbsolutePath() + "/" + zentryFileName;
                     //createDirectory(dirpath);
                     continue;           // Continue to next Entry
                 }
-                logger.info("file found!");
+                logger.fine("file found!");
                 
                 // Write the file
                 String unzipFileName = this.getFileBasename(zentryFileName);
@@ -347,7 +350,13 @@ public class ShapefileHandler{
                 }
                 
                 String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
-                logger.info("Write zip file: " + outpath);
+                if (unzippedFileNames.contains(outpath)){
+                   logger.info("Potential name collision.  Avoiding duplicate files in 'collapsed' zip directories. Skipping file: " + zentryFileName);
+                   continue;
+                }else{
+                    unzippedFileNames.add(outpath);
+                }
+                logger.fine("Write zip file: " + outpath);
                 FileOutputStream fileOutputStream;
                 long fsize = 0;
                 fileOutputStream = new FileOutputStream(outpath);
@@ -412,7 +421,7 @@ public class ShapefileHandler{
         
         dirname_for_unzipping = rezippedFolder.getAbsolutePath() + "/" + "scratch-for-unzip-12345";
         dir_for_unzipping = new File(dirname_for_unzipping);
-        logger.info("Try to create directory: " + dirname_for_unzipping );
+        logger.fine("Try to create directory: " + dirname_for_unzipping );
 
         if (!this.createDirectory(dir_for_unzipping)){
             this.addErrorMessage("Failed to make directory: " + dirname_for_unzipping);
@@ -429,13 +438,13 @@ public class ShapefileHandler{
         String target_dirname = rezippedFolder.getAbsolutePath();
         boolean redistribute_success = this.redistributeFilesFromZip(dirname_for_unzipping, target_dirname);
 
-        logger.info("About to delete: " + dir_for_unzipping);               
+        logger.fine("About to delete: " + dir_for_unzipping);               
         // Delete unzipped files in scratch directory
         FileUtils.deleteDirectory(dir_for_unzipping);
         
-        logger.info("Post redistribute:)");
+        logger.fine("Post redistribute:)");
         for (File f : new File(target_dirname).listFiles()){
-            logger.info("File exists: " + f.getAbsolutePath());
+            logger.fine("File exists: " + f.getAbsolutePath());
         }
         
         return redistribute_success;
@@ -469,7 +478,7 @@ public class ShapefileHandler{
     */
     private boolean redistributeFilesFromZip(String source_dirname, String target_dirname){
 
-        logger.info("redistributeFilesFromZip. source: '" + source_dirname + "'  target: '" + target_dirname + "'");
+        logger.fine("redistributeFilesFromZip. source: '" + source_dirname + "'  target: '" + target_dirname + "'");
 
         int cnt =0;
        /* START: Redistribute files by iterating through the Map of basenames + extensions
@@ -602,9 +611,11 @@ public class ShapefileHandler{
         if (extension_list==null) {
             extension_list = new ArrayList<>();
         }
-        extension_list.add(ext);
-        fileGroups.put(basename, extension_list);
-    }   // end addToFileGroupHash
+        if (!(extension_list.contains(ext))){
+            extension_list.add(ext);
+            fileGroups.put(basename, extension_list);
+        }
+      }   // end addToFileGroupHash
     
     /**
      * Update the fileGroup hash which contains a { base_filename : [ext1, ext2, etc ]}
@@ -649,10 +660,10 @@ public class ShapefileHandler{
         
         if (fname.startsWith("._")){
             return true;
-
         }
         
-        if (fname.equalsIgnoreCase(".DS_Store")){
+        File fnameFile = new File(fname);
+        if (fnameFile.getName().endsWith(".DS_Store")){
             return true;
         }
         return false;
@@ -707,9 +718,11 @@ public class ShapefileHandler{
                                    unzipFileName, entry.getSize(),
                                    new Date(entry.getTime()));
 
-                this.filesListInDir.add(s);
-                updateFileGroupHash(unzipFileName);
-                this.filesizeHash.put(unzipFileName, entry.getSize());
+                if (!this.filesListInDir.contains(s)){                   
+                    this.filesListInDir.add(s);
+                    updateFileGroupHash(unzipFileName);
+                    this.filesizeHash.put(unzipFileName, entry.getSize());
+                }
            } // end while
            
            zipStream.close();
