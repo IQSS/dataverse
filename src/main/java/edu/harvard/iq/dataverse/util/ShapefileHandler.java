@@ -96,6 +96,8 @@ public class ShapefileHandler{
     */
     private Map<String, List<String>> fileGroups = new HashMap<>();
     
+    private List<File> finalRezippedFiles = new ArrayList<>();
+    
     private String outputFolder = "unzipped";
     private String rezippedFolder = "rezipped";
 
@@ -139,7 +141,7 @@ public class ShapefileHandler{
    /*
         Constructor, start with FileInputStream
     */
-    public ShapefileHandler(FileInputStream zip_file_stream){
+   public ShapefileHandler(FileInputStream zip_file_stream){
 
         if (zip_file_stream==null){
             this.addErrorMessage("The zip_file_stream was null");
@@ -147,6 +149,24 @@ public class ShapefileHandler{
         }
         this.examineZipfile(zip_file_stream);
     }
+    
+    public List<File> getFinalRezippedFiles(){
+        return this.finalRezippedFiles;
+    }
+    
+    private void addFinalRezippedFile(String targetFileFullpath){
+        if (targetFileFullpath==null){
+            logger.warning("addFinalRezippedFile. targetFileFullpath is null");
+            return;
+        }
+        File finalFile = new File(targetFileFullpath);
+        if (!(finalFile.isFile())){
+            logger.warning("addFinalRezippedFile. Not a file: " + targetFileFullpath);
+            return;
+        }
+        this.finalRezippedFiles.add(finalFile);
+    };
+
     
     private void addErrorMessage(String m){
         if (m == null){
@@ -302,13 +322,12 @@ public class ShapefileHandler{
             while((origEntry = zipStream.getNextEntry())!=null){
                 
                 String zentryFileName = origEntry.getName();
-                logger.info("Original entry name: " + origEntry);
+                logger.info("\nOriginal entry name: " + origEntry);
                 
-                // Skip files or folders starting with __
-                if (zentryFileName.startsWith("__")){
+                 if (this.isFileToSkip(zentryFileName)){
                     logger.fine("Skip file");
                     continue;
-                }
+                 }
                 
                 // Create sub directory, if needed
                 if (origEntry.isDirectory()) {
@@ -476,8 +495,9 @@ public class ShapefileHandler{
                         // Another file with similar basename as shapefile.  
                         // e.g. if shapefile basename is "census", this might be "census.xls", "census.pdf", or another non-shapefile extension
                         String source_file_fullpath = this.getRedistributeFilePath(source_dirname, key, ext_name);
-                        String target_file_fullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
-                        this.straightFileCopy(source_file_fullpath, target_file_fullpath);
+                        String targetFileFullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
+                        this.straightFileCopy(source_file_fullpath, targetFileFullpath);
+                        this.addFinalRezippedFile(targetFileFullpath);
                     }else{
                         namesToZip.add(key + "." + ext_name);
                 
@@ -490,14 +510,18 @@ public class ShapefileHandler{
                 
                 //msgt("create zipped shapefile");
                 ZipMaker zip_maker = new ZipMaker(namesToZip, source_dirname, target_zipfile_name);
+                this.addFinalRezippedFile(target_zipfile_name);
+
                 // rezip it
                                 
             }else{
                 // Non-shapefiles
                 for (String ext_name : ext_list) {
                     String source_file_fullpath = this.getRedistributeFilePath(source_dirname, key, ext_name);
-                    String target_file_fullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
-                    this.straightFileCopy(source_file_fullpath, target_file_fullpath);
+                    String targetFileFullpath = this.getRedistributeFilePath(target_dirname, key, ext_name);
+                    this.straightFileCopy(source_file_fullpath, targetFileFullpath);
+                    this.addFinalRezippedFile(targetFileFullpath);
+
                 }
             }
         }
@@ -614,6 +638,25 @@ public class ShapefileHandler{
         }
     } // end updateFileGroupHash
     
+    private boolean isFileToSkip(String fname){
+        if ((fname==null)||(fname=="")){
+            return true;
+        }
+        
+        if (fname.startsWith("__")){
+            return true;
+        }
+        
+        if (fname.startsWith("._")){
+            return true;
+
+        }
+        
+        if (fname.equalsIgnoreCase(".DS_Store")){
+            return true;
+        }
+        return false;
+    }
     
     /**************************************
      * Iterate through the zip file contents.
@@ -643,7 +686,7 @@ public class ShapefileHandler{
                  String zentryFileName = entry.getName();
                  //msg("zip entry: " + entry.getName());
                  // Skip files or folders starting with __
-                 if (zentryFileName.startsWith("__")){
+                 if (this.isFileToSkip(zentryFileName)){
                      continue;
                  }
 
