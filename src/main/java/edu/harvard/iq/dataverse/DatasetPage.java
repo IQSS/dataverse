@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,7 +125,7 @@ public class DatasetPage implements java.io.Serializable {
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
     
-    private final HashMap<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
+    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
 
     /**
      * @todo ticket to get away from these hard-coded protocol and authority
@@ -295,7 +296,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-     /*
+     /**
         Check if a DataFile has an associated MapLayerMetadata object
     
         The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
@@ -310,7 +311,7 @@ public class DatasetPage implements java.io.Serializable {
         return this.mapLayerMetadataLookup.containsKey(df.getId());
     }
    
-   /*
+   /**
         Using a DataFile id, retreive an associated MapLayerMetadata object
     
         The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
@@ -323,7 +324,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
 
-    /*
+    /**
         Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
     
         Very few DataFiles will have associated MapLayerMetadata objects so only use 1 query to get them
@@ -332,7 +333,9 @@ public class DatasetPage implements java.io.Serializable {
         if (this.dataset==null){
             return;
         }
-        
+        if (this.dataset.getId()==null){
+            return;
+        }
         List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
         if (mapLayerMetadataList==null){
             return;
