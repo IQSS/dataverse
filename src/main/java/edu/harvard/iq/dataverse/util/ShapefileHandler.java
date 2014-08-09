@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-//import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipException;
 import java.util.HashMap;
 import java.util.*;
@@ -20,7 +19,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
-//import java.nio.file.Path;
 
 /**
  *  Used to identify, "repackage", and extract data from Shapefiles in .zip format
