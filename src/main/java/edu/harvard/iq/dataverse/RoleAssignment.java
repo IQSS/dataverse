@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -50,6 +51,9 @@ public class RoleAssignment implements java.io.Serializable {
 	
 	public RoleAssignment() {}
 		
+	public RoleAssignment(DataverseRole role, RoleAssignee user, DvObject definitionPoint) {
+        // Placeholder to allow the AssignRoleCommand to compile.
+    }
 	public RoleAssignment(DataverseRole role, DataverseUser user, DvObject definitionPoint) {
 		this.role = role;
 		this.user = user;

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
@@ -60,7 +61,7 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}")
     public Response getDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
@@ -81,7 +82,7 @@ public class Datasets extends AbstractApiBean {
 	@DELETE
 	@Path("{id}")
 	public Response deleteDataset( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataset ds = datasetService.find(id);
@@ -105,7 +106,7 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions")
     public Response listVersions( @PathParam("id") Long id, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		
@@ -127,7 +128,7 @@ public class Datasets extends AbstractApiBean {
 	@GET
 	@Path("{id}/versions/{versionId}")
     public Response getVersion( @PathParam("id") Long datasetId, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		
@@ -274,7 +275,7 @@ public class Datasets extends AbstractApiBean {
         if ( ! ":edit".equals(versionId) ) 
             return errorResponse( Response.Status.BAD_REQUEST, "Only the :edit version can be put on server");
         
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
         if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         Dataset ds = datasetService.find(id);
         if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
@@ -303,7 +304,6 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/actions/:publish") 
     public Response publishDataset( @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("key") String apiKey ) {
         try {
-            
             if ( type == null ) return errorResponse( Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major' or 'minor').");
             type = type.toLowerCase();
             boolean isMinor;
@@ -319,7 +319,7 @@ public class Datasets extends AbstractApiBean {
                 return errorResponse( Response.Status.BAD_REQUEST, "Bad dataset id. Please provide a number.");
             }
             
-            DataverseUser u = userSvc.findByUserName(apiKey);
+            User u = userSvc.findByIdentifier(apiKey);
             if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
             
             Dataset ds = datasetService.find(dsId);

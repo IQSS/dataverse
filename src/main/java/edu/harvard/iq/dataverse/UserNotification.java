@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -32,7 +33,7 @@ public class UserNotification implements Serializable {
     private Long id;
 
     @ManyToOne
-    private DataverseUser user;
+    private AuthenticatedUser user;
     private Timestamp sendDate;
     private boolean readNotification;
     @Enumerated
@@ -51,11 +52,11 @@ public class UserNotification implements Serializable {
         this.id = id;
     }
 
-    public DataverseUser getUser() {
+    public AuthenticatedUser getUser() {
         return user;
     }
 
-    public void setUser(DataverseUser user) {
+    public void setUser(AuthenticatedUser user) {
         this.user = user;
     }
 

@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.User;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,10 +45,9 @@ public class DataverseUserServiceBean {
         return savedUser;
     }
     
-	public DataverseUser findGuestUser() {
-		DataverseUser theGuest = findByUserName(GUEST_USERNAME);
-		return theGuest;
-	}
+    public User findByIdentifier( String idtf ) {
+        return null; // TODO implement
+    }
 	
 	public DataverseUser createGuestUser() {
 		DataverseUser guest = new DataverseUser();

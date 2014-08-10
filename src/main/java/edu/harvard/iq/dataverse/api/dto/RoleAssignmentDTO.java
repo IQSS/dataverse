@@ -7,7 +7,7 @@ package edu.harvard.iq.dataverse.api.dto;
 public class RoleAssignmentDTO {
 	long userId;
 	long roleId;
-	String userName;
+	String userIdentifier;
 	String roleAlias;
 
 	public long getUserId() {
@@ -26,12 +26,12 @@ public class RoleAssignmentDTO {
 		this.roleId = roleId;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUserIdentifier() {
+		return userIdentifier;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUserIdentifier(String userIdentifier) {
+		this.userIdentifier = userIdentifier;
 	}
 
 	public String getRoleAlias() {

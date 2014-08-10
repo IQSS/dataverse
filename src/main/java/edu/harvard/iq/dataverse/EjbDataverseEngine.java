@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -77,7 +78,7 @@ public class EjbDataverseEngine {
 										+ "Please use the RequiredPermissions annotation.");
 		}
 
-		DataverseUser user = aCommand.getUser();
+		User user = aCommand.getUser();
 		
         Map<String, DvObject> affectedDataverses = aCommand.getAffectedDvObjects();
 		

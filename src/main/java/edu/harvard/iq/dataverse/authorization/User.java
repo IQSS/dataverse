@@ -7,5 +7,7 @@ import java.io.Serializable;
  * "u:").
  */
 public interface User extends RoleAssignee, Serializable {
-
+    
+    public static final String IDENTIFIER_PREFIX = "u:";
+            
 }

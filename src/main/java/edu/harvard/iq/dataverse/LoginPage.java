@@ -7,15 +7,11 @@
 package edu.harvard.iq.dataverse;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.NoResultException;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -33,6 +29,8 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     DataverseUserServiceBean dataverseUserService;
     
+    @EJB
+    UserServiceBean userService;
 
     @NotBlank(message = "Please enter a username.")    
     private String userName;
@@ -85,14 +83,14 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public String login() {
+        // FIXME this has to use the new auth system.
         DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Login failed", " - Please check your username and password and try again."));
             return null;
         } else {
-            session.setUser(user);
+            session.setUser( userService.findUser("local", userName) );
             return "/dataverse.xhtml?faces-redirect=true";
-            
         }
     }
 }

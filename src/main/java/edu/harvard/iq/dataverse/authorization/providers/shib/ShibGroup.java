@@ -35,9 +35,4 @@ public class ShibGroup extends AbstractGroup {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String getDisplayInfo() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

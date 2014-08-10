@@ -1,6 +1,3 @@
-/*
- *  (C) Michael Bar-Sinai
- */
 package edu.harvard.iq.dataverse.engine;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -21,9 +18,9 @@ public class PermissionTest {
      */
     @Test
     public void testAppliesTo() {
-        assertTrue( Permission.Access.appliesTo(DvObject.class) );
-        assertTrue( Permission.Access.appliesTo(Dataverse.class) );
-        assertTrue( Permission.Access.appliesTo(DataFile.class) );
+        assertTrue( Permission.Discover.appliesTo(DvObject.class) );
+        assertTrue( Permission.Discover.appliesTo(Dataverse.class) );
+        assertTrue( Permission.Discover.appliesTo(DataFile.class) );
         
         assertTrue( Permission.RestrictFile.appliesTo(DataFile.class) );
         assertFalse( Permission.RestrictFile.appliesTo(DvObject.class) );

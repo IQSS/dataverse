@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +37,7 @@ public class Users extends AbstractApiBean {
 	@GET
 	@Path("{identifier}")
 	public Response view( @PathParam("identifier") String identifier ) {
-		DataverseUser u = findUser(identifier);
+		User u = findUser(identifier);
 		
 		return ( u!=null ) 
 				? okResponse( json(u) ) 

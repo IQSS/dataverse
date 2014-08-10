@@ -20,6 +20,6 @@ public interface RoleAssignee {
      */
     public String getIdentifier();
 
-    public String getDisplayInfo();
+    public RoleAssigneeDisplayInfo getDisplayInfo();
 
 }

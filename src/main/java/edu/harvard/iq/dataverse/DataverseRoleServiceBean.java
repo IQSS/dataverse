@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.authorization.UserRoleAssignments;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -64,10 +65,10 @@ public class DataverseRoleServiceBean {
 				.getResultList();
 	}
 	
-	public void revoke( Set<DataverseRole> roles, DataverseUser user, DvObject defPoint ) {
+	public void revoke( Set<DataverseRole> roles, User user, DvObject defPoint ) {
 		for ( DataverseRole role : roles ) {
 			em.createNamedQuery("RoleAssignment.deleteByUserRoleIdDefinitionPointId")
-					.setParameter("userId", user.getId())
+					.setParameter("userId", user.getIdentifier())
 					.setParameter("roleId", role.getId())
 					.setParameter("definitionPointId", defPoint.getId())
 					.executeUpdate();
@@ -83,7 +84,7 @@ public class DataverseRoleServiceBean {
 		em.remove(ra);
 	}
 	
-	public UserRoleAssignments roleAssignments( DataverseUser user, Dataverse dv ) {
+	public UserRoleAssignments roleAssignments( User user, Dataverse dv ) {
 		UserRoleAssignments retVal = new UserRoleAssignments(user);
 		while ( dv != null ) {
 			retVal.add( directRoleAssignments(user, dv) );
@@ -93,7 +94,7 @@ public class DataverseRoleServiceBean {
 		return retVal;
 	}
 	
-	public UserRoleAssignments assignmentsFor( final DataverseUser u, final DvObject d ) {
+	public UserRoleAssignments assignmentsFor( final User u, final DvObject d ) {
 		return d.accept( new DvObject.Visitor<UserRoleAssignments>() {
 
 			@Override
@@ -139,12 +140,12 @@ public class DataverseRoleServiceBean {
 	 * @return Set of roles defined for the user in the given dataverse.
 	 * @see #roleAssignments(edu.harvard.iq.dataverse.DataverseUser, edu.harvard.iq.dataverse.Dataverse)
 	 */
-	public List<RoleAssignment> directRoleAssignments( DataverseUser user, DvObject dvo ) {
+	public List<RoleAssignment> directRoleAssignments( User user, DvObject dvo ) {
 		if ( user==null ) throw new IllegalArgumentException("User cannot be null");
 		TypedQuery<RoleAssignment> query = em.createNamedQuery(
 				"RoleAssignment.listByUserIdDefinitionPointId",
 				RoleAssignment.class);
-		query.setParameter("userId", user.getId());
+		query.setParameter("userId", user.getIdentifier());
 		query.setParameter("definitionPointId", dvo.getId());
 		return query.getResultList();
 	}

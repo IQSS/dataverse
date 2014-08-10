@@ -46,6 +46,9 @@ public class DataverseUserPage implements java.io.Serializable {
     PermissionServiceBean permissionService;
     @EJB
     DataverseUserServiceBean dataverseUserService;
+    
+    @EJB
+    UserServiceBean userService;
 
     private DataverseUser dataverseUser;
     private EditMode editMode;
@@ -150,10 +153,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        if (dataverseUser == null) {
-            dataverseUser = (session.getUser().isGuest() ? new DataverseUser() : session.getUser());
-        }
-        notificationsList = userNotificationService.findByUser(dataverseUser.getId());
+        notificationsList = userNotificationService.findByUser(session.getUser().getIdentifier());
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
         switch (selectTab) {
@@ -249,10 +249,12 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
         dataverseUser = dataverseUserService.save(dataverseUser);
-        userNotificationService.sendNotification(dataverseUser, new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
+        userNotificationService.sendNotification(userService.findUser("local", Long.toString(dataverseUser.getId())),
+                new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
-            session.setUser(dataverseUser);
+//            session.setUser(dataverseUser);
+            // FIXME sign up is done in a different way now.
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 

@@ -49,7 +49,7 @@ public class DataverseUser implements Serializable {
     private String position;
     
     @OneToMany(mappedBy = "dataverseUser")
-    private List<DatasetVersionDatasetUser> datasetDataverseUsers;
+    private List<DatasetVersionUser> datasetDataverseUsers;
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
@@ -122,11 +122,11 @@ public class DataverseUser implements Serializable {
         return "__GUEST__".equals( getUserName() );
     }
         
-    public List<DatasetVersionDatasetUser> getDatasetDataverseUsers(){
+    public List<DatasetVersionUser> getDatasetDataverseUsers(){
         return datasetDataverseUsers;
     }
     
-    public void setDatasetDataverseUsers(List<DatasetVersionDatasetUser> datasetDataverseUsers){
+    public void setDatasetDataverseUsers(List<DatasetVersionUser> datasetDataverseUsers){
         this.datasetDataverseUsers = datasetDataverseUsers;
     }
     

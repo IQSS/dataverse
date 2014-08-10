@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,10 +83,10 @@ public class Roles extends AbstractApiBean {
 			@FormParam("definitionPointId") long dvObjectId,
 			@QueryParam("key") String key ) {
 		
-        DataverseUser issuer = usersSvc.findByUserName(key);
+        User issuer = usersSvc.findByIdentifier(key);
 		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
 		
-        DataverseUser u = usersSvc.findByUserName(username);
+        User u = usersSvc.findByIdentifier(username);
 		if ( u == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
 		
         // FIXME should get a DvObject
@@ -108,7 +109,7 @@ public class Roles extends AbstractApiBean {
 								 @QueryParam("dvo") String dvoIdtf,
 								 @QueryParam("key") String key ) {
         
-        DataverseUser issuer = usersSvc.findByUserName(key);
+        User issuer = usersSvc.findByIdentifier(key);
 		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
 		
 		Dataverse d = findDataverse(dvoIdtf);

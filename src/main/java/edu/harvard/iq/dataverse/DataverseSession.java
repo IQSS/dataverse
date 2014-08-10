@@ -1,16 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.PermissionServiceBean.PermissionQuery;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.GuestUser;
+import edu.harvard.iq.dataverse.authorization.User;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-//import javax.faces.bean.SessionScoped;
 import javax.inject.Named;
 
 /**
@@ -21,7 +17,7 @@ import javax.inject.Named;
 @SessionScoped
 public class DataverseSession implements Serializable{
     
-	private DataverseUser user;
+	private AuthenticatedUser user;
 	
 	@EJB
 	PermissionServiceBean permissionsService;
@@ -29,11 +25,11 @@ public class DataverseSession implements Serializable{
 	@EJB
 	DataverseUserServiceBean usersSvc;
 	
-    public DataverseUser getUser() {
-        return ( user==null ) ? usersSvc.findGuestUser() : user;
+    public User getUser() {
+        return ( user==null ) ? GuestUser.get(): user;
     }
 
-    public void setUser(DataverseUser user) {
+    public void setUser(AuthenticatedUser user) {
         this.user = user;
     }
 

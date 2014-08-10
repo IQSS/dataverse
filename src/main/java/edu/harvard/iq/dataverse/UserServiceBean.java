@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -30,6 +29,7 @@ public class UserServiceBean {
         return resultList;
     }
 
+    // FIXEME this is user id, not name (username is on the idp)
     public AuthenticatedUser findByUsername(String username) {
         TypedQuery<AuthenticatedUser> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUser AS o where o.identifier = :username", AuthenticatedUser.class);
         typedQuery.setParameter("username", username);
@@ -42,16 +42,21 @@ public class UserServiceBean {
         return authenticatedUser;
     }
 
-    public AuthenticatedUserLookup findByPersitentIdFromIdp(String persistentIdFromIdp) {
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup o where o.persistentUserIdFromIdp = :persistentIdFromIdp", AuthenticatedUserLookup.class);
-        typedQuery.setParameter("persistentIdFromIdp", persistentIdFromIdp);
-        AuthenticatedUserLookup authenticatedUser = null;
+    public AuthenticatedUserLookup findByPersitentIdFromIdp( String idp, String persistentIdFromIdp ) {
+        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByIdp,PersistentId", AuthenticatedUserLookup.class);
+        typedQuery.setParameter("persistentId", persistentIdFromIdp);
+        typedQuery.setParameter("idp", idp);
         try {
-            authenticatedUser = typedQuery.getSingleResult();
+            return typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             logger.info("caught " + ex.getClass() + " querying for " + persistentIdFromIdp);
+            return null;
         }
-        return authenticatedUser;
+    }
+    
+    public AuthenticatedUser findUser( String idp, String persistentIdpId ) {
+        AuthenticatedUserLookup lu = findByPersitentIdFromIdp(idp, persistentIdpId);
+        return (lu != null ) ? lu.getAuthenticatedUser() : null;
     }
 
     public List<AuthenticatedUserLookup> findByAllLookupStrings() {

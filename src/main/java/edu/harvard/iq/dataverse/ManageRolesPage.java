@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -45,7 +47,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	DataverseRoleServiceBean rolesService;
 	
 	@EJB
-	DataverseUserServiceBean usersService;
+	UserServiceBean usersService;
 	
 	@EJB
 	EjbDataverseEngine engineService;
@@ -93,7 +95,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		setInheritAssignmentsCbValue( ! getDataverse().isPermissionRoot() );
 		guestRolesHere = new LinkedList<>();
 		guestRolesUp = new LinkedList<>();
-		for ( RoleAssignment ra : rolesService.roleAssignments(usersService.findGuestUser(), dataverse).getAssignments() ) {
+		for ( RoleAssignment ra : rolesService.roleAssignments(GuestUser.get(), dataverse).getAssignments() ) {
 			if ( ra.getDefinitionPoint().equals(dataverse) ) {
 				guestRolesHere.add(ra.getRole());
 			} else {
@@ -217,20 +219,16 @@ public class ManageRolesPage implements java.io.Serializable {
 		logger.warning("Username: " + getAssignRoleUsername() );
 		logger.warning("RoleID: " + getAssignRoleRoleId());
         
-		DataverseUser u = usersService.findByUserName( getAssignRoleUsername() );
+		User u = usersService.findByUsername( getAssignRoleUsername() );
 		DataverseRole r = rolesService.find( getAssignRoleRoleId() );
 		logger.warning("User: " + u + " role:" + r );
 		
         try {
 			engineService.submit( new AssignRoleCommand(u, r, getDataverse(), session.getUser()));
-			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + u.getFirstName() + " " + u.getLastName() + " on " + getDataverse().getName() );
+			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + u.getDisplayInfo().getTitle() + " on " + getDataverse().getName() );
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage() );
 		}
-	}
-	
-	public List<DataverseUser> acUsername( String input ) {
-		return usersService.listByUsernamePart(input);
 	}
 	
 	public List<RoleAssignmentRow> getRoleAssignments() {

@@ -15,12 +15,12 @@ public class GuestUser implements User {
     
     @Override
     public String getIdentifier() {
-        return "u:guest";
+        return User.IDENTIFIER_PREFIX + "guest";
     }
 
     @Override
-    public String getDisplayInfo() {
-        return "Guest User";
+    public RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo("Guest", null);
     }
 
 }

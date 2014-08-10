@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.User;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,8 +20,6 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 
 @Path("search")
 public class Search extends AbstractApiBean {
@@ -33,8 +30,7 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DataverseUserServiceBean dataverseUserService;
+    
 
     @GET
 //    public JsonObject search(@QueryParam("q") String query) {
@@ -56,10 +52,10 @@ public class Search extends AbstractApiBean {
             }
             SolrQueryResponse solrQueryResponse;
             try {
-                DataverseUser dataverseUser = null;
+                User dataverseUser = null;
                 if (apiKey != null) {
                     String usernameProvided = apiKey;
-                    dataverseUser = dataverseUserService.findByUserName(usernameProvided);
+                    dataverseUser = findUserByKey(apiKey);
                     if (dataverseUser == null) {
                         return error("Couldn't find username: " + usernameProvided);
                     }

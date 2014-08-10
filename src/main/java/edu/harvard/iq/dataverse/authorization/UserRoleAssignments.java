@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.util.HashSet;
@@ -13,10 +12,10 @@ import java.util.Set;
  */
 public class UserRoleAssignments implements Iterable<RoleAssignment> {
 	
-	private final DataverseUser user;
+	private final User user;
 	private final Set<RoleAssignment> assignments = new HashSet<>();
 	
-	public UserRoleAssignments( DataverseUser aUser) {
+	public UserRoleAssignments( User aUser) {
 		user = aUser;
 	}
 	
@@ -38,7 +37,7 @@ public class UserRoleAssignments implements Iterable<RoleAssignment> {
 		return acc.asSetOf( Permission.class );
 	}
 
-	public DataverseUser getUser() {
+	public User getUser() {
 		return user;
 	}
 

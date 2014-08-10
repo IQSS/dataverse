@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.GuestUser;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
@@ -37,6 +38,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     @ElementCollection
     private List<String> groupIds;
     
+    
+    private String title;
     
     @Transient
     private ExplicitGroupCreator creator;
@@ -124,8 +127,8 @@ public class ExplicitGroup implements Group, java.io.Serializable {
     }
 
     @Override
-    public String getDisplayInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo(title, null);
     }
 
 }

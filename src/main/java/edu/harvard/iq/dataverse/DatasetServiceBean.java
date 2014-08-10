@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.User;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,6 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TransactionRequiredException;
 //import javax.persistence.SequenceGenerator;
 
 /**
@@ -117,18 +117,18 @@ public class DatasetServiceBean {
         return u;
     }
 
-   public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user){        
+   public DatasetVersionUser getDatasetVersionDatasetUser(DatasetVersion version, User user){        
 
-        DatasetVersionDatasetUser ddu = null;
+        DatasetVersionUser ddu = null;
         Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
                 + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
         query.setParameter("versionId", version.getId());
-        query.setParameter("userId", user.getId());
+        query.setParameter("userId", user.getIdentifier());
         System.out.print("versionId: " + version.getId());
-        System.out.print("userId: " + user.getId());
+        System.out.print("userId: " + user.getIdentifier());
         System.out.print(query.toString());
         try {
-            ddu = (DatasetVersionDatasetUser) query.getSingleResult();
+            ddu = (DatasetVersionUser) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
@@ -141,7 +141,7 @@ public class DatasetServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, Long userId, String info) {
+    public void addDatasetLock(Long datasetId, String userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
         DatasetLock lock = new DatasetLock();

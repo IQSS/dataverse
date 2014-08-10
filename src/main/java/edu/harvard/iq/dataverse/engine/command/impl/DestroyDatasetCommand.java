@@ -3,22 +3,18 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
+import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.util.Iterator;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop it the dataset is
@@ -31,7 +27,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;
 
-    public DestroyDatasetCommand(Dataset doomed, DataverseUser aUser) {
+    public DestroyDatasetCommand(Dataset doomed, User aUser) {
         super(aUser, doomed);
         this.doomed = doomed;
     }
@@ -62,7 +58,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         
         // version users and versions 
         for (DatasetVersion ver : managedDoomed.getVersions()) {
-            for (DatasetVersionDatasetUser ddu : ver.getDatasetVersionDataverseUsers()) {
+            for (DatasetVersionUser ddu : ver.getDatasetVersionDataverseUsers()) {
                 ctxt.em().remove(ddu);
             }
             ctxt.em().remove(ver);

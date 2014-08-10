@@ -12,10 +12,13 @@ import java.util.Set;
 /**
  * All the permissions in the system are implemented as enum constants in this
  * class. 
+ * 
+ * KEEP THIS UNDER 64, or update the permission storage that currently use bit-field
  * @author michael
  */
 public enum Permission implements java.io.Serializable {
-	Access("See and search content", DvObject.class),
+	Discover("See and search content", DvObject.class),
+    Download("Download the file", DataFile.class),
     AccessUnpublishedContent("Access unpublished content", DvObject.class),
 	AccessRestrictedMetadata("Access metadata marked as\"restricted\"", DvObject.class),
 	UndoableEdit("Edits that do not cause data loss", DvObject.class),

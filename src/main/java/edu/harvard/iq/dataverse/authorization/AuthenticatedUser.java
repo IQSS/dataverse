@@ -24,10 +24,9 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = false)
     private String identifier;
 
-    @NotNull
-    @Column(nullable = false)
-    private String displayInfo;
-
+    private String name;
+    private String email;
+    
     @Override
     public String getIdentifier() {
         return identifier;
@@ -38,8 +37,8 @@ public class AuthenticatedUser implements User, Serializable {
 //    }
 
     @Override
-    public String getDisplayInfo() {
-        return displayInfo;
+    public RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo(name, email);
     }
 
 }

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -25,7 +26,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
 import java.util.LinkedList;
@@ -80,7 +80,7 @@ public class Dataverses extends AbstractApiBean {
 	@POST
 	@Path("{identifier}")
 	public Response addDataverse( Dataverse d, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		if ( ! parentIdtf.isEmpty() ) {
@@ -121,7 +121,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/datasets")
     public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey ) {
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
         Dataverse owner = findDataverse(parentIdtf);
@@ -187,7 +187,7 @@ public class Dataverses extends AbstractApiBean {
 		Dataverse d = findDataverse(idtf);
         if (d == null) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
         if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
         
         try {
@@ -204,7 +204,7 @@ public class Dataverses extends AbstractApiBean {
 	@DELETE
 	@Path("{identifier}")
 	public Response deleteDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		Dataverse d = findDataverse(idtf);
@@ -221,7 +221,7 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}/roles")
 	public Response listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -239,7 +239,7 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}/metadatablocks")
 	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -259,7 +259,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablocks")
     @Produces(MediaType.APPLICATION_JSON)
     public Response setMetadataBlocks( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String blockIds ) {
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -284,7 +284,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces("application/json")
     public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -304,7 +304,7 @@ public class Dataverses extends AbstractApiBean {
         }
         boolean root = Util.isTrue(body);
         
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -318,7 +318,7 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}/contents")
 	public Response listContent( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
 
 		Dataverse dataverse = findDataverse(dvIdtf);
@@ -361,7 +361,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}/roles")
 	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
 		
-        DataverseUser u = userSvc.findByUserName(apiKey);
+        User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
@@ -377,7 +377,7 @@ public class Dataverses extends AbstractApiBean {
 	@GET
 	@Path("{identifier}/assignments")
 	public Response listAssignments( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		User u = userSvc.findByIdentifier(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
@@ -397,14 +397,14 @@ public class Dataverses extends AbstractApiBean {
 	@POST
 	@Path("{identifier}/assignments")
 	public Response createAssignment( RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser actingUser = userSvc.findByUserName(apiKey);
+		User actingUser = userSvc.findByIdentifier(apiKey);
 		if ( actingUser == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
-		DataverseUser grantedUser = (ra.getUserName()!=null) ? findUser(ra.getUserName()) : userSvc.find(ra.getUserId());
+		User grantedUser = findUser(ra.getUserIdentifier());
 		if ( grantedUser==null ) {
-			return errorResponse( Status.BAD_REQUEST, "Can't find user using " + ra.getUserName() + "/" + ra.getUserId() );
+			return errorResponse( Status.BAD_REQUEST, "Can't find user using " + ra.getUserIdentifier() + "/" + ra.getUserId() );
 		}
 		
 		DataverseRole theRole;
@@ -469,7 +469,7 @@ public class Dataverses extends AbstractApiBean {
                 return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
             }
             
-            DataverseUser u = userSvc.findByUserName(apiKey);
+            User u = userSvc.findByIdentifier(apiKey);
             if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
             
             dv = engineSvc.submit( new PublishDataverseCommand(u, dv) );

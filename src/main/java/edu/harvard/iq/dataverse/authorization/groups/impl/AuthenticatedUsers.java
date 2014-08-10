@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import javax.servlet.ServletRequest;
@@ -34,8 +35,8 @@ public class AuthenticatedUsers extends AbstractGroup {
     }
 
     @Override
-    public String getDisplayInfo() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo("All Authenticated Users", null);
     }
 
 }

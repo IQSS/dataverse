@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.MD5Checksum;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -18,14 +18,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,7 +28,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -293,22 +287,22 @@ public class DatasetPage implements java.io.Serializable {
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
-                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getTitle());
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
                     dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorContact)) {
-                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getEmailAddress());
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getTitle());
                             }
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getAffiliation());
                             }
                         }
                     }
@@ -629,7 +623,9 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
-                userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+                if ( session.getUser() instanceof AuthenticatedUser ) {
+                    userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+                }
             }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
@@ -653,7 +649,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, session.getUser());
+        ingestService.startIngestJobs(dataset, (AuthenticatedUser)session.getUser());
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }

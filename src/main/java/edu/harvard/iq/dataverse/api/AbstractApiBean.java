@@ -4,12 +4,15 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.ApiKey;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -67,6 +70,9 @@ public abstract class AbstractApiBean {
     @EJB
     protected MetadataBlockServiceBean metadataBlockSvc;
     
+    @EJB
+    UserServiceBean userService;
+    
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	EntityManager em;
 	
@@ -80,11 +86,19 @@ public abstract class AbstractApiBean {
         }
     });
     
-	protected DataverseUser findUser( String userIdtf ) {
-        
-		return isNumeric(userIdtf) ? engineSvc.getContext().users().find(Long.parseLong(userIdtf))
-	 							  : engineSvc.getContext().users().findByUserName(userIdtf);
+	protected User findUser( String userIdtf ) {
+    	return engineSvc.getContext().users().findByIdentifier(userIdtf);
 	}
+    
+    protected AuthenticatedUser findUserByKey( String apiKey ) {
+        ApiKey key = userService.findApiKey(apiKey);
+        return ( key == null ) ? null
+                : key.getAuthenticatedUser();
+    }
+    
+    protected User findUserById( String userIdtf ) {
+        return engineSvc.getContext().users().findByIdentifier(userIdtf);
+    }
 	
 	protected Dataverse findDataverse( String idtf ) {
 		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
@@ -129,6 +143,7 @@ public abstract class AbstractApiBean {
           
         } catch (PermissionException ex) {
             throw new FailedCommandResult(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
+            
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
             throw new FailedCommandResult(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));

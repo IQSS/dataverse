@@ -34,9 +34,9 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -90,10 +90,6 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import org.primefaces.model.UploadedFile;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.annotation.Resource;
@@ -106,9 +102,7 @@ import javax.faces.bean.ManagedBean;
 import org.primefaces.push.PushContext;
 import org.primefaces.push.PushContextFactory;
 import javax.faces.application.FacesMessage;
-import org.apache.commons.lang.StringUtils;
 import java.util.zip.GZIPInputStream;
-import java.util.UUID; 
 
 /**
  *
@@ -446,7 +440,7 @@ public class IngestServiceBean {
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
-    public void startIngestJobs(Dataset dataset, DataverseUser user) {
+    public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
         int count = 0;
         IngestMessage ingestMessage = null;
         for (DataFile dataFile : dataset.getFiles()) {
@@ -467,7 +461,7 @@ public class IngestServiceBean {
         if (count > 0) {
             String info = "Attempting to ingest " + count + " tabular data file(s).";
             if (user != null) {
-                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
+                datasetService.addDatasetLock(dataset.getId(), user.getIdentifier(), info);
             } else {
                 datasetService.addDatasetLock(dataset.getId(), null, info);
             }

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.AuthenticationManager;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -13,6 +14,8 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import javax.ws.rs.core.Response;
 
 @Path("auth")
 public class Auth extends AbstractApiBean {
@@ -22,11 +25,10 @@ public class Auth extends AbstractApiBean {
 
     @GET
     public String get() {
-        AuthenticatedUser ua = null;
         List<AuthenticatedUser> users = userService.findAllAuthenticatedUsers();
         List<String> userStuff = new ArrayList<>();
         for (AuthenticatedUser authenticatedUser : users) {
-            String displayInfo = authenticatedUser.getDisplayInfo();
+            RoleAssigneeDisplayInfo displayInfo = authenticatedUser.getDisplayInfo();
             userStuff.add(authenticatedUser.getIdentifier() + ":" + displayInfo);
         }
         List<AuthenticatedUserLookup> lookupStrings = userService.findByAllLookupStrings();
@@ -53,23 +55,19 @@ public class Auth extends AbstractApiBean {
 
     @GET
     @Path("username/{username}")
-    public String getAuthenicatedUserFromUsername(@PathParam("username") String username) {
+    public Response getAuthenicatedUserFromUsername(@PathParam("username") String username) {
         AuthenticatedUser user = userService.findByUsername(username);
         if (user != null) {
-            JsonObjectBuilder userObject = Json.createObjectBuilder();
-            userObject
-                    .add("identifier", user.getIdentifier())
-                    .add("displayInfo", user.getDisplayInfo());
-            return ok(userObject.build());
+            return okResponse( json(user) );
         } else {
-            return error("Couldn't find user based on username: " + username);
+            return notFound("Couldn't find user based on username: " + username);
         }
     }
 
     @GET
-    @Path("lookup/{id}")
-    public String getAuthenticatedUser(@PathParam("id") String id) {
-        AuthenticatedUserLookup userIdLookupString = userService.findByPersitentIdFromIdp(id);
+    @Path("lookup/{idp}/{id}")
+    public String getAuthenticatedUser(@PathParam("idp") String idp, @PathParam("id") String id) {
+        AuthenticatedUserLookup userIdLookupString = userService.findByPersitentIdFromIdp(idp, id);
         if (userIdLookupString != null) {
             AuthenticatedUser user = userIdLookupString.getAuthenticatedUser();
             if (user != null) {
@@ -84,27 +82,23 @@ public class Auth extends AbstractApiBean {
 
     @GET
     @Path("apikey/{key}")
-    public String getApiKeyInfo(@PathParam("key") String key) {
+    public Response getApiKeyInfo(@PathParam("key") String key) {
         ApiKey apiKey = userService.findApiKey(key);
         if (apiKey != null) {
             AuthenticatedUser user = apiKey.getAuthenticatedUser();
             if (user != null) {
-                JsonObjectBuilder userObject = Json.createObjectBuilder();
-                userObject
-                        .add("identifier", user.getIdentifier())
-                        .add("displayInfo", user.getDisplayInfo());
                 JsonObjectBuilder keyInfo = Json.createObjectBuilder();
                 keyInfo
-                        .add("owner", userObject)
+                        .add("owner", json(user))
                         .add("disabled", apiKey.isDisabled())
-                        .add("created", apiKey.getExpireTime().toString())
+                        .add("created", apiKey.getCreateTime().toString())
                         .add("expires", apiKey.getExpireTime().toString());
-                return ok(keyInfo.build());
+                return okResponse(keyInfo);
             } else {
-                return error("Couldn't find user based on " + key);
+                return notFound("Couldn't find user based on " + key);
             }
         } else {
-            return error("Couldn't find user based on " + key);
+            return notFound("Couldn't find user based on " + key);
         }
     }
 }

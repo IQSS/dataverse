@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -20,7 +20,7 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     final DatasetVersion newVersion;
     final Dataset dataset;
     
-    public CreateDatasetVersionCommand(DataverseUser aUser, Dataset theDataset, DatasetVersion aVersion) {
+    public CreateDatasetVersionCommand(User aUser, Dataset theDataset, DatasetVersion aVersion) {
         super(aUser, theDataset);
         dataset = theDataset;
         newVersion = aVersion;

@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -11,14 +10,12 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -59,7 +56,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(collectionUri);
         String dvAlias = urlManager.getTargetIdentifier();
@@ -217,7 +214,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "expected deposit types are isEntryOnly, isBinaryOnly, and isMultiPart");
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to modify dataset");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to modify dataset");
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse: " + dvAlias);

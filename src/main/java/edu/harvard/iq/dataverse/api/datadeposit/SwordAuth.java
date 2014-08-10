@@ -7,7 +7,10 @@ import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
+import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
@@ -25,18 +28,23 @@ public class SwordAuth {
     PermissionServiceBean permissionService;
     @EJB
     DataverseRoleServiceBean roleService;
-
-    public DataverseUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
+    @EJB
+    UserServiceBean userService;
+    
+    public AuthenticatedUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
 
         if (authCredentials != null) {
             String username = authCredentials.getUsername();
             String password = authCredentials.getPassword();
             logger.fine("Checking username " + username + " ...");
             DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
-            if (dataverseUser != null) {
+            // FIXME replace with new user authentication, this assumes local user is used.
+            AuthenticatedUser au = userService.findByUsername(username);
+            
+            if (au != null) {
                 String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
                 if (encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
-                    return dataverseUser;
+                    return au;
                 } else {
                     logger.fine("wrong password");
                     throw new SwordAuthException();
@@ -52,7 +60,7 @@ public class SwordAuth {
         }
     }
 
-    boolean hasAccessToModifyDataverse(DataverseUser dataverseUser, Dataverse dataverse) throws SwordError {
+    boolean hasAccessToModifyDataverse(User dataverseUser, Dataverse dataverse) throws SwordError {
         boolean authorized = false;
 
         /**
@@ -90,7 +98,7 @@ public class SwordAuth {
              * per SWORD commands that map onto permissions like
              * canIssue(CreateDatasetCommand.class)
              */
-            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getUserName() + " has role " + roleAssignment.getRole().getAlias());
+            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier()+ " has role " + roleAssignment.getRole().getAlias());
         }
         if (permissionService.userOn(dataverseUser, dataverse).has(Permission.DestructiveEdit)) {
             authorized = true;

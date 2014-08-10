@@ -2,9 +2,9 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -24,7 +24,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse created;
 
-	public CreateDataverseCommand(Dataverse created, DataverseUser aUser) {
+	public CreateDataverseCommand(Dataverse created, User aUser) {
 		super(aUser, created.getOwner());
 		this.created = created;
 	}
@@ -43,12 +43,13 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		}
 		
 		if ( created.getCreator() == null ) {
-			created.setCreator(getUser());
+            // FIXME Is the "creator" concept being carried over from 3.x?
+//			created.setCreator(getUser());
 		}
                 
-                if (created.getDataverseType() == null){
-                    created.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
-                }
+        if (created.getDataverseType() == null){
+            created.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
+        }
 		
 		// Save the dataverse
 		Dataverse managedDv = ctxt.dataverses().save(created);

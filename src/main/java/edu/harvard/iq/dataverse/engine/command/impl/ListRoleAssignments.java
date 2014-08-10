@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 	
 	private final Dataverse definitionPoint;
-	public ListRoleAssignments(DataverseUser aUser, Dataverse aDefinitionPoint) {
+	public ListRoleAssignments(User aUser, Dataverse aDefinitionPoint) {
 		super(aUser, aDefinitionPoint);
 		definitionPoint = aDefinitionPoint;
 	}

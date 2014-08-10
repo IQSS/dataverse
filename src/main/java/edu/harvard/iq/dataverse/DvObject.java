@@ -47,8 +47,7 @@ public abstract class DvObject implements java.io.Serializable {
 
     private Timestamp publicationDate;
 
-    @ManyToOne
-    private DataverseUser releaseUser;
+    private String releaseUserIdtf;
     
     private Timestamp createDate;
 
@@ -92,12 +91,12 @@ public abstract class DvObject implements java.io.Serializable {
         this.publicationDate = publicationDate;
     }
 
-    public DataverseUser getReleaseUser() {
-        return releaseUser;
+    public String getReleaseUserIdentifier() {
+        return releaseUserIdtf;
     }
 
-    public void setReleaseUser(DataverseUser releaseUser) {
-        this.releaseUser = releaseUser;
+    public void setReleaseUserIdentifier(String releaseUserIdtf) {
+        this.releaseUserIdtf = releaseUserIdtf;
     }
 
     public boolean isReleased() {
