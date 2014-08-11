@@ -30,8 +30,10 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +103,9 @@ public class DatasetPage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     UserNotificationServiceBean userNotificationService;
-
+    @EJB
+    MapLayerMetadataServiceBean mapLayerMetadataService;
+    
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -120,6 +124,9 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
+    
+    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
+
     /**
      * @todo ticket to get away from these hard-coded protocol and authority
      * values: https://github.com/IQSS/dataverse/issues/757
@@ -261,6 +268,86 @@ public class DatasetPage implements java.io.Serializable {
         this.deaccessionRadio = deaccessionRadio;
     }
 
+    
+    public boolean isShapefileType(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        if (fm.getDataFile()==null){
+            return false;
+        }
+        
+        return fm.getDataFile().isShapefileType();
+    }
+    
+    /*
+        Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */
+    public boolean hasMapLayerMetadata(FileMetadata fm){
+        if (fm==null){
+            return false;
+        }
+        if (fm.getDataFile()==null){
+            return false;
+        }
+        return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
+    }
+    
+    
+     /**
+        Check if a DataFile has an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */    
+    private boolean doesDataFileHaveMapLayerMetadata(DataFile df){
+        if (df==null){
+            return false;
+        }
+        if (df.getId()==null){
+            return false;
+        }
+        return this.mapLayerMetadataLookup.containsKey(df.getId());
+    }
+   
+   /**
+        Using a DataFile id, retreive an associated MapLayerMetadata object
+    
+        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+    */ 
+    private MapLayerMetadata getMapLayerMetadata(DataFile df){
+        if (df==null){
+            return null;
+        }
+        return this.mapLayerMetadataLookup.get(df.getId());
+    }
+    
+
+    /**
+        Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
+    
+        Very few DataFiles will have associated MapLayerMetadata objects so only use 1 query to get them
+    */
+    private void loadMapLayerMetadataLookup(){
+        if (this.dataset==null){
+            return;
+        }
+        if (this.dataset.getId()==null){
+            return;
+        }
+        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
+        if (mapLayerMetadataList==null){
+            return;
+        }
+        for (MapLayerMetadata layer_metadata : mapLayerMetadataList){
+            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
+        }
+
+    }// A DataFile may have a related MapLayerMetadata object
+     
+    
+    
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
@@ -282,6 +369,10 @@ public class DatasetPage implements java.io.Serializable {
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
             setReleasedVersionTabList(resetReleasedVersionTabList());
+            
+            // populate MapLayerMetadata
+            this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
+
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
@@ -298,7 +389,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
                     dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
                 }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorContact)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
                     dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
@@ -733,16 +824,21 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = null;
+        List<DataFile> dFileList = null; 
 
         try {
-            dFile = ingestService.createDataFile(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
+            dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
             return;
         }
 
-        newFiles.add(dFile);
-
+        if (dFileList != null) {
+            for (int i = 0; i < dFileList.size(); i++) {
+                dFile = dFileList.get(i);
+                newFiles.add(dFile);
+            }
+        }
     }
 
     public boolean isLocked() {

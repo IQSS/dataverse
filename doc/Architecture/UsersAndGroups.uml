@@ -7,7 +7,6 @@ package existingCode {
   class Role< DB >
   class DvObject< DB >
   class RoleAssignment< DB >
-  class Dataverse< DB >
 
   note as n1
     A role can be assigned
@@ -19,13 +18,13 @@ package existingCode {
 
 package assignees {
 
-  interface RoleAssignee {
+  interface RoleAssignee< DB > {
     + identifier:String
     + displayInfo() : TBD
     + showInLists: Boolean
   }
 
-  interface User {
+  class User {
   }
 
   class AuthenticatedUser< DB > {
@@ -34,11 +33,6 @@ package assignees {
 
   class IpGroup {
     range: IpRange[]
-  }
-
-  class RoleAssigneeRecord< DB > {
-    identifier: String
-    displayInfo: TBD
   }
 
   class GuestUser {
@@ -50,15 +44,15 @@ package assignees {
     + title: String
   }
 
-  interface Group< DB > {
+  interface Group {
     + name: String
     + description : String
     + data: Blob
-    + provider: RoleAssigneeProvider
+    + provider: AuthenticationProvider
     + contains( a:RoleAssignee )
   }
 
-  class ExplicitGroup< DB > {
+  class ExplicitGroup {
     + add( a:RoleAssignee )
     + remove( a:RoleAssignee )
     + list: RoleAssignee[]
@@ -83,32 +77,28 @@ Group <|-- AllUsers
 Group <|-- ShibGroup
 Group <|-- IpGroup
 
-RoleAssigneeRecord ..> RoleAssignee : "Locates"
-
 AuthenticatedUser "1" *- "0..*" ApiKey
 
 Role -> DvObject: Defined at
 RoleAssignment -up-> "1" DvObject: At
 RoleAssignment -up-> "1" Role: Assigns
-RoleAssignment --> "1" RoleAssigneeRecord: To
+RoleAssignment --> "1" RoleAssignee: To
 
 ExplicitGroup ..> RoleAssignee: Contains
-ExplicitGroup o--> RoleAssigneeRecord
-ExplicitGroup "0..*" <--* "1" Dataverse
-
-DvObject <|-- Dataverse
+ExplicitGroup o--> RoleAssignee
+ExplicitGroup "0..*" <--* "1" DvObject : Defines
 
 package roleassigneeprovider {
   
-  class RoleAssigneeManager<Singleton> {
-    assigneeProviders: Collection<AssigneeProvider>
+  class AuthenticationManager<Singleton> {
+    authenticationProviders: Collection<AuthenticationProvider>
 
-    registerProvider( p:AssigneeProvider )
+    registerProvider( p:AuthenticationProvider )
     getRoleAssignee( idtf:String ) : RoleAssignee
     getRoleAssignee( req:HttpRequest ) : RoleAssignee
   }
 
-  interface RoleAssigneeProvider {
+  interface AuthenticationProvider {
     + info : RoleAssigneeProviderInfo
     isQueryable(): Boolean
     acceptsRoleAssigneeIdentifier( idtf:String ): bool
@@ -125,43 +115,43 @@ package roleassigneeprovider {
     + findUsers( queryString ) : List<User>
   }
 
-  class RoleAssigneeProviderInfo {
+  class AuthenticationProviderInfo {
     + name
     + description
     + icon?
     + ...
   }
 
-  class DatabaseAssigneeProvider 
-  class ShibAssigneeProvider
-  class IpAddressAssigneeProvider
-  class LdapAssigneeProvider < future >
-  class OAuthAssigneeProvider < future >
+  class LocalAuthenticationProvider 
+  class ShibAuthenticationProvider
+  class IpAddressAuthenticationProvider
+  class LdapAuthenticationProvider < future >
+  class OAuthAuthenticationProvider < future >
 
-  RoleAssigneeManager *-->  "1..*" RoleAssigneeProvider
-  RoleAssigneeProvider <|.. OAuthAssigneeProvider
+  AuthenticationManager *-->  "1..*" AuthenticationProvider
+  AuthenticationProvider <|.. OAuthAuthenticationProvider
 
-  RoleAssigneeProvider <|-- UserLister   
-  RoleAssigneeProvider <|-- GroupCreator 
+  AuthenticationProvider <|-- UserLister   
+  AuthenticationProvider <|-- GroupCreator 
 
-  UserLister   <|-- DatabaseAssigneeProvider
-  GroupCreator <|-- DatabaseAssigneeProvider
-  UserLister   <|-- LdapAssigneeProvider
-  GroupCreator <|-- LdapAssigneeProvider
+  UserLister   <|-- LocalAuthenticationProvider
+  GroupCreator <|-- LocalAuthenticationProvider
+  UserLister   <|-- LdapAuthenticationProvider
+  GroupCreator <|-- LdapAuthenticationProvider
 
-  GroupCreator <|-- ShibAssigneeProvider
-  GroupCreator <|-- IpAddressAssigneeProvider
+  GroupCreator <|-- ShibAuthenticationProvider
+  GroupCreator <|-- IpAddressAuthenticationProvider
 
-  RoleAssigneeProvider *-> RoleAssigneeProviderInfo
+  AuthenticationProvider *-> AuthenticationProviderInfo
 
 }
 
-Group <.. RoleAssigneeProvider : "Creates"
-AuthenticatedUser  <.. RoleAssigneeProvider : "Creates/Updates"
+Group <.. AuthenticationProvider : "Creates"
+AuthenticatedUser  <.. AuthenticationProvider : "Creates/Updates"
 
 package somewhere_else_in_dataverse {
   class AccessRequest< DB > {
-    from: RoleAssigneeRecord
+    from: AuthenticatedUser
     dvo: DvObject
     metadata : TBD
   }
@@ -173,7 +163,7 @@ package somewhere_else_in_dataverse {
 
 }
  
-AccessRequest ..> RoleAssigneeRecord : "From"
+AccessRequest ..> AuthenticatedUser : "From"
 AccessRequest ..> DvObject : "about"
 
 Command "0..*" ..> "1" User : Issued By

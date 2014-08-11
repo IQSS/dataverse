@@ -7,23 +7,30 @@ actor User
 participant AuthSystem as "AuthSystem\nMay be external"
 box "DataverseSystem" #DDD
   participant DataverseUI
-  participant RoleAssigneeManager
-  participant RoleAssigneeProvider
+  participant AuthenticationManager
+  participant AuthenticationProvider
   participant UserBean
   database db
 end box
 
+== Pick IDP ==
 User --> DataverseUI : GET /
 User <-- DataverseUI : "Select Login System"
 User --> DataverseUI : authSystem
-DataverseUI --> RoleAssigneeManager: get( authSystem )
-DataverseUI <-- RoleAssigneeManager: authSystem
+DataverseUI --> AuthenticationManager: get( authSystem )
+DataverseUI <-- AuthenticationManager: authSystem
 User <-- DataverseUI: redirect to authSystem
+
+== Authenticate ==
+
 User --> AuthSystem : credentials
 User <-- AuthSystem : Ok, back to DataverseUI
 User --> DataverseUI : autenticated( data )
-DataverseUI --> RoleAssigneeProvider: getUserObj( data )
-DataverseUI <-- RoleAssigneeProvider: userObj
+
+== Log in == 
+
+DataverseUI --> AuthenticationProvider: getUserObj( data )
+DataverseUI <-- AuthenticationProvider: userObj
 DataverseUI --> UserBean : setUser( userObj )
 UserBean --> db : lookupAuthenticatedUser( userObj.id )
 

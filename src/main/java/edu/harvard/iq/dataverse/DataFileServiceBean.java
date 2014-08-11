@@ -40,6 +40,16 @@ public class DataFileServiceBean {
         return (DataFile) em.find(DataFile.class, pk);
     }   
     
+    /*public DataFile findByMD5(String md5Value){
+        if (md5Value == null){
+            return null;
+        }
+        Query query = em.createQuery("select object(o) from DataFile as o where o.md5 =:md5Value order by o.id");
+        query.setParameter("md5Value", md5Value);
+        return (DataFile)query.getSingleResult();
+        
+    }*/
+    
     public List<DataFile> findByDatasetId(Long studyId) {
         /* 
            Sure, we don't have *studies* any more, in 4.0; it's a tribute 

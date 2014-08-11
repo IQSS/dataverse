@@ -100,7 +100,7 @@ public class RemoteDataFrameService {
         if (System.getProperty("dataverse.rserve.port") == null ){
             RSERVE_PORT= 6311;
         } else {
-            RSERVE_PORT = Integer.parseInt(System.getProperty("vdc.dsb.rserve.port"));
+            RSERVE_PORT = Integer.parseInt(System.getProperty("dataverse.rserve.port"));
         }
 
     }
