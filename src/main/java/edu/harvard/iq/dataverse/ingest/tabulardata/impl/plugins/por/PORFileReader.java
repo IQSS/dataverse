@@ -244,7 +244,7 @@ public class PORFileReader  extends TabularDataFileReader{
             }
         }
         
-        dbgLog.info("done parsing headers and decoding;");
+        dbgLog.fine("done parsing headers and decoding;");
 
         List<DataVariable> variableList = new ArrayList<DataVariable>();
         
@@ -260,11 +260,10 @@ public class PORFileReader  extends TabularDataFileReader{
             dv.setSummaryStatistics( new ArrayList() );
             dv.setUnf("UNF:6:");
             dv.setCategories(new ArrayList());
-            variableList.add(dv);
-
             dv.setFileOrder(indx);
-
             dv.setDataTable(dataTable);
+            
+            variableList.add(dv);            
             
             int simpleType = 0;
             if (variableTypelList.get(indx) != null) {
@@ -290,34 +289,37 @@ public class PORFileReader  extends TabularDataFileReader{
                     String formatCategory = formatCategoryTable.get(varName);
 
                     if (formatCategory != null) {
-                        dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
+                        variableList.get(indx).setFormatCategory(formatCategory);
                     }
                 }
             }
+            
+            dbgLog.fine("Finished creating variable "+indx+", "+varName);
             
             // OK, we can now assign the types: 
             
             if (simpleType > 0) {
                 // String: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
+                variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
             } else {
                 // Numeric: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
                 // discrete or continuous?
                 // "decimal variables" become dataverse data variables of interval type "continuous":
         
                 if (decimalVariableSet.contains(indx)) {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
                 } else {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
                 }
                 
             }
+            dbgLog.fine("Finished configuring variable type information.");
         }
         
         
-        dbgLog.info("done configuring variables;");
+        dbgLog.fine("done configuring variables;");
         
         /* 
          * From the original (3.6) code: 
@@ -364,7 +366,7 @@ public class PORFileReader  extends TabularDataFileReader{
     
 
     private File decodeHeader(BufferedInputStream stream) throws IOException {
-        dbgLog.info("decodeHeader(): start");
+        dbgLog.fine("decodeHeader(): start");
         File tempPORfile = null;
 
         if (stream  == null){
@@ -565,7 +567,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
 
     private void decodeSec2(BufferedReader reader) throws IOException {
-        dbgLog.info("decodeSec2(): start");
+        dbgLog.fine("decodeSec2(): start");
         if (reader ==null){
             throw new IllegalArgumentException("decodeSec2: stream == null!");
         }
@@ -586,12 +588,12 @@ public class PORFileReader  extends TabularDataFileReader{
         int nbytes_sixthLine = reader.read(sixthLineCharArray);
 
         String sixthLine = new String(sixthLineCharArray);
-        dbgLog.info("sixthLineCharArray="+
+        dbgLog.fine("sixthLineCharArray="+
             Arrays.deepToString(ArrayUtils.toObject(sixthLineCharArray)));
         int signatureLocation = sixthLine.indexOf(POR_MARK);
 
         if (signatureLocation >= 0){
-            dbgLog.info("format signature was found at:"+signatureLocation);
+            dbgLog.fine("format signature was found at:"+signatureLocation);
         } else {
             dbgLog.severe("signature string was not found");
             throw new IOException("signature string was not found");
@@ -608,11 +610,11 @@ public class PORFileReader  extends TabularDataFileReader{
 
         String leader_string = new String(sec2_leader);
 
-        dbgLog.info("format signature [SPSSPORT] detected="+leader_string);
+        dbgLog.fine("format signature [SPSSPORT] detected="+leader_string);
 
 
         if (leader_string.equals("SPSSPORT")){
-            dbgLog.info("signature was correctly detected");
+            dbgLog.fine("signature was correctly detected");
 
         } else {
             dbgLog.severe(
@@ -660,7 +662,7 @@ public class PORFileReader  extends TabularDataFileReader{
         ///smd.getFileInformation().put("fileCreationDate", fileCreationDate);
         ///smd.getFileInformation().put("fileCreationTime", fileCreationTime);
         ///smd.getFileInformation().put("varFormat_schema", "SPSS");
-        dbgLog.info("decodeSec2(): end");
+        dbgLog.fine("decodeSec2(): end");
     }
 
 
@@ -1061,7 +1063,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
 
     private void decodeData(BufferedReader reader) throws IOException {
-        dbgLog.info("decodeData(): start");
+        dbgLog.fine("decodeData(): start");
         List<String[]> dataTableList = new ArrayList<String[]>();
         List<String[]> dateFormatList = new ArrayList<String[]>();
         int[] variableTypeFinal= new int[varQnty];
@@ -1348,7 +1350,7 @@ public class PORFileReader  extends TabularDataFileReader{
         ///smd.getFileInformation().put("caseQnty", caseQnty);
         dataTable.setCaseQuantity(new Long(caseQnty));
 
-        dbgLog.info("decodeData(): end");
+        dbgLog.fine("decodeData(): end");
     }
     
     

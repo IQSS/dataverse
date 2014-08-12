@@ -996,7 +996,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (No file produced): Sent push notification to the page.");
             return false; 
             //throw new IOException("Could not open temp file "+tempFileLocation);
         }
@@ -1016,7 +1016,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
@@ -1032,7 +1032,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
             return false;
             
         }
