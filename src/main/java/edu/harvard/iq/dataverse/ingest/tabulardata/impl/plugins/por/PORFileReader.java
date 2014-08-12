@@ -244,27 +244,7 @@ public class PORFileReader  extends TabularDataFileReader{
             }
         }
         
-        /* 
-         * Finally, create data variables, assign types and formats;
-         * This is the code from 3.6:
-            // post-parsing processing
-            // save metadata to smd 
-            // varialbe Name
-            
-            smd.setVariableName(variableNameList.toArray(new String[variableNameList.size()]));
-            smd.setVariableLabel(variableLabelMap);
-            smd.setMissingValueTable(missingValueTable);
-            dbgLog.finer("*************** missingValueCodeTable ***************:\n" + missingValueCodeTable);
-            smd.setInvalidDataTable(invalidDataTable);
-            smd.setValueLabelTable(valueLabelTable);
-         * TODO: make sure all of this is taken care of by the new plugin!
-        
-         * TODO: (maybe?) 
-         * Instead of doing it here, perhaps all the type assignments need to 
-         * be done on DataVariable objects directly;  without relying on 
-         * maps and lists here... -- L.A. 4.0 beta (?)
-         */
-        
+        dbgLog.info("done parsing headers and decoding;");
 
         List<DataVariable> variableList = new ArrayList<DataVariable>();
         
@@ -278,7 +258,7 @@ public class PORFileReader  extends TabularDataFileReader{
             
             dv.setInvalidRanges(new ArrayList());
             dv.setSummaryStatistics( new ArrayList() );
-            dv.setUnf("UNF:6:NOTCALCULATED");
+            dv.setUnf("UNF:6:");
             dv.setCategories(new ArrayList());
             variableList.add(dv);
 
@@ -336,6 +316,9 @@ public class PORFileReader  extends TabularDataFileReader{
             }
         }
         
+        
+        dbgLog.info("done configuring variables;");
+        
         /* 
          * From the original (3.6) code: 
             //smd.setVariableTypeMinimal(ArrayUtils.toPrimitive(variableTypelList.toArray(new Integer[variableTypelList.size()])));
@@ -381,6 +364,7 @@ public class PORFileReader  extends TabularDataFileReader{
     
 
     private File decodeHeader(BufferedInputStream stream) throws IOException {
+        dbgLog.info("decodeHeader(): start");
         File tempPORfile = null;
 
         if (stream  == null){
@@ -581,7 +565,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
 
     private void decodeSec2(BufferedReader reader) throws IOException {
-        dbgLog.fine("decodeSec2(): start");
+        dbgLog.info("decodeSec2(): start");
         if (reader ==null){
             throw new IllegalArgumentException("decodeSec2: stream == null!");
         }
@@ -676,6 +660,7 @@ public class PORFileReader  extends TabularDataFileReader{
         ///smd.getFileInformation().put("fileCreationDate", fileCreationDate);
         ///smd.getFileInformation().put("fileCreationTime", fileCreationTime);
         ///smd.getFileInformation().put("varFormat_schema", "SPSS");
+        dbgLog.info("decodeSec2(): end");
     }
 
 
@@ -1076,6 +1061,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
 
     private void decodeData(BufferedReader reader) throws IOException {
+        dbgLog.info("decodeData(): start");
         List<String[]> dataTableList = new ArrayList<String[]>();
         List<String[]> dateFormatList = new ArrayList<String[]>();
         int[] variableTypeFinal= new int[varQnty];
@@ -1362,6 +1348,7 @@ public class PORFileReader  extends TabularDataFileReader{
         ///smd.getFileInformation().put("caseQnty", caseQnty);
         dataTable.setCaseQuantity(new Long(caseQnty));
 
+        dbgLog.info("decodeData(): end");
     }
     
     

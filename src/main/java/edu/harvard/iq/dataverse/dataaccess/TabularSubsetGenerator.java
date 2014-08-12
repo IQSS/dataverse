@@ -243,11 +243,54 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         File tabfile = dataFile.getFileSystemLocation().toFile();
-        
+
+        if (columntype == COLUMN_TYPE_STRING) {
+            String filename = dataFile.getFileMetadata().getLabel();
+            if (filename != null) {
+                filename = filename.replaceFirst("^_", "");
+                Integer fnumvalue = null; 
+                try {
+                    fnumvalue = new Integer(filename);
+                } catch (Exception ex){
+                    fnumvalue = null; 
+                }
+                if (fnumvalue != null) {
+                    if ((fnumvalue.intValue() < 112497)) { // && (fnumvalue.intValue() > 60015)) {
+                        if (!(fnumvalue.intValue() == 60007
+                                || fnumvalue.intValue() == 59997
+                                || fnumvalue.intValue() == 60015
+                                || fnumvalue.intValue() == 59948
+                                || fnumvalue.intValue() == 60012
+                                || fnumvalue.intValue() == 52585
+                                || fnumvalue.intValue() == 60005
+                                || fnumvalue.intValue() == 60002
+                                || fnumvalue.intValue() == 59954
+                                || fnumvalue.intValue() == 60008
+                                || fnumvalue.intValue() == 54972
+                                || fnumvalue.intValue() == 55010
+                                || fnumvalue.intValue() == 54996
+                                || fnumvalue.intValue() == 53527
+                                || fnumvalue.intValue() == 53546
+                                || fnumvalue.intValue() == 55002
+                                || fnumvalue.intValue() == 55006
+                                || fnumvalue.intValue() == 54998
+                                || fnumvalue.intValue() == 52552)) {
+                            dbgLog.info("\"Old\" file name detected; using \"compatibility mode\" for a character vector subset;");
+                            return subsetObjectVector(tabfile, column, varcount, casecount, columntype, true);
+                        }
+                    }
+                }
+            }
+        }
+
         return subsetObjectVector(tabfile, column, varcount, casecount, columntype);
     }
     
     public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype) throws IOException {
+        return subsetObjectVector(tabfile, column, varcount, casecount, columntype, false);
+    }
+    
+    public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype, boolean compatmode) throws IOException {
         
         Object[] retVector = null; 
         
@@ -385,7 +428,34 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             // create a new tab-delimited file, they will 
                             // actually break things! -- L.A. Jul. 28 2014
                             
-                            retVector[caseindex] = StringUtils.join(splitTokens, '\\');
+                            token = StringUtils.join(splitTokens, '\\');
+                            
+                            // "compatibility mode" - a hack, to be able to produce
+                            // unfs identical to those produced by the "early" 
+                            // unf5 jar; will be removed in production 4.0. 
+                            // -- L.A. (TODO: ...)
+                            if (compatmode) {
+                                if (token.length() > 128) {
+                                    if ("".equals(token.trim())) {
+                                        // don't ask... 
+                                        token = token.substring(0, 129);
+                                    } else {
+                                        token = token.substring(0, 128);
+                                        token = token.trim();
+                                    }
+                                } else {
+                                    if ("".equals(token.trim())) {
+                                        // again, don't ask; 
+                                        // - this replicates some bugginness 
+                                        // that happens inside unf5;
+                                        token = "null";
+                                    } else {
+                                        token = token.trim();
+                                    }
+                                }
+                            }
+                            
+                            retVector[caseindex] = token;
                         }
                     } else if (isDouble) {
                         try {
