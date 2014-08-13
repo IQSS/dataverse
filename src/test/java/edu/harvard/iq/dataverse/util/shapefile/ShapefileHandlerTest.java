@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse.util;
+package edu.harvard.iq.dataverse.util.shapefile;
 
 
 //import edu.harvard.iq.dataverse.util.ZipMaker;
