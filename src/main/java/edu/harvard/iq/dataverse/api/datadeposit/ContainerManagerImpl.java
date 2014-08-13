@@ -378,8 +378,19 @@ public class ContainerManagerImpl implements ContainerManager {
                                          * the @todo is to think about this a
                                          * bit more before we release 4.0.
                                          */
-                                        boolean attemptMinorVersionBump = false;
-                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
+                                        boolean doMinorVersionBump = false;
+                                        /**
+                                         * @todo uncomment this code to always
+                                         * try a minor version bump when
+                                         * allowed:
+                                         * https://github.com/IQSS/dataverse/issues/795
+                                         */
+//                                        if (dataset.getLatestVersion().isMinorUpdate()) {
+//                                            doMinorVersionBump = true;
+//                                        } else {
+//                                            doMinorVersionBump = false;
+//                                        }
+                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, doMinorVersionBump);
                                         dataset = engineSvc.submit(cmd);
                                     } catch (CommandException ex) {
                                         String msg = "Unable to publish dataset: " + ex;

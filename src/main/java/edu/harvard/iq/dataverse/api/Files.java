@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.util.List;
 import java.util.logging.Logger;
@@ -25,6 +25,9 @@ public class Files extends AbstractApiBean {
     @EJB
     DatasetServiceBean datasetService;
 
+    @EJB
+    DataFileServiceBean dataFileService;
+        
     @POST
     public String add(DataFile dataFile, @QueryParam("key") String apiKey) {
         Dataset dataset;

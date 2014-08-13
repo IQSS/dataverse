@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse.util;
+package edu.harvard.iq.dataverse.util.shapefile;
 
 
 //import edu.harvard.iq.dataverse.util.ZipMaker;
@@ -13,22 +13,13 @@ import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.io.File;
-import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertEquals;
-
-import java.nio.file.Files;
-
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -63,33 +54,15 @@ public class ShapefileHandlerTest {
         msg("------------------------------------------------------------");
     }
 
-    //@Test
-    public void testWrite() throws IOException {
     
-    // Create a temporary file.
-    // This is guaranteed to be deleted after the test finishes.
-    final File tempFile = tempFolder.newFile("myfile.txt");
-    
-    // Write something to it.
-    FileUtils.writeStringToFile(tempFile, "hello world");
-    
-    // Read it.
-    //final String s = FileUtils.readFileToString(tempFile);
- 
-    // Check that what was written is correct.
-    String fcontents = FileUtils.readFileToString(tempFile);
-    msgt(fcontents);
-    msgt("-----------   ShapefileHandlerTest  -----------");
-
-    assertEquals(fcontents, "hello world");
-   // assertThat("hello world", is(s));
-  }
     
      private File createBlankFile(String filename) throws IOException {
         if (filename == null){
             return null;
         }
         File aFile = this.tempFolder.newFile(filename);
+        //  FileUtils.writeStringToFile(tempFile, "hello world");
+
         aFile.createNewFile();
         return aFile;
     }
@@ -107,10 +80,6 @@ public class ShapefileHandlerTest {
          
     private void showFilesInTempFolder(String m) throws IOException{
         this.showFilesInFolder(m, this.tempFolder.getRoot().getAbsolutePath());
-     //   msgt(m);
-       // for (File f : this.tempFolder.getRoot().listFiles() ){
-         //   this.msg("fname: " + f.getCanonicalPath());
-       // }
     } 
     
     private FileInputStream createZipReturnFilestream(List<String> file_names, String zipfile_name) throws IOException{
@@ -143,7 +112,7 @@ public class ShapefileHandlerTest {
         for (String fname : file_names) {
            File file_obj = this.createBlankFile(fname);
            fileCollection.add(file_obj);
-           msg("File created: " + file_obj.getName());           
+           //msg("File created: " + file_obj.getName());           
         }
         
         File zip_file_obj = this.tempFolder.newFile(zipfile_name);
@@ -154,8 +123,8 @@ public class ShapefileHandlerTest {
              this.addToZipFile(file_obj.getName(), file_obj, zip_stream);
         }
 
-         /* -----------------------------------
-           Delete single files that were added to .zip
+        /* -----------------------------------
+        Cleanup: Delete single files that were added to .zip
         ----------------------------------- */
         for (File file_obj : fileCollection) {
              file_obj.delete();
@@ -176,6 +145,9 @@ public class ShapefileHandlerTest {
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+        shp_handler.DEBUG= true;
+
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), false);
 
         // get file_groups Map
@@ -192,6 +164,7 @@ public class ShapefileHandlerTest {
         
         this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
 
+        
         // Delete .zip
         zipfile_obj.delete();
         
@@ -205,13 +178,25 @@ public class ShapefileHandlerTest {
         msgt("(2) testZippedTwoShapefiles");
                 
         // Create files and put them in a .zip
-        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj"); //, "prj");
+        List<String> file_names = Arrays.asList("shape1.shp", "shape1.shx", "shape1.dbf", "shape1.prj", "shape1.fbn", "shape1.fbx", // 1st shapefile
+                                            "shape2.shp", "shape2.shx", "shape2.dbf", "shape2.prj",     // 2nd shapefile
+                                            "shape2.txt", "shape2.pdf", "shape2",                  // single files, same basename as 2nd shapefile
+                                            "README.MD", "shp_dictionary.xls", "notes"  ); //, "prj");                  // single files
+        
         File zipfile_obj = createAndZipFiles(file_names, "two-shapes.zip");
         
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+        shp_handler.DEBUG= true;
+        
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), true);
-
+        assertEquals(shp_handler.errorFound, false);
+        
+        shp_handler.showFileGroups();
+       // if (true){
+         //   return ;
+        //}
         // get file_groups Map
         Map<String, List<String>> file_groups = shp_handler.getFileGroups();
         
@@ -223,11 +208,26 @@ public class ShapefileHandlerTest {
         assertEquals(file_groups.containsKey("shape2"), true);
 
         // Verify the values
-        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj"));
-        assertEquals(file_groups.get("shape2"), Arrays.asList("shp", "shx", "dbf", "prj"));
+        assertEquals(file_groups.get("shape1"), Arrays.asList("shp", "shx", "dbf", "prj", "fbn", "fbx"));
+        assertEquals(file_groups.get("shape2"), Arrays.asList("shp", "shx", "dbf", "prj", "txt", "pdf", ShapefileHandler.BLANK_EXTENSION));
         
         this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
 
+        
+        // Rezip/Reorder the files
+        File test_unzip_folder = this.tempFolder.newFolder("test_unzip").getAbsoluteFile();
+        //File test_unzip_folder = new File("/Users/rmp553/Desktop/blah");
+        shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), test_unzip_folder );
+        
+   
+        // Does the re-ordering do what we wanted?
+        List<String> rezipped_filenames = new ArrayList<>();
+        rezipped_filenames.addAll(Arrays.asList(test_unzip_folder.list()));
+        msg("rezipped_filenames: " + rezipped_filenames);
+        List<String> expected_filenames = Arrays.asList("shape1.zip", "shape2.zip", "shape2.txt", "shape2.pdf", "shape2", "README.MD", "shp_dictionary.xls", "notes");  
+
+        assertEquals(rezipped_filenames.containsAll(rezipped_filenames), true);
+        
         // Delete .zip
         zipfile_obj.delete();
         
@@ -245,6 +245,10 @@ public class ShapefileHandlerTest {
 
         // Pass the .zip to the ShapefileHandler
         ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zipfile_obj));
+        shp_handler.DEBUG= true;
+
+        
+        // Contains shapefile?
         assertEquals(shp_handler.containsShapefile(), true);
 
         // get file_groups Map
@@ -261,7 +265,20 @@ public class ShapefileHandlerTest {
         assertEquals(file_groups.get("README"), Arrays.asList("md"));
         assertEquals(file_groups.get("shape_notes"), Arrays.asList("txt"));
         
-        //this.showFilesInTempFolder(this.tempFolder.getRoot().getAbsolutePath());
+        File unzip2Folder = this.tempFolder.newFolder("test_unzip2").getAbsoluteFile();
+        // Rezip/Reorder the files
+        shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), unzip2Folder);
+        //shp_handler.rezipShapefileSets(new FileInputStream(zipfile_obj), new File("/Users/rmp553/Desktop/blah"));
+        
+   
+        // Does the re-ordering do what we wanted?
+        List<String> rezipped_filenames = new ArrayList<>();
+        rezipped_filenames.addAll(Arrays.asList(unzip2Folder.list()));
+        
+        msg("rezipped_filenames: " + rezipped_filenames);
+        List<String> expected_filenames = Arrays.asList("shape1.zip", "shape1.pdf", "README.md", "shape_notes.txt");  
+
+        assertEquals(expected_filenames.containsAll(rezipped_filenames), true);
         
         // Delete .zip
         zipfile_obj.delete();
@@ -269,94 +286,7 @@ public class ShapefileHandlerTest {
         msg("Passed!");
     }
     
-    
-    @Test
-    public void testCreateZippedShapefile() throws IOException {
-    
-        msgt("(4) testCreateZippedShapefile");
 
-        // Create four files 
-        String file_basename = "income_areas";
-        List<String> file_extensions = Arrays.asList("shp", "shx", "dbf", "prj");
-        
-        Collection<File> fileCollection = new ArrayList<File>();
-        for (String ext_name : file_extensions) {
-           //System.out.println("ext: " + ext_name);
-           File shpPart = this.createBlankFile(file_basename + "." +  ext_name);
-           fileCollection.add(shpPart);
-           msg("File created: " + shpPart.getName());
-           
-        }
-        
-        // debug
-        showFilesInTempFolder("Show files in temp folder 1");
-        
-        
-        //ArrayList<File> files = new ArrayList<File>(Arrays.asList(f.listFiles()));
-        
-        /* -----------------------------------
-           Add the files to a .zip
-        ----------------------------------- */
-        // create a  ZipOutputStream
-        String zippedShapefileName = file_basename + ".zip";
-        File zip_file_obj = this.tempFolder.newFile(zippedShapefileName);
-        ZipOutputStream zip_stream = new ZipOutputStream(new FileOutputStream(zip_file_obj));
-        msg("\nCreate zipped shapefile: " + zippedShapefileName);
-        // Iterate through File objects and add them to the ZipOutputStream
-        for (File file_obj : fileCollection) {
-             this.addToZipFile(file_obj.getName(), file_obj, zip_stream);
-        }
-
-        // debug
-        showFilesInTempFolder("Show files in temp folder 2");
-
-         /* -----------------------------------
-           Delete single files that were added to .zip
-        ----------------------------------- */
-        for (File file_obj : fileCollection) {
-             file_obj.delete();
-        }
-        showFilesInTempFolder("Show files in temp folder 3");
-
-        
-         /* -----------------------------------
-           Check this .zipped shapefile
-        ----------------------------------- */
-        //String tmp_output_folder_for_unzipping = this.tempFolder.newFolder("scratch-space").getAbsolutePath();
-        //String output_folder_for_new_zip = this.tempFolder.newFolder("newly-zipped").getAbsolutePath();
-        File output_folder_to_unzip = this.tempFolder.newFolder("folder_to_unzip");
-        File output_folder_to_rezip = this.tempFolder.newFolder("rezip");
-
-        msg("Temp folder location: " + this.tempFolder.getRoot().getAbsolutePath());
-        
-        msg("output_folder_to_rezip: " + output_folder_to_rezip.getAbsolutePath());
-        ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(zip_file_obj)
-                                            , output_folder_to_unzip.getAbsolutePath()
-                                            , output_folder_to_rezip.getAbsolutePath());
-        
-        msg("Contains shapefile?: " + shp_handler.containsShapefile());
-
-        
-        assertEquals(shp_handler.containsShapefile(), true);
-        
-        /*
-            Get a dict with the following contents
-                  key: "income_areas"
-                  value: Arrays.asList("shp", "shx", "dbf", "prj")
-        */
-        Map<String, List<String>> file_groups = shp_handler.getFileGroups();
-        
-        // The dict should not be empty
-        assertEquals(file_groups.isEmpty(), false);
-
-        // Verify the key
-        assertEquals(file_groups.containsKey("income_areas"), true);
-        
-        // Verify the value
-        assertEquals(file_groups.get("income_areas"), Arrays.asList("shp", "shx", "dbf", "prj"));
-      
-  }
-    
     
     
     
@@ -376,7 +306,7 @@ public class ShapefileHandlerTest {
             zip_output_stream.closeEntry();
             file_input_stream.close();
 
-            msg("File [" + fileName + "] added to .zip");
+            //msg("File [" + fileName + "] added to .zip");
 
             return true;
 	} // end: addToZipFile

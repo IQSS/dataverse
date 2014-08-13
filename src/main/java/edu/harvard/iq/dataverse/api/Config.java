@@ -32,7 +32,7 @@ public class Config extends AbstractApiBean {
             if (solrType.equals(SolrField.SolrType.EMAIL)) {
                 /**
                  * @todo should we also remove all "email" field types (e.g.
-                 * distributorContact) from schema.xml? We are explicitly not
+                 * datasetContact) from schema.xml? We are explicitly not
                  * indexing them for
                  * https://github.com/IQSS/dataverse/issues/759
                  *

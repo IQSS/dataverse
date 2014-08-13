@@ -24,8 +24,8 @@ import java.util.*;
 
 import org.apache.commons.lang.*;
 import org.apache.commons.math.stat.*;
-import cern.colt.list.*;
-import cern.jet.stat.Descriptive;
+//import cern.colt.list.*;
+//import cern.jet.stat.Descriptive;
 
 
 /**
@@ -41,7 +41,7 @@ public class SumStatCalculator {
 
         nx[0] = StatUtils.mean(newx);
         nx[1] = StatUtils.percentile(newx, 50);
-        nx[2] = getMode(newx);
+        nx[2] = 0.0; //getMode(newx); // TODO: remove -- L.A.
         nx[4] = countInvalidValues(x);
         nx[3] = x.length - nx[4];
 
@@ -72,6 +72,9 @@ public class SumStatCalculator {
      * Returns a new double array of nulls and non-Double.NaN values only
      *
      */
+    // TODO: 
+    // implement this in some way that does not require allocating a new 
+    // ArrayList for the values of every vector. -- L.A. Aug. 11 2014
     private static double[] removeInvalidValues(Double[] x){
         List<Double> dl = new ArrayList<Double>();
         for (Double d : x){
@@ -118,6 +121,7 @@ public class SumStatCalculator {
      * Returns the mode statistic of a double variable
      *
      */
+    /*
     public static double getMode(double[] x){
         double mode = Double.NaN;
 
@@ -145,4 +149,5 @@ public class SumStatCalculator {
         }
         return mode;
     }
+    */
 }

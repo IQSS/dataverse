@@ -584,6 +584,9 @@ public class DatasetVersion implements Serializable {
         return getAuthorsStr(true);
     }
 
+    /**
+     * @todo Does this correctly include affiliation if you ask for it?
+     */
     public String getAuthorsStr(boolean affiliation) {
         String str = "";
         for (DatasetAuthor sa : getDatasetAuthors()) {
@@ -592,8 +595,10 @@ public class DatasetVersion implements Serializable {
             }
             str += sa.getName().getValue();
             if (affiliation) {
-                if (!StringUtil.isEmpty(sa.getAffiliation().getValue())) {
-                    str += " (" + sa.getAffiliation().getValue() + ")";
+                if (sa.getAffiliation() != null) {
+                    if (!StringUtil.isEmpty(sa.getAffiliation().getValue())) {
+                        str += " (" + sa.getAffiliation().getValue() + ")";
+                    }
                 }
             }
         }
