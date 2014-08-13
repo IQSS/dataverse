@@ -32,7 +32,6 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -939,21 +938,34 @@ public class IngestServiceBean {
         return false;
     }
     
+    public void sendFailNotification(Long dataset_id) {
+        FacesMessage facesMessage = new FacesMessage("ingest failed");
+        PushContext pushContext = PushContextFactory.getDefault().getPushContext();
+        pushContext.push("/ingest" + dataset_id, facesMessage);
+        logger.info("sent push (fail) notification to the page.");
+    }
+    
     public boolean ingestAsTabular(String tempFileLocation, DataFile dataFile) { //throws IOException {
         // TODO: 
         // (still work in progress)
         // Error reporting, with descriptions of specific problems, is 
         // being added here. 
         // -- L.A. 10 June 2014
+        // TODO:
+        // streamline this code; 
+        // get rid of the duplicated fragments, add helper methods
+        // for updaing ingest status reports/push notifications. 
+        // -- L.A. 12 Aug. 2014
+        
         boolean ingestSuccessful = false;
         IngestReport errorReport = null;
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
         if (pushContext != null) {
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.FINE, "Ingest: Obtained push context "
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.FINE, "Ingest: Obtained push context "
                     + pushContext.toString());
         } else {
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.SEVERE, "Warning! Could not obtain push context.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.SEVERE, "Warning! Could not obtain push context.");
         }      
         
         // Locate ingest plugin for the file format by looking
@@ -974,7 +986,7 @@ public class IngestServiceBean {
             
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
             //throw new IOException("Could not find ingest plugin for the file " + fileName);
             return false; 
         }
@@ -996,7 +1008,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (No file produced): Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure (No file produced): Sent push notification to the page.");
             return false; 
             //throw new IOException("Could not open temp file "+tempFileLocation);
         }
@@ -1016,7 +1028,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure (IO Exception): "+ingestEx.getMessage()+ "; Sent push notification to the page.");
             return false;
         } catch (Exception unknownEx) {
             // this is a bit of a kludge, to make sure no unknown exceptions are
@@ -1032,7 +1044,7 @@ public class IngestServiceBean {
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure (Unknown Exception): "+unknownEx.getMessage()+"; Sent push notification to the page.");
             return false;
             
         }
@@ -1045,10 +1057,10 @@ public class IngestServiceBean {
                         && tabFile != null
                         && tabFile.exists()) {
 
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
+                    Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Tabular data successfully ingested; DataTable with "
                             + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
 
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+                    Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Tab-delimited file produced: " + tabFile.getAbsolutePath());
 
                     if (MIME_TYPE_CSV_ALT.equals(dataFile.getContentType())) {
                         tabDataIngest.getDataTable().setOriginalFileFormat(MIME_TYPE_CSV);
@@ -1060,12 +1072,12 @@ public class IngestServiceBean {
                     try {
                         saveIngestedOriginal(dataFile, new FileInputStream(new File(tempFileLocation)));
                     } catch (IOException iox) {
-                        Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
+                        Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Failed to save the ingested original! " + iox.getMessage());
                     }
 
                     Files.copy(Paths.get(tabFile.getAbsolutePath()), dataFile.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
 
-                // and change the mime type to "tabular" on the final datafile, 
+                    // and change the mime type to "tabular" on the final datafile, 
                     // and replace (or add) the extension ".tab" to the filename: 
                     dataFile.setContentType(MIME_TYPE_TAB);
                     dataFile.getFileMetadata().setLabel(FileUtil.replaceExtension(fileName, "tab"));
@@ -1079,7 +1091,7 @@ public class IngestServiceBean {
                     dataFile = fileService.save(dataFile);
                     FacesMessage facesMessage = new FacesMessage("ingest done");
                     pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
-                    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
+                    Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest (" + dataFile.getFileMetadata().getDescription() + "); sent push notification to the page.");
 
                 //try {
                     //} catch (IOException sumStatEx) {
@@ -1087,23 +1099,57 @@ public class IngestServiceBean {
                     //    dataFile = fileService.save(dataFile);
                     //    FacesMessage facesMessage = new FacesMessage("ingest failed");
                     //    pushContext.push("/ingest"+dataFile.getOwner().getId(), facesMessage);
-                    //    Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
+                    //    Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: Sent push notification to the page.");
                     //    throw new IOException ("Ingest: failed to calculate summary statistics. "+sumStatEx.getMessage());
                     //}
                     ingestSuccessful = true;
                 }
+            } else {
+                Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failed to produce data obect; notification NOT sent to the page.");
             }
         } catch (IOException postIngestEx) {
+            // TODO: 
+            // try to separate the post-processing (summary stats, unfs) failures
+            // from file save errors;
+            // -- L.A. Aug. 2014
             dataFile.SetIngestProblem();
             errorReport = new IngestReport();
             errorReport.setFailure();
             errorReport.setReport("Ingest failed to produce Summary Statistics and/or UNF signatures; "+postIngestEx.getMessage());
             errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
             
             dataFile = fileService.save(dataFile);
             FacesMessage facesMessage = new FacesMessage("ingest failed");
             pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
-            Logger.getLogger(DatasetPage.class.getName()).log(Level.INFO, "Ingest failure: post-ingest tasks. Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: post-ingest tasks. Sent push notification to the page.");
+        } catch (Exception unknownEx) {
+            // this probably means that an error occurred while saving the datafile
+            // in the database. 
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Sent push notification to the page.");
+
+            dataFile.SetIngestProblem();
+            errorReport = new IngestReport();
+            errorReport.setFailure();
+            errorReport.setReport("Failed to save tabular data in the database; "+unknownEx.getMessage());
+            errorReport.setDataFile(dataFile);
+            dataFile.setIngestReport(errorReport);
+            
+            // blank the datatable that may have already been attached to the
+            // datafile (it may have something "unsave-able" in it!)
+            
+            dataFile.setDataTables(null);
+            if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+                tabDataIngest.getDataTable().setDataFile(null);
+            }
+            
+            ////try {
+                dataFile = fileService.save(dataFile);
+            ////} catch (Exception unknownEx2) {
+            ////    logger.info("Another unknown exception occured while saving the datafile.");
+            ////}
+            FacesMessage facesMessage = new FacesMessage("ingest failed");
+            pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
         }
 
         

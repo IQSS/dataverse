@@ -465,9 +465,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                     String formatCategory = formatCategoryTable.get(varName);
 
                     if (formatCategory != null) {
-                        dbgLog.fine("setting format category to "+formatCategory);
-                        dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
                         if (dateFormatList[indx] != null) {
+                            dbgLog.fine("setting format category to "+formatCategory);
+                            dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
                             dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
                             dataTable.getDataVariables().get(indx).setFormatSchemaName(dateFormatList[indx]);
                         }
