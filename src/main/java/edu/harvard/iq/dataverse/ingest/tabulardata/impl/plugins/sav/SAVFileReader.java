@@ -1405,7 +1405,11 @@ public class SAVFileReader  extends TabularDataFileReader{
             DataVariable dv = new DataVariable();
             String varName = variableNameList.get(i);
             dv.setName(varName);
-            dv.setLabel(variableLabelMap.get(varName));
+            String varLabel = variableLabelMap.get(varName);
+            /*if (varLabel != null && varLabel.length() > 255) {
+                varLabel = varLabel.substring(0, 255);
+            }*/
+            dv.setLabel(varLabel);
             ////dv.setFormatSchemaName(printFormatNameTable.get(varName));
             
             dv.setInvalidRanges(new ArrayList());

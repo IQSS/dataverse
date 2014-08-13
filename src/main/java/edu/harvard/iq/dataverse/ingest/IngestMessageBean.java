@@ -84,12 +84,50 @@ public class IngestMessageBean implements MessageListener {
                 datafile_id = (Long) iter.next();
 
                 logger.info("Start ingest job;");
-                if (ingestService.ingestAsTabular(datafile_id)) {
-                    //Thread.sleep(10000);
-                    logger.info("Finished ingest job;");
-                } else {
-                    logger.info("Error occurred during ingest job!");
-                }
+                try {
+                    if (ingestService.ingestAsTabular(datafile_id)) {
+                        //Thread.sleep(10000);
+                        logger.info("Finished ingest job;");
+                    } else {
+                        logger.info("Error occurred during ingest job!");
+                    }
+                } catch (Exception ex) {
+                    //ex.printStackTrace();
+                    // TODO: 
+                    // this solution is working - but it would be cleaner to instead
+                    // make sure that all the exceptions are interrupted and appropriate
+                    // action taken still on the ingest service side. 
+                    // -- L.A. Aug. 13 2014; 
+                    logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
+                    if (datafile_id != null) {
+                        logger.info("looking up datafile for id " + datafile_id);
+                        DataFile datafile = datafileService.find(datafile_id);
+                        if (datafile != null) {
+                            datafile.SetIngestProblem();
+                            IngestReport errorReport = new IngestReport();
+                            errorReport.setFailure();
+                            if (ex.getMessage() != null) {
+                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database: " + ex.getMessage());
+                            } else {
+                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database; no further information is available");
+                            }
+                            errorReport.setDataFile(datafile);
+                            datafile.setIngestReport(errorReport);
+                            datafile.setDataTables(null);
+
+                            logger.info("trying to save datafile " + datafile_id);
+                            datafile = datafileService.save(datafile);
+
+                            Dataset dataset = datafile.getOwner();
+                            if (dataset != null && dataset.getId() != null) {
+                                logger.info("attempting to remove dataset lock for dataset " + dataset.getId());
+                                datasetService.removeDatasetLock(dataset.getId());
+                                ingestService.sendFailNotification(dataset.getId());
+                            }
+                        }
+                    }
+
+        } 
             }
             
             // Remove the dataset lock: 
@@ -107,42 +145,6 @@ public class IngestMessageBean implements MessageListener {
 
         } catch (JMSException ex) {
             ex.printStackTrace(); // error in getting object from message; can't send e-mail
-
-        } catch (Exception ex) {
-            //ex.printStackTrace();
-            // TODO: 
-            // this solution is working - but it would be cleaner to instead
-            // make sure that all the exceptions are interrupted and appropriate
-            // action taken still on the ingest service side. 
-            // -- L.A. Aug. 13 2014; 
-            logger.info("Unknown exception occurred  during ingest (supressed stack trace); re-setting ingest status.");
-            if (datafile_id != null) {
-                logger.info("looking up datafile for id "+datafile_id);
-                DataFile datafile = datafileService.find(datafile_id);
-                if (datafile != null) {
-                    datafile.SetIngestProblem();
-                    IngestReport errorReport = new IngestReport();
-                    errorReport.setFailure();
-                    if (ex.getMessage() != null) {
-                        errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database: "+ex.getMessage());
-                    } else {
-                        errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database; no further information is available");
-                    }
-                    errorReport.setDataFile(datafile);
-                    datafile.setIngestReport(errorReport);
-                    datafile.setDataTables(null);
-                    
-                    logger.info("trying to save datafile "+datafile_id);
-                    datafile = datafileService.save(datafile);
-                    
-                    Dataset dataset = datafile.getOwner();
-                    if (dataset != null && dataset.getId() != null) {
-                        logger.info("attempting to remove dataset lock for dataset "+dataset.getId());
-                        datasetService.removeDatasetLock(dataset.getId());
-                        ingestService.sendFailNotification(dataset.getId());
-                    }
-                } 
-            }
 
         } finally {
             // when we're done, go ahead and remove the lock (not yet)

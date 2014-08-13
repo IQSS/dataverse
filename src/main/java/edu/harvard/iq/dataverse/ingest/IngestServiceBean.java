@@ -959,6 +959,7 @@ public class IngestServiceBean {
         
         boolean ingestSuccessful = false;
         IngestReport errorReport = null;
+        Long datafile_id = dataFile == null ? null : dataFile.getId();
 
         PushContext pushContext = PushContextFactory.getDefault().getPushContext();
         if (pushContext != null) {
@@ -1126,30 +1127,37 @@ public class IngestServiceBean {
         } catch (Exception unknownEx) {
             // this probably means that an error occurred while saving the datafile
             // in the database. 
-            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Sent push notification to the page.");
+            Logger.getLogger(IngestServiceBean.class.getName()).log(Level.INFO, "Ingest failure: Failed to save tabular data (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
-            dataFile.SetIngestProblem();
-            errorReport = new IngestReport();
-            errorReport.setFailure();
-            errorReport.setReport("Failed to save tabular data in the database; "+unknownEx.getMessage());
-            errorReport.setDataFile(dataFile);
-            dataFile.setIngestReport(errorReport);
+            dataFile = null; 
+            dataFile = fileService.find(datafile_id);
             
+            if (dataFile != null) {
+                dataFile.SetIngestProblem();
+                errorReport = new IngestReport();
+                errorReport.setFailure();
+                errorReport.setReport("Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
+                errorReport.setDataFile(dataFile);
+                dataFile.setIngestReport(errorReport);
+
             // blank the datatable that may have already been attached to the
-            // datafile (it may have something "unsave-able" in it!)
-            
-            dataFile.setDataTables(null);
-            if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
-                tabDataIngest.getDataTable().setDataFile(null);
-            }
-            
-            ////try {
+                // datafile (it may have something "unsave-able" in it!)
+                dataFile.setDataTables(null);
+                if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
+                    tabDataIngest.getDataTable().setDataFile(null);
+                }
+
+                ////try {
                 dataFile = fileService.save(dataFile);
-            ////} catch (Exception unknownEx2) {
-            ////    logger.info("Another unknown exception occured while saving the datafile.");
-            ////}
-            FacesMessage facesMessage = new FacesMessage("ingest failed");
-            pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                ////} catch (Exception unknownEx2) {
+                ////    logger.info("Another unknown exception occured while saving the datafile.");
+                ////}
+                FacesMessage facesMessage = new FacesMessage("ingest failed");
+                pushContext.push("/ingest" + dataFile.getOwner().getId(), facesMessage);
+                logger.info("Sent push notification to the page.");
+            } else {
+                // ??
+            }
         }
 
         
