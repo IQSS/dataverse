@@ -256,9 +256,9 @@ public class PORFileReader  extends TabularDataFileReader{
             String varName = variableNameList.get(indx); 
             dv.setName(varName);
             String varLabel = variableLabelMap.get(varName);
-            /*if (varLabel != null && varLabel.length() > 255) {
+            if (varLabel != null && varLabel.length() > 255) {
                 varLabel = varLabel.substring(0, 255);
-            }*/
+            }
             dv.setLabel(varLabel);
             
             dv.setInvalidRanges(new ArrayList());
