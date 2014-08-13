@@ -791,7 +791,7 @@ public class IngestServiceBean {
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormatSchemaName())) {
                     Float[] variableVector = subsetGenerator.subsetFloatVector(dataFile, i);
                     logger.fine("Calculating summary statistics on a Float vector (skipping);");
-                    ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
                     logger.fine("Calculating UNF on a Float vector (skipping);");
                     calculateUNF(dataFile, i, variableVector);
@@ -799,7 +799,7 @@ public class IngestServiceBean {
                 } else {
                     Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                     logger.fine("Calculating summary statistics on a Double vector (skipping);");
-                    ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                    calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
                     logger.fine("Calculating UNF on a Double vector (skipping);");
                     calculateUNF(dataFile, i, variableVector);
@@ -822,7 +822,7 @@ public class IngestServiceBean {
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
-                ///calculateContinuousSummaryStatistics(dataFile, i, variableVector);
+                calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
                 logger.fine("Calculating UNF on a Long vector (skipping)");
                 calculateUNF(dataFile, i, variableVector);
@@ -1097,7 +1097,7 @@ public class IngestServiceBean {
             dataFile.SetIngestProblem();
             errorReport = new IngestReport();
             errorReport.setFailure();
-            errorReport.setReport(postIngestEx.getMessage());
+            errorReport.setReport("Ingest failed to produce Summary Statistics and/or UNF signatures; "+postIngestEx.getMessage());
             errorReport.setDataFile(dataFile);
             
             dataFile = fileService.save(dataFile);
@@ -1577,10 +1577,14 @@ public class IngestServiceBean {
         
         if ("time".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
-            
+            String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
             for (int i = 0; i < dataVector.length; i++) {
                 if (dataVector[i] != null) {
-                    dateFormats[i] = dateTimeFormat_ymdhmsS;
+                    if (savedDateFormat != null && !savedDateFormat.equals("")) {
+                        dateFormats[i] = savedDateFormat;
+                    } else {
+                        dateFormats[i] = dateTimeFormat_ymdhmsS;
+                    }
                 }
             }
         } else if ("date".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {

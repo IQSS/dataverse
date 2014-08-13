@@ -142,6 +142,8 @@ public class PORFileReader  extends TabularDataFileReader{
     private NumberFormat doubleNumberFormatter = new DecimalFormat();
 
     private String[] variableFormatTypeList;
+    private String[] dateFormatList;
+
 
 
     // Constructor -----------------------------------------------------------//
@@ -162,7 +164,7 @@ public class PORFileReader  extends TabularDataFileReader{
                 ctx = new InitialContext();
                 varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
             } catch (NamingException nex2) {
-                if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
+                if (dbgLog.isLoggable(Level.INFO)) dbgLog.fine("Could not look up initial context, or the variable service in JNDI!");
                 throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
             }
         }
@@ -176,7 +178,7 @@ public class PORFileReader  extends TabularDataFileReader{
     }
     
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
-        dbgLog.info("SAVFileReader: read() start");
+        dbgLog.fine("PORFileReader: read() start");
         
         if (dataFile != null) {
             throw new IOException ("this plugin does not support external raw data files");
@@ -254,7 +256,6 @@ public class PORFileReader  extends TabularDataFileReader{
             String varName = variableNameList.get(indx); 
             dv.setName(varName);
             dv.setLabel(variableLabelMap.get(varName));
-            dv.setFormatSchemaName(printFormatNameTable.get(varName));
             
             dv.setInvalidRanges(new ArrayList());
             dv.setSummaryStatistics( new ArrayList() );
@@ -283,13 +284,18 @@ public class PORFileReader  extends TabularDataFileReader{
                 if (variableFormatType != null
                         && (variableFormatType.equals("time")
                         || variableFormatType.equals("date"))) {
-                    ///variableTypeMinimal[indx] = 1;
                     simpleType = 1; 
                     
                     String formatCategory = formatCategoryTable.get(varName);
 
                     if (formatCategory != null) {
-                        variableList.get(indx).setFormatCategory(formatCategory);
+                        
+                        if (dateFormatList[indx] != null) {
+                            dbgLog.fine("setting format category to "+formatCategory);
+                            variableList.get(indx).setFormatCategory(formatCategory);
+                            dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
+                            variableList.get(indx).setFormatSchemaName(dateFormatList[indx]);
+                        }
                     }
                 }
             }
@@ -341,7 +347,7 @@ public class PORFileReader  extends TabularDataFileReader{
         
         ingesteddata.setDataTable(dataTable);
         
-        dbgLog.info("SAVFileReader: read() end");
+        dbgLog.info("PORFileReader: read() end");
         return ingesteddata;
     }
     
@@ -1064,14 +1070,11 @@ public class PORFileReader  extends TabularDataFileReader{
 
     private void decodeData(BufferedReader reader) throws IOException {
         dbgLog.fine("decodeData(): start");
-        List<String[]> dataTableList = new ArrayList<String[]>();
-        List<String[]> dateFormatList = new ArrayList<String[]>();
         int[] variableTypeFinal= new int[varQnty];
+        dateFormatList = new String[varQnty];
 
         // create a File object to save the tab-delimited data file
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
-        ///smd.getFileInformation().put("tabDelimitedDataFileLocation", tabDelimitedDataFile.getAbsolutePath());
-        // 4.0: 
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
         
 
@@ -1100,8 +1103,6 @@ public class PORFileReader  extends TabularDataFileReader{
 
                 // case(row)-wise storage object; to be updated after each row-reading
 
-                String[] casewiseRecord = new String[varQnty];
-                String[] caseWiseDateFormat = new String[varQnty];
                 String[] casewiseRecordForTabFile = new String[varQnty];
                 // warning: the above object is later shallow-copied to the
                 // data object for calculating a UNF value/summary statistics
@@ -1161,7 +1162,6 @@ public class PORFileReader  extends TabularDataFileReader{
                         reader.read(char_datumString);
 
                         String datum = new String(char_datumString);
-                        casewiseRecord[i]= datum;
                         casewiseRecordForTabFile[i] =  "\"" + datum.replaceAll("\"",Matcher.quoteReplacement("\\\"")) + "\"";
                         // end of string case
                     } else {
@@ -1253,10 +1253,18 @@ public class PORFileReader  extends TabularDataFileReader{
                                         }
 
                                         datum = sb_time.toString();
-                                        // don't save date format for dtime
+                                        // DTIME is weird date/time format that no one uses outside of 
+                                        // SPSS; so we are not even going to bother trying to save
+                                        // this variable as a datetime. 
                                     }
 
                                 } else if (printFormatTable.get(variableNameList.get(i)).equals("DATETIME")){
+                                    // TODO: 
+                                    // (for both datetime and "dateless" time)
+                                    // keep the longest of the matching formats - i.e., if there are *some*
+                                    // values in the vector that have thousands of a second, that should be 
+                                    // part of the saved format!
+                                    //  -- L.A. Aug. 12 2014 
 
                                     if (datum.indexOf(".") < 0){
                                         long dateDatum  = Long.parseLong(datum)*1000L - SPSS_DATE_OFFSET;
@@ -1323,8 +1331,9 @@ public class PORFileReader  extends TabularDataFileReader{
                             }
                         }
 
-                        casewiseRecord[i]= datum;
-                        caseWiseDateFormat[i] = datumDateFormat;
+                        if (datumDateFormat != null) {
+                            dateFormatList[i] = datumDateFormat;
+                        }
                         casewiseRecordForTabFile[i]= datumForTabFile;
 
                     } // end: if: string vs numeric variable
@@ -1334,9 +1343,6 @@ public class PORFileReader  extends TabularDataFileReader{
 
                 // print the i-th case; use casewiseRecord to dump the current case to the tab-delimited file
                 pwout.println(StringUtils.join(casewiseRecordForTabFile, "\t"));
-                // store the current case-holder object to the data object for later operations such as UNF/summary statistics
-                dataTableList.add(casewiseRecord);
-                dateFormatList.add(caseWiseDateFormat);
 
             } // end: while-block
         } finally {
@@ -1347,7 +1353,6 @@ public class PORFileReader  extends TabularDataFileReader{
         }
 
         ///smd.setDecimalVariables(decimalVariableSet);
-        ///smd.getFileInformation().put("caseQnty", caseQnty);
         dataTable.setCaseQuantity(new Long(caseQnty));
 
         dbgLog.fine("decodeData(): end");

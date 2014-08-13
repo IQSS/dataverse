@@ -434,7 +434,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                             // unfs identical to those produced by the "early" 
                             // unf5 jar; will be removed in production 4.0. 
                             // -- L.A. (TODO: ...)
-                            if (compatmode) {
+                            if (compatmode && !"".equals(token)) {
                                 if (token.length() > 128) {
                                     if ("".equals(token.trim())) {
                                         // don't ask... 

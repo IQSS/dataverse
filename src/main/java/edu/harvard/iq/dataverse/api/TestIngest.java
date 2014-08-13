@@ -33,22 +33,23 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import javax.servlet.http.HttpServletResponse;
 
-/*
-    Custom API exceptions [NOT YET IMPLEMENTED]
-import edu.harvard.iq.dataverse.api.exceptions.NotFoundException;
-import edu.harvard.iq.dataverse.api.exceptions.ServiceUnavailableException;
-import edu.harvard.iq.dataverse.api.exceptions.PermissionDeniedException;
-import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
-*/
+
 
 /**
  *
  * @author Leonid Andreev
  * 
- * The data (file) access API is based on the DVN access API v.1.0 (that came 
- * with the v.3.* of the DVN app) and extended for DVN 4.0 to include some
- * extra fancy functionality, such as subsetting individual columns in tabular
- * data files and more.
+ * This API call was originally created for batch-testing 4.0 ingest. 
+ * It runs the ingest code that creates the dataverse data objects - datavariables,
+ * datatable, etc. and generates a report with variable metadata - names, 
+ * types, UNFs, but doesn't persist the objects in the database. 
+ * It was put together as a bit of a hack - but we may have a place for it in 
+ * the application - Gary has requested a mechanism for producing UNFs without
+ * actually ingesting the file (for sensitive data, etc.).
+ * So we'll probably beef up this API call a little bit (make it upload the 
+ * file, etc.) and make a simple UI for it. 
+ * 
+ *      -- L.A. Aug. 2014 
  */
 
 @Path("ingest")
@@ -82,6 +83,8 @@ public class TestIngest {
             absoluteFilePath = "/usr/share/data/retest_stata/reingest/" + fileName;
         } else if (fileType.equals("x-spss-sav")) {
             absoluteFilePath = "/usr/share/data/retest_sav/reingest/" + fileName;
+        } else if (fileType.equals("x-spss-por")) {
+            absoluteFilePath = "/usr/share/data/retest_por/reingest/" + fileName; 
         }
         
         try {
