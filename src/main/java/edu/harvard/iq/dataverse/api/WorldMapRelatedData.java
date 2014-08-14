@@ -59,7 +59,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String GET_WORLDMAP_DATAFILE_API_PATH =  BASE_PATH + GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT;
     
     
-    public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata"; 
+    public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata/"; 
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
 
     // for testing, move to config file
@@ -155,23 +155,39 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
     }
     
+     private String getServerNamePort(HttpServletRequest request){
+        if (request == null){
+            return "";
+        }
+        String serverName = request.getServerName();
+        if (serverName==null){
+             return "";
+        }
+        int portNumber = request.getServerPort();
+        if (portNumber==80){
+           return "http://" + serverName;
+        }
+        return "http://" + serverName + ":" + portNumber;
+               
+    }
+    
     /**
      * Parse json looking for the GEOCONNECT_TOKEN_KEY.
      * Make sure that the string itself is not null and 64 chars
      * 
-     * @param json_token_info
+     * @param jsonTokenInfo
      * @return 
      */
-    private String retrieveTokenValueFromJson(JsonObject json_token_info){
-        if (json_token_info==null){
+    private String retrieveTokenValueFromJson(JsonObject jsonTokenInfo){
+        if (jsonTokenInfo==null){
             return null;
         }
-        if (!json_token_info.containsKey(WorldMapToken.GEOCONNECT_TOKEN_KEY)){
+        if (!jsonTokenInfo.containsKey(WorldMapToken.GEOCONNECT_TOKEN_KEY)){
             logger.warning("Token not found.  Permission denied.");
             return null;
             //return errorResponse( Response.Status.BAD_REQUEST, "Permission denied");
         }
-        Object worldmapTokenObject = json_token_info.get(WorldMapToken.GEOCONNECT_TOKEN_KEY);
+        Object worldmapTokenObject = jsonTokenInfo.get(WorldMapToken.GEOCONNECT_TOKEN_KEY);
         if (worldmapTokenObject==null){
             logger.warning("Token is null found.  Permission denied.");
             return null;
@@ -228,16 +244,16 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //----------------------------------
 
         // Parse JSON 
-        JsonObject json_token_info;
+        JsonObject jsonTokenInfo;
         try ( StringReader rdr = new StringReader(jsonTokenData) ) {
-            json_token_info = Json.createReader(rdr).readObject();
+            jsonTokenInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonTokenData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
         // Retrieve token string
-        String worldmapTokenParam = this.retrieveTokenValueFromJson(json_token_info);
+        String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonTokenInfo);
         if (worldmapTokenParam==null){
             return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
         }
@@ -328,144 +344,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         return okResponse(dfile_json);
  
     }
-    /*
-    
-        --- REPLACED BY TOKEN USE IN API CALL ABOVE ---
-    
-        For WorldMap/GeoConnect Usage
-        Return detailed Datafile information including latest Dataset and Dataverse data
-        
-        e.g. http://localhost:8080/api/worldmap/datafile/33?key=some-key
 
-        !! Does not yet implement permissions/command checks
-        !! Change to POST with check for hidden WorldMap key; IP check, etc
-    */
-    /*
-    @POST
-    @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT + "{datafile_id}")
-    public Response getWorldMapDatafile(String jsonTokenData, @Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
-        
-        //            + "<br /> getRemoteAddr: " + request.getRemoteAddr()         
-        //            + "<br /> X-FORWARDED-FOR: " + request.getHeader("X-FORWARDED-FOR")
-        if (true){
-          return okResponse("Currently deactivated--use token");
-        }
-        // Temp: Check if the user exists
-        // Change this to WorldMap API check!!
-        DataverseUser dv_user = userSvc.findByUserName(apiKey);
-        if (dv_user == null) {
-            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-        }
-        //----------------------------------
-        // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
-        //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db, etc.
-        //----------------------------------
-
-        JsonObject json_token_info;
-        try ( StringReader rdr = new StringReader(jsonTokenData) ) {
-            json_token_info = Json.createReader(rdr).readObject();
-        } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonTokenData);
-            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
-        }
-        
-        if (!json_token_info.containsKey(GEOCONNECT_TOKEN_KEY)){
-            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (1)");
-            //return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + GEOCONNECT_TOKEN_KEY + "]");
-        }
-        if (!(json_token_info.getString(GEOCONNECT_TOKEN_KEY).equalsIgnoreCase(GEOCONNECT_TOKEN_VALUE))){
-            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (2)");
-        }
-        //-----------------------------------
-
-        // (1) Attempt to retrieve DataFile indicated by id
-        DataFile dfile = dataFileService.find(datafile_id);
-        if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
-        }
-        FileMetadata dfile_meta = dfile.getFileMetadata();
-        if (dfile_meta==null){
-           return errorResponse(Response.Status.NOT_FOUND, "FileMetadata not found");
-        }
-        
-        // (2) Now get the dataset and the latest DatasetVersion
-        Dataset dset = dfile.getOwner();
-        if (dset==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Owning Dataset for this DataFile not found");
-        }
-        
-        // (2a) latest DatasetVersion
-        // !! How do you check if the lastest version has this specific file?
-        //
-        DatasetVersion dset_version = dset.getLatestVersion();
-        if (dset==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Latest DatasetVersion for this DataFile not found");
-        }
-        
-        // (3) get Dataverse
-        Dataverse dverse = dset.getOwner();
-        if (dverse==null){
-            return errorResponse(Response.Status.NOT_FOUND, "Dataverse for this DataFile's Dataset not found");
-        }
-        
-        // (4) Roll it all up in a JSON response
-        final JsonObjectBuilder dfile_json = Json.createObjectBuilder();
-        
-        // Dataverse
-        dfile_json.add("dv_id", dverse.getId());
-        dfile_json.add("dv_name", dverse.getName());
-        
-        // DatasetVersion Info
-        dfile_json.add("dataset_name", dset_version.getTitle());
-        dfile_json.add("dataset_description", dset_version.getCitation());
-        dfile_json.add("dataset_id", dset_version.getId());
-        dfile_json.add("dataset_version_id", dset_version.getVersion());
-        
-        // DataFile/FileMetaData Info
-        dfile_json.add("datafile_id", dfile.getId());
-        dfile_json.add("filename", dfile_meta.getLabel());
-        dfile_json.add("datafile_label", dfile_meta.getLabel());
-        dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
-        Long fsize = dfile.getFilesize();
-        if (fsize == null){
-            fsize= new Long(-1);
-        }
-            
-        dfile_json.add("filesize", fsize); 
-        dfile_json.add("datafile_type", dfile.getContentType());
-        dfile_json.add("created", dfile.getCreateDate().toString());
-                      
-        String server_name =  this.getServerNamePort(request);
-        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(server_name));
-       
-        
-        // DataverseUser Info
-        dfile_json.add("dv_user_email", dv_user.getEmail());
-        dfile_json.add("dv_username", dv_user.getUserName());
-        dfile_json.add("dv_user_id", dv_user.getId());
-                
-        
-        return okResponse(dfile_json);
- 
-    }
-   */
     
-    private String getServerNamePort(HttpServletRequest request){
-        if (request == null){
-            return "";
-        }
-        String serverName = request.getServerName();
-        if (serverName==null){
-             return "";
-        }
-        int portNumber = request.getServerPort();
-        if (portNumber==80){
-           return "http://" + serverName;
-        }
-        return "http://" + serverName + ":" + portNumber;
-               
-    }
-    
+   
     /*
         For WorldMap/GeoConnect Usage
         Create a MayLayerMetadata object for a given Datafile id
@@ -484,61 +365,55 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @POST
     @Path(UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT) // + "{datafile_id}")
     //public Response updateWorldMapLayerData(String jsonLayerData, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey){
-    public Response updateWorldMapLayerData(String jsonLayerData, @QueryParam("key") String apiKey){
+    public Response updateWorldMapLayerData(String jsonLayerData){//, @QueryParam("key") String apiKey){
         
-        // Temp: Check if the user exists
-        // Change this to WorldMap API check!!
-        DataverseUser dv_user = userSvc.findByUserName(apiKey);
-        if (dv_user == null) {
-            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
-        }
-        
-        
-        // (1) Parse the json message
-        JsonObject json_info;
+         //----------------------------------
+        // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
+        //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
+        //----------------------------------
+
+        // (1) Parse JSON 
+        //
+        JsonObject jsonInfo;
         try ( StringReader rdr = new StringReader(jsonLayerData) ) {
-            json_info = Json.createReader(rdr).readObject();
+            jsonInfo = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
             logger.log(Level.SEVERE, "Json: " + jsonLayerData);
             return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
-        // (1a) Check for the correct token
-        // Next step: dynamic token, etc.
-        /*
-        if (!json_info.containsKey(GEOCONNECT_TOKEN_KEY)){
-            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (1)");
-            //return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + GEOCONNECT_TOKEN_KEY + "]");
+        // Retrieve token string
+        String worldmapTokenParam = this.retrieveTokenValueFromJson(jsonInfo);
+        if (worldmapTokenParam==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "Permission denied.");
         }
-        if (!(json_info.getString(GEOCONNECT_TOKEN_KEY).equalsIgnoreCase(GEOCONNECT_TOKEN_VALUE))){
-            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (2)");
+
+        // Retrieve WorldMapToken and make sure it is valid
+        //
+        WorldMapToken wmToken = this.retrieveAndRefreshValidToken(worldmapTokenParam);
+        if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
-        */
-        
-        
+
         
         // (2) Make sure the json message has all of the required attributes
+        //
         for (String attr : MapLayerMetadata.MANDATORY_JSON_FIELDS ){
-            if (!json_info.containsKey(attr)){
+            if (!jsonInfo.containsKey(attr)){
                 return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + attr + "]\nRequired keys are: " + MapLayerMetadata.MANDATORY_JSON_FIELDS  );
             }
         }
         
-        // (2) Attempt to retrieve DataFile indicated by id
-        Integer datafileID = json_info.getInt("datafileID");
-        if (datafileID==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile id not found in JSON: " + json_info);
-        }
-        
-        DataFile dfile = dataFileService.find(datafileID.longValue());
+        // (2) Attempt to retrieve DataFile      
+        DataFile dfile = wmToken.getDatafile();
         if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafileID);
+            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
         }
 
         
         MapLayerMetadata mapLayer;
-        // See if a MapLayerMetadata already exists
-        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(json_info.getString("layerName"));//, dfile);
+        // (3) See if a MapLayerMetadata already exists
+        mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(jsonInfo.getString("layerName"));//, dfile);
         if (mapLayer == null){
             mapLayer = new MapLayerMetadata();
         }
@@ -546,10 +421,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Create/Update new MapLayerMetadata object and save it
         mapLayer.setDataFile(dfile);
         mapLayer.setDataset(dfile.getOwner());
-        mapLayer.setLayerName(json_info.getString("layerName"));
-        mapLayer.setLayerLink(json_info.getString("layerLink"));
-        mapLayer.setEmbedMapLink(json_info.getString("embedMapLink"));
-        mapLayer.setWorldmapUsername(json_info.getString("worldmapUsername"));
+        mapLayer.setLayerName(jsonInfo.getString("layerName"));
+        mapLayer.setLayerLink(jsonInfo.getString("layerLink"));
+        mapLayer.setEmbedMapLink(jsonInfo.getString("embedMapLink"));
+        mapLayer.setWorldmapUsername(jsonInfo.getString("worldmapUsername"));
 
         //mapLayer.save();
         MapLayerMetadata saved_map_layer = mapLayerMetadataService.save(mapLayer);
