@@ -18,7 +18,7 @@ import org.junit.Test;
 
 /**
  *
- * @author rmp553
+ * @author raprasad
  */
 public class WorldMapTokenTest {
  

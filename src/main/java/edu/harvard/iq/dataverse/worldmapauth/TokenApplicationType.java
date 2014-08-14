@@ -24,7 +24,7 @@ import javax.validation.constraints.Size;
 
 /**
  *
- * @author rmp553
+ * @author raprasad
  */
 @Entity
 @Table(name="worldmapauth_tokentype", indexes = {@Index(name = "application_name",  columnList="name", unique = true)})

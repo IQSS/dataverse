@@ -58,7 +58,8 @@ import org.apache.commons.io.FileUtils;
  *          }
  *         
  *
- * @author Raman Prasad
+ * @author raprasad
+ *
  * 
  */
 public class ShapefileHandler{

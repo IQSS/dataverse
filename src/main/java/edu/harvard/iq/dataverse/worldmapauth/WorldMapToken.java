@@ -29,7 +29,7 @@ import javax.persistence.Transient;
 
 /**
  *
- * @author rmp553
+ * @author raprasad
  */
 @Entity
 @Table(name="worldmapauth_token", indexes = {@Index(name = "token_value",  columnList="token", unique = true)})

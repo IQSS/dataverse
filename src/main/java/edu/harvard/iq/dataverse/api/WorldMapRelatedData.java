@@ -42,7 +42,7 @@ import javax.ws.rs.core.Response;
 
 /**
  *
- * @author rmp553
+ * @author raprasad
  */
 @Path("worldmap")
 public class WorldMapRelatedData extends AbstractApiBean {
