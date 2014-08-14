@@ -25,6 +25,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  *
@@ -34,6 +35,9 @@ import javax.persistence.Table;
 @Table(name="worldmapauth_token", indexes = {@Index(name = "token_value",  columnList="token", unique = true)})
 public class WorldMapToken implements java.io.Serializable {   
     
+    @Transient
+    public static final String GEOCONNECT_TOKEN_KEY = "GEOCONNECT_TOKEN";
+
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
 
     @Id
