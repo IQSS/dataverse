@@ -12,11 +12,14 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,7 +30,6 @@ import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import javax.json.stream.JsonParsingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -36,12 +38,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import org.atmosphere.config.service.Post;
-import org.atmosphere.config.service.Put;
-import org.primefaces.json.JSONObject;
 
 /**
  *
@@ -83,27 +80,72 @@ public class WorldMapRelatedData extends AbstractApiBean {
     
     @EJB
     UserNotificationServiceBean userNotificationService;
+    
+    @EJB
+    WorldMapTokenServiceBean tokenServiceBean;
+
+    @EJB
+    TokenApplicationTypeServiceBean tokenAppServiceBean;
+
+    @EJB
+    DataverseUserServiceBean dataverseUserService;
+
+    
+    /**
+     *  Create URL for API call to WorldMapRelatedData.mapDataFile(...)   
+     * 
+     * @param dataFileID
+     * @param dataverseUserID
+     * @return 
+     */
+    public static String getMapItURL(Long dataFileID, Long dataverseUserID){
+        if ((dataverseUserID==null)||(dataFileID==null)){
+            return null;
+        }
+        //test, see if it gets created
+        return WorldMapRelatedData.MAP_IT_API_PATH + dataFileID + "/" + dataverseUserID;
+    }
+    
+    
     /*
         Link used within Dataverse for MapIt button
         Sends file link to GeoConnect using a Redirect
     
     */
     @GET
-    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_id}")
-    public Response mapDataFile(@Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id){
+    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_id}" + "/" + "{dvuser_id}") ///{dvuser_id}")
+    public Response mapDataFile(@Context HttpServletRequest request
+                                , @PathParam("datafile_id") Long datafile_id
+                                , @PathParam("dvuser_id") Long dvuser_id){ 
         
+         logger.info("mapDataFile datafile_id: " + datafile_id );
+        logger.info("mapDataFile dvuser_id: " + dvuser_id );
         if (true){
+           //tokenAppServiceBean.getGeoConnectApplication();
+
             return okResponse("Currently deactivated");
         }
+
+        // Check if the user exists
+        DataverseUser dvUser = dataverseUserService.find(dvuser_id);
+	if ( dvUser == null ){
+            return errorResponse(Response.Status.FORBIDDEN, "Invalid user");
+        }
+
         // Check if this file exists
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for md5: " + datafile_id);
         }
         
+        // TO ADD WHEN PERMISSIONS ARE READY
+        // Does this user have permission to edit metadata for this file?
+        WorldMapToken token = tokenServiceBean.getNewToken(dfile, dvUser);
+
         // Redirect to geoconnect url
-        String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
-        String redirect_url_str = WorldMapRelatedData.GEOCONNECT_URL + "?cb=" +  URLEncoder.encode(callback_url);
+ //       String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
+        String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
+        String redirect_url_str = WorldMapRelatedData.GEOCONNECT_URL + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
         URI redirect_uri;
         try {
             redirect_uri = new URI(redirect_url_str);

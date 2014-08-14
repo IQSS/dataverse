@@ -4,11 +4,13 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse.worldmapauth;
+package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.api.Files;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.logging.Logger;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,10 +27,15 @@ import javax.validation.constraints.Size;
  * @author rmp553
  */
 @Entity
-@Table(indexes = {@Index(name = "application_name",  columnList="name", unique = true)})
+@Table(name="worldmapauth_tokentype", indexes = {@Index(name = "application_name",  columnList="name", unique = true)})
 public class TokenApplicationType implements java.io.Serializable {    
 
+    private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
+    public static final String DEFAULT_GEOCONNECT_APPLICATION_NAME = "GEOCONNECT";
+    public static final int DEFAULT_TOKEN_TIME_LIMIT_MINUTES = 30;
+    
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
   
     @Column(nullable=false)
@@ -62,7 +69,15 @@ public class TokenApplicationType implements java.io.Serializable {
     @Column(nullable=false)
     private Timestamp modified;
 
-        /**
+    public TokenApplicationType(){
+        
+        this.name = DEFAULT_GEOCONNECT_APPLICATION_NAME;
+        this.timeLimitMinutes = DEFAULT_TOKEN_TIME_LIMIT_MINUTES;
+        this.setCreated();
+        this.setModified();
+    }
+    
+    /**
      * Get property id.
      * @return Long, value of property id.
      */
@@ -174,10 +189,15 @@ public class TokenApplicationType implements java.io.Serializable {
 
     /**
      * Set property timeLimitMinutes.
-     * @param timeLimitMinutes new value of property timeLimitMinutes.
+     * @param timeLimitMinutes new value of property timeLimitMinutes.  Also sets timeLimitSeconds
      */
     public void setTimeLimitMinutes(int timeLimitMinutes) {
-            this.timeLimitMinutes = timeLimitMinutes;
+        if (timeLimitMinutes < 1){
+            logger.warning("Cannot set Token time limit to less than 1 minute");
+            return;
+        }
+        this.timeLimitMinutes = timeLimitMinutes;
+        this.timeLimitSeconds = timeLimitMinutes * 60;
     }
 
 
@@ -189,17 +209,7 @@ public class TokenApplicationType implements java.io.Serializable {
             return this.timeLimitSeconds;
     }
 
-    /**
-     * Set property timeLimitSeconds.
-     * @param timeLimitSeconds new value of property timeLimitSeconds.
-     */
-    public void setTimeLimitSeconds(long timeLimitSeconds) {
-            this.timeLimitSeconds = timeLimitSeconds;
-    }
-
-
-
-
+    
     /**
      * Get property md5.
      * @return String, value of property md5.

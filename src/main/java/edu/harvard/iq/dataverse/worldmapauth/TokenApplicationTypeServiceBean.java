@@ -4,10 +4,15 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse.worldmapauth;
+package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.MD5Checksum;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -25,11 +30,29 @@ import javax.persistence.Query;
 public class TokenApplicationTypeServiceBean {
     
     private static final Logger logger = Logger.getLogger(TokenApplicationTypeServiceBean.class.getCanonicalName());
-
+        
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    
+    public TokenApplicationType getGeoConnectApplication(){
+        logger.info("--getGeoConnectApplication--");
+        TokenApplicationType tat = this.findByName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
+        if (tat!=null){
+            logger.info("-- Got it!!");
+            return tat;
+        }
+        // Make a default application for GeoConnect
+        tat = new TokenApplicationType();
+        tat.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
+        tat.setContactEmail("info@iq.harvard.edu");
+        tat.setHostname("localhost");
+        tat.setIpAddress("127.0.0.1");
+        tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
+        tat.setMapitLink("http://127.0.0.1:8070/api/worldmap/map-it/");
+        return this.save(tat);
+        
+        //return null;
+    }
     public TokenApplicationType find(Object pk) {
         if (pk==null){
             return null;
@@ -37,50 +60,73 @@ public class TokenApplicationTypeServiceBean {
         return (TokenApplicationType) em.find(TokenApplicationType.class, pk);
     }
     
-    public TokenApplicationType save( TokenApplicationType token_application ) {
-        if (token_application==null){
+    /**
+     * 
+     * Convert string to md5 hash
+     * 
+        import hashlib
+        m = hashlib.md5()
+        m.update("Give me python or give me...more time, more time -- c.mena")
+        m.hexdigest()     #'266cf94160a22fe1ef118c907379cd60'
+        
+    */
+    public String getMD5Hash(String stringToHash){
+        if (stringToHash==null){
+            return null;
+        }
+        MessageDigest md;   
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException ex) {
+            logger.severe("Failed to set TokenApplicationType for 'Map It' request!!!");
+            return null;
+        }
+        md.update(stringToHash.getBytes());
+          
+        byte[] mdbytes = md.digest();
+        StringBuilder sb = new StringBuilder("");
+        for (int i = 0; i < mdbytes.length; i++) {
+            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+                
+       
+    }
+            
+    public TokenApplicationType save( TokenApplicationType tokenApp ) {
+        
+        if (tokenApp==null){
             return null;
         }
         
-        if (token_application.getName()==null){
-            logger.warning("Name is missing for token_application");
-            return null;            
+        if (tokenApp.getName()==null){
+            tokenApp.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         }
         
-        if (token_application.getMapitLink()==null){
-            logger.warning("mapitLink is missing for token_application");
+        if (tokenApp.getMapitLink()==null){
+            logger.warning("mapitLink is missing for tokenApp");
             return null;
         }
         
         // Set time limit minutes
-        Integer time_limit_minutes = token_application.getTimeLimitMinutes();
+        Integer time_limit_minutes = tokenApp.getTimeLimitMinutes();
         if (time_limit_minutes == null){
-            token_application.setTimeLimitMinutes(30);
+            tokenApp.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
+            // (also sets the time limit seconds)
         }
-        // Set time limit seconds
-        long time_limit_secs = 60 * token_application.getTimeLimitMinutes();
-        token_application.setTimeLimitSeconds(time_limit_secs);
         
         // set md5
-        MD5Checksum md5Checksum = new MD5Checksum();
-        try {
-            token_application.setMd5(md5Checksum.CalculateMD5(token_application.getName()));
-        } catch (Exception md5ex) {
-            logger.warning("Failed to calculate MD5 signature for token_application");
-            return null;
-        }
+        tokenApp.setMd5(this.getMD5Hash(tokenApp.getName()));
         
-        token_application.setModified();
-
-        
-        if ( token_application.getId() == null ) {
-            token_application.setCreated();
-            em.persist(token_application);
-            logger.fine("New token_application saved");
-            return token_application;
+        if ( tokenApp.getId() == null ) {
+            tokenApp.setCreated();
+            em.persist(tokenApp);
+            logger.fine("New tokenApp saved");
+            return tokenApp;
 	} else {
-            logger.fine("Existing token_application saved");
-            return em.merge( token_application );
+            tokenApp.setModified();
+            logger.fine("Existing tokenApp saved");
+            return em.merge( tokenApp );
 	}
     }
 	        

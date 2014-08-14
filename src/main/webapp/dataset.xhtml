@@ -502,7 +502,7 @@
                                            
 
                                              <ui:fragment rendered="#{ !(dataverseSession.user.guest) and  (DatasetPage.isShapefileType(fileMetadata)) }">                                                  
-                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL()}" target="_blank" role="button">
+                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> Map It
                                                 </a>
                                             </ui:fragment>

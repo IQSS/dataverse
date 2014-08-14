@@ -397,11 +397,19 @@ public class DataFile extends DvObject {
         return ingestStatus; 
     }
     
-    // URL to use with the WorldMapRelatedData API
-    //
-    public String getMapItURL(){
-        
-        return WorldMapRelatedData.MAP_IT_API_PATH + this.getId();
+    
+    /**
+     * URL to use with the WorldMapRelatedData API
+     * Used within dataset.xhtml
+     * 
+     * @param dataverseUserID
+     * @return URL for "Map It" functionality
+     */
+    public String getMapItURL(Long dataverseUserID){
+        if (dataverseUserID==null){
+            return null;
+        }
+        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
     }
     
     /*
