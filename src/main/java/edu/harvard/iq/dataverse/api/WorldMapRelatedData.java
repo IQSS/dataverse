@@ -122,7 +122,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         logger.info("mapDataFile dvuser_id: " + dvuser_id );
         if (true){
            //tokenAppServiceBean.getGeoConnectApplication();
-
+           
             return okResponse("Currently deactivated");
         }
 
@@ -157,7 +157,139 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
     }
     
+        @POST
+    @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT)// + "{worldmap_token}")
+    public Response getWorldMapDatafileInfo(String jsonTokenData, @Context HttpServletRequest request){//, @PathParam("worldmap_token") String worldmapTokenParam) {
+        if (true){
+           // return okResponse("remote server: " + request.getRemoteAddr());
+        }
+        //----------------------------------
+        // Auth check: Parse the json message and check for a valid GEOCONNECT_TOKEN_KEY and GEOCONNECT_TOKEN_VALUE
+        //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
+        //----------------------------------
+
+        // Parse JSON and Evaluate Token
+        JsonObject json_token_info;
+        try ( StringReader rdr = new StringReader(jsonTokenData) ) {
+            json_token_info = Json.createReader(rdr).readObject();
+        } catch ( JsonParsingException jpe ) {
+            logger.log(Level.SEVERE, "Json: " + jsonTokenData);
+            return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+        }
+        
+        if (!json_token_info.containsKey(GEOCONNECT_TOKEN_KEY)){
+            return errorResponse( Response.Status.BAD_REQUEST, "Permission denied (1)");
+            //return errorResponse( Response.Status.BAD_REQUEST, "Error parsing Json.  Key not found [" + GEOCONNECT_TOKEN_KEY + "]");
+        }
+        Object worldmapTokenObject = json_token_info.get(GEOCONNECT_TOKEN_KEY);
+        if (worldmapTokenObject==null){
+            return errorResponse( Response.Status.BAD_REQUEST, "Token value not found");
+        }
+                
+        String worldmapTokenParam = worldmapTokenObject.toString();                
+        if (worldmapTokenParam==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access.");
+        }
+        if (!(worldmapTokenParam.length()==64)){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access.");            
+        } 
+
+        // Retrieve token and make sure it is valid
+        //
+        WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
+        if (wmToken==null){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
+        }
+        if (wmToken.hasTokenExpired()){
+            return errorResponse(Response.Status.UNAUTHORIZED, "No access. Token expired.");            
+        }
+
+        // Make sure token user and file are still available
+        //
+        DataverseUser dv_user = wmToken.getDataverseUser();
+        if (dv_user == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
+        }
+        DataFile dfile = wmToken.getDatafile();
+        if (dfile  == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
+        }
+        
+        // Refresh token
+        //
+        wmToken.refreshToken();
+        
+        
+        // Retrieve FileMetadata
+        FileMetadata dfile_meta = dfile.getFileMetadata();
+        if (dfile_meta==null){
+           return errorResponse(Response.Status.NOT_FOUND, "FileMetadata not found");
+        }
+        
+        // (2) Now get the dataset and the latest DatasetVersion
+        Dataset dset = dfile.getOwner();
+        if (dset==null){
+            return errorResponse(Response.Status.NOT_FOUND, "Owning Dataset for this DataFile not found");
+        }
+        
+        // (2a) latest DatasetVersion
+        // !! How do you check if the lastest version has this specific file?
+        //
+        DatasetVersion dset_version = dset.getLatestVersion();
+        if (dset_version==null){
+            return errorResponse(Response.Status.NOT_FOUND, "Latest DatasetVersion for this DataFile not found");
+        }
+        
+        // (3) get Dataverse
+        Dataverse dverse = dset.getOwner();
+        if (dverse==null){
+            return errorResponse(Response.Status.NOT_FOUND, "Dataverse for this DataFile's Dataset not found");
+        }
+        
+        // (4) Roll it all up in a JSON response
+        final JsonObjectBuilder dfile_json = Json.createObjectBuilder();
+        
+        // Dataverse
+        dfile_json.add("dv_id", dverse.getId());
+        dfile_json.add("dv_name", dverse.getName());
+        
+        // DatasetVersion Info
+        dfile_json.add("dataset_name", dset_version.getTitle());
+        dfile_json.add("dataset_description", dset_version.getCitation());
+        dfile_json.add("dataset_id", dset_version.getId());
+        dfile_json.add("dataset_version_id", dset_version.getVersion());
+        
+        // DataFile/FileMetaData Info
+        dfile_json.add("datafile_id", dfile.getId());
+        dfile_json.add("filename", dfile_meta.getLabel());
+        dfile_json.add("datafile_label", dfile_meta.getLabel());
+        dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
+        Long fsize = dfile.getFilesize();
+        if (fsize == null){
+            fsize= new Long(-1);
+        }
+            
+        dfile_json.add("filesize", fsize); 
+        dfile_json.add("datafile_type", dfile.getContentType());
+        dfile_json.add("created", dfile.getCreateDate().toString());
+                      
+        String server_name =  this.getServerNamePort(request);
+        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(server_name));
+       
+        
+        // DataverseUser Info
+        dfile_json.add("dv_user_email", dv_user.getEmail());
+        dfile_json.add("dv_username", dv_user.getUserName());
+        dfile_json.add("dv_user_id", dv_user.getId());
+                
+        
+        return okResponse(dfile_json);
+ 
+    }
     /*
+    
+        --- REPLACED BY TOKEN USE IN API CALL ABOVE ---
+    
         For WorldMap/GeoConnect Usage
         Return detailed Datafile information including latest Dataset and Dataverse data
         
@@ -166,13 +298,16 @@ public class WorldMapRelatedData extends AbstractApiBean {
         !! Does not yet implement permissions/command checks
         !! Change to POST with check for hidden WorldMap key; IP check, etc
     */
+    /*
     @POST
     @Path(GET_WORLDMAP_DATAFILE_API_PATH_FRAGMENT + "{datafile_id}")
     public Response getWorldMapDatafile(String jsonTokenData, @Context HttpServletRequest request, @PathParam("datafile_id") Long datafile_id, @QueryParam("key") String apiKey) {
         
         //            + "<br /> getRemoteAddr: " + request.getRemoteAddr()         
         //            + "<br /> X-FORWARDED-FOR: " + request.getHeader("X-FORWARDED-FOR")
-        
+        if (true){
+          return okResponse("Currently deactivated--use token");
+        }
         // Temp: Check if the user exists
         // Change this to WorldMap API check!!
         DataverseUser dv_user = userSvc.findByUserName(apiKey);
@@ -271,7 +406,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         return okResponse(dfile_json);
  
     }
-   
+   */
     
     private String getServerNamePort(HttpServletRequest request){
         if (request == null){

@@ -97,13 +97,13 @@ public class WorldMapTokenServiceBean {
     }
 	        
    
-    public TokenApplicationType findByName(String name){
-        if (name == null){
+    public WorldMapToken findByName(String token){
+        if (token == null){
             return null;
         }
         try{
-            return em.createQuery("select m from TokenApplicationType m WHERE m.name=:name", TokenApplicationType.class)
-					.setParameter("name", name)
+            return em.createQuery("select m from WorldMapToken m WHERE m.token=:token", WorldMapToken.class)
+					.setParameter("token", token)
 					.getSingleResult();
         } catch ( NoResultException nre ) {
             return null;

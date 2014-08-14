@@ -316,7 +316,7 @@ public class DatasetPage implements java.io.Serializable {
     
         The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
     */ 
-    private MapLayerMetadata getMapLayerMetadata(DataFile df){
+    public MapLayerMetadata getMapLayerMetadata(DataFile df){
         if (df==null){
             return null;
         }
