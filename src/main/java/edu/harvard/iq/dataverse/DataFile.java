@@ -411,7 +411,7 @@ public class DataFile extends DvObject {
         }
         return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
     }
-    
+        
     /*
         8/10/2014 - Using the current "open access" url
     */

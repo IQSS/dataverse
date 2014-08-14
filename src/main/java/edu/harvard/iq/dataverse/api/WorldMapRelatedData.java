@@ -317,12 +317,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("dv_id", dverse.getId());
         dfile_json.add("dv_name", dverse.getName());
         
+
         // DatasetVersion Info
         dfile_json.add("dataset_name", dset_version.getTitle());
         dfile_json.add("dataset_description", dset_version.getCitation());
         dfile_json.add("dataset_id", dset_version.getId());
         dfile_json.add("dataset_version_id", dset_version.getVersion());
-        
+               
         // DataFile/FileMetaData Info
         dfile_json.add("datafile_id", dfile.getId());
         dfile_json.add("filename", dfile_meta.getLabel());
@@ -337,9 +338,11 @@ public class WorldMapRelatedData extends AbstractApiBean {
         dfile_json.add("datafile_type", dfile.getContentType());
         dfile_json.add("created", dfile.getCreateDate().toString());
                       
-        String server_name =  this.getServerNamePort(request);
-        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(server_name));
-       
+        /* Dataverse URLs to this server */
+        String serverName =  this.getServerNamePort(request);
+        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
+        dfile_json.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
+
         
         // DataverseUser Info
         dfile_json.add("dv_user_email", dv_user.getEmail());
