@@ -106,7 +106,7 @@ public class WorldMapToken implements java.io.Serializable {
             logger.severe("Failed to set token for 'Map It' request!!!");
             return false;
         }
-        md.update("blah...".getBytes());
+        md.update(this.getCurrentTimestamp().toString().getBytes());
         md.update(this.dataFile.toString().getBytes());
         md.update(this.dataverseUser.toString().getBytes());
         Random rand = new Random();

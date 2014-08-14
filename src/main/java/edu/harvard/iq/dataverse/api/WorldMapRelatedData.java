@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.TokenApplicationTypeServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
@@ -121,7 +122,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         logger.info("mapDataFile dvuser_id: " + dvuser_id );
         if (true){
            //tokenAppServiceBean.getGeoConnectApplication();           
-            //return okResponse("Currently deactivated (mapDataFile)");
+           return okResponse("Currently deactivated (mapDataFile)");
         }
 
         // Check if the user exists
@@ -216,16 +217,21 @@ public class WorldMapRelatedData extends AbstractApiBean {
      */
     private WorldMapToken retrieveAndRefreshValidToken(String worldmapTokenParam){
         if (worldmapTokenParam==null){
+            logger.warning("worldmapTokenParam is null.  Permission denied.");
             return null;
         }
         WorldMapToken wmToken = this.tokenServiceBean.findByName(worldmapTokenParam);
         if (wmToken==null){
+            logger.warning("WorldMapToken not found for '" + worldmapTokenParam + "'.  Permission denied.");
             return null;
         }
         if (wmToken.hasTokenExpired()){
+            logger.warning("WorldMapToken has expired.  Permission denied.");
             return null;
         }
         wmToken.refreshToken();
+        logger.info("WorldMapToken refreshed.");
+        tokenServiceBean.save(wmToken);
         
         return wmToken;
     }
@@ -404,15 +410,22 @@ public class WorldMapRelatedData extends AbstractApiBean {
             }
         }
         
-        // (2) Attempt to retrieve DataFile      
+        // (3) Attempt to retrieve DataverseUser      
+        DataverseUser dv_user = wmToken.getDataverseUser();
+        if (dv_user == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
+        }
+        
+        // (4) Attempt to retrieve DataFile      
         DataFile dfile = wmToken.getDatafile();
         if (dfile==null){
             return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for token");
-        }
+         }
 
+       
         
         MapLayerMetadata mapLayer;
-        // (3) See if a MapLayerMetadata already exists
+        // (5) See if a MapLayerMetadata already exists
         mapLayer = mapLayerMetadataService.findMetadataByLayerNameAndDatafile(jsonInfo.getString("layerName"));//, dfile);
         if (mapLayer == null){
             mapLayer = new MapLayerMetadata();
@@ -434,9 +447,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // notify user
-     //   userNotificationService.sendN
-      //userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), UserNotification.Type.CREATEDV, dataverse.getId());
+        userNotificationService.sendNotification(dv_user, wmToken.getCurrentTimestamp(), UserNotification.Type.MAPLAYERUPDATED, dfile.getOwner().getLatestVersion().getId());
 
+        
         return okResponse("map layer object saved!");
 
         
