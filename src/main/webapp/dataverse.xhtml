@@ -41,6 +41,19 @@
                 </f:metadata>
 
                 <h:form id="dataverseForm">
+                    <f:subview id="languageView">
+         <h:form id="languageForm"
+                   style="background-color:#bbbbbb; padding-top:4px; padding-bottom:4px;">
+                   <h:outputText value="选择语言"></h:outputText>
+                   <h:selectOneMenu value="#{languageChangeBean.currentLocale}"
+                            immediate="true" onchange="submit();"
+                            valueChangeListener="#{languageChangeBean.changeLocale}">
+                            <f:selectItem itemValue="zh_CN" itemLabel="zhongwen" />
+                            <f:selectItem itemValue="zh_TW" itemLabel="fanti" />
+                            <f:selectItem itemValue="en" itemLabel="yingwen" />
+                   </h:selectOneMenu>
+         </h:form>
+</f:subview>
                     <p:focus context="dataverseForm"/>
 
                     <!-- Name Panel -->
