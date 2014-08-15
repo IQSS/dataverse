@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationType;
 import edu.harvard.iq.dataverse.api.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

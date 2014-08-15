@@ -7,9 +7,7 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.TokenApplicationType;
 import java.sql.Timestamp;
 import java.util.Date;
 import javax.ejb.embeddable.EJBContainer;

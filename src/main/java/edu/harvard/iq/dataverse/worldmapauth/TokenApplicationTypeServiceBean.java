@@ -6,13 +6,9 @@
 
 package edu.harvard.iq.dataverse.worldmapauth;
 
-import edu.harvard.iq.dataverse.util.MD5Checksum;
-import java.io.IOException;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
