@@ -8,7 +8,7 @@ package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.TokenApplicationType;
+import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationType;
 import edu.harvard.iq.dataverse.api.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +37,9 @@ public class WorldMapToken implements java.io.Serializable {
     
     @Transient
     public static final String GEOCONNECT_TOKEN_KEY = "GEOCONNECT_TOKEN";
-
+    @Transient
+    public static final long MAX_HOURS_TOKEN_CAN_BE_USED = 10;
+    
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
 
     @Id
@@ -248,6 +250,25 @@ public class WorldMapToken implements java.io.Serializable {
     }
     
     
+  private long getElapsedHours(Timestamp currentTime, Timestamp oldTime){
+       
+       // If values are null, send back an elapsed time
+       if ((currentTime==null)||(oldTime==null)){
+            return this.application.getTimeLimitSeconds() + 100000;
+       }
+       
+        long milliseconds1 = oldTime.getTime();
+        long milliseconds2 = currentTime.getTime();
+
+        long diff = milliseconds2 - milliseconds1;
+        //long diffSeconds = diff / 1000;
+        //long diffMinutes = diff / (60 * 1000);
+        long diffHours = diff / (60 * 60 * 1000);
+        //long diffDays = diff / (24 * 60 * 60 * 1000);
+
+        return diffHours;
+    }
+  
    private long getElapsedSeconds(Timestamp currentTime, Timestamp oldTime){
        
        // If values are null, send back an elapsed time
@@ -278,7 +299,12 @@ public class WorldMapToken implements java.io.Serializable {
             return true;
         }
         //System.out.println("  ..pre diff: "+ currentTimestamp);
-
+        long hours = this.getElapsedHours(currentTimestamp, this.created);
+        if (hours > MAX_HOURS_TOKEN_CAN_BE_USED){
+            this.setHasExpired(true);
+            return false;
+        }
+        
         long diffSeconds = this.getElapsedSeconds(currentTimestamp, this.lastRefreshTime);
         //System.out.println("  ..diffSeconds: "+ diffSeconds);
         //logger.info("this.application.getTimeLimitSeconds: "+ this.application.getTimeLimitSeconds());

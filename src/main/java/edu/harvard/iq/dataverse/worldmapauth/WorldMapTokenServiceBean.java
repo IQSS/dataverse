@@ -8,8 +8,8 @@ package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.TokenApplicationType;
-import edu.harvard.iq.dataverse.TokenApplicationTypeServiceBean;
+import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationType;
+import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

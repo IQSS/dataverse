@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.util.MD5Checksum;
 import java.io.IOException;
