@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
@@ -8,20 +7,18 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationManager;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.util.ArrayList;
 import java.util.List;
-import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 @Path("auth")
 public class Auth extends AbstractApiBean {
-
-    @EJB
-    UserServiceBean userService;
 
     @GET
     public String get() {
@@ -49,13 +46,38 @@ public class Auth extends AbstractApiBean {
         JsonObjectBuilder info = Json.createObjectBuilder();
         info
                 .add("userStuff", userStuff.toString())
-                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size());
+                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size())
+                .add("endpoints", Json.createArrayBuilder()
+                        .add(usernameEndpoint)
+                        .add(lookupEndpoint)
+                        .add(apiKeyEndpoint));
         return ok(info.build());
     }
 
     @GET
-    @Path("username/{username}")
-    public Response getAuthenicatedUserFromUsername(@PathParam("username") String username) {
+    @Path("foo")
+    public Response getFoo(@QueryParam("pretty") boolean prettyPrintResponse) {
+        JsonArrayBuilder bar = Json.createArrayBuilder().add("foo").add("bar");
+        if (prettyPrintResponse) {
+            return okResponse(bar, Format.PRETTY);
+        } else {
+            return okResponse(bar);
+        }
+    }
+
+    private final String usernameEndpoint = "username";
+    private final String usernameParam = "username";
+    private final String usernameEndpointSignature = usernameEndpoint + "/{" + usernameParam + "}";
+
+    @GET
+    @Path(usernameEndpoint)
+    public String getUsername() {
+        return error("Please provide a username. The endpoint expects " + usernameEndpointSignature);
+    }
+
+    @GET
+    @Path(usernameEndpointSignature)
+    public Response getAuthenicatedUserFromUsername(@PathParam(usernameParam) String username) {
         AuthenticatedUser user = userService.findByUsername(username);
         if (user != null) {
             return okResponse( json(user) );
@@ -63,6 +85,8 @@ public class Auth extends AbstractApiBean {
             return notFound("Couldn't find user based on username: " + username);
         }
     }
+
+    private final String lookupEndpoint = "lookup";
 
     @GET
     @Path("lookup/{idp}/{id}")
@@ -80,8 +104,10 @@ public class Auth extends AbstractApiBean {
         }
     }
 
+    private final String apiKeyEndpoint = "apikey";
+
     @GET
-    @Path("apikey/{key}")
+    @Path(apiKeyEndpoint + "/{key}")
     public Response getApiKeyInfo(@PathParam("key") String key) {
         ApiKey apiKey = userService.findApiKey(key);
         if (apiKey != null) {
@@ -98,7 +124,7 @@ public class Auth extends AbstractApiBean {
                 return notFound("Couldn't find user based on " + key);
             }
         } else {
-            return notFound("Couldn't find user based on " + key);
+            return errorResponse(Response.Status.NOT_FOUND, "Couldn't find a key based on " + key);
         }
     }
 }

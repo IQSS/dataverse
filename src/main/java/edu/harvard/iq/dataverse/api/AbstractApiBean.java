@@ -29,6 +29,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -78,7 +79,15 @@ public abstract class AbstractApiBean {
 	
 	@EJB
 	DataverseRoleServiceBean rolesSvc;
-	 
+
+    /**
+     * For pretty printing (indenting) of JSON output.
+     */
+    public enum Format {
+
+        PRETTY
+    }
+
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
@@ -120,6 +129,14 @@ public abstract class AbstractApiBean {
         return Response.ok( Json.createObjectBuilder()
             .add("status", "OK")
             .add("data", bld).build() ).build();
+    }
+
+    protected Response okResponse(JsonArrayBuilder bld, Format format) {
+        return Response.ok(Util.jsonObject2prettyString(
+                Json.createObjectBuilder()
+                .add("status", "OK")
+                .add("data", bld).build()), MediaType.APPLICATION_JSON_TYPE
+        ).build();
     }
     
     protected Response okResponse( JsonObjectBuilder bld ) {
