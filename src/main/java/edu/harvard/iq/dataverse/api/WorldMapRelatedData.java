@@ -62,12 +62,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT = "update-layer-metadata/"; 
     public static final String UPDATE_MAP_LAYER_DATA_API_PATH = BASE_PATH + UPDATE_MAP_LAYER_DATA_API_PATH_FRAGMENT;
 
-    // for testing, move to config file
-    //
-    private static final String GEOCONNECT_URL = "http://127.0.0.1:8070/shapefile/map-it";
     
-    //private static final String GEOCONNECT_TOKEN_VALUE = "howdy";  // for testing
-
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
 
@@ -121,7 +116,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         logger.info("mapDataFile dvuser_id: " + dvuser_id );
         if (true){
            //tokenAppServiceBean.getGeoConnectApplication();           
-           return okResponse("Currently deactivated (mapDataFile)");
+           //return okResponse("Currently deactivated (mapDataFile)");
         }
 
         // Check if the user exists
@@ -143,8 +138,10 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Redirect to geoconnect url
  //       String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH + dfile.getId();
         String callback_url = this.getServerNamePort(request) + GET_WORLDMAP_DATAFILE_API_PATH;
-        String redirect_url_str = WorldMapRelatedData.GEOCONNECT_URL + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+        String redirect_url_str = token.getApplication().getMapitLink() + "/" + token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
+        //String redirect_url_str = TokenApplicationType.DEV_MAPIT_LINK + "/" +  token.getToken() + "/?cb=" +  URLEncoder.encode(callback_url);
         URI redirect_uri;
+        
         try {
             redirect_uri = new URI(redirect_url_str);
         } catch (URISyntaxException ex) {

@@ -26,7 +26,7 @@ import javax.persistence.Query;
 public class TokenApplicationTypeServiceBean {
     
     private static final Logger logger = Logger.getLogger(TokenApplicationTypeServiceBean.class.getCanonicalName());
-        
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -44,7 +44,7 @@ public class TokenApplicationTypeServiceBean {
         tat.setHostname("localhost");
         tat.setIpAddress("127.0.0.1");
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
-        tat.setMapitLink("http://127.0.0.1:8070/api/worldmap/map-it/");
+        tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
         return this.save(tat);
         
         //return null;
