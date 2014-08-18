@@ -33,18 +33,20 @@ public class TokenApplicationTypeServiceBean {
     public TokenApplicationType getGeoConnectApplication(){
         logger.info("--getGeoConnectApplication--");
         TokenApplicationType tat = this.findByName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
-        if (tat!=null){
+        if (tat==null){
             logger.info("-- Got it!!");
-            return tat;
+            tat = new TokenApplicationType();
+            //return tat;
         }
         // Make a default application for GeoConnect
-        tat = new TokenApplicationType();
         tat.setName(TokenApplicationType.DEFAULT_GEOCONNECT_APPLICATION_NAME);
         tat.setContactEmail("info@iq.harvard.edu");
         tat.setHostname("localhost");
         tat.setIpAddress("127.0.0.1");
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
-        tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
+        //tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
+        tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
+        
         return this.save(tat);
         
         //return null;
