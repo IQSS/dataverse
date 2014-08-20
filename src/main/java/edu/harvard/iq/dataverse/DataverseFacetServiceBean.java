@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
-import java.util.LinkedHashMap;
+import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -26,39 +17,19 @@ import javax.persistence.Query;
 @Named
 public class DataverseFacetServiceBean {
     
-    private static final LinkedHashMap<Long, List<DataverseFacet>> cache = new LinkedHashMap<>(10, 0.75f, true);
-    private static final ReentrantLock cacheLock = new ReentrantLock();
-    private static final int MAX_CACHE_SIZE = 100;
-    
-    private static final Logger logger = Logger.getLogger(DataverseFacetServiceBean.class.getName());
+    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache();
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
     public List<DataverseFacet> findByDataverseId(Long dataverseId) {
-        List<DataverseFacet> res = null;
-        try {
-            cacheLock.lock();
-            res = cache.get(dataverseId);
-            
-        } finally { cacheLock.unlock(); }
+        List<DataverseFacet> res = cache.get(dataverseId);
 
         if ( res == null ) {
-            logger.log(Level.INFO, "Cache miss on dataverse {0}", dataverseId);
             Query query = em.createNamedQuery("DataverseFacet.findByDataverseId", DataverseFacet.class);
             query.setParameter("dataverseId", dataverseId);
             res = query.getResultList();
-            try {
-                cacheLock.lock();
-                cache.put(dataverseId, res);
-                
-                if ( cache.size() > MAX_CACHE_SIZE ) {
-                    cache.remove( cache.entrySet().iterator().next().getKey() );
-                }
-
-            } finally { cacheLock.unlock(); }
-        } else {
-            logger.log(Level.INFO, "Cache hit on dataverse {0}", dataverseId);
+            cache.put(dataverseId, res);
         }
 
         return res; 
@@ -66,19 +37,15 @@ public class DataverseFacetServiceBean {
 
     public void delete(DataverseFacet dataverseFacet) {
         em.remove(em.merge(dataverseFacet));
-        invalidateCache();
+        cache.invalidate();
     }
     
 	public void deleteFacetsFor( Dataverse d ) {
 		em.createNamedQuery("DataverseFacet.removeByOwnerId")
 			.setParameter("ownerId", d.getId())
 				.executeUpdate();
-        try {
-            cacheLock.lock();
-            cache.remove(d.getId());
-        } finally {
-            cacheLock.unlock();
-        }
+        cache.invalidate(d.getId());
+        
 	}
 	
     public void create(int diplayOrder, Long datasetFieldId, Long dataverseId) {
@@ -96,13 +63,5 @@ public class DataverseFacetServiceBean {
         em.persist(dataverseFacet);
     }
     
-    public void invalidateCache() {
-        try {
-            cacheLock.lock();
-            cache.clear();
-        } finally {
-            cacheLock.unlock();
-        }
-    }
 }
 
