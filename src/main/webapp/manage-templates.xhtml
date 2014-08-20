@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="dataverseId" value="#{manageTemplatesPage.dataverseId}"/>
+            <f:viewAction action="#{manageTemplatesPage.init}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Manage Templates"/>
+            <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <h:form id="dataverseForm">
+
+                    <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null}">
+                        <h:outputLabel for="templateRoot" value="Include Templates from  Parent Dataverse" />
+                        <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
+                            <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
+                        </h:selectBooleanCheckbox>
+                    </ui:fragment>
+
+                    <h:outputLink styleClass="btn" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}"
+                                  value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverseId}">
+                        <h:outputText value="Create Dataset Template"/>
+                    </h:outputLink>
+                    <p:panel id="templatePanel" header="Templates" toggleable="true" collapsed="false" style="margin-bottom:1em;"
+                             widgetVar="templatePanel">                       
+                        <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}">
+                            <p:column sortBy="name" headerText="Template Name">
+                                <h:outputText value="#{template.name} " />
+                            </p:column>
+                            <p:column sortBy="createDate" headerText="Date Created">
+                                <h:outputText value="#{template.createDate} " />
+                            </p:column>
+                            <p:column sortBy="usageCount" headerText="Usage">
+                                <h:outputText value="#{template.usageCount} " />
+                            </p:column>
+                            <p:column headerText="Action" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}">
+                                <p:commandButton value="Make Default"
+                                                 rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
+                                                 actionListener="#{manageTemplatesPage.makeDefault(template)}"
+                                                 update="@all"/>
+                                <p:commandButton value="Default"
+                                                 disabled="true"
+                                                 rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
+                                                 actionListener="#{manageTemplatesPage.makeDefault(template)}"
+                                                 update="@all"/>
+                                <h:outputLink styleClass="btn btn-default" value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}">
+                                    <h:outputText value="View"/>
+                                </h:outputLink>
+                                <h:outputLink styleClass="btn btn-default"  value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
+                                    <h:outputText value="Edit"/>
+                                </h:outputLink>
+                                <p:commandButton value="Clone"                                                 
+                                                 action="#{manageTemplatesPage.cloneTemplate(template)}"
+                                                 update="@all"/>
+                                <p:commandButton value="Delete" 
+                                                 action="#{manageTemplatesPage.setSelectedTemplate(template)}"
+                                                 oncomplete="deleteConfirmation.show()"                                                                                                                                                                                      
+                                                 />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <div style="margin-top:1em;">
+                        <p:commandButton value="Save Changes"
+                                         actionListener="#{manageTemplatesPage.saveDataverse}"
+                                         update="@all"/>
+                    </div>
+                    <p:confirmDialog message="Are you sure you want to delete this template? This action may not be 'Undone'." header="Delete Template" widgetVar="deleteConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
+

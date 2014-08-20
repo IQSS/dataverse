@@ -45,9 +45,16 @@ public class DatasetField implements Serializable {
                                     o2.getDatasetFieldType().getDisplayOrder() );
     }};
 
-    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, DatasetVersion dsv) {
+    public static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType, Object dsv) {
+        
         DatasetField dsfv = createNewEmptyDatasetField(dsfType);
-        dsfv.setDatasetVersion(dsv);
+        //TODO - a better way to handle this?
+        if (dsv.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")){
+                   dsfv.setDatasetVersion((DatasetVersion)dsv); 
+        } else {
+            dsfv.setTemplate((Template)dsv);
+        }
+
         return dsfv;
     }
 
@@ -128,6 +135,17 @@ public class DatasetField implements Serializable {
 
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
+    }
+    
+    @ManyToOne
+    private Template template;
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
     }
 
     @ManyToOne(cascade = CascadeType.MERGE)
@@ -305,21 +323,28 @@ public class DatasetField implements Serializable {
         return "edu.harvard.iq.dataverse.DatasetField[ id=" + id + " ]";
     }
 
-    public DatasetField copy(DatasetVersion version) {
+    public DatasetField copy(Object version) {
         return copy(version, null);
     }
-
+    
     // originally this was an overloaded method, but we renamed it to get around an issue with Bean Validation
     // (that looked t overloaded methods, when it meant to look at overriden methods
     public DatasetField copyChild(DatasetFieldCompoundValue parent) {
         return copy(null, parent);
     }
 
-    private DatasetField copy(DatasetVersion version, DatasetFieldCompoundValue parent) {
+    private DatasetField copy(Object version, DatasetFieldCompoundValue parent) {
         DatasetField dsf = new DatasetField();
         dsf.setDatasetFieldType(datasetFieldType);
-
-        dsf.setDatasetVersion(version);
+        
+        if (version != null) {
+            if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
+                dsf.setDatasetVersion((DatasetVersion) version);
+            } else {
+                dsf.setTemplate((Template) version);
+            }
+        }
+        
         dsf.setParentDatasetFieldCompoundValue(parent);
         dsf.setControlledVocabularyValues(controlledVocabularyValues);
 
