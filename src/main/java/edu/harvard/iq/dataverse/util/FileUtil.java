@@ -115,10 +115,12 @@ public class FileUtil implements java.io.Serializable  {
         String fileType = dataFile.getContentType();
          
         if (fileType != null) {
+            if (fileType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)){
+                return ShapefileHandler.SHAPEFILE_FILE_TYPE_FRIENDLY_NAME;
+            }
             if (fileType.indexOf(";") != -1) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
-
             try {
                 return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
             } catch (MissingResourceException e) {
@@ -244,9 +246,12 @@ public class FileUtil implements java.io.Serializable  {
             
             // Is this a zipped Shapefile?
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
+            //logger.info("Checking for shapefile");
+
             ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
              if (shp_handler.containsShapefile()){
-                 fileType = "application/zipped-shapefile";
+              //  logger.info("------- shapefile FOUND ----------");
+                 fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
              }
         } 
         

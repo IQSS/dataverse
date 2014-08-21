@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -339,6 +341,16 @@ public class DataFile extends DvObject {
         return fileSystemPath.replaceAll("/", "%2F");
     }
     
+    /*
+        Does the contentType indicate a shapefile?
+    */
+    public boolean isShapefileType(){
+        if (this.contentType==null){
+            return false;
+        }
+        return ShapefileHandler.SHAPEFILE_FILE_TYPE.equalsIgnoreCase(this.contentType);
+    }
+    
     public boolean isImage() {
         // Some browsers (Chrome?) seem to identify FITS files as mime
         // type "image/fits" on upload; this is both incorrect (the official
@@ -384,6 +396,32 @@ public class DataFile extends DvObject {
     public int getIngestStatus() {
         return ingestStatus; 
     }
+    
+    
+    /**
+     * URL to use with the WorldMapRelatedData API
+     * Used within dataset.xhtml
+     * 
+     * @param dataverseUserID
+     * @return URL for "Map It" functionality
+     */
+    public String getMapItURL(Long dataverseUserID){
+        if (dataverseUserID==null){
+            return null;
+        }
+        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
+    }
+        
+    /*
+        8/10/2014 - Using the current "open access" url
+    */
+    public String getMapItFileDownloadURL(String serverName){
+        if ((this.getId() == null)||(serverName == null)){
+            return null;
+        }        
+        return serverName + "/api/access/datafile/" + this.getId();
+    }
+    
     /* 
      * If this is tabular data, the corresponding dataTable may have a UNF -
      * "numeric fingerprint" signature - generated:

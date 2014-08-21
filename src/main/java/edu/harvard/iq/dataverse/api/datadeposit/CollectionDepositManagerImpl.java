@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -99,15 +100,15 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                          * from these hard-coded protocol and authority values:
                          * https://github.com/IQSS/dataverse/issues/757
                          */
-                        dataset.setProtocol(DatasetPage.fixMeDontHardCodeProtocol);
-                        dataset.setAuthority(DatasetPage.fixMeDontHardCodeAuthority);
+                        dataset.setProtocol(DatasetPage.getProtocol());
+                        dataset.setAuthority(DatasetPage.getAuthority());
 
                         /**
                          * @todo why is generateIdentifierSequence off by one?
                          * (10 vs. 9):
                          * https://github.com/IQSS/dataverse/issues/758
                          */
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.fixMeDontHardCodeProtocol, DatasetPage.fixMeDontHardCodeAuthority));
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.getProtocol(), DatasetPage.getAuthority()));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 
@@ -126,7 +127,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         logger.info("required fields: " + requiredFields);
 
                         DatasetField emailDatasetField = new DatasetField();
-                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName("distributorContact");
+                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
                         List<DatasetFieldValue> values = new ArrayList<>();
                         values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
                         emailDatasetField.setDatasetFieldValues(values);

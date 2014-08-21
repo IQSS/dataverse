@@ -5,6 +5,17 @@
   "protocol": "doi",
   "initialVersion": {
     "metadataBlocks": {
+      "socialscience": {
+        "displayName": "Social Science Metadata",
+        "fields": [
+          {
+            "value": "Edward Trees Jr.",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "dataCollector"
+          }
+       ]
+      },
       "citation": {
         "fields": [
           {
@@ -40,7 +51,7 @@
             ],
             "typeClass": "primitive",
             "multiple": true,
-            "typeName": "distributorContact"
+            "typeName": "datasetContact"
           },
           {
             "value": "Trees have rings. Trees can be tall.",
@@ -92,27 +103,6 @@
             "typeClass": "compound",
             "multiple": true,
             "typeName": "otherId"
-          },
-          {
-            "value": [
-              {
-                "contributorType": {
-                  "value": "Data Collector",
-                  "typeClass": "controlledVocabulary",
-                  "multiple": false,
-                  "typeName": "contributorType"
-                },
-                "contributorName": {
-                  "value": "Edward Trees Jr.",
-                  "typeClass": "primitive",
-                  "multiple": false,
-                  "typeName": "contributorName"
-                }
-              }
-            ],
-            "typeClass": "compound",
-            "multiple": true,
-            "typeName": "contributor"
           }
         ],
         "displayName": "Citation Metadata"
