@@ -154,7 +154,8 @@ public class Access {
     @Path("imagethumb/{fileSystemId}")
     @GET
     @Produces({"image/png"})
-    public InputStream imagethumb(@PathParam("fileSystemId") Long fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public InputStream imagethumb(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
