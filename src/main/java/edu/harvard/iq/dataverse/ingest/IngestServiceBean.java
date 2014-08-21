@@ -294,11 +294,24 @@ public class IngestServiceBean {
                                 // to read it and create a DataFile with it:
 
                                 DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT);
-                                // TODO: 
-                                // Need to try to identify mime types for the individual 
-                                // files inside the ZIP archive! -- L.A.
                                 
                                 if (datafile != null) {
+                                    // We have created this datafile with the mime type "unknown";
+                                    // Now that we have it saved in a temporary location, 
+                                    // let's try and determine its real type:
+                                    
+                                    String tempFileName = getFilesTempDirectory() + "/" + datafile.getFileSystemName();
+                                    
+                                    try {
+                                        recognizedType = FileUtil.determineFileType(new File(tempFileName), fileEntryName);
+                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
+                                        if (recognizedType != null && !recognizedType.equals("")) {
+                                            datafile.setContentType(recognizedType);
+                                        }
+                                    } catch (IOException ex) {
+                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                                    }
+                                    
                                     datafiles.add(datafile);
                                 }
                             }
@@ -545,9 +558,9 @@ public class IngestServiceBean {
                             logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
                         }
                         if (metadataExtracted) {
-                            logger.info("Successfully extracted indexable metadata from file " + fileName);
+                            logger.fine("Successfully extracted indexable metadata from file " + fileName);
                         } else {
-                            logger.info("Failed to extract indexable metadata from file " + fileName);
+                            logger.fine("Failed to extract indexable metadata from file " + fileName);
                         }
                     }
 
@@ -609,7 +622,7 @@ public class IngestServiceBean {
                     }
 
                     try {
-                        logger.info("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
                         Files.delete(tempLocationPath);
                     } catch (IOException ex) {
                         // (non-fatal)
@@ -789,18 +802,18 @@ public class IngestServiceBean {
                 logger.fine("subsetting continuous vector");
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormatSchemaName())) {
                     Float[] variableVector = subsetGenerator.subsetFloatVector(dataFile, i);
-                    logger.fine("Calculating summary statistics on a Float vector (skipping);");
+                    logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Float vector (skipping);");
+                    logger.fine("Calculating UNF on a Float vector;");
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 } else {
                     Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
-                    logger.fine("Calculating summary statistics on a Double vector (skipping);");
+                    logger.fine("Calculating summary statistics on a Double vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Double vector (skipping);");
+                    logger.fine("Calculating UNF on a Double vector;");
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 }
@@ -817,13 +830,14 @@ public class IngestServiceBean {
             if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
                     && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
                 logger.fine("subsetting discrete-numeric vector");
+                //Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                 Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
                 calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a Long vector (skipping)");
+                logger.fine("Calculating UNF on a Long (Double, really...) vector");
                 calculateUNF(dataFile, i, variableVector);
                 logger.fine("Done! (discrete numeric)");
                 variableVector = null; 
@@ -853,7 +867,7 @@ public class IngestServiceBean {
                 String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a String vector (skipping)");
+                logger.fine("Calculating UNF on a String vector");
                 calculateUNF(dataFile, i, variableVector);
                 logger.fine("Done! (character)");
                 variableVector = null; 
@@ -1558,7 +1572,8 @@ public class IngestServiceBean {
         
         return variableVectors;
     }
-    
+    /*
+     dead code (?)
     private void calculateContinuousSummaryStatistics(DataFile dataFile, Double[][] dataVectors) throws IOException {
         int k = 0;
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
@@ -1569,6 +1584,7 @@ public class IngestServiceBean {
             }
         }
     }
+    */
     
     private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Number[] dataVector) throws IOException {
         double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);
