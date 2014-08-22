@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -67,7 +68,7 @@ public class PasswordResetServiceBean {
                         + "Someone, hopefully you, requested a password reset for " + user.getUserName() + ".\n\n"
                         + "Please click the link below to reset your Dataverse account password:\n\n"
                         + passwordResetUrl + "\n\n"
-                        + "The link above will only work for the next " + savedPasswordResetData.getMinutesUntilTokenExpires() + " minutes.\n\n"
+                        + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
                         /**
                          * @todo It would be a nice touch to show the IP from
                          * which the password reset originated.

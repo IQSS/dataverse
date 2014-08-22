@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -12,7 +13,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.Transient;
 
 @Entity
 public class PasswordResetData implements Serializable {
@@ -20,12 +20,6 @@ public class PasswordResetData implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    /**
-     * @todo Make this configurable
-     */
-    @Transient
-    private final int minutesUntilTokenExpires = 60;
 
     @Column(nullable = true)
     private String token;
@@ -59,7 +53,7 @@ public class PasswordResetData implements Serializable {
         long nowInMilliseconds = new Date().getTime();
         this.created = new Timestamp(nowInMilliseconds);
         long ONE_MINUTE_IN_MILLISECONDS = 60000;
-        long futureInMilliseconds = nowInMilliseconds + (minutesUntilTokenExpires * ONE_MINUTE_IN_MILLISECONDS);
+        long futureInMilliseconds = nowInMilliseconds + (SystemConfig.getMinutesUntilPasswordResetTokenExpires() * ONE_MINUTE_IN_MILLISECONDS);
         this.expires = new Timestamp(new Date(futureInMilliseconds).getTime());
 
     }
@@ -75,10 +69,6 @@ public class PasswordResetData implements Serializable {
         } else {
             return false;
         }
-    }
-
-    public int getMinutesUntilTokenExpires() {
-        return minutesUntilTokenExpires;
     }
 
     public String getToken() {
