@@ -35,6 +35,7 @@ public class PasswordValidator {
             boolean forceNumber,
             int minLength,
             int maxLength) {
+        // [a-z] is why one letter is required
         StringBuilder patternBuilder = new StringBuilder("((?=.*[a-z])");
 
         /**

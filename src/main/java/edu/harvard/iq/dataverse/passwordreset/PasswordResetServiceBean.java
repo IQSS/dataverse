@@ -213,41 +213,37 @@ public class PasswordResetServiceBean {
          */
         PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
         boolean passwordIsComplexEnough = validator.validatePassword(newPassword);
-        if (passwordIsComplexEnough) {
-            user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(newPassword));
-            DataverseUser savedUser = dataverseUserService.save(user);
-            if (savedUser != null) {
-                messageSummary = messageSummarySuccess;
-                messageDetail = messageDetailSuccess;
-                boolean tokenDeleted = deleteToken(token);
-                if (!tokenDeleted) {
-                    // suboptimal but when it expires it should be deleted
-                    logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
-                }
-                String fromAddress = "do-not-reply@dataverse.org";
-                String toAddress = user.getEmail();
-                String subject = "Dataverse Password Reset Successfully Changed";
-
-                String messageBody = "Hi " + user.getDisplayName() + ",\n\n"
-                        + "Your Dataverse account password was successfully changed.\n\n"
-                        + "Please contact us if you did not request this password reset or need further help.\n\n"
-                        + "Thank you,\n\n"
-                        + "Dataverse Support Team";
-                mailService.sendMail(fromAddress, toAddress, subject, messageBody);
-                return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
-            } else {
-                messageSummary = messageSummaryFail;
-                messageDetail = "Your password was not reset. Please contact support.";
-                return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
-            }
-        } else {
-            logger.info("password was not complex enough");
+        if (!passwordIsComplexEnough) {
             messageSummary = messageSummaryFail;
-            String extraPasswordRules = "";
-            if (forceNumber) {
-                extraPasswordRules = " At least one number is required.";
+            messageDetail = "Password is not complex enough. The password must have at least one letter and one number be at least " + minPasswordLength + " characters in length.";
+            logger.info(messageDetail);
+            return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
+        }
+        user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(newPassword));
+        DataverseUser savedUser = dataverseUserService.save(user);
+        if (savedUser != null) {
+            messageSummary = messageSummarySuccess;
+            messageDetail = messageDetailSuccess;
+            boolean tokenDeleted = deleteToken(token);
+            if (!tokenDeleted) {
+                // suboptimal but when it expires it should be deleted
+                logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
             }
-            messageDetail = "Password is not complex enough. Minimum length is " + minPasswordLength + " characters." + extraPasswordRules;
+            String fromAddress = "do-not-reply@dataverse.org";
+            String toAddress = user.getEmail();
+            String subject = "Dataverse Password Reset Successfully Changed";
+
+            String messageBody = "Hi " + user.getDisplayName() + ",\n\n"
+                    + "Your Dataverse account password was successfully changed.\n\n"
+                    + "Please contact us if you did not request this password reset or need further help.\n\n"
+                    + "Thank you,\n\n"
+                    + "Dataverse Support Team";
+            mailService.sendMail(fromAddress, toAddress, subject, messageBody);
+            return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
+        } else {
+            messageSummary = messageSummaryFail;
+            messageDetail = "Your password was not reset. Please contact support.";
+            logger.info("Enable to save user " + user.getId());
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
 
