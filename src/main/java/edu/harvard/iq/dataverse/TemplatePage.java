@@ -30,7 +30,7 @@ public class TemplatePage implements java.io.Serializable {
 
     @EJB
     EjbDataverseEngine commandEngine;
-
+    
     @Inject
     DataverseSession session;
 
@@ -111,8 +111,6 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save() {
-
-        // Use the API to save the dataset: 
         Command<Dataverse> cmd;
         try {
             if (editMode == EditMode.CREATE) {
@@ -150,8 +148,8 @@ public class TemplatePage implements java.io.Serializable {
         }
 
         editMode = null;
-
-        return "/template.xhtml?id=" + template.getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
+        return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
+        //return "/template.xhtml?id=" + template.getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
     }
 
     public void cancel() {

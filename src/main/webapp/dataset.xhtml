@@ -35,6 +35,10 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
+                    
+                    function updateTemplate() {
+                            $('button[id$="updateTemplate"]').trigger('click');
+                    }
 
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
@@ -353,7 +357,23 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                            <ui:include src="metadataFragment.xhtml"/>
+                            <ui:fragment rendered="false">
+                                <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}"><!-- removed for beta -->
+                                    <h:selectOneMenu   value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
+                                                       converter="templateConverter"
+                                                       valueChangeListener="#{DatasetPage.updateSelectedTemplate}">                                       
+                                        <f:selectItems value="#{DatasetPage.dataverseTemplates}" 
+                                                       var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
+                                    </h:selectOneMenu>
+                                </ui:fragment>
+                                    <p:commandButton value="Direct" id="updateTemplate"
+                                                     style="display:none"
+                                                     update=":datasetForm"
+                                                    
+                                                     action="#{DatasetPage.handleChangeButton}">
+                                    </p:commandButton>
+                            </ui:fragment>
+                            <ui:include src="metadataFragment.xhtml"/>                       
                         </ui:fragment>
                     </ui:fragment>
 
@@ -578,6 +598,7 @@
                                                      oncomplete="detailsBlocks.show();post_differences();"
                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
+
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.compareVersionsCount > 2}"

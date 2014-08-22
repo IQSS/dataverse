@@ -138,38 +138,58 @@ public class Dataset extends DvObjectContainer {
         this.versions = versions;
     }
 
-    private DatasetVersion createNewDatasetVersion() {
+    private DatasetVersion createNewDatasetVersion(Template template) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+        DatasetVersion latestVersion = null;
 
-        DatasetVersion latestVersion = getLatestVersionForCopy();
         //if the latest version has values get them copied over
-        if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
-            dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
+        if (!(template == null)) {
+            if (!template.getDatasetFields().isEmpty()) {
+                dsv.setDatasetFields(dsv.copyDatasetFields(template.getDatasetFields()));
+            }
+        } else {
+            latestVersion = getLatestVersionForCopy();
+            if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
+                dsv.setDatasetFields(dsv.copyDatasetFields(latestVersion.getDatasetFields()));
+            }
         }
-        dsv.setFileMetadatas(new ArrayList());
 
-        for (FileMetadata fm : latestVersion.getFileMetadatas()) {
-            FileMetadata newFm = new FileMetadata();
-            newFm.setCategory(fm.getCategory());
-            newFm.setDescription(fm.getDescription());
-            newFm.setLabel(fm.getLabel());
-            newFm.setDataFile(fm.getDataFile());
-            newFm.setDatasetVersion(dsv);
-            dsv.getFileMetadatas().add(newFm);
+        dsv.setFileMetadatas(new ArrayList());
+        if (latestVersion != null) {
+            for (FileMetadata fm : latestVersion.getFileMetadatas()) {
+                FileMetadata newFm = new FileMetadata();
+                newFm.setCategory(fm.getCategory());
+                newFm.setDescription(fm.getDescription());
+                newFm.setLabel(fm.getLabel());
+                newFm.setDataFile(fm.getDataFile());
+                newFm.setDatasetVersion(dsv);
+                dsv.getFileMetadatas().add(newFm);
+            }
         }
+
         // I'm adding the version to the list so it will be persisted when
         // the study object is persisted.
-        getVersions().add(0, dsv);
+        if(template == null){
+            getVersions().add(0, dsv);
+        } else {
+            this.setVersions(new ArrayList());
+            getVersions().add(0, dsv);
+        }
+
         dsv.setDataset(this);
         return dsv;
     }
 
     public DatasetVersion getEditVersion() {
+        return getEditVersion(null);
+    }
+
+    public DatasetVersion getEditVersion(Template template) {
         DatasetVersion latestVersion = this.getLatestVersion();
-        if (!latestVersion.isWorkingCopy()) {
+        if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
-            return createNewDatasetVersion();
+            return createNewDatasetVersion(template);
         } else {
             // else, edit existing working copy
             return latestVersion;
@@ -227,7 +247,7 @@ public class Dataset extends DvObjectContainer {
         }
         return "1.0";
     }
-    
+
     public Integer getVersionNumber() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {

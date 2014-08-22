@@ -42,6 +42,7 @@ import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -124,6 +125,9 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
+    private List<Template> dataverseTemplates = new ArrayList();
+    private Template defaultTemplate;
+    private Template selectedTemplate;
     
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
 
@@ -267,7 +271,47 @@ public class DatasetPage implements java.io.Serializable {
     public void setDeaccessionRadio(int deaccessionRadio) {
         this.deaccessionRadio = deaccessionRadio;
     }
+    
+    
+    public List<Template> getDataverseTemplates() {
+        return dataverseTemplates;
+    }
 
+    public void setDataverseTemplates(List<Template> dataverseTemplates) {
+        this.dataverseTemplates = dataverseTemplates;
+    }
+
+    public Template getDefaultTemplate() {
+        return defaultTemplate;
+    }
+
+    public void setDefaultTemplate(Template defaultTemplate) {
+        this.defaultTemplate = defaultTemplate;
+    }
+
+    public Template getSelectedTemplate() {;
+        return selectedTemplate;
+    }
+
+    public void setSelectedTemplate(Object selectedTemplate) { 
+        this.selectedTemplate = (Template) selectedTemplate;
+    }
+    
+    public void updateSelectedTemplate(ValueChangeEvent event ){
+        System.out.print("in value change listener");
+        System.out.print("new value " + event.getNewValue().toString());
+        selectedTemplate = (Template) event.getNewValue();
+    }
+
+    public void handleChange(){
+        System.out.print("handle change");
+        System.out.print("new value " + selectedTemplate.getId());        
+    }
+    
+    public void handleChangeButton(){
+        System.out.print("handle change");
+        System.out.print("new value " + selectedTemplate.getId());        
+    }
     
     public boolean isShapefileType(FileMetadata fm){
         if (fm==null){
@@ -376,23 +420,35 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            workingVersion = dataset.getLatestVersion();
-
+            dataverseTemplates = dataverseService.find(ownerId).getTemplates();
+            defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
+            if (defaultTemplate != null){               
+                selectedTemplate = defaultTemplate;
+                for (Template testT: dataverseTemplates){
+                    if (defaultTemplate.getId().equals(testT.getId())){
+                        selectedTemplate = testT;
+                    }
+                }
+                workingVersion = dataset.getEditVersion(selectedTemplate);
+            } else{
+               workingVersion = dataset.getLatestVersion(); 
+            }
+            
             dataset.setOwner(dataverseService.find(ownerId));
             datasetVersionUI = new DatasetVersionUI(workingVersion);
             dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             //On create set pre-populated fields
             for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
                     dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
                 }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
                     dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
                 }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
                     dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
                 }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
@@ -405,6 +461,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
+            System.out.print("Selected Template " + selectedTemplate.getName());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -512,7 +569,7 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
-
+    
     public void refresh(ActionEvent e) {
         refresh();
     }
@@ -584,7 +641,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String save() {
-
         // Validate
         boolean dontSave = false;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -927,7 +983,6 @@ public class DatasetPage implements java.io.Serializable {
     public void compareVersionDifferences() {
         RequestContext requestContext = RequestContext.getCurrentInstance();
         if (this.selectedVersions.size() != 2) {
-            System.out.print("selected version size = " + this.selectedVersions.size());
             requestContext.execute("openCompareTwo();");
         } else {
             //order depends on order of selection - needs to be chronological order
