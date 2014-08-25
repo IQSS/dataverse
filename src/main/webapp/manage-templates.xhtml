@@ -14,7 +14,7 @@
             <f:viewAction action="#{manageTemplatesPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Manage Templates"/>
+            <ui:param name="pageTitle" value="Manage Dataset Templates"/>
             <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
@@ -26,49 +26,60 @@
                             <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
                         </h:selectBooleanCheckbox>
                     </ui:fragment>
-
-                    <h:outputLink styleClass="btn" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}"
-                                  value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverseId}">
-                        <h:outputText value="Create Dataset Template"/>
-                    </h:outputLink>
-                    <p:panel id="templatePanel" header="Templates" toggleable="true" collapsed="false" style="margin-bottom:1em;"
-                             widgetVar="templatePanel">                       
+  
+                    <div style="float:right; margin-bottom:.5em;">
+                        <h:outputLink styleClass="btn btn-default" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}"
+                                      value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverseId}">
+                            <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> <h:outputText value="Create Dataset Template"/>
+                        </h:outputLink>
+                    </div>
+                    <div class="clearfix"/>
+                    
+                    <div>
                         <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}">
-                            <p:column sortBy="name" headerText="Template Name">
+                            <p:column width="35%" sortBy="name" headerText="Template Name">
                                 <h:outputText value="#{template.name} " />
                             </p:column>
-                            <p:column sortBy="createDate" headerText="Date Created">
+                            <p:column width="15%" sortBy="createDate" headerText="Date Created">
                                 <h:outputText value="#{template.createDate} " />
                             </p:column>
-                            <p:column sortBy="usageCount" headerText="Usage">
+                            <p:column width="10%" sortBy="usageCount" headerText="Usage">
                                 <h:outputText value="#{template.usageCount} " />
                             </p:column>
-                            <p:column headerText="Action" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}">
-                                <p:commandButton value="Make Default"
+                            <p:column width="40%" headerText="Action" style="text-align:center;" rendered="#{(!manageTemplatesPage.inheritTemplatesValue) or manageTemplatesPage.dataverse.owner eq null}">
+                                <p:commandLink styleClass="btn btn-default" 
+                                                 value="Make Default"
                                                  rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
                                                  actionListener="#{manageTemplatesPage.makeDefault(template)}"
-                                                 update="@all"/>
-                                <p:commandButton value="Default"
+                                                 update="@all"
+                                                 style="color:black;margin-right:0.5em;"/>
+                                <p:commandLink styleClass="btn btn-default" 
+                                                 value="Default"
                                                  disabled="true"
                                                  rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                  actionListener="#{manageTemplatesPage.makeDefault(template)}"
-                                                 update="@all"/>
-                                <h:outputLink styleClass="btn btn-default" value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}">
+                                                 update="@all"
+                                                 style="color:black;margin-right:0.5em;"/>
+                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}">
                                     <h:outputText value="View"/>
                                 </h:outputLink>
-                                <h:outputLink styleClass="btn btn-default"  value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
+                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
                                     <h:outputText value="Edit"/>
                                 </h:outputLink>
-                                <p:commandButton value="Clone"                                                 
+                                <p:commandLink styleClass="btn btn-default" 
+                                                 value="Clone"                                                 
                                                  action="#{manageTemplatesPage.cloneTemplate(template)}"
-                                                 update="@all"/>
-                                <p:commandButton value="Delete" 
+                                                 update="@all"
+                                                 style="color:black;margin-right:0.5em;"/>
+                                <p:commandLink styleClass="btn btn-default" 
+                                                 value="Delete" 
                                                  action="#{manageTemplatesPage.setSelectedTemplate(template)}"
-                                                 oncomplete="deleteConfirmation.show()"                                                                                                                                                                                      
-                                                 />
+                                                 oncomplete="deleteConfirmation.show()"
+                                                 style="color:black;margin-right:0.5em;"/>
                             </p:column>
                         </p:dataTable>
-                    </p:panel>
+                    </div>
+                        
 
                     <div style="margin-top:1em;">
                         <p:commandButton value="Save Changes"
