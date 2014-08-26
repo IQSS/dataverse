@@ -28,7 +28,7 @@
 
                 <h:form id="datasetForm">
                     <!-- Header / Button Panel -->
-                    <ui:fragment>
+                    <ui:fragment rendered="#{empty TemplatePage.editMode}">
                         <!-- View mode -->
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
@@ -42,16 +42,13 @@
                                 </div>
                             </div>
                         </div>
-                        <ui:fragment rendered="#{empty TemplatePage.editMode}">
-                            <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
-                                <h:outputText value="Return to Manage Templates"/>
-                            </h:outputLink>
-                        </ui:fragment>
-
-                        <ui:fragment rendered="#{empty TemplatePage.editMode}" >
-                            <h:outputText id="name" value="#{TeplatePage.template.name}"/>
-                            <ui:include src="metadataFragment.xhtml"/>
-                        </ui:fragment>
+                        
+                        <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
+                            <h:outputText value="Return to Manage Templates"/>
+                        </h:outputLink>
+                        
+                        <h:outputText id="name" value="#{TeplatePage.template.name}"/>
+                        <ui:include src="metadataFragment.xhtml"/>
                     </ui:fragment>
 
                     <!-- Tabs -->
