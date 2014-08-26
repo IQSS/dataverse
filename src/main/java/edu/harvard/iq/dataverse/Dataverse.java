@@ -117,19 +117,26 @@ public class Dataverse extends DvObjectContainer {
     private List<Template> templates;
 
     public List<Template> getTemplates() {
-        return getTemplates(false);
+        return templates;
     }
 
     public void setTemplates(List<Template> templates) {
         this.templates = templates;
     }
 
-    public List<Template> getTemplates(boolean returnActualDB) {
-        if (returnActualDB || templateRoot || getOwner() == null) {
-            return templates;
-        } else {
-            return getOwner().getTemplates();
+    public List<Template> getParentTemplates() {
+        List<Template> retList = new ArrayList();
+        Dataverse testDV = this;
+        while (testDV.getOwner() != null){           
+           retList.addAll(testDV.getOwner().getTemplates());
+           
+           if(!testDV.getOwner().templateRoot){
+               
+               break;
+           }
+           testDV = testDV.getOwner();
         }
+            return  retList;
     }
 
     public boolean isTemplateRoot() {
