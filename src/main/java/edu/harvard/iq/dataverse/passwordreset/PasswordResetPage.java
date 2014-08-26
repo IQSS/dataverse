@@ -58,7 +58,7 @@ public class PasswordResetPage {
             if (passwordResetData != null) {
                 user = passwordResetData.getDataverseUser();
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Reset Token Problem", "The token you are attempting to use is not valid."));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Reset Link", "Your password reset link is not valid."));
             }
         }
     }
