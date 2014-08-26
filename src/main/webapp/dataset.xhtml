@@ -376,6 +376,14 @@
                             <ui:include src="metadataFragment.xhtml"/>                       
                         </ui:fragment>
                     </ui:fragment>
+                    
+                    <!-- Create/Save Dataset Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
+                        <p:commandButton id="saveTop" value="Save Changes" onclick="checkFilesSelected();" />
+                        <p:commandButton id="cancelTop" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
+                        </p:commandButton>
+                    </p:panel>
 
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
