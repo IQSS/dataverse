@@ -57,11 +57,5 @@ public class Users extends AbstractApiBean {
 			return errorResponse( Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage() );
 		}
 	}
-	
-	@GET
-	@Path(":guest")
-	public Response genarateGuest() {
-		return okResponse( json(userSvc.createGuestUser()) );
-		
-	}
+
 }

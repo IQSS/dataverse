@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
@@ -48,6 +50,8 @@ public class IndexServiceBean {
     DataverseUserServiceBean dataverseUserServiceBean;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    UserServiceBean userServiceBean;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -101,7 +105,7 @@ public class IndexServiceBean {
         }
 
         int userIndexCount = 0;
-        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
+        for (AuthenticatedUser user : userServiceBean.findAllAuthenticatedUsers()) {
             userIndexCount++;
             logger.info("indexing user " + userIndexCount + " of several: " + indexUser(user));
         }
@@ -926,20 +930,20 @@ public class IndexServiceBean {
         return "indexed group " + group;
     }
 
-    public String indexUser(DataverseUser user) {
+    public String indexUser(User user) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
 
-        String userid = groupPerUserPrefix + user.getId();
-        if (user.isGuest()) {
+        String userid = groupPerUserPrefix + user.getIdentifier();
+        if ( ! user.isAuthenticated() ) {
             userid = publicGroupString;
         }
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, userid);
-        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getId());
-        solrInputDocument.addField(SearchFields.NAME_SORT, user.getUserName());
+        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getIdentifier());
+        solrInputDocument.addField(SearchFields.NAME_SORT, user.getDisplayInfo().getTitle());
         solrInputDocument.addField(SearchFields.GROUPS, userid);
 
         docs.add(solrInputDocument);
@@ -959,7 +963,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed user " + user.getId() + ":" + user.getUserName();
+        return "indexed user " + user.getIdentifier()+ ":" + user.getDisplayInfo().getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {

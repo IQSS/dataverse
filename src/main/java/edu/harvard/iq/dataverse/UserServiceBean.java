@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.authorization.ApiKey;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -22,9 +24,11 @@ public class UserServiceBean {
 
     @PersistenceContext
     EntityManager em;
+    
+    @EJB IndexServiceBean indexService;
 
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
-        Query query = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUser AS o");
+        Query query = em.createNamedQuery("AuthenticatedUser.findAll");
         List resultList = query.getResultList();
         return resultList;
     }
@@ -54,9 +58,22 @@ public class UserServiceBean {
         }
     }
     
-    public AuthenticatedUser findUser( String idp, String persistentIdpId ) {
+    public AuthenticatedUser findAuthenticatedUser( String idp, String persistentIdpId ) {
         AuthenticatedUserLookup lu = findByPersitentIdFromIdp(idp, persistentIdpId);
         return (lu != null ) ? lu.getAuthenticatedUser() : null;
+    }
+    
+    public AuthenticatedUser save( AuthenticatedUser user ) {
+        if ( user.getId() == null ) {
+            em.persist(this);
+        } else {
+            user = em.merge(user);
+        }
+        em.flush();
+        String indexingResult = indexService.indexUser(user);
+        logger.log(Level.INFO, "during user save, indexing result was: {0}", indexingResult);
+
+        return user;
     }
 
     public List<AuthenticatedUserLookup> findByAllLookupStrings() {

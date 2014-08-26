@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.User;
 import java.util.ArrayList;
 import java.util.Date;
@@ -150,7 +151,7 @@ public class DatasetServiceBean {
         lock.setStartTime(new Date());
 
         if (userId != null) {
-            DataverseUser user = em.find(DataverseUser.class, userId);
+            AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
                 user.setDatasetLocks(new ArrayList());
@@ -168,7 +169,7 @@ public class DatasetServiceBean {
         //em.refresh(dataset); (?)
         DatasetLock lock = dataset.getDatasetLock();
         if (lock != null) {
-            DataverseUser user = lock.getUser();
+            AuthenticatedUser user = lock.getUser();
             dataset.setDatasetLock(null);
             user.getDatasetLocks().remove(lock);
             /* 

@@ -23,4 +23,7 @@ public class GuestUser implements User {
         return new RoleAssigneeDisplayInfo("Guest", null);
     }
 
+    @Override
+    public boolean isAuthenticated() { return false; }
+    
 }

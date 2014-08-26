@@ -31,32 +31,18 @@ public class DataverseUserServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-	private static final String GUEST_USERNAME = "__GUEST__";
-	
     public String encryptPassword(String plainText) {
         return PasswordEncryption.getInstance().encrypt(plainText);
     }
        
     public DataverseUser save(DataverseUser dataverseUser) {
         DataverseUser savedUser = em.merge(dataverseUser);
-        em.flush();
-        String indexingResult = indexService.indexUser(savedUser);
-        logger.log(Level.INFO, "during user save, indexing result was: {0}", indexingResult);
         return savedUser;
     }
     
     public User findByIdentifier( String idtf ) {
         return null; // TODO implement
     }
-	
-	public DataverseUser createGuestUser() {
-		DataverseUser guest = new DataverseUser();
-		guest.setUserName(GUEST_USERNAME);
-		guest.setEmail("hello@world.com");
-		guest.setFirstName("Guest");
-		guest.setLastName("Guest");
-		return save(guest);
-	}
 	
     public DataverseUser find(Long pk) {
         return em.find(DataverseUser.class, pk);

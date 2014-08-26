@@ -89,7 +89,7 @@ public class LoginPage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Login failed", " - Please check your username and password and try again."));
             return null;
         } else {
-            session.setUser( userService.findUser("local", userName) );
+            session.setUser( userService.findAuthenticatedUser("local", userName) );
             return "/dataverse.xhtml?faces-redirect=true";
         }
     }

@@ -249,7 +249,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
         dataverseUser = dataverseUserService.save(dataverseUser);
-        userNotificationService.sendNotification(userService.findUser("local", Long.toString(dataverseUser.getId())),
+        userNotificationService.sendNotification(userService.findAuthenticatedUser("local", Long.toString(dataverseUser.getId())),
                 new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
