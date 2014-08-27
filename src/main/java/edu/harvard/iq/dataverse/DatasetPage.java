@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.io.File;
@@ -430,6 +431,9 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
+            if (dataverseService.find(ownerId).isTemplateRoot()){
+                dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
+            }
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
             if (defaultTemplate != null) {
                 selectedTemplate = defaultTemplate;
@@ -790,6 +794,9 @@ public class DatasetPage implements java.io.Serializable {
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
                 userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+                if (selectedTemplate != null){
+                    commandEngine.submit(new UpdateDataverseTemplateCountCommand(session.getUser(), selectedTemplate, dataset));
+                }                
             }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
