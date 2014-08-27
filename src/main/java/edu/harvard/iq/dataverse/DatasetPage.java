@@ -106,7 +106,7 @@ public class DatasetPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
-    
+
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -128,8 +128,8 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
-    
-    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();   
+
+    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
     /**
      * @todo ticket to get away from these hard-coded protocol and authority
@@ -271,8 +271,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setDeaccessionRadio(int deaccessionRadio) {
         this.deaccessionRadio = deaccessionRadio;
     }
-    
-    
+
     public List<Template> getDataverseTemplates() {
         return dataverseTemplates;
     }
@@ -293,105 +292,115 @@ public class DatasetPage implements java.io.Serializable {
         return selectedTemplate;
     }
 
-    public void setSelectedTemplate(Object selectedTemplate) { 
-        this.selectedTemplate = (Template) selectedTemplate;
-    }
-    
-    public void updateSelectedTemplate(ValueChangeEvent event ){
-        System.out.print("in value change listener");
-        System.out.print("new value " + event.getNewValue().toString());
-        selectedTemplate = (Template) event.getNewValue();
+    public void setSelectedTemplate(Template selectedTemplate) {
+        this.selectedTemplate = selectedTemplate;
     }
 
-    public void handleChange(){
-        System.out.print("handle change");
-        System.out.print("new value " + selectedTemplate.getId());        
+    public void updateSelectedTemplate(ValueChangeEvent event) {
+
+        selectedTemplate = (Template) event.getNewValue();
+        if (selectedTemplate != null){
+                   workingVersion = dataset.getEditVersion(selectedTemplate); 
+        } else {
+
+            dataset = new Dataset();
+            workingVersion = dataset.getLatestVersion();
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+            dataset.setOwner(dataverseService.find(ownerId));
+
+        }
+
+        resetVersionUI();
     }
-    
-    public void handleChangeButton(){
+
+    public void handleChange() {
         System.out.print("handle change");
-        System.out.print("new value " + selectedTemplate.getId());        
+        System.out.print("new value " + selectedTemplate.getId());
     }
-    
-    public boolean isShapefileType(FileMetadata fm){
-        if (fm==null){
+
+    public void handleChangeButton() {
+
+
+    }
+
+    public boolean isShapefileType(FileMetadata fm) {
+        if (fm == null) {
             return false;
         }
-        if (fm.getDataFile()==null){
+        if (fm.getDataFile() == null) {
             return false;
         }
-        
+
         return fm.getDataFile().isShapefileType();
     }
-    
+
     /*
-        Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
+     Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
     
-        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
-    */
-    public boolean hasMapLayerMetadata(FileMetadata fm){
-        if (fm==null){
+     The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
+     */
+    public boolean hasMapLayerMetadata(FileMetadata fm) {
+        if (fm == null) {
             return false;
         }
-        if (fm.getDataFile()==null){
+        if (fm.getDataFile() == null) {
             return false;
         }
         return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
     }
-    
-    
-     /**
-        Check if a DataFile has an associated MapLayerMetadata object
-    
-        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
-    */    
-    private boolean doesDataFileHaveMapLayerMetadata(DataFile df){
-        if (df==null){
+
+    /**
+     * Check if a DataFile has an associated MapLayerMetadata object
+     *
+     * The MapLayerMetadata objects have been fetched at page inception by
+     * "loadMapLayerMetadataLookup()"
+     */
+    private boolean doesDataFileHaveMapLayerMetadata(DataFile df) {
+        if (df == null) {
             return false;
         }
-        if (df.getId()==null){
+        if (df.getId() == null) {
             return false;
         }
         return this.mapLayerMetadataLookup.containsKey(df.getId());
     }
-   
-   /**
-        Using a DataFile id, retreive an associated MapLayerMetadata object
-    
-        The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
-    */ 
-    public MapLayerMetadata getMapLayerMetadata(DataFile df){
-        if (df==null){
+
+    /**
+     * Using a DataFile id, retreive an associated MapLayerMetadata object
+     *
+     * The MapLayerMetadata objects have been fetched at page inception by
+     * "loadMapLayerMetadataLookup()"
+     */
+    public MapLayerMetadata getMapLayerMetadata(DataFile df) {
+        if (df == null) {
             return null;
         }
         return this.mapLayerMetadataLookup.get(df.getId());
     }
-    
 
     /**
-        Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
-    
-        Very few DataFiles will have associated MapLayerMetadata objects so only use 1 query to get them
-    */
-    private void loadMapLayerMetadataLookup(){
-        if (this.dataset==null){
+     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
+     *
+     * Very few DataFiles will have associated MapLayerMetadata objects so only
+     * use 1 query to get them
+     */
+    private void loadMapLayerMetadataLookup() {
+        if (this.dataset == null) {
             return;
         }
-        if (this.dataset.getId()==null){
+        if (this.dataset.getId() == null) {
             return;
         }
         List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
-        if (mapLayerMetadataList==null){
+        if (mapLayerMetadataList == null) {
             return;
         }
-        for (MapLayerMetadata layer_metadata : mapLayerMetadataList){
+        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
             mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
         }
 
     }// A DataFile may have a related MapLayerMetadata object
-     
-    
-    
+
     public void init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
@@ -413,7 +422,7 @@ public class DatasetPage implements java.io.Serializable {
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
             setReleasedVersionTabList(resetReleasedVersionTabList());
-            
+
             // populate MapLayerMetadata
             this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
 
@@ -422,49 +431,54 @@ public class DatasetPage implements java.io.Serializable {
             editMode = EditMode.CREATE;
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
-            if (defaultTemplate != null){               
+            if (defaultTemplate != null) {
                 selectedTemplate = defaultTemplate;
-                for (Template testT: dataverseTemplates){
-                    if (defaultTemplate.getId().equals(testT.getId())){
+                for (Template testT : dataverseTemplates) {
+                    if (defaultTemplate.getId().equals(testT.getId())) {
                         selectedTemplate = testT;
                     }
                 }
                 workingVersion = dataset.getEditVersion(selectedTemplate);
-            } else{
-               workingVersion = dataset.getLatestVersion(); 
+            } else {
+                workingVersion = dataset.getLatestVersion();
             }
-            
-            dataset.setOwner(dataverseService.find(ownerId));
-            datasetVersionUI = new DatasetVersionUI(workingVersion);
             dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
-            //On create set pre-populated fields
-            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
-                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
-                }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
-                    dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
-                }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
-                }
-                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
-                    for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                        for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
-                            }
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
-                            }
-                        }
-                    }
-                }
-            }
+            dataset.setOwner(dataverseService.find(ownerId));
+            resetVersionUI();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
         }
+    }
+
+    private void resetVersionUI() {
+        datasetVersionUI = new DatasetVersionUI(workingVersion);
+
+        //On create set pre-populated fields
+        for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
+                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+            }
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
+                dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
+            }
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
+                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
+            }
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     public void edit(EditMode editMode) {
@@ -568,7 +582,7 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
-    
+
     public void refresh(ActionEvent e) {
         refresh();
     }
@@ -808,8 +822,8 @@ public class DatasetPage implements java.io.Serializable {
         // reset values
         dataset = datasetService.find(dataset.getId());
         workingVersion = dataset.getLatestVersion();
-        if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null){
-           workingVersion =  dataset.getReleasedVersion();
+        if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
+            workingVersion = dataset.getReleasedVersion();
         }
         ownerId = dataset.getOwner().getId();
         setVersionTabList(resetVersionTabList());
@@ -879,7 +893,7 @@ public class DatasetPage implements java.io.Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         UploadedFile uFile = event.getFile();
         DataFile dFile = null;
-        List<DataFile> dFileList = null; 
+        List<DataFile> dFileList = null;
 
         try {
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
@@ -926,11 +940,11 @@ public class DatasetPage implements java.io.Serializable {
     public List<DatasetVersion> getVersionTabList() {
         return versionTabList;
     }
-    
-    public Integer getCompareVersionsCount(){
+
+    public Integer getCompareVersionsCount() {
         Integer retVal = 0;
-        for (DatasetVersion dvTest: dataset.getVersions()){
-            if(!dvTest.isDeaccessioned()){
+        for (DatasetVersion dvTest : dataset.getVersions()) {
+            if (!dvTest.isDeaccessioned()) {
                 retVal++;
             }
         }

@@ -70,6 +70,11 @@ public class ManageTemplatesPage {
         dataverse.setDefaultTemplate(templateIn);
         saveDataverse("Dataverse Default Template updated");
     }
+    
+    public void unselectDefault(Template templateIn) {
+        dataverse.setDefaultTemplate(null);
+        saveDataverse("Dataverse Default Template updated");
+    }
 
     public String cloneTemplate(Template templateIn) {
         Template newOne = templateIn.cloneNewTemplate(templateIn);

@@ -35,7 +35,7 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                    
+
                     function updateTemplate() {
                             $('button[id$="updateTemplate"]').trigger('click');
                     }
@@ -357,19 +357,19 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                            <ui:fragment rendered="false">
+                            <ui:fragment rendered="true">
                                 <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}"><!-- removed for beta -->
                                     <h:selectOneMenu   value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                        converter="templateConverter"
-                                                       valueChangeListener="#{DatasetPage.updateSelectedTemplate}">                                       
+                                                       valueChangeListener="#{DatasetPage.updateSelectedTemplate}"> 
+                                        <f:selectItem itemLabel="Clear default values" itemValue="#{null}" />
                                         <f:selectItems value="#{DatasetPage.dataverseTemplates}" 
                                                        var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                     </h:selectOneMenu>
                                 </ui:fragment>
                                     <p:commandButton value="Direct" id="updateTemplate"
                                                      style="display:none"
-                                                     update=":datasetForm"
-                                                    
+                                                     update="@all"
                                                      action="#{DatasetPage.handleChangeButton}">
                                     </p:commandButton>
                             </ui:fragment>

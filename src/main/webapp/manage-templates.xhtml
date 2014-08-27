@@ -54,10 +54,9 @@
                                                  update="@all"
                                                  style="color:black;margin-right:0.5em;"/>
                                 <p:commandLink styleClass="btn btn-default" 
-                                                 value="Default"
-                                                 disabled="true"
+                                                 value="Default - Click to de-select"                                                 
                                                  rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
-                                                 actionListener="#{manageTemplatesPage.makeDefault(template)}"
+                                                 actionListener="#{manageTemplatesPage.unselectDefault(template)}"
                                                  update="@all"
                                                  style="color:black;margin-right:0.5em;"/>
                                 <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" value="/template.xhtml?id=#{template.id}&#38;ownerId=#{template.dataverse.id}">

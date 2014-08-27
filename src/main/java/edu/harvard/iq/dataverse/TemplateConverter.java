@@ -24,20 +24,13 @@ public class TemplateConverter implements Converter {
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {
-        System.out.print("get as Object " + submittedValue.toString());
-        Template template = templateService.find(new Long(submittedValue));
-        System.out.print("find Object " + template.getName());
-        //return new Long(submittedValue);
-        //return (Template) templateService.find(new Long(submittedValue));
-        return  template;
+        return templateService.find(new Long(submittedValue));
     }
 
-    @Override
     public String getAsString(FacesContext facesContext, UIComponent component, Object value) {
         if (value == null || value.equals("")) {
             return "";
         } else {
-            System.out.print("get as string " + value.toString());
             return ((Template) value).getId().toString();
         }
     }
