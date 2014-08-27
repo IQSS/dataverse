@@ -461,7 +461,6 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
             }
-            System.out.print("Selected Template " + selectedTemplate.getName());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
