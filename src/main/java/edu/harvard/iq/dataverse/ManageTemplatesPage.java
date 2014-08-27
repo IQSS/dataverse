@@ -64,13 +64,14 @@ public class ManageTemplatesPage {
             ct.setDataverse(dataverse);
             templates.add(ct);
         }
+
     }
 
     public void makeDefault(Template templateIn) {
         dataverse.setDefaultTemplate(templateIn);
         saveDataverse("Dataverse Default Template updated");
     }
-    
+
     public void unselectDefault(Template templateIn) {
         dataverse.setDefaultTemplate(null);
         saveDataverse("Dataverse Default Template updated");
@@ -112,7 +113,7 @@ public class ManageTemplatesPage {
     }
 
     private void saveDataverse(String successMessage) {
-        if (successMessage.isEmpty()){
+        if (successMessage.isEmpty()) {
             successMessage = "Dataverse Template data updated";
         }
         try {
@@ -165,9 +166,13 @@ public class ManageTemplatesPage {
     }
 
     public String updateTemplatesRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
-        try {
+        try {  
+            if (dataverse.getOwner() != null) {
+                if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {
+                    dataverse.setDefaultTemplate(dataverse.getOwner().getDefaultTemplate());
+                }
+            }
             dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(isInheritTemplatesValue(), session.getUser(), getDataverse()));
-            setInheritTemplatesValue(dataverse.isTemplateRoot());
             init();
             return "";
         } catch (CommandException ex) {
