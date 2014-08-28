@@ -39,6 +39,9 @@ public class ManageTemplatesPage {
 
     @Inject
     DataversePage dvpage;
+    
+    @Inject 
+    TemplatePage tempPage;
 
     @Inject
     DataverseSession session;
@@ -163,6 +166,12 @@ public class ManageTemplatesPage {
 
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
+    }
+    
+    public void viewSelectedTemplate(Template selectedTemplate) {
+        this.selectedTemplate = selectedTemplate;
+        this.selectedTemplate.setMetadataValueBlocks();
+        tempPage.setTemplate(selectedTemplate);
     }
 
     public String updateTemplatesRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
