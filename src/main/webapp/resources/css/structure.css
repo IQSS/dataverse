@@ -196,7 +196,7 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
-/* #datasetForm .form-group {overflow: hidden;} */
+#datasetForm .form-group {overflow: hidden;}
 #datasetForm .form-col-container .form-col-container {padding-left:0;}
 #datasetForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
 
