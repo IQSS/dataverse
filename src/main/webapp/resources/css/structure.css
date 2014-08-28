@@ -196,14 +196,17 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
-#datasetForm .form-group {overflow: hidden;}
+/* #datasetForm .form-group {overflow: hidden;} */
 #datasetForm .form-col-container .form-col-container {padding-left:0;}
 #datasetForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
 
-#datasetForm div.ui-selectonemenu.form-control {padding:0px;} /* Primefaces vs Bootstrap selectOneMenu fix */
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:6px;}
+.panel .panel-body .form-group {overflow: hidden;}
+
+/* Primefaces vs Bootstrap selectOneMenu fix */
+.form-group div.ui-selectonemenu.form-control {padding:0px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:8px;}
 
 #datasetForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
 #datasetForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}

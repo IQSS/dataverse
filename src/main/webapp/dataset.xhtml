@@ -357,23 +357,28 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                            <ui:fragment rendered="true">
-                                <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}"><!-- removed for beta -->
-                                    <h:selectOneMenu   value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
-                                                       converter="templateConverter"
-                                                       valueChangeListener="#{DatasetPage.updateSelectedTemplate}"> 
-                                        <f:selectItem itemLabel="Clear default values" itemValue="#{null}" />
-                                        <f:selectItems value="#{DatasetPage.dataverseTemplates}" 
-                                                       var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
-                                    </h:selectOneMenu>
-                                </ui:fragment>
-                                    <p:commandButton value="Direct" id="updateTemplate"
-                                                     style="display:none"
-                                                     update="@all"
-                                                     action="#{DatasetPage.handleChangeButton}">
-                                    </p:commandButton>
+                            <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
+                                <div class="form-group">
+                                    <label for="select_DatasetTemplate" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
+                                                         converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
+                                                         valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
+                                            <f:selectItem itemLabel="No template - clear default values" itemValue="#{null}" />
+                                            <f:selectItems value="#{DatasetPage.dataverseTemplates}"
+                                                           var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Direct" id="updateTemplate"
+                                                         style="display:none"
+                                                         update="@all"
+                                                         action="#{DatasetPage.handleChangeButton}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
                             </ui:fragment>
-                            <ui:include src="metadataFragment.xhtml"/>                       
+                            <ui:include src="metadataFragment.xhtml"/>                      
                         </ui:fragment>
                     </ui:fragment>
                     
@@ -445,7 +450,7 @@
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> Upload + Edit Files
@@ -583,7 +588,7 @@
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />

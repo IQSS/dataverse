@@ -97,10 +97,7 @@
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty TemplatePage.editMode}" >
                         <p:commandButton id="save" value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : 'Save Changes'}" action="#{TemplatePage.save}" >
                         </p:commandButton>
-                        <p:commandButton id="cancel" value="Cancel" action="#{TemplatePage.cancel}" process="@this" update="@form" rendered="#{TemplatePage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
-                        </p:commandButton>
-                        <p:button id="cancelCreate" value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" rendered="#{TemplatePage.editMode == 'CREATE'}" />
+                        <p:button id="cancelCreate" value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" />
                     </p:panel>
                     <p:commandButton value="Direct" id="templateSave"
                                      style="display:none"

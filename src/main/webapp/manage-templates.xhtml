@@ -21,10 +21,12 @@
                 <h:form id="manageTemplatesForm">
 
                     <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null}">
-                        <h:outputLabel for="templateRoot" value="Include Templates from  Parent Dataverse" />
-                        <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
-                            <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
-                        </h:selectBooleanCheckbox>
+                        <label for="templateRoot" style="margin-top:.75em;">
+                            <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
+                                <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
+                            </h:selectBooleanCheckbox>
+                            Include Templates from  Parent Dataverse
+                        </label>
                     </ui:fragment>
 
                     <div style="float:right; margin-bottom:.5em;">
@@ -46,7 +48,7 @@
                             <p:column width="10%" sortBy="usageCount" headerText="Usage">
                                 <h:outputText value="#{template.usageCount} " />
                             </p:column>
-                            <p:column width="40%" headerText="Action" style="text-align:center;">
+                            <p:column width="40%" headerText="Action">
                                 <p:commandLink styleClass="btn btn-default" 
                                                value="Make Default"
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
@@ -54,7 +56,7 @@
                                                update="@all"
                                                style="color:black;margin-right:0.5em;"/>
                                 <p:commandLink styleClass="btn btn-default" 
-                                               value="Default - Click to de-select"                                                 
+                                               value="Default"                                                 
                                                rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
                                                actionListener="#{manageTemplatesPage.unselectDefault(template)}"
                                                update="@all"
@@ -69,16 +71,16 @@
                                                oncomplete="viewTemplate.show()"
                                                update=":manageTemplatesForm"
                                                style="color:black;margin-right:0.5em;"/>
-                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
-                                              rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                              value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
-                                    <h:outputText value="Edit"/>
-                                </h:outputLink>
                                 <p:commandLink styleClass="btn btn-default" 
                                                value="Clone"                                                 
                                                action="#{manageTemplatesPage.cloneTemplate(template)}"
                                                update="@all"
                                                style="color:black;margin-right:0.5em;"/>
+                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
+                                              rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
+                                              value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
+                                    <h:outputText value="Edit"/>
+                                </h:outputLink>
                                 <p:commandLink styleClass="btn btn-default" 
                                                value="Delete" 
                                                action="#{manageTemplatesPage.setSelectedTemplate(template)}"
@@ -94,12 +96,22 @@
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:panel id="viewDialog">
-                        <p:dialog id="viewTemplate" header=" View Default Values" widgetVar="viewTemplate">
-                            #{manageTemplatesPage.selectedTemplate.name}
-                            <ui:include src="metadataFragment.xhtml"/>
-                        </p:dialog>
-                    </p:panel>
+                    
+                    <p:dialog id="viewTemplate" header="Dataset Template Preview" widgetVar="viewTemplate" width="600px" height="600px" style="overflow-y: scroll;">
+                        <div class="form-horizontal">
+                            
+                            <div class="form-group">
+                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                </label>
+                                <div class="col-sm-7" style="padding-top: 7px;">
+                                    #{manageTemplatesPage.selectedTemplate.name}
+                                </div>
+                            </div>
+                        </div>
+                            
+                        <ui:include src="metadataFragment.xhtml"/>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>
