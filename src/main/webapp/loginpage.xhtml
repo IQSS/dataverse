@@ -13,7 +13,7 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Login Page"/>
+            <ui:param name="pageTitle" value="Log In - Dataverse"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -24,15 +24,32 @@
                         <div class="form-group">
                             <p:outputLabel value="Username" for="userName" styleClass="col-sm-2 control-label"/>
                             <div class="col-sm-9">
-                                <h:inputText id="userName" size="40" style="width:auto;" value="#{LoginPage.userName}" styleClass="form-control"/>
-                                <p:message for="userName"/>
+                                <div class="form-group">
+                                    <div class="col-sm-5">
+                                        <h:inputText id="userName" size="40" style="width:auto;" value="#{LoginPage.userName}" styleClass="form-control"/>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p:message for="userName"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <p:outputLabel value="Password" for="password" styleClass="col-sm-2 control-label"/>
                             <div class="col-sm-9">
-                                <h:inputSecret id="password" size="40" style="width:auto;" value="#{LoginPage.password}" styleClass="form-control"/>
-                                <p:message for="password"/>
+                                <div class="form-group">
+                                    <div class="col-sm-5">
+                                        <h:inputSecret id="password" size="40" style="width:auto;" value="#{LoginPage.password}" styleClass="form-control"/>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p:message for="password"/>
+                                    </div>
+                                </div>
+                                <div style="margin-top:.5em;">
+                                    <a href="passwordreset.xhtml">
+                                        Forgot your password?
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group">

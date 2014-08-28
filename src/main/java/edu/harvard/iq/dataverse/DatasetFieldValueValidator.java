@@ -34,16 +34,25 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
 
         context.disableDefaultConstraintViolation(); // we do this so we can have different messages depending on the different issue
 
-
+        boolean lengthOnly = false;
+        
         DatasetFieldType dsfType = value.getDatasetField().getDatasetFieldType();
         String fieldType = dsfType.getFieldType();
-
-
+        
+        if (value.getDatasetField().getTemplate() != null){
+            lengthOnly = true;
+        }
+        
+        if (value.getDatasetField().getParentDatasetFieldCompoundValue() != null 
+                && value.getDatasetField().getParentDatasetFieldCompoundValue().getParentDatasetField().getTemplate() != null ){
+            lengthOnly = true;
+        }
+        
         if (StringUtils.isBlank(value.getValue())) {
             return true;
         }
-
-        if (fieldType.equals("date")) {
+        
+        if (fieldType.equals("date") && !lengthOnly) {
             boolean valid = false;
             if (!valid) {  
                 valid = isValidDate(value.getValue(), "yyyy-MM-dd");
@@ -74,7 +83,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         } 
         
-        if (fieldType.equals("float")) {
+        if (fieldType.equals("float") && !lengthOnly) {
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
@@ -83,7 +92,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
         
-        if (fieldType.equals("int")) {
+        if (fieldType.equals("int") && !lengthOnly) {
             try {
                 Integer.parseInt(value.getValue());
             } catch (Exception e) {
@@ -101,7 +110,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
                  context.buildConstraintViolationWithTemplate(" " + dsfType.getDisplayName() + " may not be more than 1000 characters.").addConstraintViolation(); 
                  return false;
         }
-        if (fieldType.equals("url")) {
+        if (fieldType.equals("url") && !lengthOnly) {
             try {
                 URL url = new URL(value.getValue());
             } catch (MalformedURLException e) {
@@ -110,7 +119,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             }
         }
 
-        if (fieldType.equals("email")) {
+        if (fieldType.equals("email") && !lengthOnly) {
             //Pattern p =  Pattern.compile("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
             //updated to allow dashes
             Pattern p =  Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");

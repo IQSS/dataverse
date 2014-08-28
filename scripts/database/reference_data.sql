@@ -21,14 +21,6 @@ INSERT INTO variablerangetype (id, "name") VALUES (3, 'min');
 INSERT INTO variablerangetype (id, "name") VALUES (4, 'max');
 INSERT INTO variablerangetype (id, "name") VALUES (5, 'point');
 
-CREATE SEQUENCE filesystemname_seq
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 2
-  CACHE 1;
-ALTER TABLE filesystemname_seq OWNER TO "dvnApp";
-
 -- using http://dublincore.org/schemas/xmls/qdc/dcterms.xsd because at http://dublincore.org/schemas/xmls/ it's the schema location for http://purl.org/dc/terms/ which is referenced in http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
 INSERT INTO foreignmetadataformatmapping(id, name, startelement, displayName, schemalocation) VALUES (1, 'http://purl.org/dc/terms/', 'entry', 'dcterms: DCMI Metadata Terms', 'http://dublincore.org/schemas/xmls/qdc/dcterms.xsd');
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (1, ':title', 'citation', 'title', FALSE, NULL, 1 );

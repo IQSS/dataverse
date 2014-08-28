@@ -668,6 +668,28 @@ public class DatasetVersion implements Serializable {
         return retList;
     }
 
+    /**
+     * For the current server, create link back to this Dataset
+     * 
+     * example: http://dvn-build.hmdc.harvard.edu/dataset.xhtml?id=72&versionId=25
+     * 
+     * @param serverName
+     * @param dset
+     * @return 
+     */
+    public String getReturnToDatasetURL(String serverName, Dataset dset){
+        if (serverName==null){
+            return null;
+        }
+        if (dset==null){
+            dset = this.getDataset();
+            if (dset==null){        // currently postgres allows this, see https://github.com/IQSS/dataverse/issues/828
+                return null;
+            }
+        }
+        return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId" + this.getId();
+    };
+    
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
         List<DatasetField> retList = new ArrayList();
 

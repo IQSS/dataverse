@@ -23,7 +23,7 @@ import org.hibernate.validator.constraints.NotBlank;
 /**
  *  File metadata: specifically WorldMap layer information for a specific DataFile 
  * 
- * @author rmp553
+ * @author raprasad
  */
 @Entity
 public class MapLayerMetadata implements Serializable {

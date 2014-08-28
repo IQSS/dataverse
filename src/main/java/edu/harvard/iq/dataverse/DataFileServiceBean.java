@@ -88,30 +88,6 @@ public class DataFileServiceBean {
 			.setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
 				.executeUpdate();
     }
-    
-    /*
-    public String generateSequentialIdentifier() {
-        Long result = null; 
-        
-        try {
-            // Warning! 
-            // The code below is very postgres-specific (relies on a proprietary
-            // postgres sequence; that needs to be created in the database ahead
-            // of time.  
-            // TODO: there's a ticket (github issue #314) for replacing it with 
-            // something non-database specific. 
-            
-            result = (Long) em.createNativeQuery("select nextval('filesystemname_seq')").getSingleResult();
-        } catch (Exception ex) {
-            return null;
-        }
-        if (result != null) {
-            return result.toString();
-        }
-        
-        return null; 
-    }
-    */
 
     public void generateStorageIdentifier(DataFile dataFile) {
         dataFile.setFileSystemName(generateStorageIdentifier());

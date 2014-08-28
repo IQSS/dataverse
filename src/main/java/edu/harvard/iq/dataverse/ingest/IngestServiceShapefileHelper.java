@@ -24,7 +24,7 @@ import javax.ejb.EJB;
  *  - Accomplish the actions described in the ShapefileHandler function "rezipShapefileSets"
  *  - Return a list of DataFile objects
  * 
- * @author rmp553
+ * @author raprasad
  */
 public class IngestServiceShapefileHelper {
     

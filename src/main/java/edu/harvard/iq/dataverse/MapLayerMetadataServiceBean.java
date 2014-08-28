@@ -17,7 +17,7 @@ import javax.persistence.Query;
 
 /**
  *
- * @author rmp553
+ * @author raprasad
  */
 @Stateless
 @Named
