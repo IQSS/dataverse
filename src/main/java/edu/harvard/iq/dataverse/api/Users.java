@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +27,7 @@ public class Users extends AbstractApiBean {
 	public Response list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		
-		for ( DataverseUser u : userSvc.findAll() ) {
+		for ( BuiltinUser u : userSvc.findAll() ) {
 			bld.add( json(u) );
 		}
 		
@@ -45,7 +45,7 @@ public class Users extends AbstractApiBean {
 	}
 	
 	@POST
-	public Response save( DataverseUser user, @QueryParam("password") String password ) {
+	public Response save( BuiltinUser user, @QueryParam("password") String password ) {
 		try { 
 			if ( password != null ) {
 				user.setEncryptedPassword(userSvc.encryptPassword(password));

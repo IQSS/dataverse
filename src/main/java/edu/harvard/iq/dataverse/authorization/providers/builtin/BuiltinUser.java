@@ -1,30 +1,30 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author xyang
+ * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="DataverseUser.findAll",
-				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName"),
-		@NamedQuery( name="DataverseUser.listByUserNameLike",
-				query = "SELECT u FROM DataverseUser u WHERE u.userName LIKE :userNameLike")
+		@NamedQuery( name="BuiltinUser.findAll",
+				query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
+		@NamedQuery( name="BuiltinUser.findByUserame",
+				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:username"),
+		@NamedQuery( name="BuiltinUser.listByUserNameLike",
+				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
-public class DataverseUser implements Serializable {
+public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -126,10 +126,10 @@ public class DataverseUser implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DataverseUser)) {
+        if (!(object instanceof BuiltinUser)) {
             return false;
         }
-        DataverseUser other = (DataverseUser) object;
+        BuiltinUser other = (BuiltinUser) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -138,7 +138,7 @@ public class DataverseUser implements Serializable {
 
 	@Override
 	public String toString() {
-		return "DataverseUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
+		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
 	}
    
 }

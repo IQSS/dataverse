@@ -20,7 +20,7 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.io.Serializable;
 import javax.persistence.Entity;

@@ -5,9 +5,9 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
@@ -175,7 +175,7 @@ public class Datasets extends AbstractApiBean {
     @GET
 	@Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") Long datasetId, @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		BuiltinUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		// TODO filter by what the user can see.
@@ -217,7 +217,7 @@ public class Datasets extends AbstractApiBean {
                                              @PathParam("versionNumber") String versionNumber, 
                                              @PathParam("block") String blockName,
                                              @QueryParam("key") String apiKey ) {
-		DataverseUser u = userSvc.findByUserName(apiKey);
+		BuiltinUser u = userSvc.findByUserName(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
 		// TODO filter by what the user can see.

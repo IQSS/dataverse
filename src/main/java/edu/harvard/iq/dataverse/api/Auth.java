@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.authorization.ApiKey;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.ApiKey;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
-import edu.harvard.iq.dataverse.authorization.AuthenticationManager;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class Auth extends AbstractApiBean {
         JsonObjectBuilder info = Json.createObjectBuilder();
         info
                 .add("userStuff", userStuff.toString())
-                .add("numAuthProviders", AuthenticationManager.getInstance().getAuthenticationProviders().size())
+                .add("numAuthProviders", authSvc.getAuthenticationProviders().size())
                 .add("endpoints", Json.createArrayBuilder()
                         .add(usernameEndpoint)
                         .add(lookupEndpoint)

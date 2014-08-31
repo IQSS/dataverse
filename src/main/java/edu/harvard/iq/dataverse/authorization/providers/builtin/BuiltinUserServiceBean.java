@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.PasswordEncryption;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -22,9 +22,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 @Named
-public class DataverseUserServiceBean {
-
-    private static final Logger logger = Logger.getLogger(DataverseUserServiceBean.class.getCanonicalName());
+public class BuiltinUserServiceBean {
 
     @EJB IndexServiceBean indexService;
 
@@ -35,8 +33,8 @@ public class DataverseUserServiceBean {
         return PasswordEncryption.getInstance().encrypt(plainText);
     }
        
-    public DataverseUser save(DataverseUser dataverseUser) {
-        DataverseUser savedUser = em.merge(dataverseUser);
+    public BuiltinUser save(BuiltinUser dataverseUser) {
+        BuiltinUser savedUser = em.merge(dataverseUser);
         return savedUser;
     }
     
@@ -44,37 +42,37 @@ public class DataverseUserServiceBean {
         return null; // TODO implement
     }
 	
-    public DataverseUser find(Long pk) {
-        return em.find(DataverseUser.class, pk);
+    public BuiltinUser find(Long pk) {
+        return em.find(BuiltinUser.class, pk);
     }    
     
-    public DataverseUser findByUserName(String userName) {
+    public BuiltinUser findByUserName(String userName) {
         String query = "SELECT u from DataverseUser u where u.userName = :userName ";
-        DataverseUser user = null;
+        BuiltinUser user = null;
         try {
-            user = (DataverseUser) em.createQuery(query).setParameter("userName", userName).getSingleResult();
+            user = (BuiltinUser) em.createQuery(query).setParameter("userName", userName).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
         }
         return user;
     }
 	
-	public List<DataverseUser> listByUsernamePart ( String part ) {
-		return em.createNamedQuery("DataverseUser.listByUserNameLike", DataverseUser.class)
+	public List<BuiltinUser> listByUsernamePart ( String part ) {
+		return em.createNamedQuery("DataverseUser.listByUserNameLike", BuiltinUser.class)
 				.setParameter("userNameLike", "%" + part + "%")
 				.getResultList();
 	}
 	
-    public DataverseUser findByEmail(String email) {
+    public BuiltinUser findByEmail(String email) {
         String query = "SELECT u from DataverseUser u where u.email = :email ";
-        DataverseUser user = null;
+        BuiltinUser user = null;
         try {
-            user = (DataverseUser) em.createQuery(query).setParameter("email", email).getSingleResult();
+            user = (BuiltinUser) em.createQuery(query).setParameter("email", email).getSingleResult();
         } catch (javax.persistence.NoResultException e) {
         }
         return user;
     }
     
-    public List<DataverseUser> findAll() {
-		return em.createNamedQuery("DataverseUser.findAll", DataverseUser.class).getResultList();
+    public List<BuiltinUser> findAll() {
+		return em.createNamedQuery("DataverseUser.findAll", BuiltinUser.class).getResultList();
 	}
 }

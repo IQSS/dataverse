@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse.authorization;
+package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.io.Serializable;
 
 /**

@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.GuestUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.EnumSet;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class PermissionServiceBean {
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
 
     @EJB
-    DataverseUserServiceBean userService;
+    BuiltinUserServiceBean userService;
 
     @EJB
     DataverseRoleServiceBean roleService;

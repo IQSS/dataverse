@@ -4,15 +4,16 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.ApiKey;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.ApiKey;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -60,10 +61,13 @@ public abstract class AbstractApiBean {
 	protected EjbDataverseEngine engineSvc;
 	
 	@EJB
-	protected DataverseUserServiceBean userSvc;
+	protected BuiltinUserServiceBean userSvc;
 	
-	@EJB 
+	@EJB
 	protected DataverseServiceBean dataverseSvc;
+    
+    @EJB 
+    protected AuthenticationServiceBean authSvc;
     
     @EJB
     protected DatasetFieldServiceBean datasetFieldSvc;

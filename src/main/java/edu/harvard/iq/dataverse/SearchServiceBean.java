@@ -1,8 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.api.SearchFields;
-import edu.harvard.iq.dataverse.authorization.GuestUser;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class SearchServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 

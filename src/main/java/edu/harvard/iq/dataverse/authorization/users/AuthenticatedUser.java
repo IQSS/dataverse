@@ -1,7 +1,9 @@
-package edu.harvard.iq.dataverse.authorization;
+package edu.harvard.iq.dataverse.authorization.users;
 
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -27,9 +29,7 @@ public class AuthenticatedUser implements User, Serializable {
     Long id;
 
     /**
-     * In practice, this identifier is a username.
-     *
-     * @todo Rename this to username? Call it alias?
+     * In practice, this identifier is a username + idp prefix.
      */
     @NotNull
     @Column(nullable = false)

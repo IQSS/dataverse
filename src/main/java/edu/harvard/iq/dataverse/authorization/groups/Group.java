@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups;
 
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.impl.AbstractGroup;
 import java.util.Set;
 import javax.servlet.ServletRequest;

@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization;
+package edu.harvard.iq.dataverse.authorization.users;
 
 import java.io.Serializable;
 import java.sql.Timestamp;

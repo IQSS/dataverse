@@ -1,11 +1,11 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import java.util.List;

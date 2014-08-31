@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.groups.impl.AbstractGroup;
 import java.util.Map;

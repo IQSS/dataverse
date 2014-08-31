@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.SearchFields;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
@@ -47,7 +49,7 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DataverseUserServiceBean dataverseUserServiceBean;
+    BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -203,7 +205,7 @@ public class IndexServiceBean {
              */
             if (dataverse.getCreator().getUserName().equals("pete")) {
                 // figure out if cathy is around
-                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
                 if (cathy != null) {
                     // let cathy see all of pete's dataverses
                     solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
@@ -595,7 +597,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
         }
 
-        DataverseUser creator = dataset.getCreator();
+        BuiltinUser creator = dataset.getCreator();
         if (creator != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
             /**
@@ -604,7 +606,7 @@ public class IndexServiceBean {
              */
             if (creator.getUserName().equals("pete")) {
                 // figure out if cathy is around
-                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
                 if (cathy != null) {
                     // let cathy see all of pete's dataverses
                     solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
@@ -814,7 +816,7 @@ public class IndexServiceBean {
                      */
                     if (creator.getUserName().equals("pete")) {
                         // figure out if cathy is around
-                        DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
+                        BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
                         if (cathy != null) {
                             // let cathy see all of pete's dataverses
                             datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());

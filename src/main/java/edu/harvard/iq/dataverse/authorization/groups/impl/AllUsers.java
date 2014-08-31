@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.authorization.groups.impl;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import javax.servlet.ServletRequest;
 
 public class AllUsers extends AbstractGroup {

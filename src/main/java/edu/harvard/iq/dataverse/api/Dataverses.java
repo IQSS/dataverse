@@ -5,13 +5,13 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -444,7 +444,7 @@ public class Dataverses extends AbstractApiBean {
 	@DELETE
 	@Path("{identifier}/assignments/{id}")
 	public Response deleteAssignment( @PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		DataverseUser actingUser = userSvc.findByUserName(apiKey);
+		BuiltinUser actingUser = userSvc.findByUserName(apiKey);
 		if ( actingUser == null ) return badApiKey(apiKey);
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");

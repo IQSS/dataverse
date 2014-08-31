@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import java.sql.Timestamp;
 import java.util.Objects;
 import javax.persistence.*;
@@ -52,7 +53,7 @@ public abstract class DvObject implements java.io.Serializable {
     private Timestamp createDate;
 
     @ManyToOne
-    private DataverseUser creator;
+    private BuiltinUser creator;
 
     public interface Visitor<T> {
         public T visit(Dataverse dv);
@@ -111,11 +112,11 @@ public abstract class DvObject implements java.io.Serializable {
         this.createDate = createDate;
     }
 
-    public DataverseUser getCreator() {
+    public BuiltinUser getCreator() {
         return creator;
     }
 
-    public void setCreator(DataverseUser creator) {
+    public void setCreator(BuiltinUser creator) {
         this.creator = creator;
     }
     

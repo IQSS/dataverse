@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ public class Roles extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Roles.class.getName());
 	
 	@EJB
-	DataverseUserServiceBean usersSvc;
+	BuiltinUserServiceBean usersSvc;
 	
 	@EJB
 	DataverseServiceBean dvSvc;

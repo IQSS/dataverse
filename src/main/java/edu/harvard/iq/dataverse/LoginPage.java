@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -27,7 +29,7 @@ public class LoginPage implements java.io.Serializable {
     @Inject DataverseSession session;    
     
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
     
     @EJB
     UserServiceBean userService;
@@ -77,14 +79,14 @@ public class LoginPage implements java.io.Serializable {
     */
     
     public boolean validatePassword(String username, String password) {
-        DataverseUser user = dataverseUserService.findByUserName(userName);
+        BuiltinUser user = dataverseUserService.findByUserName(userName);
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         return encryptedPassword.equals(user.getEncryptedPassword());
     }
 
     public String login() {
         // FIXME this has to use the new auth system.
-        DataverseUser user = dataverseUserService.findByUserName(userName);
+        BuiltinUser user = dataverseUserService.findByUserName(userName);
         if (user == null || !validatePassword(userName, password)) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Login failed", " - Please check your username and password and try again."));
             return null;

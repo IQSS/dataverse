@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +54,7 @@ public class WorldMapToken implements java.io.Serializable {
 
     @ManyToOne
     @JoinColumn(nullable=false)
-    private DataverseUser dataverseUser;
+    private BuiltinUser dataverseUser;
 
     @ManyToOne
     @JoinColumn(nullable=false)
@@ -146,7 +146,7 @@ public class WorldMapToken implements java.io.Serializable {
      * Get property dataverseUser.
      * @return DataverseUser, value of property dataverseUser.
      */
-    public DataverseUser getDataverseUser() {
+    public BuiltinUser getDataverseUser() {
             return this.dataverseUser;
     }
 
@@ -154,7 +154,7 @@ public class WorldMapToken implements java.io.Serializable {
      * Set property dataverseUser.
      * @param dataverseUser new value of property dataverseUser.
      */
-    public void setDataverseUser(DataverseUser dataverseUser) {
+    public void setDataverseUser(BuiltinUser dataverseUser) {
             this.dataverseUser = dataverseUser;
     }
 

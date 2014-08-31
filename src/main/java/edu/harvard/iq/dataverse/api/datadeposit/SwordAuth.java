@@ -2,15 +2,15 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.User;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import org.swordapp.server.AuthCredentials;
@@ -23,7 +23,7 @@ public class SwordAuth {
     private static final Logger logger = Logger.getLogger(SwordAuth.class.getCanonicalName());
 
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -37,7 +37,7 @@ public class SwordAuth {
             String username = authCredentials.getUsername();
             String password = authCredentials.getPassword();
             logger.fine("Checking username " + username + " ...");
-            DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
+            BuiltinUser dataverseUser = dataverseUserService.findByUserName(username);
             // FIXME replace with new user authentication, this assumes local user is used.
             AuthenticatedUser au = userService.findByUsername(username);
             

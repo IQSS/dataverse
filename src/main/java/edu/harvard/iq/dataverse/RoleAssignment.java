@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import java.util.Objects;
@@ -39,7 +40,7 @@ public class RoleAssignment implements java.io.Serializable {
 	
 	@ManyToOne( cascade = CascadeType.MERGE )
     @NotNull
-	private DataverseUser user;
+	private BuiltinUser user;
 		
 	@ManyToOne( cascade = CascadeType.MERGE )
     @NotNull
@@ -54,7 +55,7 @@ public class RoleAssignment implements java.io.Serializable {
 	public RoleAssignment(DataverseRole role, RoleAssignee user, DvObject definitionPoint) {
         // Placeholder to allow the AssignRoleCommand to compile.
     }
-	public RoleAssignment(DataverseRole role, DataverseUser user, DvObject definitionPoint) {
+	public RoleAssignment(DataverseRole role, BuiltinUser user, DvObject definitionPoint) {
 		this.role = role;
 		this.user = user;
 		this.definitionPoint = definitionPoint;
@@ -68,11 +69,11 @@ public class RoleAssignment implements java.io.Serializable {
 		this.id = id;
 	}
 
-	public DataverseUser getUser() {
+	public BuiltinUser getUser() {
 		return user;
 	}
 
-	public void setUser(DataverseUser user) {
+	public void setUser(BuiltinUser user) {
 		this.user = user;
 	}
 
