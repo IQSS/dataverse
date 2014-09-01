@@ -55,7 +55,7 @@ public class Search extends AbstractApiBean {
                 User dataverseUser = null;
                 if (apiKey != null) {
                     String usernameProvided = apiKey;
-                    dataverseUser = findUserByKey(apiKey);
+                    dataverseUser = findUserByApiToken(apiKey);
                     if (dataverseUser == null) {
                         return error("Couldn't find username: " + usernameProvided);
                     }

@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public interface User extends RoleAssignee, Serializable {
     
-    public static final String IDENTIFIER_PREFIX = "u:";
+    public static final String IDENTIFIER_PREFIX = "@";
 
     public boolean isAuthenticated();
             

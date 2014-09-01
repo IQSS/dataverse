@@ -40,7 +40,7 @@ public class Files extends AbstractApiBean {
         newListOfFiles.add(dataFile);
         dataset.setFiles(newListOfFiles);
         try {
-            User u = userSvc.findByIdentifier(apiKey);
+            User u = builtinUserSvc.findByIdentifier(apiKey);
             if (u == null) {
                 return error("Invalid apikey '" + apiKey + "'");
             }

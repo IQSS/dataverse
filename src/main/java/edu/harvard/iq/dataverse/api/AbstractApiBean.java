@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.ApiKey;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -54,14 +54,13 @@ public abstract class AbstractApiBean {
         public Response getResponse() {
             return response;
         }
-        
     }
     
 	@EJB
 	protected EjbDataverseEngine engineSvc;
 	
 	@EJB
-	protected BuiltinUserServiceBean userSvc;
+	protected BuiltinUserServiceBean builtinUserSvc;
 	
 	@EJB
 	protected DataverseServiceBean dataverseSvc;
@@ -100,13 +99,12 @@ public abstract class AbstractApiBean {
     });
     
 	protected User findUser( String userIdtf ) {
+        // FIXME should make use of full identifier, consider not assuming user at all, as this may be a group.
     	return engineSvc.getContext().users().findByIdentifier(userIdtf);
 	}
     
-    protected AuthenticatedUser findUserByKey( String apiKey ) {
-        ApiKey key = userService.findApiKey(apiKey);
-        return ( key == null ) ? null
-                : key.getAuthenticatedUser();
+    protected AuthenticatedUser findUserByApiToken( String apiKey ) {
+        return authSvc.lookupUser(apiKey);
     }
     
     protected User findUserById( String userIdtf ) {

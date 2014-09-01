@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.DatasetLock;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
 import java.util.List;
@@ -19,7 +17,11 @@ import javax.validation.constraints.NotNull;
 
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
-                query="select au from AuthenticatedUser au")
+                query="select au from AuthenticatedUser au"),
+    @NamedQuery( name="AuthenticatedUser.findBy",
+                query="select au from AuthenticatedUser au"),
+    @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
+                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {
@@ -32,15 +34,16 @@ public class AuthenticatedUser implements User, Serializable {
      * In practice, this identifier is a username + idp prefix.
      */
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, unique=true)
     private String userIdentifier;
 
     private String name;
     private String email;
+    private String affiliation;
     
     @Override
     public String getIdentifier() {
-        return userIdentifier;
+        return User.IDENTIFIER_PREFIX + userIdentifier;
     }
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -59,6 +62,16 @@ public class AuthenticatedUser implements User, Serializable {
         return new RoleAssigneeDisplayInfo(name, email);
     }
     
+    /**
+     * Takes the passed info object and updated the internal fields according to it.
+     * @param inf the info from which we update the fields.
+    */
+    public void applyDisplayInfo( RoleAssigneeDisplayInfo inf ) {
+        setEmail(inf.getEmailAddress());
+        setAffiliation( inf.getAffiliation() );
+        setName( inf.getTitle() );
+    }
+    
     @Override
     public boolean isAuthenticated() { return true; }
 
@@ -68,6 +81,38 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUserIdentifier() {
+        return userIdentifier;
+    }
+
+    public void setUserIdentifier(String userIdentifier) {
+        this.userIdentifier = userIdentifier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAffiliation() {
+        return affiliation;
+    }
+
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
     }
     
     

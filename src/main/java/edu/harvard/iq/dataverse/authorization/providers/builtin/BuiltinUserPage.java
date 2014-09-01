@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,7 +56,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     BuiltinUserServiceBean dataverseUserService;
     
     @EJB
-    UserServiceBean userService;
+    AuthenticationServiceBean authSvc;
 
     private BuiltinUser dataverseUser;
     private EditMode editMode;
@@ -257,7 +257,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
         dataverseUser = dataverseUserService.save(dataverseUser);
-        userNotificationService.sendNotification(userService.findAuthenticatedUser("local", Long.toString(dataverseUser.getId())),
+        userNotificationService.sendNotification(authSvc.lookupUser("builtin", Long.toString(dataverseUser.getId())),
                 new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {

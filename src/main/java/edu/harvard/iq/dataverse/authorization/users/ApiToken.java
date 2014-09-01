@@ -8,25 +8,28 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
-/**
- * @todo Should we rename this from ApiKey to ApiToken? See
- * https://github.com/IQSS/dataverse/issues/459#issuecomment-51400205
- */
 @Entity
-public class ApiKey implements Serializable {
+@NamedQueries({
+    @NamedQuery( name="ApiToken.findByToken", query="SELECT t FROM ApiToken t WHERE t.token=:token" )
+})
+public class ApiToken implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
-    @Column(nullable = false)
-    private String key;
+    @Column(nullable = false, unique = true)
+    private String token;
 
     @NotNull
     @JoinColumn(nullable = false)
+    @ManyToOne
     private AuthenticatedUser authenticatedUser;
 
     @Column(nullable = false)
@@ -46,18 +49,18 @@ public class ApiKey implements Serializable {
         this.id = id;
     }
 
-    public String getKey() {
-        return key;
+    public String getToken() {
+        return token;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setToken(String aToken) {
+        this.token = aToken;
     }
 
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
-
+    
     public boolean isDisabled() {
         return disabled;
     }
@@ -70,4 +73,20 @@ public class ApiKey implements Serializable {
         return expireTime;
     }
 
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
+
+    public void setExpireTime(Timestamp expireTime) {
+        this.expireTime = expireTime;
+    }
+    
 }

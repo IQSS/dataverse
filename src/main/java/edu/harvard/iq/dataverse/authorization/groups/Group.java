@@ -15,6 +15,7 @@ import javax.servlet.ServletRequest;
  */
 public interface Group extends RoleAssignee {
     
+    public static final String IDENTIFIER_PREFIX = "&";
     
     /**
      * A unique identifier of this group within a Dataverse system installation.

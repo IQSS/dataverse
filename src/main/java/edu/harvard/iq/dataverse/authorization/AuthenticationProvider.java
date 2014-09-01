@@ -19,11 +19,10 @@ public interface AuthenticationProvider {
     
     /**
      * The main method of this interface - provide a consistent user id, within
-     * the scope of this provider, for a user based on the credentials.
-     * @param credentials map of credentials, e.g. username, password, domain
-     * @return string containing a persistent id of the user, or {@code null} for failed login.
-     * @throws AuthorizationException in case, e.g, a connection to the remote server fails.
+     * the scope of this provider, for a user based on the request content.
+     * @param request All information needed to decide whether the user can be authenticated.
+     * @return response with the result of the authentication process.
      */
-    public String authenticate( Map<String, String> credentials ) throws AuthorizationException;
+    public AuthenticationResponse authenticate( AuthenticationRequest request );
 
 }

@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.authorization;
+package edu.harvard.iq.dataverse.authorization.exceptions;
 
 /**
  * Base class for exceptions thrown by the authorization package classes.

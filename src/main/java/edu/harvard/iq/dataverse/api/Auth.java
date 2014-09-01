@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.authorization.users.ApiKey;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -22,19 +22,16 @@ public class Auth extends AbstractApiBean {
 
     @GET
     public String get() {
-        List<AuthenticatedUser> users = userService.findAllAuthenticatedUsers();
+        List<AuthenticatedUser> users = authSvc.findAllAuthenticatedUsers();
         List<String> userStuff = new ArrayList<>();
         for (AuthenticatedUser authenticatedUser : users) {
             RoleAssigneeDisplayInfo displayInfo = authenticatedUser.getDisplayInfo();
             userStuff.add(authenticatedUser.getIdentifier() + ":" + displayInfo);
         }
-        List<AuthenticatedUserLookup> lookupStrings = userService.findByAllLookupStrings();
-        for (AuthenticatedUserLookup authenticatedUserLookup : lookupStrings) {
-            userStuff.add(authenticatedUserLookup.getPersistentUserIdFromIdp());
-        }
-        List<ApiKey> apiKeys = userService.findAllApiKeys();
-        for (ApiKey apiKey : apiKeys) {
-            userStuff.add(apiKey.getKey());
+        
+        List<ApiToken> apiKeys = userService.findAllApiKeys();
+        for (ApiToken apiKey : apiKeys) {
+            userStuff.add(apiKey.getToken());
         }
         /**
          * [jsmith:John Smith, jasmith:John Smith,
@@ -46,7 +43,7 @@ public class Auth extends AbstractApiBean {
         JsonObjectBuilder info = Json.createObjectBuilder();
         info
                 .add("userStuff", userStuff.toString())
-                .add("numAuthProviders", authSvc.getAuthenticationProviders().size())
+                .add("numAuthProviders", authSvc.getAuthenticationProviderIds().size())
                 .add("endpoints", Json.createArrayBuilder()
                         .add(usernameEndpoint)
                         .add(lookupEndpoint)
@@ -91,14 +88,9 @@ public class Auth extends AbstractApiBean {
     @GET
     @Path("lookup/{idp}/{id}")
     public String getAuthenticatedUser(@PathParam("idp") String idp, @PathParam("id") String id) {
-        AuthenticatedUserLookup userIdLookupString = userService.findByPersitentIdFromIdp(idp, id);
-        if (userIdLookupString != null) {
-            AuthenticatedUser user = userIdLookupString.getAuthenticatedUser();
-            if (user != null) {
-                return ok(user.getDisplayInfo() + " (" + user.getIdentifier() + ")");
-            } else {
-                return error("Couldn't find user based on " + id);
-            }
+        AuthenticatedUser authenticatedUser = authSvc.lookupUser(idp, id);
+        if (authenticatedUser != null) {
+            return ok(authenticatedUser.getDisplayInfo() + " (" + authenticatedUser.getIdentifier() + ")");
         } else {
             return error("Couldn't find user based on " + id);
         }
@@ -109,7 +101,7 @@ public class Auth extends AbstractApiBean {
     @GET
     @Path(apiKeyEndpoint + "/{key}")
     public Response getApiKeyInfo(@PathParam("key") String key) {
-        ApiKey apiKey = userService.findApiKey(key);
+        ApiToken apiKey = authSvc.findApiToken(key);
         if (apiKey != null) {
             AuthenticatedUser user = apiKey.getAuthenticatedUser();
             if (user != null) {

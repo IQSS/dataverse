@@ -20,34 +20,15 @@
             <ui:define name="body">
                 <div class="row" style="margin-top:3em;">
                     <h:form id="loginForm" styleClass="form-horizontal">
-                        <p:focus context="loginForm"/>
-                        <div class="form-group">
-                            <p:outputLabel value="Username" for="userName" styleClass="col-sm-2 control-label"/>
-                            <div class="col-sm-9">
-                                <h:inputText id="userName" size="40" style="width:auto;" value="#{LoginPage.userName}" styleClass="form-control"/>
-                                <p:message for="userName"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <p:outputLabel value="Password" for="password" styleClass="col-sm-2 control-label"/>
-                            <div class="col-sm-9">
-                                <h:inputSecret id="password" size="40" style="width:auto;" value="#{LoginPage.password}" styleClass="form-control"/>
-                                <p:message for="password"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-9">
-                                <p:commandButton id="login" value="Log In" action="#{LoginPage.login}" update="@all">
-                                    <p:resetInput target="@all"/>
-                                </p:commandButton>
-                                <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
-                            </div>
-                        </div>
+						<ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="authProv">
+							<div>
+								<em>#{authProv.title}</em>  <small>#{authProv.id}</small><br />
+								#{authProv.subtitle}
+								<hr />
+							</div>
+						</ui:repeat>
                     </h:form>
                 </div>
-                <h:outputLink value="/shib.xhtml">
-                    <h:outputText value="shib" style="font-size: smaller; color: #f6f6f6"/>
-                </h:outputLink>
             </ui:define>
         </ui:composition>
     </h:body>

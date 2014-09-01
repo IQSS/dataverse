@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.UserLister;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
@@ -9,7 +10,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 
@@ -21,7 +22,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     
     private static final String KEY_USERNAME = "Username";
     private static final String KEY_PASSWORD = "Password";
-    private static final List<String> CREDENTIALS_LIST = Arrays.asList( KEY_USERNAME, KEY_PASSWORD );
+    private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME), new Credential(KEY_PASSWORD, true) );
       
     final BuiltinUserServiceBean bean;
 
@@ -46,21 +47,21 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        return new AuthenticationProviderDisplayInfo("Build-in Provider", "Internal user repository");
+        return new AuthenticationProviderDisplayInfo(getId(), "Build-in Provider", "Internal user repository");
     }
 
     @Override
-    public String authenticate(Map<String, String> credentials) throws AuthorizationException {
-        BuiltinUser u = bean.findByUserName( credentials.get(KEY_USERNAME) );
-        if ( u == null ) return null;
-        if ( u.getEncryptedPassword().equals( bean.encryptPassword(credentials.get(KEY_PASSWORD)))) {
-            return u.getUserName();
+    public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
+        BuiltinUser u = bean.findByUserName( authReq.getCredential(KEY_USERNAME) );
+        if ( u == null ) return AuthenticationResponse.makeFail("Bad username");
+        if ( u.getEncryptedPassword().equals( bean.encryptPassword(authReq.getCredential(KEY_PASSWORD)))) {
+            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
         } 
-        return null;
+        return AuthenticationResponse.makeFail("Bad username or password");
    }
 
     @Override
-    public List<String> getRequiredCredentials() {
+    public List<Credential> getRequiredCredentials() {
         return CREDENTIALS_LIST;
     }
 }

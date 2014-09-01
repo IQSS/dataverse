@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Level;
@@ -27,7 +29,7 @@ public class Users extends AbstractApiBean {
 	public Response list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		
-		for ( BuiltinUser u : userSvc.findAll() ) {
+		for ( BuiltinUser u : builtinUserSvc.findAll() ) {
 			bld.add( json(u) );
 		}
 		
@@ -48,9 +50,19 @@ public class Users extends AbstractApiBean {
 	public Response save( BuiltinUser user, @QueryParam("password") String password ) {
 		try { 
 			if ( password != null ) {
-				user.setEncryptedPassword(userSvc.encryptPassword(password));
+				user.setEncryptedPassword(builtinUserSvc.encryptPassword(password));
 			}
-			user = userSvc.save(user);
+			user = builtinUserSvc.save(user);
+            
+            AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", user.getUserName(), user.createDisplayInfo());
+            
+            // CONT fix this
+            ApiToken token = new ApiToken();
+            token.setToken(user.getUserName());
+            token.setAuthenticatedUser(au);
+             
+            engineSvc.getContext().em().merge( token );
+            
 			return okResponse( json(user) );
 		} catch ( Exception e ) {
 			logger.log( Level.WARNING, "Error saving user", e );

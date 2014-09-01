@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.users.ApiKey;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import java.util.List;
@@ -27,13 +27,9 @@ public class UserServiceBean {
     
     @EJB IndexServiceBean indexService;
 
-    public List<AuthenticatedUser> findAllAuthenticatedUsers() {
-        Query query = em.createNamedQuery("AuthenticatedUser.findAll");
-        List resultList = query.getResultList();
-        return resultList;
-    }
 
     // FIXEME this is user id, not name (username is on the idp)
+    @Deprecated
     public AuthenticatedUser findByUsername(String username) {
         TypedQuery<AuthenticatedUser> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUser AS o where o.identifier = :username", AuthenticatedUser.class);
         typedQuery.setParameter("username", username);
@@ -46,22 +42,6 @@ public class UserServiceBean {
         return authenticatedUser;
     }
 
-    public AuthenticatedUserLookup findByPersitentIdFromIdp( String idp, String persistentIdFromIdp ) {
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createNamedQuery("AuthenticatedUserLookup.findByIdp,PersistentId", AuthenticatedUserLookup.class);
-        typedQuery.setParameter("persistentId", persistentIdFromIdp);
-        typedQuery.setParameter("idp", idp);
-        try {
-            return typedQuery.getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("caught " + ex.getClass() + " querying for " + persistentIdFromIdp);
-            return null;
-        }
-    }
-    
-    public AuthenticatedUser findAuthenticatedUser( String idp, String persistentIdpId ) {
-        AuthenticatedUserLookup lu = findByPersitentIdFromIdp(idp, persistentIdpId);
-        return (lu != null ) ? lu.getAuthenticatedUser() : null;
-    }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         if ( user.getId() == null ) {
@@ -76,25 +56,10 @@ public class UserServiceBean {
         return user;
     }
 
-    public List<AuthenticatedUserLookup> findByAllLookupStrings() {
-        TypedQuery<AuthenticatedUserLookup> typedQuery = em.createQuery("SELECT OBJECT(o) FROM AuthenticatedUserLookup o", AuthenticatedUserLookup.class);
+    // TODO is this needed at all?
+    public List<ApiToken> findAllApiKeys() {
+        TypedQuery<ApiToken> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiKey o", ApiToken.class);
         return typedQuery.getResultList();
     }
 
-    public List<ApiKey> findAllApiKeys() {
-        TypedQuery<ApiKey> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiKey o", ApiKey.class);
-        return typedQuery.getResultList();
-    }
-
-    public ApiKey findApiKey(String key) {
-        TypedQuery<ApiKey> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiKey o where o.key = :apiKey", ApiKey.class);
-        typedQuery.setParameter("apiKey", key);
-        ApiKey apiKey = null;
-        try {
-            apiKey = typedQuery.getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("caught " + ex.getClass() + " querying for " + key);
-        }
-        return apiKey;
-    }
 }

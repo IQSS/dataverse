@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
-import edu.harvard.iq.dataverse.authorization.AuthorizationException;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.ExternalLinkAuthenticationProvider;
 import java.net.URL;
-import java.util.Map;
 
 public class ShibAuthenticationProvider implements ExternalLinkAuthenticationProvider {
 
@@ -19,7 +19,7 @@ public class ShibAuthenticationProvider implements ExternalLinkAuthenticationPro
     }
 
     @Override
-    public String authenticate(Map<String, String> credentials) throws AuthorizationException {
+    public AuthenticationResponse authenticate( AuthenticationRequest req ) {
         // TODO the credentials map will contain the shib* headers. Find the persistent id of the 
         // user there, and return it.
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

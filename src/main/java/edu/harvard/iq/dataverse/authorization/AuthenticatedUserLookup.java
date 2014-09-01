@@ -2,60 +2,49 @@ package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
+import javax.persistence.CascadeType;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 
 /**
  * A somewhat glorified key-value pair, persisted in the database.
  * The value is the {@link AuthenticatedUser}, the internal user representation pointed by the
- * IDP, and the key is a concatenation of the IDP's alias and the user's persistent id
- * within that IDP. These objects may be used both for storage (the full constructor)
+ * IDP, and the key is a pair of the authentication provider's alias and the user's persistent id
+ * within that authentication provider. These objects may be used both for storage (the full constructor)
  * and retrieval (the idp+id constructor, and then {@link #getLookupKey()}.
- * 
+ *
  * @author pdurbin
  * @author michael
  */
 @NamedQueries( {
-    @NamedQuery( name="AuthenticatedUserLookup.findByLookupKey",
-                 query="SELECT au FROM AuthenticatedUserLookup au WHERE au.lookupKey=:lookupKey")
+    @NamedQuery( name="AuthenticatedUserLookup.findByAuthPrvID_PersUserId",
+                 query="SELECT au FROM AuthenticatedUserLookup au "
+                         + "WHERE au.id.authenticationProviderId=:authPrvId "
+                         + "  AND au.id.persistentUserId=:persUserId ")
 })
 @Entity
 public class AuthenticatedUserLookup implements Serializable {
     
-    private static final String SEPERATOR = "|";
-    
-    @Id
-    String lookupKey;
-    
-    @NotNull(message = "Please provide a persistent indentifer by which an user can be looked up.")
-    @Transient
-    private String persistentUserIdFromIdp;
-    
-    @NotNull(message = "Please provide a persistent indentifer by which an user can be looked up.")
-    @Transient
-    private String idpAlias;
+    @EmbeddedId
+    AuthenticatedUserLookupId id;
 
-    @ManyToOne
+    @ManyToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
     @JoinColumn(nullable = false)
     private AuthenticatedUser authenticatedUser;
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp) {
-        this.persistentUserIdFromIdp = persistentUserIdFromIdp;
-        this.idpAlias = idp;
-        updateLookupKey();
+        this( persistentUserIdFromIdp, idp, null );
     }
 
-    public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp, AuthenticatedUser authenticatedUser) {
-        this.persistentUserIdFromIdp = persistentUserIdFromIdp;
-        this.idpAlias = idp;
+    public AuthenticatedUserLookup(String persistentUserIdFromIdp, String authPrvId, AuthenticatedUser authenticatedUser) {
+        id = new AuthenticatedUserLookupId();
+        id.setAuthenticationProviderId(authPrvId);
+        id.setPersistentUserId(persistentUserIdFromIdp);
         this.authenticatedUser = authenticatedUser;
-        updateLookupKey();
     }
 
     /**
@@ -67,39 +56,16 @@ public class AuthenticatedUserLookup implements Serializable {
         return authenticatedUser;
     }
 
-    public String getLookupKey() {
-        return lookupKey;
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
     }
 
-    public String getPersistentUserIdFromIdp() {
-        if ( persistentUserIdFromIdp==null ) parseLookupKey();
-        return persistentUserIdFromIdp;
+    public AuthenticatedUserLookupId getId() {
+        return id;
     }
 
-    public void setPersistentUserIdFromIdp(String persistentUserIdFromIdp) {
-        this.persistentUserIdFromIdp = persistentUserIdFromIdp;
-        updateLookupKey();
-    }
-
-    public String getIdpAlias() {
-        if ( idpAlias==null ) parseLookupKey();
-        return idpAlias;
-    }
-
-    public void setIdpAlias(String idp) {
-        this.idpAlias = idp;
-        updateLookupKey();
+    public void setId(AuthenticatedUserLookupId id) {
+        this.id = id;
     }
     
-    private void updateLookupKey() {
-        lookupKey = getIdpAlias() + SEPERATOR + getPersistentUserIdFromIdp();
-    }
-    
-    private void parseLookupKey() {
-        if ( getLookupKey() != null ) {
-            String[] comps = getLookupKey().split("\\|",1);
-            setIdpAlias( comps[0] );
-            setPersistentUserIdFromIdp( comps[1] );
-        }
-    }
 }
