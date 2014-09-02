@@ -134,6 +134,14 @@
                                         </h:outputLink>
                                         <h:outputText value="#{dataverseUserBundle.toPublishText}" />
                                     </ui:fragment>
+                                    <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
+                                        <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
+                                        <h:outputText value="The Dataset " />
+                                        <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
+                                        </h:outputLink>
+                                        <h:outputText value=" had WorldMap layer data added to it." />
+                                    </ui:fragment>                                    
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">
                                         <h:outputText value="#{dataverseUserBundle.welcomeToDataverseText}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
                                         <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">

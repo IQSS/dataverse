@@ -154,7 +154,8 @@ public class Access {
     @Path("imagethumb/{fileSystemId}")
     @GET
     @Produces({"image/png"})
-    public InputStream imagethumb(@PathParam("fileSystemId") Long fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public InputStream imagethumb(@PathParam("fileSystemId") String fileSystemId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        
         String filesRootDirectory = System.getProperty("dataverse.files.directory");
         if (filesRootDirectory == null || filesRootDirectory.equals("")) {
             filesRootDirectory = "/tmp/files";
@@ -170,6 +171,13 @@ public class Access {
         } else {
             imageThumbFileName = ImageThumbConverter.generateImageThumb(fileSystemName);
         }
+        
+        // TODO: 
+        // double-check that this temporary preview thumbnail gets deleted 
+        // once the file is saved "for real". 
+        // (or maybe we shouldn't delete it - but instead move it into the 
+        // permanent location... so that it doesn't have to be generated again?)
+        // -- L.A. Aug. 21 2014
         
         if (imageThumbFileName == null) {
             imageThumbFileName = getWebappImageResource(DEFAULT_FILE_ICON);

@@ -7,9 +7,13 @@
      xmlns:o="http://omnifaces.org/ui">
 
     <!-- View Mode -->
-    <ui:fragment rendered="${empty DatasetPage.editMode}">
+
+    <ui:fragment rendered="${((empty DatasetPage.editMode) and (empty TemplatePage.editMode)) or ManageTemplatesPage.selectedTemplate != null}">
         <div class="panel-group">
-            <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
+            <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()) 
+                                ? DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray() 
+                                : TemplatePage.template.metadataBlocksForView.entrySet().toArray() }" 
+                                var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default">
                     <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
                         #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
@@ -69,11 +73,12 @@
     </ui:fragment>
 
     <!-- Edit Mode -->
-    <ui:fragment rendered="${!empty DatasetPage.editMode}">
+    <ui:fragment rendered="${(!empty DatasetPage.editMode) or (!empty TemplatePage.editMode)}">
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
-            <ui:repeat value="#{DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
-                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate)}">
+            <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()) ? 
+                                DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
+                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()  ) or (!empty TemplatePage.editMode) }">
                     <div class="panel panel-default">
                         <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
                             #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
@@ -82,7 +87,8 @@
                             <div class="panel-body">
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
 
-                                    <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate)}">
+                                    <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty())
+                                                             or (!empty TemplatePage.editMode)}">
 
                                         <div class="form-group">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">

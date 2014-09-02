@@ -403,13 +403,33 @@ public class DatasetVersionDifference {
                 }
             });
            
-                      Collections.sort(newVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
+           // Here's a potential problem: this new version may have been created
+           // specifically because new files are being added to the dataset. 
+           // In which case there may be files associated with this new version 
+           // with no database ids - since they haven't been saved yet. 
+           // So if we try to sort the files in the version the way we did above, 
+           // by ID, it may fail with a null pointer. 
+           // To solve this, we should simply check if the file has the id; and if not, 
+           // sort it higher than any file with an id - because it is a most recently
+           // added file. Since we are only doing this for the purposes of generating
+           // version differences, this should be OK. 
+           //   -- L.A. Aug. 2014
+           
+            Collections.sort(newVersion.getFileMetadatas(), new Comparator<FileMetadata>() {
                 public int compare(FileMetadata l1, FileMetadata l2) {
                     FileMetadata fm1 = l1;  //(DatasetField[]) l1.get(0);
                     FileMetadata fm2 = l2;
-                    int a = fm1.getDataFile().getId().intValue();
-                    int b = fm2.getDataFile().getId().intValue();
-                    return Integer.valueOf(a).compareTo(Integer.valueOf(b));
+                    Long a = fm1.getDataFile().getId();
+                    Long b = fm2.getDataFile().getId();
+                    
+                    if (a == null && b == null) {
+                        return 0;
+                    } else if (a == null) {
+                        return 1; 
+                    } else if (b == null) {
+                        return -1;
+                    }
+                    return a.compareTo(b);
                 }
             });
 
@@ -418,7 +438,7 @@ public class DatasetVersionDifference {
             fm1 = originalVersion.getFileMetadatas().get(i);
             fm2 = newVersion.getFileMetadatas().get(j);
 
-            if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) == 0) {
+            if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) == 0) {
                 // The 2 versions share the same study file;
                 // Check if the metadata information is identical in the 2 versions
                 // of the metadata:
@@ -429,13 +449,13 @@ public class DatasetVersionDifference {
                 }
                 i++;
                 j++;
-            } else if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
+            } else if (fm2.getDataFile().getId() != null && fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) > 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
                 fdi.setFileId(fm2.getDataFile().getId().toString());
                 datasetFilesDiffList.add(fdi);
 
                 j++;
-            } else if (fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
+            } else if (fm2.getDataFile().getId() == null || fm1.getDataFile().getId().compareTo(fm2.getDataFile().getId()) < 0) {
                 datasetFileDifferenceItem fdi = selectFileMetadataDiffs(fm1, null);
                 fdi.setFileId(fm1.getDataFile().getId().toString());
                 datasetFilesDiffList.add(fdi);
@@ -459,7 +479,11 @@ public class DatasetVersionDifference {
         while (j < newVersion.getFileMetadatas().size()) {
             fm2 = newVersion.getFileMetadatas().get(j);
             datasetFileDifferenceItem fdi = selectFileMetadataDiffs(null, fm2);
-            fdi.setFileId(fm2.getDataFile().getId().toString());
+            if (fm2.getDataFile().getId() != null) {
+                fdi.setFileId(fm2.getDataFile().getId().toString());
+            } else {
+                fdi.setFileId("[UNASSIGNED]");
+            }
             datasetFilesDiffList.add(fdi);
 
             j++;

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name} Dataverse"/>
+            <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
+            <ui:param name="template" value="#{TemplatePage.template}"/>
+            <ui:param name="showBreadcrumbs" value="#{true}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <!--<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>-->
+
+                <f:metadata>
+                    <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
+                    <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
+                    <f:viewParam name="editMode" value="#{TemplatePage.editMode}"/>
+                    <f:viewAction action="#{TemplatePage.init}" />
+                </f:metadata>
+
+                <h:form id="datasetForm">
+                    <!-- Header / Button Panel -->
+                    <ui:fragment rendered="#{empty TemplatePage.editMode}">
+                        <!-- View mode -->
+                        <div class="row form-horizontal">
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The name of the dataset template.">
+                                        Template Name 
+                                    </a>
+                                </label>
+                                <div class="col-sm-9">
+                                    <h:outputText value="#{TemplatePage.template.name}" style="padding-top: 7px;display:block;"/>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
+                            <h:outputText value="Return to Manage Templates"/>
+                        </h:outputLink>
+                        
+                        <h:outputText id="name" value="#{TeplatePage.template.name}"/>
+                        <ui:include src="metadataFragment.xhtml"/>
+                    </ui:fragment>
+
+                    <!-- Tabs -->
+                    <ui:fragment rendered="#{!empty TemplatePage.editMode}">
+                        <div class="row form-horizontal">
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Enter a unique name for the template.">
+                                        Template Name <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    </a>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p:inputText id="templateName" styleClass="form-control" value="#{TemplatePage.template.name}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="contentTabs">
+                            <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
+                                <p:tab id="metadataMapTab" title="Metadata" rendered="#{ (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
+                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
+                                            </p:commandLink>
+                                        </div>
+                                    </ui:fragment>
+                                    <div style="clear:left;">
+                                        <ui:include src="metadataFragment.xhtml"/>
+                                    </div>
+                                </p:tab>
+                            </p:tabView>
+                        </div>
+                    </ui:fragment>
+
+                    <p:confirmDialog message="Are you sure you want to delete this template? This action may not be 'Undone'." header="Delete Template" widgetVar="deleteConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{TemplatePage.deleteTemplate()}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                    <!-- Create/Save Dataset Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty TemplatePage.editMode}" >
+                        <p:commandButton id="save" value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : 'Save Changes'}" action="#{TemplatePage.save}" >
+                        </p:commandButton>
+                        <p:button id="cancelCreate" value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" />
+                    </p:panel>
+                    <p:commandButton value="Direct" id="templateSave"
+                                     style="display:none"
+                                     update=":datasetForm"
+                                     action="#{TemplatePage.save}">
+                    </p:commandButton>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

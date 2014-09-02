@@ -97,6 +97,7 @@ function post_cancel_edit_dv(){
    show_search_panels()
    hide_info_msg();    
    bind_bsui_components();
+   initCarousel();
    //console.log('show after cancel edit3');
 }
 

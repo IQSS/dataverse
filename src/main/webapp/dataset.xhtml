@@ -37,6 +37,10 @@
                         }
                     }
 
+                    function updateTemplate() {
+                            $('button[id$="updateTemplate"]').trigger('click');
+                    }
+
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
@@ -356,9 +360,38 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                            <ui:include src="metadataFragment.xhtml"/>
+                            <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
+                                <div class="form-group">
+                                    <label for="select_DatasetTemplate" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
+                                                         converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
+                                                         valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
+                                            <f:selectItem itemLabel="No template - clear default values" itemValue="#{null}" />
+                                            <f:selectItems value="#{DatasetPage.dataverseTemplates}"
+                                                           var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Direct" id="updateTemplate"
+                                                         style="display:none"
+                                                         update="@all"
+                                                         action="#{DatasetPage.handleChangeButton}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            <ui:include src="metadataFragment.xhtml"/>                      
                         </ui:fragment>
                     </ui:fragment>
+                    
+                    <!-- Create/Save Dataset Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
+                        <p:commandButton id="saveTop" value="Save Changes" onclick="checkFilesSelected();" />
+                        <p:commandButton id="cancelTop" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
+                        </p:commandButton>
+                    </p:panel>
 
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
@@ -459,11 +492,19 @@
                                             </ui:fragment>
 
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
+                                           
                                             <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData)}"/>
 
                                             <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
+                                            <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+<br />
+<iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+
+                                               <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
+                                            </ui:fragment>
                                             <div class="fileDescription">
                                                 <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
                                                 <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
@@ -494,7 +535,15 @@
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
+                                           
 
+                                             <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
+                                                           <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
+                                                           <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
+                                                </a>
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{datasetBundle.downloadButton}
@@ -542,7 +591,7 @@
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{datasetBundle.addOrEditMetadataText}" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -565,6 +614,7 @@
                                                      oncomplete="detailsBlocks.show();post_differences();"
                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
+
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.compareVersionsCount > 2}"

@@ -22,7 +22,9 @@ import javax.persistence.NamedQuery;
  */
 @NamedQueries({
 	@NamedQuery( name="DataverseFacet.removeByOwnerId",
-				 query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId")
+				 query="DELETE FROM DataverseFacet f WHERE f.dataverse.id=:ownerId"),
+    @NamedQuery( name="DataverseFacet.findByDataverseId",
+                 query="select f from DataverseFacet f where f.dataverse.id = :dataverseId order by f.displayOrder")
 })
 
 @Entity

@@ -26,7 +26,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String software = "software";
     public final static String grantNumber = "grantNumber";
     public final static String distributor = "distributor";
-    public final static String distributorContact = "distributorContact";
+    public final static String datasetContact = "datasetContact";
     public final static String series = "series";
     public final static String datasetVersion = "datasetVersion";
     
@@ -565,7 +565,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     }
 
     public String getDistributorContact() {
-        return distributorContact;
+        return datasetContact;
     }
 
     public String getDescription() {

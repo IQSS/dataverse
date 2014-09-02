@@ -21,7 +21,7 @@
         },
         {
             "id":"dataset_17_draft",
-            "matched_fields":"[dsDescription, title, notesText, authorAffiliation, authorName, keyword, contributorName]",
+            "matched_fields":"[dsDescription, title, notesText, authorAffiliation, authorName, dataCollector, keyword]",
             "detailsArray":[
                 {
                     "dsDescription":[
@@ -49,13 +49,13 @@
                     ]
                 },
                 {
-                    "keyword":[
-                        "<span class=\"search-term-match\">trees</span>"
+                    "dataCollector":[
+                        "Edward <span class=\"search-term-match\">Trees</span> Jr."
                     ]
                 },
                 {
-                    "contributorName":[
-                        "Edward <span class=\"search-term-match\">Trees</span> Jr."
+                    "keyword":[
+                        "<span class=\"search-term-match\">trees</span>"
                     ]
                 }
             ]

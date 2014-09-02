@@ -9,69 +9,47 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataTable;
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedInputStream;
-
-import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import java.util.Properties;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
-
 import javax.servlet.http.HttpServletResponse;
 
-/*
-    Custom API exceptions [NOT YET IMPLEMENTED]
-import edu.harvard.iq.dataverse.api.exceptions.NotFoundException;
-import edu.harvard.iq.dataverse.api.exceptions.ServiceUnavailableException;
-import edu.harvard.iq.dataverse.api.exceptions.PermissionDeniedException;
-import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
-*/
+
 
 /**
  *
  * @author Leonid Andreev
  * 
- * The data (file) access API is based on the DVN access API v.1.0 (that came 
- * with the v.3.* of the DVN app) and extended for DVN 4.0 to include some
- * extra fancy functionality, such as subsetting individual columns in tabular
- * data files and more.
+ * This API call was originally created for batch-testing 4.0 ingest. 
+ * It runs the ingest code that creates the dataverse data objects - datavariables,
+ * datatable, etc. and generates a report with variable metadata - names, 
+ * types, UNFs, but doesn't persist the objects in the database. 
+ * It was put together as a bit of a hack - but we may have a place for it in 
+ * the application - Gary has requested a mechanism for producing UNFs without
+ * actually ingesting the file (for sensitive data, etc.).
+ * So we'll probably beef up this API call a little bit (make it upload the 
+ * file, etc.) and make a simple UI for it. 
+ * 
+ *      -- L.A. Aug. 2014 
  */
 
 @Path("ingest")
@@ -100,20 +78,23 @@ public class TestIngest {
         
         BufferedInputStream fileInputStream = null; 
         
+        String absoluteFilePath = null; 
         if (fileType.equals("x-stata")) {
-            fileName = "/usr/share/data/retest_stata/reingest/" + fileName;
+            absoluteFilePath = "/usr/share/data/retest_stata/reingest/" + fileName;
         } else if (fileType.equals("x-spss-sav")) {
-            fileName = "/usr/share/data/retest_sav/reingest/" + fileName;
+            absoluteFilePath = "/usr/share/data/retest_sav/reingest/" + fileName;
+        } else if (fileType.equals("x-spss-por")) {
+            absoluteFilePath = "/usr/share/data/retest_por/reingest/" + fileName; 
         }
         
         try {
-            fileInputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
+            fileInputStream = new BufferedInputStream(new FileInputStream(new File(absoluteFilePath)));
         } catch (FileNotFoundException notfoundEx) {
             fileInputStream = null; 
         }
         
         if (fileInputStream == null) {
-            output = output.concat("Could not open file "+fileName+".");
+            output = output.concat("Could not open file "+absoluteFilePath+".");
             return output;
         }
         
@@ -142,7 +123,7 @@ public class TestIngest {
                         && tabFile != null
                         && tabFile.exists()) {
 
-                    String tabFilename = FileUtil.replaceExtension(fileName, "tab");
+                    String tabFilename = FileUtil.replaceExtension(absoluteFilePath, "tab");
                     
                     java.nio.file.Files.copy(Paths.get(tabFile.getAbsolutePath()), Paths.get(tabFilename), StandardCopyOption.REPLACE_EXISTING);
                     
@@ -151,8 +132,14 @@ public class TestIngest {
                     DataFile dataFile = new DataFile();
                     dataFile.setFileSystemName(tabFilename);
                     
+                    FileMetadata fileMetadata = new FileMetadata();
+                    fileMetadata.setLabel(fileName);
+                    
                     dataFile.setDataTable(dataTable);
                     dataTable.setDataFile(dataFile);
+                    
+                    fileMetadata.setDataFile(dataFile);
+                    dataFile.getFileMetadatas().add(fileMetadata);
                     
                     output = output.concat ("NVARS: "+dataTable.getVarQuantity()+"\n");
                     output = output.concat ("NOBS: "+dataTable.getCaseQuantity()+"\n");

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <f:metadata>
+            <f:viewParam name="dataverseId" value="#{manageTemplatesPage.dataverseId}"/>
+            <f:viewAction action="#{manageTemplatesPage.init}"/>
+        </f:metadata>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="Manage Dataset Templates"/>
+            <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <h:form id="manageTemplatesForm">
+
+                    <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null}">
+                        <label for="templateRoot" style="margin-top:.75em;">
+                            <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
+                                <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
+                            </h:selectBooleanCheckbox>
+                            Include Templates from  Parent Dataverse
+                        </label>
+                    </ui:fragment>
+
+                    <div style="float:right; margin-bottom:.5em;">
+                        <h:outputLink styleClass="btn btn-default" 
+                                      value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverse.id}">
+                            <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> <h:outputText value="Create Dataset Template"/>
+                        </h:outputLink>
+                    </div>
+                    <div class="clearfix"/>
+
+                    <div>
+                        <p:dataTable id="allTemplates" var="template" value="#{manageTemplatesPage.templates}">
+                            <p:column width="35%" sortBy="name" headerText="Template Name">
+                                <h:outputText value="#{template.name} " />
+                            </p:column>
+                            <p:column width="15%" sortBy="createDate" headerText="Date Created">
+                                <h:outputText value="#{template.createDate} " />
+                            </p:column>
+                            <p:column width="10%" sortBy="usageCount" headerText="Usage">
+                                <h:outputText value="#{template.usageCount} " />
+                            </p:column>
+                            <p:column width="40%" headerText="Action">
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="Make Default"
+                                               rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
+                                               actionListener="#{manageTemplatesPage.makeDefault(template)}"
+                                               update="@all"
+                                               style="color:black;margin-right:0.5em;"/>
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="Default"                                                 
+                                               rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
+                                               actionListener="#{manageTemplatesPage.unselectDefault(template)}"
+                                               update="@all"
+                                               style="color:black;margin-right:0.5em;"/>
+                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" rendered="false"
+                                              value="/template.xhtml?id=#{template.id}&#38;ownerId=#{template.dataverse.id}">
+                                    <h:outputText value="View"/>
+                                </h:outputLink>
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="View" 
+                                               action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
+                                               oncomplete="viewTemplate.show()"
+                                               update=":manageTemplatesForm"
+                                               style="color:black;margin-right:0.5em;"/>
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="Clone"                                                 
+                                               action="#{manageTemplatesPage.cloneTemplate(template)}"
+                                               update="@all"
+                                               style="color:black;margin-right:0.5em;"/>
+                                <h:outputLink styleClass="btn btn-default" style="color:black;margin-right:0.5em;" 
+                                              rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
+                                              value="/template.xhtml?id=#{template.id}&#38;ownerId=#{manageTemplatesPage.dataverse.id}&#38;editMode=METADATA">
+                                    <h:outputText value="Edit"/>
+                                </h:outputLink>
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="Delete" 
+                                               action="#{manageTemplatesPage.setSelectedTemplate(template)}"
+                                               rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
+                                               oncomplete="deleteConfirmation.show()"
+                                               style="color:black;margin-right:0.5em;"/>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+
+                    <p:confirmDialog message="Are you sure you want to delete this template? This action may not be 'Undone'." header="Delete Template" widgetVar="deleteConfirmation">
+                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                    
+                    <p:dialog id="viewTemplate" header="Dataset Template Preview" widgetVar="viewTemplate" width="600px" height="600px" style="overflow-y: scroll;">
+                        <div class="form-horizontal">
+                            
+                            <div class="form-group">
+                                <label for="select_DatasetTemplate" class="col-sm-3 control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                </label>
+                                <div class="col-sm-7" style="padding-top: 7px;">
+                                    #{manageTemplatesPage.selectedTemplate.name}
+                                </div>
+                            </div>
+                        </div>
+                            
+                        <ui:include src="metadataFragment.xhtml"/>
+                    </p:dialog>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
+
