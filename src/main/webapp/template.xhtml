@@ -26,7 +26,8 @@
                     <f:viewAction action="#{TemplatePage.init}" />
                 </f:metadata>
 
-                <h:form id="datasetForm">
+                <h:form id="templateForm">
+
                     <!-- Header / Button Panel -->
                     <ui:fragment rendered="#{empty TemplatePage.editMode}">
                         <!-- View mode -->
@@ -42,12 +43,11 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <h:outputLink styleClass="btn" value="/manage-templates.xhtml?dataverseId=#{TemplatePage.ownerId}">
                             <h:outputText value="Return to Manage Templates"/>
                         </h:outputLink>
-                        
-                        <h:outputText id="name" value="#{TeplatePage.template.name}"/>
+                        <h:outputText value="#{TeplatePage.template.name}"/>
                         <ui:include src="metadataFragment.xhtml"/>
                     </ui:fragment>
 
@@ -62,48 +62,21 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:inputText id="templateName" styleClass="form-control" value="#{TemplatePage.template.name}"/>
+                                    <p:message for="templateName"/>
                                 </div>
                             </div>
                         </div>
-
-                        <div id="contentTabs">
-                            <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                                <p:tab id="metadataMapTab" title="Metadata" rendered="#{ (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
-                                                             and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                             and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
-                                            <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
-                                                <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
-                                            </p:commandLink>
-                                        </div>
-                                    </ui:fragment>
-                                    <div style="clear:left;">
-                                        <ui:include src="metadataFragment.xhtml"/>
-                                    </div>
-                                </p:tab>
-                            </p:tabView>
-                        </div>
+                        <ui:include src="metadataFragment.xhtml"/>            
                     </ui:fragment>
 
-                    <p:confirmDialog message="Are you sure you want to delete this template? This action may not be 'Undone'." header="Delete Template" widgetVar="deleteConfirmation">
-                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{TemplatePage.deleteTemplate()}">
-                        </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty TemplatePage.editMode}" >
-                        <p:commandButton id="save" value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : 'Save Changes'}" action="#{TemplatePage.save}" >
-                        </p:commandButton>
-                        <p:button id="cancelCreate" value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" />
+                        <h:commandButton type="submit" action="#{TemplatePage.save()}" class="btn btn-default" 
+                                         value="#{TemplatePage.editMode == 'CREATE' ? 'Create Dataset Template' : 'Save Changes'}" />
+                        <h:button  class="btn btn-default" 
+                                   value="Cancel" outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}" />
                     </p:panel>
-                    <p:commandButton value="Direct" id="templateSave"
-                                     style="display:none"
-                                     update=":datasetForm"
-                                     action="#{TemplatePage.save}">
-                    </p:commandButton>
+
                 </h:form>
             </ui:define>
         </ui:composition>

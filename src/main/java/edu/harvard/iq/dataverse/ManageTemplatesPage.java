@@ -39,8 +39,8 @@ public class ManageTemplatesPage {
 
     @Inject
     DataversePage dvpage;
-    
-    @Inject 
+
+    @Inject
     TemplatePage tempPage;
 
     @Inject
@@ -167,7 +167,7 @@ public class ManageTemplatesPage {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
-    
+
     public void viewSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
         this.selectedTemplate.setMetadataValueBlocks();
@@ -175,7 +175,7 @@ public class ManageTemplatesPage {
     }
 
     public String updateTemplatesRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
-        try {  
+        try {
             if (dataverse.getOwner() != null) {
                 if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {
                     dataverse.setDefaultTemplate(dataverse.getOwner().getDefaultTemplate());

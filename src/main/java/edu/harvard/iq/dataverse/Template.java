@@ -194,7 +194,6 @@ public class Template implements Serializable {
                 metadataBlocksForEdit.put(mdb, sortDatasetFields(datasetFieldsForEdit));
             }
         }
-        System.out.print("size for edit init " + metadataBlocksForEdit.size());
     }
 
     public void setMetadataValueBlocks() {
