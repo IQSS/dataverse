@@ -398,6 +398,14 @@
                             <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
                                                      itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
                         </div>
+                        <div class="form-group">
+                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
+                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
+                        </div>
+                        <div class="form-group">
+                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
+                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                        </div>
                         <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
                     </p:dialog>
