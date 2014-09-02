@@ -130,24 +130,25 @@
                                         <p:message for="affiliation"/>
                                     </p:panelGrid>
                                 </div>
-                            </div>
-                            <div class="col-xs-6 form-group">
-
-                                <label class="col-sm-3 control-label" for="dataverseType">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.typeReflectsDataverseTitle}">
-                                        #{dataverseBundle.dataverseTypeText} <span class="glyphicon glyphicon-asterisk text-danger" title="#{dataverseBundle.requiredFieldTitle}"></span>
+                                
+                                <label class="col-sm-3 control-label" for="dataverseCategory">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The type that most closely reflects this Dataverse.">
+                                        Category <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
                                     </a>
                                 </label>  
-                                <div class="col-sm-8">
-                                    <h:selectOneMenu id="dataverseType" value="#{DataversePage.dataverse.dataverseType}">
-                                        <f:selectItem id="dvSelect" itemLabel="#{dataverseBundle.selectOneItem}" itemValue="" />
-                                        <f:selectItem id="dvResearch" itemLabel="#{dataverseBundle.researchersItem}" itemValue="RESEARCHERS" />
-                                        <f:selectItem id="dvResearchProj" itemLabel="#{dataverseBundle.researchProjectsItem}" itemValue="RESEARCH_PROJECTS" />
-                                        <f:selectItem id="dvJournals" itemLabel="#{dataverseBundle.journalsItem}" itemValue="JOURNALS" />
-                                        <f:selectItem id="dvOrgInst" itemLabel="#{dataverseBundle.organizationsAndInstitutionsItem}" itemValue="ORGANIZATIONS_INSTITUTIONS" />
-                                        <f:selectItem id="dvTeaching" itemLabel="#{dataverseBundle.teachingCoursesItem}" itemValue="TEACHING_COURSES" />
-                                        <f:selectItem id="dvUncategorized" itemLabel="#{dataverseBundle.uncategorizedItem}" itemValue="UNCATEGORIZED" />
-                                    </h:selectOneMenu>
+                                <div class="col-sm-9">
+                                    <p:panelGrid columns="2">
+                                        <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
+                                            <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
+                                            <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
+                                            <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
+                                            <f:selectItem id="dvJournals" itemLabel="Journals" itemValue="JOURNALS" />
+                                            <f:selectItem id="dvOrgInst" itemLabel="Organizations &amp; Institutions" itemValue="ORGANIZATIONS_INSTITUTIONS" />
+                                            <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
+                                            <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
+                                        </h:selectOneMenu>
+                                        <p:message for="dataverseCategory"/>
+                                    </p:panelGrid>
                                 </div>
                             </div>
                             <div class="col-xs-6 form-group">
@@ -158,8 +159,8 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
-                                                     rows="5" cols="50" counter="counter" maxlength="1000"
-                                                     counterTemplate="#{dataverseBundle.charactersRemainingText}" autoResize="false">
+                                                     rows="6" cols="50"
+                                                     autoResize="false">
                                     </p:inputTextarea>
                                     <h:outputText id="counter" style="display:block;"/>                                    
                                 </div>
@@ -303,14 +304,6 @@
                             <p:confirmDialog message="#{dataverseBundle.cannotEmailMsg}" header="#{dataverseBundle.emailContactText}" widgetVar="contact_confirmation">                                           
                             </p:confirmDialog>                                                                
                         </div>
-                        <div class="form-group">
-                            <label for="exampleInputFile">#{dataverseBundle.featuredDataversesText}</label>
-                            <p class="help-block">#{dataverseBundle.selectedToFeatureText}</p>
-                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse" 
-                                        itemLabel="#{featureddataverse.name}" 
-                                        itemValue="#{featureddataverse}" converter="dataverseConverter"
-                                        showSourceFilter="true" showTargetFilter="true" />
-                        </div>
                         
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
                             <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
@@ -389,12 +382,30 @@
                             <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
                                                      itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
                         </div>
+                        <div class="form-group">
+                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
+                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
+                        </div>
+                        <div class="form-group">
+                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
+                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                        </div>
+                        <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
+                    </p:dialog>
+
+                    <!-- Dialog Feedback Form -->
+                    <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
+                        <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="confirmation.hide();" type="button" />
                     </p:confirmDialog>
                     <p:confirmDialog message="#{dataverseBundle.mayNotPublishMsg}" header="#{dataverseBundle.mayNotPublishText}" widgetVar="mayNotRelease">
                     </p:confirmDialog>
                     <p:confirmDialog message="#{dataverseBundle.deleteDataverseTip}" header="#{dataverseBundle.deleteDataverseLink}" widgetVar="deleteConfirmation">
                         <p:commandButton value="#{dataverseBundle.continueButton}" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}">
                         </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide();" type="button" />
                     </p:confirmDialog>
                     
                     <!-- Dataverse Theme Panel -->
