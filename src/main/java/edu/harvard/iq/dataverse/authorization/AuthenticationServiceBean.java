@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.exceptions.DuplicateAuthenticationProviderException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -8,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,8 +99,8 @@ public class AuthenticationServiceBean {
     
     public ApiToken findApiToken(String token) {
         try {
-            return em.createNamedQuery("ApiToken.findByToken", ApiToken.class)
-                    .setParameter("token", token)
+            return em.createNamedQuery("ApiToken.findByTokenString", ApiToken.class)
+                    .setParameter("tokenString", token)
                     .getSingleResult();
         } catch (NoResultException ex) {
             return null;
@@ -108,7 +109,17 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser lookupUser( String apiToken ) {
         ApiToken tkn = findApiToken(apiToken);
-        return (tkn!=null) ? tkn.getAuthenticatedUser() : null;
+        if ( tkn == null ) return null;
+        
+        if ( tkn.isDisabled() ) return null;
+        if ( tkn.getExpireTime() != null ) {
+            if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
+                em.remove(tkn);
+                return null;
+            }
+        }
+        
+        return tkn.getAuthenticatedUser();
     }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
@@ -118,6 +129,15 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser update( AuthenticatedUser user ) {
         return em.merge(user);
+    }
+    
+    public ApiToken save( ApiToken aToken ) {
+        if ( aToken.getId() == null ) {
+            em.persist(aToken);
+            return aToken;
+        } else { 
+            return em.merge( aToken );
+        }
     }
 
     /**

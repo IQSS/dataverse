@@ -31,7 +31,7 @@ public class Auth extends AbstractApiBean {
         
         List<ApiToken> apiKeys = userService.findAllApiKeys();
         for (ApiToken apiKey : apiKeys) {
-            userStuff.add(apiKey.getToken());
+            userStuff.add(apiKey.getTokenString());
         }
         /**
          * [jsmith:John Smith, jasmith:John Smith,

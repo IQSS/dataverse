@@ -5,10 +5,13 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -56,14 +59,22 @@ public class Users extends AbstractApiBean {
             
             AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", user.getUserName(), user.createDisplayInfo());
             
-            // CONT fix this
             ApiToken token = new ApiToken();
-            token.setToken(user.getUserName());
-            token.setAuthenticatedUser(au);
-             
-            engineSvc.getContext().em().merge( token );
             
-			return okResponse( json(user) );
+            token.setTokenString(java.util.UUID.randomUUID().toString());
+            token.setAuthenticatedUser(au);
+
+            Calendar c = Calendar.getInstance();
+            token.setCreateTime( new Timestamp(c.getTimeInMillis()) );
+            c.roll(Calendar.YEAR, 1);
+            token.setExpireTime( new Timestamp(c.getTimeInMillis()) );
+            authSvc.save(token);
+            
+            JsonObjectBuilder resp = Json.createObjectBuilder();
+            resp.add("user", json(user) );
+            resp.add("apiToken", token.getTokenString());
+			return okResponse( resp );
+            
 		} catch ( Exception e ) {
 			logger.log( Level.WARNING, "Error saving user", e );
 			return errorResponse( Status.INTERNAL_SERVER_ERROR, "Can't save user: " + e.getMessage() );

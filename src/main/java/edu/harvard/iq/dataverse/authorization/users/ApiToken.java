@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @NamedQueries({
-    @NamedQuery( name="ApiToken.findByToken", query="SELECT t FROM ApiToken t WHERE t.token=:token" )
+    @NamedQuery( name="ApiToken.findByTokenString", query="SELECT t FROM ApiToken t WHERE t.tokenString=:tokenString" )
 })
 public class ApiToken implements Serializable {
 
@@ -25,7 +25,7 @@ public class ApiToken implements Serializable {
 
     @NotNull
     @Column(nullable = false, unique = true)
-    private String token;
+    private String tokenString;
 
     @NotNull
     @JoinColumn(nullable = false)
@@ -49,12 +49,12 @@ public class ApiToken implements Serializable {
         this.id = id;
     }
 
-    public String getToken() {
-        return token;
+    public String getTokenString() {
+        return tokenString;
     }
 
-    public void setToken(String aToken) {
-        this.token = aToken;
+    public void setTokenString(String aToken) {
+        this.tokenString = aToken;
     }
 
     public AuthenticatedUser getAuthenticatedUser() {
