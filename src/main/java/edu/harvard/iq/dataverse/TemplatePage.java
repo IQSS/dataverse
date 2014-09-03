@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDateverseTemplateCommand;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -13,6 +14,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  *
@@ -110,6 +115,34 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save() {
+        
+                boolean dontSave = false;
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        for (DatasetField dsf : template.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                dontSave = true;
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
+            for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
+                dsfv.setValidationMessage(null); // clear out any existing validation message
+                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
+                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                    dsfv.setValidationMessage(constraintViolation.getMessage());
+                    dontSave = true;
+                    break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
+                }
+            }
+        }
+        if (dontSave) {
+            return "";
+        }
+        
         Command<Dataverse> cmd;
         try {
             if (editMode == EditMode.CREATE) {
