@@ -129,6 +129,8 @@ Retrieves a list of permissions a user has on the DvObject. Both ids can be the 
 
 ### users
 
+This endopint deals with users of the built-in authentication provider. Note that users may come from different authentication services as well, such as Shibboleth.
+
 	GET http://{{SERVER}}/api/users
 
 List all users.
@@ -136,14 +138,6 @@ List all users.
 	POST http://{{SERVER}}/api/users?password={{password}}
 
 Generates a new user. Note that the password is passed as a parameter in the query.
-
-	GET http://{{SERVER}}/api/users/{{uid}}
-
-Shows data about the user whose `uid` is passed. The `uid` can either be a number (id in the db) or the username.
-
-	GET http://{{SERVERS}}/api/users/:guest
-
-Gets the guest user. Generating one if needed.
 
 ### roles
 
