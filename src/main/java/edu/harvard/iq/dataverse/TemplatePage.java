@@ -93,17 +93,12 @@ public class TemplatePage implements java.io.Serializable {
                     template = dvTemp;
                 }
             }
-            if (dataverse != null){
-                
-            }
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
         } else if (ownerId != null) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
-            System.out.print("create new template " + ownerId);
             editMode = TemplatePage.EditMode.CREATE;
-            System.out.print("create new template " + dataverse.getName());
             template = new Template(this.dataverse);
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
@@ -121,9 +116,6 @@ public class TemplatePage implements java.io.Serializable {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
                 dataverse.getTemplates().add(template);
-                
-                System.out.print("save new template " + dataverse.getTemplates().size());
-                System.out.print("save new template " + dataverse.getName());
                 cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser());
                 commandEngine.submit(cmd);
             } else {
@@ -153,10 +145,8 @@ public class TemplatePage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
-
         editMode = null;
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
-        //return "/template.xhtml?id=" + template.getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
     }
 
     public void cancel() {
