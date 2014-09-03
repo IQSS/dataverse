@@ -59,8 +59,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json( RoleAssignment ra ) {
 		return jsonObjectBuilder()
 				.add("id", ra.getId())
-				.add("userId", ra.getUser().getId() )
-				.add("_username", ra.getUser().getUserName())
+				.add("assignee", ra.getAssigneeIdentifier() )
 				.add("roleId", ra.getRole().getId() )
 				.add("_roleAlias", ra.getRole().getAlias())
 				.add("definitionPointId", ra.getDefinitionPoint().getId() );

@@ -74,6 +74,16 @@ public class AuthenticationServiceBean {
         return authenticationProviders.get( id );
     }
     
+    public AuthenticatedUser getAuthenticatedUser( String identifier ) {
+        try {
+            return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)
+                    .setParameter("identifier", identifier)
+                    .getSingleResult();
+        } catch ( NoResultException nre ) {
+            return null;
+        }
+    }
+    
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );

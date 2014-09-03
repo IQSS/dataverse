@@ -5,12 +5,12 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -402,38 +402,29 @@ public class Dataverses extends AbstractApiBean {
 		Dataverse dataverse = findDataverse(dvIdtf);
 		if ( dataverse == null ) return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
-		// FIXME assignee may be a group!
-        User grantedUser = findUser(ra.getUserIdentifier());
-		if ( grantedUser==null ) {
-			return errorResponse( Status.BAD_REQUEST, "Can't find user using " + ra.getUserIdentifier() + "/" + ra.getUserId() );
+        RoleAssignee assignee = findAssignee(ra.getAssignee());
+		if ( assignee==null ) {
+			return errorResponse( Status.BAD_REQUEST, "Assignee not found" );
 		}
 		
 		DataverseRole theRole;
-		if ( ra.getRoleId() != 0 ) {
-			theRole = rolesSvc.find(ra.getRoleId());
-			if ( theRole == null ) {
-				return errorResponse( Status.BAD_REQUEST, "Can't find role with id " + ra.getRoleId() );
-			}
-			
-		} else {
-			Dataverse dv = dataverse;
-			theRole = null;
-			while ( (theRole==null) && (dv!=null) ) {
-				for ( DataverseRole aRole : dv.getRoles() ) {
-					if ( aRole.getAlias().equals(ra.getRoleAlias()) ) {
-						theRole = aRole;
-						break;
-					}
-				}
-				dv = dv.getOwner();
-			}
-			if ( theRole == null ) {
-				return errorResponse( Status.BAD_REQUEST, "Can't find role named '" + ra.getRoleAlias() + "' in dataverse " + dataverse);
-			}
-		}
+        Dataverse dv = dataverse;
+        theRole = null;
+        while ( (theRole==null) && (dv!=null) ) {
+            for ( DataverseRole aRole : dv.getRoles() ) {
+                if ( aRole.getAlias().equals(ra.getRole()) ) {
+                    theRole = aRole;
+                    break;
+                }
+            }
+            dv = dv.getOwner();
+        }
+        if ( theRole == null ) {
+            return errorResponse( Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
+        }
 		
 		try {
-			RoleAssignment roleAssignment = execCommand( new AssignRoleCommand(grantedUser, theRole, dataverse, actingUser), "Assign role");
+			RoleAssignment roleAssignment = execCommand( new AssignRoleCommand(assignee, theRole, dataverse, actingUser), "Assign role");
 			return okResponse(json(roleAssignment));
 			
 		} catch (FailedCommandResult ex) {

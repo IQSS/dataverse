@@ -18,21 +18,20 @@ import javax.validation.constraints.NotNull;
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
                 query="select au from AuthenticatedUser au"),
-    @NamedQuery( name="AuthenticatedUser.findBy",
-                query="select au from AuthenticatedUser au"),
+    @NamedQuery( name="AuthenticatedUser.findByIdentifier",
+                query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
                 query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier")
 })
 @Entity
 public class AuthenticatedUser implements User, Serializable {
-
+    
+    public static final String IDENTIFIER_PREFIX = "@";
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    /**
-     * In practice, this identifier is a username + idp prefix.
-     */
     @NotNull
     @Column(nullable = false, unique=true)
     private String userIdentifier;
@@ -43,7 +42,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     @Override
     public String getIdentifier() {
-        return User.IDENTIFIER_PREFIX + userIdentifier;
+        return IDENTIFIER_PREFIX + userIdentifier;
     }
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})

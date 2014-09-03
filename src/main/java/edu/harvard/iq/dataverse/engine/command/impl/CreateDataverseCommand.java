@@ -58,17 +58,17 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
 		// as no one is allowed to do anything on the newly created dataverse yet.
 		// TODO this can be optimized out if the creating user has full permissions
 		// on the parent dv, and the created dv is not a permission root.
-		DataverseRole manager = new DataverseRole();
-		manager.addPermissions( EnumSet.allOf(Permission.class) );
+		DataverseRole managerRole = new DataverseRole();
+		managerRole.addPermissions( EnumSet.allOf(Permission.class) );
 		
-		manager.setAlias("manager");
-		manager.setName("Dataverse Manager");
-		manager.setDescription("Auto-generated role for the creator of this dataverse");
-		manager.setOwner(managedDv);
+		managerRole.setAlias("manager");
+		managerRole.setName("Dataverse Manager");
+		managerRole.setDescription("Auto-generated role for the creator of this dataverse");
+		managerRole.setOwner(managedDv);
 		
-		ctxt.roles().save(manager);
+		ctxt.roles().save(managerRole);
 		
-		ctxt.roles().save(new RoleAssignment(manager, getUser(), managedDv));
+		ctxt.roles().save(new RoleAssignment(managerRole, getUser(), managedDv));
 		
 		ctxt.index().indexDataverse(managedDv);
 		

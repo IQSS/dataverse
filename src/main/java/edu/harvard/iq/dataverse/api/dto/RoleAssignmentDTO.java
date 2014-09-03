@@ -1,45 +1,27 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 /**
- * Data transfer object for role assignments. Carries the ids.
+ * Data transfer object for role assignments.
  * @author michael
  */
 public class RoleAssignmentDTO {
-	long userId;
-	long roleId;
-	String userIdentifier;
-	String roleAlias;
+	String assignee;
+	String role;
 
-	public long getUserId() {
-		return userId;
-	}
+    public String getAssignee() {
+        return assignee;
+    }
 
-	public void setUserId(long userId) {
-		this.userId = userId;
-	}
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
+    }
 
-	public long getRoleId() {
-		return roleId;
-	}
+    public String getRole() {
+        return role;
+    }
 
-	public void setRoleId(long roleId) {
-		this.roleId = roleId;
-	}
+    public void setRole(String role) {
+        this.role = role;
+    }
 
-	public String getUserIdentifier() {
-		return userIdentifier;
-	}
-
-	public void setUserIdentifier(String userIdentifier) {
-		this.userIdentifier = userIdentifier;
-	}
-
-	public String getRoleAlias() {
-		return roleAlias;
-	}
-
-	public void setRoleAlias(String roleAlias) {
-		this.roleAlias = roleAlias;
-	}
-	
 }

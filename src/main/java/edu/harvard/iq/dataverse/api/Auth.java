@@ -29,7 +29,7 @@ public class Auth extends AbstractApiBean {
             userStuff.add(authenticatedUser.getIdentifier() + ":" + displayInfo);
         }
         
-        List<ApiToken> apiKeys = userService.findAllApiKeys();
+        List<ApiToken> apiKeys = userSvc.findAllApiKeys();
         for (ApiToken apiKey : apiKeys) {
             userStuff.add(apiKey.getTokenString());
         }
@@ -75,7 +75,7 @@ public class Auth extends AbstractApiBean {
     @GET
     @Path(usernameEndpointSignature)
     public Response getAuthenicatedUserFromUsername(@PathParam(usernameParam) String username) {
-        AuthenticatedUser user = userService.findByUsername(username);
+        AuthenticatedUser user = userSvc.findByUsername(username);
         if (user != null) {
             return okResponse( json(user) );
         } else {

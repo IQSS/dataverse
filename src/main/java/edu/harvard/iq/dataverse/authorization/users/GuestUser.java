@@ -17,7 +17,7 @@ public class GuestUser implements User {
     
     @Override
     public String getIdentifier() {
-        return User.IDENTIFIER_PREFIX + "guest";
+        return ":Guest";
     }
 
     @Override

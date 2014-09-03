@@ -82,8 +82,8 @@
                         </div>
                         
                         <p:dataTable id="assignedRoles" var="ar" value="#{manageRolesPage.roleAssignments}">
-                            <p:column sortBy="name" headerText="User">
-                                <h:outputText value="#{ar.name} (#{ar.email})" />
+                            <p:column sortBy="title" headerText="User">
+                                <h:outputText value="#{ar.assigneeDisplayInfo.title} (#{ar.assigneeDisplayInfo.emailAddress})" />
                             </p:column>
                             <p:column sortBy="roleName" headerText="Role">
                                 <h:outputText value="#{ar.roleName} (#{ar.assignedDvName} Dataverse)" />

@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.util.HashSet;
@@ -8,16 +7,18 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A set of assignment a user has. 
+ * A set of assignment for a given {@link RoleAssignee} user has. 
+ * 
+ * LATER: we could probably refactor this class out.
  * @author michael
  */
-public class UserRoleAssignments implements Iterable<RoleAssignment> {
+public class RoleAssignmentSet implements Iterable<RoleAssignment> {
 	
-	private final User user;
+	private final RoleAssignee roas;
 	private final Set<RoleAssignment> assignments = new HashSet<>();
 	
-	public UserRoleAssignments( User aUser) {
-		user = aUser;
+	public RoleAssignmentSet( RoleAssignee aRoleAssignee) {
+		roas = aRoleAssignee;
 	}
 	
 	public void add( Iterable<RoleAssignment> ras ) {
@@ -38,9 +39,9 @@ public class UserRoleAssignments implements Iterable<RoleAssignment> {
 		return acc.asSetOf( Permission.class );
 	}
 
-	public User getUser() {
-		return user;
-	}
+    public RoleAssignee getRoleAssignee() {
+        return roas;
+    }
 
 	public Set<RoleAssignment> getAssignments() {
 		return assignments;

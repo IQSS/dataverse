@@ -29,7 +29,7 @@ echo Pete creates top-level for Uma
 curl -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "$SERVER/dvs/root?key=$1"
 echo
 echo Pete makes Uma a manager on her own DV
-curl -H "Content-type:application/json" -X POST -d"{\"userName\":\"uma\",\"roleAlias\":\"manager\"}" $SERVER/dvs/umaTop/assignments/?key=$1
+curl -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"manager\"}" $SERVER/dvs/umaTop/assignments/?key=$1
 echo
 curl -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "$SERVER/dvs/umaTop?key=$2"
 echo
@@ -38,7 +38,9 @@ echo
 
 echo Assign sensible role for the guest on root
 curl -H "Content-type:application/json" -X POST -d @data/role-guest.json "$SERVER/dvs/root/roles?key=$1"
-curl -H "Content-type:application/json" -X POST -d"{\"userName\":\"__GUEST__\",\"roleAlias\":\"guest-role\"}" $SERVER/dvs/root/assignments/?key=$1
+echo
+curl -H "Content-type:application/json" -X POST -d"{\"assignee\":\":Guest\",\"role\":\"guest-role\"}" $SERVER/dvs/root/assignments/?key=$1
+echo
 
 echo Set the metadata block for Root
 curl -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dvs/:root/metadatablocks/?key=$1

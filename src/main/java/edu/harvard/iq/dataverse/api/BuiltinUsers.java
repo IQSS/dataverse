@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -15,7 +14,6 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -25,8 +23,8 @@ import javax.ws.rs.core.Response.Status;
  * @author michael
  */
 @Path("users")
-public class Users extends AbstractApiBean {
-	private static final Logger logger = Logger.getLogger(Users.class.getName());
+public class BuiltinUsers extends AbstractApiBean {
+	private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
 	
 	@GET
 	public Response list() {
@@ -37,16 +35,6 @@ public class Users extends AbstractApiBean {
 		}
 		
 		return okResponse( bld );
-	}
-	
-	@GET
-	@Path("{identifier}")
-	public Response view( @PathParam("identifier") String identifier ) {
-		User u = findUser(identifier);
-		
-		return ( u!=null ) 
-				? okResponse( json(u) ) 
-				: errorResponse( Status.NOT_FOUND, "Can't find user with identifier '" + identifier + "'");
 	}
 	
 	@POST
