@@ -456,20 +456,38 @@ public class SAVFileReader  extends TabularDataFileReader{
                 // (see the setFormatCategory below... but double-check!)
                 // -- L.A. 4.0 alpha
                 String variableFormatType = variableFormatTypeList[indx];
-                if (variableFormatType != null
-                        && (variableFormatType.equals("time")
-                        || variableFormatType.equals("date"))) {
-                    ///variableTypeMinimal[indx] = 1;
-                    simpleType = 1; 
+                if (variableFormatType != null) {
+                    if (variableFormatType.equals("time")
+                        || variableFormatType.equals("date")) {
+                        simpleType = 1; 
                     
-                    String formatCategory = formatCategoryTable.get(varName);
+                        String formatCategory = formatCategoryTable.get(varName);
 
-                    if (formatCategory != null) {
-                        if (dateFormatList[indx] != null) {
-                            dbgLog.fine("setting format category to "+formatCategory);
-                            dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
-                            dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
-                            dataTable.getDataVariables().get(indx).setFormatSchemaName(dateFormatList[indx]);
+                        if (formatCategory != null) {
+                            if (dateFormatList[indx] != null) {
+                                dbgLog.fine("setting format category to "+formatCategory);
+                                dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
+                                dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
+                                dataTable.getDataVariables().get(indx).setFormatSchemaName(dateFormatList[indx]);
+                            }
+                        }
+                    } else if (variableFormatType.equals("other")) {
+                        dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
+                        dbgLog.fine("SPSS print format: "+printFormatTable.get(dataTable.getDataVariables().get(indx).getName()));
+                        
+                        if (printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals("WKDAY")
+                            || printFormatTable.get(dataTable.getDataVariables().get(indx).getName()).equals("MONTH")) {
+                            // week day or month; 
+                            // These are not treated as time/date values (meaning, we 
+                            // don't define time/date formats for them; there's likely 
+                            // no valid ISO time/date format for just a month or a day 
+                            // of week). However, the
+                            // values will be stored in the TAB files as strings, 
+                            // and not as numerics - as they were stored in the 
+                            // SAV file. So we need to adjust the type here.
+                            // -- L.A. 
+                            
+                            simpleType = 1;
                         }
                     }
                 }
@@ -2733,6 +2751,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                                         // We're not even going to try to handle "DTIME"
                                         // values as time/dates in dataverse; this is a weird
                                         // format that nobody uses outside of SPSS.
+                                        // (but we do need to remember to treat the resulting values 
+                                        // as character strings, not numerics!)
                                         
                                         if (casewiseRecordForTabFile.get(k).toString().indexOf(".") < 0) {
                                             long dateDatum = Long.parseLong(casewiseRecordForTabFile.get(k).toString()) * 1000L - SPSS_DATE_BIAS;
@@ -3157,6 +3177,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                             //formatCategoryTable.put(variableNameList.get(k), "time");
                             // not treating DTIME as date/time; see comment elsewhere in 
                             // the code; 
+                            // (but we do need to remember to treat the resulting values 
+                            // as character strings, not numerics!)
                             
                             if (printFormatTable.get(variableNameList.get(k)).equals("DTIME")){
 
