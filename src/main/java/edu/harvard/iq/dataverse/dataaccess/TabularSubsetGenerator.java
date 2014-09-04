@@ -562,7 +562,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         
         int MAX_OUTPUT_STREAMS = 32;
         int MAX_BUFFERED_BYTES = 10 * 1024 * 1024; // 10 MB - for now?
-        int MAX_COLUMN_BUFFER = 8192; 
+        int MAX_COLUMN_BUFFER = 8 * 1024; 
         
         // offsetHeader will contain the byte offsets of the individual column 
         // vectors in the final rotated image file
@@ -604,9 +604,18 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     tokensize = token.getBytes().length;
                     if (bufferedSizes[varindex]+tokensize > MAX_COLUMN_BUFFER) {
                         // fill the buffer and dump its contents into the temp file:
+                        // (do note that there may be *several* MAX_COLUMN_BUFFERs
+                        // worth of bytes in the token!)
+                        
+                        int tokenoffset = 0; 
+
                         if (bufferedSizes[varindex] != MAX_COLUMN_BUFFER) {
-                            System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], MAX_COLUMN_BUFFER-bufferedSizes[varindex]);
-                        }
+                            tokenoffset = MAX_COLUMN_BUFFER-bufferedSizes[varindex];
+                            System.arraycopy(token.getBytes(), 0, bufferedColumns[varindex], bufferedSizes[varindex], tokenoffset);
+                        } // (otherwise the buffer is already full, and we should 
+                          // simply dump it into the temp file, without adding any 
+                          // extra bytes to it)
+                        
                         File bufferTempFile = columnTempFiles[varindex]; 
                         if (bufferTempFile == null) {
                             bufferTempFile = File.createTempFile("columnBufferFile", "bytes");
@@ -618,18 +627,29 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream (bufferTempFile, true));
                         outputStream.write(bufferedColumns[varindex], 0, MAX_COLUMN_BUFFER);
                         cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
+                        
+                        // keep writing MAX_COLUMN_BUFFER-size chunks of bytes into 
+                        // the temp file, for as long as there's more than MAX_COLUMN_BUFFER
+                        // bytes left in the token:
+                        
+                        while (tokensize - tokenoffset > MAX_COLUMN_BUFFER) {
+                            outputStream.write(token.getBytes(), tokenoffset, MAX_COLUMN_BUFFER);
+                            cachedfileSizes[varindex] += MAX_COLUMN_BUFFER;
+                            tokenoffset += MAX_COLUMN_BUFFER;
+                        }
+                        
                         outputStream.close();
                         
                         // buffer the remaining bytes and reset the buffered 
                         // byte counter: 
                         
                         System.arraycopy(token.getBytes(), 
-                                MAX_COLUMN_BUFFER-bufferedSizes[varindex],
+                                tokenoffset, 
                                 bufferedColumns[varindex], 
                                 0,
-                                bufferedSizes[varindex] + tokensize - MAX_COLUMN_BUFFER);
+                                tokensize - tokenoffset); 
                         
-                        bufferedSizes[varindex] = bufferedSizes[varindex] + tokensize - MAX_COLUMN_BUFFER;
+                        bufferedSizes[varindex] = tokensize - tokenoffset; 
                         
                     } else {
                         // continue buffering
@@ -803,7 +823,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     
     /**
      * main() method, for testing
-     * usage: java edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator testfile.tab varcount casecount
+     * usage: java edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator testfile.tab varcount casecount column type
      * make sure the CLASSPATH contains ...
      * 
      */

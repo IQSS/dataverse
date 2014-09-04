@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.CascadeType;
@@ -18,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -47,6 +49,7 @@ public class Template implements Serializable {
     }
 
     @NotBlank(message = "Please enter a name.")
+    @Size(max = 255, message = "Name must be at most 255 characters.")
     private String name;
 
     public String getName() {
@@ -274,6 +277,24 @@ public class Template implements Serializable {
             dsf.setTemplate(this);
         }
         this.datasetFields = datasetFields;
+    }
+    
+    public List<DatasetField> getFlatDatasetFields() {
+        return getFlatDatasetFields(getDatasetFields());
+    }
+
+    private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
+        List<DatasetField> retList = new LinkedList();
+        for (DatasetField dsf : dsfList) {
+            retList.add(dsf);
+            if (dsf.getDatasetFieldType().isCompound()) {
+                for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                    retList.addAll(getFlatDatasetFields(compoundValue.getChildDatasetFields()));
+                }
+
+            }
+        }
+        return retList;
     }
     
     @Override
