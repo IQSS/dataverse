@@ -93,8 +93,8 @@
 	contributorType	Supervisor	13											
 	contributorType	Work Package Leader	14											
 	contributorType	Other	15											
-	authorIdentifierScheme	ISNI	0											
-	authorIdentifierScheme	ORCID	1											
+	authorIdentifierScheme	ORCID	0											
+	authorIdentifierScheme	ISNI	1											
 	language	Abkhaz	0											
 	language	Afar	1											
 	language	Afrikaans	2											
