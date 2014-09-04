@@ -9,7 +9,7 @@
     </h:head>
 
     <h:body>
-        <ui:composition template="/dataverse_template.xhtml">            
+        <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? dataverseBundle.new_PageTitle : DataversePage.dataverse.name} #{dataverseBundle._dataversePageTitle}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
@@ -40,20 +40,7 @@
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
 
-                <h:form id="dataverseForm">
-                    <f:subview id="languageView">
-         <h:form id="languageForm"
-                   style="background-color:#bbbbbb; padding-top:4px; padding-bottom:4px;">
-                   <h:outputText value="选择语言"></h:outputText>
-                   <h:selectOneMenu value="#{languageChangeBean.currentLocale}"
-                            immediate="true" onchange="submit();"
-                            valueChangeListener="#{languageChangeBean.changeLocale}">
-                            <f:selectItem itemValue="zh_CN" itemLabel="zhongwen" />
-                            <f:selectItem itemValue="zh_TW" itemLabel="fanti" />
-                            <f:selectItem itemValue="en" itemLabel="yingwen" />
-                   </h:selectOneMenu>
-         </h:form>
-</f:subview>
+                <h:form id="dataverseForm">                    
                     <p:focus context="dataverseForm"/>
 
                     <!-- Name Panel -->
@@ -162,7 +149,7 @@
                                                      rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
-                                    <h:outputText id="counter" style="display:block;"/>                                    
+                                    <h:outputText id="counter" style="display:block;"/>
                                 </div>
                                 <div class="col-sm-2 control-label">
                                     <p:message for="description"/>
@@ -383,36 +370,12 @@
                                                      itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
                         </div>
                         <div class="form-group">
-                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
-                        </div>
-                        <div class="form-group">
-                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
-                        </div>
-                        <div class="form-group">
-                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
-                        </div>
-                        <div class="form-group">
-                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
-                        </div>
-                        <div class="form-group">
-                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
-                        </div>
-                        <div class="form-group">
-                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
-                        </div>
-                        <div class="form-group">
-                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
-                        </div>
-                        <div class="form-group">
-                            <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                            <label for="exampleInputFile">Featured Dataverses</label>
+                            <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
+                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
+                                        itemLabel="#{featureddataverse.name}"
+                                        itemValue="#{featureddataverse}" converter="dataverseConverter"
+                                        showSourceFilter="true" showTargetFilter="true" />
                         </div>
                         <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>

@@ -80,7 +80,7 @@
                                 #{headerBundle.logInText}
                             </h:outputLink>
                         </li>
-                    </ui:fragment>                    
+                    </ui:fragment>
                     <ui:fragment rendered="#{!dataverseSession.user.guest}">
                         <li class="dropdown accountName">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -109,34 +109,6 @@
                                         </h:commandLink>
                                     </h:form>
                                 </li>
-                            </ul>
-                        </li>
-                    </ui:fragment>
-                    <ui:fragment rendered="true">
-                        <li class="dropdown accountName">
-                            <a value="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <h:outputText value="Language"/><b class="caret"></b>                              
-                            </a>
-                            <ul class="dropdown-menu">                                                              
-                                <li class="logout">
-                                    <h:form styleClass="navbar-form navbar-left" pt:role="logout">
-                                        <li>
-                                            <h:commandLink action="#{languageChangeBean.changeLocale('zh_CN')}">
-                                                <h:outputText value="#{headerBundle.logOutLink}" />
-                                            </h:commandLink>
-                                        </li>
-                                        <li>
-                                            <h:commandLink action="#{dataverseHeaderFragment.logout}">
-                                                <h:outputText value="#{headerBundle.logOutLink}" />
-                                            </h:commandLink>
-                                        </li>
-                                        <li>
-                                            <h:commandLink action="#{dataverseHeaderFragment.logout}">
-                                                <h:outputText value="#{headerBundle.logOutLink}" />
-                                            </h:commandLink>
-                                        </li>                                        
-                                    </h:form>
-                                </li>                                
                             </ul>
                         </li>
                     </ui:fragment>
@@ -287,7 +259,7 @@
                 </div>
             </div>
             
-            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-succactioness" value="#{headerBundle.sendMessageButton}"/>
+            <h:commandButton type="submit" action="#{sendFeedbackDialog.sendMessage}" class="btn btn-success" value="#{headerBundle.sendMessageButton}"/>
             <button type="button" class="btn btn-default" onclick="feedbackForm.hide()" value="Cancel">#{headerBundle.cancelButton}</button>
         </h:form>
     </p:dialog>

@@ -21,7 +21,7 @@ import java.util.ResourceBundle;
 })
 @Entity
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
-       
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -57,7 +57,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     @Transient
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
-      
+    
     public DatasetFieldType() {}
 
     public DatasetFieldType(String name, String fieldType, boolean allowMultiples) {
@@ -89,7 +89,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return title;
     }
 
-    public void setTitle(String title) {        
+    public void setTitle(String title) {
         this.title = title;
     }
 
