@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -68,6 +69,16 @@ public class AuthenticationServiceBean {
 
     public Set<String> getAuthenticationProviderIds() {
         return authenticationProviders.keySet();
+    }
+    
+    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
+        Set<String> retVal = new TreeSet<>();
+        for ( Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet() ) {
+            if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
+                retVal.add( p.getKey() );
+            }
+        }
+        return retVal;
     }
     
     public AuthenticationProvider getAuthenticationProvider( String id ) {

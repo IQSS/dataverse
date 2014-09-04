@@ -103,7 +103,6 @@ public class DataversePage implements java.io.Serializable {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
     public void init() {
-
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
@@ -126,7 +125,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-
+        
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
 

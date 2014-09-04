@@ -47,13 +47,13 @@ public class BuiltinUserServiceBean {
     }    
     
     public BuiltinUser findByUserName(String userName) {
-        String query = "SELECT u from DataverseUser u where u.userName = :userName ";
-        BuiltinUser user = null;
         try {
-            user = (BuiltinUser) em.createQuery(query).setParameter("userName", userName).getSingleResult();
+            return em.createNamedQuery("BuiltinUser.findByUserName", BuiltinUser.class)
+                    .setParameter("userName", userName)
+                    .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
+            return null;
         }
-        return user;
     }
 	
 	public List<BuiltinUser> listByUsernamePart ( String part ) {

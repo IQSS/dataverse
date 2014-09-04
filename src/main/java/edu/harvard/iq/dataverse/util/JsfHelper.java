@@ -1,9 +1,12 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.ip.IpAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletRequest;
 
 /**
  * Utility class for common JSF tasks.
@@ -31,4 +34,22 @@ public class JsfHelper {
 			return defaultValue;
 		}
 	}
+    
+    /**
+     * Finds the request IP address. Honors X-Forwarded-for headers.
+     * @return the IP Address of the client issuing the request.
+     */
+    public IpAddress requestClientIpAddress() {
+        ExternalContext ctxt = FacesContext.getCurrentInstance().getExternalContext();
+        String xff = ctxt.getRequestHeaderMap().get("X-Forwarded-For");
+        if ( xff != null ) {
+            xff = xff.trim();
+            if ( ! xff.isEmpty() ) {
+                xff = xff.split(",")[0];
+                return IpAddress.valueOf(xff); // XFF exit
+            }
+        }
+        ServletRequest sr = (ServletRequest) ctxt.getRequest();
+        return IpAddress.valueOf(sr.getRemoteHost());
+    }
 }

@@ -19,8 +19,8 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 		@NamedQuery( name="BuiltinUser.findAll",
 				query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
-		@NamedQuery( name="BuiltinUser.findByUserame",
-				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:username"),
+		@NamedQuery( name="BuiltinUser.findByUserName",
+				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
 		@NamedQuery( name="BuiltinUser.listByUserNameLike",
 				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
