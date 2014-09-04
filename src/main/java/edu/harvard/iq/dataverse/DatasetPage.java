@@ -60,6 +60,7 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -68,6 +69,8 @@ import org.primefaces.context.RequestContext;
 @ViewScoped
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
+    
+    ResourceBundle rBundle =ResourceBundle.getBundle("DatasetBundle");
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
@@ -495,7 +498,7 @@ public class DatasetPage implements java.io.Serializable {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             datasetVersionUI = new DatasetVersionUI(workingVersion);
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("editDatasetMetadataSummary"), rBundle.getString("editDatasetMetadataDetail")));
         }
     }
 
@@ -532,10 +535,10 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("datasetReleaseFailedSummary"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your selected versions have been deaccessioned.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("datasetDeaccessionedSummary"),rBundle.getString("datasetDeaccessionedDetail") );
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
@@ -544,22 +547,22 @@ public class DatasetPage implements java.io.Serializable {
         int deaccessionReasonCode = getDeaccessionReasonRadio();
         switch (deaccessionReasonCode) {
             case 1:
-                dvIn.setVersionNote("There is identifiable data in one or more files. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("identifiableDataInFilesItem2") + getDeaccessionReasonText());
                 break;
             case 2:
-                dvIn.setVersionNote("The research article has been retracted. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("researchArticleBeRetractedItem2") + getDeaccessionReasonText());
                 break;
             case 3:
-                dvIn.setVersionNote("The dataset has been transferred to another repository. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("beTransferredToAnotherItem2") + getDeaccessionReasonText());
                 break;
             case 4:
-                dvIn.setVersionNote("IRB request. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("IRBRequestItem2") + getDeaccessionReasonText());
                 break;
             case 5:
-                dvIn.setVersionNote("Legal issue or Data Usage Agreement. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("issueOrAgreementItem2") + getDeaccessionReasonText());
                 break;
             case 6:
-                dvIn.setVersionNote("Not a valid dataset. " + getDeaccessionReasonText());
+                dvIn.setVersionNote(rBundle.getString("illegalDatasetItem2") + getDeaccessionReasonText());
                 break;
             case 7:
                 dvIn.setVersionNote(getDeaccessionReasonText());
@@ -579,10 +582,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("datasetReleaseFailedSummary"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetReleased", "Your dataset is now public.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("datasetReleasedSummary"), rBundle.getString("datasetReleasedDetail"));
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
@@ -625,10 +628,10 @@ public class DatasetPage implements java.io.Serializable {
              userNotificationService.delete(und);
              } */
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Delete Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("datasetDeleteFailedSummary"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("datasetDeletedSummary"), rBundle.getString("datasetDeletedDetail"));
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataverse.xhtml?id=" + dataset.getOwner().getId() + "&faces-redirect=true";
     }
@@ -639,10 +642,10 @@ public class DatasetPage implements java.io.Serializable {
             cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Version Delete Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("versionDeleteFailedSummary"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeleted", "Your dataset has been deleted.");
+        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("datasetDeletedSummary"), rBundle.getString("datasetDeletedDetail"));
         FacesContext.getCurrentInstance().addMessage(null, message);
         return "/dataset.xhtml?id=" + dataset.getId() + "&faces-redirect=true";
     }
@@ -666,7 +669,7 @@ public class DatasetPage implements java.io.Serializable {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
             for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("validationErrorSummary"), constraintViolation.getMessage()));
                 dsf.setValidationMessage(constraintViolation.getMessage());
                 dontSave = true;
                 break; // currently only support one message, so we can break out of the loop after the first constraint violation
@@ -675,7 +678,7 @@ public class DatasetPage implements java.io.Serializable {
                 dsfv.setValidationMessage(null); // clear out any existing validation message
                 Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
                 for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("validationErrorSummary"), constraintViolation.getMessage()));
                     dsfv.setValidationMessage(constraintViolation.getMessage());
                     dontSave = true;
                     break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
@@ -772,7 +775,7 @@ public class DatasetPage implements java.io.Serializable {
                                 }
 
                             } catch (CommandException ex) {
-                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Data file Delete Failed", " - " + ex.toString()));
+                                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("dataFileDeleteFailedSummary"), " - " + ex.toString()));
                                 logger.severe(ex.getMessage());
                             }
                         }
@@ -809,10 +812,10 @@ public class DatasetPage implements java.io.Serializable {
                 error.append(cause.getMessage() + " ");
             }
             logger.fine("Couldn't save dataset: " + error.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + error.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("datasetSaveFailedSummary"), " - " + error.toString()));
             return null;
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Save Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBundle.getString("datasetSaveFailedSummary"), " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
         newFiles.clear();

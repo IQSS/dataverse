@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -62,6 +63,8 @@ public class DataversePage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     FeaturedDataverseServiceBean featuredDataverseService;
+    
+    ResourceBundle rBundle=ResourceBundle.getBundle("DataverseBundle");
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -119,7 +122,7 @@ public class DataversePage implements java.io.Serializable {
             } catch (EJBException e) {
                 if (e.getCause() instanceof NoResultException) {
                     editMode = EditMode.INFO;
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create Root Dataverse", " - To get started, you need to create your root dataverse. Asterisks indicate required fields."));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("createRootDataverseSummary"), rBundle.getString("createRootDataverseDetail")));
                 } else {
                     throw e;
                 }
@@ -170,9 +173,9 @@ public class DataversePage implements java.io.Serializable {
     public void edit(EditMode editMode) {
         this.editMode = editMode;
         if (editMode == EditMode.INFO) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse", " - Edit your dataverse and click Save. Asterisks indicate required fields."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("editDataverseSummary"),rBundle.getString("editDataverseDetail")));
         } else if (editMode == EditMode.SETUP) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("editDataverseSetupSummary"), rBundle.getString("editDataverseSetupDetail")));
         }
     }
 
@@ -266,16 +269,16 @@ public class DataversePage implements java.io.Serializable {
         PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseReleased", "Your dataverse is now public.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("dataverseReleasedSummary"), rBundle.getString("releasedSuccessfulDetail"));
             FacesContext.getCurrentInstance().addMessage(null, message);
             return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
         } catch (CommandException ex) {
-            String msg = "There was a problem publishing your dataverse: " + ex;
+            String msg = rBundle.getString("problemWhenPublishingDetail") + ex;
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?
              */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotReleased", msg);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("dataverseNotReleasedSummary"), msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
             return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
         }
@@ -285,16 +288,16 @@ public class DataversePage implements java.io.Serializable {
         DeleteDataverseCommand cmd = new DeleteDataverseCommand(session.getUser(), dataverse);
         try {
             commandEngine.submit(cmd);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseDeleted", "Your dataverse ihas been deleted.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("dataverseDeletedSummary"), rBundle.getString("deletedSuccessfulDetail"));
             FacesContext.getCurrentInstance().addMessage(null, message);
             return "/dataverse.xhtml?id=" + dataverse.getOwner().getId() + "&faces-redirect=true";
         } catch (CommandException ex) {
-            String msg = "There was a problem deleting your dataverse: " + ex;
+            String msg = rBundle.getString("problemWhenDeletingDetail") + ex;
             logger.severe(msg);
             /**
              * @todo how do we get this message to show up in the GUI?
              */
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DataverseNotDeleted", msg);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, rBundle.getString("dataverseNotDeletedSummary"), msg);
             FacesContext.getCurrentInstance().addMessage(null, message);
             return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
         }
@@ -341,7 +344,7 @@ public class DataversePage implements java.io.Serializable {
         }
         if (aliasFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This Alias is already taken.");
+            FacesMessage message = new FacesMessage(rBundle.getString("aliasIsTakenMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }

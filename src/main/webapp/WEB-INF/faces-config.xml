@@ -10,4 +10,22 @@
             <renderer-class>edu.harvard.iq.dataverse.FileUploadRenderer</renderer-class>
         </renderer>
     </render-kit>
+    <application>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>zh_CN</supported-locale>            
+        </locale-config>        
+    </application>
+    <lifecycle>
+         <phase-listener>
+            edu.harvard.iq.dataverse.MyPhaseListener
+         </phase-listener>
+    </lifecycle>
+    <managed-bean>
+         <managed-bean-name>languageSelectorBean</managed-bean-name>
+         <managed-bean-class>
+            edu.harvard.iq.dataverse.LanguageSelectorBean
+         </managed-bean-class>
+         <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
 </faces-config>

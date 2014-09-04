@@ -56,14 +56,14 @@ public class DataverseRole implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Pattern(regexp=".+", message="A Role must ahve a name.")
+    @Pattern(regexp=".+", message="{MustHaveNameMsg}")
     private String name;
     
-	@Size(max = 1000, message = "Description must be at most 1000 characters.")
+	@Size(max = 1000, message = "{descriptionOutOfBoundsMsg}")
     private String description;
     
-    @Size(max = 16, message = "Alias must be at most 16 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "Alias cannot be empty. Valid characters are a-Z, 0-9, '_', and '-'.")
+    @Size(max = 16, message = "{aliasOutOf16Msg}")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{aliasValidMsg}")
     private String alias;
 	
 	/** Stores the permissions in a bit set.  */
