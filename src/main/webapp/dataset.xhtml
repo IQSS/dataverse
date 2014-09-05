@@ -363,17 +363,17 @@
                             <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
                                 <div class="form-group">
                                     <label for="select_DatasetTemplate" class="col-sm-2 control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{datasetBundle.originalTitle}">#{datasetBundle.datasetTemplateText}</a>
                                     </label>
                                     <div class="col-sm-10">
                                         <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                          converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
                                                          valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
-                                            <f:selectItem itemLabel="No template - clear default values" itemValue="#{null}" />
+                                            <f:selectItem itemLabel="#{datasetBundle.noTemplateItem}" itemValue="#{null}" />
                                             <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                            var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                         </p:selectOneMenu>
-                                        <p:commandButton value="Direct" id="updateTemplate"
+                                        <p:commandButton value="#{datasetBundle.directText}" id="updateTemplate"
                                                          style="display:none"
                                                          update="@all"
                                                          action="#{DatasetPage.handleChangeButton}">
@@ -387,8 +387,8 @@
                     
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
-                        <p:commandButton id="saveTop" value="Save Changes" onclick="checkFilesSelected();" />
-                        <p:commandButton id="cancelTop" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                        <p:commandButton id="saveTop" value="#{datasetBundle.saveChangesButton}" onclick="checkFilesSelected();" />
+                        <p:commandButton id="cancelTop" value="#{datasetBundle.cancelButton}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </p:panel>
@@ -454,7 +454,7 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{datasetBundle.uploadAndEditFilesTitle}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{datasetBundle.uploadOrEditText}
                                             </p:commandLink>
@@ -468,7 +468,7 @@
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
+                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{datasetBundle.previewText}: #{fileMetadata.label}&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
@@ -495,11 +495,11 @@
                                            
                                             <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData)}"/>
 
-                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileTypeOutputTabular" value="#{datasetBundle.tabularDataText}#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{datasetBundle.viewOnWorldMapText}</a> 		
 <br />
 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
@@ -522,7 +522,7 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
-                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="/dataexplore/gui.html?dfId=#{fileMetadata.dataFile.id}" target="_blank">
+                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="#{datasetBundle.exploreButton}" value="/dataexplore/gui.html?dfId=#{fileMetadata.dataFile.id}" target="_blank">
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{datasetBundle.exploreButton}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
@@ -540,8 +540,8 @@
                                              <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
                                                  <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
-                                                           <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
-                                                           <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
+                                                           <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{datasetBundle.reMapDataText}" />
+                                                           <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{datasetBundle.mapDataText}" />
                                                 </a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
@@ -587,7 +587,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                <p:tab id="metadataMapTab" title="#{datasetBundle.metadataText}" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
