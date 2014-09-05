@@ -538,7 +538,8 @@
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                         <!-- img src="/resources/images/icon_dataset.png" style="width:48px;" border="0" alt="Dataset"/ -->
                                         <h:outputLink value="#{result.datasetUrl}" style="display:block; clear:left; margin-bottom: .5em;">
-                                            <p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/>
+                                            <!-- p:graphicImage value="/api/access/dsPreview/#{result.entityId}"/ -->
+                                            <p:graphicImage value="/api/access/dsPreview/#{result.datasetVersionId}"/>
                                         </h:outputLink>
                                     </div>
 
