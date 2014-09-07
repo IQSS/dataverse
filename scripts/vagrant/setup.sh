@@ -1,5 +1,12 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
+
+# Add JQ
+echo "Installing jq for the setup scripts"
+wget http://stedolan.github.io/jq/download/linux64/jq
+chmod +x jq
+sudo mv jq /usr/local/bin/jq
+
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
