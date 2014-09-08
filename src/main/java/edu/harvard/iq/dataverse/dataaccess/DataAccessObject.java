@@ -112,9 +112,16 @@ public abstract class DataAccessObject {
         
         public abstract String getStorageLocation() throws IOException;
         
-        // Tis method will return a Path, if the storage method is a 
+        // This method will return a Path, if the storage method is a 
         // local filesystem. Otherwise should throw an IOException. 
         public abstract Path getFileSystemPath() throws IOException; 
+             
+        // This method will delete the physical file (object), if delete
+        // functionality is supported by the physical driver. 
+        // TODO: this method should throw something other than IOException 
+        // if delete functionality is not supported by the access driver!
+        // -- L.A. 4.0. beta
+        public abstract void delete() throws IOException;        
 
         // getters:
 

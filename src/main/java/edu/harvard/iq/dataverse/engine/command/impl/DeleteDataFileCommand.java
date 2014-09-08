@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -31,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
  */
 @RequiredPermissions(Permission.DestructiveEdit)
 public class DeleteDataFileCommand extends AbstractVoidCommand {
+    private static final Logger logger = Logger.getLogger(DeleteDataFileCommand.class.getCanonicalName());
 
     private final DataFile doomed;
 
@@ -42,6 +44,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
         if (doomed.isReleased()) {
+            logger.fine("Delete command called on a released (published) DataFile "+doomed.getId());
             /*
              If the file has been released but also previously published handle here.
              In this case we're only removing the link to the current version
@@ -67,17 +70,35 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         // First we try to delete the data file itself; if that 
         // fails, we throw an exception and abort the command without
         // trying to remove the object from the database:
+        
+        logger.fine("Delete command called on an unpublished DataFile "+doomed.getId());
         String fileSystemName = doomed.getFileSystemName();
-        if (fileSystemName != null) {
-            Path filePath = Paths.get(fileSystemName);
-            if (Files.exists(filePath)) {
-                try {
-                    Files.delete(filePath);
-                } catch (IOException ex) {
-                    throw new CommandExecutionException("Error deleting physical file '" + doomed.getFileSystemLocation() + "' while deleting DataFile " + doomed.getName(), ex, this);
-                }
+        logger.fine("Storage identifier for the file: "+fileSystemName);
+        
+        DataAccessObject dataAccess = null; 
+        
+        try {
+            dataAccess = doomed.getAccessObject();
+        } catch (IOException ioex) {
+            throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
+        }
+        
+        if (dataAccess != null) {
+            
+            try {
+                dataAccess.delete();
+            } catch (IOException ex) {
+                throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
             }
 
+            logger.fine("Successfully deleted physical storage object (file) for the DataFile " + doomed.getId());
+            
+            // Destroy the dataAccess object - we will need to purge the 
+            // DataFile from the database (below), so we don't want to have any
+            // objects in this transaction that reference it:
+            
+            dataAccess = null; 
+            
             // We may also have a few extra files associated with this object - 
             // preserved original that was used in the tabular data ingest, 
             // cached R data frames, image thumbnails, etc.
@@ -85,10 +106,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             // important with these. If we fail to delete any of these 
             // auxiliary files, we'll just leave an error message in the 
             // log file and proceed deleting the database object.
+            
+            // Note that the assumption here is that all these auxiliary 
+            // files - saved original, cached format conversions, etc., are
+            // all stored on the physical filesystem locally. 
+            // TODO: revisit and review this assumption! -- L.A. 4.0
+            
             List<Path> victims = new ArrayList<>();
 
             // 1. preserved original: 
-            filePath = doomed.getSavedOriginalFile();
+            Path filePath = doomed.getSavedOriginalFile();
             if (filePath != null) {
                 victims.add(filePath);
             }
@@ -100,6 +127,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             List<String> failures = new ArrayList<>();
             for (Path deadFile : victims) {
                 try {
+                    logger.fine("Deleting cached file "+deadFile.toString());
                     Files.delete(deadFile);
                 } catch (IOException ex) {
                     failures.add(deadFile.toString());
