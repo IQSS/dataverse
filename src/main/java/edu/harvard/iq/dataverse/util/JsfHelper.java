@@ -50,6 +50,16 @@ public class JsfHelper {
             }
         }
         ServletRequest sr = (ServletRequest) ctxt.getRequest();
-        return IpAddress.valueOf(sr.getRemoteHost());
+        try {
+            return IpAddress.valueOf(sr.getRemoteHost());
+        } catch (IllegalArgumentException ex) {
+            // getRemoteHost is "0:0:0:0:0:0:0:1" from Harvard wireless
+            String localhostIp = "127.0.0.1";
+            /**
+             * @todo should we use some other value besides localhost?
+             */
+            logger.info("\"" + sr.getRemoteHost() + "\" from ServletRequest.getRemoteHost() passed but exception thrown: " + ex + ". Using " + localhostIp + " instead.");
+            return IpAddress.valueOf(localhostIp);
+        }
     }
 }
