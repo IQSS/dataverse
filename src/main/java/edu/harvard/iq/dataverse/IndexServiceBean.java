@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -191,26 +192,11 @@ public class IndexServiceBean {
 //            }
 //        }
         // this should be the more performant way... given a dataverse, figure out who has the access in question
-//        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
-//        for (RoleAssignment roleAssignment : assignmentsOn) {
-//            if (roleAssignment.getRole().permissions().contains(Permission.Access)) {
-//                final DataverseUser user = roleAssignment.getUser();
-//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
-//            }
-//        }
-        if (dataverse.getCreator() != null) {
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
-            /**
-             * @todo: replace this fake version of granting users access to
-             * dataverses with the real thing, when it's available in the app
-             */
-            if (dataverse.getCreator().getUserName().equals("pete")) {
-                // figure out if cathy is around
-                BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                if (cathy != null) {
-                    // let cathy see all of pete's dataverses
-                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                }
+        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
+        for (RoleAssignment roleAssignment : assignmentsOn) {
+            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
             }
         }
 
@@ -598,20 +584,18 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
         }
 
+        /**
+         * @todo delete this line about creator
+         */
         BuiltinUser creator = dataset.getCreator();
-        if (creator != null) {
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-            /**
-             * @todo: replace this fake version of granting users access to
-             * dataverses with the real thing, when it's available in the app
-             */
-            if (creator.getUserName().equals("pete")) {
-                // figure out if cathy is around
-                BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                if (cathy != null) {
-                    // let cathy see all of pete's dataverses
-                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                }
+        /**
+         * @todo DRY! Same code as for dataverses.
+         */
+        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
+        for (RoleAssignment roleAssignment : assignmentsOn) {
+            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
             }
         }
 
@@ -939,13 +923,18 @@ public class IndexServiceBean {
         SolrInputDocument solrInputDocument = new SolrInputDocument();
 
         String userid = groupPerUserPrefix + user.getIdentifier();
-        if ( ! user.isAuthenticated() ) {
+        if (!user.isAuthenticated()) {
             userid = publicGroupString;
         }
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, userid);
-        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getIdentifier());
+        /**
+         * @todo is it bad to not index entity id for users, which has changed
+         * from Long to String, yielding NumberFormatException when indexing
+         * into Solr?
+         */
+//        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getIdentifier());
         solrInputDocument.addField(SearchFields.NAME_SORT, user.getDisplayInfo().getTitle());
         solrInputDocument.addField(SearchFields.GROUPS, userid);
 
@@ -966,7 +955,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed user " + user.getIdentifier()+ ":" + user.getDisplayInfo().getTitle();
+        return "indexed user " + user.getIdentifier() + ":" + user.getDisplayInfo().getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
