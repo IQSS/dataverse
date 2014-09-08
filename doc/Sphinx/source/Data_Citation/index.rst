@@ -10,8 +10,8 @@ Contents:
   standard
   unf
 
-Data Citation in Dataverse
-============================
+**Data Citation in Dataverse**
+
 |image1|
 
 Dataverse standardizes the citation of datasets to make it easier for researchers to publish their data and get credit for their work.
@@ -34,9 +34,11 @@ when generating data citations for datasets.
 
 |image2|
 
-References
-==============
+**References**
 
 #. King, Gary. 1995. Replication, Replication. PS: Political Science and Politics 28: 443–499. `Link <http://gking.harvard.edu/files/abs/replication-abs.shtml>`_.
 #. Altman, Micah, and Gary King.  2007 . "A proposed standard for the scholarly citation of quantitative data." *D-lib Magazine* 13.3/4. `Link <http://www.dlib.org/dlib/march07/altman/03altman.html>`_.
 #. Altman, Micah, and Mercè Crosas. 2013. "The Evolution of Data Citation: From Principles to Implementation." *IASSIST Quarterly* 2013;37. `Link <http://www.iassistdata.org/iq/evolution-data-citation-principles-implementation>`_.
+
+.. |image1| image:: ./img/data-citation.png
+.. |image2| image:: ./img/generic-citation.png
