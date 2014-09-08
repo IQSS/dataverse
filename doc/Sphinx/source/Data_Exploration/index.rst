@@ -12,6 +12,7 @@ Contents:
    :titlesonly:
    :maxdepth: 2
 
-  data-exploration
+  tworavens
+  worldmap
 
 
