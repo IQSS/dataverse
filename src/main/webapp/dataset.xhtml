@@ -227,7 +227,7 @@
                                             <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
                                                 <h:outputFormat value="#{datasetBundle.publishingVersionTip}">
                                                     <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
-                                                </h:templateNameText>                                                
+                                                </h:outputFormat>                                                
                                             </ui:fragment>
                                             <p:commandButton value="#{datasetBundle.continueButton}" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
                                             </p:commandButton>
