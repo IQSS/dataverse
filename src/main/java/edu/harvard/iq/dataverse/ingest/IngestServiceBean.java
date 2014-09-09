@@ -423,7 +423,20 @@ public class IngestServiceBean {
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
             String existingName = fm.getLabel();
+            
             if (existingName != null) {
+                // if it's a tabular file, we need to restore the original file name; 
+                // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
+                // foobar.tab once ingested! 
+                if (fm.getDataFile().isTabularData()) {
+                    String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
+                    if ( originalMimeType != null) {
+                        String origFileExtension = generateOriginalExtension(originalMimeType);
+                        existingName = existingName.replaceAll(".tab$", origFileExtension);
+                    } else {
+                        existingName = existingName.replaceAll(".tab$", "");
+                    }
+                }
                 fileNamesExisting.add(existingName);
             }
         }
@@ -434,6 +447,31 @@ public class IngestServiceBean {
 
         return fileName;
     }
+    
+    // TODO: 
+    // Move this method (duplicated in StoredOriginalFile.java) to 
+    // FileUtil.java. 
+    // -- L.A. 4.0 beta
+    
+    private static String generateOriginalExtension(String fileType) {
+
+        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
+            return ".sav";
+        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
+            return ".por";
+        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".dta";
+        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+            return ".RData";
+        } else if (fileType.equalsIgnoreCase("text/csv")) {
+            return ".csv";
+        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ".xlsx";
+        }
+
+       return "";
+    }
+
     
     private String generateNewFileName(String fileName) {
         String newName = null;
