@@ -21,4 +21,5 @@ UMA=$(cat $TMP | grep :result: | grep Uma | cut -d: -f4)
 rm $TMP
 
 # index-all
+# FIXME: obviate the need for this
 curl -s http://localhost:8080/api/index
