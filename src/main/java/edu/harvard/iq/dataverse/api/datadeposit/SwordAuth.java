@@ -2,14 +2,15 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.PasswordEncryption;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -30,32 +31,57 @@ public class SwordAuth {
     DataverseRoleServiceBean roleService;
     @EJB
     UserServiceBean userService;
-    
+    @EJB
+    AuthenticationServiceBean authSvc;
+
+    /**
+     * @todo Allow the Data Deposit API to use API keys
+     * https://github.com/IQSS/dataverse/issues/890
+     */
+    /**
+     * @todo How can Shibboleth users use the Data Deposit API?
+     */
     public AuthenticatedUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
 
-        if (authCredentials != null) {
-            String username = authCredentials.getUsername();
-            String password = authCredentials.getPassword();
-            logger.fine("Checking username " + username + " ...");
-            BuiltinUser dataverseUser = dataverseUserService.findByUserName(username);
-            // FIXME replace with new user authentication, this assumes local user is used.
-            AuthenticatedUser au = userService.findByUsername(username);
-            
-            if (au != null) {
-                String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
-                if (encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
-                    return au;
-                } else {
-                    logger.fine("wrong password");
-                    throw new SwordAuthException();
-                }
-            } else {
-                logger.fine("could not find username: " + username);
-                throw new SwordAuthException();
-            }
-        } else {
+        if (authCredentials == null) {
             // in DVN 3.x at least, it seems this was never reached... eaten somewhere by way of ServiceDocumentServletDefault -> ServiceDocumentAPI -> SwordAPIEndpoint
             logger.info("no credentials provided");
+            throw new SwordAuthException();
+        }
+
+        String username = authCredentials.getUsername();
+        if (username == null) {
+            logger.info("no username provided");
+            throw new SwordAuthException();
+        }
+
+        String password = authCredentials.getPassword();
+        if (password == null) {
+            logger.info("no password provided");
+            throw new SwordAuthException();
+        }
+
+        AuthenticationRequest authReq = new AuthenticationRequest();
+        /**
+         * @todo get away from hard-coding "Username" here. It's KEY_USERNAME in
+         * BuiltinAuthenticationProvider
+         */
+        authReq.putCredential("Username", username);
+        /**
+         * @todo get away from hard-coding "Password" here. It's KEY_PASSWORD in
+         * BuiltinAuthenticationProvider
+         */
+        authReq.putCredential("Password", password);
+        try {
+            /**
+             * @todo get away from hard-coding "builtin" here."
+             */
+            String credentialsAuthProviderId = "builtin";
+            AuthenticatedUser au = authSvc.authenticate(credentialsAuthProviderId, authReq);
+            logger.info("Successful login. getUserIdentifier: " + au.getUserIdentifier() + "  getIdentifier: " + au.getIdentifier());
+            return au;
+        } catch (AuthenticationFailedException ex) {
+            logger.info("Exception caught: " + ex);
             throw new SwordAuthException();
         }
     }
@@ -98,7 +124,7 @@ public class SwordAuth {
              * per SWORD commands that map onto permissions like
              * canIssue(CreateDatasetCommand.class)
              */
-            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier()+ " has role " + roleAssignment.getRole().getAlias());
+            logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier() + " has role " + roleAssignment.getRole().getAlias());
         }
         if (permissionService.userOn(dataverseUser, dataverse).has(Permission.DestructiveEdit)) {
             authorized = true;
