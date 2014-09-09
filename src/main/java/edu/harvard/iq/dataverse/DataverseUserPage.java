@@ -63,7 +63,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private int activeIndex;
     private String selectTab = "somedata";
     
-    ResourceBundle resourceBundlePageInfo=ResourceBundle.getBundle("DataverseUserBundle");
+    ResourceBundle rBundle=ResourceBundle.getBundle("DataverseUserBundle");
 
     public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
@@ -201,7 +201,7 @@ public class DataverseUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(resourceBundlePageInfo.getString("usernameIsTakenMsg"));
+            FacesMessage message = new FacesMessage(rBundle.getString("usernameIsTakenMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -220,7 +220,7 @@ public class DataverseUserPage implements java.io.Serializable {
         }
         if (!userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(resourceBundlePageInfo.getString("usernameOrEmailisIncorrectMsg"));
+            FacesMessage message = new FacesMessage(rBundle.getString("usernameOrEmailisIncorrectMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -230,7 +230,7 @@ public class DataverseUserPage implements java.io.Serializable {
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         if (!encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(resourceBundlePageInfo.getString("passwdIsIncorrectMsg"));
+            FacesMessage message = new FacesMessage(rBundle.getString("passwdIsIncorrectMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
