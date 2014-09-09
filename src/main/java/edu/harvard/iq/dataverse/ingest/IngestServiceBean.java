@@ -396,6 +396,14 @@ public class IngestServiceBean {
             if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getFileSystemName()))) {
                 return null; 
             }
+            
+            // MD5:
+            MD5Checksum md5Checksum = new MD5Checksum();
+            try {
+                datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+            } catch (Exception md5ex) {
+                logger.warning("Could not calculate MD5 signature for new file " + fileName);
+            }
         
             datafiles.add(datafile);
             return datafiles;
@@ -456,7 +464,8 @@ public class IngestServiceBean {
 
         // And save the file - but only if the InputStream is not null; 
         // (the temp file may be saved already - if this is a single
-        // file upload case)
+        // file upload case - and in that case this method gets called 
+        // with null for the inputStream)
         
         if (inputStream != null) {
         
@@ -486,6 +495,16 @@ public class IngestServiceBean {
                 try {
                     outputStream.close();
                 } catch (IOException ioex) {}
+            }
+            
+            // MD5:
+            if (datafile != null) {
+                MD5Checksum md5Checksum = new MD5Checksum();
+                try {
+                    datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+                } catch (Exception md5ex) {
+                    logger.warning("Could not calculate MD5 signature for new file " + fileName);
+                }
             }
         }
         
@@ -601,16 +620,6 @@ public class IngestServiceBean {
                             dataFile.setFilesize(readChannel.size());
                         } catch (IOException fsize_ex) {
                             logger.warning("Could not calculate the size of new file: " + fileName);
-                        }
-                        
-                        // MD5:
-                        // TODO: replace the direct filesystem access with a DataAccess 
-                        // call. -- L.A. Jul. 20 2014. 
-                        MD5Checksum md5Checksum = new MD5Checksum();
-                        try {
-                            dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
-                        } catch (Exception md5ex) {
-                            logger.warning("Could not calculate MD5 signature for the new file " + fileName);
                         }
                         
                         

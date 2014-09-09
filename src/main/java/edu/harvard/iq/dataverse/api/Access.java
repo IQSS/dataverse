@@ -7,42 +7,31 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 
-import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import java.util.Properties;
-import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -75,6 +64,8 @@ public class Access {
     DataFileServiceBean dataFileService;
     @EJB 
     DatasetServiceBean datasetService; 
+    @EJB
+    DatasetVersionServiceBean versionService;
 
     //@EJB
     
@@ -234,24 +225,36 @@ public class Access {
         return null; 
     }
     
-    @Path("dsPreview/{datasetId}")
+    @Path("dsPreview/{versionId}")
     @GET
     @Produces({ "image/png" })
-    public InputStream dsPreview(@PathParam("datasetId") Long datasetId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+    public InputStream dsPreview(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
         
         
-        
+        /*
+         first version of this API verb was operating on the dataset id, not
+         version id: 
         Dataset dataset = datasetService.find(datasetId);
         
         if (dataset == null) {
             logger.warning("Preview: dataset service could not locate a Dataset object for id "+datasetId+"!");
             return null; 
         }
+        */
+        
+        DatasetVersion datasetVersion = versionService.find(versionId);
+        
+        if (datasetVersion == null) {
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+versionId+"!");
+            return null; 
+        }
         
         String imageThumbFileName = null; 
-        
-        List<DataFile> dataFiles = dataset.getFiles();
-        for (DataFile dataFile : dataFiles) {
+                
+        List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+            
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
             if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
                 imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
                 break; 
