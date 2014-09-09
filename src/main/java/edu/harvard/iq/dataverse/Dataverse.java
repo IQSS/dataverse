@@ -58,12 +58,12 @@ public class Dataverse extends DvObjectContainer {
     @Size(max = 1000, message = "{descriptionOutOfBoundsMsg")
     private String description;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
+    @NotBlank(message = "{enterEmailMsg}")
+    @Email(message = "{enterEmailMsg}")
     private String contactEmail;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Please select a category for your dataverse.")
+    @NotNull(message = "{selectCategoryForDataverseMsg}")
     private DataverseType dataverseType;
 
     public DataverseType getDataverseType() {

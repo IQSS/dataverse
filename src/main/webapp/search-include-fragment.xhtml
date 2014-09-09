@@ -22,7 +22,7 @@
                     </p:commandLink>
                     <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                       
                     <h:outputLink id="aadvsearchlink" value="/search/advanced.xhtml" rendered="#{showAdvancedSearchLink}">
-                        <h:outputText value="Advanced Search"/>
+                        <h:outputText value="#{searchBundle.advancedSearchText}"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
                     </h:outputLink>
                 </h:form>
@@ -34,7 +34,7 @@
                         <span class="glyphicon glyphicon-plus"/> #{searchBundle.addDataText} <span class="caret"></span>
                     </button>
                 </div>
-                <p:confirmDialog header="Add Data" widgetVar="addData_popup">                                           
+                <p:confirmDialog header="#{searchBundle.addDataText}" widgetVar="addData_popup">                                           
                     <f:facet name="message">
                         <h:outputFormat value="#{searchBundle.needToLoginOrSignupText}" escape="false"/>                   
                     </f:facet>
@@ -225,7 +225,7 @@
                             </ui:fragment>
                             <ui:fragment rendered="#{dataverseSession.user.guest and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / GUEST-->
-                                <p>This Dataverse currently has no Dataverses, Datasets, or Files. Please <h:outputLink value="/loginpage.xhtml">log in</h:outputLink> to see if you are able to add to it.</p>
+                               <h:outputFormat value="#{searchBundle.pleaseLoginTip}" escape="false"/>
                             </ui:fragment>
                             <ui:fragment rendered="#{!dataverseSession.user.guest and !(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS-->

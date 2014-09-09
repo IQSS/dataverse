@@ -209,7 +209,7 @@
                                 <p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
                                     #{roleBundle.guestInheritText}
                                     <p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
-                                        #{ra.role.name} <small>(assigned at #{ra.definitionPoint.name})</small>
+                                        #{ra.role.name} <small>(#{roleBundle.assignedAtText} #{ra.definitionPoint.name})</small>
                                     </p:dataList>
                                 </p:outputPanel>
                             </h:panelGroup>
