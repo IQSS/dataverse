@@ -13,7 +13,7 @@ import javax.persistence.Lob;
  * @author michael
  */
 @Entity
-class AuthenticationProviderRecord implements java.io.Serializable {
+public class AuthenticationProviderRecord implements java.io.Serializable {
     
     @Id
     private String alias;

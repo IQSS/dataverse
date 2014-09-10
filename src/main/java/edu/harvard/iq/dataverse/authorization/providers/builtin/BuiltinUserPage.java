@@ -265,12 +265,13 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
         dataverseUser = builtinUserService.save(dataverseUser);
-        userNotificationService.sendNotification(authSvc.lookupUser("builtin", Long.toString(dataverseUser.getId())),
-                new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
             AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
             session.setUser(au);
+            userNotificationService.sendNotification(au,
+                                                     new Timestamp(new Date().getTime()), 
+                                                     UserNotification.Type.CREATEACC, null);
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 
