@@ -26,7 +26,7 @@ rm $TMP
 echo Setting up the settings
 echo  - Allow internal signup
 curl -X PUT $SERVER/s/settings/:AllowSignUp/yes
-curl -X PUT $SERVER/s/settings/:SignUpUrl/builtin-idp%2Fsignup.xhtml
+curl -X PUT $SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml%3FeditMode%3DCREATE
 
 # index-all
 # FIXME: obviate the need for this

@@ -67,8 +67,9 @@
                     </li>
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                         <li>
-                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
-                                Sign Up FIXME <!-- add default provider -->
+                            <h:outputLink rendered="#{settingsServiceBean.isTrue(':AllowSignUp',true)}"
+										  value="#{settingsServiceBean.get(':SignUpUrl')}">
+                                Sign Up <!-- add default provider -->
                             </h:outputLink>
                         </li>
                         <li>
