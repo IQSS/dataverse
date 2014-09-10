@@ -67,8 +67,8 @@
                     </li>
                     <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                         <li>
-                            <h:outputLink rendered="#{settingsServiceBean.isTrue(':AllowSignUp',true)}"
-										  value="#{settingsServiceBean.get(':SignUpUrl')}">
+                            <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
+                                          value="#{dataverseHeaderFragment.signupUrl}">
                                 Sign Up <!-- add default provider -->
                             </h:outputLink>
                         </li>
