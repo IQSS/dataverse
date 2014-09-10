@@ -18,7 +18,7 @@
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
+                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
 
                     function openDialog() {
@@ -438,14 +438,17 @@
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
+                                        
                                         <div class="panel panel-default" style="margin-top:1em;">
+                                            <ui:fragment  rendered="#{!empty DatasetPage.dropBoxKey}">
                                             <div class="panel-body">
                                                 <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
                                                 <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
                                                 </p:commandButton>
-                                                <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                                <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
                                                 <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
                                             </div>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->

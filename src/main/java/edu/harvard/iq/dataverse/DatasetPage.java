@@ -185,6 +185,17 @@ public class DatasetPage implements java.io.Serializable {
         return dropBoxSelection;
     }
 
+    public String getDropBoxKey() {
+        // Site-specific DropBox application registration key is configured 
+        // via a JVM option under glassfish.
+        
+        String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
+        if (configuredDropBoxKey != null) {
+            return configuredDropBoxKey;
+        }
+        return "";
+    }
+    
     public void setDropBoxSelection(String dropBoxSelection) {
         this.dropBoxSelection = dropBoxSelection;
     }
