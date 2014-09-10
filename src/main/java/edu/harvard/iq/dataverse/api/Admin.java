@@ -65,8 +65,8 @@ public class Admin extends AbstractApiBean {
     @Path("setup")
     @POST
     public Response setup() {
-        settingsSvc.set( SettingsServiceBean.Key.AllowSignUp, "1" );
-        settingsSvc.set( SettingsServiceBean.Key.SignUpUrl, "builtin/signup.xhtml" );
+        settingsSvc.setValueForKey( SettingsServiceBean.Key.AllowSignUp, "1" );
+        settingsSvc.setValueForKey( SettingsServiceBean.Key.SignUpUrl, "builtin/signup.xhtml" );
         return okResponse("setup done");
     }
     

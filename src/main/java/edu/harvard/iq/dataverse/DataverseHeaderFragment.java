@@ -82,14 +82,13 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
 
     public boolean isSignupAllowed() {
-        String allowSignUpKey = SettingsServiceBean.Key.AllowSignUp.toString();
         boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrue(allowSignUpKey, safeDefaultIfKeyNotFound);
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
     }
 
     public String getSignupUrl() {
         String nonNullDefaultIfKeyNotFound = "";
-        String signUpUrl = settingsService.get(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
+        String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
         return signUpUrl;
     }
 

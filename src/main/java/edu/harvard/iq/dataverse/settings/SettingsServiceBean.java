@@ -61,7 +61,7 @@ public class SettingsServiceBean {
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */
-    public String get( Key key ) {
+    public String getValueForKey( Key key ) {
         return get(key.toString());
     }
     
@@ -79,7 +79,7 @@ public class SettingsServiceBean {
         return (val!=null) ? val : defaultValue;
     }
     
-    public String get( Key key, String defaultValue ) {
+    public String getValueForKey( Key key, String defaultValue ) {
         return get( key.toString(), defaultValue );
     }
     
@@ -89,7 +89,7 @@ public class SettingsServiceBean {
         return s;
     }
     
-    public Setting set( Key key, String content ) {
+    public Setting setValueForKey( Key key, String content ) {
         Setting s = new Setting( key.toString(), content );
         s = em.merge(s);
         return s;
@@ -107,11 +107,11 @@ public class SettingsServiceBean {
         return ( val==null ) ? defaultValue : trueValues.contains(val.trim().toLowerCase() );
     }
     
-    public boolean isTrue( Key key, boolean defaultValue ) {
+    public boolean isTrueForKey( Key key, boolean defaultValue ) {
         return isTrue( key.toString(), defaultValue );
     }
             
-    public void delete( Key name ) {
+    public void deleteValueForKey( Key name ) {
         delete( name.toString() );
     }
     
