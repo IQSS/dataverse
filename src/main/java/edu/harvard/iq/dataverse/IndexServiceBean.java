@@ -585,10 +585,6 @@ public class IndexServiceBean {
         }
 
         /**
-         * @todo delete this line about creator
-         */
-        BuiltinUser creator = dataset.getCreator();
-        /**
          * @todo DRY! Same code as for dataverses.
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
@@ -792,20 +788,15 @@ public class IndexServiceBean {
                 }
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
-                if (creator != null) {
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                    /**
-                     * @todo: replace this fake version of granting users access
-                     * to dataverses with the real thing, when it's available in
-                     * the app
-                     */
-                    if (creator.getUserName().equals("pete")) {
-                        // figure out if cathy is around
-                        BuiltinUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                        if (cathy != null) {
-                            // let cathy see all of pete's dataverses
-                            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                        }
+                /**
+                 * @todo Should we be checking permissions on the dataset like
+                 * this or the datafile?
+                 */
+                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(dataset);
+                for (RoleAssignment roleAssignment : assignmentsOnFile) {
+                    if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                        String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
                     }
                 }
 
