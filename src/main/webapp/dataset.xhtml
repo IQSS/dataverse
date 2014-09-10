@@ -44,7 +44,6 @@
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
                             deleteFileConfirmation.show();
-                            duplicateContentConfirmation.show();
                         } else {
                             $('button[id$="datasetSave"]').trigger('click');
                         }
@@ -741,11 +740,6 @@
                         <p:commandButton value="Continue" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.save()}">
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
-                    </p:confirmDialog>
-                    <p:confirmDialog message="Some of the files you are adding already exist in the dataset..." header="Duplicate Files" widgetVar="duplicateContentConfirmation">
-                        <p:commandButton value="Continue" onclick="duplicateContentConfirmation.hide()" action="#{DatasetPage.save()}">
-                        </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="duplicateContentConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
