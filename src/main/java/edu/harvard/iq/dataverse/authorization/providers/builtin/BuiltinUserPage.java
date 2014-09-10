@@ -56,7 +56,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     @EJB
     PermissionServiceBean permissionService;
     @EJB
-    BuiltinUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean builtinUserService;
     
     @EJB
     AuthenticationServiceBean authSvc;
@@ -202,7 +202,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
-        BuiltinUser user = dataverseUserService.findByUserName(userName);
+        BuiltinUser user = builtinUserService.findByUserName(userName);
         if (editMode == EditMode.CREATE) {
             if (user != null) {
                 userNameFound = true;
@@ -222,11 +222,11 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
-        BuiltinUser user = dataverseUserService.findByUserName(userName);
+        BuiltinUser user = builtinUserService.findByUserName(userName);
         if (user != null) {
             userNameFound = true;
         } else {
-            BuiltinUser user2 = dataverseUserService.findByEmail(userName);
+            BuiltinUser user2 = builtinUserService.findByEmail(userName);
             if (user2 != null) {
                 userNameFound = true;
             }
@@ -250,27 +250,27 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
-        BuiltinUser user = dataverseUserService.findByUserName(userName);
+        BuiltinUser user = builtinUserService.findByUserName(userName);
         if (user == null) {
-            user = dataverseUserService.findByEmail(userName);
+            user = builtinUserService.findByEmail(userName);
         }
         user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
-        dataverseUserService.save(user);
+        builtinUserService.save(user);
     }
 
     public String save() {
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE) {
             if (inputPassword != null) {
-                dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
+                dataverseUser.setEncryptedPassword(builtinUserService.encryptPassword(inputPassword));
             }
         }
-        dataverseUser = dataverseUserService.save(dataverseUser);
+        dataverseUser = builtinUserService.save(dataverseUser);
         userNotificationService.sendNotification(authSvc.lookupUser("builtin", Long.toString(dataverseUser.getId())),
                 new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
-//            session.setUser(dataverseUser);
-            // FIXME sign up is done in a different way now.
+            AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
+            session.setUser(au);
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 
