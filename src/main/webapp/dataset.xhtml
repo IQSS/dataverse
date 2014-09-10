@@ -722,13 +722,16 @@
                         </p:commandButton>
                         <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:confirmDialog message="Some of the files you are adding already exist in the dataset..." header="Duplicate Files" widgetVar="duplicateContentConfirmation">
+                    <p:confirmDialog message="#{datasetBundle.filesExistTip}" header="#{dataBundle.duplicateFilesText}" widgetVar="duplicateContentConfirmation">
                         <p:commandButton value="Continue" onclick="duplicateContentConfirmation.hide()" action="#{DatasetPage.save()}">
+                            #{datasetBundle.continueButton}
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="duplicateContentConfirmation.hide()" type="button" />
+                        <p:commandButton value="Cancel" onclick="duplicateContentConfirmation.hide()" type="button" >
+                            #{datasetBundle.cancelButton}
+                        </commandButton>
                     </p:confirmDialog>
-                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
+                    <p:dialog id="deaccessionBlock" header="#{datasetBundle.deaccessionDatasetText}" widgetVar="deaccessionBlock" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{datasetBundle.datasetBeNotViewableTip}</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
                                 <label for="deaccessionOptions">#{datasetBundle.versionSelectedToDeaccessionText}</label>
