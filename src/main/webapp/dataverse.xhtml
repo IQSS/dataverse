@@ -116,7 +116,7 @@
                                         <p:message for="affiliation"/>
                                     </p:panelGrid>
                                 </div>
-                                
+
                                 <label class="col-sm-3 control-label" for="dataverseCategory">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The type that most closely reflects this Dataverse.">
                                         Category <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
@@ -231,6 +231,11 @@
                                                     <h:outputText value="General Information" />
                                                 </p:commandLink>
                                             </li>
+                                            <li>
+                                                <p:commandLink id="themeWidgetsOpts" onclick="themeAndWidgetsForm.show()">                                                          
+                                                    <h:outputText value="Theme + Widgets" />
+                                                </p:commandLink>
+                                            </li>
                                             <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                                                 <li>
                                                     <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">                                                          
@@ -290,7 +295,7 @@
                             <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataverse contacts. Look for this feature in Dataverse 4.0!" header="Email Dataverse Contact" widgetVar="contact_confirmation">                                           
                             </p:confirmDialog>                                                                
                         </div>
-                        
+
                         <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
                             <ui:fragment rendered="#{!empty DataversePage.dataverse.description}">
                                 <div id="dataverseDesc" style="margin-bottom:1em;">
@@ -324,7 +329,7 @@
                                                             </a>
                                                         </ui:fragment>
                                                         <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                           <h:outputText value="#{dv.name} Dataverse"/>
+                                                            <h:outputText value="#{dv.name} Dataverse"/>
                                                         </a>
                                                     </div>
                                                 </ui:repeat>
@@ -355,7 +360,7 @@
                                 </div>
                             </ui:fragment>
                         </ui:fragment>
-                        
+
                     </ui:fragment>
 
                     <!-- Browsing Options Form -->
@@ -379,6 +384,82 @@
                         <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
                     </p:dialog>
+                    <!-- Theme and Widgets Form -->
+                    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true">
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
+                            <p:tab id="themeTab" title="Theme" >
+                                <!-- Dataverse Theme Panel -->
+                                <ui:remove>
+                                <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
+                                    <p:panelGrid columns="3">
+                                        <h:outputLabel value="Logo"/>
+                                        <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
+                                        <p:message for="logo"/>
+
+                                        <h:outputLabel value="Logo Format"/>
+                                        <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
+                                            <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
+                                            <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                                        </p:selectOneRadio>
+                                        <p:message for="logoFormat"/>
+
+                                        <h:outputLabel value="Logo Alignment"/>
+                                        <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
+                                            <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
+                                            <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
+                                            <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                                        </p:selectOneMenu>
+                                        <p:message for="logoFormat"/>
+
+                                        <h:outputLabel value="Logo Background Color"/>
+                                        <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
+                                        <p:message for="logoBackgroundColor"/>
+
+                                        <h:outputLabel value="Tagline"/>
+                                        <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
+                                        <p:message for="tagline"/>
+
+                                        <h:outputLabel value="Link URL"/>
+                                        <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
+                                        <p:message for="linkUrl"/>
+
+                                        <h:outputLabel value="Link Text"/>
+                                        <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
+                                        <p:message for="linkText"/>
+
+                                        <h:outputLabel value="Link Color"/>
+                                        <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
+                                        <p:message for="linkColor"/>
+
+                                        <h:outputLabel value="Text Color"/>
+                                        <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
+                                        <p:message for="textColor"/>
+
+                                        <h:outputLabel value="Background Color"/>
+                                        <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
+                                        <p:message for="backgroundColor"/>
+                                    </p:panelGrid>
+                                </ui:fragment>
+                                    </ui:remove>
+                                <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                            </p:tab>
+                            <p:tab id="widgetsTab" title="Widgets" >
+                                <div>
+                                    <h:outputText value="Dataverse Listing" />
+                                </div>
+                                <div>
+                                    <textarea name="text_area1" rows="4">
+                                    <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
+                                    
+                                    </textarea>
+                                </div>
+                                <div>
+                                    <h:outputText value="Copy and paste this code into the HTML on your site." />
+                                </div>
+                            </p:tab>                       
+                        </p:tabView>                        
+                        <button type="button" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Done">Done</button>
+                    </p:dialog>
 
                     <!-- Dialog Feedback Form -->
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
@@ -393,58 +474,8 @@
                         </p:commandButton>
                         <p:commandButton value="Cancel" onclick="deleteConfirmation.hide();" type="button" />
                     </p:confirmDialog>
-                    
-                    <!-- Dataverse Theme Panel -->
-                    <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
-                        <p:panelGrid columns="3">
-                            <h:outputLabel value="Logo"/>
-                            <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
-                            <p:message for="logo"/>
 
-                            <h:outputLabel value="Logo Format"/>
-                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
-                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
-                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
-                            </p:selectOneRadio>
-                            <p:message for="logoFormat"/>
 
-                            <h:outputLabel value="Logo Alignment"/>
-                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
-                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
-                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
-                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
-                            </p:selectOneMenu>
-                            <p:message for="logoFormat"/>
-
-                            <h:outputLabel value="Logo Background Color"/>
-                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
-                            <p:message for="logoBackgroundColor"/>
-
-                            <h:outputLabel value="Tagline"/>
-                            <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
-                            <p:message for="tagline"/>
-
-                            <h:outputLabel value="Link URL"/>
-                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
-                            <p:message for="linkUrl"/>
-
-                            <h:outputLabel value="Link Text"/>
-                            <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
-                            <p:message for="linkText"/>
-
-                            <h:outputLabel value="Link Color"/>
-                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
-                            <p:message for="linkColor"/>
-
-                            <h:outputLabel value="Text Color"/>
-                            <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
-                            <p:message for="textColor"/>
-
-                            <h:outputLabel value="Background Color"/>
-                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
-                            <p:message for="backgroundColor"/>
-                        </p:panelGrid>
-                    </ui:fragment>
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
@@ -466,13 +497,13 @@
                     $(document).ready(function() {
                         initPopover();
                         characterCounter();
-                        initCarousel(); 
+                        initCarousel();
                     });
-                    
+
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");
                         var owl2 = $("#categoryDataversesList");
-                        
+
                         owl1.owlCarousel({
                             pagination: false,
                             navigation: false,
@@ -494,7 +525,7 @@
                         } else {
                             $("#featuredDataversesBlock .customNavigation a.btn").hide();
                         }
-                        
+
                         owl2.owlCarousel({
                             pagination: false,
                             navigation: false,

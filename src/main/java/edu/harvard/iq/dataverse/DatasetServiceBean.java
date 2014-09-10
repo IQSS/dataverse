@@ -5,11 +5,15 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -17,6 +21,9 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  *
@@ -107,7 +114,118 @@ public class DatasetServiceBean {
         return u;
     }
 
-   public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user){        
+    public String getRISFormat(DatasetVersion version) {
+        String retString = "";
+
+        String publisher = version.getRootDataverseNameforCitation();
+        List<DatasetAuthor> authorList = version.getDatasetAuthors();
+        retString = "Provider: " + publisher + "\r\n";
+        retString += "Content: text/plain; charset=us-ascii" + "\r\n";;
+        retString += "TY - DATA" + "\r\n";;
+        retString += "T1 - " + version.getTitle() + "\r\n";
+        for (DatasetAuthor author : authorList) {
+            retString += "AU - " + author.getName().getDisplayValue() + "\r\n";
+        }
+        retString += "DO - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId() + "\r\n";
+        retString += "PY - " + version.getVersionYear() + "\r\n";
+        retString += "UR - " + version.getDataset().getPersistentURL() + "\r\n";
+        retString += "PB - " + publisher + "\r\n";
+        return retString;
+    }
+
+    private XMLOutputFactory xmlOutputFactory = null;
+
+    public void createXML(OutputStream os, DatasetVersion datasetVersion) {
+
+        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+        XMLStreamWriter xmlw = null;
+        try {
+            xmlw = xmlOutputFactory.createXMLStreamWriter(os);
+            xmlw.writeStartDocument();
+            createEndNoteXML(xmlw, datasetVersion);
+            xmlw.writeEndDocument();
+        } catch (XMLStreamException ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            throw new EJBException("ERROR occurred during creating endnote xml.", ex);
+        } finally {
+            try {
+                if (xmlw != null) {
+                    xmlw.close();
+                }
+            } catch (XMLStreamException ex) {
+            }
+        }
+    }
+
+    private void createEndNoteXML(XMLStreamWriter xmlw, DatasetVersion version) throws XMLStreamException {
+
+        String title = version.getTitle();
+        String versionYear = version.getVersionYear();
+        String publisher = version.getRootDataverseNameforCitation();
+
+        List<DatasetAuthor> authorList = version.getDatasetAuthors();
+
+        xmlw.writeStartElement("xml");
+        xmlw.writeStartElement("records");
+
+        xmlw.writeStartElement("record");
+
+        //<ref-type name="Dataset">59</ref-type> - How do I get that and xmlw.write it?
+        xmlw.writeStartElement("ref-type");
+        xmlw.writeAttribute("name","Dataset");
+        xmlw.writeCharacters(version.getDataset().getId().toString());
+        xmlw.writeEndElement(); // ref-type
+
+        xmlw.writeStartElement("contributors");
+        for (DatasetAuthor author : authorList) {
+            xmlw.writeStartElement("author");
+            xmlw.writeCharacters(author.getName().getDisplayValue());
+            xmlw.writeEndElement(); // author                    
+        }
+        xmlw.writeEndElement(); // contributors 
+
+        xmlw.writeStartElement("titles");
+        xmlw.writeStartElement("title");
+        xmlw.writeCharacters(title);
+        xmlw.writeEndElement(); // title
+        xmlw.writeEndElement(); // titles
+
+        xmlw.writeStartElement("section");
+        String sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
+        xmlw.writeCharacters(sectionString);
+        xmlw.writeEndElement(); // publisher
+
+        xmlw.writeStartElement("dates");
+        xmlw.writeStartElement("year");
+        xmlw.writeCharacters(versionYear);
+        xmlw.writeEndElement(); // year
+        xmlw.writeEndElement(); // dates
+
+        xmlw.writeStartElement("publisher");
+        xmlw.writeCharacters(publisher);
+        xmlw.writeEndElement(); // publisher
+
+        xmlw.writeStartElement("urls");
+        xmlw.writeStartElement("related-urls");
+        xmlw.writeStartElement("url");
+        xmlw.writeCharacters(version.getDataset().getPersistentURL());
+        xmlw.writeEndElement(); // url
+        xmlw.writeEndElement(); // related-urls
+        xmlw.writeEndElement(); // urls
+
+        xmlw.writeStartElement("electronic-resource-num");
+        String electResourceNum = version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId();
+        xmlw.writeCharacters(electResourceNum);
+        xmlw.writeEndElement();
+        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
+        xmlw.writeEndElement(); // record
+
+        xmlw.writeEndElement(); // records
+        xmlw.writeEndElement(); // xml
+
+    }
+
+    public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user) {
 
         DatasetVersionDatasetUser ddu = null;
         Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "

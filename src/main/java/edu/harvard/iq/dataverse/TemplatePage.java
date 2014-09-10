@@ -116,7 +116,7 @@ public class TemplatePage implements java.io.Serializable {
 
     public String save() {
         
-                boolean dontSave = false;
+        boolean dontSave = false;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         for (DatasetField dsf : template.getFlatDatasetFields()) {

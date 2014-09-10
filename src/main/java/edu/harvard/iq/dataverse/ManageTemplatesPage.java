@@ -180,7 +180,17 @@ public class ManageTemplatesPage {
                 if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {
                     dataverse.setDefaultTemplate(dataverse.getOwner().getDefaultTemplate());
                 }
+                if (!isInheritTemplatesValue()) {
+                    if (dataverse.getDefaultTemplate() != null) {
+                        for (Template test : dataverse.getParentTemplates()) {
+                            if (test.equals(dataverse.getDefaultTemplate())) {
+                                dataverse.setDefaultTemplate(null);
+                            }
+                        }
+                    }
+                }
             }
+
             dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(isInheritTemplatesValue(), session.getUser(), getDataverse()));
             init();
             return "";
