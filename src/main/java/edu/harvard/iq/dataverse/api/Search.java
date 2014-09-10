@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +29,12 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
-    
 
     @GET
-//    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("key") String apiKey,
+    /**
+     * @todo return errorResponse not error, which is a String.
+     */
+    public String search(@QueryParam("key") String apiToken,
             @QueryParam("q") String query,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
@@ -53,11 +53,13 @@ public class Search extends AbstractApiBean {
             SolrQueryResponse solrQueryResponse;
             try {
                 User dataverseUser = null;
-                if (apiKey != null) {
-                    String usernameProvided = apiKey;
-                    dataverseUser = findUserByApiToken(apiKey);
+                if (apiToken != null) {
+                    dataverseUser = findUserByApiToken(apiToken);
                     if (dataverseUser == null) {
-                        return error("Couldn't find username: " + usernameProvided);
+                        /**
+                         * @todo return a 404 here
+                         */
+                        return error("Unable to find a user with API token " + apiToken);
                     }
                 }
                 SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
