@@ -13,8 +13,11 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -161,7 +164,12 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        notificationsList = userNotificationService.findByUser(session.getUser().getIdentifier());
+        User currentUser = session.getUser();
+        if ( currentUser.isAuthenticated() ) {
+            notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
+        } else {
+            notificationsList = Collections.<UserNotification>emptyList();
+        }
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
         switch (selectTab) {

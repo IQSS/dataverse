@@ -134,7 +134,7 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
                                                              or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
@@ -186,7 +186,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
@@ -414,7 +414,7 @@
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
@@ -501,7 +501,7 @@
                                             </ui:fragment>-->
                                            
 
-                                             <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
                                                  <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
                                                            <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map It" />
@@ -552,7 +552,7 @@
                                 </p:tab>
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="containder" style="text-align:right; margin-bottom:.5em;">
@@ -651,7 +651,8 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-                                            <h:outputText value="#{versionTab.versionContributors}" />
+											<!-- FIXME Commented this out, as there is no such property at this time. Michael --> 
+                                            <!-- h:outputText value="#{versionTab.versionContributors}" /-->
                                         </p:column>
                                         <p:column>
                                             <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />

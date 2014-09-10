@@ -26,8 +26,8 @@ public class UserNotificationServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    public List<UserNotification> findByUser(String userId) {
-        Query query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId order by o.sendDate desc");
+    public List<UserNotification> findByUser(Long userId) {
+        Query query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc");
         query.setParameter("userId", userId);
         return query.getResultList();
     }
