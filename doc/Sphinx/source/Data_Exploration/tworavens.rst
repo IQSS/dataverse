@@ -1,5 +1,5 @@
-Data Exploration Guide TwoRavens
-++++++++++++++++++++++++++++++++++
+TwoRavens: Tabular Data Exploration
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Exploring and Analyzing Tabular files in Dataverse
 ===================================================

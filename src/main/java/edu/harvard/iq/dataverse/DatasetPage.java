@@ -698,15 +698,11 @@ public class DatasetPage implements java.io.Serializable {
         
          * All the back end-specific ingest logic has been moved into 
          * the IngestServiceBean! -- L.A.
-         * TODO: we still need to figure out how the ingestServiceBean is 
-         * going to communicate the information about ingest errors back to 
-         * the page, and what the page should be doing to alert the user. 
-         * (we may not do any communication/exceptions/etc. here - relying
-         * instead on the ingest/upload status properly set on each of the 
-         * individual files, and adding a mechanism to the page for displaying
-         * file-specific error reports - in pop-up windows maybe?)
          */
-        //First Remove Any that have never been ingested;
+        
+        // File deletes (selected by the checkboxes on the page)
+        //
+        // First Remove Any that have never been ingested;
         if (this.selectedFiles != null) {
             Iterator<DataFile> dfIt = newFiles.iterator();
             while (dfIt.hasNext()) {
@@ -784,6 +780,13 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        // One last check before we save the files - go through the newly-uploaded 
+        // ones and modify their names so that there are no duplicates. 
+        
+        // (but should we really be doing it here? - maybe a better approach to do it
+        // in the ingest service bean, when the files get uploaded.)
+        
+        // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
 
         // Use the API to save the dataset: 
@@ -842,6 +845,37 @@ public class DatasetPage implements java.io.Serializable {
         editMode = null;
     }
 
+    public boolean isDuplicate(FileMetadata fileMetadata) {
+        String thisMd5 = fileMetadata.getDataFile().getmd5();
+        if (thisMd5 == null) {
+            return false;
+        }
+        
+        Map<String,Integer> MD5Map= new HashMap<String,Integer>();
+
+        // TODO: 
+        // think of a way to do this that doesn't involve populating this 
+        // map for every file on the page? 
+        // man not be that much of a problem, if we paginate and never display 
+        // more than a certain number of files... Still, needs to be revisited
+        // before the final 4.0. 
+        // -- L.A. 4.0
+        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            String md5 = fm.getDataFile().getmd5();
+            if (md5 != null) {
+                if (MD5Map.get(md5) != null) {
+                    MD5Map.put(md5, MD5Map.get(md5).intValue()+1);
+                } else {
+                    MD5Map.put(md5, 1);
+                }
+            }
+        }
+        
+        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1; 
+    }
+    
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
