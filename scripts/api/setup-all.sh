@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SERVER=http://localhost:8080/api
+
 # Everything + the kitchen sink, in a single script
 # - Push the metadata blocks
 # - Create the usual suspect users
@@ -20,6 +22,14 @@ UMA=$(cat $TMP | grep :result: | grep Uma | cut -d: -f4)
 
 rm $TMP
 
+# setup the local sign-in
+echo Setting up the settings
+echo  - Allow internal signup
+curl -X PUT $SERVER/s/settings/:AllowSignUp/yes
+curl -X PUT $SERVER/s/settings/:SignUpUrl/builtin-idp%2Fsignup.xhtml
+
 # index-all
 # FIXME: obviate the need for this
+
+echo Start indexing
 curl -s http://localhost:8080/api/index

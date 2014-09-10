@@ -170,4 +170,21 @@ Lists brief info about all metadata blocks registered in the system.
 
 Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
 
-	
+### Admin (`/s/XXX`)
+This is a "secure" part of the api, dealing with setup. Future releases will only allow accessing this from a whilelisted IP address, or localhost.
+
+	GET http://{{SERVER}}/api/s/settings
+
+List all settings.
+
+	GET http://{{SERVER}}/api/s/settings/{{name}}
+
+Get the setting under `name`.
+
+	PUT http://{{SERVER}}/api/s/settings/{{name}}/{{content}}
+
+Set `name` to `content`. Note that `content` is assumed to be url-encoded.
+
+	DELETE http://{{SERVER}}/api/s/settings/{{name}}
+
+Delete the setting under `name`.
