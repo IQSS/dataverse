@@ -82,6 +82,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -412,6 +413,97 @@ public class IngestServiceBean {
         return null;
     }   // end createDataFiles
     
+    // TODO: 
+    // add comments explaining what's going on in the 2 methods below. 
+    // -- L.A. 4.0 beta
+    private String checkForDuplicateFileNames(DatasetVersion version, String fileName) {
+        Set<String> fileNamesExisting = new HashSet<String>();
+
+        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            String existingName = fm.getLabel();
+            
+            if (existingName != null) {
+                // if it's a tabular file, we need to restore the original file name; 
+                // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
+                // foobar.tab once ingested! 
+                if (fm.getDataFile().isTabularData()) {
+                    String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
+                    if ( originalMimeType != null) {
+                        String origFileExtension = generateOriginalExtension(originalMimeType);
+                        existingName = existingName.replaceAll(".tab$", origFileExtension);
+                    } else {
+                        existingName = existingName.replaceAll(".tab$", "");
+                    }
+                }
+                fileNamesExisting.add(existingName);
+            }
+        }
+
+        while (fileNamesExisting.contains(fileName)) {
+            fileName = generateNewFileName(fileName);
+        }
+
+        return fileName;
+    }
+    
+    // TODO: 
+    // Move this method (duplicated in StoredOriginalFile.java) to 
+    // FileUtil.java. 
+    // -- L.A. 4.0 beta
+    
+    private static String generateOriginalExtension(String fileType) {
+
+        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
+            return ".sav";
+        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
+            return ".por";
+        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".dta";
+        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+            return ".RData";
+        } else if (fileType.equalsIgnoreCase("text/csv")) {
+            return ".csv";
+        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ".xlsx";
+        }
+
+       return "";
+    }
+
+    
+    private String generateNewFileName(String fileName) {
+        String newName = null;
+        String baseName = null; 
+        String extension = null; 
+        
+        int extensionIndex = fileName.lastIndexOf(".");
+        if (extensionIndex != -1 ) {
+            extension = fileName.substring(extensionIndex+1);
+            baseName = fileName.substring(0, extensionIndex);
+        } else {
+            baseName = fileName; 
+        }
+        
+        if (baseName.matches(".*-[0-9][0-9]*$")) {
+            int dashIndex = baseName.lastIndexOf("-");
+            String numSuffix = baseName.substring(dashIndex+1);
+            String basePrefix = baseName.substring(0,dashIndex);
+            int numSuffixValue = new Integer(numSuffix).intValue();
+            numSuffixValue++; 
+            baseName = basePrefix + "-" + numSuffixValue;
+        } else {
+            baseName = baseName + "-1"; 
+        }
+        
+        newName = baseName; 
+        if (extension != null) {
+            newName = newName + "." + extension; 
+        }
+        
+        return newName;
+    }
     
     /**
      *  Returns a content type string for a FileObject
@@ -450,7 +542,7 @@ public class IngestServiceBean {
         DataFile datafile = new DataFile(contentType);
         FileMetadata fmd = new FileMetadata();
         
-        fmd.setLabel(fileName);
+        fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
         datafile.setOwner(version.getDataset());
         fmd.setDataFile(datafile);

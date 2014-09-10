@@ -45,6 +45,7 @@
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
                             deleteFileConfirmation.show();
+                            duplicateContentConfirmation.show();
                         } else {
                             $('button[id$="datasetSave"]').trigger('click');
                         }
@@ -494,7 +495,9 @@
 
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                                            
-                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData)}"/>
+                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                            <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
+                                            <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
 
                                             <h:outputText id="fileTypeOutputTabular" value="#{datasetBundle.tabularDataText}#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
@@ -719,8 +722,13 @@
                         </p:commandButton>
                         <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:dialog id="deaccessionBlock" header="#{datasetBundle.deaccessionDatasetText}" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{datasetBundle.willNotBeViewableTip}</p>
+                    <p:confirmDialog message="Some of the files you are adding already exist in the dataset..." header="Duplicate Files" widgetVar="duplicateContentConfirmation">
+                        <p:commandButton value="Continue" onclick="duplicateContentConfirmation.hide()" action="#{DatasetPage.save()}">
+                        </p:commandButton>
+                        <p:commandButton value="Cancel" onclick="duplicateContentConfirmation.hide()" type="button" />
+                    </p:confirmDialog>
+                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
                                 <label for="deaccessionOptions">#{datasetBundle.versionSelectedToDeaccessionText}</label>
