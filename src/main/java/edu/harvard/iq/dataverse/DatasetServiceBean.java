@@ -191,7 +191,13 @@ public class DatasetServiceBean {
         xmlw.writeEndElement(); // titles
 
         xmlw.writeStartElement("section");
-        String sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
+        String sectionString ="";
+        if (version.getDataset().isReleased()){
+            sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getDataset().getPublicationDate());
+        } else {
+            sectionString = new SimpleDateFormat("yyyy-MM-dd").format(version.getLastUpdateTime());
+        }
+        
         xmlw.writeCharacters(sectionString);
         xmlw.writeEndElement(); // publisher
 

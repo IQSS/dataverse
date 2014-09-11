@@ -441,14 +441,15 @@
                                     </p:panelGrid>
                                 </ui:fragment>
                                     </ui:remove>
-                                <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                                <h:outputText value="Theme updates are not available at this time." />
+                                <h:commandButton type="submit" disabled="true" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
                             </p:tab>
                             <p:tab id="widgetsTab" title="Widgets" >
                                 <div>
                                     <h:outputText value="Dataverse Listing" />
                                 </div>
                                 <div>
-                                    <textarea name="text_area1" rows="4">
+                                    <textarea name="text_area1" rows="6">
                                     <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
                                     
                                     </textarea>
