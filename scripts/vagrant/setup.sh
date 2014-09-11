@@ -11,7 +11,7 @@ sudo mv jq /usr/bin/jq
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 cp /dataverse/conf/vagrant/etc/yum.repos.d/epel-apache-maven.repo /etc/yum.repos.d
-yum install -y java-1.7.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl shibboleth
+yum install -y java-1.7.0-openjdk-devel postgresql-server apache-maven httpd mod_ssl shibboleth shibboleth-embedded-ds
 service postgresql initdb
 service postgresql stop
 cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/data/pg_hba.conf
