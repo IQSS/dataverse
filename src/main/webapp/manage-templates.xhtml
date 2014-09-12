@@ -21,7 +21,7 @@
             <ui:define name="body">
                 <h:form id="manageTemplatesForm">
 
-                    <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null}">
+                    <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
                         <label for="templateRoot" style="margin-top:.75em;">
                             <h:selectBooleanCheckbox id="templateRoot" value="#{manageTemplatesPage.inheritTemplatesValue}">
                                 <p:ajax update="@all" listener="#{manageTemplatesPage.updateTemplatesRoot}" />

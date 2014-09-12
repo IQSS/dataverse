@@ -19,7 +19,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:loadBundle basename="DatasetBundle" var="datasetBundle"/>
-                <script type="text/javascript" src="/resuouce/js/dropbox.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
+                <script type="text/javascript" src="/resuouce/js/dropbox.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
 
                     function openDialog() {
@@ -38,28 +38,28 @@
                     }
 
                     function updateTemplate() {
-                            $('button[id$="updateTemplate"]').trigger('click');
+                        $('button[id$="updateTemplate"]').trigger('click');
                     }
 
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
                             deleteFileConfirmation.show();
-                            duplicateContentConfirmation.show();
                         } else {
                             $('button[id$="datasetSave"]').trigger('click');
                         }
                     }
-                    
-                    function updateHiddenReason(textArea){
+
+                    function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
 
                     function testDeaccessionVersionSelection(testVersion) {
                         var deaccessionText = $('input[id$="hiddenReasonInput"]').val();
-                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();;
+                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
+                        ;
                         var valid = true;
-                        if (testVersion === true){
+                        if (testVersion === true) {
                             var count = versionDeaccessionTable.getSelectedRowsCount();
                         }
 
@@ -75,7 +75,7 @@
                                 }
                             }
                         }
-                        if(deaccessionText.length >= 1001){
+                        if (deaccessionText.length >= 1001) {
                             valid = false;
                             reasonTooManyCharacters.show();
                         }
@@ -284,6 +284,25 @@
                                             </ui:fragment>
                                             <span id="whycitelink" class="bg-warning small pull-right"><a href="/guides/Data_Citation/index.html" target="_blank">#{datasetBundle.whyCiteText}</a></span>
                                         </div>
+                                        <div class="btn-group">
+                                            <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                <li>
+                                                    <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
+
+                                                        <h:outputText value="End Note XML" />
+                                                    </h:commandLink>
+                                                </li>
+                                                <li>
+                                                    <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
+
+                                                        <h:outputText value="RIS Format" />
+                                                    </h:commandLink>
+                                                </li>
+                                            </ul>
+                                        </div>  
                                     </ui:fragment>
 
                                     <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
@@ -386,7 +405,7 @@
                             <ui:include src="metadataFragment.xhtml"/>                      
                         </ui:fragment>
                     </ui:fragment>
-                    
+
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
                         <p:commandButton id="saveTop" value="#{datasetBundle.saveChangesButton}" onclick="checkFilesSelected();" />
@@ -441,14 +460,17 @@
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="#{datasetBundle.selectToAddButton}"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
+
                                         <div class="panel panel-default" style="margin-top:1em;">
-                                            <div class="panel-body">
-                                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                                <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
-                                                </p:commandButton>
-                                                <p:commandButton value="#{datasetBundle.uploadFromDropboxButton}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                                <p class="help-block">#{datasetBundle.beUploadedFromDropboxTip}</p>
-                                            </div>
+                                            <ui:fragment  rendered="#{!empty DatasetPage.dropBoxKey}">
+                                                <div class="panel-body">
+                                                    <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
+                                                    <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
+                                                    </p:commandButton>
+                                                    <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
+                                                    <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
+                                                </div>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
@@ -494,7 +516,7 @@
                                             </ui:fragment>
 
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-                                           
+
                                             <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
                                             <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
                                             <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
@@ -503,11 +525,8 @@
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{datasetBundle.viewOnWorldMapText}</a> 		
-<br />
-<iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
-                                               <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
+                                                <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
                                             </ui:fragment>
                                             <div class="fileDescription">
                                                 <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
@@ -539,13 +558,14 @@
                                             <!--<ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
-                                           
 
-                                             <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
-                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+
+                                            <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                                <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
-                                                           <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{datasetBundle.reMapDataText}" />
-                                                           <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{datasetBundle.mapDataText}" />
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+                                                <br />
+                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
                                                 </a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
@@ -722,16 +742,8 @@
                         </p:commandButton>
                         <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:confirmDialog message="#{datasetBundle.filesExistTip}" header="#{dataBundle.duplicateFilesText}" widgetVar="duplicateContentConfirmation">
-                        <p:commandButton value="Continue" onclick="duplicateContentConfirmation.hide()" action="#{DatasetPage.save()}">
-                            #{datasetBundle.continueButton}
-                        </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="duplicateContentConfirmation.hide()" type="button" >
-                            #{datasetBundle.cancelButton}
-                        </commandButton>
-                    </p:confirmDialog>
-                    <p:dialog id="deaccessionBlock" header="#{datasetBundle.deaccessionDatasetText}" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{datasetBundle.datasetBeNotViewableTip}</p>
+                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
+                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
                                 <label for="deaccessionOptions">#{datasetBundle.versionSelectedToDeaccessionText}</label>
@@ -763,7 +775,7 @@
                                 #{datasetBundle.enterAdditionalInformationTip}
                             </label>
                             <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" 
-                                          onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
+                                             onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
                             <p:message for="reasonForDeaccession"/>
                         </div>
                         <div class="form-group">
@@ -896,3 +908,5 @@
         </ui:composition>
     </h:body>
 </html>
+                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>

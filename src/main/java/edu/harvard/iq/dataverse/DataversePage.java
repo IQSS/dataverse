@@ -113,7 +113,7 @@ public class DataversePage implements java.io.Serializable {
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
-            dataverse.setContactEmail(session.getUser().getEmail());
+            dataverse.setContactEmail(session.getUser().getEmail());            
             dataverse.setAffiliation(session.getUser().getAffiliation());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)

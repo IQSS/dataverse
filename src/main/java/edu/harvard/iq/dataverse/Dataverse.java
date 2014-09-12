@@ -127,13 +127,16 @@ public class Dataverse extends DvObjectContainer {
     public List<Template> getParentTemplates() {
         List<Template> retList = new ArrayList();
         Dataverse testDV = this;
-        while (testDV.getOwner() != null){           
+        while (testDV.getOwner() != null){   
+            
+           if (!testDV.getMetadataBlocks().equals(testDV.getOwner().getMetadataBlocks())){
+               break;
+           }           
            retList.addAll(testDV.getOwner().getTemplates());
            
-           if(!testDV.getOwner().templateRoot){
-               
+           if(!testDV.getOwner().templateRoot){               
                break;
-           }
+           }           
            testDV = testDV.getOwner();
         }
             return  retList;

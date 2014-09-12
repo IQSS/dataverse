@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -53,6 +54,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -188,6 +191,17 @@ public class DatasetPage implements java.io.Serializable {
         return dropBoxSelection;
     }
 
+    public String getDropBoxKey() {
+        // Site-specific DropBox application registration key is configured 
+        // via a JVM option under glassfish.
+
+        String configuredDropBoxKey = System.getProperty("dataverse.dropbox.key");
+        if (configuredDropBoxKey != null) {
+            return configuredDropBoxKey;
+        }
+        return "";
+    }
+
     public void setDropBoxSelection(String dropBoxSelection) {
         this.dropBoxSelection = dropBoxSelection;
     }
@@ -303,8 +317,8 @@ public class DatasetPage implements java.io.Serializable {
     public void updateSelectedTemplate(ValueChangeEvent event) {
 
         selectedTemplate = (Template) event.getNewValue();
-        if (selectedTemplate != null){
-                   workingVersion = dataset.getEditVersion(selectedTemplate); 
+        if (selectedTemplate != null) {
+            workingVersion = dataset.getEditVersion(selectedTemplate);
         } else {
 
             dataset = new Dataset();
@@ -323,7 +337,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void handleChangeButton() {
-
 
     }
 
@@ -434,7 +447,7 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
-            if (dataverseService.find(ownerId).isTemplateRoot()){
+            if (dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
             }
             defaultTemplate = dataverseService.find(ownerId).getDefaultTemplate();
@@ -699,7 +712,6 @@ public class DatasetPage implements java.io.Serializable {
          * All the back end-specific ingest logic has been moved into 
          * the IngestServiceBean! -- L.A.
          */
-        
         // File deletes (selected by the checkboxes on the page)
         //
         // First Remove Any that have never been ingested;
@@ -782,10 +794,8 @@ public class DatasetPage implements java.io.Serializable {
 
         // One last check before we save the files - go through the newly-uploaded 
         // ones and modify their names so that there are no duplicates. 
-        
         // (but should we really be doing it here? - maybe a better approach to do it
         // in the ingest service bean, when the files get uploaded.)
-        
         // Finally, save the files permanently: 
         ingestService.addFiles(workingVersion, newFiles);
 
@@ -800,9 +810,9 @@ public class DatasetPage implements java.io.Serializable {
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
                 userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
-                if (selectedTemplate != null){
+                if (selectedTemplate != null) {
                     commandEngine.submit(new UpdateDataverseTemplateCountCommand(session.getUser(), selectedTemplate, dataset));
-                }                
+                }
             }
         } catch (EJBException ex) {
             StringBuilder error = new StringBuilder();
@@ -850,8 +860,8 @@ public class DatasetPage implements java.io.Serializable {
         if (thisMd5 == null) {
             return false;
         }
-        
-        Map<String,Integer> MD5Map= new HashMap<String,Integer>();
+
+        Map<String, Integer> MD5Map = new HashMap<String, Integer>();
 
         // TODO: 
         // think of a way to do this that doesn't involve populating this 
@@ -866,16 +876,16 @@ public class DatasetPage implements java.io.Serializable {
             String md5 = fm.getDataFile().getmd5();
             if (md5 != null) {
                 if (MD5Map.get(md5) != null) {
-                    MD5Map.put(md5, MD5Map.get(md5).intValue()+1);
+                    MD5Map.put(md5, MD5Map.get(md5).intValue() + 1);
                 } else {
                     MD5Map.put(md5, 1);
                 }
             }
         }
-        
-        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1; 
+
+        return MD5Map.get(thisMd5) != null && MD5Map.get(thisMd5).intValue() > 1;
     }
-    
+
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
@@ -1095,5 +1105,44 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return retList;
+    }
+
+    public void downloadXMLFile() {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        datasetService.createXML(outStream, workingVersion);
+        String xml = outStream.toString();
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/xml");
+        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.xml";
+        response.setHeader("Content-Disposition", fileNameString);
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(xml.getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void downloadRISFile() {
+
+        String risFormatDowload = datasetService.getRISFormat(workingVersion);
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("application/download");
+        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.ris";
+        response.setHeader("Content-Disposition", fileNameString);
+
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(risFormatDowload.getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+
+        }
     }
 }

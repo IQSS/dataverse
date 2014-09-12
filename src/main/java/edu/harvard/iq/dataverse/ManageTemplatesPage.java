@@ -50,11 +50,17 @@ public class ManageTemplatesPage {
     private Dataverse dataverse;
     private Long dataverseId;
     private boolean inheritTemplatesValue;
+    private boolean inheritTemplatesAllowed = false;
+
     private Template selectedTemplate = null;
 
     public void init() {
         dataverse = dvService.find(dataverseId);
         dvpage.setDataverse(dataverse);
+        if (dataverse.getOwner() != null && dataverse.getMetadataBlocks().equals(dataverse.getOwner().getMetadataBlocks())){
+           setInheritTemplatesAllowed(true); 
+        }
+ 
         templates = new LinkedList<>();
         setInheritTemplatesValue(dataverse.isTemplateRoot());
         if (inheritTemplatesValue && dataverse.getOwner() != null) {
@@ -160,6 +166,13 @@ public class ManageTemplatesPage {
         this.inheritTemplatesValue = inheritTemplatesValue;
     }
 
+    public boolean isInheritTemplatesAllowed() {
+        return inheritTemplatesAllowed;
+    }
+
+    public void setInheritTemplatesAllowed(boolean inheritTemplatesAllowed) {
+        this.inheritTemplatesAllowed = inheritTemplatesAllowed;
+    }
     public Template getSelectedTemplate() {
         return selectedTemplate;
     }
@@ -180,7 +193,17 @@ public class ManageTemplatesPage {
                 if (isInheritTemplatesValue() && dataverse.getDefaultTemplate() == null && dataverse.getOwner().getDefaultTemplate() != null) {
                     dataverse.setDefaultTemplate(dataverse.getOwner().getDefaultTemplate());
                 }
+                if (!isInheritTemplatesValue()) {
+                    if (dataverse.getDefaultTemplate() != null) {
+                        for (Template test : dataverse.getParentTemplates()) {
+                            if (test.equals(dataverse.getDefaultTemplate())) {
+                                dataverse.setDefaultTemplate(null);
+                            }
+                        }
+                    }
+                }
             }
+
             dataverse = engineService.submit(new UpdateDataverseTemplateRootCommand(isInheritTemplatesValue(), session.getUser(), getDataverse()));
             init();
             return "";
