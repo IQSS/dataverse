@@ -22,7 +22,7 @@
                     <div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
                         <h:form id="loginForm" styleClass="form-horizontal">
                             <p:focus context="loginForm"/>
-                            <div class="form-group">
+                            <div class="form-group" style="visibility: hidden">
                                 <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
                                 <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
                                     <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap" 
@@ -50,7 +50,7 @@
                         </h:form>
                     </div>
                     <div class="col-md-7" style="margin-top:3em;">
-                        <iframe src="shib-identity-picker.html" width="550" height="400"/>
+                        <iframe src="shib-identity-picker.html" width="450" height="320" style="background-color: lightgray"/>
                     </div>
                 </div>
                 <div style="float: bottom">

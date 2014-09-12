@@ -3,8 +3,8 @@
 {
     width: 389px;
     text-align: left;
-    background-color: #FFFFFF;
-    border: 2px #A40000 solid;
+    background-color: lightgray;
+    border: 0px #A40000 solid;
     padding: 10px;
 }
 
@@ -46,6 +46,7 @@ div.IdPSelectPreferredIdPButton a
 div.IdPSelectTextDiv{
     height: 3.5ex; /* Add some height to separate the text from the boxes */
     font-size: 15px;
+    clear: left;
 }
 
 div.IdPSelectPreferredIdPImg
