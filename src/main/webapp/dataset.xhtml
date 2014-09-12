@@ -286,19 +286,19 @@
                                         </div>
                                         <div class="btn-group">
                                             <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
+                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{dataverseBundle.downloadCitationButton} <span class="caret"></span>
                                             </button>
                                             <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                 <li>
                                                     <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
 
-                                                        <h:outputText value="End Note XML" />
+                                                        <h:outputText value="#{dataverseBundle.endNoteXmlText}" />
                                                     </h:commandLink>
                                                 </li>
                                                 <li>
                                                     <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
 
-                                                        <h:outputText value="RIS Format" />
+                                                        <h:outputText value="#{dataverseBundle.RISFormatText}" />
                                                     </h:commandLink>
                                                 </li>
                                             </ul>
