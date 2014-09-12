@@ -115,21 +115,20 @@ public class DatasetServiceBean {
     }
 
     public String getRISFormat(DatasetVersion version) {
-        String retString = "";
-
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
-        retString = "Provider: " + publisher + "\r\n";
-        retString += "Content: text/plain; charset=us-ascii" + "\r\n";;
-        retString += "TY - DATA" + "\r\n";;
-        retString += "T1 - " + version.getTitle() + "\r\n";
+        String retString = "Provider: " + publisher + "\r\n";
+        retString += "Content: text/plain; \"charset=us-ascii\"" + "\r\n";
+        retString += "TY  - DATA" + "\r\n";
+        retString += "T1  - " + version.getTitle() + "\r\n";
         for (DatasetAuthor author : authorList) {
-            retString += "AU - " + author.getName().getDisplayValue() + "\r\n";
+            retString += "AU  - " + author.getName().getDisplayValue() + "\r\n";
         }
-        retString += "DO - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId() + "\r\n";
-        retString += "PY - " + version.getVersionYear() + "\r\n";
-        retString += "UR - " + version.getDataset().getPersistentURL() + "\r\n";
-        retString += "PB - " + publisher + "\r\n";
+        retString += "DO  - " + version.getDataset().getProtocol() + "/" + version.getDataset().getAuthority() + "/" + version.getDataset().getId() + "\r\n";
+        retString += "PY  - " + version.getVersionYear() + "\r\n";
+        retString += "UR  - " + version.getDataset().getPersistentURL() + "\r\n";
+        retString += "PB  - " + publisher + "\r\n";
+        retString += "ER  - \r\n";
         return retString;
     }
 
@@ -177,11 +176,13 @@ public class DatasetServiceBean {
         xmlw.writeEndElement(); // ref-type
 
         xmlw.writeStartElement("contributors");
+        xmlw.writeStartElement("authors");
         for (DatasetAuthor author : authorList) {
             xmlw.writeStartElement("author");
             xmlw.writeCharacters(author.getName().getDisplayValue());
             xmlw.writeEndElement(); // author                    
         }
+        xmlw.writeEndElement(); // authors 
         xmlw.writeEndElement(); // contributors 
 
         xmlw.writeStartElement("titles");
