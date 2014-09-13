@@ -52,6 +52,19 @@ public Response listVersions( @PathParam("id") Long id, @QueryParam("key") Strin
     User u = builtinUserSvc.findByIdentifier(apiKey);
     if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 ```
+
+Testing for guest-ness of the user has changed as well. Before, when we had a dummy guest user, we used 
+
+```xml
+<ui:fragment rendered="#{dataverseSession.user.guest}">
+```
+
+Now, we can query the user object about it's authentication state. So te code becomes:
+
+```xml
+<ui:fragment rendered="#{!dataverseSession.user.authenticated}">
+```
+Note that before we were asking `isGuest` and now we ask `isAuthenticated`, so the logic is reversed and we need to add a not operator. Sorry about that.
 ## Other Added Things
 
 ### Settings bean
