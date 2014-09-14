@@ -16,7 +16,7 @@ From a merge standpoint, this means that code that previously referenced `Datave
 
 Most of these changes have been done by Michael/Phil - otherwise, the `auth` branch would not compile.
 
-Since the guest user does not live in the database, it does not have an id. Moreover, JPA classes cannot link directly to it*. But have no fear - all users (and, really, all `RoleAssignee`s, which are users or groups) have an identifier. When you need to reference a user (and later, a group) just use the identifier (it's of type `String`). When needing to convert an identifier to a user, call `RoleAssigneeServiceBean.getRoleAssignee( identifier )` in the general case, or `AuthenticationServiceBean.getAuthenticatedUser(identifier)` if you're certain the identifier is of an authenticated user.
+Since the guest user does not live in the database, it does not have an id. Moreover, JPA classes cannot link directly to it\*. But have no fear - all users (and, really, all `RoleAssignee`s, which are users or groups) have an identifier. When you need to reference a user (and later, a group) just use the identifier (it's of type `String`). When needing to convert an identifier to a user, call `RoleAssigneeServiceBean.getRoleAssignee( identifier )` in the general case, or `AuthenticationServiceBean.getAuthenticatedUser(identifier)` if you're certain the identifier is of an authenticated user.
 
 
 \* We have debated this for a while, since we could have created a dummy record, like we've done so far. We went with this solution, as it is cleaner, can't be messed up by SQL scripts, and will make even more sense once groups arrive.
@@ -65,6 +65,11 @@ Now, we can query the user object about it's authentication state. So te code be
 <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
 ```
 Note that before we were asking `isGuest` and now we ask `isAuthenticated`, so the logic is reversed and we need to add a not operator. Sorry about that.
+
+### Tools
+
+`git ls-files --unmerged`: show which files have not been merged
+
 ## Other Added Things
 
 ### Settings bean
