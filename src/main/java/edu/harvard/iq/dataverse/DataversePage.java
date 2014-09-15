@@ -158,7 +158,7 @@ public class DataversePage implements java.io.Serializable {
     // equivalent of the old VDCRequestBean - but maybe application-scoped?
     // -- L.A. 4.0 beta
     
-    public String getDvnUrl() {
+    public String getDataverseSiteUrl() {
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl; 
