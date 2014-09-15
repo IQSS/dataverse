@@ -37,4 +37,3 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablocknam
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (12, ':coverage', 'geospatial', 'otherGeographicCoverage', FALSE, NULL, 1 );
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (13, ':type', 'socialscience', 'kindOfData', FALSE, NULL, 1 );
 INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, metadatablockname, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id) VALUES (14, ':source', 'socialscience', 'dataSources', FALSE, NULL, 1 );
-
