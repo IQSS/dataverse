@@ -525,6 +525,9 @@
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{datasetBundle.viewOnWorldMapText}</a> 		
+                                                <br />
+                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
                                                 <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
                                             </ui:fragment>
@@ -562,10 +565,9 @@
 
                                             <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
-                                                <br />
-                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
+                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{datasetBundle.reMapDataText}" />
+                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{datasetBundle.mapDataText}" />
                                                 </a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
@@ -742,8 +744,8 @@
                         </p:commandButton>
                         <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
-                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
+                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{datasetBundle.datasetBeNotViewableTip}</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
                                 <label for="deaccessionOptions">#{datasetBundle.versionSelectedToDeaccessionText}</label>
@@ -809,7 +811,7 @@
                     <p:confirmDialog id="selectDeaccessionReason" message="#{datasetBundle.selectReasonMsg}" header="#{datasetBundle.selectReasonHeader}" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
                     <p:confirmDialog id="enterForwardUrl" message="#{datasetBundle.invalidURLMsg}" header="#{datasetBundle.invalidURLHeader}" widgetVar="enterForwardUrl"> </p:confirmDialog>
                     <p:confirmDialog id="enterOtherReason" message="#{datasetBundle.additionalInformationMsg}" header="#{datasetBundle.additionalInformationHeader}" widgetVar="enterOtherReason"> </p:confirmDialog>
-                    <p:confirmDialog id="reasonTooManyCharacters" message="" header="#{datasetBundle.limitCharactersHeader}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
+                    <p:confirmDialog id="reasonTooManyCharacters" message="#{datasetBundle.limitCharactersMsg}" header="#{datasetBundle.limitCharactersHeader}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
                     <ui:fragment id="detailsBlock">
                         <p:dialog id="detailsBlocks" header="#{datasetBundle.versionDifferencesDetailsHeader}" widgetVar="detailsBlocks">
@@ -908,5 +910,3 @@
         </ui:composition>
     </h:body>
 </html>
-                    <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>

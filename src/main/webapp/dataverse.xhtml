@@ -40,9 +40,9 @@
                     <f:viewAction action="#{SearchIncludeFragment.search()}" />
                 </f:metadata>
 
-                <h:form id="dataverseForm">                    
+                <h:form id="dataverseForm">
                     <p:focus context="dataverseForm"/>
-
+                    
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -149,7 +149,7 @@
                                                      rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
-                                    <h:outputText id="counter" style="display:block;"/>
+                                   <div><span id="chars"/> #{dataverseBundle.charactersRemainingText}</div>
                                 </div>
                                 <div class="col-sm-2 control-label">
                                     <p:message for="description"/>
