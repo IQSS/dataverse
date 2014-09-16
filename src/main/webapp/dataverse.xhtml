@@ -402,7 +402,7 @@
                                         <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
                                     </textarea>-->
                                     <p:inputTextarea rows="3" cols="54" autoResize="false"
-                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;">
+                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;">
                                     </p:inputTextarea>
                                 </div>
                                 <div>
@@ -416,7 +416,7 @@
                                         <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
                                     </textarea>-->
                                     <p:inputTextarea rows="2" cols="54" autoResize="false"
-                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;">
+                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;">
                                     </p:inputTextarea>
                                 </div>
                             </p:tab>
