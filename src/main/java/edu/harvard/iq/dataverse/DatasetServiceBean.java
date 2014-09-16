@@ -118,7 +118,7 @@ public class DatasetServiceBean {
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
         String retString = "Provider: " + publisher + "\r\n";
-        retString += "Content: text/plain; \"charset=us-ascii\"" + "\r\n";
+        retString += "Content: text/plain; charset=\"us-ascii\"" + "\r\n";
         retString += "TY  - DATA" + "\r\n";
         retString += "T1  - " + version.getTitle() + "\r\n";
         for (DatasetAuthor author : authorList) {
