@@ -385,7 +385,7 @@
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
                     </p:dialog>
                     <!-- Theme and Widgets Form -->
-                    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true">
+                    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="themeWidgetsPopUp">
                         <p:tabView id="tabView" widgetVar="content">
                             <p:tab id="widgetsTab" title="Widgets">
                                 <div>
@@ -395,26 +395,28 @@
                                     <h5>
                                         Dataverse Search Box
                                     </h5>
+                                    <span class="text-muted">Add a way for visitors on your website to be able to search Dataverse.</span>
                                 </div>
                                 <div>
                                     <!--<textarea name="text_area1" rows="6">
                                         <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
                                     </textarea>-->
                                     <p:inputTextarea rows="3" cols="54" autoResize="false"
-                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}:8080/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;dvUrl=#{DataversePage.dataverseSiteUrl}:8080&amp;widget=search&quot;&gt;&lt;/script&gt;">
+                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;">
                                     </p:inputTextarea>
                                 </div>
                                 <div>
                                     <h5>
                                         Dataverse Listing
                                     </h5>
+                                    <span class="text-muted">Add a way for visitors on your website to be able to view your dataverses and datasets, sort and page through them.</span>
                                 </div>
                                 <div>
                                     <!--<textarea name="text_area1" rows="6">
                                         <h:outputText  value="&lt;script type=&quot;text/javascript&quot;&gt;&#013;&#010;var dvn_url = &quot;http://dvn-build.hmdc.harvard.edu/dataverse.xhtml?id=1&quot;;&#013;&#010;var regexS = &quot;[\\?&amp;]dvn_subpage=([^&amp;#]*)&quot;;&#013;&#010;var regex = new RegExp( regexS );&#013;&#010;var results = regex.exec( window.location.href );&#013;&#010;if( results != null ) dvn_url = dvn_url + results[1];&#013;&#010;document.write(&#39;&lt;iframe src=&quot;&#39; + dvn_url + &#39;&quot; onLoad=&quot;set_dvn_url(this)&quot; width=&quot;100%&quot; height=&quot;500&quot;&gt;&lt;/iframe&gt;&#39;);&#013;&#010;&lt;/script&gt;"/>
                                     </textarea>-->
                                     <p:inputTextarea rows="2" cols="54" autoResize="false"
-                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}:8080/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;widget=iframe&quot;&gt;&lt;/script&gt;">
+                                            value="&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/test.js?dataverseId=#{DataversePage.dataverse.id}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;">
                                     </p:inputTextarea>
                                 </div>
                             </p:tab>
