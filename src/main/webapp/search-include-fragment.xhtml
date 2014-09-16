@@ -200,6 +200,10 @@
                                         </p:panelGrid>
                                     </ui:fragment>
                                 </p:dataList>
+                            </h:form> 
+                        </ui:fragment>
+                    </div>
+                </ui:fragment>
                 <ui:param name="dataversePage" value="#{dataverseLinksStayOnPage == true ? '' : '/dataverse.xhtml' }"/>
                 <div id="dv-maincolumn" class="#{showFacets == true ? 'showfacets' : 'nofacets'}">
                     <!--DEBUG BEGIN-->
@@ -443,10 +447,9 @@
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div>
-                            </h:form> 
-                        </ui:fragment>
-                    </div>
-                </ui:fragment>
+                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                            <h:outputText value="#{result.name} #{searchBundle.dataverseText}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                            <h:outputText value="#{result.nameHighlightSnippet} #{searchBundle.dataverseText}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                                         </h:outputLink>
                                         <h:outputText value="(#{result.dataverseAffiliation})" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}" style="color:#999999; margin-left: .5em;"/>
@@ -462,6 +465,8 @@
 
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
 
+                                    <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                        <h:outputText value="#{result.parent.get('name')} #{searchBundle.dataverseText}"/>
                                     </h:outputLink>
 
                                     <hr style="margin:.5em;border:0;"/>
@@ -510,6 +515,8 @@
                                                         <h:outputText value="#{dataset.getFiles().size()} #{dataset.getFiles().size() == 0 or dataset.getFiles().size() > 1 ? 'Files' : 'File'}" />
                                                     </p:column>
                                                     <f:facet name="footer">  
+                                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}" style="font-weight:normal; font-size: smaller;">
+                                                            <h:outputText value="#{searchBundle.viwAllText}"/>
                                                         </h:outputLink>
                                                     </f:facet>
                                                 </p:dataTable>
@@ -540,6 +547,8 @@
 
                                     <h:outputText value=" #{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
 
+                                    <h:outputLink value="#{dataversePage}?id=#{result.parent.get('id')}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                        <h:outputText value="#{result.parent.get('name')} #{searchBundle.dataverseText}"/>
                                     </h:outputLink>
 
                                     <h:outputText value="#{result.citation}" styleClass="resultDatasetCitationBlock bg-info"/>
@@ -596,9 +605,8 @@
 
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right: .5em;"/>
 
-                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}">
-                                            <h:outputText value="#{result.name} #{searchBundle.dataverseText}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                            <h:outputText value="#{result.nameHighlightSnippet} #{searchBundle.dataverseText}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputLink value="#{result.fileUrl}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                        <h:outputText value="#{searchBundle.datasetText}: #{result.parent.get('name')}"/>
                                     </h:outputLink>
 
                                     <hr style="margin:.5em;border:0;"/>
