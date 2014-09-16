@@ -171,7 +171,7 @@ public class DataversePage implements java.io.Serializable {
                 return null;
             }
         }
-        hostUrl = "http://"+hostName;
+        hostUrl = "https://"+hostName;
         return hostUrl;
     }
     
