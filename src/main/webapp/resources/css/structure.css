@@ -105,6 +105,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 #dv-sidecolumn {width:20%;float:left;padding-right:1em;}
 #dv-maincolumn {width:80%;float:left;}
+#dv-maincolumn.nofacets {width:100%;float:none;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
