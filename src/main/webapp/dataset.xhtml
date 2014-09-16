@@ -268,38 +268,42 @@
                                         <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div id="citation" class="bg-info">
-                                            <span>#{DatasetPage.displayCitation}</span>
-                                            <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
-                                            </ui:fragment>
-                                            <span id="whycitelink" class="bg-warning small pull-right"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
+                                        <div class="row" style="margin-bottom:.5em; padding-left:15px;">
+                                            <div id="citation" class="bg-info col-md-9">
+                                                <span>#{DatasetPage.displayCitation}</span>
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
+                                                </ui:fragment>
+                                            </div>
+                                            <div class="row col-md-3" style="padding-right:0;">
+                                                <span id="whycitelink" class="bg-warning small pull-left"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
+                                                <div class="dropdown pull-right">
+                                                    <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                        <li>
+                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
+
+                                                                <h:outputText value="End Note XML" />
+                                                            </h:commandLink>
+                                                        </li>
+                                                        <li>
+                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
+
+                                                                <h:outputText value="RIS Format" />
+                                                            </h:commandLink>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="btn-group">
-                                            <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
-                                                <li>
-                                                    <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
-
-                                                        <h:outputText value="End Note XML" />
-                                                    </h:commandLink>
-                                                </li>
-                                                <li>
-                                                    <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
-
-                                                        <h:outputText value="RIS Format" />
-                                                    </h:commandLink>
-                                                </li>
-                                            </ul>
-                                        </div>  
                                     </ui:fragment>
 
                                     <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
