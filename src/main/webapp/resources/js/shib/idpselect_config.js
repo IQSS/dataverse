@@ -5,8 +5,7 @@ function IdPSelectUIParms() {
     // Adjust the following to fit into your local configuration
     //
     this.alwaysShow = true;          // If true, this will show results as soon as you start typing
-//    this.dataSource = '/Shibboleth.sso/DiscoFeed';    // Where to get the data from
-    this.dataSource = '/resources/dev/sample-shib-identities.json'; // for use in development
+    this.dataSource = window.location.hostname === 'localhost' ? '/resources/dev/sample-shib-identities.json' : '/Shibboleth.sso/DiscoFeed'; // where to get the data from (dev vs. prod)
     this.defaultLanguage = 'en';     // Language to use if the browser local doesnt have a bundle
     this.defaultLogo = 'flyingpiglogo.jpg';
     this.defaultLogoWidth = 90;
@@ -14,9 +13,10 @@ function IdPSelectUIParms() {
 //    this.defaultReturn = null;       // If non null, then the default place to send users who are not
     // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
-    this.defaultReturn = "https://" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=http://" + window.location.hostname + "/shib.xhtml";
+
+    this.defaultReturn = window.location.protocol + "//" + window.location.hostname + "/Shibboleth.sso/Login?SAMLDS=1&target=" + window.location.protocol + "//" + window.location.hostname + "/shib.xhtml";
     this.defaultReturnIDParam = null;
-    this.helpURL = '/guides/index.html';
+    this.helpURL = '/guides/index.html' + this.foo;
     this.ie6Hack = null;             // An array of structures to disable when drawing the pull down (needed to 
     // handle the ie6 z axis problem
     this.insertAtDiv = 'idpSelect';  // The div where we will insert the data
@@ -47,7 +47,7 @@ function IdPSelectUIParms() {
             'fatal.noReturnURL': "No URL return parameter provided",
             'fatal.badProtocol': "Return request must start with https:// or http://",
             'idpPreferred.label': 'Use a previous selection:',
-            'idpEntry.label': 'Or enter your institutions\'s name',
+            'idpEntry.label': 'Or enter your institution\'s name',
             'idpEntry.NoPreferred.label': 'Enter your institution\'s name',
             'idpList.label': 'Or select your institution from the list below.',
             'idpList.NoPreferred.label': 'Select your institution and click "Continue" to log in via your institution\'s authentication system.',

@@ -147,7 +147,7 @@ public class Shib implements java.io.Serializable {
             session.setUser(au);
         } else {
             logger.info("Couldn't find " + userPersistentId + ". Creating a new user.");
-            authSvc.createAuthenticatedUser(authPrvId, userPersistentId, displayInfo);
+            au = authSvc.createAuthenticatedUser(authPrvId, userPersistentId, displayInfo);
             session.setUser(au);
         }
         try {
