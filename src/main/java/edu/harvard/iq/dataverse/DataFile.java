@@ -289,6 +289,7 @@ public class DataFile extends DvObject {
 
     public Path getFileSystemLocation() {
         // TEMPORARY HACK!
+        // (only used in batch ingest testing -- L.A. 4.0 beta)
         if (this.fileSystemName != null && this.fileSystemName.startsWith("/")) {
             return Paths.get(this.fileSystemName);
         }

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDateverseTemplateCommand;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -13,6 +14,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  *
@@ -93,17 +98,12 @@ public class TemplatePage implements java.io.Serializable {
                     template = dvTemp;
                 }
             }
-            if (dataverse != null){
-                
-            }
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
         } else if (ownerId != null) {
             // create mode for a new template
             dataverse = dataverseService.find(ownerId);
-            System.out.print("create new template " + ownerId);
             editMode = TemplatePage.EditMode.CREATE;
-            System.out.print("create new template " + dataverse.getName());
             template = new Template(this.dataverse);
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
@@ -115,15 +115,40 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save() {
+        
+        boolean dontSave = false;
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        for (DatasetField dsf : template.getFlatDatasetFields()) {
+            dsf.setValidationMessage(null); // clear out any existing validation message
+            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
+            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                dsf.setValidationMessage(constraintViolation.getMessage());
+                dontSave = true;
+                break; // currently only support one message, so we can break out of the loop after the first constraint violation
+            }
+            for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
+                dsfv.setValidationMessage(null); // clear out any existing validation message
+                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
+                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", constraintViolation.getMessage()));
+                    dsfv.setValidationMessage(constraintViolation.getMessage());
+                    dontSave = true;
+                    break; // currently only support one message, so we can break out of the loop after the first constraint violation                    
+                }
+            }
+        }
+        if (dontSave) {
+            return "";
+        }
+        
         Command<Dataverse> cmd;
         try {
             if (editMode == EditMode.CREATE) {
                 template.setCreateTime(new Timestamp(new Date().getTime()));
                 template.setUsageCount(new Long(0));
                 dataverse.getTemplates().add(template);
-                
-                System.out.print("save new template " + dataverse.getTemplates().size());
-                System.out.print("save new template " + dataverse.getName());
                 cmd = new UpdateDataverseCommand(dataverse, null, null, session.getUser());
                 commandEngine.submit(cmd);
             } else {
@@ -153,10 +178,8 @@ public class TemplatePage implements java.io.Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
-
         editMode = null;
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
-        //return "/template.xhtml?id=" + template.getId() + "&ownerId=" + dataverse.getId() + "&faces-redirect=true";
     }
 
     public void cancel() {

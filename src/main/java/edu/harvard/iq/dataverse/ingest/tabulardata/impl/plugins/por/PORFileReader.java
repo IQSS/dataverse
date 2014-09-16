@@ -285,23 +285,43 @@ public class PORFileReader  extends TabularDataFileReader{
                 // (see the setFormatCategory below... but double-check!)
                 // -- L.A. 4.0 alpha
                 String variableFormatType = variableFormatTypeList[indx];
-                if (variableFormatType != null
-                        && (variableFormatType.equals("time")
-                        || variableFormatType.equals("date"))) {
-                    simpleType = 1; 
+                
+                if (variableFormatType != null) {
+                    if (variableFormatType.equals("time")
+                        || variableFormatType.equals("date")) {
+                        simpleType = 1; 
                     
-                    String formatCategory = formatCategoryTable.get(varName);
+                        String formatCategory = formatCategoryTable.get(varName);
 
-                    if (formatCategory != null) {
+                        if (formatCategory != null) {
+                            if (dateFormatList[indx] != null) {
+                                dbgLog.fine("setting format category to "+formatCategory);
+                                variableList.get(indx).setFormatCategory(formatCategory);
+                                dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
+                                variableList.get(indx).setFormatSchemaName(dateFormatList[indx]);
+                            }
+                        }
+                    } else if (variableFormatType.equals("other")) {
+                        dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
+                        dbgLog.fine("SPSS print format: "+printFormatTable.get(variableList.get(indx).getName()));
                         
-                        if (dateFormatList[indx] != null) {
-                            dbgLog.fine("setting format category to "+formatCategory);
-                            variableList.get(indx).setFormatCategory(formatCategory);
-                            dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
-                            variableList.get(indx).setFormatSchemaName(dateFormatList[indx]);
+                        if (printFormatTable.get(variableList.get(indx).getName()).equals("WKDAY")
+                            || printFormatTable.get(variableList.get(indx).getName()).equals("MONTH")) {
+                            // week day or month; 
+                            // These are not treated as time/date values (meaning, we 
+                            // don't define time/date formats for them; there's likely 
+                            // no valid ISO time/date format for just a month or a day 
+                            // of week). However, the
+                            // values will be stored in the TAB files as strings, 
+                            // and not as numerics - as they were stored in the 
+                            // SAV file. So we need to adjust the type here.
+                            // -- L.A. 
+                            
+                            simpleType = 1;
                         }
                     }
                 }
+                
             }
             
             dbgLog.fine("Finished creating variable "+indx+", "+varName);
@@ -1074,6 +1094,7 @@ public class PORFileReader  extends TabularDataFileReader{
 
     private void decodeData(BufferedReader reader) throws IOException {
         dbgLog.fine("decodeData(): start");
+        // TODO: get rid of this "variableTypeFinal"; -- L.A. 4.0 beta
         int[] variableTypeFinal= new int[varQnty];
         dateFormatList = new String[varQnty];
 

@@ -38,7 +38,7 @@ import nom.tam.fits.UndefinedHDU;
 
 /**
  *
- * @author leonidandreev
+ * @author Leonid Andreev
  */
 public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     private static Logger dbgLog = Logger.getLogger(FITSFileMetadataExtractor.class.getPackage().getName());
@@ -137,7 +137,6 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             defaultIndexableFitsMetaKeys.put("CD1_1", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
             defaultIndexableFitsMetaKeys.put("EXPTIME", "resolution.Temporal");
-            defaultIndexableFitsMetaKeys.put("CDELT", "resolution.Spatial");
 
             
 
@@ -425,7 +424,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                         try {
                             startDate = format.parse(obsDateString);
-                            dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
+                            dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+TIME_FORMATS[0].format(startDate));
                             startDateFormatted = format.format(startDate);
                             //startDateFormatted = obsDateString;
                             break;
@@ -460,7 +459,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                     
                             try {
                                 startDate = format.parse(obsDateString);
-                                dbgLog.fine("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+DATE_FORMATS[0].format(startDate));
+                                dbgLog.info("Valid date string: " + obsDateString + ", format: " + format.toPattern() + ", resulting date: "+startDate+", formatted resulting date: "+DATE_FORMATS[0].format(startDate));
                                 //startDateFormatted = format.format(startDate);
                                 startDateFormatted = DATE_FORMATS[0].format(startDate);
                                 break;
@@ -608,7 +607,22 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             if (fitsMetaMap.get(indexableKey) == null) {
                                 fitsMetaMap.put(indexableKey, new HashSet<String>());
                             } 
-                            fitsMetaMap.get(indexableKey).add(headerValue); 
+                            
+                            // if the key is supposed to be a FLOAT, we only 
+                            // want to process it if the value actually validates
+                            // as a float:
+                            // TODO: make sure all other values that may be 
+                            // be expected to parse as certain formats/types are 
+                            // also validated!
+                            // -- L.A. 4.0 beta
+                            if (isRecognizedFloatKey(headerKey)) {
+                                try {
+                                    Double.parseDouble(headerValue);
+                                    fitsMetaMap.get(indexableKey).add(headerValue);
+                                } catch (Exception e) {}
+                            } else {
+                                fitsMetaMap.get(indexableKey).add(headerValue);
+                            }
 
                         } else if (headerKey.equals("COMMENT") && headerComment != null) {
                             dbgLog.fine("comment: " + headerComment);
@@ -878,6 +892,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     }
     private boolean isRecognizedKey (String key) {
         if (recognizedFitsMetadataKeys.containsKey(key)) {
+            return true;
+        }
+        return false; 
+    }
+    
+    private boolean isRecognizedFloatKey (String key) {
+        if (recognizedFitsMetadataKeys.containsKey(key) && recognizedFitsMetadataKeys.get(key).intValue() == FIELD_TYPE_FLOAT) {
             return true;
         }
         return false; 

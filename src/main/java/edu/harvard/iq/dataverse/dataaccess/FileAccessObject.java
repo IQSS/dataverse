@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileOutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -176,6 +177,17 @@ public class FileAccessObject extends DataAccessObject {
 
         return Paths.get(datasetDirectory, this.getFile().getFileSystemName());
 
+    }
+    
+    @Override
+    public void delete() throws IOException {
+        Path victim = getFileSystemPath();
+        
+        if (victim != null) {
+            Files.delete(victim);
+        } else {
+            throw new IOException("Could not locate physical file location for the Filesystem object.");
+        }
     }
     
     @Override
