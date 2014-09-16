@@ -20,6 +20,7 @@ import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationPr
  */
 public class BuiltinAuthenticationProvider implements CredentialsAuthenticationProvider, UserLister, GroupCreator {
     
+    public static final String PROVIDER_ID = "builtin";
     private static final String KEY_USERNAME = "Username";
     private static final String KEY_PASSWORD = "Password";
     private static final List<Credential> CREDENTIALS_LIST = Arrays.asList( new Credential(KEY_USERNAME), new Credential(KEY_PASSWORD, true) );
@@ -42,7 +43,7 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
 
     @Override
     public String getId() {
-        return "builtin";
+        return PROVIDER_ID;
     }
 
     @Override

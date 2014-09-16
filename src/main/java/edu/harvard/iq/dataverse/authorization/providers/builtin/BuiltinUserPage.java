@@ -267,7 +267,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         dataverseUser = builtinUserService.save(dataverseUser);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
             session.setUser(au);
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 

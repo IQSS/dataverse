@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -73,10 +74,7 @@ public class SwordAuth {
          */
         authReq.putCredential("Password", password);
         try {
-            /**
-             * @todo get away from hard-coding "builtin" here."
-             */
-            String credentialsAuthProviderId = "builtin";
+            String credentialsAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
             AuthenticatedUser au = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.info("Successful login. getUserIdentifier: " + au.getUserIdentifier() + "  getIdentifier: " + au.getIdentifier());
             return au;

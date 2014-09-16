@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -45,7 +46,7 @@ public class BuiltinUsers extends AbstractApiBean {
 			}
 			user = builtinUserSvc.save(user);
             
-            AuthenticatedUser au = authSvc.createAuthenticatedUser("builtin", user.getUserName(), user.createDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, user.getUserName(), user.createDisplayInfo());
             
             ApiToken token = new ApiToken();
             
