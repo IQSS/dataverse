@@ -14,7 +14,10 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -61,15 +64,19 @@ public class BuiltinUserServiceBean {
 				.setParameter("userNameLike", "%" + part + "%")
 				.getResultList();
 	}
-	
+
+    /**
+     * @return A {@link BuiltinUser} or null if not found
+     */
     public BuiltinUser findByEmail(String email) {
-        String query = "SELECT u from DataverseUser u where u.email = :email ";
-        BuiltinUser user = null;
+        TypedQuery<BuiltinUser> typedQuery = em.createQuery("SELECT OBJECT(o) FROM BuiltinUser o WHERE o.email = :email", BuiltinUser.class);
+        typedQuery.setParameter("email", email);
         try {
-            user = (BuiltinUser) em.createQuery(query).setParameter("email", email).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
+            BuiltinUser builtinUser = typedQuery.getSingleResult();
+            return builtinUser;
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
         }
-        return user;
     }
     
     public List<BuiltinUser> findAll() {
