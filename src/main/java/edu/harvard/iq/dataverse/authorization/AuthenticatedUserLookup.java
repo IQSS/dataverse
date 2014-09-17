@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 
 /**
  * A somewhat glorified key-value pair, persisted in the database.
@@ -32,8 +33,8 @@ public class AuthenticatedUserLookup implements Serializable {
     @EmbeddedId
     AuthenticatedUserLookupId id;
 
-    @ManyToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
-    @JoinColumn(nullable = false)
+    @OneToOne( cascade = {CascadeType.PERSIST, CascadeType.MERGE} )
+    @JoinColumn(unique=true, nullable=false)
     private AuthenticatedUser authenticatedUser;
 
     public AuthenticatedUserLookup(String persistentUserIdFromIdp, String idp) {
