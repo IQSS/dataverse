@@ -258,7 +258,7 @@ public class DatasetServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, String userId, String info) {
+    public void addDatasetLock(Long datasetId, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
         DatasetLock lock = new DatasetLock();
