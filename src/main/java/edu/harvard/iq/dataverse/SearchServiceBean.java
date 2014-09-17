@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class SearchServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 
@@ -63,11 +66,11 @@ public class SearchServiceBean {
         PUBLISHED, UNPUBLISHED
     };
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
+    public SolrQueryResponse search(User dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
         return search(dataverseUser, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
     }
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+    public SolrQueryResponse search(User dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
 //        } else {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
@@ -127,7 +130,7 @@ public class SearchServiceBean {
         // initialize to public only to be safe
         String permissionFilterQuery = publicOnly;
         if (dataverseUser != null) {
-            if (dataverseUser.isGuest()) {
+            if (dataverseUser == GuestUser.get() ) {
                 permissionFilterQuery = publicOnly;
 //                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS); // remove ... just for dev
             } else {
@@ -142,22 +145,23 @@ public class SearchServiceBean {
                  */
                 String publicPlusUserPrivateGroup = "("
                         + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-                        + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId() + ")";
+                        + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getIdentifier()+ ")";
                 /**
                  * @todo: replace this with a real group... look up the user's
                  * groups (once you can)
                  */
-                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
-                    String publicPlusUserPrivateGroupPlusNSA = "("
-                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-                            + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
-                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
-                            + ")";
-                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
-                } else {
+                 // Michael - commenting this out, should be impleneted by permissions.
+//                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
+//                    String publicPlusUserPrivateGroupPlusNSA = "("
+//                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+//                            + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
+//                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
+//                            + ")";
+//                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
+//                } else {
                     // not part of any particular group 
                     permissionFilterQuery = publicPlusUserPrivateGroup;
-                }
+//                }
             }
         }
 

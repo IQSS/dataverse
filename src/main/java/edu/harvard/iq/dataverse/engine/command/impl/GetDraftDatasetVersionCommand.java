@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -15,11 +15,11 @@ import java.util.Collections;
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.Access )
+@RequiredPermissions( Permission.Discover )
 public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
 
-    public GetDraftDatasetVersionCommand(DataverseUser aUser, Dataset anAffectedDataset) {
+    public GetDraftDatasetVersionCommand(User aUser, Dataset anAffectedDataset) {
         super(aUser, anAffectedDataset);
         ds = anAffectedDataset;
     }

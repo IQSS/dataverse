@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.logging.Logger;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -14,7 +15,7 @@ public class SampleAccountPageWithSearch {
     @Inject
     DataverseSession session;
 
-    private DataverseUser dataverseUser;
+    private User dataverseUser;
 
     public void init() {
         logger.info("init called");
@@ -22,14 +23,14 @@ public class SampleAccountPageWithSearch {
             logger.info("dataverseUser is null");
             dataverseUser = session.getUser();
         }
-        logger.info("last name: " + dataverseUser.getLastName());
+        logger.info("user: " + dataverseUser.getDisplayInfo().getTitle() );
     }
 
-    public DataverseUser getDataverseUser() {
+    public User getDataverseUser() {
         return dataverseUser;
     }
 
-    public void setDataverseUser(DataverseUser dataverseUser) {
+    public void setDataverseUser(User dataverseUser) {
         this.dataverseUser = dataverseUser;
     }
 

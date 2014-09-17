@@ -1,11 +1,15 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+<<<<<<< HEAD
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.engine.Permission;
+=======
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
+>>>>>>> auth
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -19,10 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.Query;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -36,7 +38,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
     private final DataFile doomed;
 
-    public DeleteDataFileCommand(DataFile doomed, DataverseUser aUser) {
+    public DeleteDataFileCommand(DataFile doomed, User aUser) {
         super(aUser, doomed);
         this.doomed = doomed;
     }

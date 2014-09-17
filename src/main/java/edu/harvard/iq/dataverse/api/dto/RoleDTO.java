@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api.dto;
 
-import edu.harvard.iq.dataverse.DataverseRole;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import java.util.EnumSet;
 
 /**

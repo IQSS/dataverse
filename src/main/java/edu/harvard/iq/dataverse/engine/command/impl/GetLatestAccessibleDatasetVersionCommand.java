@@ -8,9 +8,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -18,15 +17,15 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 
 /**
- *
+ * Get the latest version of a dataset a user can view.
  * @author Naomi
  */
-@RequiredPermissions( Permission.Access )
+@RequiredPermissions( Permission.Discover )
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
-    private final DataverseUser u;
+    private final User u;
 
-    public GetLatestAccessibleDatasetVersionCommand(DataverseUser aUser, Dataset anAffectedDataset) {
+    public GetLatestAccessibleDatasetVersionCommand(User aUser, Dataset anAffectedDataset) {
         super(aUser, anAffectedDataset);
         u = aUser;
         ds = anAffectedDataset;
@@ -38,18 +37,12 @@ public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<Da
         
         try {
             d = ctxt.engine().submit(new GetDraftDatasetVersionCommand(u, ds));
-        } catch(PermissionException ex) {
-            
-        }
+        } catch(PermissionException ex) {}
         
         if (d == null || d.getId() == null) {
             d = ctxt.engine().submit(new GetLatestPublishedDatasetVersionCommand(u,ds));
         }
-    
         
-        
-    /*    return (published) ?
-            ds.getReleasedVersion() : ds.getLatestVersion(); */
         return d;
     }
     

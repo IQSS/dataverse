@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.MD5Checksum;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -19,15 +19,15 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+<<<<<<< HEAD
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+=======
+>>>>>>> auth
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -139,9 +138,12 @@ public class DatasetPage implements java.io.Serializable {
      * @todo ticket to get away from these hard-coded protocol and authority
      * values: https://github.com/IQSS/dataverse/issues/757
      */
-    public static String fixMeDontHardCodeProtocol = "doi";
-    public static String fixMeDontHardCodeAuthority = "10.5072/FK2";
-
+    static String fixMeDontHardCodeProtocol = "doi";
+    static String fixMeDontHardCodeAuthority = "10.5072/FK2";
+    
+    public static String getProtocol() { return fixMeDontHardCodeProtocol; }
+    public static String getAuthority() { return fixMeDontHardCodeAuthority; }
+    
     public String getShowVersionList() {
         return showVersionList;
     }
@@ -443,6 +445,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
+<<<<<<< HEAD
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             if (dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -453,6 +456,34 @@ public class DatasetPage implements java.io.Serializable {
                 for (Template testT : dataverseTemplates) {
                     if (defaultTemplate.getId().equals(testT.getId())) {
                         selectedTemplate = testT;
+=======
+            workingVersion = dataset.getLatestVersion();
+
+            dataset.setOwner(dataverseService.find(ownerId));
+            datasetVersionUI = new DatasetVersionUI(workingVersion);
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+            //On create set pre-populated fields
+            for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getTitle());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.distributorContactEmail)) {
+                    dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getEmailAddress());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                    for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getTitle());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(session.getUser().getDisplayInfo().getAffiliation());
+                            }
+                        }
+>>>>>>> auth
                     }
                 }
                 workingVersion = dataset.getEditVersion(selectedTemplate);
@@ -806,9 +837,14 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
+<<<<<<< HEAD
                 userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
                 if (selectedTemplate != null) {
                     commandEngine.submit(new UpdateDataverseTemplateCountCommand(session.getUser(), selectedTemplate, dataset));
+=======
+                if ( session.getUser() instanceof AuthenticatedUser ) {
+                    userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
+>>>>>>> auth
                 }
             }
         } catch (EJBException ex) {
@@ -833,7 +869,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, session.getUser());
+        ingestService.startIngestJobs(dataset, (AuthenticatedUser)session.getUser());
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }

@@ -7,10 +7,10 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
+import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -34,7 +34,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     boolean minorRelease = false;
     Dataset theDataset;
 
-    public PublishDatasetCommand(Dataset datasetIn, DataverseUser user, boolean minor) {
+    public PublishDatasetCommand(Dataset datasetIn, User user, boolean minor) {
         super(user, datasetIn);
         minorRelease = minor;
         theDataset = datasetIn;
@@ -57,7 +57,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         if (theDataset.getPublicationDate() == null) {
             theDataset.setPublicationDate(new Timestamp(new Date().getTime()));
-            theDataset.setReleaseUser(getUser());
+            theDataset.setReleaseUserIdentifier(getUser().getIdentifier());
             if (!minorRelease) {
                 theDataset.getEditVersion().setVersionNumber(new Long(1));
                 theDataset.getEditVersion().setMinorVersionNumber(new Long(0));
@@ -90,18 +90,17 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         ctxt.index().indexDataset(savedDataset);
 
-        DatasetVersionDatasetUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(savedDataset.getLatestVersion(), this.getUser());
+        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(savedDataset.getLatestVersion(), this.getUser());
 
         if (ddu != null) {
             ddu.setLastUpdateDate(updateTime);
             ctxt.em().merge(ddu);
         } else {
-            DatasetVersionDatasetUser datasetDataverseUser = new DatasetVersionDatasetUser();
-            datasetDataverseUser.setDataverseUser(getUser());
+            DatasetVersionUser datasetDataverseUser = new DatasetVersionUser();
             datasetDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
             datasetDataverseUser.setLastUpdateDate((Timestamp) updateTime);
             datasetDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId());
-            datasetDataverseUser.setDataverseuserid(getUser().getId());
+            datasetDataverseUser.setUserIdentifier(getUser().getIdentifier());
             ctxt.em().merge(datasetDataverseUser);
         }
 

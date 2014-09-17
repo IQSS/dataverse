@@ -18,6 +18,7 @@
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+<<<<<<< HEAD
                 <div class="row" style="margin-top:3em;">
                     <h:form id="loginForm" styleClass="form-horizontal">
                         <p:focus context="loginForm"/>
@@ -49,22 +50,77 @@
                                     <a href="passwordreset.xhtml">
                                         Forgot your password?
                                     </a>
+=======
+                <div class="row">
+                    <div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
+                        <h:form id="loginForm" styleClass="form-horizontal">
+                            <p:focus context="loginForm"/>
+                            <div class="form-group" style="visibility: hidden">
+                                <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
+                                <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
+                                    <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap" 
+                                                   itemLabel="#{ap.title}" itemValue="#{ap.id}" />
+                                    <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
+                                </h:selectOneMenu>
+                            </div>
+                            <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
+                                <div class="form-group">
+                                    <p:outputLabel value="#{fc.credential.title}" for="credValue" styleClass="col-sm-2 control-label"/>
+                                    <div class="col-sm-9">
+                                        <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" size="40" style="width:auto;" styleClass="form-control"/>
+                                        <p:message rendered="#{not fc.credential.secret}" for="credValue"/>
+                                        <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" size="40" style="width:auto;" styleClass="form-control"/>
+                                        <p:message rendered="#{not fc.credential.secret}" for="sCredValue"/>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-9">
+                                    <p:commandButton id="login" value="Log In" action="#{LoginPage.login}"/>
+                                    <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+>>>>>>> auth
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-9">
-                                <p:commandButton id="login" value="Log In" action="#{LoginPage.login}" update="@all">
-                                    <p:resetInput target="@all"/>
-                                </p:commandButton>
-                                <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
-                            </div>
-                        </div>
-                    </h:form>
+                        </h:form>
+                    </div>
+                    <div class="col-md-7" style="margin-top:3em; background-color: lightgray">
+                        <!--<iframe src="shib-identity-picker.html" width="450" height="320" style="background-color: lightgray"/>-->
+                        <p style="font-weight: bolder; font-size: x-large">Log in via your institution</p>
+
+                        <div id="idpSelect"></div>
+
+                        <script src="/resources/js/shib/idpselect_config.js" type="text/javascript" language="javascript"></script>
+
+                        <script src="/resources/js/shib/idpselect.js" type="text/javascript" language="javascript"></script>
+
+                        <noscript>
+                            <!-- If you need to care about non javascript browsers you will need to 
+                                 generate a hyperlink to a non-js DS.
+                        
+                                 To build you will need:
+                                     - URL:  The base URL of the DS you use
+                                     - EI: Your entityId, URLencoded.  You can get this from the line that 
+                                       this page is called with.
+                                     - RET: Your return address dlib-adidp.ucs.ed.ac.uk. Again you can get
+                                       this from the page this is called with, but beware of the 
+                                       target%3Dcookie%253A5269905f bit..
+                        
+                                < href=${URL}?entityID=${EI}&return=${RET}
+                            -->
+
+                            Your Browser does not support javascript. Please use 
+                            <!--FIXME not valid xhtml?-->
+                            <!--<a href="http://federation.org/DS/DS?entityID=https%3A%2F%2FyourentityId.edu.edu%2Fshibboleth&return=https%3A%2F%2Fyourreturn.edu%2FShibboleth.sso%2FDS%3FSAMLDS%3D1%26target%3Dhttps%3A%2F%2Fyourreturn.edu%2F">this link</a>.-->
+
+                        </noscript>
+
+                    </div>
                 </div>
-                <h:outputLink value="/shib.xhtml">
-                    <h:outputText value="shib" style="font-size: smaller; color: #f6f6f6"/>
-                </h:outputLink>
+                <div style="float: bottom">
+                    <h:outputLink value="/shib.xhtml">
+                        <h:outputText value="shib" style="font-size: smaller; color: #f6f6f6"/>
+                    </h:outputLink>
+                </div>
             </ui:define>
         </ui:composition>
     </h:body>

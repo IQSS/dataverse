@@ -1,6 +1,7 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.authorization;
 
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.util.BitSet;
 import java.io.Serializable;
 import java.util.Collection;
