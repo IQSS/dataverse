@@ -386,7 +386,7 @@
                         <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">#{dataverseBundle.cancelText}</button>
                     </p:dialog>
                     <!-- Theme and Widgets Form -->
-                    <p:dialog header="#{dataverseBundle.themeAndWidgetsText}" widgetVar="themeAndWidgetsForm" modal="true" styleClass="themeWidgetsPopUp">
+                    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="themeWidgetsPopUp">
                         <p:tabView id="tabView" widgetVar="content">
                             <p:tab id="widgetsTab" title="Widgets">
                                 <div>
@@ -396,7 +396,7 @@
                                     <h5>
                                         #{dataverseBundle.dataverseSearchBoxText}
                                     </h5>
-                                    <span class="text-muted">#{dataverseBundle.wayToSearchDataverseText}</span>
+                                    <span class="text-muted">Add a way for visitors on your website to be able to search Dataverse.</span>
                                 </div>
                                 <div>
                                     <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;
@@ -406,7 +406,7 @@
                                     <h5>
                                         #{dataverseBundle.dataverseListingText}
                                     </h5>
-                                    <span class="text-muted">#{dataverseBundle.wayToViewDatasText}</span>
+                                    <span class="text-muted">Add a way for visitors on your website to be able to view your dataverses and datasets, sort and page through them.</span>
                                 </div>
                                 <div>
                                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
@@ -491,41 +491,41 @@
                     <!-- Dataverse Theme Panel -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
-                            <h:outputLabel value="#{dataverseBundle.logoText}"/>
+                            <h:outputLabel value="Logo"/>
                             <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
                             <p:message for="logo"/>
-                            <h:outputLabel value="#{dataverseBundle.logoFormatText}"/>
+                            <h:outputLabel value="Logo Format"/>
                             <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
-                                <f:selectItem itemLabel="#{dataverseBundle.squareSelectItem}" itemValue="SQUARE"/>
-                                <f:selectItem itemLabel="#{dataverseBundle.rectangleSelectItem}" itemValue="RECTANGLE"/>
+                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
+                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
-                            <h:outputLabel value="#{dataverseBundle.logoAlignment}"/>
+                            <h:outputLabel value="Logo Alignment"/>
                             <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
-                                <f:selectItem id="left" itemLabel="#{dataverseBundle.leftSelectItem}" itemValue="LEFT" />
-                                <f:selectItem id="center" itemLabel="#{dataverseBundle.centerSelectItem}" itemValue="CENTER" />
-                                <f:selectItem id="right" itemLabel="#{dataverseBundle.rightSelectItem}" itemValue="RIGHT" />
+                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
+                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
+                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
                             </p:selectOneMenu>
                             <p:message for="logoFormat"/>
-                            <h:outputLabel value="#{dataverseBundle.logoBackgroundColorText}"/>
+                            <h:outputLabel value="Logo Background Color"/>
                             <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
                             <p:message for="logoBackgroundColor"/>
-                            <h:outputLabel value="#{dataverseBundle.taglineText}"/>
+                            <h:outputLabel value="Tagline"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
                             <p:message for="tagline"/>
-                            <h:outputLabel value="#{dataverseBundle.linkURLText}"/>
+                            <h:outputLabel value="Link URL"/>
                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
                             <p:message for="linkUrl"/>
-                            <h:outputLabel value="#{dataverseBundle.linkText}"/>
+                            <h:outputLabel value="Link Text"/>
                             <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
                             <p:message for="linkText"/>
-                            <h:outputLabel value="#{dataverseBundle.linkColorText}"/>
+                            <h:outputLabel value="Link Color"/>
                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
                             <p:message for="linkColor"/>
-                            <h:outputLabel value="#{dataverseBundle.textColorText}"/>
+                            <h:outputLabel value="Text Color"/>
                             <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
                             <p:message for="textColor"/>
-                            <h:outputLabel value="#{dataverseBundle.backgroundColorText}"/>
+                            <h:outputLabel value="Background Color"/>
                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
                             <p:message for="backgroundColor"/>
                         </p:panelGrid>
