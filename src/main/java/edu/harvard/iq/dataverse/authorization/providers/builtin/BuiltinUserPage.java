@@ -61,7 +61,8 @@ public class BuiltinUserPage implements java.io.Serializable {
     @EJB
     AuthenticationServiceBean authSvc;
 
-    private BuiltinUser dataverseUser;
+    private AuthenticatedUser currentUser;
+    private BuiltinUser builtinUser;    
     private EditMode editMode;
 
     @NotBlank(message = "Please enter a password for your account.")
@@ -76,17 +77,23 @@ public class BuiltinUserPage implements java.io.Serializable {
     private int activeIndex;
     private String selectTab = "somedata";
 
-    public BuiltinUser getDataverseUser() {
-        if (dataverseUser == null) {
-            dataverseUser = new BuiltinUser();
-        }
-        return dataverseUser;
+
+    public AuthenticatedUser getCurrentUser() {
+        return currentUser;
     }
 
-    public void setDataverseUser(BuiltinUser dataverseUser) {
-        this.dataverseUser = dataverseUser;
+    public void setCurrentUser(AuthenticatedUser currentUser) {
+        this.currentUser = currentUser;
     }
 
+    public BuiltinUser getBuiltinUser() {
+        return builtinUser;
+    }
+
+    public void setBuiltinUser(BuiltinUser builtinUser) {
+        this.builtinUser = builtinUser;
+    }
+     
     public EditMode getEditMode() {
         return editMode;
     }
@@ -164,9 +171,12 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        User currentUser = session.getUser();
-        if ( currentUser.isAuthenticated() ) {
+        if ( session.getUser().isAuthenticated() ) {
+            currentUser = (AuthenticatedUser) session.getUser();
             notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
+            if (true/*currentUser.isBuiltInUser()*/) {
+                builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
+            }
         } else {
             notificationsList = Collections.<UserNotification>emptyList();
         }
@@ -208,7 +218,7 @@ public class BuiltinUserPage implements java.io.Serializable {
                 userNameFound = true;
             }
         } else {
-            if (user != null && !user.getId().equals(dataverseUser.getId())) {
+            if (user != null && !user.getId().equals(builtinUser.getId())) {
                 userNameFound = true;
             }
         }
@@ -241,7 +251,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validatePassword(FacesContext context, UIComponent toValidate, Object value) {
         String password = (String) value;
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
-        if (!encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
+        if (!encryptedPassword.equals(builtinUser.getEncryptedPassword())) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage("Password is incorrect.");
             context.addMessage(toValidate.getClientId(context), message);
@@ -261,13 +271,13 @@ public class BuiltinUserPage implements java.io.Serializable {
     public String save() {
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE) {
             if (inputPassword != null) {
-                dataverseUser.setEncryptedPassword(builtinUserService.encryptPassword(inputPassword));
+                builtinUser.setEncryptedPassword(builtinUserService.encryptPassword(inputPassword));
             }
         }
-        dataverseUser = builtinUserService.save(dataverseUser);
+        builtinUser = builtinUserService.save(builtinUser);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
+            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.createDisplayInfo());
             session.setUser(au);
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()), 
@@ -289,7 +299,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void submit(ActionEvent e) {
-        updatePassword(dataverseUser.getUserName());
+        updatePassword(builtinUser.getUserName());
         editMode = null;
     }
 
