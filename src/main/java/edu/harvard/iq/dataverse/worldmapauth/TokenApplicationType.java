@@ -29,8 +29,8 @@ public class TokenApplicationType implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
     public static final String DEFAULT_GEOCONNECT_APPLICATION_NAME = "GEOCONNECT";
     public static final int DEFAULT_TOKEN_TIME_LIMIT_MINUTES = 30;
-    public static final String TEST_MAPIT_LINK = "http://127.0.0.1:8070/geo/shapefile/map-it";  // local GeoConnect
-    public static final String DEV_MAPIT_LINK = "http://54.200.240.211/geo/shapefile/map-it";   // dev GeoConnect
+    public static final String TEST_MAPIT_LINK = "http://127.0.0.1:8070/shapefile/map-it";  // local GeoConnect
+    public static final String DEV_MAPIT_LINK = "http://54.200.240.211/shapefile/map-it";   // dev GeoConnect
 
     
     

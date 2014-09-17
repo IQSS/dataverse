@@ -9,6 +9,8 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
@@ -29,6 +31,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServiceUnavailableException;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -61,6 +65,9 @@ public class Meta {
     
     @EJB
     DataFileServiceBean datafileService; 
+    
+    @EJB
+    DatasetServiceBean datasetService;
 
     @Path("variable/{varId}")
     @GET
@@ -94,9 +101,16 @@ public class Meta {
     @Path("datafile/{fileId}")
     @GET
     @Produces({"application/xml"})
-    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@PathParam("fileId") Long fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
+        DataFile dataFile = null; 
+        
+        dataFile = datafileService.find(fileId);
+        if (dataFile == null) {
+            throw new NotFoundException();
+        }
+        
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
 
@@ -111,8 +125,9 @@ public class Meta {
 
         } catch (Exception e) {
             // For whatever reason we've failed to generate a partial 
-            // metadata record requested. We simply return an empty string.
-            return retValue;
+            // metadata record requested. 
+            // We return Service Unavailable.
+            throw new ServiceUnavailableException();
         }
 
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -123,7 +138,13 @@ public class Meta {
     @Path("dataset/{datasetId}")
     @GET
     @Produces({"application/xml"})
-    public String dataset(@PathParam("datasetId") Long datasetId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String dataset(@PathParam("datasetId") Long datasetId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException /*, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+ 
+        Dataset dataset = datasetService.find(datasetId);
+        if (dataset == null) {
+            throw new NotFoundException();
+        }
+        
         String retValue = "";
 
         ByteArrayOutputStream outStream = null;
@@ -141,7 +162,7 @@ public class Meta {
         } catch (Exception e) {
             // For whatever reason we've failed to generate a partial 
             // metadata record requested. We simply return an empty string.
-            return retValue;
+            throw new ServiceUnavailableException();
         }
 
         response.setHeader("Access-Control-Allow-Origin", "*");

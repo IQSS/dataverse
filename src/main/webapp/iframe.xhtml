@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title><h:outputText value="#{pageTitle}"/></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Content-Language" content="en"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <link type="image/png" rel="icon" href="/resources/images/favicondataverse.png"/>
+        <h:outputStylesheet library="bs" name="css/bootstrap.css" />
+        <h:outputStylesheet library="bs" name="css/bootstrap-theme.min.css" />
+        <h:outputStylesheet library="css" name="ie-compat.css" />
+        <h:outputStylesheet library="css" name="componentStyles.css" />
+        <h:outputStylesheet library="css" name="owl.carousel.css" />
+        <h:outputStylesheet library="css" name="main.css" />
+        <link type="text/css" rel="stylesheet" href="/resources/css/structure.css"/>
+    </h:head>
+
+    <h:body>
+        
+                <f:metadata>
+                    <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
+                    <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
+                    <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <f:viewAction action="#{DataversePage.init}"/>
+                    <f:viewParam name="id" value="#{SearchIncludeFragment.dataverseId}"/>
+                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
+                    <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
+                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
+                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
+                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
+                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
+                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
+                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
+                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
+                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
+                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
+                    <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                    <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                    <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
+                    <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
+                    <f:viewAction action="#{SearchIncludeFragment.search()}" />
+                </f:metadata>
+
+                <!-- Content Panel -->
+                <ui:fragment rendered="#{empty DataversePage.editMode}">
+                    <ui:include src="search-include-fragment.xhtml">
+                        <ui:param name="showFacets" value="false"/>
+                        <ui:param name="showSearch" value="false"/>
+                        <ui:param name="showAdvancedSearchLink" value="true"/>
+                        <ui:param name="dataverseRedirectPage" value="iframe.xhtml"/>
+                    </ui:include>
+                </ui:fragment>
+                
+        <h:outputScript library="bs" name="js/bootstrap.min.js" />
+        <h:outputScript library="bs" name="js/bootstrap-hover-dropdown.min.js" />
+                
+    </h:body>
+</html>

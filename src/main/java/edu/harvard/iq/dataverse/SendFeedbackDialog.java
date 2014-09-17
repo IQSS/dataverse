@@ -17,10 +17,13 @@ public class SendFeedbackDialog {
 
     String userEmail = "";
     String userMessage = "";
+    String messageSubject = "";
     
     
     @EJB
     MailServiceBean mailService;
+    @EJB
+    DataverseServiceBean dataverseService; 
     @Inject DataverseSession dataverseSession;
     
     public void setUserEmail (String uEmail) {
@@ -39,6 +42,14 @@ public class SendFeedbackDialog {
         return userMessage;
     }
     
+    public String getMessageSubject() {
+        if ("".equals(messageSubject)) {
+            String versionString = dataverseService.getApplicationVersion();
+            messageSubject = "Dataverse "+versionString+" Feedback";
+        }
+        return messageSubject; 
+    }
+    
     public boolean isLoggedIn() {
         return dataverseSession.getUser() != GuestUser.get();
     }
@@ -50,12 +61,12 @@ public class SendFeedbackDialog {
     
     public String sendMessage() {
         if (isLoggedIn()) {
-            mailService.sendMail(loggedInUserEmail(), "support@thedata.org", "Dataverse 4.0 Beta Feedback", userMessage);
+            mailService.sendMail(loggedInUserEmail(), "support@thedata.org", messageSubject, userMessage);
             userMessage = "";
             return null;
         } else {
             if (userEmail != null && userMessage != null) {
-                mailService.sendMail(userEmail, "support@thedata.org", "Dataverse 4.0 Beta Feedback", userMessage);
+                mailService.sendMail(userEmail, "support@thedata.org", messageSubject, userMessage);
                 userMessage = "";
                 return null;
             } else {

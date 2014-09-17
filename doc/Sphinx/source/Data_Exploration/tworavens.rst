@@ -1,9 +1,9 @@
-Data Exploration Guide Sola Fide
-++++++++++++++++++++++++++++++++++
+TwoRavens: Tabular Data Exploration
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Exploring and Analyzing Tabular files in Dataverse
 ===================================================
-On the files tab, click on the “Explore” button to initiate Sola Fide Data Exploration and Analysis Tool.
+On the files tab, click on the “Explore” button to initiate TwoRavens Data Exploration and Analysis Tool.
 
 Selection/Left Panel:
 =====================
@@ -17,7 +17,7 @@ Variables, Models, and Summary:
 -------------------------------
 Each of these tabs displays something different in the left panel when selected.  The Variables tab shows a list of all the variables.  When a variable name is hovered over, you can see that variable’s summary statistics. The first three variables are selected by default and displayed in the center panel, but you may add or remove variables by clicking on their name in the Variables tab.
 
-The Models tab displays a list of Zelig models that are supported by Sola Fide. A brief model description is visible when hovering on the model name.  Depending on the level of measurement of the dependent variable (continuous, ordinal, dichotomous, etc.), particular models may or may not be appropriate.
+The Models tab displays a list of Zelig models that are supported by TwoRavens. A brief model description is visible when hovering on the model name.  Depending on the level of measurement of the dependent variable (continuous, ordinal, dichotomous, etc.), particular models may or may not be appropriate.
   
 Note that to estimate a model, you must select one from the list. Currently, please use only Ordinary Least Squares (ls) as we are working on making other models available.  
 (Suggestion: maybe we need to gray out the ones the other ones for the time being)
@@ -42,7 +42,7 @@ With a region selected, you have two options. First, you may click the Estimate 
 
 Set Covariates
 ---------------
-The Set Covariates button plots the distributions of each of the pebbles with an additional axis that contains two sliders, each of which default to the variable’s mean. This is Sola Fide’s equivalent of Zelig’s setx function. Move these sliders to the left or right to set your covariates at the desired value prior to estimation. Notice that the selected values appear below each plot.
+The Set Covariates button plots the distributions of each of the pebbles with an additional axis that contains two sliders, each of which default to the variable’s mean. This is TwoRavens' equivalent of Zelig’s setx function. Move these sliders to the left or right to set your covariates at the desired value prior to estimation. Notice that the selected values appear below each plot.
 
 After clicking the Estimate button, the model will be estimated and, upon completion, results appear in the Results tab. The results include figures produced by Zelig (and eventually the equation that has been estimated, the R code used to estimate the model, and a results table).
 
@@ -59,7 +59,7 @@ The Force button allows you to control the way layout of the pebbles. To use thi
 
 Reset
 ------
-This is your start over button. Clicking this is equivalent to reloading the Web page or re-initiating Sola Fide.
+This is your start over button. Clicking this is equivalent to reloading the Web page or re-initiating TwoRavens.
 
 Scenario Example: 
 

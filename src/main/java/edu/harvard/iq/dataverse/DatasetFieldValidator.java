@@ -25,12 +25,15 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         context.disableDefaultConstraintViolation(); // we do this so we can have different messages depending on the different issue
 
         DatasetFieldType dsfType = value.getDatasetFieldType();
-
-        if (dsfType.isPrimitive() && dsfType.isRequired() && StringUtils.isBlank(value.getValue())) {
+        //SEK Additional logic turns off validation for templates
+        //TODO more needs to be done for 'multi-layer' compound fields
+        if (dsfType.isPrimitive() && dsfType.isRequired() && value.getTemplate() == null && StringUtils.isBlank(value.getValue())) {
+            if (value.getParentDatasetFieldCompoundValue() != null && value.getParentDatasetFieldCompoundValue().getParentDatasetField().getTemplate() != null){
+                return true;
+            }
             context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is required.").addConstraintViolation();
             return false;
         }
-
         return true;
     }
 

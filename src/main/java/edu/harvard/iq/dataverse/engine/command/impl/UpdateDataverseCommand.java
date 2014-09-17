@@ -25,8 +25,18 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, User aUser) {
 		super(aUser, editedDv);
 		this.editedDv = editedDv;
-		this.facetList = new ArrayList<>(facetList);
-                this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
+                // add update template uses this command but does not
+                // update facet list or featured dataverses
+                if (facetList != null){
+                   this.facetList = new ArrayList<>(facetList); 
+                } else {
+                   this.facetList = null;
+                }
+		if (featuredDataverseList != null){
+                    this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
+                } else {
+                    this.featuredDataverseList = null;
+                }                
 	}
 	
 	@Override

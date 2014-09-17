@@ -82,6 +82,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -294,11 +295,24 @@ public class IngestServiceBean {
                                 // to read it and create a DataFile with it:
 
                                 DataFile datafile = createSingleDataFile(version, unZippedIn, fileEntryName, MIME_TYPE_UNDETERMINED_DEFAULT);
-                                // TODO: 
-                                // Need to try to identify mime types for the individual 
-                                // files inside the ZIP archive! -- L.A.
                                 
                                 if (datafile != null) {
+                                    // We have created this datafile with the mime type "unknown";
+                                    // Now that we have it saved in a temporary location, 
+                                    // let's try and determine its real type:
+                                    
+                                    String tempFileName = getFilesTempDirectory() + "/" + datafile.getFileSystemName();
+                                    
+                                    try {
+                                        recognizedType = FileUtil.determineFileType(new File(tempFileName), fileEntryName);
+                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
+                                        if (recognizedType != null && !recognizedType.equals("")) {
+                                            datafile.setContentType(recognizedType);
+                                        }
+                                    } catch (IOException ex) {
+                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                                    }
+                                    
                                     datafiles.add(datafile);
                                 }
                             }
@@ -383,6 +397,14 @@ public class IngestServiceBean {
             if (!tempFile.toFile().renameTo(new File(getFilesTempDirectory() + "/" + datafile.getFileSystemName()))) {
                 return null; 
             }
+            
+            // MD5:
+            MD5Checksum md5Checksum = new MD5Checksum();
+            try {
+                datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+            } catch (Exception md5ex) {
+                logger.warning("Could not calculate MD5 signature for new file " + fileName);
+            }
         
             datafiles.add(datafile);
             return datafiles;
@@ -391,6 +413,97 @@ public class IngestServiceBean {
         return null;
     }   // end createDataFiles
     
+    // TODO: 
+    // add comments explaining what's going on in the 2 methods below. 
+    // -- L.A. 4.0 beta
+    private String checkForDuplicateFileNames(DatasetVersion version, String fileName) {
+        Set<String> fileNamesExisting = new HashSet<String>();
+
+        Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            String existingName = fm.getLabel();
+            
+            if (existingName != null) {
+                // if it's a tabular file, we need to restore the original file name; 
+                // otherwise, we may miss a match. e.g. stata file foobar.dta becomes
+                // foobar.tab once ingested! 
+                if (fm.getDataFile().isTabularData()) {
+                    String originalMimeType = fm.getDataFile().getDataTable().getOriginalFileFormat();
+                    if ( originalMimeType != null) {
+                        String origFileExtension = generateOriginalExtension(originalMimeType);
+                        existingName = existingName.replaceAll(".tab$", origFileExtension);
+                    } else {
+                        existingName = existingName.replaceAll(".tab$", "");
+                    }
+                }
+                fileNamesExisting.add(existingName);
+            }
+        }
+
+        while (fileNamesExisting.contains(fileName)) {
+            fileName = generateNewFileName(fileName);
+        }
+
+        return fileName;
+    }
+    
+    // TODO: 
+    // Move this method (duplicated in StoredOriginalFile.java) to 
+    // FileUtil.java. 
+    // -- L.A. 4.0 beta
+    
+    private static String generateOriginalExtension(String fileType) {
+
+        if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
+            return ".sav";
+        } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
+            return ".por";
+        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".dta";
+        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+            return ".RData";
+        } else if (fileType.equalsIgnoreCase("text/csv")) {
+            return ".csv";
+        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            return ".xlsx";
+        }
+
+       return "";
+    }
+
+    
+    private String generateNewFileName(String fileName) {
+        String newName = null;
+        String baseName = null; 
+        String extension = null; 
+        
+        int extensionIndex = fileName.lastIndexOf(".");
+        if (extensionIndex != -1 ) {
+            extension = fileName.substring(extensionIndex+1);
+            baseName = fileName.substring(0, extensionIndex);
+        } else {
+            baseName = fileName; 
+        }
+        
+        if (baseName.matches(".*-[0-9][0-9]*$")) {
+            int dashIndex = baseName.lastIndexOf("-");
+            String numSuffix = baseName.substring(dashIndex+1);
+            String basePrefix = baseName.substring(0,dashIndex);
+            int numSuffixValue = new Integer(numSuffix).intValue();
+            numSuffixValue++; 
+            baseName = basePrefix + "-" + numSuffixValue;
+        } else {
+            baseName = baseName + "-1"; 
+        }
+        
+        newName = baseName; 
+        if (extension != null) {
+            newName = newName + "." + extension; 
+        }
+        
+        return newName;
+    }
     
     /**
      *  Returns a content type string for a FileObject
@@ -429,7 +542,7 @@ public class IngestServiceBean {
         DataFile datafile = new DataFile(contentType);
         FileMetadata fmd = new FileMetadata();
         
-        fmd.setLabel(fileName);
+        fmd.setLabel(checkForDuplicateFileNames(version,fileName));
 
         datafile.setOwner(version.getDataset());
         fmd.setDataFile(datafile);
@@ -443,7 +556,8 @@ public class IngestServiceBean {
 
         // And save the file - but only if the InputStream is not null; 
         // (the temp file may be saved already - if this is a single
-        // file upload case)
+        // file upload case - and in that case this method gets called 
+        // with null for the inputStream)
         
         if (inputStream != null) {
         
@@ -473,6 +587,16 @@ public class IngestServiceBean {
                 try {
                     outputStream.close();
                 } catch (IOException ioex) {}
+            }
+            
+            // MD5:
+            if (datafile != null) {
+                MD5Checksum md5Checksum = new MD5Checksum();
+                try {
+                    datafile.setmd5(md5Checksum.CalculateMD5(getFilesTempDirectory() + "/" + datafile.getFileSystemName()));
+                } catch (Exception md5ex) {
+                    logger.warning("Could not calculate MD5 signature for new file " + fileName);
+                }
             }
         }
         
@@ -545,9 +669,9 @@ public class IngestServiceBean {
                             logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
                         }
                         if (metadataExtracted) {
-                            logger.info("Successfully extracted indexable metadata from file " + fileName);
+                            logger.fine("Successfully extracted indexable metadata from file " + fileName);
                         } else {
-                            logger.info("Failed to extract indexable metadata from file " + fileName);
+                            logger.fine("Failed to extract indexable metadata from file " + fileName);
                         }
                     }
 
@@ -590,16 +714,6 @@ public class IngestServiceBean {
                             logger.warning("Could not calculate the size of new file: " + fileName);
                         }
                         
-                        // MD5:
-                        // TODO: replace the direct filesystem access with a DataAccess 
-                        // call. -- L.A. Jul. 20 2014. 
-                        MD5Checksum md5Checksum = new MD5Checksum();
-                        try {
-                            dataFile.setmd5(md5Checksum.CalculateMD5(dataFile.getFileSystemLocation().toString()));
-                        } catch (Exception md5ex) {
-                            logger.warning("Could not calculate MD5 signature for the new file " + fileName);
-                        }
-                        
                         
                     } catch (IOException ioex) {
                         logger.warning("Failed to save the file  " + dataFile.getFileSystemLocation());
@@ -609,7 +723,7 @@ public class IngestServiceBean {
                     }
 
                     try {
-                        logger.info("Will attempt to delete the temp file "+tempLocationPath.toString());
+                        logger.fine("Will attempt to delete the temp file "+tempLocationPath.toString());
                         Files.delete(tempLocationPath);
                     } catch (IOException ex) {
                         // (non-fatal)
@@ -789,18 +903,18 @@ public class IngestServiceBean {
                 logger.fine("subsetting continuous vector");
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormatSchemaName())) {
                     Float[] variableVector = subsetGenerator.subsetFloatVector(dataFile, i);
-                    logger.fine("Calculating summary statistics on a Float vector (skipping);");
+                    logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Float vector (skipping);");
+                    logger.fine("Calculating UNF on a Float vector;");
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 } else {
                     Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
-                    logger.fine("Calculating summary statistics on a Double vector (skipping);");
+                    logger.fine("Calculating summary statistics on a Double vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
-                    logger.fine("Calculating UNF on a Double vector (skipping);");
+                    logger.fine("Calculating UNF on a Double vector;");
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null; 
                 }
@@ -817,13 +931,14 @@ public class IngestServiceBean {
             if ("discrete".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName()) 
                     && "numeric".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableFormatType().getName())) {
                 logger.fine("subsetting discrete-numeric vector");
+                //Double[] variableVector = subsetGenerator.subsetDoubleVector(dataFile, i);
                 Long[] variableVector = subsetGenerator.subsetLongVector(dataFile, i);
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
                 calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a Long vector (skipping)");
+                logger.fine("Calculating UNF on a Long (Double, really...) vector");
                 calculateUNF(dataFile, i, variableVector);
                 logger.fine("Done! (discrete numeric)");
                 variableVector = null; 
@@ -853,7 +968,7 @@ public class IngestServiceBean {
                 String[] variableVector = subsetGenerator.subsetStringVector(dataFile, i);
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
-                logger.fine("Calculating UNF on a String vector (skipping)");
+                logger.fine("Calculating UNF on a String vector");
                 calculateUNF(dataFile, i, variableVector);
                 logger.fine("Done! (character)");
                 variableVector = null; 
@@ -1558,7 +1673,8 @@ public class IngestServiceBean {
         
         return variableVectors;
     }
-    
+    /*
+     dead code (?)
     private void calculateContinuousSummaryStatistics(DataFile dataFile, Double[][] dataVectors) throws IOException {
         int k = 0;
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
@@ -1569,6 +1685,7 @@ public class IngestServiceBean {
             }
         }
     }
+    */
     
     private void calculateContinuousSummaryStatistics(DataFile dataFile, int varnum, Number[] dataVector) throws IOException {
         double[] sumStats = SumStatCalculator.calculateSummaryStatistics(dataVector);

@@ -105,6 +105,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 #dv-sidecolumn {width:20%;float:left;padding-right:1em;}
 #dv-maincolumn {width:80%;float:left;}
+#dv-maincolumn.nofacets {width:100%;float:none;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
@@ -174,6 +175,9 @@ div[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:se
 
 div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
+/* -------- POPUP -------- */
+div.ui-dialog.themeWidgetsPopUp {min-width:60%;}
+
 /* -------- ADVANCED -------- */
 #advancedSearchForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
 #advancedSearchForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
@@ -191,22 +195,26 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation {padding:.5em; margin-bottom:.5em;}
+#citation {padding:.5em;}
+#whycitelink {margin:10px 0 0 1em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
-#datasetForm .form-group {overflow: hidden;}
-#datasetForm .form-col-container .form-col-container {padding-left:0;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
+#datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
+#datasetForm .form-col-container .form-col-container, #templateForm .form-col-container .form-col-container {padding-left:0;}
+#datasetForm .form-col-container .form-col-container .ui-selectonemenu, #templateForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
 
-#datasetForm div.ui-selectonemenu.form-control {padding:0px;} /* Primefaces vs Bootstrap selectOneMenu fix */
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:6px;}
+.panel .panel-body .form-group {overflow: hidden;}
 
-#datasetForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
-#datasetForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
+/* Primefaces vs Bootstrap selectOneMenu fix */
+.form-group div.ui-selectonemenu.form-control {padding:0px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:8px;}
+
+#datasetForm .select-scroll-block, #templateForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
+#datasetForm .select-scroll-block table.ui-selectmanycheckbox label, #templateForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 

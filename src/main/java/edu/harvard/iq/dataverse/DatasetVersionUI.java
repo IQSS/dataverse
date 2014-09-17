@@ -383,12 +383,14 @@ public class DatasetVersionUI {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
+            mdb.setEmpty(true);
             List<DatasetField> datasetFieldsForView = new ArrayList();
             List<DatasetField> datasetFieldsForEdit = new ArrayList();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
                     if (!dsf.isEmpty()) {
+                        mdb.setEmpty(false);
                         datasetFieldsForView.add(dsf);
                     }
                 }

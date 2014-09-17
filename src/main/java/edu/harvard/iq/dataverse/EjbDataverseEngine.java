@@ -63,6 +63,9 @@ public class EjbDataverseEngine {
         
         @EJB
 	DataFileServiceBean dataFileService; 
+        
+        @EJB
+	TemplateServiceBean templateService; 
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -148,7 +151,11 @@ public class EjbDataverseEngine {
 				public FeaturedDataverseServiceBean featuredDataverses() {
 					return featuredDataverseService;
 				}
-                                
+ 
+                                @Override
+				public TemplateServiceBean templates() {
+					return templateService;
+				}
 				@Override
 				public DataverseEngine engine() { 
 					return new DataverseEngine() {

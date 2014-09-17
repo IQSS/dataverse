@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -136,4 +138,31 @@ public class DataverseServiceBean {
     public List<DataverseFacet> findAllDataverseFacets() {
         return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
     }  
+   
+    private String appVersionString;
+    
+    public String getApplicationVersion() {        
+        if (appVersionString == null) {
+
+            try {
+                appVersionString = ResourceBundle.getBundle("VersionNumber").getString("version.number");
+            } catch (MissingResourceException ex) {
+                appVersionString = "4.0";
+            }
+            
+            String buildNumber; 
+            
+            try {
+                buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+            } catch (MissingResourceException ex) {
+                buildNumber = null; 
+            }
+            
+            if (buildNumber != null && !buildNumber.equals("")) {
+                appVersionString = appVersionString + " build " + buildNumber; 
+            }
+        }        
+        
+        return appVersionString; 
+    }
 }  

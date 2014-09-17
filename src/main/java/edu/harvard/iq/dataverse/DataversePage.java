@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -151,6 +153,29 @@ public class DataversePage implements java.io.Serializable {
         featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
     }
 
+    // TODO: 
+    // this method will need to be moved somewhere else, possibly some
+    // equivalent of the old VDCRequestBean - but maybe application-scoped?
+    // -- L.A. 4.0 beta
+    
+    public String getDataverseSiteUrl() {
+        String hostUrl = System.getProperty("dataverse.siteUrl");
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl; 
+        }
+        String hostName = System.getProperty("dataverse.fqdn");
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://"+hostName;
+        return hostUrl;
+    }
+    
+    
     public List<Dataverse> getCarouselFeaturedDataverses() {
         List<Dataverse> retList = new ArrayList();
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());

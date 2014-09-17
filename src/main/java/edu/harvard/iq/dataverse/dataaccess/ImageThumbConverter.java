@@ -150,7 +150,7 @@ public class ImageThumbConverter {
             int width = fullSizeImage.getWidth(null);
             int height = fullSizeImage.getHeight(null);
             
-            logger.info("image dimensions: "+width+"x"+height);
+            logger.fine("image dimensions: "+width+"x"+height);
             
             double scaleFactor = 0.0;
             int thumbHeight = size; 
@@ -164,8 +164,8 @@ public class ImageThumbConverter {
                 thumbWidth = (int) (width * scaleFactor);
             }
             
-            logger.info("scale factor: "+scaleFactor);
-            logger.info("thumbnail dimensions: "+thumbWidth+"x"+thumbHeight);
+            logger.fine("scale factor: "+scaleFactor);
+            logger.fine("thumbnail dimensions: "+thumbWidth+"x"+thumbHeight);
 
 
 
@@ -173,9 +173,9 @@ public class ImageThumbConverter {
 	    // better-looking thumbnails, hence the SCALE_SMOOTH flag. 
 	    // SCALE_FAST would trade quality for speed. 
 
-            //logger.info("Start image rescaling ("+size+" pixels), SCALE_FAST used;");
+            //logger.fine("Start image rescaling ("+size+" pixels), SCALE_FAST used;");
 	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(thumbWidth, thumbHeight, java.awt.Image.SCALE_FAST);
-            //logger.info("Finished image rescaling.");
+            //logger.fine("Finished image rescaling.");
 
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");
@@ -202,7 +202,7 @@ public class ImageThumbConverter {
             return thumbFileLocation;
         } catch (Exception e) {
             // something went wrong, returning "false":
-	    //dbgLog.info("ImageIO: caught an exception while trying to generate a thumbnail for "+fileLocation);
+	    //dbgLog.fine("ImageIO: caught an exception while trying to generate a thumbnail for "+fileLocation);
 
             return null;
         }

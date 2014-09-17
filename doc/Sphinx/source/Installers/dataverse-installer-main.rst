@@ -9,11 +9,21 @@ Installers Guide
 JVM Options
 +++++++++++
 
+dataverse.fqdn
+--------------
+
 If you need to change the hostname the Data Deposit API returns:
 
 ``asadmin delete-jvm-options "-Ddataverse.fqdn=old.example.com"``
 
 ``asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
+
+The ``dataverse.fqdn`` JVM option also affects the password reset feature.
+
+dataverse.auth.password-reset-timeout-in-minutes
+------------------------------------------------
+
+Set the ``dataverse.auth.password-reset-timeout-in-minutes`` option if you'd like to override the default value put into place by the installer.
 
 **Enforce SSL on SWORD**
 

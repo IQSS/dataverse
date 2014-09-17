@@ -25,6 +25,10 @@
                 <p:panel styleClass="panelLayoutBlock" style="margin-bottom:1em;">
                     <h:form id="advancedSearchForm" styleClass="form-horizontal">
                         <p:focus/>
+                        
+                        <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;margin-bottom:.5em;">
+                            <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                        </p:panel>
 
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#dataversesFieldList" class="panel-heading">
@@ -122,7 +126,9 @@
                             </div>
                         </div>
 
-                        <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                        <p:panel styleClass="panelLayoutButtonBlock">
+                            <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                        </p:panel>
 
                     </h:form>
                 </p:panel>

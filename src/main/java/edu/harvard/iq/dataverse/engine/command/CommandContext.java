@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import javax.persistence.EntityManager;
 
@@ -47,5 +48,7 @@ public interface CommandContext {
         public FeaturedDataverseServiceBean featuredDataverses();
         
         public DataFileServiceBean files(); 
+        
+        public TemplateServiceBean templates();
 	
 }

@@ -188,6 +188,10 @@ public class DatasetVersion implements Serializable {
     public String getVersionDate(){
         return new SimpleDateFormat("MMMM d, yyyy").format(lastUpdateTime);
     }
+    
+    public String getVersionYear(){
+        return new SimpleDateFormat("yyyy").format(lastUpdateTime);
+    }
 
     public Date getReleaseTime() {
         return releaseTime;
@@ -495,17 +499,14 @@ public class DatasetVersion implements Serializable {
         }
 
         //Get root dataverse name for Citation
-        Dataverse root = this.getDataset().getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
+        String dataverseName = getRootDataverseNameforCitation();
+        if (!StringUtil.isEmpty(dataverseName)) {
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
             }
-            str += " " + rootDataverseName + " Dataverse";
-        }        
+            str += " " + dataverseName;
+        } 
+        
         if (this.isDraft()){
             if (!StringUtil.isEmpty(str)) {
                 str += ", ";
@@ -551,6 +552,21 @@ public class DatasetVersion implements Serializable {
         //todo get dist date from datasetfieldvalue table
         return "UNF";
     }
+    
+    public String getRootDataverseNameforCitation(){
+                    //Get root dataverse name for Citation
+        Dataverse root = this.getDataset().getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            return rootDataverseName + " Dataverse"; 
+        } else {
+            return "";
+        }
+    }
+
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues

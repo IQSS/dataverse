@@ -16,6 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -34,10 +36,11 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author mbarsinai
  */
 @NamedQueries({
-	@NamedQuery(name = "Dataverse.ownedObjectsById", query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
+    @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
 @Entity
 public class Dataverse extends DvObjectContainer {
+
     public enum DataverseType {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
     };
@@ -59,9 +62,9 @@ public class Dataverse extends DvObjectContainer {
     @NotBlank(message = "Please enter a valid email address.")
     @Email(message = "Please enter a valid email address.")
     private String contactEmail;
-    
-    @NotNull(message = "Please select a category for your dataverse.")
+
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Please select a category for your dataverse.")
     private DataverseType dataverseType;
 
     public DataverseType getDataverseType() {
@@ -71,12 +74,11 @@ public class Dataverse extends DvObjectContainer {
     public void setDataverseType(DataverseType dataverseType) {
         this.dataverseType = dataverseType;
     }
-    
-    
+
     private String affiliation;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
-	//       to this role. So, adding it would mean violating a forign key contstraint.
+    //       to this role. So, adding it would mean violating a forign key contstraint.
     @OneToMany(cascade = {CascadeType.MERGE},
             fetch = FetchType.LAZY,
             mappedBy = "owner")
@@ -98,13 +100,68 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
-    
-    public enum ImageFormat { SQUARE, RECTANGLE }
+
+    private boolean templateRoot;
+
+    @ManyToOne
+    @JoinColumn(nullable = true)
+    private Template defaultTemplate;
+
+    public Template getDefaultTemplate() {
+        return defaultTemplate;
+    }
+
+    public void setDefaultTemplate(Template defaultTemplate) {
+        this.defaultTemplate = defaultTemplate;
+    }
+    @OneToMany(cascade = {CascadeType.MERGE})
+    private List<Template> templates;
+
+    public List<Template> getTemplates() {
+        return templates;
+    }
+
+    public void setTemplates(List<Template> templates) {
+        this.templates = templates;
+    }
+
+    public List<Template> getParentTemplates() {
+        List<Template> retList = new ArrayList();
+        Dataverse testDV = this;
+        while (testDV.getOwner() != null){   
+            
+           if (!testDV.getMetadataBlocks().equals(testDV.getOwner().getMetadataBlocks())){
+               break;
+           }           
+           retList.addAll(testDV.getOwner().getTemplates());
+           
+           if(!testDV.getOwner().templateRoot){               
+               break;
+           }           
+           testDV = testDV.getOwner();
+        }
+            return  retList;
+    }
+
+    public boolean isTemplateRoot() {
+        return templateRoot;
+    }
+
+    public void setTemplateRoot(boolean templateRoot) {
+        this.templateRoot = templateRoot;
+    }
+
+    public enum ImageFormat {
+
+        SQUARE, RECTANGLE
+    }
 
     @Enumerated(EnumType.STRING)
     private ImageFormat logoFormat;
-    
-    public enum Alignment { LEFT, CENTER, RIGHT }
+
+    public enum Alignment {
+        LEFT, CENTER, RIGHT
+    }
     @Enumerated(EnumType.STRING)
     private Alignment logoAlignment;
     private String logoBackgroundColor;
@@ -113,8 +170,8 @@ public class Dataverse extends DvObjectContainer {
     private String linkUrl;
     private String linkText;
     private String linkColor;
-    private String textColor; 
-    private String backgroundColor; 
+    private String textColor;
+    private String backgroundColor;
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -127,15 +184,15 @@ public class Dataverse extends DvObjectContainer {
             return getOwner().getMetadataBlocks();
         }
     }
-    
+
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
         this.metadataBlocks = metadataBlocks;
     }
 
     public List<DataverseFacet> getDataverseFacets() {
         return getDataverseFacets(false);
-    }    
-    
+    }
+
     public List<DataverseFacet> getDataverseFacets(boolean returnActualDB) {
         if (returnActualDB || facetRoot || getOwner() == null) {
             return dataverseFacets;
@@ -215,7 +272,7 @@ public class Dataverse extends DvObjectContainer {
     public void setFacetRoot(boolean facetRoot) {
         this.facetRoot = facetRoot;
     }
-    
+
     public boolean isDisplayByType() {
         return displayByType;
     }
@@ -231,7 +288,7 @@ public class Dataverse extends DvObjectContainer {
     public void setDisplayFeatured(boolean displayFeatured) {
         this.displayFeatured = displayFeatured;
     }
-    
+
     public ImageFormat getLogoFormat() {
         return logoFormat;
     }
@@ -255,7 +312,7 @@ public class Dataverse extends DvObjectContainer {
     public void setLogoBackgroundColor(String logoBackgroundColor) {
         this.logoBackgroundColor = logoBackgroundColor;
     }
-    
+
     public String getLogo() {
         return logo;
     }
@@ -311,8 +368,6 @@ public class Dataverse extends DvObjectContainer {
     public void setBackgroundColor(String backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
-    
-    
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);
@@ -332,7 +387,6 @@ public class Dataverse extends DvObjectContainer {
         return owners;
     }
 
-        
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -349,8 +403,8 @@ public class Dataverse extends DvObjectContainer {
     }
 
     @Override
-	public <T> T accept( Visitor<T> v ) {
-		return v.visit(this);
-	}
-	
+    public <T> T accept(Visitor<T> v) {
+        return v.visit(this);
+    }
+
 }
