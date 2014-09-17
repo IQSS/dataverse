@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -232,10 +234,10 @@ public class DatasetServiceBean {
 
     }
 
-    public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user) {
+    public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
         DatasetVersionUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
+        Query query = em.createQuery("select object(o) from DatasetVersion_DataverseUser as o "
                 + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
         query.setParameter("versionId", version.getId());
         query.setParameter("userId", user.getIdentifier());
