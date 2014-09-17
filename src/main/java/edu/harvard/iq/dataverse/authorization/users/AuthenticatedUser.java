@@ -114,5 +114,13 @@ public class AuthenticatedUser implements User, Serializable {
         this.affiliation = affiliation;
     }
     
-    
+
+    public boolean isBuiltInUser(){
+        // to do
+        return false;
+    }
+
+    public boolean canResetPassword(){
+        return this.isBuiltInUser();
+    }    
 }
