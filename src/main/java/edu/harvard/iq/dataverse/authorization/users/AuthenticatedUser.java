@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -13,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
@@ -40,10 +43,7 @@ public class AuthenticatedUser implements User, Serializable {
     private String name;
     private String email;
     private String affiliation;
-    
-    @Transient
-    private boolean builtInUserStatus = false;
-    
+
     @Override
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
@@ -117,18 +117,25 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
     }
-    
-    public void setBuiltInUserStatus(boolean status){
-        this.builtInUserStatus = status;
-    }
-    
-    public boolean isBuiltInUser(){
-        // to do
-        return this.builtInUserStatus;
-        // return false;
+
+    public boolean isBuiltInUser() {
+        String authProviderString = authenticatedUserLookup.getId().getAuthenticationProviderId();
+        if (authProviderString != null) {
+            if (authProviderString.equals(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
-    public boolean canResetPassword(){
-        return this.isBuiltInUser();
-    }    
+    @OneToOne(mappedBy = "authenticatedUser")
+    AuthenticatedUserLookup authenticatedUserLookup;
+
+    public AuthenticatedUserLookup getAuthenticatedUserLookup() {
+        return authenticatedUserLookup;
+    }
+    
 }

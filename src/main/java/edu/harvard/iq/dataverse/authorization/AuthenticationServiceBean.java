@@ -95,29 +95,6 @@ public class AuthenticationServiceBean {
         }
     }
 
-    /**
-     * Check if the AuthenticatedUser is from a BuiltinAuthenticationProvider
-     * If so, the user.builtInUserStatus is set to true
-     * 
-     * @param prv AuthenticationProvider
-     * @param user AuthenticatedUser
-     */
-    private void setBuiltInProviderFlag(AuthenticationProvider prv, AuthenticatedUser user){
-        if (prv == null){
-            return;
-        }
-        if (user==null){
-            return;
-        }
-        
-        if (prv instanceof BuiltinAuthenticationProvider){
-            user.setBuiltInUserStatus(true);
-        }else{
-             user.setBuiltInUserStatus(false);
-        }
-        
-    }
-    
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
