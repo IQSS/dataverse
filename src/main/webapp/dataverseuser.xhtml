@@ -77,7 +77,7 @@
                                             </p:commandLink>
                                         </li>
                                         <li>
-                                            <ui:fragment rendered="#{!DataverseUserPage.builtinUser}">
+                                            <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
                                                 You have logged in through your institution. To edit account details, please visit the account page for your institution.
                                             </ui:fragment>                        
                                         </li>                                        
