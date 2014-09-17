@@ -1,9 +1,10 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.PasswordEncryption;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,7 +24,7 @@ public class PasswordResetServiceBean {
     private static final Logger logger = Logger.getLogger(PasswordResetServiceBean.class.getCanonicalName());
 
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
 
     @EJB
     MailServiceBean mailService;
@@ -41,7 +42,7 @@ public class PasswordResetServiceBean {
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
-        DataverseUser user = dataverseUserService.findByEmail(emailAddress);
+        BuiltinUser user = dataverseUserService.findByEmail(emailAddress);
         if (user != null) {
             // delete old tokens for the user
             List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(user);
@@ -138,7 +139,7 @@ public class PasswordResetServiceBean {
         return passwordResetData;
     }
 
-    public List<PasswordResetData> findPasswordResetDataByDataverseUser(DataverseUser user) {
+    public List<PasswordResetData> findPasswordResetDataByDataverseUser(BuiltinUser user) {
         TypedQuery<PasswordResetData> typedQuery = em.createQuery("SELECT OBJECT(o) FROM PasswordResetData AS o WHERE o.dataverseUser = :user", PasswordResetData.class);
         typedQuery.setParameter("user", user);
         List<PasswordResetData> passwordResetDatas = typedQuery.getResultList();
@@ -167,7 +168,7 @@ public class PasswordResetServiceBean {
         return numDeleted;
     }
 
-    public PasswordChangeAttemptResponse attemptPasswordReset(DataverseUser user, String newPassword, String token) {
+    public PasswordChangeAttemptResponse attemptPasswordReset(BuiltinUser user, String newPassword, String token) {
 
         final String messageSummarySuccess = "Password Reset Successfully";
         final String messageDetailSuccess = "";
@@ -220,7 +221,7 @@ public class PasswordResetServiceBean {
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
         user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(newPassword));
-        DataverseUser savedUser = dataverseUserService.save(user);
+        BuiltinUser savedUser = dataverseUserService.save(user);
         if (savedUser != null) {
             messageSummary = messageSummarySuccess;
             messageDetail = messageDetailSuccess;
