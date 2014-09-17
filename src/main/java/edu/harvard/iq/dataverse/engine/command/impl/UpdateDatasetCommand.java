@@ -67,7 +67,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         ctxt.em().flush();
         String indexingResult = ctxt.index().indexDataset(savedDataset);
         logger.info("during dataset save, indexing result was: " + indexingResult);
-        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(theDataset.getLatestVersion(), this.getUser());
+        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
         
         if (ddu != null){
              ddu.setLastUpdateDate(updateTime);
