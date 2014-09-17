@@ -94,15 +94,36 @@ public class AuthenticationServiceBean {
             return null;
         }
     }
+
+    private void setBuiltInProviderFlag(AuthenticationProvider prv, AuthenticatedUser user){
+        if (prv == null){
+            return;
+        }
+        if (user==null){
+            return;
+        }
+        
+        if (prv instanceof BuiltinAuthenticationProvider){
+            user.setBuiltInUserStatus(true);
+        }
+    }
     
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         
+        
+        
+        
         AuthenticationResponse resp = prv.authenticate(req);
+        
+        
+        
         if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
+            this.setBuiltInProviderFlag(prv, user);
+            
             return ( user == null ) ?
                 createAuthenticatedUser( authenticationProviderId, resp.getUserId(), resp.getUserDisplayInfo() )
                 : updateAuthenticatedUser( user, resp.getUserDisplayInfo() );
