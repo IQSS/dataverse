@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 @NamedQueries({
@@ -39,6 +40,9 @@ public class AuthenticatedUser implements User, Serializable {
     private String name;
     private String email;
     private String affiliation;
+    
+    @Transient
+    private boolean builtInUserStatus = false;
     
     @Override
     public String getIdentifier() {
@@ -114,10 +118,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.affiliation = affiliation;
     }
     
-
+    public void setBuiltInUserStatus(boolean status){
+        this.builtInUserStatus = status;
+    }
+    
     public boolean isBuiltInUser(){
         // to do
-        return false;
+        return this.builtInUserStatus;
+        // return false;
     }
 
     public boolean canResetPassword(){
