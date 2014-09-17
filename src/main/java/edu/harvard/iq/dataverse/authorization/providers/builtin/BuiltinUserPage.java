@@ -174,7 +174,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         if ( session.getUser().isAuthenticated() ) {
             currentUser = (AuthenticatedUser) session.getUser();
             notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
-            if (true/*currentUser.isBuiltInUser()*/) {
+            if (currentUser.isBuiltInUser()) {
                 builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
             }
         } else {
