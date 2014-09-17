@@ -237,8 +237,8 @@ public class DatasetServiceBean {
     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
         DatasetVersionUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersion_DataverseUser as o "
-                + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
+        Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
+                + "where o.datasetversionid =:versionId and o.userIdentifier =:userId");
         query.setParameter("versionId", version.getId());
         query.setParameter("userId", user.getIdentifier());
         System.out.print("versionId: " + version.getId());
