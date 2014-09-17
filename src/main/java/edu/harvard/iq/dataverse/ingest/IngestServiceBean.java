@@ -813,7 +813,7 @@ public class IngestServiceBean {
         if (count > 0) {
             String info = "Attempting to ingest " + count + " tabular data file(s).";
             if (user != null) {
-                datasetService.addDatasetLock(dataset.getId(), user.getIdentifier(), info);
+                datasetService.addDatasetLock(dataset.getId(), user.getId(), info);
             } else {
                 datasetService.addDatasetLock(dataset.getId(), null, info);
             }
