@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -467,28 +469,42 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    private String getUserName(User user) {
+        if (user.isAuthenticated()) {
+            AuthenticatedUser authUser = (AuthenticatedUser)user;
+            return authUser.getName();
+        }
+        return "Guest";
+    }
+    
     private void resetVersionUI() {
         datasetVersionUI = new DatasetVersionUI(workingVersion);
+        User user = session.getUser();
 
         //On create set pre-populated fields
         for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                dsf.getDatasetFieldValues().get(0).setValue(getUserName(user));
             }
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
                 dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
             }
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
-            }
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
+            
+            // the following only applies if this is a "real", authenticated user:
+            if (user.isAuthenticated()) {
+                AuthenticatedUser authUser = (AuthenticatedUser) user;
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
+                    dsf.getDatasetFieldValues().get(0).setValue(authUser.getEmail());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+                    for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(authUser.getName());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(authUser.getAffiliation());
+                            }
                         }
                     }
                 }
