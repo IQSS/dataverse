@@ -95,6 +95,13 @@ public class AuthenticationServiceBean {
         }
     }
 
+    /**
+     * Check if the AuthenticatedUser is from a BuiltinAuthenticationProvider
+     * If so, the user.builtInUserStatus is set to true
+     * 
+     * @param prv AuthenticationProvider
+     * @param user AuthenticatedUser
+     */
     private void setBuiltInProviderFlag(AuthenticationProvider prv, AuthenticatedUser user){
         if (prv == null){
             return;
@@ -105,7 +112,10 @@ public class AuthenticationServiceBean {
         
         if (prv instanceof BuiltinAuthenticationProvider){
             user.setBuiltInUserStatus(true);
+        }else{
+             user.setBuiltInUserStatus(false);
         }
+        
     }
     
     public AuthenticatedUser authenticate( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
@@ -113,16 +123,13 @@ public class AuthenticationServiceBean {
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         
         
-        
-        
         AuthenticationResponse resp = prv.authenticate(req);
-        
-        
         
         if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
-            this.setBuiltInProviderFlag(prv, user);
+
+            //this.setBuiltInProviderFlag(prv, user);
             
             return ( user == null ) ?
                 createAuthenticatedUser( authenticationProviderId, resp.getUserId(), resp.getUserDisplayInfo() )
@@ -136,6 +143,7 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser lookupUser( String authPrvId, String userPersistentId ) {
         AuthenticatedUserLookup lookup = em.find(AuthenticatedUserLookup.class,
                 new AuthenticatedUserLookupId(authPrvId, userPersistentId));
+        
         return ( lookup != null ) ? lookup.getAuthenticatedUser() : null;
     }
     
