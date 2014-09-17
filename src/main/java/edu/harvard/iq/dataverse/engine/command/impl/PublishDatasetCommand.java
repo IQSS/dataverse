@@ -90,7 +90,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
         ctxt.index().indexDataset(savedDataset);
 
-        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionDatasetUser(savedDataset.getLatestVersion(), this.getUser());
+        DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(savedDataset.getLatestVersion(), this.getUser());
 
         if (ddu != null) {
             ddu.setLastUpdateDate(updateTime);
