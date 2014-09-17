@@ -11,4 +11,8 @@ public interface User extends RoleAssignee, Serializable {
 
     public boolean isAuthenticated();
             
-}
+
+   public boolean isBuiltInUser();
+
+   public boolean canResetPassword();
+  }

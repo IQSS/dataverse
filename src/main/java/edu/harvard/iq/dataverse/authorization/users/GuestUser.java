@@ -28,4 +28,13 @@ public class GuestUser implements User {
     @Override
     public boolean isAuthenticated() { return false; }
     
+    public boolean isBuiltInUser(){
+        // to do
+        return false;
+    }
+
+    public boolean canResetPassword(){
+        return false;
+    }  
+    
 }
