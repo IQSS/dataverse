@@ -16,14 +16,7 @@ public class JsfHelper {
 	private static final Logger logger = Logger.getLogger(JsfHelper.class.getName());
 	
 	public static final JsfHelper JH = new JsfHelper();
-    /**
-     * @todo What should we use as a fallback IP address if IpAddress.valueOf()
-     * is not able to parse it? The equivalent of "localhost" may not be a
-     * secure choice! This question has been asked at
-     * https://github.com/IQSS/dataverse/issues/909
-     */
-    private final String fallbackIp = "127.0.0.1";
-	
+    
 	public void addMessage( FacesMessage.Severity s, String summary, String details ) {
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, summary, details));
 	}
@@ -43,11 +36,51 @@ public class JsfHelper {
 	}
     
     /**
-     * Finds the request IP address. Honors X-Forwarded-for headers.
+     * Finds the request IP address. 
      * @return the IP Address of the client issuing the request.
      */
     public IpAddress requestClientIpAddress() {
         ExternalContext ctxt = FacesContext.getCurrentInstance().getExternalContext();
+        
+        ServletRequest sr = (ServletRequest) ctxt.getRequest();
+        String remoteAddress = sr.getRemoteAddr();
+        
+        logger.fine("remote address returned: "+remoteAddress);
+        
+        // it appears that in some environments (for ex., some scenarios under 
+        // MacOS X) for requests coming from localhost, getRemoteHost() returns 
+        // the ipv6 version -- 0:0:0:0:0:0:0:1. 
+        // At this point our IpAddress only supports 4 byte ipv4 addresses.
+        // We'll want to add support for ipv6 at some point; but for now, 
+        // to be able to recognize localhost logins, for testing and such, 
+        // we'll just pass "127.0.0.1" to IpAddress.valueOf() instead.
+        // Any other ipv6 address is going to result in an exception. 
+        // -- L.A. - 4.0 beta 7
+        
+        if ("0:0:0:0:0:0:0:1".equals(remoteAddress)) {
+            remoteAddress = "127.0.0.1";
+        }
+        
+        try {
+            return IpAddress.valueOf(remoteAddress);
+        } catch (IllegalArgumentException ex) {
+            logger.info("\"" + remoteAddress + "\" returned by ServletRequest.getRemoteAddress(), but exception thrown by IpAddress.valueOf(): " + ex);
+            // If we can't obtain or parse an IP address, we can't make any decisions based on it - 
+            // so we are returning null here; no "fall back" addresses.
+            return null;
+        }
+    }
+    
+    /**
+     * Tries to obtain the "real" address of a proxied request, from the
+     * X-Forwarded-for header. 
+     * @return IpAddress, if available and parseable.
+     * (returns null if there's no X-Forwarded-For header, or if the address 
+     * is unparseable).
+     */
+    public IpAddress proxiedRequestIpAddress() {
+        ExternalContext ctxt = FacesContext.getCurrentInstance().getExternalContext();
+        
         String xff = ctxt.getRequestHeaderMap().get("X-Forwarded-For");
         if ( xff != null ) {
             xff = xff.trim();
@@ -57,18 +90,13 @@ public class JsfHelper {
                     return IpAddress.valueOf(xff); // XFF exit
                 } catch (Exception ex) {
                     // xff is "::ffff:65.112.10.94" when trying to log in via http://pdurbin.pagekite.me
-                    logger.info("\"" + xff + "\" from get(\"X-Forwarded-For\") but exception thrown: " + ex + ". Using fallback IP of " + fallbackIp + " instead.");
-                    return IpAddress.valueOf(fallbackIp);
+                    // TODO: 
+                    // modify IpAddress class to recognize ipv6 addresses
+                    logger.info("\"" + xff + "\" from get(\"X-Forwarded-For\") but exception thrown: " + ex + ". Returning null.");
+                    return null;
                 }
             }
         }
-        ServletRequest sr = (ServletRequest) ctxt.getRequest();
-        try {
-            return IpAddress.valueOf(sr.getRemoteHost());
-        } catch (IllegalArgumentException ex) {
-            // getRemoteHost is "0:0:0:0:0:0:0:1" from Harvard wireless
-            logger.info("\"" + sr.getRemoteHost() + "\" from ServletRequest.getRemoteHost() passed but exception thrown: " + ex + ". Using fallback IP of " + fallbackIp + " instead.");
-            return IpAddress.valueOf(fallbackIp);
-        }
+        return null;
     }
 }
