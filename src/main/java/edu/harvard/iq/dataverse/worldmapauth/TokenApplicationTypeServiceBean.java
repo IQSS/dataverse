@@ -44,8 +44,8 @@ public class TokenApplicationTypeServiceBean {
         tat.setHostname("localhost");
         tat.setIpAddress("127.0.0.1");
         tat.setTimeLimitMinutes(TokenApplicationType.DEFAULT_TOKEN_TIME_LIMIT_MINUTES);
-        tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
-        //tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
+        //tat.setMapitLink(TokenApplicationType.TEST_MAPIT_LINK);
+        tat.setMapitLink(TokenApplicationType.DEV_MAPIT_LINK);
         
         return this.save(tat);
         
