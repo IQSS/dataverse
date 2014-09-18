@@ -30,9 +30,9 @@
         ],
         "Logos": [
             {
-                "value": "https://www.iq.harvard.edu/profiles/openscholar/themes/hwpi_basetheme/images/harvard-logo.png",
-                "height": "88",
-                "width": "253"
+                "value": "http://dataverse-demo.iq.harvard.edu/logos/1/harvard.png",
+                "height": "100",
+                "width": "158"
             }
         ]
     }

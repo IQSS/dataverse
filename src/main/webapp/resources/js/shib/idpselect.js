@@ -511,13 +511,14 @@ TypeAheadControl.prototype.draw = function(setFocus) {
     //
     // Set up the 'dropDown'
     //
-    this.dropDown = document.createElement('div');
+    this.dropDown = document.createElement('ul');
     this.dropDown.className = 'IdPSelectDropDown';
     this.dropDown.style.visibility = 'hidden';
 
     this.dropDown.style.width = this.textBox.offsetWidth;
     this.dropDown.current = -1;
-    document.body.appendChild(this.dropDown);
+    // document.body.appendChild(this.dropDown);
+    document.getElementById('idpSelectIdPEntryTile').appendChild(this.dropDown);
 
     //
     // mouse listeners for the dropdown box
@@ -738,7 +739,7 @@ TypeAheadControl.prototype.populateDropDown = function(list) {
     var str;
 
     while (i < list.length) {
-        div = document.createElement('div');
+        div = document.createElement('li');
         str = list[i][0];
 
 	if (null !== list[i][2]) {
@@ -767,8 +768,8 @@ TypeAheadControl.prototype.populateDropDown = function(list) {
         i++;
     }
     var off = this.getXY();
-    this.dropDown.style.left = off[0] + 'px';
-    this.dropDown.style.top = off[1] + 'px';
+    // this.dropDown.style.left = off[0] + 'px';
+    // this.dropDown.style.top = off[1] + 'px';
     this.showDrop();
 };
 

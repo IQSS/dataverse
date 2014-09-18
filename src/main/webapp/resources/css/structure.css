@@ -80,6 +80,67 @@ button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-s {background-position: -72px -16px;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-e {background-position: -35px -16px;}
 
+/* -------- LOGIN -------- */
+div.panel.highlight {
+    background-color: #f7f7f9;
+}
+#idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
+#idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
+
+#idpSelectIdPEntryTile {position: relative;}
+
+ul.IdPSelectDropDown {
+    background-clip: padding-box;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+/*    display: none;*/
+    float: left;
+    font-size: 14px;
+    left: 0;
+    list-style: none outside none;
+    margin: 2px 0 0;
+    min-width: 160px;
+    padding: 5px 0;
+    position: absolute;
+    text-align: left;
+    /*top: 100%;*/
+    bottom:-22px;
+    z-index: 1000;
+}
+
+ul.IdPSelectDropDown > li > a {
+    clear: both;
+    color: #333;
+    display: block;
+    font-weight: 400;
+    line-height: 1.42857;
+    padding: 3px 20px;
+    white-space: nowrap;
+}
+
+ul.IdPSelectDropDown > li > a:hover, ul.IdPSelectDropDown > li > a:focus {
+    background-color: #f5f5f5;
+    color: #262626;
+    text-decoration: none;
+}
+ul.IdPSelectDropDown > .active > a, ul.IdPSelectDropDown > .active > a:hover, ul.IdPSelectDropDown > .active > a:focus {
+    background-color: #428bca;
+    color: #fff;
+    outline: 0 none;
+    text-decoration: none;
+}
+ul.IdPSelectDropDown > .disabled > a, ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+    color: #777;
+}
+ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+    background-color: transparent;
+    background-image: none;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
 /* -------- DATAVERSE -------- */
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
@@ -178,11 +239,13 @@ div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {disp
 /* -------- POPUP -------- */
 div.ui-dialog.largePopUp {min-width:60%;}
 
-div.ui-dialog div.highlight {background-color: #f7f7f9;
+div.ui-dialog div.highlight {
+    background-color: #f7f7f9;
     border: 1px solid #e1e1e8;
     border-radius: 4px;
     margin-bottom: 14px;
-    padding: 9px 14px;}
+    padding: 9px 14px;
+}
 
 /* -------- SUBTABS -------- */
 div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content {padding-left:0; padding-right:0;}
