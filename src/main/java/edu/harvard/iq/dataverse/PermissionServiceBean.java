@@ -100,6 +100,25 @@ public class PermissionServiceBean {
 
     public Set<Permission> permissionsFor(User u, DvObject d) {
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
+        
+        // temporary HACK for allowing any authenticated user create 
+        // new objects inside the root dataverse, and in dataverses 
+        // with the aliases that end with "_open". 
+        // TODO: this should be replaced with some default group, to which 
+        // all the new users should be assigned automatically. This group will 
+        // get as much or as little permissions as the local dataverse are 
+        // willing to give it. 
+        // - Leonid, 4.0 beta 7 (merge party)
+        
+        if (d instanceof Dataverse) {
+            Dataverse dv = (Dataverse) d;
+            if ((dv.getOwner() == null || dv.getAlias().endsWith("_open")) && (u.isAuthenticated())) {
+                retVal.add(Permission.UndoableEdit);
+                retVal.add(Permission.AddDataset);
+                retVal.add(Permission.AddDataverse);
+            }
+        }
+        
         for (RoleAssignment asmnt : roleService.assignmentsFor(u, d)) {
             retVal.addAll(asmnt.getRole().permissions());
         }
