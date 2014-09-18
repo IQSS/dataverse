@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -40,7 +40,7 @@ public class WorldMapTokenServiceBean {
      * @param dvUserID
      * @return WorldMapToken
      */
-    public WorldMapToken getNewToken(DataFile dataFile, BuiltinUser dvUser){
+    public WorldMapToken getNewToken(DataFile dataFile, AuthenticatedUser dvUser){
         if ((dataFile==null)||(dvUser==null)){
             logger.severe("dataFile or dvUser is null");
             return null;

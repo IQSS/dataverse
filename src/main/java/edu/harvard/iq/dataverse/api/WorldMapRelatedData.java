@@ -11,14 +11,14 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.worldmapauth.TokenApplicationTypeServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import java.io.StringReader;
@@ -82,7 +82,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     TokenApplicationTypeServiceBean tokenAppServiceBean;
 
     @EJB
-    BuiltinUserServiceBean dataverseUserService;
+    AuthenticationServiceBean dataverseUserService;
 
     
     /**
@@ -120,7 +120,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
 
         // Check if the user exists
-        BuiltinUser dvUser = dataverseUserService.find(dvuser_id);
+        AuthenticatedUser dvUser = dataverseUserService.findByID(dvuser_id);
 	if ( dvUser == null ){
             return errorResponse(Response.Status.FORBIDDEN, "Invalid user");
         }
@@ -271,7 +271,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //
         // Make sure token user and file are still available
         //
-        BuiltinUser dv_user = wmToken.getDataverseUser();
+        AuthenticatedUser dv_user = wmToken.getDataverseUser();
         if (dv_user == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
@@ -311,8 +311,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         // Dataverse
         dfile_json.add("dv_id", dverse.getId());
-        dfile_json.add("dv_name", dverse.getName());
         
+        //dfile_json.add("dv_name", dverse.getName());  // old variable 
+        dfile_json.add("dataverse_name", dverse.getName());
 
         // DatasetVersion Info
         dfile_json.add("dataset_name", dset_version.getTitle());
@@ -342,7 +343,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         
         // DataverseUser Info
         dfile_json.add("dv_user_email", dv_user.getEmail());
-        dfile_json.add("dv_username", dv_user.getUserName());
+        dfile_json.add("dv_username", dv_user.getName());
         dfile_json.add("dv_user_id", dv_user.getId());
                 
         
@@ -410,7 +411,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
         
         // (3) Attempt to retrieve DataverseUser      
-        BuiltinUser dv_user = wmToken.getDataverseUser();
+        AuthenticatedUser dv_user = wmToken.getDataverseUser();
         if (dv_user == null) {
             return errorResponse(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }

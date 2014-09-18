@@ -85,6 +85,14 @@ public class AuthenticationServiceBean {
         return authenticationProviders.get( id );
     }
     
+    public AuthenticatedUser findByID(Object pk){
+        if (pk==null){
+            return null;
+        }
+        return (AuthenticatedUser) em.find(AuthenticatedUser.class, pk);
+    }
+            
+            
     public AuthenticatedUser getAuthenticatedUser( String identifier ) {
         try {
             return em.createNamedQuery("AuthenticatedUser.findByIdentifier", AuthenticatedUser.class)

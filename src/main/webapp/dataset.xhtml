@@ -564,7 +564,7 @@
                                             </ui:fragment>-->
 
                                              <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
-                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                                 <a style="margin-right:1em;color:black;font-size:1em;" target="_blank" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
