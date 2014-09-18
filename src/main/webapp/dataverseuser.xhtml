@@ -59,7 +59,7 @@
                                                 </div>-->
                                                 <div style="float:left; width:300px;">
                                                     <div style="font-weight:bold;">#{DataverseUserPage.currentUser.name}<h:outputText value=" (#{DataverseUserPage.currentUser.affiliation})" rendered="#{!empty DataverseUserPage.currentUser.affiliation}"/></div>
-                                                    <ui:fragment rendered="#{!empty DataverseUserPage.currentUser.userIdentifier}"><div style="color:#777;">#{DataverseUserPage.currentUser.userIdentifier}</div></ui:fragment>
+                                                    <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser.userName}"><div style="color:#777;">#{DataverseUserPage.builtinUser.userName}</div></ui:fragment>
                                                     <ui:fragment rendered="#{!empty DataverseUserPage.currentUser.email}"><div style="color:#777;">#{DataverseUserPage.currentUser.email}</div></ui:fragment>
                                                     <ui:fragment rendered="#{!empty DataverseUserPage.builtinUser.position}"><div style="color:#777;">#{DataverseUserPage.builtinUser.position}</div></ui:fragment>
                                                 </div>
