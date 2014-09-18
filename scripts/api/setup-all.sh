@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "deleting all data from Solr"
+curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
 
 SERVER=http://localhost:8080/api
 
@@ -27,9 +29,3 @@ echo Setting up the settings
 echo  - Allow internal signup
 curl -X PUT $SERVER/s/settings/:AllowSignUp/yes
 curl -X PUT $SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml%3FeditMode%3DCREATE
-
-# index-all
-# FIXME: obviate the need for this
-
-echo Start indexing
-curl -s http://localhost:8080/api/index

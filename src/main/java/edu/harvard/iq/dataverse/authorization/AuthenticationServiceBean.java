@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.exceptions.DuplicateAuthenticationProviderException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -42,6 +43,8 @@ public class AuthenticationServiceBean {
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
+    @EJB
+    IndexServiceBean indexService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -205,7 +208,7 @@ public class AuthenticationServiceBean {
         AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(authPrvUserPersistentId, authenticationProviderId, auus);
         em.persist( auusLookup );
         auus.setAuthenticatedUserLookup(auusLookup);
-        
+        indexService.indexUser(auus);
         return auus;
     }
     
