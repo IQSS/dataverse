@@ -3,12 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
-import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,6 +71,9 @@ public class LoginPage implements java.io.Serializable {
     
     @EJB
     AuthenticationServiceBean authSvc;
+
+    @EJB
+    SettingsServiceBean settingsService;
 
     private String credentialsAuthProviderId;
     
@@ -149,6 +152,11 @@ public class LoginPage implements java.io.Serializable {
 
     public void setFilledCredentials(List<FilledCredential> filledCredentials) {
         this.filledCredentials = filledCredentials;
+    }
+
+    public boolean isShibEnabled() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
 
 }

@@ -6,6 +6,16 @@ Installers Guide
 
 **Introduction**
 
+Settings
+++++++++
+
+ShibEnabled
+-----------
+
+Set ``ShibEnabled`` to ``true`` to enable Shibboleth login.
+
+``curl -X PUT http://localhost:8080/api/s/settings/:ShibEnabled/true``
+
 JVM Options
 +++++++++++
 

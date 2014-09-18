@@ -25,6 +25,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /** Key for if Shibboleth is enabled or disabled. */
+        ShibEnabled,
         /** Key for the url to send users who want to sign up to. */
         SignUpUrl,
         /** Key for whether we allow users to sign up */
