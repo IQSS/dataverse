@@ -49,6 +49,8 @@ public class AuthenticatedUser implements User, Serializable {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
     
+    
+    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
 	
@@ -132,10 +134,15 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     @OneToOne(mappedBy = "authenticatedUser")
-    AuthenticatedUserLookup authenticatedUserLookup;
+    private AuthenticatedUserLookup authenticatedUserLookup;
 
     public AuthenticatedUserLookup getAuthenticatedUserLookup() {
         return authenticatedUserLookup;
     }
+
+    public void setAuthenticatedUserLookup(AuthenticatedUserLookup authenticatedUserLookup) {
+        this.authenticatedUserLookup = authenticatedUserLookup;
+    }
+    
     
 }
