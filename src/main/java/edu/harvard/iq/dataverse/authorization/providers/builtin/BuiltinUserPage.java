@@ -71,8 +71,6 @@ public class BuiltinUserPage implements java.io.Serializable {
     @NotBlank(message = "Please enter a password for your account.")
     private String currentPassword;
     private Long dataverseId;
-    private String permissionType;
-    private List dataIdList;
     private List<UserNotification> notificationsList;
     private int activeIndex;
     private String selectTab = "somedata";
@@ -130,21 +128,7 @@ public class BuiltinUserPage implements java.io.Serializable {
         this.dataverseId = dataverseId;
     }
 
-    public String getPermissionType() {
-        return permissionType;
-    }
 
-    public void setPermissionType(String permissionType) {
-        this.permissionType = permissionType;
-    }
-
-    public List getDataIdList() {
-        return dataIdList;
-    }
-
-    public void setDataIdList(List dataIdList) {
-        this.dataIdList = dataIdList;
-    }
 
     public List getNotificationsList() {
         return notificationsList;
@@ -171,34 +155,33 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        if ( session.getUser().isAuthenticated() ) {
-            currentUser = (AuthenticatedUser) session.getUser();
-            notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
-            if (currentUser.isBuiltInUser()) {
-                builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
-            }
+        if (editMode == EditMode.CREATE) { //create mode is for sign up
+            builtinUser = new BuiltinUser();
         } else {
-            notificationsList = Collections.<UserNotification>emptyList();
-        }
-        permissionType = "writeAccess";
-        dataIdList = new ArrayList();
-        switch (selectTab) {
-            case "notifications":
-                activeIndex = 1;
-                displayNotification();
-                break;
-            default:
-                activeIndex = 0;
-                break;
+            if ( session.getUser().isAuthenticated() ) {
+                currentUser = (AuthenticatedUser) session.getUser();
+                notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
+                if (currentUser.isBuiltInUser()) {
+                    builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
+                }
+            } else {
+                notificationsList = Collections.<UserNotification>emptyList();
+            }
+
+            switch (selectTab) {
+                case "notifications":
+                    activeIndex = 1;
+                    displayNotification();
+                    break;
+                default:
+                    activeIndex = 0;
+                    break;
+            }
         }
     }
 
     public void edit(ActionEvent e) {
         editMode = EditMode.EDIT;
-    }
-
-    public void create(ActionEvent e) {
-        editMode = EditMode.CREATE;
     }
 
     public void changePassword(ActionEvent e) {
@@ -275,6 +258,7 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
         builtinUser = builtinUserService.save(builtinUser);
+        authSvc.updateAuthenticatedUser(currentUser, builtinUser.createDisplayInfo());
 
         if (editMode == EditMode.CREATE) {
             AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.createDisplayInfo());
