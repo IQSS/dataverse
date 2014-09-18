@@ -22,7 +22,7 @@
                     <div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
                         <h:form id="loginForm" styleClass="form-horizontal">
                             <p:focus context="loginForm"/>
-                            <ui:fragment rendered="false">
+                            <ui:fragment rendered="#{not empty param.debug}">
                                 <div class="form-group">
                                     <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
                                     <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
