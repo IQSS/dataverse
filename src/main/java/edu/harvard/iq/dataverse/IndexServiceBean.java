@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -64,12 +63,12 @@ public class IndexServiceBean {
     public static final String deaccessionedSuffix = "_deaccessioned";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
-    private static final Long publicGroupId = 1L;
+    private static final String publicGroupIdString = "public";
     private static final String publicGroupString = groupPrefix + "public";
     /**
      * @todo: remove this fake "has access to all data" group
      */
-    private static final Long tmpNsaGroupId = 2L;
+    private static final String tmpNsaGroupIdString = "2";
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
@@ -96,14 +95,14 @@ public class IndexServiceBean {
         /**
          * @todo: replace hard-coded groups with real groups
          */
-        Map<Long, String> groups = new HashMap<>();
-        groups.put(publicGroupId, publicGroupString);
-        groups.put(tmpNsaGroupId, "nsa");
-        groups.put(tmpNsaGroupId + 1, "flappybird");
-        groups.put(tmpNsaGroupId + 2, "2048");
+        Map<String, String> groups = new HashMap<>();
+        groups.put(publicGroupIdString, publicGroupString);
+        groups.put(tmpNsaGroupIdString, "nsa");
+        groups.put(tmpNsaGroupIdString + 1, "flappybird");
+        groups.put(tmpNsaGroupIdString + 2, "2048");
 
         int groupIndexCount = 0;
-        for (Map.Entry<Long, String> group : groups.entrySet()) {
+        for (Map.Entry<String, String> group : groups.entrySet()) {
             groupIndexCount++;
             logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
         }
@@ -145,14 +144,14 @@ public class IndexServiceBean {
             /**
              * @todo: replace hard-coded groups with real groups
              */
-            Map<Long, String> groups = new HashMap<>();
-            groups.put(publicGroupId, publicGroupString);
-            groups.put(tmpNsaGroupId, "nsa");
-            groups.put(tmpNsaGroupId + 1, "flappybird");
-            groups.put(tmpNsaGroupId + 2, "2048");
+            Map<String, String> groups = new HashMap<>();
+            groups.put(publicGroupIdString, publicGroupString);
+            groups.put(tmpNsaGroupIdString, "nsa");
+            groups.put(tmpNsaGroupIdString + 1, "flappybird");
+            groups.put(tmpNsaGroupIdString + 2, "2048");
 
             int groupIndexCount = 0;
-            for (Map.Entry<Long, String> group : groups.entrySet()) {
+            for (Map.Entry<String, String> group : groups.entrySet()) {
                 groupIndexCount++;
                 logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
             }
@@ -203,7 +202,7 @@ public class IndexServiceBean {
         /**
          * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
 //        if (dataverse.getOwner() != null) {
@@ -598,7 +597,7 @@ public class IndexServiceBean {
         /**
          * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
@@ -803,7 +802,7 @@ public class IndexServiceBean {
                 /**
                  * @todo: remove this fake "has access to all data" group
                  */
-                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
                 // For the mime type, we are going to index the "friendly" version, e.g., 
                 // "PDF File" instead of "application/pdf", "MS Excel" instead of 
@@ -875,7 +874,7 @@ public class IndexServiceBean {
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
-    public String indexGroup(Map.Entry<Long, String> group) {
+    public String indexGroup(Map.Entry<String, String> group) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -884,7 +883,11 @@ public class IndexServiceBean {
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, id);
-        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
+        /**
+         * @todo think about how we groups don't have entity IDs in Solr any
+         * more, after the auth merge
+         */
+//        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
         solrInputDocument.addField(SearchFields.NAME_SORT, group.getValue());
         solrInputDocument.addField(SearchFields.GROUPS, id);
 
@@ -1009,8 +1012,8 @@ public class IndexServiceBean {
         return publicGroupString;
     }
 
-    public static Long getTmpNsaGroupId() {
-        return tmpNsaGroupId;
+    public static String getTmpNsaGroupId() {
+        return tmpNsaGroupIdString;
     }
 
     public static String getPUBLISHED_STRING() {
