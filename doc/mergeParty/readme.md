@@ -80,3 +80,8 @@ Accessible under url `{server}/api/s/`, API calls to this bean should be editing
 
 ### `setup-all.sh` script
 A new script that sets up the users and the dataverses, sets the system up for built-in signup, and then indexes the dataverses using solr. Requires the [jq utility](http://stedolan.github.io/jq/). On Macs with [homebrew](http://brew.sh) installed, getting this utility is a `brew install jq` command away.
+
+
+## Undoing the undoing the merge
+When merging back to master, we need to undo commit 8ae3e6a482b87b52a1745bb06f340875803d2c5b (a.k.a 8ae3e6a), which is the commit that undid the erroneous merge.
+More at http://www.christianengvall.se/undo-pushed-merge-git/
