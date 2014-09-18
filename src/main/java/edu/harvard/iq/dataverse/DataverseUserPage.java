@@ -3,21 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse.authorization.providers.builtin;
+package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.PasswordEncryption;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -38,7 +27,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @ViewScoped
 @Named("DataverseUserPage")
-public class BuiltinUserPage implements java.io.Serializable {
+public class DataverseUserPage implements java.io.Serializable {
 
     public enum EditMode {
 
@@ -56,12 +45,9 @@ public class BuiltinUserPage implements java.io.Serializable {
     @EJB
     PermissionServiceBean permissionService;
     @EJB
-    BuiltinUserServiceBean builtinUserService;
-    
-    @EJB
-    AuthenticationServiceBean authSvc;
+    DataverseUserServiceBean dataverseUserService;
 
-    private BuiltinUser dataverseUser;
+    private DataverseUser dataverseUser;
     private EditMode editMode;
 
     @NotBlank(message = "Please enter a password for your account.")
@@ -76,14 +62,14 @@ public class BuiltinUserPage implements java.io.Serializable {
     private int activeIndex;
     private String selectTab = "somedata";
 
-    public BuiltinUser getDataverseUser() {
+    public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
-            dataverseUser = new BuiltinUser();
+            dataverseUser = new DataverseUser();
         }
         return dataverseUser;
     }
 
-    public void setDataverseUser(BuiltinUser dataverseUser) {
+    public void setDataverseUser(DataverseUser dataverseUser) {
         this.dataverseUser = dataverseUser;
     }
 
@@ -164,12 +150,10 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        User currentUser = session.getUser();
-        if ( currentUser.isAuthenticated() ) {
-            notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
-        } else {
-            notificationsList = Collections.<UserNotification>emptyList();
+        if (dataverseUser == null) {
+            dataverseUser = (session.getUser().isGuest() ? new DataverseUser() : session.getUser());
         }
+        notificationsList = userNotificationService.findByUser(dataverseUser.getId());
         permissionType = "writeAccess";
         dataIdList = new ArrayList();
         switch (selectTab) {
@@ -202,7 +186,7 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
-        BuiltinUser user = builtinUserService.findByUserName(userName);
+        DataverseUser user = dataverseUserService.findByUserName(userName);
         if (editMode == EditMode.CREATE) {
             if (user != null) {
                 userNameFound = true;
@@ -222,11 +206,11 @@ public class BuiltinUserPage implements java.io.Serializable {
     public void validateUserNameEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
         boolean userNameFound = false;
-        BuiltinUser user = builtinUserService.findByUserName(userName);
+        DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user != null) {
             userNameFound = true;
         } else {
-            BuiltinUser user2 = builtinUserService.findByEmail(userName);
+            DataverseUser user2 = dataverseUserService.findByEmail(userName);
             if (user2 != null) {
                 userNameFound = true;
             }
@@ -250,28 +234,25 @@ public class BuiltinUserPage implements java.io.Serializable {
 
     public void updatePassword(String userName) {
         String plainTextPassword = PasswordEncryption.generateRandomPassword();
-        BuiltinUser user = builtinUserService.findByUserName(userName);
+        DataverseUser user = dataverseUserService.findByUserName(userName);
         if (user == null) {
-            user = builtinUserService.findByEmail(userName);
+            user = dataverseUserService.findByEmail(userName);
         }
         user.setEncryptedPassword(PasswordEncryption.getInstance().encrypt(plainTextPassword));
-        builtinUserService.save(user);
+        dataverseUserService.save(user);
     }
 
     public String save() {
         if (editMode == EditMode.CREATE || editMode == EditMode.CHANGE) {
             if (inputPassword != null) {
-                dataverseUser.setEncryptedPassword(builtinUserService.encryptPassword(inputPassword));
+                dataverseUser.setEncryptedPassword(dataverseUserService.encryptPassword(inputPassword));
             }
         }
-        dataverseUser = builtinUserService.save(dataverseUser);
+        dataverseUser = dataverseUserService.save(dataverseUser);
+        userNotificationService.sendNotification(dataverseUser, new Timestamp(new Date().getTime()), UserNotification.Type.CREATEACC, null);
 
         if (editMode == EditMode.CREATE) {
-            AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, dataverseUser.getUserName(), dataverseUser.createDisplayInfo());
-            session.setUser(au);
-            userNotificationService.sendNotification(au,
-                                                     new Timestamp(new Date().getTime()), 
-                                                     UserNotification.Type.CREATEACC, null);
+            session.setUser(dataverseUser);
             return "/dataverse.xhtml?faces-redirect=true;";
         }
 

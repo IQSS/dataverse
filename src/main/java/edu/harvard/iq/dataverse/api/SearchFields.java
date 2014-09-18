@@ -95,10 +95,6 @@ public class SearchFields {
     public static final String PERMS = "perms_ss";
     public static final String PUBLICATION_STATUS = "published_ss";
     // Used for performance. Why hit the db if solr has the data?
-    /**
-     * @todo reconcile different with Sorl schema.xml where type is Long rather
-     * than String.
-     */
     public static final String ENTITY_ID = "entityid";
     public static final String PARENT_NAME = "parentname";
     public static final String PARENT_ID = "parentid";

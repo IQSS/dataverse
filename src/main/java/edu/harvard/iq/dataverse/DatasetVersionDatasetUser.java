@@ -1,3 +1,9 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
@@ -13,32 +19,26 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Records the last time a {@link User} handled a {@link DatasetVersion}.
+ *
  * @author skraffmiller
  */
 @Entity
 @Table(name="DatasetVersion_DataverseUser")
 @IdClass(DatasetVersionDatasetUserId.class)
-public class DatasetVersionUser implements Serializable {
+public class DatasetVersionDatasetUser implements Serializable{
 
     @Id
-    private String userIdentifier;
+    private long dataverseuserid;
     
     @Id
     private long datasetversionid;
 
-    @ManyToOne
-    @JoinColumn(name = "datasetversion_id")
-    private DatasetVersion datasetVersion;
-
-    private Timestamp lastUpdateDate;
-
-    public String getUserIdentifier() {
-        return userIdentifier;
+    public long getDataverseuserid() {
+        return dataverseuserid;
     }
 
-    public void setUserIdentifier(String dataverseuserid) {
-        this.userIdentifier = dataverseuserid;
+    public void setDataverseuserid(long dataverseuserid) {
+        this.dataverseuserid = dataverseuserid;
     }
 
     public long getDatasetversionid() {
@@ -48,6 +48,22 @@ public class DatasetVersionUser implements Serializable {
     public void setDatasetversionid(long datasetversionid) {
         this.datasetversionid = datasetversionid;
     }
+    
+    @ManyToOne
+    @JoinColumn(name = "dataverseuser_id")
+    private DataverseUser dataverseUser;
+    
+    public DataverseUser getDataverseUser() {
+        return dataverseUser;
+    }
+
+    public void setDataverseUser(DataverseUser dataverseUser) {
+        this.dataverseUser = dataverseUser;
+    }
+    
+    @ManyToOne
+    @JoinColumn(name = "datasetversion_id")
+    private DatasetVersion datasetVersion;
 
     public Timestamp getLastUpdateDate() {
         return lastUpdateDate;
@@ -64,6 +80,8 @@ public class DatasetVersionUser implements Serializable {
     public void setDatasetVersion(DatasetVersion datasetVersion) {
         this.datasetVersion = datasetVersion;
     }
+
+    private Timestamp lastUpdateDate;
 
    
 }

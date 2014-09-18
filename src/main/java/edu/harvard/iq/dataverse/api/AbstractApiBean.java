@@ -4,22 +4,16 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -32,7 +26,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -56,19 +49,17 @@ public abstract class AbstractApiBean {
         public Response getResponse() {
             return response;
         }
+        
     }
     
 	@EJB
 	protected EjbDataverseEngine engineSvc;
 	
 	@EJB
-	protected BuiltinUserServiceBean builtinUserSvc;
+	protected DataverseUserServiceBean userSvc;
 	
-	@EJB
+	@EJB 
 	protected DataverseServiceBean dataverseSvc;
-    
-    @EJB 
-    protected AuthenticationServiceBean authSvc;
     
     @EJB
     protected DatasetFieldServiceBean datasetFieldSvc;
@@ -76,29 +67,12 @@ public abstract class AbstractApiBean {
     @EJB
     protected MetadataBlockServiceBean metadataBlockSvc;
     
-    @EJB
-    UserServiceBean userSvc;
-    
-	@EJB
-	DataverseRoleServiceBean rolesSvc;
-    
-    @EJB
-    SettingsServiceBean settingsSvc;
-    
-    @EJB
-    RoleAssigneeServiceBean roleAssigneeSvc;
-    
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	EntityManager em;
 	
-    /**
-     * For pretty printing (indenting) of JSON output.
-     */
-    public enum Format {
-
-        PRETTY
-    }
-
+	@EJB
+	DataverseRoleServiceBean rolesSvc;
+	 
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
         public JsonParser call() throws Exception {
@@ -106,17 +80,11 @@ public abstract class AbstractApiBean {
         }
     });
     
-	protected RoleAssignee findAssignee( String identifier ) {
-    	return roleAssigneeSvc.getRoleAssignee(identifier);
+	protected DataverseUser findUser( String userIdtf ) {
+        
+		return isNumeric(userIdtf) ? engineSvc.getContext().users().find(Long.parseLong(userIdtf))
+	 							  : engineSvc.getContext().users().findByUserName(userIdtf);
 	}
-    
-    protected AuthenticatedUser findUserByApiToken( String apiKey ) {
-        return authSvc.lookupUser(apiKey);
-    }
-    
-    protected User findUserById( String userIdtf ) {
-        return engineSvc.getContext().users().findByIdentifier(userIdtf);
-    }
 	
 	protected Dataverse findDataverse( String idtf ) {
 		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
@@ -138,14 +106,6 @@ public abstract class AbstractApiBean {
         return Response.ok( Json.createObjectBuilder()
             .add("status", "OK")
             .add("data", bld).build() ).build();
-    }
-
-    protected Response okResponse(JsonArrayBuilder bld, Format format) {
-        return Response.ok(Util.jsonObject2prettyString(
-                Json.createObjectBuilder()
-                .add("status", "OK")
-                .add("data", bld).build()), MediaType.APPLICATION_JSON_TYPE
-        ).build();
     }
     
     protected Response okResponse( JsonObjectBuilder bld ) {
@@ -169,7 +129,6 @@ public abstract class AbstractApiBean {
           
         } catch (PermissionException ex) {
             throw new FailedCommandResult(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
-            
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
             throw new FailedCommandResult(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));

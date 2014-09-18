@@ -22,15 +22,10 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
 
             <!-- Triggers a login request directly to the TestShib IdP. -->
             <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPServiceSSO -->
-            <!-- A single explicit entityId could be used for Dataverse installation that only cares about one IdP. -->
-            <!-- <SSO entityID="https://idp.testshib.org/idp/shibboleth">SAML2 SAML1</SSO> -->
+            <SSO entityID="https://idp.testshib.org/idp/shibboleth">
+                SAML2 SAML1
+            </SSO>
 
-            <!-- not used but maybe helpful for troubleshooting -->
-            <!--<SSO discoveryProtocol="SAMLDS" discoveryURL="https://pdurbin.pagekite.me/shibboleth-ds/index.html">SAML2 SAML1</SSO>-->
-            <!-- picker is displayed as an iframe in this page -->
-            <SSO discoveryProtocol="SAMLDS" discoveryURL="http://pdurbin.pagekite.me/loginpage.xhtml">SAML2 SAML1</SSO>
-<!--
--->
             <!-- SAML and local-only logout. -->
             <!-- https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPServiceLogout -->
             <Logout>SAML2 Local</Logout>
@@ -60,11 +55,8 @@ https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPConfiguration
                 styleSheet="/shibboleth-sp/main.css"/>
 
         <!-- Loads and trusts a metadata file that describes only the Testshib IdP and how to communicate with it. -->
-        <!-- For Dataverse we hard code a local file instead of using a URI -->
-        <!-- <MetadataProvider type="XML" uri="http://www.testshib.org/metadata/testshib-providers.xml" backingFilePath="testshib-two-idp-metadata.xml" reloadInterval="180000" /> -->
-
-        <!-- IdPs we want allow go in /etc/shibboleth/dataverse-idp-metadata.xml -->
-        <MetadataProvider type="XML" file="dataverse-idp-metadata.xml" backingFilePath="local-idp-metadata.xml" legacyOrgNames="true" reloadInterval="7200"/>
+        <MetadataProvider type="XML" uri="http://www.testshib.org/metadata/testshib-providers.xml"
+             backingFilePath="testshib-two-idp-metadata.xml" reloadInterval="180000" />
 
         <!-- Attribute and trust options you shouldn't need to change. -->
         <AttributeExtractor type="XML" validate="true" path="attribute-map.xml"/>

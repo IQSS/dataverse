@@ -28,8 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", path: "scripts/vagrant/setup-solr.sh"
   config.vm.provision "shell", path: "scripts/vagrant/install-dataverse.sh", args: mailserver
   #config.vm.provision "shell", path: "scripts/setup/asadmin-setup.sh"
-  # FIXME: get tests working and re-enable them!
-  #config.vm.provision "shell", path: "scripts/vagrant/test.sh"
+  config.vm.provision "shell", path: "scripts/vagrant/test.sh"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine.

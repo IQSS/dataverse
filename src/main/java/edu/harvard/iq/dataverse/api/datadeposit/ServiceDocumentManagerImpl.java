@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.DataverseUser;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -32,7 +32,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
-        AuthenticatedUser user = swordAuth.auth(authCredentials);
+        DataverseUser user = swordAuth.auth(authCredentials);
         String warning = urlManager.processUrl(sdUri);
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();

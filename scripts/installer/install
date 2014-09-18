@@ -995,17 +995,17 @@ sleep 180;
 # Populate the metadata block field values, create users
 # and dataverses:
 
-unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
+unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" ) {
     chdir("../api");
 }
 
-unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
+unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" ) {
     print "\nERROR: Can't find the metadata and user/dataverse setup scripts!\n";
     print "\tAre you running the installer in the right directory?\n";
     exit 1;
 }
 
-for my $script ( "setup-all.sh" ) {
+for my $script ( "datasetfields.sh", "setup-users.sh", "setup-dvs.sh" ) {
     print "Executing script " . $script . "...\n";
 
     my $my_hostname = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};

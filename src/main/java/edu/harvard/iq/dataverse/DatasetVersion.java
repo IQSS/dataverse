@@ -202,25 +202,32 @@ public class DatasetVersion implements Serializable {
     }
     
     @OneToMany(mappedBy = "datasetVersion")
-    private List<DatasetVersionUser> datasetVersionDataverseUsers;
+    private List<DatasetVersionDatasetUser> datasetVersionDataverseUsers;
     
-    public List<DatasetVersionUser> getDatasetVersionDataverseUsers(){
+    public List<DatasetVersionDatasetUser> getDatasetVersionDataverseUsers(){
         return datasetVersionDataverseUsers;
     }
     
-    public void setUserDatasets(List<DatasetVersionUser> datasetVersionDataverseUsers){
+    public void setUserDatasets(List<DatasetVersionDatasetUser> datasetVersionDataverseUsers){
         this.datasetVersionDataverseUsers = datasetVersionDataverseUsers;
     }
     
-    public List<String> getVersionContributorIdentifiers(){
+    public String getVersionContributors(){
+        String retString = ""; 
         if (this.getDatasetVersionDataverseUsers() == null){
-            return Collections.emptyList();
+            return retString;
         }
-        List<String> ret = new LinkedList<>();
-        for (DatasetVersionUser contributor: this.getDatasetVersionDataverseUsers()){
-             ret.add(contributor.getUserIdentifier());
+        for (DatasetVersionDatasetUser contributor: this.getDatasetVersionDataverseUsers()){
+             if (retString.isEmpty()){
+                 retString = contributor.getDataverseUser().getDisplayName();
+             } else {
+                 retString += ", " + contributor.getDataverseUser().getDisplayName();
+             }
         }
-        return ret;
+        if (retString.isEmpty()){
+            retString = this.getDataset().getCreator().getDisplayName();
+        }
+        return retString;
     }
 
     

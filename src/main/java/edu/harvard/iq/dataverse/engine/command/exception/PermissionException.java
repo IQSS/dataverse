@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.exception;
 
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.Set;
 

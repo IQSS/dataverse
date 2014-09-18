@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -41,7 +39,7 @@ public class EjbDataverseEngine {
 	DataverseRoleServiceBean rolesService;
 	
 	@EJB
-	BuiltinUserServiceBean usersService;
+	DataverseUserServiceBean usersService;
 	
 	@EJB
 	IndexServiceBean indexService;
@@ -82,7 +80,7 @@ public class EjbDataverseEngine {
 										+ "Please use the RequiredPermissions annotation.");
 		}
 
-		User user = aCommand.getUser();
+		DataverseUser user = aCommand.getUser();
 		
         Map<String, DvObject> affectedDataverses = aCommand.getAffectedDvObjects();
 		
@@ -123,7 +121,7 @@ public class EjbDataverseEngine {
 				public DataverseRoleServiceBean roles() { return rolesService; }
 
 				@Override
-				public BuiltinUserServiceBean users() { return usersService; }
+				public DataverseUserServiceBean users() { return usersService; }
 
 				@Override
 				public IndexServiceBean index() { return indexService; }

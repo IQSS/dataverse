@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
+import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -32,18 +32,15 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     private final Dataset theDataset;
 
-    public CreateDatasetCommand(Dataset theDataset, User user) {
+    public CreateDatasetCommand(Dataset theDataset, DataverseUser user) {
         super(user, theDataset.getOwner());
         this.theDataset = theDataset;
     }
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        // add creator and create date to dataset
-        
-        // FIXME - need to revisit this. Either
-        // theDataset.setCreator(getUser());
-        
+        //add creator and create date to dataset
+        theDataset.setCreator(getUser());
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
@@ -81,15 +78,16 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage(), e);
         }
         
-        DatasetVersionUser datasetVersionDataverseUser = new DatasetVersionUser();        
-        datasetVersionDataverseUser.setUserIdentifier(getUser().getIdentifier());
+        DatasetVersionDatasetUser datasetVersionDataverseUser = new DatasetVersionDatasetUser();        
+        datasetVersionDataverseUser.setDataverseUser(getUser());
         datasetVersionDataverseUser.setDatasetVersion(savedDataset.getLatestVersion());
         datasetVersionDataverseUser.setLastUpdateDate((Timestamp) createDate);  
         if (savedDataset.getLatestVersion().getId() == null){
-            logger.warning("CreateDatasetCommand: savedDataset version id is null");
+            System.out.print("savedDataset version id is null");
         } else {
             datasetVersionDataverseUser.setDatasetversionid(savedDataset.getLatestVersion().getId().intValue());
         }       
+        datasetVersionDataverseUser.setDataverseuserid(getUser().getId().intValue());
         ctxt.em().merge(datasetVersionDataverseUser); 
         
         return savedDataset;

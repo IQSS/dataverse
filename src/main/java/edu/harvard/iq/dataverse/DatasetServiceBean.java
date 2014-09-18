@@ -5,13 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
-<<<<<<< HEAD
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-=======
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
->>>>>>> auth
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,13 +21,9 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-<<<<<<< HEAD
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-=======
-//import javax.persistence.SequenceGenerator;
->>>>>>> auth
 
 /**
  *
@@ -123,7 +114,6 @@ public class DatasetServiceBean {
         return u;
     }
 
-<<<<<<< HEAD
     public String getRISFormat(DatasetVersion version) {
         String publisher = version.getRootDataverseNameforCitation();
         List<DatasetAuthor> authorList = version.getDatasetAuthors();
@@ -243,20 +233,17 @@ public class DatasetServiceBean {
     }
 
     public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user) {
-=======
-   public DatasetVersionUser getDatasetVersionDatasetUser(DatasetVersion version, User user){        
->>>>>>> auth
 
-        DatasetVersionUser ddu = null;
+        DatasetVersionDatasetUser ddu = null;
         Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
                 + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
         query.setParameter("versionId", version.getId());
-        query.setParameter("userId", user.getIdentifier());
+        query.setParameter("userId", user.getId());
         System.out.print("versionId: " + version.getId());
-        System.out.print("userId: " + user.getIdentifier());
+        System.out.print("userId: " + user.getId());
         System.out.print(query.toString());
         try {
-            ddu = (DatasetVersionUser) query.getSingleResult();
+            ddu = (DatasetVersionDatasetUser) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
@@ -269,7 +256,7 @@ public class DatasetServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void addDatasetLock(Long datasetId, String userId, String info) {
+    public void addDatasetLock(Long datasetId, Long userId, String info) {
 
         Dataset dataset = em.find(Dataset.class, datasetId);
         DatasetLock lock = new DatasetLock();
@@ -278,7 +265,7 @@ public class DatasetServiceBean {
         lock.setStartTime(new Date());
 
         if (userId != null) {
-            AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
+            DataverseUser user = em.find(DataverseUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
                 user.setDatasetLocks(new ArrayList());
@@ -296,7 +283,7 @@ public class DatasetServiceBean {
         //em.refresh(dataset); (?)
         DatasetLock lock = dataset.getDatasetLock();
         if (lock != null) {
-            AuthenticatedUser user = lock.getUser();
+            DataverseUser user = lock.getUser();
             dataset.setDatasetLock(null);
             user.getDatasetLocks().remove(lock);
             /* 

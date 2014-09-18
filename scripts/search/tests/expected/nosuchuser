@@ -1,5 +1,5 @@
 
 {
     "status":"ERROR",
-    "message":"Unable to find a user with API token nosuchuser"
+    "message":"Couldn't find username: nosuchuser"
 }

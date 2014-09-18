@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -19,7 +19,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
     
     final Dataverse updatedDv;
     
-    public UpdateDataverseMetadataBlocksCommand(User aUser, Dataverse anAffectedDataverse) {
+    public UpdateDataverseMetadataBlocksCommand(DataverseUser aUser, Dataverse anAffectedDataverse) {
         super(aUser, anAffectedDataverse);
         updatedDv = anAffectedDataverse;
     }
@@ -29,7 +29,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
         
         private final boolean isRoot;
             
-        public SetRoot(User aUser, Dataverse anAffectedDataverse, boolean shouldBeRoot) {
+        public SetRoot(DataverseUser aUser, Dataverse anAffectedDataverse, boolean shouldBeRoot) {
             super(aUser, anAffectedDataverse);
             isRoot = shouldBeRoot;
         }
@@ -46,7 +46,7 @@ public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidC
         
         private final List<MetadataBlock> blocks;
             
-        public SetBlocks(User aUser, Dataverse anAffectedDataverse, List<MetadataBlock> someBlocks) {
+        public SetBlocks(DataverseUser aUser, Dataverse anAffectedDataverse, List<MetadataBlock> someBlocks) {
             super(aUser, anAffectedDataverse);
             blocks = someBlocks;
         }

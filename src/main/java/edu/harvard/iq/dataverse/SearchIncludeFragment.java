@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -442,7 +440,7 @@ public class SearchIncludeFragment {
         // being explicit about the user, could just call permissionService.on(dataverse)
 
         // TODO: decide on rules for this button and check actual permissions
-        return session.getUser() != null && (session.getUser() != GuestUser.get() );
+        return session.getUser() != null && !session.getUser().isGuest();
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
@@ -826,7 +824,16 @@ public class SearchIncludeFragment {
     }
 
     public boolean userLoggedIn() {
-        return ( session.getUser() != GuestUser.get() );
+        DataverseUser dataverseUser = session.getUser();
+        if (dataverseUser != null) {
+            if (dataverseUser.isGuest()) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     public boolean publishedSelected() {

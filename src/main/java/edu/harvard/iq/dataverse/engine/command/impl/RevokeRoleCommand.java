@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -18,7 +18,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
 	
 	private final RoleAssignment toBeRevoked;
 
-	public RevokeRoleCommand(RoleAssignment toBeRevoked, User aUser) {
+	public RevokeRoleCommand(RoleAssignment toBeRevoked, DataverseUser aUser) {
 		super(aUser, (Dataverse)toBeRevoked.getDefinitionPoint());
 		this.toBeRevoked = toBeRevoked;
 	}

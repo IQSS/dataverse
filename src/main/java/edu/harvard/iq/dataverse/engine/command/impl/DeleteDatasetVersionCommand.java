@@ -5,12 +5,15 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionUser;
+import edu.harvard.iq.dataverse.DatasetVersionDatasetUser;
+import edu.harvard.iq.dataverse.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.engine.Permission;
 
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -28,7 +31,7 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;
 
-    public DeleteDatasetVersionCommand(User aUser, Dataset dataset) {
+    public DeleteDatasetVersionCommand(DataverseUser aUser, Dataset dataset) {
         super(aUser, dataset);
         this.doomed = dataset;
     }
@@ -41,11 +44,11 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                 DatasetVersion doomedVersion = doomed.getLatestVersion();
                 Long versionId = doomedVersion.getId();
                 // Users
-                Iterator<DatasetVersionUser> duIt = doomedVersion.getDatasetVersionDataverseUsers().iterator();
+                Iterator<DatasetVersionDatasetUser> duIt = doomedVersion.getDatasetVersionDataverseUsers().iterator();
 
                 while (duIt.hasNext()) {
-                    DatasetVersionUser dfn = duIt.next();
-                    DatasetVersionUser doomedAndMerged = ctxt.em().merge(dfn);
+                    DatasetVersionDatasetUser dfn = duIt.next();
+                    DatasetVersionDatasetUser doomedAndMerged = ctxt.em().merge(dfn);
                     ctxt.em().remove(doomedAndMerged);
                     duIt.remove();
 

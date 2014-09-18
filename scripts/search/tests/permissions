@@ -4,8 +4,6 @@
 # If you start creating dataverses and datasets, you should expect to see output.
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=nosuchuser') scripts/search/tests/expected/nosuchuser
 diff <(curl -s 'http://localhost:8080/api/search?q=*') scripts/search/tests/expected/anon
-echo FIXME: need actual keys/tokens for each user to run permission tests
-exit
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=__GUEST__') scripts/search/tests/expected/__GUEST__
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=pete') scripts/search/tests/expected/pete
 diff <(curl -s 'http://localhost:8080/api/search?q=*&key=uma') scripts/search/tests/expected/uma

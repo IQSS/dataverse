@@ -2,10 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ public class Roles extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Roles.class.getName());
 	
 	@EJB
-	BuiltinUserServiceBean usersSvc;
+	DataverseUserServiceBean usersSvc;
 	
 	@EJB
 	DataverseServiceBean dvSvc;
@@ -82,10 +82,10 @@ public class Roles extends AbstractApiBean {
 			@FormParam("definitionPointId") long dvObjectId,
 			@QueryParam("key") String key ) {
 		
-        User issuer = usersSvc.findByIdentifier(key);
+        DataverseUser issuer = usersSvc.findByUserName(key);
 		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
 		
-        User u = usersSvc.findByIdentifier(username);
+        DataverseUser u = usersSvc.findByUserName(username);
 		if ( u == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
 		
         // FIXME should get a DvObject
@@ -108,7 +108,7 @@ public class Roles extends AbstractApiBean {
 								 @QueryParam("dvo") String dvoIdtf,
 								 @QueryParam("key") String key ) {
         
-        User issuer = usersSvc.findByIdentifier(key);
+        DataverseUser issuer = usersSvc.findByUserName(key);
 		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
 		
 		Dataverse d = findDataverse(dvoIdtf);

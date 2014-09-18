@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
@@ -35,7 +35,7 @@ public interface CommandContext {
 	
 	public DataverseRoleServiceBean roles();
 	
-	public BuiltinUserServiceBean users();
+	public DataverseUserServiceBean users();
 	
 	public IndexServiceBean index();
 	

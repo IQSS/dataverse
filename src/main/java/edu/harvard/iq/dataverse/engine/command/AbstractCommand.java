@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import java.util.Map;
 public abstract class AbstractCommand<R> implements Command<R> {
 	
 	private final Map<String,DvObject> affectedDataverses;
-	private final User user;
+	private final DataverseUser user;
 	
 	static protected class DvNamePair {
 		final String name;
@@ -35,11 +35,11 @@ public abstract class AbstractCommand<R> implements Command<R> {
 		return new DvNamePair(s,d);
 	}
 	
-	public AbstractCommand(User aUser, DvObject anAffectedDvObject) {
+	public AbstractCommand(DataverseUser aUser, DvObject anAffectedDvObject) {
 		this( aUser, dv("",anAffectedDvObject));
 	}
 	
-	public AbstractCommand(User aUser, DvNamePair dvp, DvNamePair... more ) {
+	public AbstractCommand(DataverseUser aUser, DvNamePair dvp, DvNamePair... more ) {
 		user = aUser;
 		affectedDataverses = new HashMap<>();
 		affectedDataverses.put( dvp.name, dvp.dvObject );
@@ -48,7 +48,7 @@ public abstract class AbstractCommand<R> implements Command<R> {
 		}
 	}
 	
-	public AbstractCommand( User aUser, Map<String, DvObject> someAffectedDvObjects ) {
+	public AbstractCommand( DataverseUser aUser, Map<String, DvObject> someAffectedDvObjects ) {
 		user = aUser;
 		affectedDataverses = someAffectedDvObjects;
 	}
@@ -59,7 +59,7 @@ public abstract class AbstractCommand<R> implements Command<R> {
 	}
 	
 	@Override
-	public User getUser() {
+	public DataverseUser getUser() {
 		return user;
 	}
 	

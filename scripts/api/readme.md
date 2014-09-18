@@ -129,8 +129,6 @@ Retrieves a list of permissions a user has on the DvObject. Both ids can be the 
 
 ### users
 
-This endopint deals with users of the built-in authentication provider. Note that users may come from different authentication services as well, such as Shibboleth.
-
 	GET http://{{SERVER}}/api/users
 
 List all users.
@@ -138,6 +136,14 @@ List all users.
 	POST http://{{SERVER}}/api/users?password={{password}}
 
 Generates a new user. Note that the password is passed as a parameter in the query.
+
+	GET http://{{SERVER}}/api/users/{{uid}}
+
+Shows data about the user whose `uid` is passed. The `uid` can either be a number (id in the db) or the username.
+
+	GET http://{{SERVERS}}/api/users/:guest
+
+Gets the guest user. Generating one if needed.
 
 ### roles
 
@@ -170,21 +176,4 @@ Lists brief info about all metadata blocks registered in the system.
 
 Return data about the block whose `idtf` is passed. `idtf` can either be the block's id, or its name.
 
-### Admin (`/s/XXX`)
-This is a "secure" part of the api, dealing with setup. Future releases will only allow accessing this from a whilelisted IP address, or localhost.
-
-	GET http://{{SERVER}}/api/s/settings
-
-List all settings.
-
-	GET http://{{SERVER}}/api/s/settings/{{name}}
-
-Get the setting under `name`.
-
-	PUT http://{{SERVER}}/api/s/settings/{{name}}/{{content}}
-
-Set `name` to `content`. Note that `content` is assumed to be url-encoded.
-
-	DELETE http://{{SERVER}}/api/s/settings/{{name}}
-
-Delete the setting under `name`.
+	

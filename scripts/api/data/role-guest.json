@@ -3,6 +3,6 @@
   "name": "What guests can do",
   "description": "Guests can browse",
   "permissions": [
-    "Discover"
+    "Access"
   ]
 }

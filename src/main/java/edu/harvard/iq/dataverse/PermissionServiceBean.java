@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.EnumSet;
 import java.util.Map;
@@ -34,7 +31,7 @@ public class PermissionServiceBean {
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
 
     @EJB
-    BuiltinUserServiceBean userService;
+    DataverseUserServiceBean userService;
 
     @EJB
     DataverseRoleServiceBean roleService;
@@ -47,15 +44,15 @@ public class PermissionServiceBean {
 
     public class PermissionQuery {
 
-        final User user;
+        final DataverseUser user;
         final DvObject subject;
 
-        public PermissionQuery(User user, DvObject subject) {
+        public PermissionQuery(DataverseUser user, DvObject subject) {
             this.user = user;
             this.subject = subject;
         }
 
-        public PermissionQuery user(User anotherUser) {
+        public PermissionQuery user(DataverseUser anotherUser) {
             return new PermissionQuery(anotherUser, subject);
         }
 
@@ -98,7 +95,7 @@ public class PermissionServiceBean {
                 .setParameter("definitionPointId", d.getId()).getResultList();
     }
 
-    public Set<Permission> permissionsFor(User u, DvObject d) {
+    public Set<Permission> permissionsFor(DataverseUser u, DvObject d) {
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
         for (RoleAssignment asmnt : roleService.assignmentsFor(u, d)) {
             retVal.addAll(asmnt.getRole().permissions());
@@ -106,13 +103,25 @@ public class PermissionServiceBean {
 
         // Every user can access released DvObjects
         if (d.isReleased()) {
-            retVal.add(Permission.Discover);
+            retVal.add(Permission.Access);
+        }
+        
+		// special case - All registered users can add to the root dv (no owner)
+        // or if alias ends in "_open"
+        if (d instanceof Dataverse) {
+            Dataverse dv = (Dataverse) d;
+            if ((dv.getOwner() == null || dv.getAlias().endsWith("_open")) && (!u.isGuest())) {
+                // TODO when groups arrive, this has to go.
+                retVal.add(Permission.UndoableEdit);
+                retVal.add(Permission.AddDataset);
+                retVal.add(Permission.AddDataverse);
+            }
         }
 
         return retVal;
     }
 
-    public Set<RoleAssignment> assignmentsFor(User u, DvObject d) {
+    public Set<RoleAssignment> assignmentsFor(DataverseUser u, DvObject d) {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
             assignments.addAll(roleService.directRoleAssignments(u, d));
@@ -135,7 +144,7 @@ public class PermissionServiceBean {
      * @param dvo
      * @return
      */
-    public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {
+    public boolean isUserAllowedOn(DataverseUser u, Class<? extends Command> commandClass, DvObject dvo) {
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
         if (required.isEmpty() || required.get("") == null) {
             logger.info("IsUserAllowedOn: empty-true");
@@ -147,10 +156,10 @@ public class PermissionServiceBean {
         }
     }
 
-    public PermissionQuery userOn(User u, DvObject d) {
+    public PermissionQuery userOn(DataverseUser u, DvObject d) {
         if (u == null) {
             // get guest user for dataverse d
-            u = GuestUser.get();
+            u = userService.findByUserName("GabbiGuest");
         }
         return new PermissionQuery(u, d);
     }

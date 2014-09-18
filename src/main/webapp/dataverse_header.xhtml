@@ -65,23 +65,24 @@
                     <li>
                             <p:commandLink value="Feedback" onclick="feedbackForm.show()"/>
                     </li>
-                    <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
+                    <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
-                            <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
-                                          value="#{dataverseHeaderFragment.signupUrl}">
+                            <h:outputLink value="/dataverseuser.xhtml?editMode=CREATE">
                                 Sign Up
                             </h:outputLink>
                         </li>
+                    </ui:fragment>
+                    <ui:fragment rendered="#{dataverseSession.user.guest}">
                         <li>
                             <h:outputLink value="/loginpage.xhtml">
                                 Log In
                             </h:outputLink>
                         </li>
                     </ui:fragment>
-                    <ui:fragment rendered="#{dataverseSession.user.authenticated}">
+                    <ui:fragment rendered="#{!dataverseSession.user.guest}">
                         <li class="dropdown accountName">
                             <a value="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <h:outputText value="#{dataverseSession.user.displayInfo.title}"/>
+                                <h:outputText value="#{dataverseSession.user.firstName} #{dataverseSession.user.lastName}"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                 <b class="caret"></b>
                             </a>

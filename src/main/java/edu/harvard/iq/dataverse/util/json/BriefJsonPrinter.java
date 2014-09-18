@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import javax.json.JsonObjectBuilder;
@@ -14,7 +14,7 @@ import javax.json.JsonObjectBuilder;
  */
 public class BriefJsonPrinter {
 	
-	public JsonObjectBuilder json( BuiltinUser usr ) {
+	public JsonObjectBuilder json( DataverseUser usr ) {
 		return ( usr==null ) 
 				? null
 				: jsonObjectBuilder().add("id", usr.getId())

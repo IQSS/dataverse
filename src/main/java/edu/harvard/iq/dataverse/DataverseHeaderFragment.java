@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
@@ -25,9 +24,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-    @EJB
-    SettingsServiceBean settingsService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -79,17 +75,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public String logout() {
         dataverseSession.setUser(null);
         return "/dataverse.xhtml?faces-redirect=true";
-    }
-
-    public boolean isSignupAllowed() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
-    }
-
-    public String getSignupUrl() {
-        String nonNullDefaultIfKeyNotFound = "";
-        String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
-        return signUpUrl;
     }
 
 }

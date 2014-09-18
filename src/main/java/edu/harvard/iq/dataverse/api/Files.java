@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.util.List;
@@ -40,7 +40,7 @@ public class Files extends AbstractApiBean {
         newListOfFiles.add(dataFile);
         dataset.setFiles(newListOfFiles);
         try {
-            User u = builtinUserSvc.findByIdentifier(apiKey);
+            DataverseUser u = userSvc.findByUserName(apiKey);
             if (u == null) {
                 return error("Invalid apikey '" + apiKey + "'");
             }

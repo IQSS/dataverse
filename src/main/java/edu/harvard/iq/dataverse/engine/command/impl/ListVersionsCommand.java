@@ -8,12 +8,13 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.engine.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,12 +22,12 @@ import java.util.List;
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.Discover )
+@RequiredPermissions( Permission.Access )
 public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
     
     private final Dataset ds;
     
-	public ListVersionsCommand(User aUser, Dataset aDataset) {
+	public ListVersionsCommand(DataverseUser aUser, Dataset aDataset) {
 		super(aUser, aDataset);
 		ds = aDataset;
 	}

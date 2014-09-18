@@ -7,7 +7,7 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.DataverseUser;
 import java.sql.Timestamp;
 import java.util.Date;
 import javax.ejb.embeddable.EJBContainer;
@@ -48,7 +48,7 @@ public class WorldMapTokenTest {
         token = new WorldMapToken();
         token.setApplication(tat);
         token.setDatafile(new DataFile());
-        token.setDataverseUser(new BuiltinUser());
+        token.setDataverseUser(new DataverseUser());
         token.refreshToken();
         token.setToken();        
         return token;

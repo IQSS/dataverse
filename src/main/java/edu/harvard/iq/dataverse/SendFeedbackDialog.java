@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -51,11 +50,11 @@ public class SendFeedbackDialog {
     }
     
     public boolean isLoggedIn() {
-        return dataverseSession.getUser() != GuestUser.get();
+        return !dataverseSession.getUser().isGuest();
     }
     
     public String loggedInUserEmail() {
-        return dataverseSession.getUser().getDisplayInfo().getEmailAddress();
+        return dataverseSession.getUser().getEmail();
     }
     
     

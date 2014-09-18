@@ -205,7 +205,7 @@
 
                         <div id="actionButtonBlock" class="clearfix" style="margin-bottom:1em;">
                             <!-- Edit Button -->
-                            <ui:fragment rendered="#{dataverseSession.user.authenticated and
+                            <ui:fragment rendered="#{!dataverseSession.user.guest and
                                                      permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('UpdateDataverseCommand')}">
                                 <div class="pull-right" style="margin-left:1em;">
                                     <div class="btn-group">
@@ -270,7 +270,7 @@
                                 </div>
                             </ui:fragment>
                             <!-- Release Button -->
-                            <ui:fragment rendered="#{dataverseSession.user.authenticated and
+                            <ui:fragment rendered="#{!dataverseSession.user.guest and
                                                      permissionServiceBean.on(DataversePage.dataverse).canIssueCommand('PublishDataverseCommand')}">
                                 <div style="float:right; margin-left:1em;">
                                     <ui:fragment rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">

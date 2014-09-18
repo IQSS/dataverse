@@ -21,4 +21,4 @@
 #
 # FIXME dataset01-create-new.json is using hard-coded protocol and authority values from
 # DatasetPage. Related ticket: https://github.com/IQSS/dataverse/issues/757
-curl -s -X POST -H "Content-type:application/json" -d @scripts/search/data/dataset01-create-new.json http://localhost:8080/api/dvs/11/datasets/?key=$PETEKEY
+curl -s -X POST -H "Content-type:application/json" -d @scripts/search/data/dataset01-create-new.json http://localhost:8080/api/dvs/11/datasets/?key=pete

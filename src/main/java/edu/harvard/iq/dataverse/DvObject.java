@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import java.sql.Timestamp;
 import java.util.Objects;
 import javax.persistence.*;
@@ -48,12 +47,13 @@ public abstract class DvObject implements java.io.Serializable {
 
     private Timestamp publicationDate;
 
-    private String releaseUserIdtf;
+    @ManyToOne
+    private DataverseUser releaseUser;
     
     private Timestamp createDate;
 
     @ManyToOne
-    private BuiltinUser creator;
+    private DataverseUser creator;
 
     public interface Visitor<T> {
         public T visit(Dataverse dv);
@@ -92,12 +92,12 @@ public abstract class DvObject implements java.io.Serializable {
         this.publicationDate = publicationDate;
     }
 
-    public String getReleaseUserIdentifier() {
-        return releaseUserIdtf;
+    public DataverseUser getReleaseUser() {
+        return releaseUser;
     }
 
-    public void setReleaseUserIdentifier(String releaseUserIdtf) {
-        this.releaseUserIdtf = releaseUserIdtf;
+    public void setReleaseUser(DataverseUser releaseUser) {
+        this.releaseUser = releaseUser;
     }
 
     public boolean isReleased() {
@@ -112,11 +112,11 @@ public abstract class DvObject implements java.io.Serializable {
         this.createDate = createDate;
     }
 
-    public BuiltinUser getCreator() {
+    public DataverseUser getCreator() {
         return creator;
     }
 
-    public void setCreator(BuiltinUser creator) {
+    public void setCreator(DataverseUser creator) {
         this.creator = creator;
     }
     

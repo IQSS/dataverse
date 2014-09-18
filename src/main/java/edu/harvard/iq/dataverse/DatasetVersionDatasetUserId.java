@@ -1,19 +1,25 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 
 /**
- * Id Class for {@link DatasetVersionUser}, representing a composite key.
+ *
  * @author skraffmiller
  */
 
 public class DatasetVersionDatasetUserId implements Serializable {
 
-    private String userIdentifier;    
+    private long dataverseuserid;    
     private long datasetversionid;
 
     @Override
     public int hashCode() {
-        return (int) (userIdentifier.hashCode() ^ datasetversionid);
+        return (int) (dataverseuserid + datasetversionid);
     }
 
     @Override
@@ -23,27 +29,27 @@ public class DatasetVersionDatasetUserId implements Serializable {
             return false;
         }
         DatasetVersionDatasetUserId other = (DatasetVersionDatasetUserId) object;
-        return (this.userIdentifier.equals(other.userIdentifier) && this.datasetversionid == other.datasetversionid ); 
+        return (this.dataverseuserid == other.dataverseuserid && this.datasetversionid == other.datasetversionid ); 
     }
 
     @Override
     public String toString() {
-        return "DatasetVersionDatasetUserId{" + "userIdentifier=" + userIdentifier + ", datasetversionid=" + datasetversionid + '}';
+        return "edu.harvard.iq.dataverse.DatasetDataverseUserId[ id=" + (dataverseuserid + datasetversionid) + " ]";
     }
 
-    public String getUserIdentifier() {
-        return userIdentifier;
+    public long getDataverseUserId() {
+        return dataverseuserid;
     }
 
-    public void setUserIdentifier(String userIdentifier) {
-        this.userIdentifier = userIdentifier;
+    public void setDataverseUserId(long dataverseUserId) {
+        this.dataverseuserid = dataverseUserId;
     }
-
-    public long getDatasetversionid() {
+    
+    public long getDatavsetVersionId() {
         return datasetversionid;
     }
 
-    public void setDatasetversionid(long datasetversionid) {
+    public void setDatasetVersionId(long datasetversionid) {
         this.datasetversionid = datasetversionid;
     }
     
