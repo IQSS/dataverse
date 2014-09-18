@@ -5,7 +5,7 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui">
 
-    <!-- input text start --><a id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"></a>
+    <!-- input text start --><span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"></span>
     <p:inputText value="#{dsfv.value}" id="inputText" 
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary        
