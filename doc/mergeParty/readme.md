@@ -59,7 +59,7 @@ Testing for guest-ness of the user has changed as well. Before, when we had a du
 <ui:fragment rendered="#{dataverseSession.user.guest}">
 ```
 
-Now, we can query the user object about its authentication state. So the code becomes:
+Now, we can query the user object about it's authentication state. So te code becomes:
 
 ```xml
 <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
@@ -68,28 +68,7 @@ Note that before we were asking `isGuest` and now we ask `isAuthenticated`, so t
 
 ### Tools
 
-NetBeans offers some tools to help investigating the history of a file. 
-
-### Show annotations (a.k.a git blame, svn praise)
-Make NetBeans show the latest user to have touched each line, and the commit id.
-Select this:
-![how to show annotations](images/show-annotations-1.png)
-And get this:
-![annotations shown](images/show-annotations-2.png)
-
-### File history tab
-Allows you to see the file history, and revert changes as needed:
-![Who did what and why](images/history.png)
-
-### Line number gutter
-The gutter with the line numbers shows which lines where changed. If you click a changes line, a small contextual menu appears and allows you to revert or diff that line.
-
-Click this rectangle:
-![Click the rectangle](images/gutter-1.png "click this")
-
-To get this menu:
-![To get this menu](images/gutter-2.png)
-
+`git ls-files --unmerged`: show which files have not been merged
 
 ## Other Added Things
 
