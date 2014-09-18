@@ -258,7 +258,6 @@ public class BuiltinUserPage implements java.io.Serializable {
             }
         }
         builtinUser = builtinUserService.save(builtinUser);
-        authSvc.updateAuthenticatedUser(currentUser, builtinUser.createDisplayInfo());
 
         if (editMode == EditMode.CREATE) {
             AuthenticatedUser au = authSvc.createAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName(), builtinUser.createDisplayInfo());
@@ -267,10 +266,11 @@ public class BuiltinUserPage implements java.io.Serializable {
                                                      new Timestamp(new Date().getTime()), 
                                                      UserNotification.Type.CREATEACC, null);
             return "/dataverse.xhtml?faces-redirect=true;";
+        } else {
+            authSvc.updateAuthenticatedUser(currentUser, builtinUser.createDisplayInfo());
+            editMode = null;
+            return null;            
         }
-
-        editMode = null;
-        return null;
     }
 
     public String cancel() {
