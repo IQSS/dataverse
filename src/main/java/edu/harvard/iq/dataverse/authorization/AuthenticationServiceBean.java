@@ -194,8 +194,9 @@ public class AuthenticationServiceBean {
         }
         auus = save( auus );
         // TODO should unlock table authenticated users for write here
-        
-        em.persist( new AuthenticatedUserLookup(authPrvUserPersistentId, authenticationProviderId, auus));
+        AuthenticatedUserLookup auusLookup = new AuthenticatedUserLookup(authPrvUserPersistentId, authenticationProviderId, auus);
+        em.persist( auusLookup );
+        auus.setAuthenticatedUserLookup(auusLookup);
         
         return auus;
     }
