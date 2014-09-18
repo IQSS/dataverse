@@ -10,7 +10,7 @@ public class IpAddress {
     public static IpAddress valueOf( String s ) {
         String[] comps = s.split("\\.");
         if ( comps.length != 4 ) {
-            throw new IllegalArgumentException("IpAddress string expected to be in xxx.xxx.xxx.xxx format");
+            throw new IllegalArgumentException("IpAddress string expected to be in xxx.xxx.xxx.xxx format (only 4 byte ipv4 addresses are supported)");
         }
         short[] arr = new short[4];
         for ( int i=0; i<4; i++ ) {
@@ -33,6 +33,19 @@ public class IpAddress {
         this( new short[]{(short)a,(short)b,(short)c,(short)d} );
     }
 
+    // Adding hooks for IPv6 support; both IPv4 and IPv6 should be 
+    // supported; with the boolean methods below provided for identifying
+    // which kind it is. 
+    
+    public boolean isIPv4() {
+        // hard-coded for now. 
+        return true;
+    }
+    
+    public boolean isIPv6() {
+        return false; 
+    }
+    
     public short[] getAddress() {
         return address;
     }
