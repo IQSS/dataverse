@@ -112,10 +112,17 @@ public class PermissionServiceBean {
         
         if (d instanceof Dataverse) {
             Dataverse dv = (Dataverse) d;
-            if ((dv.getOwner() == null || dv.getAlias().endsWith("_open")) && (u.isAuthenticated())) {
-                retVal.add(Permission.UndoableEdit);
-                retVal.add(Permission.AddDataset);
-                retVal.add(Permission.AddDataverse);
+            if (u.isAuthenticated()) {
+                if (dv.getOwner() == null) {
+                    retVal.add(Permission.UndoableEdit);
+                    retVal.add(Permission.AddDataverse);
+                }
+
+                if (dv.getAlias().endsWith("_open")) {
+                    retVal.add(Permission.UndoableEdit);
+                    retVal.add(Permission.AddDataset);
+                    retVal.add(Permission.AddDataverse);
+                }
             }
         }
         
