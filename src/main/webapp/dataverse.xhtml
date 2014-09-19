@@ -10,10 +10,11 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? 'New' : DataversePage.dataverse.name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? dataverseBundle.new_PageTitle : DataversePage.dataverse.name} #{dataverseBundle._dataversePageTitle}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DataversePage.editMode}"/>
             <ui:define name="body">
+                <f:loadBundle basename="DataverseBundle" var="dataverseBundle"/>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
@@ -41,7 +42,7 @@
 
                 <h:form id="dataverseForm">
                     <p:focus context="dataverseForm"/>
-
+                    
                     <!-- Name Panel -->
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="2">
@@ -52,19 +53,19 @@
                                             <p:inputText id="name" styleClass="form-control" style="margin-right:.5em;" value="#{DataversePage.dataverse.name}"/>
                                         </div>
                                         <label class="control-label" style="padding-right:1em;" for="name">
-                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The project, department, university, or professor this Dataverse will contain data for.">
-                                                Dataverse <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.dataverseTitle}">
+                                                #{dataverseBundle.dataverseText} <span class="glyphicon glyphicon-asterisk text-danger" title="#{dataverseBundle.requiredFieldTitle}"></span>
                                             </a>
                                         </label>
-                                        <p:watermark for="name" value="Enter name..."/>
+                                        <p:watermark for="name" value="#{dataverseBundle.enterNameTip}"/>
                                     </div>
                                 </ui:fragment>
                                 <p:message for="name"/>
                             </p:panelGrid>
                             <p:panelGrid columns="2" rendered="#{DataversePage.ownerId != null}">
                                 <label class="control-label" style="padding-right:1em;" for="hostDataverse">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">
-                                        Host Dataverse
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.hostDataverseTitle}">
+                                        #{dataverseBundle.hostDataverseText}
                                     </a>
                                 </label>
                                 <h:outputText value="#{ DataversePage.dataverse.getOwner().name }" />
@@ -84,8 +85,8 @@
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Short name used for the URL of this Dataverse.">
-                                        Alias <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.aliasTitle}">
+                                        #{dataverseBundle.aliasText} <span class="glyphicon glyphicon-asterisk text-danger" title="#{dataverseBundle.requiredFieldTitle}"></span>
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -95,8 +96,8 @@
                                     </p:panelGrid>
                                 </div>
                                 <label class="col-sm-3 control-label" for="contactEmail" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The e-mail address(es) of the contact(s) for the Dataverse.">
-                                        E-mail <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.emailTitle}">
+                                        #{dataverseBundle.emailText} <span class="glyphicon glyphicon-asterisk text-danger" title="#{dataverseBundle.requiredFieldTitle}"></span>
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -106,8 +107,8 @@
                                     </p:panelGrid>
                                 </div>
                                 <label class="col-sm-3 control-label" for="affiliation" style="white-space:nowrap;">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The organization with which this Dataverse is affiliated.">
-                                        Affiliation
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.affiliationTitle}">
+                                        #{dataverseBundle.affiliationText}
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -118,20 +119,20 @@
                                 </div>
 
                                 <label class="col-sm-3 control-label" for="dataverseCategory">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The type that most closely reflects this Dataverse.">
-                                        Category <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.categoryOriginalTitle}">
+                                        #{dataverseBundle.categoryText} <span class="glyphicon glyphicon-asterisk text-danger" title="#{dataverseBundle.requiredFieldTitle}"></span>
                                     </a>
                                 </label>  
                                 <div class="col-sm-9">
                                     <p:panelGrid columns="2">
                                         <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}">
-                                            <f:selectItem id="dvSelect" itemLabel="Select one..." itemValue="" />
-                                            <f:selectItem id="dvResearch" itemLabel="Researchers" itemValue="RESEARCHERS" />
-                                            <f:selectItem id="dvResearchProj" itemLabel="Research Projects" itemValue="RESEARCH_PROJECTS" />
-                                            <f:selectItem id="dvJournals" itemLabel="Journals" itemValue="JOURNALS" />
-                                            <f:selectItem id="dvOrgInst" itemLabel="Organizations &amp; Institutions" itemValue="ORGANIZATIONS_INSTITUTIONS" />
-                                            <f:selectItem id="dvTeaching" itemLabel="Teaching Courses" itemValue="TEACHING_COURSES" />
-                                            <f:selectItem id="dvUncategorized" itemLabel="Uncategorized" itemValue="UNCATEGORIZED" />
+                                            <f:selectItem id="dvSelect" itemLabel="#{dataverseBUndle.selectOneItem}" itemValue="" />
+                                            <f:selectItem id="dvResearch" itemLabel="#{dataverseBundle.researchersItem}" itemValue="RESEARCHERS" />
+                                            <f:selectItem id="dvResearchProj" itemLabel="#{dataverseBundle.researchProjectsItem}" itemValue="RESEARCH_PROJECTS" />
+                                            <f:selectItem id="dvJournals" itemLabel="#{dataverseBundle.journalsItem}" itemValue="JOURNALS" />
+                                            <f:selectItem id="dvOrgInst" itemLabel="#{dataverseBundle.organizationsAndInstitutionsItem2}" itemValue="ORGANIZATIONS_INSTITUTIONS" />
+                                            <f:selectItem id="dvTeaching" itemLabel="#{dataverseBundle.teachingCoursesItem}" itemValue="TEACHING_COURSES" />
+                                            <f:selectItem id="dvUncategorized" itemLabel="#{dataverseBundle.uncategorizedItem}" itemValue="UNCATEGORIZED" />
                                         </h:selectOneMenu>
                                         <p:message for="dataverseCategory"/>
                                     </p:panelGrid>
@@ -139,8 +140,8 @@
                             </div>
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="description">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A summary describing the purpose, nature, or scope of this Dataverse.">
-                                        Description
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dataverseBundle.descriptionTitle}">
+                                        #{dataverseBundle.descriptionText}
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -148,7 +149,7 @@
                                                      rows="6" cols="50"
                                                      autoResize="false">
                                     </p:inputTextarea>
-                                    <div><span id="chars"/> characters remaining</div>
+                                   <div><span id="chars"/> #{dataverseBundle.charactersRemainingText}</div>
                                 </div>
                                 <div class="col-sm-2 control-label">
                                     <p:message for="description"/>
@@ -160,11 +161,11 @@
                     <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
                         <div class="row form-horizontal">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label" for="mdbSelect">Metadata Elements</label>
+                                <label class="col-sm-3 control-label" for="mdbSelect">#{dataverseBundle.metadataElementsText}</label>
                                 <div class="col-sm-9">
-                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the sets of Metadata Elements for datasets in this Dataverse.</p>
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> #{dataverseBundle.chooseSetsForDatasetsTip}</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
+                                        <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="#{dataverseBundle.metadataElementsFromHostDataverseLabel}">
                                             <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
@@ -172,7 +173,7 @@
                                     <p:selectManyCheckbox id="mdbSelect" styleClass="metadata-blocks-select" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
                                                           widgetVar="metadataBlocks" layout="pageDirection">
                                         <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb"
-                                                       itemLabel="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}"
+                                                       itemLabel="#{mdb.displayName}#{mdb.required ? dataverserBundle.requiredText : dataverseBundle.examplesText.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(dataverseBundle.rightParenthesis)}" itemValue="#{mdb}"
                                                        itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
                                     </p:selectManyCheckbox>
                                 </div>
@@ -183,11 +184,11 @@
                     <p:panel id="editFacets" styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}" widgetVar="editFacets">
                         <div class="row form-horizontal">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
+                                <label class="col-sm-3 control-label" for="facetPickListCreate">#{dataverseBundle.selectFacetsText}</label>
                                 <div class="col-sm-9">
-                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the search result facets to display for this Dataverse.</p>
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> #{dataverseBundle.chooseResultFacetsTip}</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
-                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
+                                        <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="#{dataverseBundle.facetsFromHostDataverseText}">
                                             <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
@@ -210,7 +211,7 @@
                                 <div class="pull-right" style="margin-left:1em;">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-pencil"/> Edit Dataverse <span class="caret"></span>
+                                            <span class="glyphicon glyphicon-pencil"/> #{dataverseBundle.editDataverseButton} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right text-left" role="menu">
                                             <li>
@@ -219,7 +220,7 @@
                                                         <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
                                                     </div>
                                                     <div style="float:left; width:300px;">
-                                                        <div style="font-weight:bold;">#{DataversePage.dataverse.name} Dataverse <h:outputText value=" (#{DataversePage.dataverse.affiliation})" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
+                                                        <div style="font-weight:bold;">#{DataversePage.dataverse.name} #{dataverseBundle.dataverseText} <h:outputText value=" (#{DataversePage.dataverse.affiliation})" rendered="#{!empty DataversePage.dataverse.affiliation}"/></div>
                                                         <div style="color:#777;">#{DataversePage.dataverse.alias}</div>
                                                         <div style="color:#777;">#{DataversePage.dataverse.contactEmail}</div>
                                                     </div>
@@ -228,31 +229,31 @@
                                             <li class="divider" role="presentation"></li>
                                             <li>
                                                 <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form" oncomplete="javascript:post_edit_dv_general_info();characterCounter();initPopover();">
-                                                    <h:outputText value="General Information" />
+                                                    <h:outputText value="#{dataverseBundle.generalInformationLink}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
                                                 <p:commandLink id="themeWidgetsOpts" onclick="themeAndWidgetsForm.show()">                                                          
-                                                    <h:outputText value="Theme + Widgets" />
+                                                    <h:outputText value="#{dataverseBundle.themeAndWidgetsText}" />
                                                 </p:commandLink>
                                             </li>
                                             <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                                                 <li>
                                                     <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">                                                          
-                                                        <h:outputText value="Browsing Options" />
+                                                        <h:outputText value="#{dataverseBundle.browsingOptionsLink}" />
                                                     </p:commandLink>
                                                 </li>
                                             </ui:fragment>
                                             <li>
                                                 <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
-                                                    <h:outputText value="Roles + Permissions" />
+                                                    <h:outputText value="#{dataverseBundle.rolesAndPermissionsLink}" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                     <f:param name="objectType" value="USERS" />
                                                 </h:link>
                                             </li>
                                             <li>
                                                 <h:link id="manageTemplates" styleClass="ui-commandlink ui-widget" outcome="manage-templates">
-                                                    <h:outputText value="Dataset Templates" />
+                                                    <h:outputText value="#{dataverseBundle.datasetTemplatesText}" />
                                                     <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
                                                 </h:link>
                                             </li>
@@ -261,7 +262,7 @@
                                                 <li class="divider"></li>
                                                 <li>
                                                     <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">                                                          
-                                                        <h:outputText value="Delete Dataverse" />
+                                                        <h:outputText value="#{dataverseBundle.deleteDataverseLink}" />
                                                     </p:commandLink>
                                                 </li>
                                             </ui:fragment>
@@ -275,12 +276,12 @@
                                 <div style="float:right; margin-left:1em;">
                                     <ui:fragment rendered="#{!DataversePage.dataverse.released and (empty DataversePage.dataverse.owner or DataversePage.dataverse.owner.released)}">
                                         <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataverse
+                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{dataverseBundle.publishDataverseText}
                                         </button>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!DataversePage.dataverse.released and (!empty DataversePage.dataverse.owner and !DataversePage.dataverse.owner.released)}">
                                         <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataverse
+                                            <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{dataverseBundle.publishDataverseText}
                                         </button>
                                     </ui:fragment>
                                 </div>
@@ -288,11 +289,11 @@
                             <ui:fragment rendered="true">
                                 <div style="float:right;">
                                     <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
-                                        <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataverse Contact
+                                        <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> #{dataverseBundle.emailContactText}
                                     </button>
                                 </div>
                             </ui:fragment>
-                            <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataverse contacts. Look for this feature in Dataverse 4.0!" header="Email Dataverse Contact" widgetVar="contact_confirmation">                                           
+                            <p:confirmDialog message="#{dataverseBundle.cannotEmailMsg}" header="#{dataverseBundle.emailContactText}" widgetVar="contact_confirmation">                                           
                             </p:confirmDialog>                                                                
                         </div>
 
@@ -308,34 +309,34 @@
                                         <div id="featuredDataversesBlock" style="overflow: hidden; padding-top:.5em; border-top:1px solid #ddd;">
                                             <div class="clearfix"><strong>Featured Dataverses</strong></div>
                                             <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
-                                                <a class="btn prev1" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                                <a class="btn prev1" title="#{dataverseBundle.previousTitle}"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
                                             </div>
                                             <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
                                                 <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                                     <div class="item" style="min-height:80px;">
                                                         <ui:fragment rendered="#{empty dv.logo}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/resources/images/icon_dataverse.png" style="height:60px;" alt="#{dv.name} Dataverse"/>
+                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} #{dataverseBundle.dataverseText}" style="display:block;">
+                                                                <img src="/resources/images/icon_dataverse.png" style="height:60px;" alt="#{dv.name} #{dataverseBundle.dataverseText}"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'SQUARE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} #{dataverseBundle.dataverseText}" style="display:block;">
+                                                                <img src="/logos/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} #{dataverseBundle.dataverseText}"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'RECTANGLE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} #{dataverseBundle.dataverseText}" style="display:block;">
+                                                                <img src="/logos/#{dv.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} #{dataverseBundle.dataverseText}"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                            <h:outputText value="#{dv.name} Dataverse"/>
+                                                        <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} #{dataverseBundle.dataverseText}" style="display:block;">
+                                                           <h:outputText value="#{dv.name} #{dataverseBundle.dataverseText}"/>
                                                         </a>
                                                     </div>
                                                 </ui:repeat>
                                             </div>
                                             <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
-                                                <a class="btn next1" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                                <a class="btn next1" title="#{dataverseBundle.nextTitle}"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -343,17 +344,17 @@
                                         <div id="categoryDataversesBlock" style="overflow: hidden; border-top:1px solid #ddd; padding-top:.5em;">
                                             <div class="clearfix"><strong>Dataverses by Category</strong></div>
                                             <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
-                                                <a class="btn prev2" title="Previous"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
+                                                <a class="btn prev2" title="#{dataverseBundle.previousTitle}"><span class="glyphicon glyphicon-chevron-left" style="color:#999999;font-size:2em;"></span></a>
                                             </div>
                                             <div id="categoryDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
-                                                <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>Researchers</div>
-                                                <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>Research Projects</div>
-                                                <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>Journals</div>
-                                                <div class="item"><span class="glyphicon glyphicon-home" style="font-size:2.5em;"></span><br/>Organizations &amp; Institutions</div>
-                                                <div class="item"><span class="glyphicon glyphicon-tree-conifer" style="font-size:2.5em;"></span><br/>Teaching &amp; Courses</div>
+                                                <div class="item"><span class="glyphicon glyphicon-user" style="font-size:2.5em;"></span><br/>#{dataverseBundle.researchersItem}</div>
+                                                <div class="item"><span class="glyphicon glyphicon-film" style="font-size:2.5em;"></span><br/>#{dataverseBundle.researchProjectsItem}</div>
+                                                <div class="item"><span class="glyphicon glyphicon-book" style="font-size:2.5em;"></span><br/>#{dataverseBundle.journalsItem}</div>
+                                                <div class="item"><span class="glyphicon glyphicon-home" style="font-size:2.5em;"></span><br/>#{dataverseBundle.organizationsAndInstitutionsItem2}</div>
+                                                <div class="item"><span class="glyphicon glyphicon-tree-conifer" style="font-size:2.5em;"></span><br/>#{dataverseBundle.teachingCoursesItem2}</div>
                                             </div>
                                             <div class="customNavigation" style="width:4%;float:left;padding:28px 0;">
-                                                <a class="btn next2" title="Next"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
+                                                <a class="btn next2" title="#{dataverseBundle.nextTitle}"><span class="glyphicon glyphicon-chevron-right" style="color:#999999;font-size:2em;"></span></a>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -364,38 +365,38 @@
                     </ui:fragment>
 
                     <!-- Browsing Options Form -->
-                    <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
+                    <p:dialog header="#{dataverseBundle.browsingOptionsLink}" widgetVar="browseOptsForm" modal="true">
                         <div class="form-group">
                             <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}" 
                                                  itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
                         </div>
                         <div class="form-group">
                             <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}" 
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                                                     itemLabel="#{dataverseBundle.displayFeaturedText}"/>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputFile">Featured Dataverses</label>
-                            <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
-                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse" 
-                                        itemLabel="#{featureddataverse.name}" 
+                            <label for="exampleInputFile">#{dataverseBundle.featuredDataversesText}</label>
+                            <p class="help-block">#{dataverseBundle.selectedToFeatureText}</p>
+                            <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
+                                        itemLabel="#{featureddataverse.name}"
                                         itemValue="#{featureddataverse}" converter="dataverseConverter"
                                         showSourceFilter="true" showTargetFilter="true" />
                         </div>
-                        <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
-                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">Cancel</button>
+                        <h:commandButton type="submit" action="#{DataversePage.save()}" class="btn btn-success" value="#{dataverseBundle.saveChangesButton}"/>
+                        <button type="button" class="btn btn-default" onclick="browseOptsForm.hide()" value="Cancel">#{dataverseBundle.cancelText}</button>
                     </p:dialog>
                     <!-- Theme and Widgets Form -->
-                    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="themeWidgetsPopUp">
+                    <p:dialog header="#{dataverseBundle.themeAndWidgetsText}" widgetVar="themeAndWidgetsForm" modal="true" styleClass="themeWidgetsPopUp">
                         <p:tabView id="tabView" widgetVar="content">
                             <p:tab id="widgetsTab" title="Widgets">
                                 <div>
-                                    <p class="bg-info" style="padding: 15px;">Copy and paste this code into the HTML on your site.</p>
+                                    <p class="bg-info" style="padding: 15px;">#{dataverseBundle.pasteCodeIntoHtmlTip}</p>
                                 </div>
                                 <div>
                                     <h5>
-                                        Dataverse Search Box
+                                        #{dataverseBundle.dataverseSearchBoxText}
                                     </h5>
-                                    <span class="text-muted">Add a way for visitors on your website to be able to search Dataverse.</span>
+                                    <span class="text-muted">#{dataverseBundle.wayToSearchDataverseText}</span>
                                 </div>
                                 <div>
                                     <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;
@@ -403,128 +404,128 @@
                                 </div>
                                 <div>
                                     <h5>
-                                        Dataverse Listing
+                                        #{dataverseBundle.dataverseListingText}
                                     </h5>
-                                    <span class="text-muted">Add a way for visitors on your website to be able to view your dataverses and datasets, sort and page through them.</span>
+                                    <span class="text-muted">#{dataverseBundle.wayToViewDatasText}</span>
                                 </div>
                                 <div>
                                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{DataversePage.dataverse.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
                                     </textarea>
                                 </div>
                             </p:tab>
-                            <p:tab id="themeTab" title="Theme">
+                            <p:tab id="themeTab" title="#{dataverseBundle.themeText}">
                                 <!-- Dataverse Theme Panel -->
                                 <ui:remove>
                                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                                         <p:panelGrid columns="3">
-                                            <h:outputLabel value="Logo"/>
+                                            <h:outputLabel value="#{dataverseBundle.logoText}"/>
                                             <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
                                             <p:message for="logo"/>
 
-                                            <h:outputLabel value="Logo Format"/>
+                                            <h:outputLabel value="#{dataverseBundle.logoFormatText}"/>
                                             <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
-                                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
-                                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                                                <f:selectItem itemLabel="#{dataverseBundle.squareSelectItem}" itemValue="SQUARE"/>
+                                                <f:selectItem itemLabel="#{dataverseBundle.rectangleSelectItem}" itemValue="RECTANGLE"/>
                                             </p:selectOneRadio>
                                             <p:message for="logoFormat"/>
 
-                                            <h:outputLabel value="Logo Alignment"/>
+                                            <h:outputLabel value="#{dataverseBundle.logoAlignment}"/>
                                             <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
-                                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
-                                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
-                                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                                                <f:selectItem id="left" itemLabel="#{dataverseBundle.leftSelectItem}" itemValue="LEFT" />
+                                                <f:selectItem id="center" itemLabel="#{dataverseBundle.centerSelectItem}" itemValue="CENTER" />
+                                                <f:selectItem id="right" itemLabel="#{dataverseBundle.rightSelectItem}" itemValue="RIGHT" />
                                             </p:selectOneMenu>
                                             <p:message for="logoFormat"/>
 
-                                            <h:outputLabel value="Logo Background Color"/>
+                                            <h:outputLabel value="#{dataverseBundle.logoBackgroundColorText}"/>
                                             <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
                                             <p:message for="logoBackgroundColor"/>
 
-                                            <h:outputLabel value="Tagline"/>
+                                            <h:outputLabel value="#{dataverseBundle.taglineText}"/>
                                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
                                             <p:message for="tagline"/>
 
-                                            <h:outputLabel value="Link URL"/>
+                                            <h:outputLabel value="#{dataverseBundle.linkURLText}"/>
                                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
                                             <p:message for="linkUrl"/>
 
-                                            <h:outputLabel value="Link Text"/>
+                                            <h:outputLabel value="#{dataverseBundle.linkText}"/>
                                             <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
                                             <p:message for="linkText"/>
 
-                                            <h:outputLabel value="Link Color"/>
+                                            <h:outputLabel value="#{dataverseBundle.linkColorText}"/>
                                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
                                             <p:message for="linkColor"/>
 
-                                            <h:outputLabel value="Text Color"/>
+                                            <h:outputLabel value="#{dataverseBundle.textColorText}"/>
                                             <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
                                             <p:message for="textColor"/>
 
-                                            <h:outputLabel value="Background Color"/>
+                                            <h:outputLabel value="#{dataverseBundle.backgroundColorText}"/>
                                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
                                             <p:message for="backgroundColor"/>
                                         </p:panelGrid>
-                                        <h:commandButton type="submit" disabled="true" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
+                                        <h:commandButton type="submit" disabled="true" action="#{DataversePage.save()}" class="btn btn-success" value="#{dataverseBundle.saveChangesButton}"/>
                                     </ui:fragment>
                                 </ui:remove>
-                                <h:outputText value="Theme updates are not available at this time." />
+                                <h:outputText value="#{dataverseBundle.themeCannotUpdateTip}" />
                             </p:tab>
                         </p:tabView>
-                        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Done">Done</button>
+                        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Done">#{dataverseBundle.doneButton}</button>
                     </p:dialog>
 
                     <!-- Dialog Feedback Form -->
-                    <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
-                        <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
+                    <p:confirmDialog message="#{dataverseBundle.publishDataverseMsg}" header="#{dataverseBundle.publishDataverseText}" widgetVar="confirmation">
+                        <p:commandButton value="#{dataverseBundle.continueButton}" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="confirmation.hide();" type="button" />
+                        <p:commandButton value="#{dataverseBundle.cancelButton}" onclick="confirmation.hide();" type="button" />
                     </p:confirmDialog>
-                    <p:confirmDialog message="This dataverse may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
+                    <p:confirmDialog message="#{dataverseBundle.mayNotPublishMsg}" header="#{dataverseBundle.mayNotPublishText}" widgetVar="mayNotRelease">
                     </p:confirmDialog>
-                    <p:confirmDialog message="Are you sure you want to delete your dataverse? This action may not be 'Undone'." header="Delete Dataverse" widgetVar="deleteConfirmation">
-                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}">
+                    <p:confirmDialog message="#{dataverseBundle.deleteDataverseTip}" header="#{dataverseBundle.deleteDataverseLink}" widgetVar="deleteConfirmation">
+                        <p:commandButton value="#{dataverseBundle.continueButton}" onclick="deleteConfirmation.hide()" action="#{DataversePage.deleteDataverse}">
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide();" type="button" />
+                        <p:commandButton value="#{dataverseBundle.cancelButton}" onclick="deleteConfirmation.hide();" type="button" />
                     </p:confirmDialog>
 
                     <!-- Dataverse Theme Panel -->
                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
-                            <h:outputLabel value="Logo"/>
+                            <h:outputLabel value="#{dataverseBundle.logoText}"/>
                             <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
                             <p:message for="logo"/>
-                            <h:outputLabel value="Logo Format"/>
+                            <h:outputLabel value="#{dataverseBundle.logoFormatText}"/>
                             <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
-                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
-                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                                <f:selectItem itemLabel="#{dataverseBundle.squareSelectItem}" itemValue="SQUARE"/>
+                                <f:selectItem itemLabel="#{dataverseBundle.rectangleSelectItem}" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
-                            <h:outputLabel value="Logo Alignment"/>
+                            <h:outputLabel value="#{dataverseBundle.logoAlignment}"/>
                             <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
-                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
-                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
-                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                                <f:selectItem id="left" itemLabel="#{dataverseBundle.leftSelectItem}" itemValue="LEFT" />
+                                <f:selectItem id="center" itemLabel="#{dataverseBundle.centerSelectItem}" itemValue="CENTER" />
+                                <f:selectItem id="right" itemLabel="#{dataverseBundle.rightSelectItem}" itemValue="RIGHT" />
                             </p:selectOneMenu>
                             <p:message for="logoFormat"/>
-                            <h:outputLabel value="Logo Background Color"/>
+                            <h:outputLabel value="#{dataverseBundle.logoBackgroundColorText}"/>
                             <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
                             <p:message for="logoBackgroundColor"/>
-                            <h:outputLabel value="Tagline"/>
+                            <h:outputLabel value="#{dataverseBundle.taglineText}"/>
                             <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
                             <p:message for="tagline"/>
-                            <h:outputLabel value="Link URL"/>
+                            <h:outputLabel value="#{dataverseBundle.linkURLText}"/>
                             <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
                             <p:message for="linkUrl"/>
-                            <h:outputLabel value="Link Text"/>
+                            <h:outputLabel value="#{dataverseBundle.linkText}"/>
                             <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
                             <p:message for="linkText"/>
-                            <h:outputLabel value="Link Color"/>
+                            <h:outputLabel value="#{dataverseBundle.linkColorText}"/>
                             <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
                             <p:message for="linkColor"/>
-                            <h:outputLabel value="Text Color"/>
+                            <h:outputLabel value="#{dataverseBundle.textColorText}"/>
                             <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
                             <p:message for="textColor"/>
-                            <h:outputLabel value="Background Color"/>
+                            <h:outputLabel value="#{dataverseBundle.backgroundColorText}"/>
                             <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
                             <p:message for="backgroundColor"/>
                         </p:panelGrid>
@@ -532,9 +533,9 @@
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? 'Create Dataverse' : 'Save Changes'}" action="#{DataversePage.save}" update="@all"/>
-                        <p:commandButton id="cancel" value="Cancel" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
-                        <p:button value="Cancel" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                        <p:commandButton id="save" value="#{DataversePage.dataverse.id == null ? dataverseBundle.createDataverseButton : dataverseBundle.saveChangesButton}" action="#{DataversePage.save}" update="@all"/>
+                        <p:commandButton id="cancel" value="#{dataverseBundle.cancelText}" actionListener="#{DataversePage.cancel}" process="@this" update="@form" rendered="#{DataversePage.dataverse.id != null}" oncomplete="javascript:post_cancel_edit_dv()" />
+                        <p:button value="#{dataverseBundle.cancelText}" outcome="/dataverse.xhtml?id=#{DataversePage.ownerId}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
                     </p:panel>
                 </h:form>
 

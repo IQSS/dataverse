@@ -119,11 +119,11 @@
                                                                     <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                                         <div class="col-xs-3">
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
-                                                                                             title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
+                                                                                             title="#{datasetBundle.addRecordTitle}" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
                                                                                              actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}">
                                                                             </p:commandButton>
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
-                                                                                             title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
+                                                                                             title="#{datasetBundle.deleteRecordTitle}" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                              rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                                              actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}">
                                                                             </p:commandButton>
@@ -140,7 +140,7 @@
                                                                     <div class="ui-inputfield form-control select-scroll-block">
                                                                         <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                               layout="pageDirection">
-                                                                            <f:selectItem itemLabel="Select..." itemValue="" noSelectionOption="true"/>
+                                                                            <f:selectItem itemLabel="#{datasetBundle.selectLabel}" itemValue="" noSelectionOption="true"/>
                                                                             <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
                                                                         </p:selectManyCheckbox>
                                                                     </div>
@@ -182,7 +182,7 @@
                                                                         <div>
                                                                             <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" 
                                                                                              rendered="#{!subdsf.datasetFieldType.allowMultiples}">
-                                                                                <f:selectItem itemLabel="Select..." itemValue="" noSelectionOption="true"/>
+                                                                                <f:selectItem itemLabel="#{datasetBundle.selectLabel}" itemValue="" noSelectionOption="true"/>
                                                                                 <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
                                                                             </p:selectOneMenu>
                                                                             <ui:fragment rendered="#{subdsf.datasetFieldType.allowMultiples}">
@@ -206,11 +206,11 @@
                                                         <ui:fragment rendered="#{dsf.datasetFieldType.allowMultiples and !dsf.datasetFieldType.controlledVocabulary}">
                                                             <div class="col-sm-3">
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
-                                                                                 title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
+                                                                                 title="#{datasetBundle.addRecordTitle}" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
                                                                                  actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}">
                                                                 </p:commandButton>
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
-                                                                                 title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
+                                                                                 title="#{datasetBundle.deleteRecordTitle}" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                  rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                                  actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}">
                                                                 </p:commandButton>

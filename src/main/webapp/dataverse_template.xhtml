@@ -23,8 +23,9 @@
         <link type="text/css" rel="stylesheet" href="/resources/css/structure.css"/>
     </h:head>
 
-    <h:body>
-        <a href="#content" class="sr-only">Skip to main content</a>
+    <h:body>        
+        <f:loadBundle basename="TemplateBundle" var="templateBundle"/>                
+        <a href="#content" class="sr-only">#{templateBundle.skipToMainContentText}</a>
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
@@ -32,14 +33,14 @@
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
         </ui:include>
         <div class="container" id="content">
-            <ui:insert name="body">Default Body</ui:insert>
+            <ui:insert name="body">#{templateBundle.defaultBodyText}</ui:insert>
         </div>
         <div class="container clearfix" id="footer" style="margin-top:3em;">
             <div class="pull-left">
-                &#169; Copyright 1997-2014, President &#38; Fellows Harvard University. <!-- | <a href="#">Privacy</a> -->
+                #{templateBundle.copyrightText} <!-- | <a href="#">Privacy</a> -->
             </div>
             <div class="pull-right clearfix">
-                <div class="poweredbylogo pull-left"><span style="color:#808080;font-size:.85em;margin-right:.3em;">Powered by</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" /></div>
+                <div class="poweredbylogo pull-left"><span style="color:#808080;font-size:.85em;margin-right:.3em;">#{templateBundle.poweredByText}</span> <h:graphicImage value="/resources/images/dataverseproject_logo.jpg" /></div>
                 <div class="version pull-right" style="margin-top:24px;font-size:.85em;color:#808080;">v. #{dataverseServiceBean.applicationVersion}</div>
             </div>
         </div>

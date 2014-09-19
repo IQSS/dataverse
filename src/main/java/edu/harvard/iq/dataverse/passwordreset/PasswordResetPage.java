@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -16,6 +17,8 @@ import javax.inject.Named;
 public class PasswordResetPage {
 
     private static final Logger logger = Logger.getLogger(PasswordResetPage.class.getCanonicalName());
+    
+    ResourceBundle rBunlde=ResourceBundle.getBundle("PasswordResetBundle");
 
     @EJB
     PasswordResetServiceBean passwordResetService;
@@ -58,7 +61,7 @@ public class PasswordResetPage {
             if (passwordResetData != null) {
                 user = passwordResetData.getDataverseUser();
             } else {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Reset Link", "Your password reset link is not valid."));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, rBunlde.getString("invalidLinkSummary"), rBunlde.getString("invalidLinkDetail")));
             }
         }
     }
@@ -75,7 +78,7 @@ public class PasswordResetPage {
             } else {
                 logger.info("Couldn't find account using " + emailAddress);
             }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Password Reset Initiated", ""));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, rBunlde.getString("passwordResetInitiatedDetail"), ""));
         } catch (PasswordResetException ex) {
             /**
              * @todo do we really need a special exception for this??

@@ -11,12 +11,12 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="thisPageTitle" value="Advanced Search"/>
+            <ui:param name="thisPageTitle" value="#{advancedBundle.advancedSearchPageTitle}"/>
             <ui:param name="pageTitle" value="#{thisPageTitle}"/>
             <ui:param name="dataverse" value="#{AdvancedSearchPage.dataverse}"/>
             <ui:param name="ownerId" value="#{DataversePage.ownerId}"/>
             <ui:define name="body">
-
+                <f:loadBundle basename="AdvancedBundle" var="advancedBundle"/>
                 <f:metadata>
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
                 </f:metadata>
@@ -32,23 +32,23 @@
 
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#dataversesFieldList" class="panel-heading">
-                                <h:outputText value="Dataverses"/>
+                                <h:outputText value="#{advancedBundle.dataversesText}"/>
                             </div>
                             <div id="dataversesFieldList" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Name</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.nameText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldName" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldName}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Affiliation</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.affiliationText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldAffiliation" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldAffiliation}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Description</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.descriptionText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.dvFieldDescription}"/>
                                     </div>
@@ -60,7 +60,7 @@
                             <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#citationFieldList#{mdb.id}" class="panel-heading">
-                                        <h:outputText value="Datasets: #{mdb.displayName}"/>
+                                        <h:outputText value="#{advancedBundle.datasetsText} #{mdb.displayName}"/>
                                     </div>
                                     <div id="citationFieldList#{mdb.id}" class="collapse #{status.first?'in':''}" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                         <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
@@ -90,35 +90,35 @@
 
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#filesFieldList" class="panel-heading">
-                                <h:outputText value="Files"/>
+                                <h:outputText value="#{advancedBundke.filesText}"/>
                             </div>
                             <div id="filesFieldList" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Name</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.nameText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldName}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Description</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.descriptionText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldDescription" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldDescription}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">File Type</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.fileTypeText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldFiletype" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldFiletype}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Variable Name</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.variableNameText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldVariableName" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldVariableName}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">Variable Label</label>
+                                    <label class="col-sm-4 control-label">#{advancedBundle.variableLabelText}</label>
                                     <div class="col-sm-6">
                                         <p:inputText id="fileFieldVariableLabel" styleClass="form-control" value="#{AdvancedSearchPage.fileFieldVariableLabel}"/>
                                     </div>
@@ -127,7 +127,7 @@
                         </div>
 
                         <p:panel styleClass="panelLayoutButtonBlock">
-                            <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
+                            <p:commandButton value="#{advancedBundle.findButton}" action="#{AdvancedSearchPage.find()}"/>
                         </p:panel>
 
                     </h:form>

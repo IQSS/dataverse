@@ -10,4 +10,10 @@
             <renderer-class>edu.harvard.iq.dataverse.FileUploadRenderer</renderer-class>
         </renderer>
     </render-kit>
+    <application>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>zh_CN</supported-locale>
+        </locale-config>        
+    </application>
 </faces-config>

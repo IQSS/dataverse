@@ -9,12 +9,14 @@
     </h:head>
 
     <h:body>
-        <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="User"/>
+        <ui:composition template="/dataverse_template.xhtml">          
+            <f:loadBundle basename="DataverseUserBundle" var="dataverseUserBundle"/>                       
+            <ui:param name="pageTitle" value="#{dataverseUserBundle.userPageTitle}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:define name="body">
+                <f:loadBundle basename="DataverseUserBundle" var="dataverseUserBundle"/>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataverseUserPage.dataverseUser.id}"/>
                     <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
@@ -44,7 +46,7 @@
                             <div class="pull-right" style="padding:0 1em 1em 1em; margin:0 0 1em 1em;">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                        <span class="glyphicon glyphicon-pencil"/> Edit Account <span class="caret"></span>
+                                        <span class="glyphicon glyphicon-pencil"/> #{dataverseUserBundle.editAccountButton} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                         <li>
@@ -63,12 +65,12 @@
                                         <li class="divider" role="presentation"></li>
                                         <li>
                                             <p:commandLink id="editAccount" actionListener="#{DataverseUserPage.edit}" update="@all">
-                                                <h:outputText value="Account Information" />
+                                                <h:outputText value="#{dataverseUserBundle.accountInformationText}" />
                                             </p:commandLink>
                                         </li>
                                         <li>
                                             <p:commandLink id="changePassword" actionListener="#{DataverseUserPage.changePassword}" update="@all">
-                                                <h:outputText value="Password" />
+                                                <h:outputText value="#{dataverseUserBundle.passwdText}" />
                                             </p:commandLink>
                                         </li>
                                     </ul>
@@ -78,12 +80,12 @@
                     </ui:fragment>
 
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
-                        <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
+                        <h:outputText value="#{dataverseUserBundle.lostPasswdMsg}" style="color: green" />
                     </p:panel>
 
                     <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
-                        <p:tab id="somedata" title="Data Related To Me">
+                        <p:tab id="somedata" title="#{dataverseUserBundle.dataRelatedToMeTab}">
                             <!--  <ui:fragment>
                             <p:selectOneMenu value="#{DataverseUserPage.permissionType}">
                                 <f:selectItem id="writeAccess" itemLabel="Data I have write access to..." itemValue="writeAccess" />
@@ -109,30 +111,30 @@
                                    </p:menuButton>
                                </ui:fragment>  -->
                         </p:tab>
-                        <p:tab id="notifications" title="Notifications">
+                        <p:tab id="notifications" title="#{dataverseUserBundle.notificationsTab}">
                             <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                 <div style="border-bottom:1px solid #DDDDDD; padding:5px;" class="#{item.displayAsRead ? '' : 'bg-warning'}">
                                     <ui:fragment rendered="#{item.type == 'CREATEDV'}">
                                         <h:graphicImage value="/resources/images/icon_dataverse.png" alt="Dataverse" style="height:18px;margin-right:6px;" />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} Dataverse" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{item.objectId}" title="#{dataverseServiceBean.find(item.objectId).getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
-                                        <h:outputText value=", was created in " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} Dataverse" />
+                                        <h:outputText value="#{dataverseUserBundle.wasCreatedInText}" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{dataverseServiceBean.find(item.objectId).getOwner().id}" title="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{dataverseServiceBean.find(item.objectId).getOwner().getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
-                                        <h:outputText value=". Don't forget to publish it!" />
+                                        <h:outputText value="#{dataverseUserBundle.toPublishText}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'CREATEDS'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
                                         <h:outputLink value="/dataset.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.id}">
                                             <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getTitle()}" />
                                         </h:outputLink>
-                                        <h:outputText value=", was added to " />
-                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse">
-                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} Dataverse" />
+                                        <h:outputText value="#{dataverseUserBundle.wasAddedToText}" />
+                                        <h:outputLink value="/dataverse.xhtml?id=#{datasetVersionServiceBean.find(item.objectId).dataset.owner.id}" title="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{dataverseUserBundle.dataverseText}">
+                                            <h:outputText value="#{datasetVersionServiceBean.find(item.objectId).getDataset().getOwner().getName()} #{dataverseUserBundle.dataverseText}" />
                                         </h:outputLink>
-                                        <h:outputText value=". Don't forget to publish it!" />
+                                        <h:outputText value="#{dataverseUserBundle.toPublishText}" />
                                     </ui:fragment>
                                     <ui:fragment rendered="#{item.type == 'MAPLAYERUPDATED'}">
                                         <h:graphicImage value="/resources/images/icon_dataset.png" alt="Dataset" style="height:18px;margin-right:6px;" />
@@ -143,16 +145,16 @@
                                         <h:outputText value=" had WorldMap layer data added to it." />
                                     </ui:fragment>                                    
                                     <ui:fragment rendered="#{item.type == 'CREATEACC'}">
-                                        <h:outputText value="Welcome to Dataverse 4.0 Beta! Please take a look around, try everything out, and check out our " style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
+                                        <h:outputText value="#{dataverseUserBundle.welcomeToDataverseText}" style="padding:4px 0 4px 30px; background: url(/resources/images/icon_dataset.png) no-repeat 6px 50% / 20px;" />
                                         <h:outputLink value="https://groups.google.com/forum/#!forum/dataverse-community">
-                                            <h:outputText value="Google Group" style="color: blue" />
+                                            <h:outputText value="#{dataverseUserBundle.googleGroupText}" style="color: blue" />
                                         </h:outputLink>
-                                        <h:outputText value=" to leave feedback." />
+                                        <h:outputText value="#{dataverseUserBundle.toLeaveFeedbackText}" />
                                     </ui:fragment>
                                     <h:outputText value="#{item.sendDate}" style="color:#999999; margin-left:1em; font-size:.85em;"/>
                                     <!--<h:outputText value="Read " style="color: green" rendered="#{item.displayAsRead}" />
                                     <h:outputText value="Unread " style="color: red" rendered="#{!item.displayAsRead}" />-->
-                                    <h:commandLink action="#{DataverseUserPage.remove(item.id)}" title="Remove notification" styleClass="pull-right">
+                                    <h:commandLink action="#{DataverseUserPage.remove(item.id)}" title="#{dataverseUserBundle.removeNotificationText}" styleClass="pull-right">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </h:commandLink>
                                 </div>
@@ -161,16 +163,16 @@
                     </p:tabView>
 
                     <p:tabView id="tabView1" rendered="#{!empty DataverseUserPage.editMode}">
-                        <p:tab id="accountInfo" title="Account Information">
+                        <p:tab id="accountInfo" title="#{dataverseUserBundle.accountInformationText}">
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
                                 <div>
                                     <style type="text/css">
                                         .panelgridFormTable tr, .panelgridFormTable td {border:0;}
                                     </style>
                                     <p:panelGrid columns="2" styleClass="panelgridFormTable">
-                                        <p:outputLabel value="Username *" for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Username" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
-                                        <p:outputLabel value="Usuername/Email:  " rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.userNameText} *" for="userName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.userNameText}" for="userName" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.userNameText}/#{dataverseUserBundle.emailText}:  " rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode != 'CHANGE'}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.userName}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{!empty DataverseUserPage.editMode}">
@@ -181,34 +183,34 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <h:outputLabel value="Current Password *" for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <h:outputLabel value="#{dataverseUserBundle.currentPasswdText} *" for="currentPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CHANGE'}">
                                             <p:panelGrid columns="2">
-                                                <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="Current Password" value="#{DataverseUserPage.currentPassword}" />
+                                                <p:password id="currentPassword" validator="#{DataverseUserPage.validatePassword}" label="#{dataverseUserBundle.currentPasswdText}" value="#{DataverseUserPage.currentPassword}" />
                                                 <p:message for="currentPassword" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <h:outputLabel value="Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <h:outputLabel value="New Password *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <h:outputLabel value="#{dataverseUserBundle.passwdText} *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                                        <h:outputLabel value="#{dataverseUserBundle.newPasswdText} *" for="inputPassword" rendered="#{DataverseUserPage.editMode == 'CHANGE'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
                                             <p:panelGrid columns="2">
-                                                <p:password id="inputPassword" label="Password" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
+                                                <p:password id="inputPassword" label="#{dataverseUserBundle.passwdText}" match="retypePassword" value="#{DataverseUserPage.inputPassword}" />
                                                 <p:message for="inputPassword" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <h:outputLabel value="Retype Password *" for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <h:outputLabel value="#{dataverseUserBundle.retypePasswdText} *" for="retypePassword" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'CHANGE'}">
                                             <p:panelGrid columns="2">
-                                                <p:password id="retypePassword" label="Retype Password" value="#{DataverseUserPage.inputPassword}" />
+                                                <p:password id="retypePassword" label="#{dataverseUserBundle.retypePasswdText}" value="#{DataverseUserPage.inputPassword}" />
                                                 <p:message for="retypePassword" />
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="First Name *" for="firstName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="First Name" for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
-                                        <p:outputLabel value="Name" rendered="#{empty DataverseUserPage.editMode}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.firstNameText} *" for="firstName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.firstNameText}" for="firstName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.firstNameText}" rendered="#{empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{empty DataverseUserPage.editMode or DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.firstName} #{DataverseUserPage.dataverseUser.lastName}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -217,8 +219,8 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Last Name *" for="lastName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Last Name" for="lastName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.lastNameText} *" for="lastName" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.firstNameText}" for="lastName" rendered="#{DataverseUserPage.editMode == 'EDIT'}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                             <p:panelGrid columns="2">
                                                 <p:inputText id="lastName" value="#{DataverseUserPage.dataverseUser.lastName}" />
@@ -226,8 +228,8 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Email *" for="email" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
-                                        <p:outputLabel value="Email" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.emailText} *" for="email" rendered="#{DataverseUserPage.editMode == 'CREATE'}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.emailText}" for="email" rendered="#{DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.email}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -236,7 +238,7 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Affiliation" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.affiliationText}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.affiliation}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -245,7 +247,7 @@
                                             </p:panelGrid>
                                         </ui:fragment>
 
-                                        <p:outputLabel value="Position" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
+                                        <p:outputLabel value="#{dataverseUserBundle.positionText}" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}" />
                                         <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or empty DataverseUserPage.editMode}">
                                             <h:outputText value="#{DataverseUserPage.dataverseUser.position}" rendered="#{empty DataverseUserPage.editMode}" />
                                             <p:panelGrid columns="2" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
@@ -257,9 +259,9 @@
                                 </div>
                                 <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataverseUserPage.editMode}">
                                     <ui:fragment>
-                                        <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE'?'Create Account':'Save Changes'}" action="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
-                                        <p:commandButton id="submit" value="Submit" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
-                                        <p:commandButton id="cancel" value="Cancel" action="#{DataverseUserPage.cancel}" process="@this" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE' or DataverseUserPage.editMode == 'FORGOT'}">
+                                        <p:commandButton id="save" value="#{DataverseUserPage.editMode == 'CREATE'?dataverseUserBundle.createAccountButton:dataverseUserBundle.saveChangesButton}" action="#{DataverseUserPage.save}" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE'}" />
+                                        <p:commandButton id="submit" value="#{dataverseUserBundle.sumbitButton}" actionListener="#{DataverseUserPage.submit}" update="@all" rendered="#{DataverseUserPage.editMode == 'FORGOT'}" />
+                                        <p:commandButton id="cancel" value="#{dataverseUserBundle.cancelButton}" action="#{DataverseUserPage.cancel}" process="@this" update="@all" rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT' or DataverseUserPage.editMode == 'CHANGE' or DataverseUserPage.editMode == 'FORGOT'}">
                                             <p:resetInput target="@all" />
                                         </p:commandButton>
                                     </ui:fragment>

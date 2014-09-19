@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.hibernate.validator.constraints.NotBlank;
 import org.primefaces.event.TabChangeEvent;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -50,10 +51,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private DataverseUser dataverseUser;
     private EditMode editMode;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{enterPasswdMsg}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{enterPasswdMsg}")
     private String currentPassword;
     private Long dataverseId;
     private String permissionType;
@@ -61,6 +62,8 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<UserNotification> notificationsList;
     private int activeIndex;
     private String selectTab = "somedata";
+    
+    ResourceBundle rBundle=ResourceBundle.getBundle("DataverseUserBundle");
 
     public DataverseUser getDataverseUser() {
         if (dataverseUser == null) {
@@ -198,7 +201,7 @@ public class DataverseUserPage implements java.io.Serializable {
         }
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This Username is already taken.");
+            FacesMessage message = new FacesMessage(rBundle.getString("usernameIsTakenMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -217,7 +220,7 @@ public class DataverseUserPage implements java.io.Serializable {
         }
         if (!userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("Username or Email is incorrect.");
+            FacesMessage message = new FacesMessage(rBundle.getString("usernameOrEmailisIncorrectMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -227,7 +230,7 @@ public class DataverseUserPage implements java.io.Serializable {
         String encryptedPassword = PasswordEncryption.getInstance().encrypt(password);
         if (!encryptedPassword.equals(dataverseUser.getEncryptedPassword())) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("Password is incorrect.");
+            FacesMessage message = new FacesMessage(rBundle.getString("passwdIsIncorrectMsg"));
             context.addMessage(toValidate.getClientId(context), message);
         }
     }

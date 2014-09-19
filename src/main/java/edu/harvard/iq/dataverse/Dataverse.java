@@ -45,25 +45,25 @@ public class Dataverse extends DvObjectContainer {
     };
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "Please enter a name.")
+    @NotBlank(message = "{enterNameMsg}")
     private String name;
 
-    @NotBlank(message = "Please enter an alias.")
-    @Size(max = 32, message = "Alias must be at most 32 characters.")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'.")
+    @NotBlank(message = "{enterAliasMsg}")
+    @Size(max = 32, message = "{aliasOutOf32Msg}")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{illegalCharactersMsg}")
     private String alias;
 
     // #VALIDATION: page defines maxlength in input:textarea component
     @Column(name = "description", columnDefinition = "TEXT")
-    @Size(max = 1000, message = "Description must be at most 1000 characters.")
+    @Size(max = 1000, message = "{descriptionOutOfBoundsMsg")
     private String description;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
+    @NotBlank(message = "{enterEmailMsg}")
+    @Email(message = "{enterEmailMsg}")
     private String contactEmail;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Please select a category for your dataverse.")
+    @NotNull(message = "{selectCategoryForDataverseMsg}")
     private DataverseType dataverseType;
 
     public DataverseType getDataverseType() {

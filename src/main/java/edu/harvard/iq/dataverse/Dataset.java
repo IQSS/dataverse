@@ -33,7 +33,7 @@ public class Dataset extends DvObjectContainer {
 
     private String protocol;
     private String authority;
-    @NotBlank(message = "Please enter an identifier for your dataset.")
+    @NotBlank(message = "{enterAnIdentifierMsg}")
     private String identifier;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id DESC")

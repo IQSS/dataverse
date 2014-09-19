@@ -13,16 +13,17 @@
             <f:viewAction action="#{LoginPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Log In - Dataverse"/>
+            <ui:param name="pageTitle" value="#{loginBundle.loginPageTitle}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <f:loadBundle basename="LoginBundle" var="loginBundle"/>
                 <div class="row" style="margin-top:3em;">
                     <h:form id="loginForm" styleClass="form-horizontal">
                         <p:focus context="loginForm"/>
                         <div class="form-group">
-                            <p:outputLabel value="Username" for="userName" styleClass="col-sm-2 control-label"/>
+                            <p:outputLabel value="#{loginBundle.usernameText}" for="userName" styleClass="col-sm-2 control-label"/>
                             <div class="col-sm-9">
                                 <div class="form-group">
                                     <div class="col-sm-5">
@@ -35,7 +36,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <p:outputLabel value="Password" for="password" styleClass="col-sm-2 control-label"/>
+                            <p:outputLabel value="#{loginBundle.passwdText}" for="password" styleClass="col-sm-2 control-label"/>
                             <div class="col-sm-9">
                                 <div class="form-group">
                                     <div class="col-sm-5">
@@ -47,17 +48,17 @@
                                 </div>
                                 <div style="margin-top:.5em;">
                                     <a href="passwordreset.xhtml">
-                                        Forgot your password?
+                                        #{loginBundle.forgotPasswordTip}
                                     </a>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-9">
-                                <p:commandButton id="login" value="Log In" action="#{LoginPage.login}" update="@all">
+                                <p:commandButton id="login" value="#{loginBundle.loginButton}" action="#{LoginPage.login}" update="@all">
                                     <p:resetInput target="@all"/>
                                 </p:commandButton>
-                                <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+                                <p:button value="#{loginBundle.cancelButton}" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
                             </div>
                         </div>
                     </h:form>

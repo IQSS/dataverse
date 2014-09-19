@@ -16,10 +16,11 @@
             <f:viewAction action="#{manageRolesPage.init}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="Manage Roles and Permissions"/>
+            <ui:param name="pageTitle" value="#{roleBundle.rolePageTitle}"/>
             <ui:param name="dataverse" value="#{manageRolesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <f:loadBundle basename="ManageRolesBundle" var="roleBundle"/>
                 <h:form id="dataverseForm">
 
                     <ui:remove>
@@ -27,15 +28,15 @@
                     </ui:remove>
 
                     <ui:fragment rendered="#{manageRolesPage.dataverse.owner ne null}">
-                        <h:outputLabel for="permissionRootCb" value="Inherit Assignments" />
+                        <h:outputLabel for="permissionRootCb" value="#{roleBundle.inheritAssignmentsText}" />
                         <h:selectBooleanCheckbox id="permissionRootCb" value="#{manageRolesPage.inheritAssignmentsCbValue}">
                             <p:ajax update="permissionRootCbHelp permissionRootCbHelpWhenIs permissionRootCbHelpWhenIsNot assignedRoles" listener="#{manageRolesPage.updatePermissionRoot}" />
                         </h:selectBooleanCheckbox>
                         <p:outputPanel id="permissionRootCbHelp">
                             <h:outputText id="permissionRootCbHelpWhenIs" rendered="#{manageRolesPage.permissionRoot}"
-                                          value="Role assignments in parent dataverses are not honored in this dataverse" />
+                                          value="#{roleBundle.areNotHonoredMsg}" />
                             <h:outputText id="permissionRootCbHelpWhenIsNot" rendered="#{not manageRolesPage.permissionRoot}"
-                                          value="Role assignments in parent dataverses are honored in this dataverse" />
+                                          value="#{roleBundle.areHonoredMsg}" />
                         </p:outputPanel>
                     </ui:fragment>
 
@@ -46,17 +47,17 @@
                         This has yet to be invented.
                     </p:panel>-->
 
-                    <p:panel header="Role Assignments" toggleable="true" collapsed="false" style="margin-bottom:1em;">
+                    <p:panel header="#{roleBundle.roleAssignmentsHeader}" toggleable="true" collapsed="false" style="margin-bottom:1em;">
                         
                         <div class="form-group clearfix">
-                            <p:outputLabel styleClass="col-xs-2 control-label" value="Assign Role" for="userRole"/>
+                            <p:outputLabel styleClass="col-xs-2 control-label" value="#{roleBundle.assignRoleText}" for="userRole"/>
                             <div class="col-xs-4">
                                 <h:selectOneMenu id="userRole" styleClass="form-control" value="#{manageRolesPage.assignRoleRoleId}">
                                     <f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
-                                                   itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
+                                                   itemLabel="#{role.name} #{roleBundle.definedIn_Text} #{role.owner.name} #{roleBundle._dataverseText}" itemValue="#{role.id}"/>
                                 </h:selectOneMenu>
                             </div>
-                            <p:outputLabel styleClass="col-xs-2 control-label" value="User/Group" for="userRole"/>
+                            <p:outputLabel styleClass="col-xs-2 control-label" value="#{roleBundle.userOrGroupText}" for="userRole"/>
                             <div class="col-xs-2">
                                 <p:autoComplete id="usernameField"
                                                 value="#{manageRolesPage.assignRoleUsername}"
@@ -76,20 +77,20 @@
                             </div>
 
                             <div class="col-xs-2">
-                                <p:commandButton value="Assign"
+                                <p:commandButton value="#{roleBundle.assignButton}"
                                              actionListener="#{manageRolesPage.assignRole}"
                                              update="assignedRoles"/>
                             </div>
                         </div>
                         
                         <p:dataTable id="assignedRoles" var="ar" value="#{manageRolesPage.roleAssignments}">
-                            <p:column sortBy="name" headerText="User">
+                            <p:column sortBy="name" headerText="#{roleBundle.userHeaderText}">
                                 <h:outputText value="#{ar.name} (#{ar.email})" />
                             </p:column>
-                            <p:column sortBy="roleName" headerText="Role">
-                                <h:outputText value="#{ar.roleName} (#{ar.assignedDvName} Dataverse)" />
+                            <p:column sortBy="roleName" headerText="#{roleBundle.roleHeaderText}">
+                                <h:outputText value="#{ar.roleName} (#{ar.assignedDvName} #{roleBundle.dataverseText})" />
                             </p:column>
-                            <p:column sortBy="assignedDvName" headerText="Action">
+                            <p:column sortBy="assignedDvName" headerText="#{roleBundle.actionHeaderText}">
                                 <p:commandButton value="Revoke" actionListener="#{manageRolesPage.revokeRole(ar.id)}"
                                                  update="assignedRoles" rendered="#{ar.assignDv eq manageRolesPage.dataverse}" />
                             </p:column>
@@ -99,7 +100,7 @@
                     <ui:remove>
                         <!-- Manage roles -->
                     </ui:remove>
-                    <p:panel header="Role Management" toggleable="true" collapsed="true" style="margin-bottom:1em;">
+                    <p:panel header="#{roleBundle.roleManagementHeader}" toggleable="true" collapsed="true" style="margin-bottom:1em;">
 
                         <ui:remove>
                             <!-- List of roles -->
@@ -108,7 +109,7 @@
                             <f:passThroughAttribute name="class" value="list-unstyled" />
                             <div class="#{manageRolesPage.role.id == role.id?'bg-primary':'bg-info'}" style="margin-bottom:1em;padding:5px;">
                                 <span style="font-weight:bold">#{role.name}</span>
-                                <p:commandLink title="Edit role" style="margin-left:1em;"
+                                <p:commandLink title="#{roleBundle.editRoleTitle}" style="margin-left:1em;"
                                                actionListener="#{manageRolesPage.editRole(role.id)}"
                                                update="roleList :#{p:component('editRoleButtonPanel')} :#{p:component('editRolePermissionPanel')} :#{p:component('editRolePropertiesPanel')}"
                                                ><span class="glyphicon glyphicon-pencil"></span></p:commandLink>
@@ -120,17 +121,18 @@
                             </div>
                         </ui:repeat>
                         <p:panel rendered="#{! manageRolesPage.hasRoles}">
-                            No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
+                            <h:outputFormat value="#{roleBundle.noRolesDefinedMsg}">
+                                <f:param value="'#{DataversePage.dataverse.name}'"/>
+                            </h:outputFormat>                            
                             <h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
-                                Any roles applied to users at parent dataverses, are valid in this
-                                dataverse as well.
+                                #{roleBundle.appliedParentValidInThisMsg}
                             </h:outputText>
                         </p:panel>
 
-                        <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" header="Role Properties">
+                        <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" header="#{roleBundle.rolePropertiesHeader}">
                             <div class="row form-horizontal">
                                 <div class="col-xs-6 form-group">
-                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the role.">Name</label>
+                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{roleBundle.enterNameForRoleTip}">#{roleBundle.roleNameText}</label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2">
                                             <p:inputText id="roleName" value="#{manageRolesPage.role.name}"/>
@@ -139,7 +141,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6 form-group">
-                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the alias.">Alias</label>
+                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{roleBundle.enterNameForAliasTip}">#{roleBundle.roleAliasText}</label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2">
                                             <p:inputText id="roleAlias" value="#{manageRolesPage.role.alias}"/>
@@ -148,13 +150,13 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6 form-group">
-                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Describe the role (1000 characters max).">Description</label>
+                                    <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="#{roleBundle.roleDescriptionTip}">#{roleBundle.roleDescriptionText}</label>
                                     <div class="col-sm-9">
                                         <p:panelGrid columns="2">
                                             <h:panelGroup>
                                                 <p:inputTextarea id="roleDescription" value="#{manageRolesPage.role.description}"
                                                                  rows="5" cols="50" counter="counter" maxlength="1000"
-                                                                 counterTemplate="{0} characters remaining" autoResize="false"/>
+                                                                 counterTemplate="#{roleBundle.charactersRemainingText}" autoResize="false"/>
                                                 <h:outputText id="counter" style="display:block;"/>
                                             </h:panelGroup>
                                             <p:message for="roleDescription"/>
@@ -163,7 +165,7 @@
                                 </div>
                             </div>
                         </p:panel>
-                        <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions">
+                        <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="#{roleBundle.rolePermissionsHeader}">
                             <h:selectManyCheckbox value="#{manageRolesPage.selectedPermissions}"
                                                   layout="pageDirection">
                                 <f:selectItems value="#{manageRolesPage.permissions}" var="pmsn"
@@ -193,21 +195,21 @@
                         </pre>-->
                     <p:panelGrid styleClass="panelgridLayoutTable" columns="1" columnClasses="leftClass,rightClass">
                         <p:panelGrid styleClass="panelgridLayoutTable" columns="3" columnClasses="leftClass, leftClass, leftClass">
-                            <h:outputText value="Guest User" />
+                            <h:outputText value="#{roleBundle.guestUserText}" />
                             <h:selectManyCheckbox value="#{manageRolesPage.guestRolesHereId}"
                                                   layout="pageDirection">
                                 <f:selectItems value="#{manageRolesPage.availableRoles()}" var="role"
-                                               itemLabel="#{role.name} (#{role.owner.name} Dataverse)" itemValue="#{role.id}" />
+                                               itemLabel="#{role.name} (#{role.owner.name} #{roleBundle.dataverseText})" itemValue="#{role.id}" />
                             </h:selectManyCheckbox>
                             <h:panelGroup>
-                                Define what roles non-logged in users have.
+                                #{roleBundle.rolesNoLoggedInUsersHaveText}
                                 <p:outputPanel rendered="#{empty manageRolesPage.guestRolesUp}">
-                                    Guests do not inherit any role from parent dataverses.
+                                    #{roleBundle.guestsDonotInheritText}
                                 </p:outputPanel>
                                 <p:outputPanel rendered="#{not empty manageRolesPage.guestRolesUp}">
-                                    Guest users inherit these roles from parent dataverses:
+                                    #{roleBundle.guestInheritText}
                                     <p:dataList value="#{manageRolesPage.guestRolesUp}" var="ra">
-                                        #{ra.role.name} <small>(assigned at #{ra.definitionPoint.name})</small>
+                                        #{ra.role.name} <small>(#{roleBundle.assignedAtText} #{ra.definitionPoint.name})</small>
                                     </p:dataList>
                                 </p:outputPanel>
                             </h:panelGroup>
@@ -215,7 +217,7 @@
                     </p:panelGrid>
                     
                     <div style="margin-top:1em;">
-                        <p:commandButton value="Save Changes"
+                        <p:commandButton value="#{roleBundle.saveChangesButton}"
                                         actionListener="#{manageRolesPage.saveDataverse}"
                                         update="@all"/>
                     </div>

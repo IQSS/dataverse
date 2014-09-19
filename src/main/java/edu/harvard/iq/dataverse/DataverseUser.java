@@ -31,17 +31,17 @@ public class DataverseUser implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Please enter a user name  for your dataverse account.")
+    @NotBlank(message = "{enterUsernameMsg}")
     private String userName;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @Email(message = "Please enter a valid email address.")
+    @NotBlank(message = "{enterEmailMsg}")
+    @Email(message = "{enterEmailMsg}")
     private String email;
 
-    @NotBlank(message = "Please enter your fist name  for your dataverse account.")
+    @NotBlank(message = "{enterFirstNameMsg}")
     private String firstName;
 
-    @NotBlank(message = "Please enter your last name  for your dataverse account.")
+    @NotBlank(message = "{enterLastNameMsg}")
     private String lastName;
     
     private String encryptedPassword;

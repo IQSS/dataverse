@@ -11,14 +11,15 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? 'Add New Dataset' : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} Dataverse"/>
+            <ui:param name="pageTitle" value="#{DatasetPage.editMode == 'CREATE' ? datasetBundle.datasetPageTitle : DatasetPage.workingVersion.title} - #{DatasetPage.dataset.owner.name} #{datasetBundle.dataverseText}"/>
             <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
+                <f:loadBundle basename="DatasetBundle" var="datasetBundle"/>
+                <script type="text/javascript" src="/resuouce/js/dropbox.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
 
                     function openDialog() {
@@ -147,26 +148,26 @@
                                         <div style="float:right; margin-left:1em;">
                                             <div class="btn-group">
                                                 <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                    <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Edit Dataset <span class="caret"></span>
+                                                    <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> #{datasetBundle.editDatasetButton} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                     <li>
                                                         <p:commandLink id="editFiles" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                            <h:outputText value="Files (Upload + Edit)" />
+                                                            <h:outputText value="#{datasetBundle.uploadOrEditText}" />
                                                         </p:commandLink>
                                                     </li>
                                                     <li>
                                                         <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()">
                                                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                            <h:outputText value="Metadata" />
+                                                            <h:outputText value="#{datasetBundle.metadataText}" />
                                                         </p:commandLink>
                                                     </li>
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deleteDataset" onclick="deleteConfirmation.show()">
-                                                                <h:outputText value="Delete Dataset" />
+                                                                <h:outputText value="#{datasetBundle.deleteDatasetText}" />
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
@@ -174,7 +175,7 @@
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deleteVersion" onclick="deleteVersionConfirmation.show()">
-                                                                <h:outputText value="Delete Draft Version" />
+                                                                <h:outputText value="#{datasetBundle.deleteDraftVersionText}" />
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
@@ -182,7 +183,7 @@
                                                         <li class="divider"></li>
                                                         <li>
                                                             <p:commandLink id="deaccessionDatasetLink" onclick="deaccessionBlock.show()">
-                                                                <h:outputText value="Deaccession Dataset" />
+                                                                <h:outputText value="#{datasetBundle.deaccessionDatasetText}" />
                                                             </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
@@ -197,48 +198,50 @@
                                         <div style="float:right; margin-left:1em;">
                                             <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{datasetBundle.publishDatasetText}
                                                 </button>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                                 <button type="button" class="btn btn-default" onclick="releaseDraft.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{datasetBundle.publishDatasetText}
                                                 </button>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                                 <button type="button" class="btn btn-default" onclick="mayNotRelease.show()">
-                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
+                                                    <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> #{datasetBundle.publishDatasetText}
                                                 </button>
                                             </ui:fragment>
                                         </div>
-                                        <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">
-                                            <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
+                                        <p:confirmDialog message="#{datasetBundle.publishingTip}" header="#{datasetBundle.publishDatasetText}" widgetVar="confirmation">
+                                            <p:commandButton value="#{datasetBundle.continueButton}" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
                                             </p:commandButton>
-                                            <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />
+                                            <p:commandButton value="#{datasetBundle.cancelButton}" onclick="confirmation.hide()" type="button" />
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="Are you sure you want to republish your dataset?" header="Publish Dataset" widgetVar="releaseDraft">
+                                        <p:confirmDialog message="#{datasetBundle.republsihTip}" header="#{datasetBundle.publishDatasetText}" widgetVar="releaseDraft">
                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
-                                                Select version number:
+                                                #{datasetBundle.selectVersionNumberText}
                                                 <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
-                                                    <f:selectItem itemLabel="Major Release (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />
-                                                    <f:selectItem itemLabel="Minor Release (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />
+                                                    <f:selectItem itemLabel="#{datasetBundle.majorReleaseSelectItem} (#{DatasetPage.datasetNextMajorVersion})" itemValue="1" />
+                                                    <f:selectItem itemLabel="#{datasetBundle.minorReleaseSelectItem} (#{DatasetPage.datasetNextMinorVersion})" itemValue="2" />
                                                 </p:selectOneRadio>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
-                                                Due to the nature of changes to the current draft this will be a major release (#{DatasetPage.datasetNextMajorVersion})
+                                                <h:outputFormat value="#{datasetBundle.publishingVersionTip}">
+                                                    <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
+                                                </h:outputFormat>                                                
                                             </ui:fragment>
-                                            <p:commandButton value="Continue" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
+                                            <p:commandButton value="#{datasetBundle.continueButton}" onclick="releaseDraft.hide()" action="#{DatasetPage.releaseDraft}">
                                             </p:commandButton>
-                                            <p:commandButton value="Cancel" onclick="releaseDraft.hide()" type="button" />
+                                            <p:commandButton value="#{datasetBundle.cancelButton}" onclick="releaseDraft.hide()" type="button" />
                                         </p:confirmDialog>
-                                        <p:confirmDialog message="This dataset may not be published because its host dataverse has not been published." header="May not publish" widgetVar="mayNotRelease">
+                                        <p:confirmDialog message="#{datasetBundle.mayNotBePublishedTip}" header="#{datasetBundle.mayNotPublishHeader}" widgetVar="mayNotRelease">
                                         </p:confirmDialog>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.draft and DatasetPage.workingVersion != DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-warning" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.latestVersion.id}">
-                                                <h:outputText value="View Unpublished Version"/>
+                                                <h:outputText value="#{datasetBundle.viewUnpublishedVersionText}"/>
                                             </h:outputLink>
                                         </div>
                                     </ui:fragment>
@@ -246,58 +249,58 @@
                                                              and !empty(DatasetPage.releasedVersionTabList)}">
                                         <div style="float:right; margin-left:1em;">
                                             <h:outputLink styleClass="btn btn-primary" value="/dataset.xhtml?id=#{DatasetPage.dataset.id}&#38;versionId=#{DatasetPage.dataset.releasedVersion.id}">
-                                                <h:outputText value="View Published Version"/>
+                                                <h:outputText value="${datsetBundle.viewPublishedVersionText}"/>
                                             </h:outputLink>
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{empty DatasetPage.editMode}">
                                         <div style="float:right;">
                                             <button type="button" class="btn btn-default" onclick="contact_confirmation.show()">
-                                                <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> Email Dataset Contact
+                                                <span class="glyphicon glyphicon-envelope" style="margin-right:.3em;"/> #{datasetBundle.emailDatasetContactHeader}
                                             </button>
                                         </div>
                                     </ui:fragment>
-                                    <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!" header="Email Dataset Contact" widgetVar="contact_confirmation">
+                                    <p:confirmDialog message="#{datasetBundle.cannotEmailTip}" header="#{datasetBundle.emailDatasetContactHeader}" widgetVar="contact_confirmation">
                                     </p:confirmDialog>
                                 </div>
                                 <div id="datasetVersionBlock">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                         <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                        <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
-                                        <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        <h:outputText value="#{datasetBundle.draftText}" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                        <h:outputText value="#{datasetBundle.unpublishedText}" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
+                                        <h:outputText value="#{datasetBundle.deaccessionedText}" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                         <div class="row" style="margin-bottom:.5em; padding-left:15px;">
                                             <div id="citation" class="bg-info col-md-9">
                                                 <span>#{DatasetPage.displayCitation}</span>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{datasetBundle.beReplacedWithV1Title}"></span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
-                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{datasetBundle.beReplacedWithSelectedTitle}"></span>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{datasetBundle.beAddedToCitationTitle}"></span>
                                                 </ui:fragment>
                                             </div>
                                             <div class="row col-md-3" style="padding-right:0;">
-                                                <span id="whycitelink" class="bg-warning small pull-left"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
+                                                <span id="whycitelink" class="bg-warning small pull-left"><a href="/guides/Data_Citation/index.html" target="_blank">#{datasetBundle.whyCiteText}</a></span>
                                                 <div class="dropdown pull-right">
                                                     <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
+                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{datasetBundle.downloadCitationButton} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
                                                         <li>
                                                             <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
 
-                                                                <h:outputText value="End Note XML" />
+                                                                <h:outputText value="#{dataverseBundle.endNoteXmlText}" />
                                                             </h:commandLink>
                                                         </li>
                                                         <li>
                                                             <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
 
-                                                                <h:outputText value="RIS Format" />
+                                                                <h:outputText value="#{dataverseBundle.RISFormatText}" />
                                                             </h:commandLink>
                                                         </li>
                                                     </ul>
@@ -308,9 +311,9 @@
 
                                     <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                         <div class="bg-danger" style="padding:4px;margin-bottom:.5em;">
-                                            <p><strong>Deaccession Reason:</strong> #{DatasetPage.workingVersion.versionNote}</p>
+                                            <p><strong>#{datasetBundle.deaccessionReasonText}</strong> #{DatasetPage.workingVersion.versionNote}</p>
                                             <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                                <p>The dataset can now be accessed at: <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                                <p>#{datasetBundle.cannotBeAccessedText} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
                                             </ui:fragment>
                                         </div>
                                     </ui:fragment>
@@ -366,7 +369,7 @@
                         <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                             <div class="form-group">
                                 <label for="select_HostDataverse" class="col-sm-2 control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The Dataverse which contains this data.">Host Dataverse</a>
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{datasetBundle.dataverseWhichContainsDataTitle}">#{datasetBundle.hostDataverseText}</a>
                                 </label>
                                 <div class="col-sm-10">
 
@@ -385,17 +388,17 @@
                             <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
                                 <div class="form-group">
                                     <label for="select_DatasetTemplate" class="col-sm-2 control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{datasetBundle.originalTitle}">#{datasetBundle.datasetTemplateText}</a>
                                     </label>
                                     <div class="col-sm-10">
                                         <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
                                                          converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
                                                          valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
-                                            <f:selectItem itemLabel="No template - clear default values" itemValue="#{null}" />
+                                            <f:selectItem itemLabel="#{datasetBundle.noTemplateItem}" itemValue="#{null}" />
                                             <f:selectItems value="#{DatasetPage.dataverseTemplates}"
                                                            var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
                                         </p:selectOneMenu>
-                                        <p:commandButton value="Direct" id="updateTemplate"
+                                        <p:commandButton value="#{datasetBundle.directText}" id="updateTemplate"
                                                          style="display:none"
                                                          update="@all"
                                                          action="#{DatasetPage.handleChangeButton}">
@@ -409,8 +412,8 @@
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
-                        <p:commandButton id="saveTop" value="Save Changes" onclick="checkFilesSelected();" />
-                        <p:commandButton id="cancelTop" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                        <p:commandButton id="saveTop" value="#{datasetBundle.saveChangesButton}" onclick="checkFilesSelected();" />
+                        <p:commandButton id="cancelTop" value="#{datasetBundle.cancelButton}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                     </p:panel>
@@ -430,7 +433,7 @@
                                 </p:socket>
                             </ui:fragment>
                             <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}">
-                                <p:tab id="dataFilesTab" title="Files" rendered="#{!DatasetPage.workingVersion.deaccessioned and 
+                                <p:tab id="dataFilesTab" title="#{datasetBundle.filesText}" rendered="#{!DatasetPage.workingVersion.deaccessioned and 
                                                                                    (empty DatasetPage.editMode or DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}" >
                                     <!-- Upload -->
                                     <!--<p:message for="fileUpload" showDetail="true"/>-->
@@ -458,7 +461,7 @@
                                             });
                                         </script>
                                         <p:fileUpload id="fileUpload" dragDropSupport="true" auto="true" multiple="true" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
-                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
+                                                      fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="#{datasetBundle.selectToAddButton}"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
 
@@ -479,9 +482,9 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-bottom:.5em;">
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{datasetBundle.uploadAndEditFilesTitle}" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> Upload + Edit Files
+                                                <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> #{datasetBundle.uploadOrEditText}
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
@@ -489,11 +492,11 @@
                                     <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
-                                        <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
+                                        <p:column headerText="#{datasetBundle.deleteHeader}" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
                                                   style="width:2%;text-align:center"/>
                                         <p:column styleClass="col-xs-1" style="text-align:center;">
                                             <ui:fragment rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image}">
-                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;Preview: #{fileMetadata.label}&#34; /&gt;">
+                                                <a class="imageThumbPreview" data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{datasetBundle.previewText}: #{fileMetadata.label}&#34; /&gt;">
                                                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                                                 </a>
                                             </ui:fragment>
@@ -502,7 +505,7 @@
 
                                             <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.fileSystemName and fileMetadata.dataFile.image}">
                                                 <p:graphicImage value="/api/access/imagethumb/#{fileMetadata.dataFile.fileSystemName}?mimetype=#{fileMetadata.dataFile.contentType}"/>
-                                                <h:outputText id="imgPreview" value="Preview" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
+                                                <h:outputText id="imgPreview" value="#{datasetBundle.previewText}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                         </p:column>
                                         <p:column styleClass="col-sm-7">
@@ -510,7 +513,7 @@
 
                                             <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                                 <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
-                                                    File Name
+                                                    #{datasetBundle.fileNameText}
                                                 </label>
                                                 <p:inputText id="fileName" value="#{fileMetadata.label}" style="margin-bottom:.5em;"/>
                                                 <p:message for="fileName"/>
@@ -522,11 +525,11 @@
                                             <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
                                             <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
 
-                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileTypeOutputTabular" value="#{datasetBundle.tabularDataText}#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
-                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">#{datasetBundle.viewOnWorldMapText}</a> 		
                                                 <br />
                                                 <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
 
@@ -538,10 +541,10 @@
 
                                                 <ui:fragment rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}">
                                                     <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
-                                                        Description
+                                                        #{datasetBundle.descriptionText}
                                                     </label>
                                                     <p:inputTextarea  id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="margin-top:.5em;"/>
-                                                    <p:watermark for="fileDescription" value="Add file description..."/>
+                                                    <p:watermark for="fileDescription" value="#{datasetBundle.addFileDescriptionTip}"/>
                                                     <p:message for="fileDescription"/>
                                                 </ui:fragment>
                                             </div>
@@ -549,13 +552,13 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
-                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="/dataexplore/gui.html?dfId=#{fileMetadata.dataFile.id}" target="_blank">
-                                                    <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">Explore</span>
+                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="#{datasetBundle.exploreButton}" value="/dataexplore/gui.html?dfId=#{fileMetadata.dataFile.id}" target="_blank">
+                                                    <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">#{datasetBundle.exploreButton}</span>
                                                 </h:outputLink>
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem}">
-                                                <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;Tabular Data Ingest Failed&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                                                <a href="#" class="imageThumbPreview h2" style="margin:0 .5em 0 0;vertical-align:middle;" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{datasetBundle.ingestFailedMsg}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
                                                     <span class="glyphicon glyphicon-warning-sign text-danger" style="top:5px;"></span></a>
                                             </ui:fragment>
 
@@ -566,41 +569,41 @@
 
                                             <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
-                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
-                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
-                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/>
+                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="#{datasetBundle.reMapDataText}" />
+                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="#{datasetBundle.mapDataText}" />
                                                 </a>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
-                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
+                                                    <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{datasetBundle.downloadButton}
                                                 </a>
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download <span class="caret"></span>
+                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> #{datasetBundle.downloadButton} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu" role="menu" style="text-align:left;">
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As Tab-Delimited"/>
+                                                                <h:outputText value="#{datasetBundle.asTabDelimitedText}"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="As RData"/>
+                                                                <h:outputText value="#{datasetBundle.asRDataText}"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=original"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Saved Original (#{fileMetadata.dataFile.originalFormatLabel})"/>
+                                                                <h:outputText value="#{datasetBundle.savedOriginalText} (#{fileMetadata.dataFile.originalFormatLabel})"/>
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
                                                             <h:outputLink value="/api/meta/datafile/#{fileMetadata.dataFile.id}"  disabled="#{empty fileMetadata.dataFile.id}">
-                                                                <h:outputText value="Variable Metadata"/>
+                                                                <h:outputText value="#{datasetBundle.variableMetadataText}"/>
                                                             </h:outputLink>
                                                         </li>
                                                     </ul>
@@ -608,21 +611,21 @@
                                             </ui:fragment>
 
                                             <ui:fragment rendered="#{fileMetadata.dataFile.ingestInProgress}">
-                                                <h:outputText id="txtInprogess" value="Ingest in progress..." styleClass="bg-info text-info" style="display:block;text-align:center;"/>
+                                                <h:outputText id="txtInprogess" value="#{datasetBundle.ingestInProgressTip}" styleClass="bg-info text-info" style="display:block;text-align:center;"/>
                                             </ui:fragment>
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                <p:tab id="metadataMapTab" title="#{datasetBundle.metadataText}" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                     <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
-                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
+                                            <p:commandLink style="color:black;" styleClass="btn btn-default" title="#{datasetBundle.addOrEditMetadataText}" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> Add + Edit Metadata
+                                                <span class="glyphicon glyphicon-pencil" style="margin-right:.3em;"/> #{datasetBundle.addOrEditMetadataText}
                                             </p:commandLink>
                                         </div>
                                     </ui:fragment>
@@ -630,12 +633,12 @@
                                         <ui:include src="metadataFragment.xhtml"/>
                                     </div>
                                 </p:tab>
-                                <p:tab id="versionsTab" title="Versions" rendered="#{empty DatasetPage.editMode}">
-                                    <p:commandButton value="Show Differences" style="margin-bottom:.5em;"
+                                <p:tab id="versionsTab" title="#{datasetBundle.versionsTitle}" rendered="#{empty DatasetPage.editMode}">
+                                    <p:commandButton value="#{datasetBundle.showDifferencesText}" style="margin-bottom:.5em;"
                                                      onclick="testCheckBoxes();"
                                                      rendered="#{DatasetPage.compareVersionsCount > 2}">
                                     </p:commandButton>
-                                    <p:commandButton value="Direct" id="compareVersions"
+                                    <p:commandButton value="#{datasetBundle.directText}" id="compareVersions"
                                                      style="display:none"
                                                      update=":datasetForm"
                                                      oncomplete="detailsBlocks.show();post_differences();"
@@ -663,30 +666,30 @@
                                         <p:column>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference != null}">
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.summaryDataForNote)}">
-                                                    <h:outputLabel value="Citation Metadata: " />
+                                                    <h:outputLabel value="#{datasetBundle.citationMetadataText} " />
                                                     <ui:repeat value="#{versionTab.defaultVersionDifference.summaryDataForNote}" var="summaryNote">
                                                         <h:outputText value=" #{summaryNote[0].datasetFieldType.displayName} (" />
-                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} Added" />
-                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Added" />
+                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[1]} #{datasetBundle.addedText}" />
+                                                        <h:outputText rendered="#{(summaryNote[1]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{datasetBundle.addedText}" />
                                                         <h:outputText rendered="#{(summaryNote[1]) > 0 and (summaryNote[2] + summaryNote[3]) > 0}"  value=", " />
-                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} Removed" />
-                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Removed" />
+                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[2]} #{datasetBundle.removedText}" />
+                                                        <h:outputText rendered="#{(summaryNote[2]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{datasetBundle.removedText}" />
                                                         <h:outputText rendered="#{(summaryNote[2]) > 0 and (summaryNote[3]) > 0}"  value=", " />
-                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} Changed" />
-                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="Changed" />
+                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and summaryNote[0].datasetFieldType.allowMultiples}"  value="#{summaryNote[3]} #{datasetBundle.changedText}" />
+                                                        <h:outputText rendered="#{(summaryNote[3]) > 0 and !(summaryNote[0].datasetFieldType.allowMultiples)}"  value="#{datasetBundle.changedText}" />
                                                         <h:outputText value="); " />
                                                     </ui:repeat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty(versionTab.defaultVersionDifference.blockDataForNote)}">
                                                     <ui:repeat value="#{versionTab.defaultVersionDifference.blockDataForNote}" var="blockNote">
-                                                        <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="Additional Citation Metadata: " />
+                                                        <h:outputLabel rendered="#{blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata'}" value="#{datasetBundle.additionalCitationMetadataText} " />
                                                         <h:outputLabel rendered="#{!(blockNote[0].datasetFieldType.metadataBlock.displayName == 'Citation Metadata')}" value=" #{blockNote[0].datasetFieldType.metadataBlock.displayName}: " />
                                                         <h:outputText value=" (" />
-                                                        <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} Added" />
+                                                        <h:outputText rendered="#{blockNote[1] > 0}" value="#{blockNote[1]} #{datasetBundle.addedText}" />
                                                         <h:outputText rendered="#{(blockNote[1]) > 0 and (blockNote[2] + blockNote[3]) > 0}" value=", " />
-                                                        <h:outputText rendered="#{(blockNote[2]) > 0}" value="#{blockNote[2]} Removed" />
+                                                        <h:outputText rendered="#{(blockNote[2]) > 0}" value="#{blockNote[2]} #{datasetBundle.removedText}" />
                                                         <h:outputText rendered="#{(blockNote[2]) > 0 and (blockNote[3]) > 0}" value=", " />
-                                                        <h:outputText rendered="#{(blockNote[3]) > 0}" value="#{blockNote[3]} Changed" />
+                                                        <h:outputText rendered="#{(blockNote[3]) > 0}" value="#{blockNote[3]} #{datasetBundle.changedText}" />
                                                         <h:outputText value="); " />
                                                     </ui:repeat>
                                                 </ui:fragment>
@@ -696,23 +699,23 @@
                                             </ui:fragment>
                                             <ui:fragment rendered="#{versionTab.defaultVersionDifference == null}">
                                                 <ui:fragment rendered="#{versionTab.draft}">
-                                                    This is a draft version.
+                                                    #{datasetBundle.aDraftVersionTip}
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == 'DEACCESSIONED'}">
-                                                    Due to the previous version being deaccessioned, there are no difference notes for this published version.
+                                                    #{datasetBundle.noDifferenceTip}
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.released and versionTab.priorVersionState == null}">
-                                                    This is the first published version.
+                                                    #{datasetBundle.firstPublishedVersionTip}
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{versionTab.deaccessioned}">
-                                                    Deaccessioned Reason: #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">The dataset can now be accessed at: <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
+                                                    #{datasetBundle.deaccessionedReasonText} #{versionTab.versionNote} <ui:fragment rendered="#{!empty versionTab.archiveNote}">The dataset can now be accessed at: <a href="#{versionTab.archiveNote}" target="_blank">#{versionTab.archiveNote}</a></ui:fragment>
                                                 </ui:fragment>
                                             </ui:fragment>
                                             <p:commandLink rendered="#{(!empty(versionTab.defaultVersionDifference)) and DatasetPage.versionTabList.size() > (rowNum + 1)}"
                                                            actionListener="#{DatasetPage.updateVersionDifferences(versionTab, null)}"
                                                            oncomplete="detailsBlocks.show();post_differences();"
                                                            update=":datasetForm"
-                                                           value="Show Details" style="margin-left:1em;"></p:commandLink>
+                                                           value="#{datasetBundle.showDetailsLink}" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
                                             <h:outputText value="#{versionTab.versionContributors}" />
@@ -725,57 +728,57 @@
                             </p:tabView>
                         </div>
                     </ui:fragment>
-                    <p:confirmDialog id="compareTwo" message="You may only compare two versions." header="Please Select Two Versions" widgetVar="compareTwo">
+                    <p:confirmDialog id="compareTwo" message="#{datasetBundle.onlyTwoVersionsToCompareMsg}" header="#{datasetBundle.selectTwoVersionsHeader}" widgetVar="compareTwo">
                     </p:confirmDialog>
-                    <p:confirmDialog message="Are you sure you want to delete your dataset? This action may not be 'Undone'." header="Delete Dataset" widgetVar="deleteConfirmation">
-                        <p:commandButton value="Continue" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}">
+                    <p:confirmDialog message="#{datasetBundle.deleteDatasetMsg}" header="#{datasetBundle.deleteDatasetHeader}" widgetVar="deleteConfirmation">
+                        <p:commandButton value="#{datasetBundle.continueButton}" onclick="deleteConfirmation.hide()" action="#{DatasetPage.deleteDataset()}">
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="deleteConfirmation.hide()" type="button" />
+                        <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:confirmDialog message="Are you sure you want to delete this draft version? This action may not be 'Undone'." header="Delete Draft Version" widgetVar="deleteVersionConfirmation">
-                        <p:commandButton value="Continue" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}">
+                    <p:confirmDialog message="#{datasetBundle.deleteDraftMsg}" header="#{datasetBundle.deleteDraftVersionHeader}" widgetVar="deleteVersionConfirmation">
+                        <p:commandButton value="#{datasetBundle.continueButton}" onclick="deleteVersionConfirmation.hide()" action="#{DatasetPage.deleteDatasetVersion()}">
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="deleteVersionConfirmation.hide()" type="button" />
+                        <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteVersionConfirmation.hide()" type="button" />
                     </p:confirmDialog>
-                    <p:confirmDialog message="Are you sure you want to delete the selected files? This action may not be 'Undone'." header="Delete Files" widgetVar="deleteFileConfirmation">
+                    <p:confirmDialog message="#{datasetBundle.deleteSelectedFilesMsg}" header="#{datasetBundle.deleteFilesHeader}" widgetVar="deleteFileConfirmation">
                         <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                            Files will not be removed from previously published versions of the dataset.
+                            #{datasetBundle.filesWillNotBeRemovedText}
                         </ui:fragment>
-                        <p:commandButton value="Continue" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.save()}">
+                        <p:commandButton value="#{datasetBundle.continueButton}" onclick="deleteFileConfirmation.hide()" action="#{DatasetPage.save()}">
                         </p:commandButton>
-                        <p:commandButton value="Cancel" onclick="deleteFileConfirmation.hide()" type="button" />
+                        <p:commandButton value="#{datasetBundle.cancelButton}" onclick="deleteFileConfirmation.hide()" type="button" />
                     </p:confirmDialog>
                     <p:dialog id="deaccessionBlock" header="Deaccession Dataset" widgetVar="deaccessionBlock" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> Once you deaccession your dataset it will not be viewable by the public.</p>
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"></span> #{datasetBundle.datasetBeNotViewableTip}</p>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
                             <div class="form-group">
-                                <label for="deaccessionOptions">Which version(s) do you want to deaccession?</label>
+                                <label for="deaccessionOptions">#{datasetBundle.versionSelectedToDeaccessionText}</label>
                                 <p:dataTable id="versionDeaccessionTable" value="#{DatasetPage.releasedVersionTabList}" var="versionTab" widgetVar="versionDeaccessionTable"
                                              rowIndexVar="rowNum" selection="#{DatasetPage.selectedDeaccessionVersions}" rowKey="#{versionTab}">
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center;"/>
                                     <p:column>
-                                        <h:outputText value="Version #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
+                                        <h:outputText value="#{datasetBundle.versionsText} #{versionTab.versionNumber}.#{versionTab.minorVersionNumber}, #{versionTab.versionDate}" />
                                     </p:column>
                                 </p:dataTable>
                             </div>
                         </ui:fragment>
                         <div class="form-group">
-                            <label for="deaccessionOptions">What is the reason for deaccession?</label>
+                            <label for="deaccessionOptions">#{datasetBundle.reasonForDeaccessionText}</label>
                             <h:selectOneMenu id="reasonOptions" styleClass="form-control" value="#{DatasetPage.deaccessionReasonRadio}">
-                                <f:selectItem itemLabel="Select one..." itemValue="0" />
-                                <f:selectItem itemLabel="There is identifiable data in one or more files" itemValue="1" />
-                                <f:selectItem itemLabel="The research article has been retracted" itemValue="2" />
-                                <f:selectItem itemLabel="The dataset has been transferred to another repository" itemValue="3" />
-                                <f:selectItem itemLabel="IRB request" itemValue="4" />
-                                <f:selectItem itemLabel="Legal issue or Data Usage Agreement" itemValue="5" />
-                                <f:selectItem itemLabel="Not a valid dataset" itemValue="6" />
-                                <f:selectItem itemLabel="Other (Please type reason in space provided below)" itemValue="7" />
+                                <f:selectItem itemLabel="#{datasetBundle.selectOneItem}" itemValue="0" />
+                                <f:selectItem itemLabel="#{datasetBundle.identifiableDataInFilesItem}" itemValue="1" />
+                                <f:selectItem itemLabel="#{datasetBundle.researchArticleBeRetractedItem}" itemValue="2" />
+                                <f:selectItem itemLabel="#{datasetBundle.beTransferredToAnotherItem}" itemValue="3" />
+                                <f:selectItem itemLabel="#{datasetBundle.IRBRequestItem}" itemValue="4" />
+                                <f:selectItem itemLabel="#{datasetBundle.issueOrAgreementItem}" itemValue="5" />
+                                <f:selectItem itemLabel="#{datasetBundle.illegalDatasetItem}" itemValue="6" />
+                                <f:selectItem itemLabel="#{datasetBundle.otherReasonsItem}" itemValue="7" />
                             </h:selectOneMenu>
                         </div>
 
                         <div class="form-group">
                             <label class="control-label" for="fileDescription">
-                                Please enter additional information about the reason for deaccession.
+                                #{datasetBundle.enterAdditionalInformationTip}
                             </label>
                             <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" 
                                              onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
@@ -783,48 +786,48 @@
                         </div>
                         <div class="form-group">
                             <label class="control-label" ><!--for="forwardURLForDeaccession"-->
-                                If applicable, please leave a URL where this dataset can be accessed after deaccessioning.
+                                #{dataverseBundle.leaveAURLTip}
                             </label>
                             <p:inputText id="forwardURLForDeaccession" styleClass="form-control" value="#{DatasetPage.deaccessionForwardURLFor}" widgetVar="forwardURLForDeaccession"/>
                             <!--<p:message for="forwardURLForDeaccession"/>-->
                         </div>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() > 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(true);">Deaccession</button>
+                            <button type="button" class="btn btn-success" value="#{datasetBundle.deaccessionButton}" onclick="testDeaccessionVersionSelection(true);">#{datasetBundle.deaccessionButton}</button>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.releasedVersionTabList.size() == 1}">
-                            <button type="button" class="btn btn-success" value="Deaccession" onclick="testDeaccessionVersionSelection(false);">Deaccession</button>
+                            <button type="button" class="btn btn-success" value="#{datasetBundle.deaccessionButton}" onclick="testDeaccessionVersionSelection(false);">#{datasetBundle.deaccessionButton}</button>
                         </ui:fragment>
-                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">Cancel</button>
+                        <button type="button" class="btn btn-default" value="Cancel" onclick="deaccessionBlock.hide()">#{datasetBundle.cancelButton}</button>
                     </p:dialog>
-                    <p:dialog id="deaccessionConfirmation" header="Deaccession Dataset" widgetVar="deaccessionConfirmation" modal="true">
-                        <p>Are you sure you want to deaccession? The selected version(s) will no longer be viewable by the public.</p>
-                        <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionConfirmation.hide();
+                    <p:dialog id="deaccessionConfirmation" header="#{datasetBundle.deaccessionDatasetText}" widgetVar="deaccessionConfirmation" modal="true">
+                        <p>#{datasetBundle.noLongerBeViewableTip}</p>
+                        <h:commandButton styleClass="btn btn-success" value="#{datasetBundle.yesButton}" onclick="deaccessionConfirmation.hide();
                                 deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionConfirmation.hide()">No</button>
+                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionConfirmation.hide()">#{datasetBundle.noButton}</button>
                     </p:dialog>
-                    <p:dialog id="deaccessionAllConfirmation" header="Deaccession Dataset" widgetVar="deaccessionAllConfirmation" modal="true">
+                    <p:dialog id="deaccessionAllConfirmation" header="#{datasetBundel.deaccessionDatasetText}" widgetVar="deaccessionAllConfirmation" modal="true">
                         <p>Are you sure you want to deaccession your dataset? It will no longer be viewable by the public.</p>
-                        <h:commandButton styleClass="btn btn-success" value="Yes" onclick="deaccessionAllConfirmation.hide();
+                        <h:commandButton styleClass="btn btn-success" value="#{datasetBundle.yesButton}" onclick="deaccessionAllConfirmation.hide();
                                 deaccessionBlock.hide()" action="#{DatasetPage.deaccessionVersions}" />
-                        <button type="button" class="btn btn-default" value="No" onclick="deaccessionAllConfirmation.hide()">No</button>
+                        <button type="button" class="btn btn-default" value="#{datasetBundle.noButton}" onclick="deaccessionAllConfirmation.hide()">#{datasetBundle.noButton}</button>
                     </p:dialog>
-                    <p:confirmDialog id="selectDeaccessionVersion" message="Please select version(s) for deaccessioning." header="Please Select Version(s)" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
-                    <p:confirmDialog id="selectDeaccessionReason" message="Please select reason for deaccessioning." header="Please Select Reason" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
-                    <p:confirmDialog id="enterForwardUrl" message="Please enter valid forwarding URL." header="Invalid URL" widgetVar="enterForwardUrl"> </p:confirmDialog>
-                    <p:confirmDialog id="enterOtherReason" message="Please enter text for reason for deaccessioning." header="Enter additional information" widgetVar="enterOtherReason"> </p:confirmDialog>
-                    <p:confirmDialog id="reasonTooManyCharacters" message="Text for reason for deaccessioning may be no longer than 1000 characters." header="Limit 1000 characters" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
+                    <p:confirmDialog id="selectDeaccessionVersion" message="#{datasetBundle.selectVersionsMsg}" header="#{datasetBundle.selectVersionsHeader}" widgetVar="selectDeaccessionVersion"> </p:confirmDialog>
+                    <p:confirmDialog id="selectDeaccessionReason" message="#{datasetBundle.selectReasonMsg}" header="#{datasetBundle.selectReasonHeader}" widgetVar="selectDeaccessionReason"> </p:confirmDialog>
+                    <p:confirmDialog id="enterForwardUrl" message="#{datasetBundle.invalidURLMsg}" header="#{datasetBundle.invalidURLHeader}" widgetVar="enterForwardUrl"> </p:confirmDialog>
+                    <p:confirmDialog id="enterOtherReason" message="#{datasetBundle.additionalInformationMsg}" header="#{datasetBundle.additionalInformationHeader}" widgetVar="enterOtherReason"> </p:confirmDialog>
+                    <p:confirmDialog id="reasonTooManyCharacters" message="#{datasetBundle.limitCharactersMsg}" header="#{datasetBundle.limitCharactersHeader}" widgetVar="reasonTooManyCharacters"> </p:confirmDialog>
                     <p:inputText id="hiddenReasonInput" style="display:none" widgetVar="hiddenReasonInput"/>
                     <ui:fragment id="detailsBlock">
-                        <p:dialog id="detailsBlocks" header="Version Differences Details" widgetVar="detailsBlocks">
-                            <h:outputLabel value="Viewing: #{DatasetPage.datasetVersionDifference.newVersion.title}" />
+                        <p:dialog id="detailsBlocks" header="#{datasetBundle.versionDifferencesDetailsHeader}" widgetVar="detailsBlocks">
+                            <h:outputLabel value="#{datasetBundle.viewingText} #{DatasetPage.datasetVersionDifference.newVersion.title}" />
                             <div class="clearfix" style="margin-bottom:1em;">
                                 <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;border-left-width:0;">
-                                    Version: #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
-                                    Last Updated: #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
+                                    #{datasetBundle.versionText} #{DatasetPage.datasetVersionDifference.newVersion.semanticVersion}<br/>
+                                    #{datasetBundle.lastUpdatedText} #{DatasetPage.datasetVersionDifference.newVersion.lastUpdateTime}
                                 </div>
                                 <div class="pull-right text-left" style="width:35%;padding:4px 10px;border: 1px solid #DDDDDD;">
-                                    Version: #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
-                                    Last Updated: #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
+                                    #{datasetBundle.versionText} #{DatasetPage.datasetVersionDifference.originalVersion.semanticVersion}<br/>
+                                    #{datasetBundle.lastUpdatedText} #{DatasetPage.datasetVersionDifference.originalVersion.lastUpdateTime}
                                 </div>
                                 <div class="pull-right text-left" style="width:30%;padding:4px 10px;">
                                     &#160;
@@ -855,28 +858,28 @@
                             <ui:fragment rendered="#{!empty(DatasetPage.datasetVersionDifference.fileNote)}">
                                 <div class="panel panel-default">
                                     <div class="panel-heading text-info" rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
-                                        <h:outputText id="outputText" value="Files"/>
+                                        <h:outputText id="outputText" value="#{datasetBundle.filesText}"/>
                                     </div>
                                     <p:dataTable id="diffFilesDataTable" styleClass="dvnDifferanceTable" value="#{DatasetPage.datasetVersionDifference.datasetFilesDiffList}" var="fileDiff">
                                         <p:column styleClass="versionValue">
-                                            <h:outputText value="File ID: #{fileDiff.fileId}"/>
+                                            <h:outputText value="#{datasetBundle.fileIDText} #{fileDiff.fileId}"/>
                                         </p:column>
                                         <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
-                                            <h:outputText value="File Name: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
-                                            <h:outputText value="File Type: #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
-                                            <h:outputText value="File Size: #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
-                                            <h:outputText value="Category: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
-                                            <h:outputText value="Description: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileNameText} #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileTypeText} #{fileDiff.fileType1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType1 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileSizeText} #{fileDiff.fileSize1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize1 != null}"/>
+                                            <h:outputText value="#{datasetBundle.categoryText} #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
+                                            <h:outputText value="#{datasetBundle.descriptionText} #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
                                         </p:column>
                                         <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
                                             &#160;
                                         </p:column>
                                         <p:column styleClass="versionDetails" rendered="#{! fileDiff.file2Empty}">
-                                            <h:outputText value="File Name: #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
-                                            <h:outputText value="File Type: #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
-                                            <h:outputText value="File Size: #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
-                                            <h:outputText value="Category: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
-                                            <h:outputText value="Description: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileNameText} #{fileDiff.fileName2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName2 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileTypeText} #{fileDiff.fileType2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileType2 != null}"/>
+                                            <h:outputText value="#{datasetBundle.fileSizeText} #{fileDiff.fileSize2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileSize2 != null}"/>
+                                            <h:outputText value="#{datasetBundle.categoryText} #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
+                                            <h:outputText value="#{datasetBundle.descriptionText} #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
                                         </p:column>
                                         <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
                                             &#160;
@@ -888,20 +891,20 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
                         <div class="alert alert-info" style="margin-top:.5em;">
-                            Metadata Tip: After adding the dataset, click the Edit Dataset button to add more metadata..
+                            #{datasetBundle.metadataTip}
                         </div>
                     </ui:fragment>
 
                     <!-- Create/Save Dataset Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? 'Add Dataset' : 'Save Changes'}" onclick="checkFilesSelected();" >
+                        <p:commandButton id="save"  value="#{DatasetPage.editMode == 'CREATE' ? datasetBundle.addDatasetButton : datasetBundle.saveChangesButton}" onclick="checkFilesSelected();" >
                         </p:commandButton>
-                        <p:commandButton id="cancel" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                        <p:commandButton id="cancel" value="#{datasetBundle.cancelButton}" action="#{DatasetPage.cancel}" process="@this" update="@form"  rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
-                        <p:button id="cancelCreate" value="Cancel" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
+                        <p:button id="cancelCreate" value="#{datasetBundle.cancelButton}" outcome="/dataverse.xhtml?id=#{DatasetPage.ownerId}"  rendered="#{DatasetPage.editMode == 'CREATE'}" />
                     </p:panel>
-                    <p:commandButton value="Direct" id="datasetSave"
+                    <p:commandButton value="#{datasetBundle.directText}" id="datasetSave"
                                      style="display:none"
                                      update=":datasetForm"
                                      action="#{DatasetPage.save}">
