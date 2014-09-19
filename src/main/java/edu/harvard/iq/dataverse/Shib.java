@@ -100,6 +100,9 @@ public class Shib implements java.io.Serializable {
     private final String shibIdpAttribute = "Shib-Identity-Provider";
     private final String uniquePersistentIdentifier = "eppn";
     private final String displayNameAttribute = "cn";
+    private final String firstNameAttribute = "givenName";
+    private final String lastNameAttribute = "sn";
+    private final String emailAttribute = "mail";
     private boolean debug = false;
 
     public void init() {
@@ -124,16 +127,12 @@ public class Shib implements java.io.Serializable {
         if (userIdentifier.isEmpty()) {
             throw new RuntimeException("Unique persistent identifer attribute (" + uniquePersistentIdentifier + ") was empty");
         }
-        Object displayNameObject = request.getAttribute(displayNameAttribute);
-        if (displayNameObject == null) {
-            throw new RuntimeException("Display name attribute (" + displayNameAttribute + ") was null");
-        }
-        String displayName = displayNameObject.toString();
-        if (displayName.isEmpty()) {
-            throw new RuntimeException("Display name attribute (" + displayNameAttribute + ") was empty");
-        }
 
-        String emailAddress = "FIXMEemailAddress";
+        String displayName = getDisplayName(displayNameAttribute, firstNameAttribute, lastNameAttribute);
+        /**
+         * @todo is it ok if email address is null? What will blow up?
+         */
+        String emailAddress = getValueFromAttribute(emailAttribute);
         RoleAssigneeDisplayInfo displayInfo = new RoleAssigneeDisplayInfo(displayName, emailAddress);
 
         String userPersistentId = shibIdp + "|" + userIdentifier;
@@ -151,7 +150,6 @@ public class Shib implements java.io.Serializable {
             session.setUser(au);
         }
         try {
-//            FacesContext.getCurrentInstance().getExternalContext().redirect("http://pdurbin.pagekite.me");
             FacesContext.getCurrentInstance().getExternalContext().redirect("/dataverse.xhtml");
         } catch (IOException ex) {
             Logger.getLogger(Shib.class.getName()).log(Level.SEVERE, null, ex);
@@ -183,5 +181,55 @@ public class Shib implements java.io.Serializable {
             }
         }
         logger.info("shib values: " + shibValues);
+    }
+
+    /**
+     * @return The value of a Shib attribute (if non-empty) or null.
+     */
+    private String getValueFromAttribute(String attribute) {
+        Object attributeObject = request.getAttribute(attribute);
+        if (attributeObject != null) {
+            String attributeValue = attributeObject.toString();
+            if (!attributeValue.isEmpty()) {
+                return attributeValue;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return The best display name we can retrieve or construct based on
+     * attributes received from Shibboleth. Shouldn't be null, maybe "Unknown"
+     */
+    private String getDisplayName(String displayNameAttribute, String firstNameAttribute, String lastNameAttribute) {
+        Object displayNameObject = request.getAttribute(displayNameAttribute);
+        if (displayNameObject != null) {
+            String displayName = displayNameObject.toString();
+            if (!displayName.isEmpty()) {
+                return displayName;
+            } else {
+                return getDisplayNameFromFirstNameLastName(firstNameAttribute, lastNameAttribute);
+            }
+        } else {
+            return getDisplayNameFromFirstNameLastName(firstNameAttribute, lastNameAttribute);
+        }
+    }
+
+    /**
+     * @return First name plus last name if available, just first name or just
+     * last name or "Unknown".
+     */
+    private String getDisplayNameFromFirstNameLastName(String firstNameAttribute, String lastNameAttribute) {
+        String firstName = getValueFromAttribute(firstNameAttribute);
+        String lastName = getValueFromAttribute(lastNameAttribute);
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        } else if (firstName != null) {
+            return firstName;
+        } else if (lastName != null) {
+            return lastName;
+        } else {
+            return "Unknown";
+        }
     }
 }
