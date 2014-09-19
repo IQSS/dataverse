@@ -1126,7 +1126,7 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
-        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.xml";
+        String fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
         response.setHeader("Content-Disposition", fileNameString);
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -1137,6 +1137,11 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
+    
+    private String getFileNameDOI(){
+        Dataset ds = workingVersion.getDataset();
+        return "DOI:" + ds.getAuthority()  + "_" + ds.getId().toString();
+    }
 
     public void downloadRISFile() {
 
@@ -1144,7 +1149,8 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
-        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.ris";
+
+        String fileNameString = "attachment;filename="  + getFileNameDOI() + ".ris";
         response.setHeader("Content-Disposition", fileNameString);
 
         try {
