@@ -264,6 +264,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     
     /* We should be defaulting to ISO-Latin, NOT US-ASCII! -- L.A. */
     private String defaultCharSet = "ISO-8859-1";
+    //private String defaultCharSet = "US-ASCII"; // -- temporary! -- 4.0 beta 6
     private int    spssVersionNumber = 0; 
 
 
@@ -662,7 +663,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                  */
                 if (spssVersionNumber > 15) {
                     if (getDataLanguageEncoding() == null) {
-                        defaultCharSet = "UTF-8";
+                        //defaultCharSet = "ISO-8859-1"; // temporary! -- L.A. "UTF-8";
+                        //defaultCharSet = "UTF-8"; 
                     }
                 }
             }
@@ -2717,7 +2719,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                                 if (paddRemoved.equals("")) {
                                     paddRemoved = " ";
                                 }
-                                casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                                //casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                                casewiseRecordForTabFile.set(k, escapeCharacterString(paddRemoved));
 
                             // end of String var case
 
@@ -2814,7 +2817,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                                             String newDatum = sdf_hms.format(new Date(dateDatum));
                                             dbgLog.finer("k=" + k + ":" + newDatum);
                                             casewiseRecordForTabFile.set(k, newDatum);
-                                            dateFormatList[k] = sdf_hms.toPattern();
+                                            if (dateFormatList[k] == null) {
+                                                dateFormatList[k] = sdf_hms.toPattern();
+                                            }
                                         } else {
                                             // decimal point included
                                             String[] timeData = casewiseRecordForTabFile.get(k).toString().split("\\.");
@@ -2830,7 +2835,11 @@ public class SAVFileReader  extends TabularDataFileReader{
                                             }
                                             dbgLog.finer("k=" + k + ":" + sb_time.toString());
                                             casewiseRecordForTabFile.set(k, sb_time.toString());
-                                            dateFormatList[k] = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                            
+                                            String format_hmsS = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "");
+                                            if (dateFormatList[k] == null || (format_hmsS.length() > dateFormatList[k].length())) {
+                                                dateFormatList[k] = format_hmsS;
+                                            }
                                         }
                                     }
 				    
@@ -3148,7 +3157,8 @@ public class SAVFileReader  extends TabularDataFileReader{
 			    paddRemoved = " ";
 			}
 
-			casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+			//casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                        casewiseRecordForTabFile.set(k, escapeCharacterString(paddRemoved));
 			
 			// end of String var case
 
@@ -3243,7 +3253,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                                     String newDatum = sdf_hms.format(new Date(dateDatum));
                                     dbgLog.finer("k="+k+":"+newDatum);
                                     casewiseRecordForTabFile.set(k, newDatum);
-                                    dateFormatList[k] = sdf_hms.toPattern();
+                                    if (dateFormatList[k] == null) {
+                                        dateFormatList[k] = sdf_hms.toPattern();
+                                    }
                                 } else {
                                     // decimal point included
                                     String[] timeData = casewiseRecordForTabFile.get(k).toString().split("\\.");
@@ -3259,8 +3271,11 @@ public class SAVFileReader  extends TabularDataFileReader{
                                     }
                                     dbgLog.finer("k="+k+":"+sb_time.toString());
                                     casewiseRecordForTabFile.set(k, sb_time.toString());
-                                    // time with milliseconds:
-                                    dateFormatList[k] = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                    // time, possibly with milliseconds:
+                                    String format_hmsS = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                    if (dateFormatList[k] == null || (format_hmsS.length() > dateFormatList[k].length())) {
+                                        dateFormatList[k] = format_hmsS;
+                                    }
                                 }
                             }
                         } else if (variableFormatType.equals("other")){

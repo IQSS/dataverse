@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.*;
 //import edu.harvard.iq.dataverse.ingest.plugin.metadata.*;
 import java.io.*;
 import static java.lang.System.*;
+import java.util.regex.Matcher;
 
 /**
  * An abstract superclass for reading and writing of a statistical data file.
@@ -148,6 +149,32 @@ public abstract class TabularDataFileReader {
             nullRemovedString = rawString;
         }
         return nullRemovedString;
+    }
+    
+    protected String escapeCharacterString(String rawString) {
+        /*
+         * Some special characters, like new lines and tabs need to 
+         * be escaped - otherwise they will break our TAB file 
+         * structure! 
+         * But before we escape anything, all the back slashes 
+         * already in the string need to be escaped themselves.
+         */
+        String escapedString = rawString.replace("\\", "\\\\");
+        // escape quotes: 
+        escapedString = escapedString.replaceAll("\"", Matcher.quoteReplacement("\\\""));
+        // escape tabs and new lines:
+        escapedString = escapedString.replaceAll("\t", Matcher.quoteReplacement("\\t"));
+        escapedString = escapedString.replaceAll("\n", Matcher.quoteReplacement("\\n"));
+        escapedString = escapedString.replaceAll("\r", Matcher.quoteReplacement("\\r"));
+        
+        // the escaped version of the string is stored in the tab file 
+        // enclosed in double-quotes; this is in order to be able 
+        // to differentiate between an empty string (tab-delimited empty string in 
+        // double quotes) and a missing value (tab-delimited empty string). 
+     
+        escapedString = "\"" + escapedString + "\"";
+        
+        return escapedString;
     }
 
 }
