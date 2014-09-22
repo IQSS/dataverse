@@ -13,13 +13,13 @@ public class DatasetVersionDifference {
 
     private DatasetVersion newVersion;
     private DatasetVersion originalVersion;
-    private List<List> detailDataByBlock = new ArrayList<>();
+    private List<List<DatasetField[]>> detailDataByBlock = new ArrayList<>();
     private List<datasetFileDifferenceItem> datasetFilesDiffList;
-    private List<FileMetadata> addedFiles = new ArrayList();
-    private List<FileMetadata> removedFiles = new ArrayList();
-    private List<FileMetadata> changedFileMetadata = new ArrayList();
-    private List<Object[]> summaryDataForNote = new ArrayList();
-    private List<Object[]> blockDataForNote = new ArrayList();
+    private List<FileMetadata> addedFiles = new ArrayList<>();
+    private List<FileMetadata> removedFiles = new ArrayList<>();
+    private List<FileMetadata> changedFileMetadata = new ArrayList<>();
+    private List<Object[]> summaryDataForNote = new ArrayList<>();
+    private List<Object[]> blockDataForNote = new ArrayList<>();
     String noFileDifferencesFoundLabel = "";
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
@@ -94,7 +94,7 @@ public class DatasetVersionDifference {
 
         //Sort within blocks by datasetfieldtype dispaly order then....
         //sort via metadatablock order - citation first...
-        for (List blockList : detailDataByBlock) {
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
             Collections.sort(blockList, new Comparator<DatasetField[]>() {
                 public int compare(DatasetField[] l1, DatasetField[] l2) {
                     DatasetField dsfa = l1[0];  //(DatasetField[]) l1.get(0);
@@ -105,8 +105,8 @@ public class DatasetVersionDifference {
                 }
             });
         }
-        Collections.sort(detailDataByBlock, new Comparator<List>() {
-            public int compare(List l1, List l2) {
+        Collections.sort(detailDataByBlock, new Comparator<List<DatasetField[]>>() {
+            public int compare(List<DatasetField[]> l1, List<DatasetField[]> l2) {
                 DatasetField dsfa[] = (DatasetField[]) l1.get(0);
                 DatasetField dsfb[] = (DatasetField[]) l2.get(0);
                 int a = dsfa[0].getDatasetFieldType().getMetadataBlock().getId().intValue();
@@ -116,7 +116,7 @@ public class DatasetVersionDifference {
         });
     }
 
-    private void addToList(List listIn, DatasetField dsfo, DatasetField dsfn) {
+    private void addToList(List<DatasetField[]> listIn, DatasetField dsfo, DatasetField dsfn) {
         DatasetField[] dsfArray;
         dsfArray = new DatasetField[2];
         dsfArray[0] = dsfo;
@@ -134,7 +134,7 @@ public class DatasetVersionDifference {
             dsfn.setDatasetFieldType(dsfo.getDatasetFieldType());
         }
         boolean addedToAll = false;
-        for (List blockList : detailDataByBlock) {
+        for (List<DatasetField[]> blockList : detailDataByBlock) {
             DatasetField dsft[] = (DatasetField[]) blockList.get(0);
             if (dsft[0].getDatasetFieldType().getMetadataBlock().equals(dsfo.getDatasetFieldType().getMetadataBlock())) {
                 addToList(blockList, dsfo, dsfn);
@@ -304,11 +304,11 @@ public class DatasetVersionDifference {
         return retString;
     }
 
-    public List<List> getDetailDataByBlock() {
+    public List<List<DatasetField[]>> getDetailDataByBlock() {
         return detailDataByBlock;
     }
 
-    public void setDetailDataByBlock(List<List> detailDataByBlock) {
+    public void setDetailDataByBlock(List<List<DatasetField[]>> detailDataByBlock) {
         this.detailDataByBlock = detailDataByBlock;
     }
 
@@ -369,7 +369,7 @@ public class DatasetVersionDifference {
     }
 
     private void initDatasetFilesDifferencesList() {
-        datasetFilesDiffList = new ArrayList<datasetFileDifferenceItem>();
+        datasetFilesDiffList = new ArrayList<>();
 
         // Study Files themselves are version-less;
         // In other words, 2 different versions can have different sets of

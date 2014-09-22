@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -61,7 +60,7 @@ public class SearchIncludeFragment {
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
     private String selectedTypesString;
-    private List<String> selectedTypesList = new ArrayList<String>();
+    private List<String> selectedTypesList = new ArrayList<>();
     private String selectedTypesHumanReadable;
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;

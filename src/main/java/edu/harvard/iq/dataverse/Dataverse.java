@@ -22,13 +22,11 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -95,12 +93,12 @@ public class Dataverse extends DvObjectContainer {
     private boolean displayFeatured;
 
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<MetadataBlock> metadataBlocks = new ArrayList<MetadataBlock>();
+    private List<MetadataBlock> metadataBlocks = new ArrayList<>();
 
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
 
-    private List<DataverseFacet> dataverseFacets = new ArrayList<DataverseFacet>();
+    private List<DataverseFacet> dataverseFacets = new ArrayList<>();
 
     private boolean templateRoot;
 
@@ -127,7 +125,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Template> getParentTemplates() {
-        List<Template> retList = new ArrayList<Template>();
+        List<Template> retList = new ArrayList<>();
         Dataverse testDV = this;
         while (testDV.getOwner() != null){   
             
@@ -381,7 +379,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Dataverse> getOwners() {
-        List<Dataverse> owners = new ArrayList<Dataverse>();
+        List<Dataverse> owners = new ArrayList<>();
         if (getOwner() != null) {
             owners.addAll(getOwner().getOwners());
             owners.add(getOwner());

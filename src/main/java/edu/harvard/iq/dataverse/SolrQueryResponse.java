@@ -18,7 +18,7 @@ public class SolrQueryResponse {
     private List<FacetCategory> typeFacetCategories;
     Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField;
-    private List<String> filterQueriesActual = new ArrayList<String>();
+    private List<String> filterQueriesActual = new ArrayList<>();
     private String error;
 
     public List<SolrSearchResult> getSolrSearchResults() {

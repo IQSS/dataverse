@@ -33,7 +33,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     DataverseSession dataverseSession;
 
     public List<Dataverse> getDataverses(Dataverse dataverse) {
-        List dataverses = new ArrayList();
+        List<Dataverse> dataverses = new ArrayList<>();
         if (dataverse != null) {
             dataverses.addAll(dataverse.getOwners());
             dataverses.add(dataverse);

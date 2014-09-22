@@ -166,7 +166,7 @@ public class IngestServiceBean {
     }
     
     public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String contentType) throws IOException {
-        List<DataFile> datafiles = new ArrayList<DataFile>(); 
+        List<DataFile> datafiles = new ArrayList<>(); 
         
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
@@ -417,7 +417,7 @@ public class IngestServiceBean {
     // add comments explaining what's going on in the 2 methods below. 
     // -- L.A. 4.0 beta
     private String checkForDuplicateFileNames(DatasetVersion version, String fileName) {
-        Set<String> fileNamesExisting = new HashSet<String>();
+        Set<String> fileNamesExisting = new HashSet<>();
 
         Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator();
         while (fmIt.hasNext()) {
@@ -548,7 +548,7 @@ public class IngestServiceBean {
         fmd.setDataFile(datafile);
         datafile.getFileMetadatas().add(fmd);
         if (version.getFileMetadatas() == null) {
-            version.setFileMetadatas(new ArrayList());
+            version.setFileMetadatas(new ArrayList<FileMetadata>());
         }
         version.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(version);
@@ -1645,7 +1645,7 @@ public class IngestServiceBean {
     }
  
     private Set<Integer> selectContinuousVariableColumns(DataFile dataFile) {
-        Set<Integer> contVarFields = new LinkedHashSet<Integer>();
+        Set<Integer> contVarFields = new LinkedHashSet<>();
 
         for (int i = 0; i < dataFile.getDataTable().getVarQuantity(); i++) {
             if ("continuous".equals(dataFile.getDataTable().getDataVariables().get(i).getVariableIntervalType().getName())) {

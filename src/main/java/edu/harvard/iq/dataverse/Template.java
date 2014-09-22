@@ -87,16 +87,16 @@ public class Template implements Serializable {
 
     @OneToMany(mappedBy = "template", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList();
+    private List<DatasetField> datasetFields = new ArrayList<>();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
 
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<>();
     @Transient
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
 
     public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
@@ -127,7 +127,7 @@ public class Template implements Serializable {
 
     private List<DatasetField> initDatasetFields() {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             retList.add(initDatasetField(dsf));
         }
@@ -181,8 +181,8 @@ public class Template implements Serializable {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForView = new ArrayList();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList();
+            List<DatasetField> datasetFieldsForView = new ArrayList<>();
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
 
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
@@ -204,8 +204,8 @@ public class Template implements Serializable {
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.getDataverse().getMetadataBlocks()) {
-            List<DatasetField> datasetFieldsForView = new ArrayList();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList();
+            List<DatasetField> datasetFieldsForView = new ArrayList<>();
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<>();
             for (DatasetField dsf : this.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
@@ -262,7 +262,7 @@ public class Template implements Serializable {
     }
 
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<>();
 
         for (DatasetField sourceDsf : copyFromList) {
             //the copy needs to have the current version
@@ -284,7 +284,7 @@ public class Template implements Serializable {
     }
 
     private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new LinkedList();
+        List<DatasetField> retList = new LinkedList<>();
         for (DatasetField dsf : dsfList) {
             retList.add(dsf);
             if (dsf.getDatasetFieldType().isCompound()) {

@@ -51,7 +51,7 @@ public class DownloadInfo {
     
     public DownloadInfo(DataFile sf) {
         dataFile = sf;
-        optionalServicesAvailable = new ArrayList<OptionalAccessService>();       
+        optionalServicesAvailable = new ArrayList<>();       
     }
 
     public DataFile getDataFile() {

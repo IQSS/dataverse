@@ -20,33 +20,27 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.csv;
 
 import java.io.*;
-import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.text.*;
 import java.util.logging.*;
 import java.util.*;
-import java.security.NoSuchAlgorithmException;
-
 import javax.inject.Inject;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
-import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -157,7 +151,7 @@ public class CSVFileReader extends TabularDataFileReader {
         
         // Create variables: 
         
-        List<DataVariable> variableList = new ArrayList<DataVariable>();
+        List<DataVariable> variableList = new ArrayList<>();
         
         for (int i = 0; i < varQnty; i++) {
             String varName = valueTokens[i];
@@ -172,10 +166,10 @@ public class CSVFileReader extends TabularDataFileReader {
             DataVariable dv = new DataVariable();
             dv.setName(varName);
             dv.setLabel(varName);
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics(new ArrayList());
+            dv.setInvalidRanges(new ArrayList<VariableRange>());
+            dv.setSummaryStatistics(new ArrayList<SummaryStatistic>());
             dv.setUnf("UNF:6:NOTCALCULATED");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
             dv.setVariableFormatType(varService.findVariableFormatTypeByName("character"));

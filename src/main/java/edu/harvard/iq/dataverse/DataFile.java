@@ -113,7 +113,7 @@ public class DataFile extends DvObject {
 
     public void setDataTable(DataTable dt) {
         if (this.getDataTables() == null) {
-            this.setDataTables( new ArrayList() );
+            this.setDataTables( new ArrayList<DataTable>() );
         } else {
             this.getDataTables().clear();
         }
@@ -131,7 +131,7 @@ public class DataFile extends DvObject {
 
     public void setIngestReport(IngestReport report) {
         if (ingestReports == null) {
-            ingestReports = new ArrayList();
+            ingestReports = new ArrayList<>();
         } else {
             ingestReports.clear();
         }

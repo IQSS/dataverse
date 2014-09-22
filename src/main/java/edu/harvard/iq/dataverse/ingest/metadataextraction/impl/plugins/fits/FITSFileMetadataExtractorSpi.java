@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
 
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import java.util.logging.*;
 import java.util.Locale;
 

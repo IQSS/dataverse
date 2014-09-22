@@ -156,7 +156,7 @@ public class RemoteDataFrameService {
         dbgLog.fine("RemoteDataFrameService: execute() starts here.");
     
         // set the return object
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         
         try {
             // TODO: 
@@ -279,7 +279,7 @@ public class RemoteDataFrameService {
                 c.voidEval(fmtValuesLine);
             } else {
                 String [] varFmtN ={};
-                List<String> varFmtV = new ArrayList<String>();
+                List<String> varFmtV = new ArrayList<>();
                 c.assign("varFmt", new REXPList(new RList(varFmtV, varFmtN)));
             }
             
@@ -615,7 +615,7 @@ public class RemoteDataFrameService {
 
     public static String[] getValueSet(Map<String, String> mp, String[] keys) {
         
-        List<String> tmpvl = new ArrayList<String>();
+        List<String> tmpvl = new ArrayList<>();
         for (int i=0; i< keys.length; i++){
             tmpvl.add(mp.get(keys[i]));
         }
@@ -631,7 +631,7 @@ public class RemoteDataFrameService {
      */
     public Map<String, String> runDataFrameRequest(RJobRequest sro, RConnection c){
             
-        Map<String, String> sr = new HashMap<String, String>();
+        Map<String, String> sr = new HashMap<>();
                 
         try {
             String dataFileName = "Data." + PID + "." + sro.getFormatRequested();

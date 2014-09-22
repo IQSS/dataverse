@@ -65,7 +65,7 @@ public final class SPSSConstants {
      * SPSS SAV data-format code.
      */
     public static Map<Integer, String> FORMAT_CODE_TABLE_SAV =
-            new LinkedHashMap<Integer, String>();
+            new LinkedHashMap<>();
             
     /**
      * A mapping table from a <code>Integer</code> value to 
@@ -74,14 +74,14 @@ public final class SPSSConstants {
      * coincide.
      */
     public static Map<Integer, String> FORMAT_CODE_TABLE_POR =
-            new LinkedHashMap<Integer, String>();
+            new LinkedHashMap<>();
             
     /**
      * A mapping table that groups data-formats into three categories
      * (date, time, and other).
      */
     public static Map<String, String> FORMAT_CATEGORY_TABLE =
-            new LinkedHashMap<String, String>();
+            new LinkedHashMap<>();
 
     private static List<Integer> ORDINARY_FORMAT_CODE = Arrays.asList(0, 1, 5);
 
@@ -90,7 +90,7 @@ public final class SPSSConstants {
      * is not a date/time type.
      */
     public static final Set<Integer> ORDINARY_FORMAT_CODE_SET =
-            new LinkedHashSet<Integer>(ORDINARY_FORMAT_CODE);
+            new LinkedHashSet<>(ORDINARY_FORMAT_CODE);
 
     /**
      * A <code>String</code> array of short weekday names in English 
@@ -106,12 +106,12 @@ public final class SPSSConstants {
      * A mapping table from an <code>Integer</code> to
      * a short-weekday name in English.
      */
-    public static final Map<Integer, String> WEEKDAY_LIST= new LinkedHashMap<Integer, String>();
+    public static final Map<Integer, String> WEEKDAY_LIST= new LinkedHashMap<>();
     /**
      * A mapping table from an <code>Integer</code> to
      * a short-month name in English.
      */
-    public static final Map<Integer, String> MONTH_LIST= new LinkedHashMap<Integer, String>();
+    public static final Map<Integer, String> MONTH_LIST= new LinkedHashMap<>();
 
     static{
         for (int i=0; i< FORMAT_KEYS_SAV.length; i++){

@@ -27,7 +27,7 @@ public class AdvancedSearchPage {
 
     private Dataverse dataverse;
     private List<MetadataBlock> metadataBlocks;
-    private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap();
+    private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap<>();
     private List<DatasetFieldType> metadataFieldList;
     private String dvFieldName;
     private String dvFieldDescription;
@@ -49,7 +49,7 @@ public class AdvancedSearchPage {
 
         for (MetadataBlock mdb : metadataBlocks) {
 
-            List dsfTypes = new ArrayList();
+            List<DatasetFieldType> dsfTypes = new ArrayList<>();
             for (DatasetFieldType dsfType : metadataFieldList) {
                 if (dsfType.getMetadataBlock().getId().equals(mdb.getId())) {
                     dsfTypes.add(dsfType);
@@ -61,7 +61,7 @@ public class AdvancedSearchPage {
     }
 
     public String find() throws IOException {
-        List<String> queryStrings = new ArrayList();
+        List<String> queryStrings = new ArrayList<>();
         queryStrings.add(constructDataverseQuery());
         queryStrings.add(constructDatasetQuery());
         queryStrings.add(constructFileQuery());
@@ -70,12 +70,12 @@ public class AdvancedSearchPage {
     }
 
     private String constructDatasetQuery() {
-        List<String> queryStrings = new ArrayList();
+        List<String> queryStrings = new ArrayList<>();
         for (DatasetFieldType dsfType : metadataFieldList) {
             if (dsfType.getSearchValue() != null && !dsfType.getSearchValue().equals("")) {
                 queryStrings.add(constructQuery(dsfType.getSolrField().getNameSearchable(), dsfType.getSearchValue()));
             } else if (dsfType.getListValues() != null && !dsfType.getListValues().isEmpty()) {
-                List<String> listQueryStrings = new ArrayList();
+                List<String> listQueryStrings = new ArrayList<>();
                 for (String value : dsfType.getListValues()) {
                     listQueryStrings.add(dsfType.getSolrField().getNameSearchable() + ":" + "\"" + value + "\"");
                 }
@@ -87,7 +87,7 @@ public class AdvancedSearchPage {
     }
 
     private String constructDataverseQuery() {
-        List queryStrings = new ArrayList();
+        List<String> queryStrings = new ArrayList<>();
         if (!dvFieldName.isEmpty()) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName));
         }
@@ -104,7 +104,7 @@ public class AdvancedSearchPage {
     }
 
     private String constructFileQuery() {
-        List queryStrings = new ArrayList();
+        List<String> queryStrings = new ArrayList<>();
         if (!fileFieldName.isEmpty()) {
             queryStrings.add(constructQuery(SearchFields.FILE_NAME, fileFieldName));
         }
@@ -158,7 +158,7 @@ public class AdvancedSearchPage {
         StringBuilder queryBuilder = new StringBuilder();
         String delimiter = "[\"]+";
 
-        List<String> queryStrings = new ArrayList();
+        List<String> queryStrings = new ArrayList<>();
 
         if (userSuppliedQuery != null && !userSuppliedQuery.equals("")) {
             if (userSuppliedQuery.contains("\"")) {

@@ -14,9 +14,7 @@ import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -130,11 +128,11 @@ public class BuiltinUserPage implements java.io.Serializable {
 
 
 
-    public List getNotificationsList() {
+    public List<UserNotification> getNotificationsList() {
         return notificationsList;
     }
 
-    public void setNotificationsList(List notificationsList) {
+    public void setNotificationsList(List<UserNotification> notificationsList) {
         this.notificationsList = notificationsList;
     }
 

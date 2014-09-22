@@ -41,7 +41,7 @@ public class DataAccessRequest {
 
     public DataAccessRequest (DataFile file) {
         this.file = file;
-        this.requestParameters = new HashMap<String, String>();
+        this.requestParameters = new HashMap<>();
     }
 
     private DataFile file;

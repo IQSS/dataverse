@@ -35,7 +35,7 @@ public class RJobRequest {
     private static Logger dbgLog = Logger.getLogger(RJobRequest.class.getPackage().getName());
 
 
-    private Map<String,String> variableFormats = new HashMap<String,String>(); 
+    private Map<String,String> variableFormats = new HashMap<>(); 
     
     /**
      * 4 parameter Constructor:
@@ -141,7 +141,7 @@ public class RJobRequest {
     
     public int[] getVariableTypes() {
         
-        List<Integer> rw = new ArrayList<Integer>();
+        List<Integer> rw = new ArrayList<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
             if (!StringUtils.isEmpty(dv.getFormatCategory())){
@@ -197,7 +197,7 @@ public class RJobRequest {
     
     public List<String> getVariableTypesAsString() {
         
-        List<String> rw = new ArrayList<String>();
+        List<String> rw = new ArrayList<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
             if (!StringUtils.isEmpty(dv.getFormatCategory())){
@@ -247,7 +247,7 @@ public class RJobRequest {
      *            its corresponding type, either time or date
      */
     public Map<String, String> getVariableFormats() {
-        Map<String, String> variableFormats=new LinkedHashMap<String, String>();
+        Map<String, String> variableFormats=new LinkedHashMap<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
 
@@ -342,7 +342,7 @@ public class RJobRequest {
     public String[] getVariableNames() {
         String[] variableNames=null;
         
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add(dv.getName());
@@ -376,7 +376,7 @@ public class RJobRequest {
     }
     
     public List<String> getFilteredVarNameSet(List<String> varIdSet){
-        List<String> varNameSet = new ArrayList<String>();
+        List<String> varNameSet = new ArrayList<>();
         for (String vid : varIdSet){
             dbgLog.fine("name list: vid="+vid);
             String raw = getVarIdToRawVarNameTable().get(vid);
@@ -399,7 +399,7 @@ public class RJobRequest {
     
     public String[] getVariableIds(){
         String[] variableIds=null;
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add("v"+dv.getId().toString());
@@ -410,7 +410,7 @@ public class RJobRequest {
     }
 
     public Map<String, String> getVarIdToRawVarNameTable(){
-        Map<String, String> vi2rwn = new HashMap<String, String>();
+        Map<String, String> vi2rwn = new HashMap<>();
         
         for(DataVariable dv :dataVariablesForRequest){
             vi2rwn.put("v"+dv.getId(), dv.getName());
@@ -419,7 +419,7 @@ public class RJobRequest {
     }
 
     public Map<String, String> getRawVarNameToVarIdTable(){
-        Map<String, String> rwn2Id = new HashMap<String, String>();
+        Map<String, String> rwn2Id = new HashMap<>();
         
         for(DataVariable dv :dataVariablesForRequest){
             rwn2Id.put(dv.getName(), "v"+dv.getId());
@@ -428,7 +428,7 @@ public class RJobRequest {
     }
 
     public String[] getUpdatedVariableNames(){
-        List<String> tmp = new ArrayList<String>();
+        List<String> tmp = new ArrayList<>();
         if (!hasUnsafeVariableNames){
             // neither renemaed nor recoded vars
             return  getVariableNames();
@@ -444,7 +444,7 @@ public class RJobRequest {
      */
     public String[] getVariableLabels(){
         String [] variableLabels=null;
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add(dv.getLabel());
