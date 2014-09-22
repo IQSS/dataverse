@@ -72,11 +72,11 @@ public class Dataverse extends DvObjectContainer {
     private boolean facetRoot;
 
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<MetadataBlock> metadataBlocks = new ArrayList();
+    private List<MetadataBlock> metadataBlocks = new ArrayList<MetadataBlock>();
 
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
-    private List<DataverseFacet> dataverseFacets = new ArrayList();
+    private List<DataverseFacet> dataverseFacets = new ArrayList<DataverseFacet>();
     
     public enum ImageFormat { SQUARE, RECTANGLE }
 
@@ -287,7 +287,7 @@ public class Dataverse extends DvObjectContainer {
     }
 
     public List<Dataverse> getOwners() {
-        List owners = new ArrayList();
+        List<Dataverse> owners = new ArrayList<Dataverse>();
         if (getOwner() != null) {
             owners.addAll(getOwner().getOwners());
             owners.add(getOwner());
