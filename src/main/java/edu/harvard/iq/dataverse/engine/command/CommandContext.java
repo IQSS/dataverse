@@ -5,11 +5,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
+import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import javax.persistence.EntityManager;
 
@@ -33,7 +35,7 @@ public interface CommandContext {
 	
 	public DataverseRoleServiceBean roles();
 	
-	public DataverseUserServiceBean users();
+	public BuiltinUserServiceBean users();
 	
 	public IndexServiceBean index();
 	
@@ -43,6 +45,10 @@ public interface CommandContext {
 	
 	public DataverseFacetServiceBean facets(); 
         
+        public FeaturedDataverseServiceBean featuredDataverses();
+        
         public DataFileServiceBean files(); 
+        
+        public TemplateServiceBean templates();
 	
 }

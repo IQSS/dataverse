@@ -5,10 +5,10 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class Browse {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
     @EJB
     PermissionServiceBean permissionService;
 
@@ -43,11 +43,11 @@ public class Browse {
     @GET
     @Path("{user}")
     public String browseByUser(@PathParam("user") String username) {
-        DataverseUser dataverseUser = dataverseUserService.findByUserName(username);
+        User dataverseUser = dataverseUserService.findByIdentifier(username);
         if (dataverseUser != null) {
             List<Dataset> datasetsByUser = new ArrayList<>();
             List<Dataset> allDatasets = datasetService.findAll();
-            Permission permission = Permission.Access;
+            Permission permission = Permission.Discover;
             for (Dataset dataset : allDatasets) {
                 if (permissionService.permissionsFor(dataverseUser, dataset).contains(permission)) {
                     datasetsByUser.add(dataset);

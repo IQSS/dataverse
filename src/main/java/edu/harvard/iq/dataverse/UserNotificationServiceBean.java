@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -26,7 +27,7 @@ public class UserNotificationServiceBean {
     private EntityManager em;
     
     public List<UserNotification> findByUser(Long userId) {
-        Query query = em.createQuery("select object(o) from UserNotification as o where o.user.id =:userId order by o.sendDate desc");
+        Query query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc");
         query.setParameter("userId", userId);
         return query.getResultList();
     }
@@ -60,7 +61,7 @@ public class UserNotificationServiceBean {
         em.remove(em.merge(userNotification));
     }
     
-    public void sendNotification(DataverseUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);

@@ -1,0 +1,12 @@
+#!/bin/sh
+USERNAME=pete
+PASSWORD=pete
+SERVER=localhost:8181
+if [ -z "$1" ]; then
+  GLOBAL_ID=`scripts/api/data-deposit/list-datasets | xpath '//id/text()' | cut -d'/' -f11,12,13`
+else
+  GLOBAL_ID=$1
+  #GLOBAL_ID=doi:10.5072/FK2/5555
+fi
+curl --insecure --upload-file "scripts/search/tests/data/dataset-versioning03-setup.xml" -H "Content-Type: application/atom+xml" https://$USERNAME:$PASSWORD@$SERVER/dvn/api/data-deposit/v1/swordv2/edit/study/$GLOBAL_ID \
+| xmllint -format - \

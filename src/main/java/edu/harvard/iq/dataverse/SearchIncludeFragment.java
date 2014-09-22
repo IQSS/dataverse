@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -314,7 +316,8 @@ public class SearchIncludeFragment {
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
                     if (dataverseInCard != null) {
-                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId());
+                        //Omit deaccessioned datasets
+                        List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId(), true);
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
@@ -439,7 +442,7 @@ public class SearchIncludeFragment {
         // being explicit about the user, could just call permissionService.on(dataverse)
 
         // TODO: decide on rules for this button and check actual permissions
-        return session.getUser() != null && !session.getUser().isGuest();
+        return session.getUser() != null && (session.getUser() != GuestUser.get() );
         //return permissionService.userOn(session.getUser(), dataverse).has(Permission.UndoableEdit);
     }
 
@@ -823,16 +826,7 @@ public class SearchIncludeFragment {
     }
 
     public boolean userLoggedIn() {
-        DataverseUser dataverseUser = session.getUser();
-        if (dataverseUser != null) {
-            if (dataverseUser.isGuest()) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
+        return ( session.getUser() != GuestUser.get() );
     }
 
     public boolean publishedSelected() {

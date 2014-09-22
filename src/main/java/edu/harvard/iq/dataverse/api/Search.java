@@ -1,14 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
-import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,8 +19,6 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer.RemoteSolrException;
 
 @Path("search")
 public class Search extends AbstractApiBean {
@@ -33,12 +29,12 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
-    @EJB
-    DataverseUserServiceBean dataverseUserService;
 
     @GET
-//    public JsonObject search(@QueryParam("q") String query) {
-    public String search(@QueryParam("key") String apiKey,
+    /**
+     * @todo return errorResponse not error, which is a String.
+     */
+    public String search(@QueryParam("key") String apiToken,
             @QueryParam("q") String query,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
@@ -56,12 +52,14 @@ public class Search extends AbstractApiBean {
             }
             SolrQueryResponse solrQueryResponse;
             try {
-                DataverseUser dataverseUser = null;
-                if (apiKey != null) {
-                    String usernameProvided = apiKey;
-                    dataverseUser = dataverseUserService.findByUserName(usernameProvided);
+                User dataverseUser = null;
+                if (apiToken != null) {
+                    dataverseUser = findUserByApiToken(apiToken);
                     if (dataverseUser == null) {
-                        return error("Couldn't find username: " + usernameProvided);
+                        /**
+                         * @todo return a 404 here
+                         */
+                        return error("Unable to find a user with API token " + apiToken);
                     }
                 }
                 SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;

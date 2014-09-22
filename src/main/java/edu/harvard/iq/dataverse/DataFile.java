@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import org.hibernate.validator.constraints.NotBlank;
@@ -44,6 +47,9 @@ public class DataFile extends DvObject {
 
     private String md5;
 
+    @Column(nullable=true)
+    private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
+
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -60,6 +66,7 @@ public class DataFile extends DvObject {
     private List<FileMetadata> fileMetadatas;
     
     private char ingestStatus = INGEST_STATUS_NONE; 
+    
 
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
@@ -249,7 +256,29 @@ public class DataFile extends DvObject {
         return fmd;
     }
     
-    
+    /**
+     * Get property filesize, number of bytes
+     * @return value of property filesize.
+     */
+    public long getFilesize() {
+        return this.filesize;
+    }
+
+    /**
+     * Set property filesize in bytes
+     * 
+     * Allow nulls, but not negative numbers.
+     * 
+     * @param filesize new value of property filesize.
+     */
+    public void setFilesize(long filesize) {
+        if (filesize < 0){
+            return;
+        }
+       this.filesize = filesize;
+    }
+
+
     public String getmd5() { 
         return this.md5; 
     }
@@ -259,7 +288,11 @@ public class DataFile extends DvObject {
     }
 
     public Path getFileSystemLocation() {
-        
+        // TEMPORARY HACK!
+        // (only used in batch ingest testing -- L.A. 4.0 beta)
+        if (this.fileSystemName != null && this.fileSystemName.startsWith("/")) {
+            return Paths.get(this.fileSystemName);
+        }
         
         Path studyDirectoryPath = this.getOwner().getFileSystemDirectory();
         if (studyDirectoryPath == null) {
@@ -309,6 +342,16 @@ public class DataFile extends DvObject {
         return fileSystemPath.replaceAll("/", "%2F");
     }
     
+    /*
+        Does the contentType indicate a shapefile?
+    */
+    public boolean isShapefileType(){
+        if (this.contentType==null){
+            return false;
+        }
+        return ShapefileHandler.SHAPEFILE_FILE_TYPE.equalsIgnoreCase(this.contentType);
+    }
+    
     public boolean isImage() {
         // Some browsers (Chrome?) seem to identify FITS files as mime
         // type "image/fits" on upload; this is both incorrect (the official
@@ -354,6 +397,32 @@ public class DataFile extends DvObject {
     public int getIngestStatus() {
         return ingestStatus; 
     }
+    
+    
+    /**
+     * URL to use with the WorldMapRelatedData API
+     * Used within dataset.xhtml
+     * 
+     * @param dataverseUserID
+     * @return URL for "Map It" functionality
+     */
+    public String getMapItURL(Long dataverseUserID){
+        if (dataverseUserID==null){
+            return null;
+        }
+        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
+    }
+        
+    /*
+        8/10/2014 - Using the current "open access" url
+    */
+    public String getMapItFileDownloadURL(String serverName){
+        if ((this.getId() == null)||(serverName == null)){
+            return null;
+        }        
+        return serverName + "/api/access/datafile/" + this.getId();
+    }
+    
     /* 
      * If this is tabular data, the corresponding dataTable may have a UNF -
      * "numeric fingerprint" signature - generated:

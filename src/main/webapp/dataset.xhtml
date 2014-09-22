@@ -18,7 +18,7 @@
             <ui:param name="showBreadcrumbs" value="#{empty DatasetPage.editMode}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="1itrou6ddxx0bsd"/>
+                <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="#{DatasetPage.dropBoxKey}"/>
                 <script type="text/javascript">
 
                     function openDialog() {
@@ -36,6 +36,10 @@
                         }
                     }
 
+                    function updateTemplate() {
+                        $('button[id$="updateTemplate"]').trigger('click');
+                    }
+
                     function checkFilesSelected() {
                         var count = filesTable.getSelectedRowsCount();
                         if (count > 0) {
@@ -44,16 +48,17 @@
                             $('button[id$="datasetSave"]').trigger('click');
                         }
                     }
-                    
-                    function updateHiddenReason(textArea){
+
+                    function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);
                     }
 
                     function testDeaccessionVersionSelection(testVersion) {
                         var deaccessionText = $('input[id$="hiddenReasonInput"]').val();
-                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();;
+                        var urlEntry = $('input[id$="forwardURLForDeaccession"]').val();
+                        ;
                         var valid = true;
-                        if (testVersion === true){
+                        if (testVersion === true) {
                             var count = versionDeaccessionTable.getSelectedRowsCount();
                         }
 
@@ -69,7 +74,7 @@
                                 }
                             }
                         }
-                        if(deaccessionText.length >= 1001){
+                        if (deaccessionText.length >= 1001) {
                             valid = false;
                             reasonTooManyCharacters.show();
                         }
@@ -134,7 +139,7 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
                                                              or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
@@ -186,7 +191,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
@@ -263,17 +268,41 @@
                                         <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div id="citation" class="bg-info">
-                                            <span>#{DatasetPage.displayCitation}</span>
-                                            <ui:fragment rendered="#{!DatasetPage.dataset.released}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                                <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
-                                            </ui:fragment>
+                                        <div class="row" style="margin-bottom:.5em; padding-left:15px;">
+                                            <div id="citation" class="bg-info col-md-9">
+                                                <span>#{DatasetPage.displayCitation}</span>
+                                                <ui:fragment rendered="#{!DatasetPage.dataset.released}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with the selected version once the dataset has been published."></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                                    <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
+                                                </ui:fragment>
+                                            </div>
+                                            <div class="row col-md-3" style="padding-right:0;">
+                                                <span id="whycitelink" class="bg-warning small pull-left"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
+                                                <div class="dropdown pull-right">
+                                                    <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
+                                                    </button>
+                                                    <ul class="dropdown-menu pull-right" role="menu" style="text-align:left;">
+                                                        <li>
+                                                            <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
+
+                                                                <h:outputText value="EndNote XML" />
+                                                            </h:commandLink>
+                                                        </li>
+                                                        <li>
+                                                            <h:commandLink id="risLink" actionListener="#{DatasetPage.downloadRISFile()}">
+
+                                                                <h:outputText value="RIS Format" />
+                                                            </h:commandLink>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                     </ui:fragment>
 
@@ -353,9 +382,38 @@
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE'}">
-                            <ui:include src="metadataFragment.xhtml"/>
+                            <ui:fragment rendered="#{!empty DatasetPage.dataverseTemplates}">
+                                <div class="form-group">
+                                    <label for="select_DatasetTemplate" class="col-sm-2 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The dataset template which prepopulates info into the form automatically.">Dataset Template</a>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <p:selectOneMenu value="#{DatasetPage.selectedTemplate}" onchange="updateTemplate()"
+                                                         converter="templateConverter" id="select_DatasetTemplate" styleClass="form-control"
+                                                         valueChangeListener="#{DatasetPage.updateSelectedTemplate}">
+                                            <f:selectItem itemLabel="No template - clear default values" itemValue="#{null}" />
+                                            <f:selectItems value="#{DatasetPage.dataverseTemplates}"
+                                                           var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
+                                        </p:selectOneMenu>
+                                        <p:commandButton value="Direct" id="updateTemplate"
+                                                         style="display:none"
+                                                         update="@all"
+                                                         action="#{DatasetPage.handleChangeButton}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            <ui:include src="metadataFragment.xhtml"/>                      
                         </ui:fragment>
                     </ui:fragment>
+
+                    <!-- Create/Save Dataset Button Panel -->
+                    <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;" rendered="#{DatasetPage.editMode == 'METADATA'}">
+                        <p:commandButton id="saveTop" value="Save Changes" onclick="checkFilesSelected();" />
+                        <p:commandButton id="cancelTop" value="Cancel" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
+                            <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
+                        </p:commandButton>
+                    </p:panel>
 
                     <!-- Tabs -->
                     <ui:fragment rendered="#{DatasetPage.editMode != 'INFO'}">
@@ -403,21 +461,24 @@
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
+
                                         <div class="panel panel-default" style="margin-top:1em;">
-                                            <div class="panel-body">
-                                                <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
-                                                <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
-                                                </p:commandButton>
-                                                <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                                                <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
-                                            </div>
+                                            <ui:fragment  rendered="#{!empty DatasetPage.dropBoxKey}">
+                                                <div class="panel-body">
+                                                    <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
+                                                    <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
+                                                    </p:commandButton>
+                                                    <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
+                                                    <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
+                                                </div>
+                                            </ui:fragment>
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> Upload + Edit Files
@@ -456,11 +517,21 @@
                                             </ui:fragment>
 
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData)}"/>
+
+                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                            <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
+                                            <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
 
                                             <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
 
+                                            <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
+                                                <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
+                                                <br />
+                                                <iframe id="id_iframe_map" height="300" width="100%" src="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+
+                                                <!--br />Metadata here: #{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile) }-->
+                                            </ui:fragment>
                                             <div class="fileDescription">
                                                 <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
                                                 <!--<h:outputText id="fileDescEmpty" value="NO DESCRIPTION AVAILABLE" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.description)}"/>-->
@@ -492,6 +563,13 @@
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
 
+                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                                    <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
+                                                    <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
+                                                    <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
+                                                </a>
+                                            </ui:fragment>
                                             <ui:fragment rendered="#{!(fileMetadata.dataFile.tabularData)}">
                                                 <a class="btn btn-default" href="/api/access/datafile/#{fileMetadata.dataFile.id}" role="button" style="color:#333333;">
                                                     <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download
@@ -536,10 +614,10 @@
                                 </p:tab>
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="containder" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-bottom:.5em;">
                                             <p:graphicImage value="/resources/images/icon_locked.png" rendered="#{DatasetPage.locked}"/>
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Add + Edit Metadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -562,6 +640,7 @@
                                                      oncomplete="detailsBlocks.show();post_differences();"
                                                      actionListener="#{DatasetPage.compareVersionDifferences()}">
                                     </p:commandButton>
+
                                     <p:dataTable id="versionsTable" value="#{DatasetPage.versionTabList}" var="versionTab" widgetVar="versionsTable"
                                                  rowIndexVar="rowNum" selection="#{DatasetPage.selectedVersions}" disabledSelection="#{versionTab.deaccessioned}"  rowKey="#{versionTab}">
                                         <p:column selectionMode="multiple" rendered="#{DatasetPage.compareVersionsCount > 2}"
@@ -635,7 +714,8 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-                                            <h:outputText value="#{versionTab.versionContributors}" />
+											<!-- FIXME Commented this out, as there is no such property at this time. Michael --> 
+                                            <!-- h:outputText value="{versionTab.versionContributors}" /-->
                                         </p:column>
                                         <p:column>
                                             <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />
@@ -698,7 +778,7 @@
                                 Please enter additional information about the reason for deaccession.
                             </label>
                             <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" immediate="true" rows="2" cols="40" 
-                                          onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
+                                             onkeyup="updateHiddenReason(this);"   value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession"/>
                             <p:message for="reasonForDeaccession"/>
                         </div>
                         <div class="form-group">

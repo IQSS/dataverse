@@ -1,6 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
@@ -45,9 +50,11 @@ public class IndexServiceBean {
     @EJB
     DatasetServiceBean datasetService;
     @EJB
-    DataverseUserServiceBean dataverseUserServiceBean;
+    BuiltinUserServiceBean dataverseUserServiceBean;
     @EJB
     PermissionServiceBean permissionService;
+    @EJB
+    AuthenticationServiceBean userServiceBean;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -56,12 +63,12 @@ public class IndexServiceBean {
     public static final String deaccessionedSuffix = "_deaccessioned";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
-    private static final Long publicGroupId = 1L;
+    private static final String publicGroupIdString = "public";
     private static final String publicGroupString = groupPrefix + "public";
     /**
      * @todo: remove this fake "has access to all data" group
      */
-    private static final Long tmpNsaGroupId = 2L;
+    private static final String tmpNsaGroupIdString = "2";
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
@@ -88,20 +95,20 @@ public class IndexServiceBean {
         /**
          * @todo: replace hard-coded groups with real groups
          */
-        Map<Long, String> groups = new HashMap<>();
-        groups.put(publicGroupId, publicGroupString);
-        groups.put(tmpNsaGroupId, "nsa");
-        groups.put(tmpNsaGroupId + 1, "flappybird");
-        groups.put(tmpNsaGroupId + 2, "2048");
+        Map<String, String> groups = new HashMap<>();
+        groups.put(publicGroupIdString, publicGroupString);
+        groups.put(tmpNsaGroupIdString, "nsa");
+        groups.put(tmpNsaGroupIdString + 1, "flappybird");
+        groups.put(tmpNsaGroupIdString + 2, "2048");
 
         int groupIndexCount = 0;
-        for (Map.Entry<Long, String> group : groups.entrySet()) {
+        for (Map.Entry<String, String> group : groups.entrySet()) {
             groupIndexCount++;
             logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
         }
 
         int userIndexCount = 0;
-        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
+        for (AuthenticatedUser user : userServiceBean.findAllAuthenticatedUsers()) {
             userIndexCount++;
             logger.info("indexing user " + userIndexCount + " of several: " + indexUser(user));
         }
@@ -137,14 +144,14 @@ public class IndexServiceBean {
             /**
              * @todo: replace hard-coded groups with real groups
              */
-            Map<Long, String> groups = new HashMap<>();
-            groups.put(publicGroupId, publicGroupString);
-            groups.put(tmpNsaGroupId, "nsa");
-            groups.put(tmpNsaGroupId + 1, "flappybird");
-            groups.put(tmpNsaGroupId + 2, "2048");
+            Map<String, String> groups = new HashMap<>();
+            groups.put(publicGroupIdString, publicGroupString);
+            groups.put(tmpNsaGroupIdString, "nsa");
+            groups.put(tmpNsaGroupIdString + 1, "flappybird");
+            groups.put(tmpNsaGroupIdString + 2, "2048");
 
             int groupIndexCount = 0;
-            for (Map.Entry<Long, String> group : groups.entrySet()) {
+            for (Map.Entry<String, String> group : groups.entrySet()) {
                 groupIndexCount++;
                 logger.info("indexing group " + groupIndexCount + " of " + groups.size() + ": " + indexGroup(group));
             }
@@ -163,7 +170,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getPublicationDate()));
             solrInputDocument.addField(SearchFields.PERMS, publicGroupString);
-        } else if (dataverse.getCreator() != null) { //@todo: do we need this check still
+        } else {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
@@ -184,33 +191,18 @@ public class IndexServiceBean {
 //            }
 //        }
         // this should be the more performant way... given a dataverse, figure out who has the access in question
-//        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
-//        for (RoleAssignment roleAssignment : assignmentsOn) {
-//            if (roleAssignment.getRole().permissions().contains(Permission.Access)) {
-//                final DataverseUser user = roleAssignment.getUser();
-//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
-//            }
-//        }
-        if (dataverse.getCreator() != null) {
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + dataverse.getCreator().getId());
-            /**
-             * @todo: replace this fake version of granting users access to
-             * dataverses with the real thing, when it's available in the app
-             */
-            if (dataverse.getCreator().getUserName().equals("pete")) {
-                // figure out if cathy is around
-                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                if (cathy != null) {
-                    // let cathy see all of pete's dataverses
-                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                }
+        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
+        for (RoleAssignment roleAssignment : assignmentsOn) {
+            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
             }
         }
 
         /**
          * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
 //        if (dataverse.getOwner() != null) {
@@ -591,27 +583,21 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, DRAFT_STRING);
         }
 
-        DataverseUser creator = dataset.getCreator();
-        if (creator != null) {
-            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-            /**
-             * @todo: replace this fake version of granting users access to
-             * dataverses with the real thing, when it's available in the app
-             */
-            if (creator.getUserName().equals("pete")) {
-                // figure out if cathy is around
-                DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                if (cathy != null) {
-                    // let cathy see all of pete's dataverses
-                    solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                }
+        /**
+         * @todo DRY! Same code as for dataverses.
+         */
+        List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
+        for (RoleAssignment roleAssignment : assignmentsOn) {
+            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
             }
         }
 
         /**
          * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
@@ -801,27 +787,22 @@ public class IndexServiceBean {
                 }
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
-                if (creator != null) {
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + creator.getId());
-                    /**
-                     * @todo: replace this fake version of granting users access
-                     * to dataverses with the real thing, when it's available in
-                     * the app
-                     */
-                    if (creator.getUserName().equals("pete")) {
-                        // figure out if cathy is around
-                        DataverseUser cathy = dataverseUserServiceBean.findByUserName("cathy");
-                        if (cathy != null) {
-                            // let cathy see all of pete's dataverses
-                            datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + cathy.getId());
-                        }
+                /**
+                 * @todo Should we be checking permissions on the dataset like
+                 * this or the datafile?
+                 */
+                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(dataset);
+                for (RoleAssignment roleAssignment : assignmentsOnFile) {
+                    if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                        String userIdentifier = roleAssignment.getAssigneeIdentifier();
+                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
                     }
                 }
 
                 /**
                  * @todo: remove this fake "has access to all data" group
                  */
-                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupId);
+                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
                 // For the mime type, we are going to index the "friendly" version, e.g., 
                 // "PDF File" instead of "application/pdf", "MS Excel" instead of 
@@ -893,7 +874,7 @@ public class IndexServiceBean {
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
-    public String indexGroup(Map.Entry<Long, String> group) {
+    public String indexGroup(Map.Entry<String, String> group) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
@@ -902,7 +883,11 @@ public class IndexServiceBean {
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, id);
-        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
+        /**
+         * @todo think about how we groups don't have entity IDs in Solr any
+         * more, after the auth merge
+         */
+//        solrInputDocument.addField(SearchFields.ENTITY_ID, group.getKey());
         solrInputDocument.addField(SearchFields.NAME_SORT, group.getValue());
         solrInputDocument.addField(SearchFields.GROUPS, id);
 
@@ -926,20 +911,25 @@ public class IndexServiceBean {
         return "indexed group " + group;
     }
 
-    public String indexUser(DataverseUser user) {
+    public String indexUser(User user) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
 
-        String userid = groupPerUserPrefix + user.getId();
-        if (user.isGuest()) {
+        String userid = groupPerUserPrefix + user.getIdentifier();
+        if (!user.isAuthenticated()) {
             userid = publicGroupString;
         }
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, userid);
-        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getId());
-        solrInputDocument.addField(SearchFields.NAME_SORT, user.getUserName());
+        /**
+         * @todo is it bad to not index entity id for users, which has changed
+         * from Long to String, yielding NumberFormatException when indexing
+         * into Solr?
+         */
+//        solrInputDocument.addField(SearchFields.ENTITY_ID, user.getIdentifier());
+        solrInputDocument.addField(SearchFields.NAME_SORT, user.getDisplayInfo().getTitle());
         solrInputDocument.addField(SearchFields.GROUPS, userid);
 
         docs.add(solrInputDocument);
@@ -959,7 +949,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
-        return "indexed user " + user.getId() + ":" + user.getUserName();
+        return "indexed user " + user.getIdentifier() + ":" + user.getDisplayInfo().getTitle();
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
@@ -1022,8 +1012,8 @@ public class IndexServiceBean {
         return publicGroupString;
     }
 
-    public static Long getTmpNsaGroupId() {
-        return tmpNsaGroupId;
+    public static String getTmpNsaGroupId() {
+        return tmpNsaGroupIdString;
     }
 
     public static String getPUBLISHED_STRING() {

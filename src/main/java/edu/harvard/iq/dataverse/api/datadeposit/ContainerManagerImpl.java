@@ -6,9 +6,10 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
@@ -64,7 +65,7 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
         logger.fine("getEntry called with url: " + uri);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
@@ -90,7 +91,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not generate deposit receipt.");
                         }
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to retrieve entry for " + dataset.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to retrieve entry for " + dataset.getGlobalId());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on URL: " + uri);
@@ -105,7 +106,7 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt replaceMetadata(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser vdcUser = swordAuth.auth(authCredentials);
         logger.fine("replaceMetadata called with url: " + uri);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
@@ -157,7 +158,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
                         return depositReceipt;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getDisplayInfo().getTitle()+ " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
@@ -193,7 +194,7 @@ public class ContainerManagerImpl implements ContainerManager {
     @Override
     public void deleteContainer(String uri, AuthCredentials authCredentials, SwordConfiguration sc) throws SwordError, SwordServerException, SwordAuthException {
 //        swordConfiguration = (SwordConfigurationImpl) sc;
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser vdcUser = swordAuth.auth(authCredentials);
         logger.fine("deleteContainer called with url: " + uri);
         urlManager.processUrl(uri);
         logger.fine("original url: " + urlManager.getOriginalUrl());
@@ -260,7 +261,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     if (study != null) {
                         Dataverse dvThatOwnsStudy = study.getOwner();
                         if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsStudy)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getUserName() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getDisplayInfo().getTitle() + " is not authorized to modify " + dvThatOwnsStudy.getAlias());
                         }
                         DatasetVersion.VersionState studyState = study.getLatestVersion().getVersionState();
                         if (study.isReleased()) {
@@ -329,7 +330,7 @@ public class ContainerManagerImpl implements ContainerManager {
     public DepositReceipt useHeaders(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         logger.fine("uri was " + uri);
         logger.fine("isInProgress:" + deposit.isInProgress());
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
@@ -378,8 +379,19 @@ public class ContainerManagerImpl implements ContainerManager {
                                          * the @todo is to think about this a
                                          * bit more before we release 4.0.
                                          */
-                                        boolean attemptMinorVersionBump = false;
-                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, attemptMinorVersionBump);
+                                        boolean doMinorVersionBump = false;
+                                        /**
+                                         * @todo uncomment this code to always
+                                         * try a minor version bump when
+                                         * allowed:
+                                         * https://github.com/IQSS/dataverse/issues/795
+                                         */
+//                                        if (dataset.getLatestVersion().isMinorUpdate()) {
+//                                            doMinorVersionBump = true;
+//                                        } else {
+//                                            doMinorVersionBump = false;
+//                                        }
+                                        cmd = new PublishDatasetCommand(dataset, dataverseUser, doMinorVersionBump);
                                         dataset = engineSvc.submit(cmd);
                                     } catch (CommandException ex) {
                                         String msg = "Unable to publish dataset: " + ex;
@@ -397,7 +409,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to release a study.");
                             }
                         } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getDisplayInfo().getTitle()+ " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study using globalId " + globalId);
@@ -415,7 +427,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
                         if (!swordAuth.hasAccessToModifyDataverse(dataverseUser, dvToRelease)) {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getUserName() + " is not authorized to modify dataverse " + dvAlias);
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
                         }
                         if (deposit.isInProgress()) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
@@ -446,15 +458,10 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public boolean isStatementRequest(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        DataverseUser vdcUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String servlet = urlManager.getServlet();
         if (servlet != null) {
-            if (servlet.equals("statement")) {
-                return true;
-            } else {
-                return false;
-            }
+            return servlet.equals("statement");
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine requested IRI from URL: " + uri);
         }

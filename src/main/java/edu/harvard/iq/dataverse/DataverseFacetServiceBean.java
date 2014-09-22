@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.LruCache;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -16,31 +11,41 @@ import javax.persistence.Query;
 /**
  *
  * @author xyang
+ * @author Michael Bar-Sinai
  */
 @Stateless
 @Named
 public class DataverseFacetServiceBean {
     
+    public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache();
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
     public List<DataverseFacet> findByDataverseId(Long dataverseId) {
-        Query query = em.createQuery("select object(o) from DataverseFacet as o where o.dataverse.id = :dataverseId order by o.displayOrder");
-        query.setParameter("dataverseId", dataverseId);
-        return query.getResultList();
-    }
-    public List<DataverseFacet> findByRootDataverse() {
-        return em.createQuery("select object(o) from DataverseFacet as o where o.dataverse.id = 1 order by o.displayOrder").getResultList();
+        List<DataverseFacet> res = cache.get(dataverseId);
+
+        if ( res == null ) {
+            Query query = em.createNamedQuery("DataverseFacet.findByDataverseId", DataverseFacet.class);
+            query.setParameter("dataverseId", dataverseId);
+            res = query.getResultList();
+            cache.put(dataverseId, res);
+        }
+
+        return res; 
     }
 
     public void delete(DataverseFacet dataverseFacet) {
         em.remove(em.merge(dataverseFacet));
+        cache.invalidate();
     }
     
 	public void deleteFacetsFor( Dataverse d ) {
 		em.createNamedQuery("DataverseFacet.removeByOwnerId")
 			.setParameter("ownerId", d.getId())
 				.executeUpdate();
+        cache.invalidate(d.getId());
+        
 	}
 	
     public void create(int diplayOrder, Long datasetFieldId, Long dataverseId) {
@@ -57,5 +62,6 @@ public class DataverseFacetServiceBean {
         dataverse.getDataverseFacets().add(dataverseFacet);
         em.persist(dataverseFacet);
     }
+    
 }
 

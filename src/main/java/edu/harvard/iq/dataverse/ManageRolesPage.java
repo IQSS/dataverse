@@ -1,6 +1,11 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -41,16 +46,19 @@ public class ManageRolesPage implements java.io.Serializable {
     @Inject DataverseSession session;     
 	
 	@EJB
-	DataverseRoleServiceBean rolesService;
+	DataverseRoleServiceBean rolesSvc;
+	
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeSvc;
+    
+	@EJB
+	UserServiceBean usersSvc;
 	
 	@EJB
-	DataverseUserServiceBean usersService;
+	EjbDataverseEngine engineSvc;
 	
 	@EJB
-	EjbDataverseEngine engineService;
-	
-	@EJB
-	DataverseServiceBean dvService;
+	DataverseServiceBean dvSvc;
 	
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
 	EntityManager em;
@@ -79,7 +87,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		// decide object type
 		if ( viewRoleId != null ) {
 			// enter view mode
-			setRole( rolesService.find(viewRoleId) );
+			setRole( rolesSvc.find(viewRoleId) );
 			if ( getRole() == null ) {
 				JH.addMessage(FacesMessage.SEVERITY_WARN, "Can't find role with id '" + viewRoleId + "'",
 								"The role might have existed once, but was deleted");
@@ -87,12 +95,12 @@ public class ManageRolesPage implements java.io.Serializable {
 		} else {
             setRole( new DataverseRole() );
         }
-        dataverse = dvService.find( Long.parseLong(dataverseIdParam) );
+        dataverse = dvSvc.find( Long.parseLong(dataverseIdParam) );
 		dvpage.setDataverse(getDataverse());
 		setInheritAssignmentsCbValue( ! getDataverse().isPermissionRoot() );
 		guestRolesHere = new LinkedList<>();
 		guestRolesUp = new LinkedList<>();
-		for ( RoleAssignment ra : rolesService.roleAssignments(usersService.findGuestUser(), dataverse).getAssignments() ) {
+		for ( RoleAssignment ra : rolesSvc.roleAssignments(GuestUser.get(), dataverse).getAssignments() ) {
 			if ( ra.getDefinitionPoint().equals(dataverse) ) {
 				guestRolesHere.add(ra.getRole());
 			} else {
@@ -107,7 +115,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
 	public List<DataverseRole> getRoles() {
-		return rolesService.findByOwnerId(dataverse.getId());
+		return rolesSvc.findByOwnerId(dataverse.getId());
 	}
 	
 	public List<Permission> getPermissions() {
@@ -124,12 +132,12 @@ public class ManageRolesPage implements java.io.Serializable {
 	}
 	
     public void editRole( String roleId ) {
-        setRole( rolesService.find(Long.parseLong(roleId)) );
+        setRole( rolesSvc.find(Long.parseLong(roleId)) );
     }
     
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dataverse = engineService.submit( new UpdateDataversePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
+            dataverse = engineSvc.submit( new UpdateDataversePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
             setInheritAssignmentsCbValue( ! dataverse.isPermissionRoot() );
         } catch (CommandException ex) {
             Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -146,8 +154,8 @@ public class ManageRolesPage implements java.io.Serializable {
 		}
 		
 		try {
-			engineService.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
-			engineService.submit( new UpdateDataversePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
+			engineSvc.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
+			engineSvc.submit( new UpdateDataversePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());
@@ -161,7 +169,7 @@ public class ManageRolesPage implements java.io.Serializable {
 			role.addPermission(Permission.valueOf(pmsnStr) );
 		}
         try {
-            setRole( engineService.submit( new CreateRoleCommand(role, session.getUser(), getDataverse())) );
+            setRole( engineSvc.submit( new CreateRoleCommand(role, session.getUser(), getDataverse())) );
             JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage() );
@@ -203,7 +211,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	public List<DataverseRole> availableRoles() {
 		List<DataverseRole> roles = new LinkedList<>();
 		for ( Map.Entry<Dataverse,Set<DataverseRole>> e : 
-				rolesService.availableRoles(getDataverse().getId()).entrySet() ) {
+				rolesSvc.availableRoles(getDataverse().getId()).entrySet() ) {
 			for ( DataverseRole aRole : e.getValue() ) {
 				roles.add( aRole );
 			}
@@ -216,27 +224,23 @@ public class ManageRolesPage implements java.io.Serializable {
 		logger.warning("Username: " + getAssignRoleUsername() );
 		logger.warning("RoleID: " + getAssignRoleRoleId());
         
-		DataverseUser u = usersService.findByUserName( getAssignRoleUsername() );
-		DataverseRole r = rolesService.find( getAssignRoleRoleId() );
-		logger.warning("User: " + u + " role:" + r );
+		RoleAssignee roas = roleAssigneeSvc.getRoleAssignee( getAssignRoleUsername() );
+		DataverseRole r = rolesSvc.find( getAssignRoleRoleId() );
+		logger.warning("User: " + roas + " role:" + r );
 		
         try {
-			engineService.submit( new AssignRoleCommand(u, r, getDataverse(), session.getUser()));
-			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + u.getFirstName() + " " + u.getLastName() + " on " + getDataverse().getName() );
+			engineSvc.submit( new AssignRoleCommand(roas, r, getDataverse(), session.getUser()));
+			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + roas.getDisplayInfo().getTitle() + " on " + getDataverse().getName() );
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage() );
 		}
 	}
 	
-	public List<DataverseUser> acUsername( String input ) {
-		return usersService.listByUsernamePart(input);
-	}
-	
 	public List<RoleAssignmentRow> getRoleAssignments() {
-		Set<RoleAssignment> ras = rolesService.rolesAssignments(getDataverse());
+		Set<RoleAssignment> ras = rolesSvc.rolesAssignments(getDataverse());
 		List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
 		for ( RoleAssignment ra : ras ) {
-			raList.add( new RoleAssignmentRow(ra) );
+			raList.add( new RoleAssignmentRow(ra,  roleAssigneeSvc.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()) );
 		}
 		
 		return raList;
@@ -244,7 +248,7 @@ public class ManageRolesPage implements java.io.Serializable {
 	
 	public void revokeRole( Long roleAssignmentId ) {
 		try {
-			engineService.submit( new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
+			engineSvc.submit( new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
 		} catch (PermissionException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment - you're missing permission", ex.getRequiredPermissions().toString());
@@ -349,18 +353,17 @@ public class ManageRolesPage implements java.io.Serializable {
     }
     
 	public static class RoleAssignmentRow {
-		private final String name;
+		private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
 		private final RoleAssignment ra;
 
-		public RoleAssignmentRow(RoleAssignment anRa) {
+		public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
 			ra = anRa;
-			this.name = ra.getUser().getFirstName() + " " + ra.getUser().getLastName();
-			
+			assigneeDisplayInfo = disInf;
 		}
 
-		public String getName() {
-			return name;
-		}
+        public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
+            return assigneeDisplayInfo;
+        }
 
 		public DataverseRole getRole() {
 			return ra.getRole();
@@ -370,16 +373,8 @@ public class ManageRolesPage implements java.io.Serializable {
 			return (Dataverse) ra.getDefinitionPoint();
 		}
 
-		public DataverseUser getUser() {
-			return ra.getUser();
-		}
-		
 		public String getRoleName() {
 			return getRole().getName();
-		}
-		
-		public String getEmail() {
-			return getUser().getEmail();
 		}
 		
 		public String getAssignedDvName() {

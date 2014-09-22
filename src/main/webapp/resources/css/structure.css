@@ -80,6 +80,67 @@ button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-s {background-position: -72px -16px;}
 #breadcrumbNavBlock div.ui-tree.ui-widget-content span.ui-treenode-content span.ui-icon.ui-tree-toggler.ui-icon-triangle-1-e {background-position: -35px -16px;}
 
+/* -------- LOGIN -------- */
+div.panel.highlight {
+    background-color: #f7f7f9;
+}
+#idpSelectIdPListTile form, #idpSelectIdPEntryTile form {margin-bottom:1em;}
+#idpSelectIdPListTile input.btn, #idpSelectIdPEntryTile input.btn {margin-left:.5em;}
+
+#idpSelectIdPEntryTile {position: relative;}
+
+ul.IdPSelectDropDown {
+    background-clip: padding-box;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+/*    display: none;*/
+    float: left;
+    font-size: 14px;
+    left: 0;
+    list-style: none outside none;
+    margin: 2px 0 0;
+    min-width: 160px;
+    padding: 5px 0;
+    position: absolute;
+    text-align: left;
+    /*top: 100%;*/
+    bottom:-22px;
+    z-index: 1000;
+}
+
+ul.IdPSelectDropDown > li > a {
+    clear: both;
+    color: #333;
+    display: block;
+    font-weight: 400;
+    line-height: 1.42857;
+    padding: 3px 20px;
+    white-space: nowrap;
+}
+
+ul.IdPSelectDropDown > li > a:hover, ul.IdPSelectDropDown > li > a:focus {
+    background-color: #f5f5f5;
+    color: #262626;
+    text-decoration: none;
+}
+ul.IdPSelectDropDown > .active > a, ul.IdPSelectDropDown > .active > a:hover, ul.IdPSelectDropDown > .active > a:focus {
+    background-color: #428bca;
+    color: #fff;
+    outline: 0 none;
+    text-decoration: none;
+}
+ul.IdPSelectDropDown > .disabled > a, ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+    color: #777;
+}
+ul.IdPSelectDropDown > .disabled > a:hover, ul.IdPSelectDropDown > .disabled > a:focus {
+    background-color: transparent;
+    background-image: none;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
 /* -------- DATAVERSE -------- */
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget,
 form[id$='dataverseForm'] .panelLayoutBlock .form-horizontal table.ui-panelgrid.ui-widget tr, 
@@ -105,6 +166,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 #dv-sidecolumn {width:20%;float:left;padding-right:1em;}
 #dv-maincolumn {width:80%;float:left;}
+#dv-maincolumn.nofacets {width:100%;float:none;}
 
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
@@ -174,6 +236,22 @@ div[id$='resultsTable'] > .ui-datatable-tablewrapper > table {border-collapse:se
 
 div[id$='resultsTable'].resultsNone .ui-datatable-tablewrapper table tfoot {display:none;}
 
+/* -------- POPUP -------- */
+div.ui-dialog.largePopUp {min-width:60%;}
+
+div.ui-dialog div.highlight {
+    background-color: #f7f7f9;
+    border: 1px solid #e1e1e8;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    padding: 9px 14px;
+}
+
+/* -------- SUBTABS -------- */
+div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content {padding-left:0; padding-right:0;}
+div.ui-tabs-panels .ui-tabs .ui-tabs-nav.ui-widget-header li {border:0;}
+div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bottom:0;}
+
 /* -------- ADVANCED -------- */
 #advancedSearchForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
 #advancedSearchForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
@@ -191,22 +269,26 @@ span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
                                     
 #title {/*display:block;*/font-size:1.5em;font-weight:bold; /*margin-bottom:.5em;*/}
 #author, #contact {display:block; margin-bottom:.5em;}
-#citation {padding:.5em; margin-bottom:.5em;}
+#citation {padding:.5em;}
+#whycitelink {margin:10px 0 0 1em;}
 #description {display:block; margin-bottom:.5em;}
 #keywords, #subject, #note, #publication {display:block; margin-bottom:.5em;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
-#datasetForm .form-group {overflow: hidden;}
-#datasetForm .form-col-container .form-col-container {padding-left:0;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
+#datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
+#datasetForm .form-col-container .form-col-container, #templateForm .form-col-container .form-col-container {padding-left:0;}
+#datasetForm .form-col-container .form-col-container .ui-selectonemenu, #templateForm .form-col-container .form-col-container .ui-selectonemenu {display:block;}
 
-#datasetForm div.ui-selectonemenu.form-control {padding:0px;} /* Primefaces vs Bootstrap selectOneMenu fix */
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
-#datasetForm .form-col-container .form-col-container .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:6px;}
+.panel .panel-body .form-group {overflow: hidden;}
 
-#datasetForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
-#datasetForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
+/* Primefaces vs Bootstrap selectOneMenu fix */
+.form-group div.ui-selectonemenu.form-control {padding:0px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-label {padding:6px 4px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger {border-radius:0; width:24px;}
+.form-group .ui-selectonemenu .ui-selectonemenu-trigger .ui-icon {margin-top:8px;}
+
+#datasetForm .select-scroll-block, #templateForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
+#datasetForm .select-scroll-block table.ui-selectmanycheckbox label, #templateForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 

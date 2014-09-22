@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -57,7 +58,7 @@ public class DatasetLock implements Serializable {
 
     @ManyToOne
     @JoinColumn(nullable=false)
-    private DataverseUser user;    
+    private AuthenticatedUser user;    
 
     private String info;
 
@@ -87,11 +88,11 @@ public class DatasetLock implements Serializable {
     }
     
     
-    public DataverseUser getUser() {
+    public AuthenticatedUser getUser() {
         return user;
     }
 
-    public void setUser(DataverseUser user) {
+    public void setUser(AuthenticatedUser user) {
         this.user = user;
     }
 

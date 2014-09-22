@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -28,6 +29,8 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -60,13 +63,16 @@ public class DataversePage implements java.io.Serializable {
     DataverseFacetServiceBean dataverseFacetService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    FeaturedDataverseServiceBean featuredDataverseService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
     private Long ownerId;
     private DualListModel<DatasetFieldType> facets;
-//    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
+    private DualListModel<Dataverse> featuredDataverses;
 
+//    private TreeNode treeWidgetRootNode = new DefaultTreeNode("Root", null);
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -99,7 +105,6 @@ public class DataversePage implements java.io.Serializable {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
     public void init() {
-
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
@@ -107,8 +112,8 @@ public class DataversePage implements java.io.Serializable {
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
-            dataverse.setContactEmail(session.getUser().getEmail());
-            dataverse.setAffiliation(session.getUser().getAffiliation());
+            dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
+            dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)
             try {
@@ -122,7 +127,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-
+        
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
 
@@ -135,6 +140,50 @@ public class DataversePage implements java.io.Serializable {
             facetsSource.remove(dsfType);
         }
         facets = new DualListModel<>(facetsSource, facetsTarget);
+
+        List<Dataverse> featuredSource = new ArrayList<>();
+        List<Dataverse> featuredTarget = new ArrayList<>();
+        featuredSource.addAll(dataverseService.findAllPublishedByOwnerId(dataverse.getId()));
+        List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
+        for (DataverseFeaturedDataverse dfd : featuredList) {
+            Dataverse fd = dfd.getFeaturedDataverse();
+            featuredTarget.add(fd);
+            featuredSource.remove(fd);
+        }
+        featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
+    }
+
+    // TODO: 
+    // this method will need to be moved somewhere else, possibly some
+    // equivalent of the old VDCRequestBean - but maybe application-scoped?
+    // -- L.A. 4.0 beta
+    
+    public String getDataverseSiteUrl() {
+        String hostUrl = System.getProperty("dataverse.siteUrl");
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl; 
+        }
+        String hostName = System.getProperty("dataverse.fqdn");
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://"+hostName;
+        return hostUrl;
+    }
+    
+    
+    public List<Dataverse> getCarouselFeaturedDataverses() {
+        List<Dataverse> retList = new ArrayList();
+        List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
+        for (DataverseFeaturedDataverse dfd : featuredList) {
+            Dataverse fd = dfd.getFeaturedDataverse();
+            retList.add(fd);
+        }
+        return retList;
     }
 
     public List getContents() {
@@ -159,12 +208,14 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
             cmd = new CreateDataverseCommand(dataverse, session.getUser());
         } else {
-            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), session.getUser());
+            cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser());
         }
 
         try {
             dataverse = commandEngine.submit(cmd);
-            userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            if ( session.getUser() instanceof AuthenticatedUser ) {
+                userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            }
             editMode = null;
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
@@ -230,6 +281,14 @@ public class DataversePage implements java.io.Serializable {
         this.facets = facets;
     }
 
+    public DualListModel<Dataverse> getFeaturedDataverses() {
+        return featuredDataverses;
+    }
+
+    public void setFeaturedDataverses(DualListModel<Dataverse> featuredDataverses) {
+        this.featuredDataverses = featuredDataverses;
+    }
+
     public String releaseDataverse() {
         PublishDataverseCommand cmd = new PublishDataverseCommand(session.getUser(), dataverse);
         try {
@@ -267,7 +326,7 @@ public class DataversePage implements java.io.Serializable {
             return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
         }
     }
-    
+
     public String getMetadataBlockPreview(MetadataBlock mdb, int numberOfItems) {
         /// for beta, we will just preview the first n fields
         StringBuilder mdbPreview = new StringBuilder();
@@ -289,8 +348,8 @@ public class DataversePage implements java.io.Serializable {
 
         return mdbPreview.toString();
     }
-    
-    public Boolean isEmptyDataverse(){
+
+    public Boolean isEmptyDataverse() {
         return !dataverseService.hasData(dataverse);
     }
 

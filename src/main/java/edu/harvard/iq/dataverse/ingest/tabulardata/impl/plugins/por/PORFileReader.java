@@ -142,6 +142,8 @@ public class PORFileReader  extends TabularDataFileReader{
     private NumberFormat doubleNumberFormatter = new DecimalFormat();
 
     private String[] variableFormatTypeList;
+    private String[] dateFormatList;
+
 
 
     // Constructor -----------------------------------------------------------//
@@ -162,7 +164,7 @@ public class PORFileReader  extends TabularDataFileReader{
                 ctx = new InitialContext();
                 varService = (VariableServiceBean) ctx.lookup("java:global/dataverse/VariableServiceBean");
             } catch (NamingException nex2) {
-                if (dbgLog.isLoggable(Level.INFO)) dbgLog.info("Could not look up initial context, or the variable service in JNDI!");
+                if (dbgLog.isLoggable(Level.INFO)) dbgLog.fine("Could not look up initial context, or the variable service in JNDI!");
                 throw new IOException ("Could not look up initial context, or the variable service in JNDI!"); 
             }
         }
@@ -176,7 +178,7 @@ public class PORFileReader  extends TabularDataFileReader{
     }
     
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException{
-        dbgLog.info("SAVFileReader: read() start");
+        dbgLog.fine("PORFileReader: read() start");
         
         if (dataFile != null) {
             throw new IOException ("this plugin does not support external raw data files");
@@ -244,27 +246,7 @@ public class PORFileReader  extends TabularDataFileReader{
             }
         }
         
-        /* 
-         * Finally, create data variables, assign types and formats;
-         * This is the code from 3.6:
-            // post-parsing processing
-            // save metadata to smd 
-            // varialbe Name
-            
-            smd.setVariableName(variableNameList.toArray(new String[variableNameList.size()]));
-            smd.setVariableLabel(variableLabelMap);
-            smd.setMissingValueTable(missingValueTable);
-            dbgLog.finer("*************** missingValueCodeTable ***************:\n" + missingValueCodeTable);
-            smd.setInvalidDataTable(invalidDataTable);
-            smd.setValueLabelTable(valueLabelTable);
-         * TODO: make sure all of this is taken care of by the new plugin!
-        
-         * TODO: (maybe?) 
-         * Instead of doing it here, perhaps all the type assignments need to 
-         * be done on DataVariable objects directly;  without relying on 
-         * maps and lists here... -- L.A. 4.0 beta (?)
-         */
-        
+        dbgLog.fine("done parsing headers and decoding;");
 
         List<DataVariable> variableList = new ArrayList<DataVariable>();
         
@@ -273,18 +255,20 @@ public class PORFileReader  extends TabularDataFileReader{
             DataVariable dv = new DataVariable();
             String varName = variableNameList.get(indx); 
             dv.setName(varName);
-            dv.setLabel(variableLabelMap.get(varName));
-            dv.setFormatSchemaName(printFormatNameTable.get(varName));
+            String varLabel = variableLabelMap.get(varName);
+            if (varLabel != null && varLabel.length() > 255) {
+                varLabel = varLabel.substring(0, 255);
+            }
+            dv.setLabel(varLabel);
             
             dv.setInvalidRanges(new ArrayList());
             dv.setSummaryStatistics( new ArrayList() );
-            dv.setUnf("UNF:6:NOTCALCULATED");
+            dv.setUnf("UNF:6:");
             dv.setCategories(new ArrayList());
-            variableList.add(dv);
-
             dv.setFileOrder(indx);
-
             dv.setDataTable(dataTable);
+            
+            variableList.add(dv);            
             
             int simpleType = 0;
             if (variableTypelList.get(indx) != null) {
@@ -301,40 +285,71 @@ public class PORFileReader  extends TabularDataFileReader{
                 // (see the setFormatCategory below... but double-check!)
                 // -- L.A. 4.0 alpha
                 String variableFormatType = variableFormatTypeList[indx];
-                if (variableFormatType != null
-                        && (variableFormatType.equals("time")
-                        || variableFormatType.equals("date"))) {
-                    ///variableTypeMinimal[indx] = 1;
-                    simpleType = 1; 
+                
+                if (variableFormatType != null) {
+                    if (variableFormatType.equals("time")
+                        || variableFormatType.equals("date")) {
+                        simpleType = 1; 
                     
-                    String formatCategory = formatCategoryTable.get(varName);
+                        String formatCategory = formatCategoryTable.get(varName);
 
-                    if (formatCategory != null) {
-                        dataTable.getDataVariables().get(indx).setFormatCategory(formatCategory);
+                        if (formatCategory != null) {
+                            if (dateFormatList[indx] != null) {
+                                dbgLog.fine("setting format category to "+formatCategory);
+                                variableList.get(indx).setFormatCategory(formatCategory);
+                                dbgLog.fine("setting formatschemaname to "+dateFormatList[indx]);
+                                variableList.get(indx).setFormatSchemaName(dateFormatList[indx]);
+                            }
+                        }
+                    } else if (variableFormatType.equals("other")) {
+                        dbgLog.fine("Variable of format type \"other\"; type adjustment may be needed");
+                        dbgLog.fine("SPSS print format: "+printFormatTable.get(variableList.get(indx).getName()));
+                        
+                        if (printFormatTable.get(variableList.get(indx).getName()).equals("WKDAY")
+                            || printFormatTable.get(variableList.get(indx).getName()).equals("MONTH")) {
+                            // week day or month; 
+                            // These are not treated as time/date values (meaning, we 
+                            // don't define time/date formats for them; there's likely 
+                            // no valid ISO time/date format for just a month or a day 
+                            // of week). However, the
+                            // values will be stored in the TAB files as strings, 
+                            // and not as numerics - as they were stored in the 
+                            // SAV file. So we need to adjust the type here.
+                            // -- L.A. 
+                            
+                            simpleType = 1;
+                        }
                     }
                 }
+                
             }
+            
+            dbgLog.fine("Finished creating variable "+indx+", "+varName);
             
             // OK, we can now assign the types: 
             
             if (simpleType > 0) {
                 // String: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
-                dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
+                variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
             } else {
                 // Numeric: 
-                dataTable.getDataVariables().get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
+                variableList.get(indx).setVariableFormatType(varService.findVariableFormatTypeByName("numeric"));
                 // discrete or continuous?
                 // "decimal variables" become dataverse data variables of interval type "continuous":
         
                 if (decimalVariableSet.contains(indx)) {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
+                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("continuous"));
                 } else {
-                    dataTable.getDataVariables().get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
+                    variableList.get(indx).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
                 }
                 
             }
+            dbgLog.fine("Finished configuring variable type information.");
         }
+        
+        
+        dbgLog.fine("done configuring variables;");
         
         /* 
          * From the original (3.6) code: 
@@ -356,7 +371,7 @@ public class PORFileReader  extends TabularDataFileReader{
         
         ingesteddata.setDataTable(dataTable);
         
-        dbgLog.info("SAVFileReader: read() end");
+        dbgLog.info("PORFileReader: read() end");
         return ingesteddata;
     }
     
@@ -381,6 +396,7 @@ public class PORFileReader  extends TabularDataFileReader{
     
 
     private File decodeHeader(BufferedInputStream stream) throws IOException {
+        dbgLog.fine("decodeHeader(): start");
         File tempPORfile = null;
 
         if (stream  == null){
@@ -602,12 +618,12 @@ public class PORFileReader  extends TabularDataFileReader{
         int nbytes_sixthLine = reader.read(sixthLineCharArray);
 
         String sixthLine = new String(sixthLineCharArray);
-        dbgLog.info("sixthLineCharArray="+
+        dbgLog.fine("sixthLineCharArray="+
             Arrays.deepToString(ArrayUtils.toObject(sixthLineCharArray)));
         int signatureLocation = sixthLine.indexOf(POR_MARK);
 
         if (signatureLocation >= 0){
-            dbgLog.info("format signature was found at:"+signatureLocation);
+            dbgLog.fine("format signature was found at:"+signatureLocation);
         } else {
             dbgLog.severe("signature string was not found");
             throw new IOException("signature string was not found");
@@ -624,11 +640,11 @@ public class PORFileReader  extends TabularDataFileReader{
 
         String leader_string = new String(sec2_leader);
 
-        dbgLog.info("format signature [SPSSPORT] detected="+leader_string);
+        dbgLog.fine("format signature [SPSSPORT] detected="+leader_string);
 
 
         if (leader_string.equals("SPSSPORT")){
-            dbgLog.info("signature was correctly detected");
+            dbgLog.fine("signature was correctly detected");
 
         } else {
             dbgLog.severe(
@@ -676,6 +692,7 @@ public class PORFileReader  extends TabularDataFileReader{
         ///smd.getFileInformation().put("fileCreationDate", fileCreationDate);
         ///smd.getFileInformation().put("fileCreationTime", fileCreationTime);
         ///smd.getFileInformation().put("varFormat_schema", "SPSS");
+        dbgLog.fine("decodeSec2(): end");
     }
 
 
@@ -1076,14 +1093,13 @@ public class PORFileReader  extends TabularDataFileReader{
 
 
     private void decodeData(BufferedReader reader) throws IOException {
-        List<String[]> dataTableList = new ArrayList<String[]>();
-        List<String[]> dateFormatList = new ArrayList<String[]>();
+        dbgLog.fine("decodeData(): start");
+        // TODO: get rid of this "variableTypeFinal"; -- L.A. 4.0 beta
         int[] variableTypeFinal= new int[varQnty];
+        dateFormatList = new String[varQnty];
 
         // create a File object to save the tab-delimited data file
         File tabDelimitedDataFile = File.createTempFile("tempTabfile.", ".tab");
-        ///smd.getFileInformation().put("tabDelimitedDataFileLocation", tabDelimitedDataFile.getAbsolutePath());
-        // 4.0: 
         ingesteddata.setTabDelimitedFile(tabDelimitedDataFile);
         
 
@@ -1112,8 +1128,6 @@ public class PORFileReader  extends TabularDataFileReader{
 
                 // case(row)-wise storage object; to be updated after each row-reading
 
-                String[] casewiseRecord = new String[varQnty];
-                String[] caseWiseDateFormat = new String[varQnty];
                 String[] casewiseRecordForTabFile = new String[varQnty];
                 // warning: the above object is later shallow-copied to the
                 // data object for calculating a UNF value/summary statistics
@@ -1173,7 +1187,6 @@ public class PORFileReader  extends TabularDataFileReader{
                         reader.read(char_datumString);
 
                         String datum = new String(char_datumString);
-                        casewiseRecord[i]= datum;
                         casewiseRecordForTabFile[i] =  "\"" + datum.replaceAll("\"",Matcher.quoteReplacement("\\\"")) + "\"";
                         // end of string case
                     } else {
@@ -1265,10 +1278,18 @@ public class PORFileReader  extends TabularDataFileReader{
                                         }
 
                                         datum = sb_time.toString();
-                                        // don't save date format for dtime
+                                        // DTIME is weird date/time format that no one uses outside of 
+                                        // SPSS; so we are not even going to bother trying to save
+                                        // this variable as a datetime. 
                                     }
 
                                 } else if (printFormatTable.get(variableNameList.get(i)).equals("DATETIME")){
+                                    // TODO: 
+                                    // (for both datetime and "dateless" time)
+                                    // keep the longest of the matching formats - i.e., if there are *some*
+                                    // values in the vector that have thousands of a second, that should be 
+                                    // part of the saved format!
+                                    //  -- L.A. Aug. 12 2014 
 
                                     if (datum.indexOf(".") < 0){
                                         long dateDatum  = Long.parseLong(datum)*1000L - SPSS_DATE_OFFSET;
@@ -1335,8 +1356,9 @@ public class PORFileReader  extends TabularDataFileReader{
                             }
                         }
 
-                        casewiseRecord[i]= datum;
-                        caseWiseDateFormat[i] = datumDateFormat;
+                        if (datumDateFormat != null) {
+                            dateFormatList[i] = datumDateFormat;
+                        }
                         casewiseRecordForTabFile[i]= datumForTabFile;
 
                     } // end: if: string vs numeric variable
@@ -1346,9 +1368,6 @@ public class PORFileReader  extends TabularDataFileReader{
 
                 // print the i-th case; use casewiseRecord to dump the current case to the tab-delimited file
                 pwout.println(StringUtils.join(casewiseRecordForTabFile, "\t"));
-                // store the current case-holder object to the data object for later operations such as UNF/summary statistics
-                dataTableList.add(casewiseRecord);
-                dateFormatList.add(caseWiseDateFormat);
 
             } // end: while-block
         } finally {
@@ -1359,9 +1378,9 @@ public class PORFileReader  extends TabularDataFileReader{
         }
 
         ///smd.setDecimalVariables(decimalVariableSet);
-        ///smd.getFileInformation().put("caseQnty", caseQnty);
         dataTable.setCaseQuantity(new Long(caseQnty));
 
+        dbgLog.fine("decodeData(): end");
     }
     
     

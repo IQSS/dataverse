@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -15,9 +15,9 @@ import java.util.Date;
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse dataverse;
-    private final DataverseUser dataverseUser;
+    private final User dataverseUser;
 
-    public PublishDataverseCommand(DataverseUser dataverseUser, Dataverse dataverse) {
+    public PublishDataverseCommand(User dataverseUser, Dataverse dataverse) {
         super(dataverseUser, dataverse);
         this.dataverse = dataverse;
         this.dataverseUser = dataverseUser;
@@ -38,7 +38,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         dataverse.setPublicationDate(new Timestamp(new Date().getTime()));
-        dataverse.setReleaseUser(dataverseUser);
+        dataverse.setReleaseUserIdentifier(dataverseUser.getIdentifier());
         return ctxt.dataverses().save(dataverse);
     }
 

@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
@@ -22,7 +22,7 @@ public class Permissions extends AbstractApiBean {
 	
 	@GET
 	public Response listPermissions( @QueryParam("user") String userIdtf, @QueryParam("on") String dvoIdtf ) {
-		DataverseUser u = findUser(userIdtf);
+		User u = findUserById(userIdtf);
 		if ( u==null ) return errorResponse( Status.FORBIDDEN, "Can't find user with identifier '" + userIdtf + "'");
 		
 		Dataverse d = findDataverse(dvoIdtf);

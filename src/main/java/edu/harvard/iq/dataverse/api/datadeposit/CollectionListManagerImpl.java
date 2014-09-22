@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
 
     @Override
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
@@ -78,7 +78,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                     feed.addSimpleExtension(new QName(UriRegistry.SWORD_STATE, "dataverseHasBeenReleased"), dvHasBeenReleased.toString());
                     return feed;
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to list datasets in dataverse " + dv.getAlias());
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
                 }
 
             } else {

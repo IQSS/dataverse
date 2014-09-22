@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -56,9 +58,29 @@ public class DataverseServiceBean {
         query.setParameter("ownerId", ownerId);
         return query.getResultList();
     }
+    
+    public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
+        Query query = em.createQuery("select object(o) from Dataverse as o where o.owner.id =:ownerId and o.publicationDate is not null order by o.name");
+        query.setParameter("ownerId", ownerId);
+        return query.getResultList();
+    }
 
     public Dataverse findRootDataverse() {
         return (Dataverse) em.createQuery("select object(o) from Dataverse as o where o.owner.id = null").getSingleResult();
+    }
+    
+    public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
+        List<Dataverse> retVal = new ArrayList();       
+        List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
+        
+        retVal.addAll(previousLevel);
+        /*
+        if (!previousLevel.isEmpty()) {
+            for (Dataverse dv : previousLevel) {
+                retVal.addAll(findPublishedByOwnerId(dv.getId()));
+            }
+        }*/
+        return retVal;
     }
 
     public Dataverse findByAlias(String anAlias) {
@@ -116,4 +138,31 @@ public class DataverseServiceBean {
     public List<DataverseFacet> findAllDataverseFacets() {
         return em.createQuery("select object(o) from DataverseFacet as o order by o.display").getResultList();
     }  
+   
+    private String appVersionString;
+    
+    public String getApplicationVersion() {        
+        if (appVersionString == null) {
+
+            try {
+                appVersionString = ResourceBundle.getBundle("VersionNumber").getString("version.number");
+            } catch (MissingResourceException ex) {
+                appVersionString = "4.0";
+            }
+            
+            String buildNumber; 
+            
+            try {
+                buildNumber = ResourceBundle.getBundle("BuildNumber").getString("build.number");
+            } catch (MissingResourceException ex) {
+                buildNumber = null; 
+            }
+            
+            if (buildNumber != null && !buildNumber.equals("")) {
+                appVersionString = appVersionString + " build " + buildNumber; 
+            }
+        }        
+        
+        return appVersionString; 
+    }
 }  

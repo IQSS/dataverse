@@ -7,15 +7,15 @@ FILESDIR='data/in/files'
 
 #rm data/in/dataverses/1
 for i in `ls $DVDIR_ROOT`; do
-  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_ROOT/$i "http://localhost:8080/api/dvs/root?key=pete"
+  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_ROOT/$i "http://localhost:8080/api/dvs/root?key=$PETEKEY"
 done
 
 for i in `ls $DVDIR_BIRDS`; do
-  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_BIRDS/$i "http://localhost:8080/api/dvs/birds?key=pete"
+  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_BIRDS/$i "http://localhost:8080/api/dvs/birds?key=$PETEKEY"
 done
 
 for i in `ls $DVDIR_TREES`; do
-  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_TREES/$i "http://localhost:8080/api/dvs/trees?key=pete"
+  curl -s -H "Content-type:application/json" -X POST -d @$DVDIR_TREES/$i "http://localhost:8080/api/dvs/trees?key=$PETEKEY"
 done
 
 # 9 is "sparrows"

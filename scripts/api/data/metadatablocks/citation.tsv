@@ -4,35 +4,48 @@
 	title	Title	Full title by which the Dataset is known.	Enter title...	text	0	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
 	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		text	1	FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this dataset.	FamilyName, GivenName or Organization	text	2	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
-	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	author	citation
-	distributorContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	4	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		textbox	5	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
-	keyword	Keyword	Key terms that describe important aspects of the Dataset.		text	6	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
-	subject	Subject	Domain-specific Subjects that are topically relevant to the Dataset.		text	7	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
-	notesText	Notes	Additional important information about the Dataset		textbox	8	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
-	otherId	Other ID	Another unique identifier that identifies this dataset (e.g., producer's or another repository's number).		text	9	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	10	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	otherIdAgency	Agency	Name of agency which generated this identifier.		text	11	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	publication	Related Publication	Publications that use the data from this Dataset.		text	12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	publicationCitation	Publication Citation	The full bibliographic citation for this related publication.		textbox	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	14	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	15	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).		url	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
-	contributor	Contributor	The organization or person responsible for either collecting, managing, distributing, or otherwise contributing in some form to the development of the resource.		text	17	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	contributorType	Type	The type of contributor of the  resource.  		text	18	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
-	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	19	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
-	contributorAffiliation	Affiliation	The organization which the contributor is affiliated with.		text	20	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	contributorAbbreviation	Abbreviation	The abbreviation by which the contributor's affiliation is commonly known (e.g., IQSS, ICPSR, etc).		text	21	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contributor	citation
-	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, released or archived).		date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	23	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	grantNumber	Grant Information	Grant Information		text	24	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	grantNumberAgency	Grant Agency	Grant Number Agency		text	26	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	27	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.		date	28	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
-	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	29	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	30	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	31	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	3	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
+	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	4	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	5	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation
+	datasetContact	Contact E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	6	FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		textbox	7	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		citation
+	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	8	TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation
+	keyword	Keyword	Key terms that describe important aspects of the Dataset.		text	9	TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		citation
+	notesText	Notes	Additional important information about the Dataset		textbox	10	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
+	language	Language	Language of the Dataset		text	11	TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation
+	otherId	Other ID	Another unique identifier that identifies this dataset (e.g., producer's or another repository's number).		text	12	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	13	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	otherIdAgency	Agency	Name of agency which generated this identifier.		text	14	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
+	publication	Related Publication	Publications that use the data from this Dataset.		text	15	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	publicationCitation	Publication Citation	The full bibliographic citation for this related publication.		textbox	16	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	17	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	18	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).		url	19	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	publication	citation
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		text	20	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	21	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected.	YYYY-MM-DD	date	22	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	citation
+	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		text	23	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	24	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
+	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	25	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	26	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
+	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived).	YYYY-MM-DD	date	27	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	28	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		text	29	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	contributorType	Type	The type of contributor of the  resource.  		text	30	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	31	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	citation
+	grantNumber	Grant Information	Grant Information		text	32	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	grantNumberValue	Grant Number	The grant or contract number of the project that  sponsored the effort.		text	33	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
+	grantNumberAgency	Grant Agency	Grant Number Agency		text	34	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	grantNumber	citation
+	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		text	35	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	distributorName	Name	Distributor name	FamilyName, GivenName or Organization	text	36	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	citation
+	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	37	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	38	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	citation
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	39	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
+	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository.	YYYY-MM-DD	date	40	FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		citation
+	kindOfData	Kind of Data	Type of data included in the file: survey data, census/enumeration data, aggregate data, clinical data, event/transaction data, program source code, machine-readable text, administrative records data, experimental data, psychological test, textual data, coded textual, coded documents, time budget diaries, observation data/ratings, process-produced data, or other.		textbox	41	TRUE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedMaterial	Related Material	Any material related to this Dataset.		textbox	42	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	relatedDatasets	Related Datasets	Any Datasets that are related to this Dataset, such as previous research on this subject.		textbox	43	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	44	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	displayOrder											
 	subject	Arts and Humanities	0											
 	subject	Astronomy and Astrophysics	1											
@@ -65,21 +78,205 @@
 	publicationIDType	upc	15											
 	publicationIDType	url	16											
 	publicationIDType	urn	17											
-	contributorType	Data Collector	0											
 	contributorType	Data Manager	1											
-	contributorType	Distributor	2											
-	contributorType	Editor	3											
-	contributorType	Funder	4											
-	contributorType	Hosting Institution	5											
-	contributorType	Producer	6											
-	contributorType	Project Leader	7											
-	contributorType	Project Manager	8											
-	contributorType	Project Member	9											
-	contributorType	Related Person	10											
-	contributorType	Researcher	11											
-	contributorType	Research Group	12											
-	contributorType	Rights Holder	13											
-	contributorType	Sponsor	14											
-	contributorType	Supervisor	15											
-	contributorType	Work Package Leader	16											
-	contributorType	Other	17											
+	contributorType	Editor	2											
+	contributorType	Funder	3											
+	contributorType	Hosting Institution	4											
+	contributorType	Project Leader	5											
+	contributorType	Project Manager	6											
+	contributorType	Project Member	7											
+	contributorType	Related Person	8											
+	contributorType	Researcher	9											
+	contributorType	Research Group	10											
+	contributorType	Rights Holder	11											
+	contributorType	Sponsor	12											
+	contributorType	Supervisor	13											
+	contributorType	Work Package Leader	14											
+	contributorType	Other	15											
+	authorIdentifierScheme	ORCID	0											
+	authorIdentifierScheme	ISNI	1											
+	language	Abkhaz	0											
+	language	Afar	1											
+	language	Afrikaans	2											
+	language	Akan	3											
+	language	Albanian	4											
+	language	Amharic	5											
+	language	Arabic	6											
+	language	Aragonese	7											
+	language	Armenian	8											
+	language	Assamese	9											
+	language	Avaric	10											
+	language	Avestan	11											
+	language	Aymara	12											
+	language	Azerbaijani	13											
+	language	Bambara	14											
+	language	Bashkir	15											
+	language	Basque	16											
+	language	Belarusian	17											
+	language	Bengali, Bangla	18											
+	language	Bihari	19											
+	language	Bislama	20											
+	language	Bosnian	21											
+	language	Breton	22											
+	language	Bulgarian	23											
+	language	Burmese	24											
+	language	Catalan,Valencian	25											
+	language	Chamorro	26											
+	language	Chechen	27											
+	language	Chichewa, Chewa, Nyanja	28											
+	language	Chinese	29											
+	language	Chuvash	30											
+	language	Cornish	31											
+	language	Corsican	32											
+	language	Cree	33											
+	language	Croatian	34											
+	language	Czech	35											
+	language	Danish	36											
+	language	Divehi, Dhivehi, Maldivian	37											
+	language	Dutch	38											
+	language	Dzongkha	39											
+	language	English	40											
+	language	Esperanto	41											
+	language	Estonian	42											
+	language	Ewe	43											
+	language	Faroese	44											
+	language	Fijian	45											
+	language	Finnish	46											
+	language	French	47											
+	language	Fula, Fulah, Pulaar, Pular	48											
+	language	Galician	49											
+	language	Georgian	50											
+	language	German	51											
+	language	Greek (modern)	52											
+	language	Guaraní	53											
+	language	Gujarati	54											
+	language	Haitian, Haitian Creole	55											
+	language	Hausa	56											
+	language	Hebrew (modern)	57											
+	language	Herero	58											
+	language	Hindi	59											
+	language	Hiri Motu	60											
+	language	Hungarian	61											
+	language	Interlingua	62											
+	language	Indonesian	63											
+	language	Interlingue	64											
+	language	Irish	65											
+	language	Igbo	66											
+	language	Inupiaq	67											
+	language	Ido	68											
+	language	Icelandic	69											
+	language	Italian	70											
+	language	Inuktitut	71											
+	language	Japanese	72											
+	language	Javanese	73											
+	language	Kalaallisut, Greenlandic	74											
+	language	Kannada	75											
+	language	Kanuri	76											
+	language	Kashmiri	77											
+	language	Kazakh	78											
+	language	Khmer	79											
+	language	Kikuyu, Gikuyu	80											
+	language	Kinyarwanda	81											
+	language	Kyrgyz	82											
+	language	Komi	83											
+	language	Kongo	84											
+	language	Korean	85											
+	language	Kurdish	86											
+	language	Kwanyama, Kuanyama	87											
+	language	Latin	88											
+	language	Luxembourgish, Letzeburgesch	89											
+	language	Ganda	90											
+	language	Limburgish, Limburgan, Limburger	91											
+	language	Lingala	92											
+	language	Lao	93											
+	language	Lithuanian	94											
+	language	Luba-Katanga	95											
+	language	Latvian	96											
+	language	Manx	97											
+	language	Macedonian	98											
+	language	Malagasy	99											
+	language	Malay	100											
+	language	Malayalam	101											
+	language	Maltese	102											
+	language	Māori	103											
+	language	Marathi (Marāṭhī)	104											
+	language	Marshallese	105											
+	language	Mongolian	106											
+	language	Nauru	107											
+	language	Navajo, Navaho	108											
+	language	Northern Ndebele	109											
+	language	Nepali	110											
+	language	Ndonga	111											
+	language	Norwegian Bokmål	112											
+	language	Norwegian Nynorsk	113											
+	language	Norwegian	114											
+	language	Nuosu	115											
+	language	Southern Ndebele	116											
+	language	Occitan	117											
+	language	Ojibwe, Ojibwa	118											
+	language	Old Church Slavonic,Church Slavonic,Old Bulgarian	119											
+	language	Oromo	120											
+	language	Oriya	121											
+	language	Ossetian, Ossetic	122											
+	language	Panjabi, Punjabi	123											
+	language	Pāli	124											
+	language	Persian (Farsi)	125											
+	language	Polish	126											
+	language	Pashto, Pushto	127											
+	language	Portuguese	128											
+	language	Quechua	129											
+	language	Romansh	130											
+	language	Kirundi	131											
+	language	Romanian	132											
+	language	Russian	133											
+	language	Sanskrit (Saṁskṛta)	134											
+	language	Sardinian	135											
+	language	Sindhi	136											
+	language	Northern Sami	137											
+	language	Samoan	138											
+	language	Sango	139											
+	language	Serbian	140											
+	language	Scottish Gaelic, Gaelic	141											
+	language	Shona	142											
+	language	Sinhala, Sinhalese	143											
+	language	Slovak	144											
+	language	Slovene	145											
+	language	Somali	146											
+	language	Southern Sotho	147											
+	language	Spanish, Castilian	148											
+	language	Sundanese	149											
+	language	Swahili	150											
+	language	Swati	151											
+	language	Swedish	152											
+	language	Tamil	153											
+	language	Telugu	154											
+	language	Tajik	155											
+	language	Thai	156											
+	language	Tigrinya	157											
+	language	Tibetan Standard, Tibetan, Central	158											
+	language	Turkmen	159											
+	language	Tagalog	160											
+	language	Tswana	161											
+	language	Tonga (Tonga Islands)	162											
+	language	Turkish	163											
+	language	Tsonga	164											
+	language	Tatar	165											
+	language	Twi	166											
+	language	Tahitian	167											
+	language	Uyghur, Uighur	168											
+	language	Ukrainian	169											
+	language	Urdu	170											
+	language	Uzbek	171											
+	language	Venda	172											
+	language	Vietnamese	173											
+	language	Volapük	174											
+	language	Walloon	175											
+	language	Welsh	176											
+	language	Wolof	177											
+	language	Western Frisian	178											
+	language	Xhosa	179											
+	language	Yiddish	180											
+	language	Yoruba	181											
+	language	Zhuang, Chuang	182											
+	language	Zulu	183											
+	language	Not applicable	184											

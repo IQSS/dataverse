@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -39,7 +41,7 @@ public class EjbDataverseEngine {
 	DataverseRoleServiceBean rolesService;
 	
 	@EJB
-	DataverseUserServiceBean usersService;
+	BuiltinUserServiceBean usersService;
 	
 	@EJB
 	IndexServiceBean indexService;
@@ -55,9 +57,15 @@ public class EjbDataverseEngine {
 	
 	@EJB
 	DataverseFacetServiceBean dataverseFacetService; 
+
+        @EJB
+	FeaturedDataverseServiceBean featuredDataverseService; 
         
         @EJB
 	DataFileServiceBean dataFileService; 
+        
+        @EJB
+	TemplateServiceBean templateService; 
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -74,7 +82,7 @@ public class EjbDataverseEngine {
 										+ "Please use the RequiredPermissions annotation.");
 		}
 
-		DataverseUser user = aCommand.getUser();
+		User user = aCommand.getUser();
 		
         Map<String, DvObject> affectedDataverses = aCommand.getAffectedDvObjects();
 		
@@ -115,7 +123,7 @@ public class EjbDataverseEngine {
 				public DataverseRoleServiceBean roles() { return rolesService; }
 
 				@Override
-				public DataverseUserServiceBean users() { return usersService; }
+				public BuiltinUserServiceBean users() { return usersService; }
 
 				@Override
 				public IndexServiceBean index() { return indexService; }
@@ -138,7 +146,16 @@ public class EjbDataverseEngine {
 				public DataverseFacetServiceBean facets() {
 					return dataverseFacetService;
 				}
-				
+                                
+				@Override
+				public FeaturedDataverseServiceBean featuredDataverses() {
+					return featuredDataverseService;
+				}
+ 
+                                @Override
+				public TemplateServiceBean templates() {
+					return templateService;
+				}
 				@Override
 				public DataverseEngine engine() { 
 					return new DataverseEngine() {

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import javax.persistence.EntityManager;
@@ -28,7 +29,7 @@ public class TestCommandContext implements CommandContext {
 	}
 
 	@Override
-	public DataverseUserServiceBean users() {
+	public BuiltinUserServiceBean users() {
 		return null;
 	}
 
@@ -62,6 +63,16 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
 	
+        @Override
+	public FeaturedDataverseServiceBean featuredDataverses() {
+		return null;
+	}
+        
+        @Override
+	public TemplateServiceBean templates() {
+		return null;
+	}
+        
 	@Override
 	public DataverseEngine engine() { return new TestDataverseEngine(this); }
 
