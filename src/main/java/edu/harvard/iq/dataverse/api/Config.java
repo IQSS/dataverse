@@ -51,7 +51,7 @@ public class Config extends AbstractApiBean {
             sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
 
-        List<String> listOfStaticFields = new ArrayList();
+        List<String> listOfStaticFields = new ArrayList<String>();
         Object searchFieldsObject = new SearchFields();
         Field[] staticSearchFields = searchFieldsObject.getClass().getDeclaredFields();
         for (Field fieldObject : staticSearchFields) {

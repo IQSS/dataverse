@@ -161,7 +161,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "parentDatasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList();
+    private List<DatasetFieldCompoundValue> datasetFieldCompoundValues = new ArrayList<DatasetFieldCompoundValue>();
 
     public List<DatasetFieldCompoundValue> getDatasetFieldCompoundValues() {
         return datasetFieldCompoundValues;
@@ -173,7 +173,7 @@ public class DatasetField implements Serializable {
 
     @OneToMany(mappedBy = "datasetField", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private List<DatasetFieldValue> datasetFieldValues = new ArrayList();
+    private List<DatasetFieldValue> datasetFieldValues = new ArrayList<DatasetFieldValue>();
 
     public List<DatasetFieldValue> getDatasetFieldValues() {
         return this.datasetFieldValues;
@@ -184,7 +184,7 @@ public class DatasetField implements Serializable {
     }
 
     @OneToMany(cascade = {CascadeType.MERGE})
-    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
+    private List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList<ControlledVocabularyValue>();
 
     public List<ControlledVocabularyValue> getControlledVocabularyValues() {
         return controlledVocabularyValues;
@@ -252,7 +252,7 @@ public class DatasetField implements Serializable {
     }
 
     public List<String> getValues() {
-        List returnList = new ArrayList();
+        List<String> returnList = new ArrayList<String>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
                 returnList.add(dsfv.getValue());

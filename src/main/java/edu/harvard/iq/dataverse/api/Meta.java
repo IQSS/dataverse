@@ -13,16 +13,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
-import edu.harvard.iq.dataverse.rserve.RemoteDataFrameService;
-import java.io.BufferedInputStream;
-
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;

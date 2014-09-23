@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.IndexServiceBean;
-
 public abstract class IndexableObject {
 
     private String type;

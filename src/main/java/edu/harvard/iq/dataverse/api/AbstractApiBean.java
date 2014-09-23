@@ -224,7 +224,7 @@ public abstract class AbstractApiBean {
                 .build();
     }
     
-    protected Response execute( Command c ) {
+    protected Response execute( Command<?> c ) {
          try { 
             engineSvc.submit( c );
             return accepted();

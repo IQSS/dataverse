@@ -1,11 +1,9 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl;
 
 import edu.harvard.iq.dataverse.authorization.groups.Group;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.util.Collections;
 import java.util.Set;
-import javax.servlet.ServletRequest;
 
 /**
  * Convenience class for implementing {@link Groups}.

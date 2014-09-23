@@ -22,7 +22,6 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.hul.ois.jhove.*;
 import java.io.*;
 import java.util.*;
-import static java.lang.System.*;
 import java.util.logging.Logger;
 
 /**

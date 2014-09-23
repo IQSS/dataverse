@@ -16,7 +16,7 @@ public class PermissionException extends CommandException {
 	private final Set<Permission> required;
 	private final DvObject dvObject;
 	
-	public PermissionException(String message, Command failedCommand, Set<Permission> required, DvObject aDvObject ) {
+	public PermissionException(String message, Command<?> failedCommand, Set<Permission> required, DvObject aDvObject ) {
 		super(message, failedCommand);
 		this.required = required;
 		dvObject = aDvObject;

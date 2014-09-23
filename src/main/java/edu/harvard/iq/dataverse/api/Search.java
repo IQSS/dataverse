@@ -115,7 +115,7 @@ public class Search extends AbstractApiBean {
 //                logger.info(string + ":" + string1);
             }
 
-            List filterQueriesActual = solrQueryResponse.getFilterQueriesActual();
+            List<String> filterQueriesActual = solrQueryResponse.getFilterQueriesActual();
             JsonObjectBuilder value = Json.createObjectBuilder()
                     .add("q", query)
                     .add("fq_provided", filterQueries.toString())

@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import java.util.Map;
 
 /**
  * Objects that can authenticate users - for credentials, they provide persistent user id that can be used to

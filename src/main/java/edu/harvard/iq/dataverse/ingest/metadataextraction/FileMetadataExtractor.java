@@ -7,9 +7,7 @@
 package edu.harvard.iq.dataverse.ingest.metadataextraction;
 
 import edu.harvard.iq.dataverse.ingest.metadataextraction.spi.*;
-import java.io.*;
-import java.util.Map; 
-import java.util.Set; 
+import java.io.*; 
 
 /**
  *

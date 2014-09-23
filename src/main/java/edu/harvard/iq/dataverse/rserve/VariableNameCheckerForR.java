@@ -22,7 +22,6 @@ package edu.harvard.iq.dataverse.rserve;
 
 import org.apache.commons.lang.*;
 import java.util.*;
-import java.util.regex.*;
 
 
 /**

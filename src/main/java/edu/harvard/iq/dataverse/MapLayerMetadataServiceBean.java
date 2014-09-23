@@ -6,7 +6,6 @@
 
 package edu.harvard.iq.dataverse;
 
-import java.util.Arrays;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Named;
