@@ -162,6 +162,7 @@ public class AuthenticationServiceBean {
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         em.persist(user);
+        em.flush();
         return user;
     }
     

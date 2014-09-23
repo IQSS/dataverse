@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.api.SearchFields;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
@@ -55,6 +54,8 @@ public class IndexServiceBean {
     PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean userServiceBean;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeSvc;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -194,8 +195,7 @@ public class IndexServiceBean {
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
-                String userIdentifier = roleAssignment.getAssigneeIdentifier();
-                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
+                addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
 
@@ -589,8 +589,7 @@ public class IndexServiceBean {
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
-                String userIdentifier = roleAssignment.getAssigneeIdentifier();
-                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
+                addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
 
@@ -794,8 +793,7 @@ public class IndexServiceBean {
                 List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(dataset);
                 for (RoleAssignment roleAssignment : assignmentsOnFile) {
                     if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
-                        String userIdentifier = roleAssignment.getAssigneeIdentifier();
-                        datafileSolrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + userIdentifier);
+                        addPermissionToSolrDoc(solrInputDocument, roleAssignment);
                     }
                 }
 
@@ -911,15 +909,12 @@ public class IndexServiceBean {
         return "indexed group " + group;
     }
 
-    public String indexUser(User user) {
+    public String indexUser(AuthenticatedUser user) {
 
         Collection<SolrInputDocument> docs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
 
-        String userid = groupPerUserPrefix + user.getIdentifier();
-        if (!user.isAuthenticated()) {
-            userid = publicGroupString;
-        }
+        String userid = groupPerUserPrefix + user.getId();
 
         solrInputDocument.addField(SearchFields.TYPE, "groups");
         solrInputDocument.addField(SearchFields.ID, userid);
@@ -1184,6 +1179,34 @@ public class IndexServiceBean {
             }
         }
         return "Desired state for existence of cards: " + desiredCards + "\n";
+    }
+
+    /**
+     * Our goal is to go from a potentially ugly role assignee identifier such
+     * as "@https://idp.testshib.org/idp/shibboleth|myself@testshib.org" to a
+     * database key we can safely index into Solr such as "group_user8" for an
+     * AuthenticatedUser with a primary key of 8.
+     */
+    private void addPermissionToSolrDoc(SolrInputDocument solrInputDocument, RoleAssignment roleAssignment) {
+        String assigneeIdentifier = roleAssignment.getAssigneeIdentifier();
+        if (assigneeIdentifier == null) {
+            return;
+        }
+        String identifierWithoutPrefix = null;
+        try {
+            String prefix = AuthenticatedUser.IDENTIFIER_PREFIX;
+            int indexAfterPrefix = prefix.length();
+            identifierWithoutPrefix = assigneeIdentifier.substring(indexAfterPrefix);
+        } catch (IndexOutOfBoundsException ex) {
+            return;
+        }
+        if (identifierWithoutPrefix == null) {
+            return;
+        }
+        AuthenticatedUser au = userServiceBean.getAuthenticatedUser(identifierWithoutPrefix);
+        if (au != null) {
+            solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + au.getId());
+        }
     }
 
 }
