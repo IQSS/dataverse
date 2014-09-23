@@ -26,10 +26,10 @@ public class CommandHelper {
 			// try for the permission map
 			RequiredPermissionsMap reqPermMap = cmdClass.getAnnotation( RequiredPermissionsMap.class );
             if ( reqPermMap == null ) {
-                // No annotations here. Look up the class hierachy
-                Class superClass = cmdClass.getSuperclass();
+                // No annotations here. Look up the class hierarchy
+                Class<?> superClass = cmdClass.getSuperclass();
                 if ( superClass != null ) {
-                    return permissionsRequired(superClass);
+                    return permissionsRequired((Class<? extends Command>) superClass);
                 } else {
                     throw new IllegalArgumentException("Command class " + cmdClass.getCanonicalName() 
                      + ", and its superclasses, do not declare required permissions.");
@@ -56,7 +56,7 @@ public class CommandHelper {
 	 * @param c The command
 	 * @return Set of permissions, or {@code null} if the command's class was not annotated.
 	 */
-	public Map<String,Set<Permission>> permissionsRequired( Command c ) {
+	public Map<String,Set<Permission>> permissionsRequired( Command<?> c ) {
 		return permissionsRequired(c.getClass());
 	}
 	

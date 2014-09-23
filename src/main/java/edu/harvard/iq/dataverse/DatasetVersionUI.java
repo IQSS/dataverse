@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -25,8 +23,8 @@ public class DatasetVersionUI {
     public DatasetVersionUI() {
     }
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap();
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForView = new HashMap<MetadataBlock, List<DatasetField>>();
+    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<MetadataBlock, List<DatasetField>>();
 
     public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForView() {
         return metadataBlocksForView;
@@ -50,8 +48,8 @@ public class DatasetVersionUI {
          viewing and editng in the dataset page.
          */
         setDatasetVersion(datasetVersion);
-        this.setDatasetAuthors(new ArrayList());
-        this.setDatasetRelPublications(new ArrayList());
+        this.setDatasetAuthors(new ArrayList<DatasetAuthor>());
+        this.setDatasetRelPublications(new ArrayList<DatasetRelPublication>());
 
         // loop through vaues to get fields for view mode
         for (DatasetField dsf : datasetVersion.getDatasetFields()) {
@@ -131,7 +129,7 @@ public class DatasetVersionUI {
     private DatasetField subject;
     private DatasetField notes;    
             
-    private List<DatasetAuthor> datasetAuthors = new ArrayList();    
+    private List<DatasetAuthor> datasetAuthors = new ArrayList<DatasetAuthor>();    
     private List<DatasetRelPublication> datasetRelPublications;    
 
     public DatasetField getTitle() {
@@ -327,7 +325,7 @@ public class DatasetVersionUI {
 
     private List<DatasetField> initDatasetFields() {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<DatasetField>();
         for (DatasetField dsf : this.datasetVersion.getDatasetFields()) {
             retList.add(initDatasetField(dsf));
         }
@@ -384,8 +382,8 @@ public class DatasetVersionUI {
         metadataBlocksForEdit.clear();
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
             mdb.setEmpty(true);
-            List<DatasetField> datasetFieldsForView = new ArrayList();
-            List<DatasetField> datasetFieldsForEdit = new ArrayList();
+            List<DatasetField> datasetFieldsForView = new ArrayList<DatasetField>();
+            List<DatasetField> datasetFieldsForEdit = new ArrayList<DatasetField>();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);

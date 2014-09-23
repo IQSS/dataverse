@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.Arrays;
 import java.util.List;
-import static edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider.Credential;
 
 /**
  * An authentication provider built into the application. Uses JPA and the 

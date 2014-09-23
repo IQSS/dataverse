@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -18,12 +17,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -114,7 +110,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
-    private List<DataFile> newFiles = new ArrayList();
+    private List<DataFile> newFiles = new ArrayList<DataFile>();
     private DatasetVersion workingVersion;
     private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private int releaseRadio = 1;
@@ -127,7 +123,7 @@ public class DatasetPage implements java.io.Serializable {
     private String displayCitation;
     private String deaccessionForwardURLFor = "";
     private String showVersionList = "false";
-    private List<Template> dataverseTemplates = new ArrayList();
+    private List<Template> dataverseTemplates = new ArrayList<Template>();
     private Template defaultTemplate;
     private Template selectedTemplate;
 
@@ -643,7 +639,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDataset() {
 
-        Command cmd;
+        Command<?> cmd;
         try {
             cmd = new DestroyDatasetCommand(dataset, session.getUser());
             commandEngine.submit(cmd);
@@ -662,7 +658,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String deleteDatasetVersion() {
-        Command cmd;
+        Command<?> cmd;
         try {
             cmd = new DeleteDatasetVersionCommand(session.getUser(), dataset);
             commandEngine.submit(cmd);
@@ -763,7 +759,7 @@ public class DatasetPage implements java.io.Serializable {
 
             for (FileMetadata fmd : selectedFiles) {
                 if (fmd.getId() != null && fmd.getId().intValue() > 0) {
-                    Command cmd;
+                    Command<?> cmd;
                     fmIt = dataset.getEditVersion().getFileMetadatas().iterator();
                     while (fmIt.hasNext()) {
                         FileMetadata dfn = fmIt.next();
@@ -1000,7 +996,7 @@ public class DatasetPage implements java.io.Serializable {
         return datasetVersionUI;
     }
 
-    private List<DatasetVersion> versionTabList = new ArrayList();
+    private List<DatasetVersion> versionTabList = new ArrayList<DatasetVersion>();
 
     public List<DatasetVersion> getVersionTabList() {
         return versionTabList;
@@ -1020,7 +1016,7 @@ public class DatasetPage implements java.io.Serializable {
         this.versionTabList = versionTabList;
     }
 
-    private List<DatasetVersion> releasedVersionTabList = new ArrayList();
+    private List<DatasetVersion> releasedVersionTabList = new ArrayList<DatasetVersion>();
 
     public List<DatasetVersion> getReleasedVersionTabList() {
         return releasedVersionTabList;
@@ -1094,7 +1090,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<DatasetVersion> resetVersionTabList() {
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<DatasetVersion>();
 
         if (canIssueUpdateCommand()) {
             return dataset.getVersions();
@@ -1109,7 +1105,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
-        List<DatasetVersion> retList = new ArrayList();
+        List<DatasetVersion> retList = new ArrayList<DatasetVersion>();
         for (DatasetVersion version : dataset.getVersions()) {
             if (version.isReleased() || version.isArchived()) {
                 retList.add(version);

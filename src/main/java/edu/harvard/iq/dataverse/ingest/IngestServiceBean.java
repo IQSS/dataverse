@@ -548,7 +548,7 @@ public class IngestServiceBean {
         fmd.setDataFile(datafile);
         datafile.getFileMetadatas().add(fmd);
         if (version.getFileMetadatas() == null) {
-            version.setFileMetadatas(new ArrayList());
+            version.setFileMetadatas(new ArrayList<FileMetadata>());
         }
         version.getFileMetadatas().add(fmd);
         fmd.setDatasetVersion(version);

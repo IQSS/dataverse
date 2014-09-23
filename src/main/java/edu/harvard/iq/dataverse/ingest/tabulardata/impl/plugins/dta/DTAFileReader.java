@@ -40,11 +40,12 @@ import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -631,10 +632,10 @@ public class DTAFileReader extends TabularDataFileReader{
 
         for (int i = 0; i < nvar; i++) {
             DataVariable dv = new DataVariable();
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics( new ArrayList() );
+            dv.setInvalidRanges(new ArrayList<VariableRange>());
+            dv.setSummaryStatistics( new ArrayList<SummaryStatistic>() );
             dv.setUnf("UNF:6:XXX");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
             dv.setFileOrder(i);

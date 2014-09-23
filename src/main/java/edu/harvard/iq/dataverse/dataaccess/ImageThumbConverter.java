@@ -178,9 +178,9 @@ public class ImageThumbConverter {
             //logger.fine("Finished image rescaling.");
 
             ImageWriter writer = null;
-            Iterator iter = ImageIO.getImageWritersByFormatName("png");
+            Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("png");
             if (iter.hasNext()) {
-                writer = (ImageWriter) iter.next();
+                writer = iter.next();
             } else {
                 return null;
             }

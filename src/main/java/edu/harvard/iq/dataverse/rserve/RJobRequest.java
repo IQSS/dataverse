@@ -342,7 +342,7 @@ public class RJobRequest {
     public String[] getVariableNames() {
         String[] variableNames=null;
         
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<String>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add(dv.getName());
@@ -399,7 +399,7 @@ public class RJobRequest {
     
     public String[] getVariableIds(){
         String[] variableIds=null;
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<String>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add("v"+dv.getId().toString());
@@ -444,7 +444,7 @@ public class RJobRequest {
      */
     public String[] getVariableLabels(){
         String [] variableLabels=null;
-        List<String> rw = new ArrayList();
+        List<String> rw = new ArrayList<String>();
         for(int i=0;i < dataVariablesForRequest.size(); i++){
             DataVariable dv = (DataVariable) dataVariablesForRequest.get(i);
                 rw.add(dv.getLabel());

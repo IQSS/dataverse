@@ -99,7 +99,7 @@ public class DatasetVersion implements Serializable {
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     //@OrderBy("datasetField.displayOrder") 
-    private List<DatasetField> datasetFields = new ArrayList();
+    private List<DatasetField> datasetFields = new ArrayList<DatasetField>();
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
@@ -427,7 +427,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetAuthor> getDatasetAuthors() {
         //todo get "List of Authors" from datasetfieldvalue table
-        List retList = new ArrayList();
+        List<DatasetAuthor> retList = new ArrayList<DatasetAuthor>();
         for (DatasetField dsf : this.getDatasetFields()) {
              if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
                 for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
@@ -570,7 +570,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues
-        return new ArrayList();
+        return new ArrayList<DatasetDistributor>();
     }
     
      public void setDatasetDistributors( List<DatasetDistributor> distributors) {
@@ -641,7 +641,7 @@ public class DatasetVersion implements Serializable {
 
     public List<DatasetField> initDatasetFields() {
         //retList - Return List of values
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<DatasetField>();
         //Running into null on create new dataset
         if (this.getDatasetFields() != null) {
             for (DatasetField dsf : this.getDatasetFields()) {
@@ -700,7 +700,7 @@ public class DatasetVersion implements Serializable {
     };
     
     public List<DatasetField> copyDatasetFields(List<DatasetField> copyFromList) {
-        List<DatasetField> retList = new ArrayList();
+        List<DatasetField> retList = new ArrayList<DatasetField>();
 
         for (DatasetField sourceDsf : copyFromList) {
             //the copy needs to have the current version
@@ -715,7 +715,7 @@ public class DatasetVersion implements Serializable {
     }
 
     private List<DatasetField> getFlatDatasetFields(List<DatasetField> dsfList) {
-        List<DatasetField> retList = new LinkedList();
+        List<DatasetField> retList = new LinkedList<DatasetField>();
         for (DatasetField dsf : dsfList) {
             retList.add(dsf);
             if (dsf.getDatasetFieldType().isCompound()) {

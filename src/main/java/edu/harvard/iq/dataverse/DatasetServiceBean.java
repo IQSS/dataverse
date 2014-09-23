@@ -51,7 +51,7 @@ public class DatasetServiceBean {
     }
 
     public List<Dataset> findByOwnerId(Long ownerId, Boolean omitDeaccessioned) {
-        List<Dataset> retList = new ArrayList();
+        List<Dataset> retList = new ArrayList<Dataset>();
         Query query = em.createQuery("select object(o) from Dataset as o where o.owner.id =:ownerId order by o.id");
         query.setParameter("ownerId", ownerId);
         if (!omitDeaccessioned) {
@@ -270,7 +270,7 @@ public class DatasetServiceBean {
             AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
-                user.setDatasetLocks(new ArrayList());
+                user.setDatasetLocks(new ArrayList<DatasetLock>());
             }
             user.getDatasetLocks().add(lock);
         }

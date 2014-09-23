@@ -17,7 +17,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
