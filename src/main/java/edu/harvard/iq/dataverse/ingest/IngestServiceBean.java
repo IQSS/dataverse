@@ -521,7 +521,7 @@ public class IngestServiceBean {
             contentType = null;
         }
 
-        if ((contentType==null)||(contentType=="")){
+        if ((contentType==null)||(contentType.equals(""))){
             contentType = "MIME_TYPE_UNDETERMINED_DEFAULT";
         }
         return contentType;
