@@ -119,7 +119,7 @@ public class SumStatCalculator {
     // implement this in some way that does not require allocating a new 
     // ArrayList for the values of every vector. -- L.A. Aug. 11 2014
     private static double[] removeInvalidValues(Double[] x){
-        List<Double> dl = new ArrayList<Double>();
+        List<Double> dl = new ArrayList<>();
         for (Double d : x){
             if (d != null && !Double.isNaN(d)){
                 dl.add(d);

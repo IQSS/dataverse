@@ -34,8 +34,6 @@ import edu.harvard.iq.dataverse.DataFile;
 //mport edu.harvard.iq.dataverse.TabularDataFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.FileOutputStream;
-import java.nio.channels.Channel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -125,7 +123,7 @@ public class FileAccessObject extends DataAccessObject {
             file.getDataTable() != null &&
             (!this.noVarHeader())) {
 
-            List datavariables = file.getDataTable().getDataVariables();
+            List<DataVariable> datavariables = file.getDataTable().getDataVariables();
             String varHeaderLine = generateVariableHeader(datavariables);
             this.setVarHeader(varHeaderLine);
         }
@@ -280,11 +278,11 @@ public class FileAccessObject extends DataAccessObject {
         return in;
     }
     
-    private String generateVariableHeader(List dvs) {
+    private String generateVariableHeader(List<DataVariable> dvs) {
         String varHeader = null;
 
         if (dvs != null) {
-            Iterator iter = dvs.iterator();
+            Iterator<DataVariable> iter = dvs.iterator();
             DataVariable dv;
 
             if (iter.hasNext()) {

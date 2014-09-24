@@ -19,8 +19,6 @@
  */
 package edu.harvard.iq.dataverse.ingest.metadataextraction;
 
-import java.io.File;
-import edu.harvard.iq.dataverse.DataTable;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,7 +39,7 @@ public class FileMetadataIngest {
     private String metadataSummary; 
     
     public FileMetadataIngest() {
-        fileTypes = new HashSet<String>();
+        fileTypes = new HashSet<>();
     }
 
     public Set<String> getFileTypes() {

@@ -29,7 +29,7 @@ public class Dataset extends DvObjectContainer {
     private static final long serialVersionUID = 1L;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
-    private List<DataFile> files = new ArrayList();
+    private List<DataFile> files = new ArrayList<>();
 
     private String protocol;
     private String authority;
@@ -37,7 +37,7 @@ public class Dataset extends DvObjectContainer {
     private String identifier;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id DESC")
-    private List<DatasetVersion> versions = new ArrayList();
+    private List<DatasetVersion> versions = new ArrayList<>();
     @OneToOne(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private DatasetLock datasetLock;
 
@@ -46,7 +46,7 @@ public class Dataset extends DvObjectContainer {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(this);
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
-        datasetVersion.setFileMetadatas(new ArrayList());
+        datasetVersion.setFileMetadatas(new ArrayList<FileMetadata>());
         datasetVersion.setVersionNumber(new Long(1));
         datasetVersion.setMinorVersionNumber(new Long(0));
         versions.add(datasetVersion);
@@ -155,7 +155,7 @@ public class Dataset extends DvObjectContainer {
             }
         }
 
-        dsv.setFileMetadatas(new ArrayList());
+        dsv.setFileMetadatas(new ArrayList<FileMetadata>());
         if (latestVersion != null) {
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                 FileMetadata newFm = new FileMetadata();
@@ -173,7 +173,7 @@ public class Dataset extends DvObjectContainer {
         if(template == null){
             getVersions().add(0, dsv);
         } else {
-            this.setVersions(new ArrayList());
+            this.setVersions(new ArrayList<DatasetVersion>());
             getVersions().add(0, dsv);
         }
 

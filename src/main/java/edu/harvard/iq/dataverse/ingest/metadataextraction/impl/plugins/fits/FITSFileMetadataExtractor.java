@@ -57,17 +57,17 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
     // This map defines the names of the keys under which they will be indexed
     // and made searchable in the application
     
-    private static final Map<String, Integer> defaultRecognizedFitsMetadataKeys = new HashMap<String, Integer>();
+    private static final Map<String, Integer> defaultRecognizedFitsMetadataKeys = new HashMap<>();
     // the integer value in the map is reserved for the type of the metadata 
     // keyword; it's not being used as of now. 
     
-    private static final Map<String, Integer> defaultRecognizedFitsColumnKeys = new HashMap<String, Integer>();
+    private static final Map<String, Integer> defaultRecognizedFitsColumnKeys = new HashMap<>();
     // these are the column-level metadata keys; these are defined as XXXXn in 
     // the "FITS Standard, Appendix C" document; for example, "TTYPEn", meaning 
     // that the Header section of the table HDU will contain the keys TTYPE1, 
     // TTYPE2, ... TTYPEN - where N is the number of columns. 
     
-    private static final Map<String, String> defaultIndexableFitsMetaKeys = new HashMap<String, String>(); 
+    private static final Map<String, String> defaultIndexableFitsMetaKeys = new HashMap<>(); 
     // This map defines the names of the keys under which they will be indexed
     // and made searchable in the application
     
@@ -257,10 +257,10 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
         
         int nAxis = 0; 
         
-        Set<String> metadataKeys = new HashSet<String>(); 
-        Set<String> columnKeys = new HashSet<String>(); 
-        List<String> hduTypes = new ArrayList<String>();
-        List<String> hduNames = new ArrayList<String>(); 
+        Set<String> metadataKeys = new HashSet<>(); 
+        Set<String> columnKeys = new HashSet<>(); 
+        List<String> hduTypes = new ArrayList<>();
+        List<String> hduNames = new ArrayList<>(); 
         
         try {
             fitsMetaMap.put(ATTRIBUTE_TYPE, new HashSet<String>());
@@ -739,9 +739,9 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             dbgLog.fine("FITS plugin: checking for the config file: "+configFileName);
             
             if (configFile.exists()) {
-                recognizedFitsMetadataKeys = new HashMap<String, Integer>();
-                recognizedFitsColumnKeys = new HashMap<String, Integer>();
-                indexableFitsMetaKeys = new HashMap<String, String>();
+                recognizedFitsMetadataKeys = new HashMap<>();
+                recognizedFitsColumnKeys = new HashMap<>();
+                indexableFitsMetaKeys = new HashMap<>();
                 
                 
 

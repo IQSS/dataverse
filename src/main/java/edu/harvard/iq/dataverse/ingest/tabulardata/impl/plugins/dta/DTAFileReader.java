@@ -40,11 +40,12 @@ import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -69,49 +70,49 @@ public class DTAFileReader extends TabularDataFileReader{
     // (should it all be isolated in some other class?) 
 
     private static Map<Integer, String> STATA_RELEASE_NUMBER = 
-            new HashMap<Integer, String>();
-    private static Map<String, Integer> release105type = new LinkedHashMap<String, Integer>();
-    private static Map<String, Integer> release111type = new LinkedHashMap<String, Integer>();
+            new HashMap<>();
+    private static Map<String, Integer> release105type = new LinkedHashMap<>();
+    private static Map<String, Integer> release111type = new LinkedHashMap<>();
 
     private static Map<Integer, Map<String, Integer>> CONSTATNT_TABLE =
-            new LinkedHashMap<Integer, Map<String, Integer>>();
+            new LinkedHashMap<>();
 
     private static Map<String, Integer> release104constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release105constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release108constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release110constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release111constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release113constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
                                         
     private static Map<String, Integer> release114constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
       
     private static Map<String, Integer> release115constant =
-                                        new LinkedHashMap<String, Integer>();
+                                        new LinkedHashMap<>();
     
     private static Map<Byte, Integer> byteLengthTable105 = 
-                                        new HashMap<Byte, Integer>();
+                                        new HashMap<>();
     private static Map<Byte, Integer> byteLengthTable111 = 
-                                        new HashMap<Byte, Integer>();
+                                        new HashMap<>();
                                         
     private static Map<Byte, String> variableTypeTable105 = 
-                                        new LinkedHashMap<Byte, String>();
+                                        new LinkedHashMap<>();
     private static Map<Byte, String> variableTypeTable111 = 
-                                        new LinkedHashMap<Byte, String>();
+                                        new LinkedHashMap<>();
     
     private static Map<String, Integer> variableTypeMap =
-        new LinkedHashMap<String, Integer>();
+        new LinkedHashMap<>();
 
     private static final int[] LENGTH_HEADER = {60, 109};
     private static final int[] LENGTH_LABEL = {32, 81};
@@ -286,7 +287,7 @@ public class DTAFileReader extends TabularDataFileReader{
         0x1.018p127f, 0x1.019p127f, 0x1.01ap127f);
 
     private Set<Float> FLOAT_MISSING_VALUE_SET =
-        new HashSet<Float>(FLOAT_MISSING_VALUES);
+        new HashSet<>(FLOAT_MISSING_VALUES);
 
     private static final List<Double> DOUBLE_MISSING_VALUE_LIST = Arrays.asList(
         0x1.000p1023, 0x1.001p1023, 0x1.002p1023, 0x1.003p1023, 0x1.004p1023,
@@ -297,7 +298,7 @@ public class DTAFileReader extends TabularDataFileReader{
         0x1.019p1023, 0x1.01ap1023);
 
     private Set<Double> DOUBLE_MISSING_VALUE_SET =
-        new HashSet<Double>(DOUBLE_MISSING_VALUE_LIST);
+        new HashSet<>(DOUBLE_MISSING_VALUE_LIST);
 
     private static SimpleDateFormat sdf_ymdhmsS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); // sdf
 
@@ -324,7 +325,7 @@ public class DTAFileReader extends TabularDataFileReader{
         "time", "date", "date", "date", "date", "date", "date",
         "date", "date", "date", "date", "date", "date"
     };
-    private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<String, String>();
+    private static Map<String, String> DATE_TIME_FORMAT_TABLE=  new LinkedHashMap<>();
 
     private static long SECONDS_PER_YEAR = 24*60*60*1000L;
 
@@ -374,7 +375,7 @@ public class DTAFileReader extends TabularDataFileReader{
      * the same fixed values for every string column). 
      * -- L.A. 4.0
      */
-    private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<Integer, Integer>();
+    private Map<Integer, Integer> StringLengthTable = new LinkedHashMap<>();
     
 
     private Map<String, Integer> typeOffsetTable ;
@@ -627,14 +628,14 @@ public class DTAFileReader extends TabularDataFileReader{
         }
 
         // 4.0 Initialize dataverse variable objects: 
-        List<DataVariable> variableList = new ArrayList<DataVariable>();
+        List<DataVariable> variableList = new ArrayList<>();
 
         for (int i = 0; i < nvar; i++) {
             DataVariable dv = new DataVariable();
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics( new ArrayList() );
+            dv.setInvalidRanges(new ArrayList<VariableRange>());
+            dv.setSummaryStatistics( new ArrayList<SummaryStatistic>() );
             dv.setUnf("UNF:6:XXX");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
             dv.setFileOrder(i);
@@ -1241,7 +1242,7 @@ public class DTAFileReader extends TabularDataFileReader{
         // the full map of all the variable groups, then go through the list 
         // of variables and create the dataverse variable categories from 
         // them. -- L.A. 4.0       
-        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
         
         for (int i = 0; i < nvar; i++) {
             if (dbgLog.isLoggable(Level.FINE)) {
@@ -1453,7 +1454,7 @@ public class DTAFileReader extends TabularDataFileReader{
         // of variables and create the dataverse variable categories from 
         // them. -- L.A. 4.0
         
-        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> tempValueLabelTable = new LinkedHashMap<>();
 
         
         for (int i = 0; i < nvar; i++) {

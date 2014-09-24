@@ -404,7 +404,7 @@ public class SearchServiceBean {
             }
         }
 
-        List<FacetCategory> facetCategoryList = new ArrayList<FacetCategory>();
+        List<FacetCategory> facetCategoryList = new ArrayList<>();
         List<FacetCategory> typeFacetCategories = new ArrayList<>();
         boolean hidePublicationStatusFacet = true;
         boolean draftsAvailable = false;

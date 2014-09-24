@@ -80,7 +80,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
             for (long caseIndex = 0; caseIndex < numCases; caseIndex++) {
                 if (scanner.hasNext()) {
                     String[] line = (scanner.next()).split(delimiter,-1);
-                    List<String> ln = new ArrayList<String>();
+                    List<String> ln = new ArrayList<>();
                     for (Integer i : columns) {
                         ln.add(line[i]);
                     }

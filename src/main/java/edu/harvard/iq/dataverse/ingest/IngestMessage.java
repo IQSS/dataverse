@@ -19,7 +19,6 @@
 */
 package edu.harvard.iq.dataverse.ingest;
 
-import edu.harvard.iq.dataverse.DataFile;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class IngestMessage implements Serializable {
     public IngestMessage(int messageLevel)  {
         this.messageLevel = messageLevel;
         //dataFiles = new ArrayList<DataFile>();
-        datafile_ids = new ArrayList<Long>();
+        datafile_ids = new ArrayList<>();
     }
    
     private int messageLevel = INGEST_MESAGE_LEVEL_INFO;

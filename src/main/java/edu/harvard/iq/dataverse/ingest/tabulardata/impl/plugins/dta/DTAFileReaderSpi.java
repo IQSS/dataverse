@@ -45,7 +45,7 @@ import org.apache.commons.codec.binary.Hex;
  */
 public class DTAFileReaderSpi extends TabularDataFileReaderSpi{
 
-    private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
+    private static Map<Byte, String> stataReleaseNumber = new HashMap<>();
 
     static {
         stataReleaseNumber.put((byte) 104, "rel_3");

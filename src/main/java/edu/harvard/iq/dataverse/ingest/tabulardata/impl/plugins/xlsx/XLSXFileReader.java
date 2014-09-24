@@ -21,7 +21,6 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 
 
 import java.io.*;
-import java.io.FileReader;
 import java.util.logging.*;
 import java.util.*;
 
@@ -30,6 +29,9 @@ import javax.inject.Inject;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
+import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
@@ -52,8 +54,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 
 /**
@@ -306,7 +306,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             this.variableServiceLocal = variableService;
             this.tempOut = tempOut; 
             variableHeader = true;
-            variableNames = new ArrayList<String>(); 
+            variableNames = new ArrayList<>(); 
             caseCount = 0; 
             columnCount = 0; 
         }
@@ -349,7 +349,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             if (name.equals("row")) {
                 if (variableHeader) {
                     // Initialize variables:
-                    List<DataVariable> variableList = new ArrayList<DataVariable>();
+                    List<DataVariable> variableList = new ArrayList<>();
                     columnCount = variableNames.size();
                     for (int i = 0; i < columnCount; i++) {
                         String varName = variableNames.get(i);
@@ -365,10 +365,10 @@ public class XLSXFileReader extends TabularDataFileReader {
                         DataVariable dv = new DataVariable();
                         dv.setName(varName);
                         dv.setLabel(varName);
-                        dv.setInvalidRanges(new ArrayList());
-                        dv.setSummaryStatistics(new ArrayList());
+                        dv.setInvalidRanges(new ArrayList<VariableRange>());
+                        dv.setSummaryStatistics(new ArrayList<SummaryStatistic>());
                         dv.setUnf("UNF:6:NOTCALCULATED");
-                        dv.setCategories(new ArrayList());
+                        dv.setCategories(new ArrayList<VariableCategory>());
                         variableList.add(dv);
 
                         if (variableServiceLocal != null) {

@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.SearchFields;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
 import javax.inject.Named;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;

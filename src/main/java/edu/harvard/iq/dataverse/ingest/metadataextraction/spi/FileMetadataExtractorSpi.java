@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.*;
 import java.util.logging.*;
 import java.io.*;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.RegisterableService;
 import edu.harvard.iq.dataverse.ingest.plugin.spi.IngestServiceProvider;
 import edu.harvard.iq.dataverse.ingest.plugin.spi.ServiceRegistry;
 import java.nio.MappedByteBuffer;

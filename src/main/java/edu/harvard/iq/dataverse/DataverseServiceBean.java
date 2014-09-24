@@ -70,7 +70,7 @@ public class DataverseServiceBean {
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
-        List<Dataverse> retVal = new ArrayList();       
+        List<Dataverse> retVal = new ArrayList<>();       
         List<Dataverse> previousLevel = findPublishedByOwnerId(ownerId);
         
         retVal.addAll(previousLevel);
@@ -108,7 +108,7 @@ public class DataverseServiceBean {
     }
 
     public String determineDataversePath(Dataverse dataverse) {
-        List<String> dataversePathSegments = new ArrayList();
+        List<String> dataversePathSegments = new ArrayList<>();
         indexService.findPathSegments(dataverse, dataversePathSegments);
         StringBuilder dataversePath = new StringBuilder();
         for (String segment : dataversePathSegments) {

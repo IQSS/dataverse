@@ -37,11 +37,11 @@ import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -145,9 +145,9 @@ public class SAVFileReader  extends TabularDataFileReader{
     private static final int LENGTH_RT999_FILLER        =  4;
 
     
-    private static final List<String> RecordType7SubType4Fields= new ArrayList<String>();
-    private static final Set<Integer> validMissingValueCodeSet = new HashSet<Integer>();
-    private static final Map<Integer, Integer> missingValueCodeUnits = new HashMap<Integer, Integer>();
+    private static final List<String> RecordType7SubType4Fields= new ArrayList<>();
+    private static final Set<Integer> validMissingValueCodeSet = new HashSet<>();
+    private static final Map<Integer, Integer> missingValueCodeUnits = new HashMap<>();
 
     private static double SYSMIS_LITTLE =0xFFFFFFFFFFFFEFFFL;
     private static double SYSMIS_BIG =0xFFEFFFFFFFFFFFFFL;
@@ -207,8 +207,8 @@ public class SAVFileReader  extends TabularDataFileReader{
     TabularDataIngest ingesteddata = new TabularDataIngest();
     private DataTable dataTable = new DataTable();
     
-    Map<String, String> shortToLongVariableNameTable = new LinkedHashMap<String, String>();
-    Map<String, String> formatCategoryTable = new LinkedHashMap<String, String>(); 
+    Map<String, String> shortToLongVariableNameTable = new LinkedHashMap<>();
+    Map<String, String> formatCategoryTable = new LinkedHashMap<>(); 
 
 
 
@@ -216,36 +216,36 @@ public class SAVFileReader  extends TabularDataFileReader{
     private boolean isDataSectionCompressed = true; 
 
     private Map<Integer, String> OBSIndexToVariableName =
-        new LinkedHashMap<Integer, String>(); 
+        new LinkedHashMap<>(); 
     
     private int OBSUnitsPerCase; 
     
-    private List<Integer> variableTypelList= new ArrayList<Integer>(); 
-    private List<Integer> OBSwiseTypelList= new ArrayList<Integer>(); 
+    private List<Integer> variableTypelList= new ArrayList<>(); 
+    private List<Integer> OBSwiseTypelList= new ArrayList<>(); 
 
-    Map<String, String> printFormatTable = new LinkedHashMap<String, String>(); 
+    Map<String, String> printFormatTable = new LinkedHashMap<>(); 
     
 
-    Set<Integer> obsNonVariableBlockSet = new LinkedHashSet<Integer>(); 
+    Set<Integer> obsNonVariableBlockSet = new LinkedHashSet<>(); 
     
 
-    Map<String, String> valueVariableMappingTable = new LinkedHashMap<String, String>(); 
+    Map<String, String> valueVariableMappingTable = new LinkedHashMap<>(); 
  
-    Map<String, Integer> extendedVariablesSizeTable = new LinkedHashMap<String, Integer>();
+    Map<String, Integer> extendedVariablesSizeTable = new LinkedHashMap<>();
 
 
-    List<String> variableNameList = new ArrayList<String>(); 
+    List<String> variableNameList = new ArrayList<>(); 
 
 
-    Map<String, InvalidData> invalidDataTable = new LinkedHashMap<String, InvalidData>(); // this variable used in 2 methods; only one uses it to set the smd value -- ??
+    Map<String, InvalidData> invalidDataTable = new LinkedHashMap<>(); // this variable used in 2 methods; only one uses it to set the smd value -- ??
 
     NumberFormat doubleNumberFormatter = new DecimalFormat();
 
-    Set<Integer> decimalVariableSet = new HashSet<Integer>(); 
+    Set<Integer> decimalVariableSet = new HashSet<>(); 
     
     String[] variableFormatTypeList= null; 
 
-    List<Integer> formatDecimalPointPositionList= new ArrayList<Integer>(); 
+    List<Integer> formatDecimalPointPositionList= new ArrayList<>(); 
   
 
     int caseWeightVariableOBSIndex = 0; 
@@ -259,7 +259,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     private SimpleDateFormat sdf_hms    = new SimpleDateFormat("HH:mm:ss");
 
 
-    Map<String, String> OBSTypeHexValue = new LinkedHashMap<String, String>();    
+    Map<String, String> OBSTypeHexValue = new LinkedHashMap<>();    
     
     
     /* We should be defaulting to ISO-Latin, NOT US-ASCII! -- L.A. */
@@ -884,10 +884,10 @@ public class SAVFileReader  extends TabularDataFileReader{
             throw new IllegalArgumentException("stream == null!");
         }
 
-        Map<String, String> printFormatNameTable = new LinkedHashMap<String, String>(); 
-        Map<String, String> variableLabelMap = new LinkedHashMap<String, String>();
-        Map<String, List<String>> missingValueTable = new LinkedHashMap<String, List<String>>();
-        List<Integer> printFormatList = new ArrayList<Integer>();
+        Map<String, String> printFormatNameTable = new LinkedHashMap<>(); 
+        Map<String, String> variableLabelMap = new LinkedHashMap<>();
+        Map<String, List<String>> missingValueTable = new LinkedHashMap<>();
+        List<Integer> printFormatList = new ArrayList<>();
 
         String caseWeightVariableName = null;
         int caseWeightVariableIndex = 0;
@@ -1314,7 +1314,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
                         double[] missingValues = new double[howManyMissingValueUnits];
                         //List<String> mvp = new ArrayList<String>();
-                        List<String> mv = new ArrayList<String>();
+                        List<String> mv = new ArrayList<>();
 
                         ByteBuffer[] bb_missig_value_code =
                             new ByteBuffer[howManyMissingValueUnits];
@@ -1373,7 +1373,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     } else {
                         // string variable case
                         String[] missingValues = new String[howManyMissingValueUnits];
-                        List<String> mv = new ArrayList<String>();
+                        List<String> mv = new ArrayList<>();
                         int offset_start = 0;
                         int offset_end   = LENGTH_SAV_OBS_BLOCK;
                         for (int i= 0; i < howManyMissingValueUnits;i++ ){
@@ -1419,7 +1419,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         dbgLog.fine("RT2: varQnty=" + variableCounter);
 
         // 4.0 Initialize variables: 
-        List<DataVariable> variableList = new ArrayList<DataVariable>();
+        List<DataVariable> variableList = new ArrayList<>();
 
         for (int i = 0; i < variableCounter; i++) {
             DataVariable dv = new DataVariable();
@@ -1431,10 +1431,10 @@ public class SAVFileReader  extends TabularDataFileReader{
             }
             dv.setLabel(varLabel);
             
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics( new ArrayList() );
+            dv.setInvalidRanges(new ArrayList<VariableRange>());
+            dv.setSummaryStatistics( new ArrayList<SummaryStatistic>() );
             dv.setUnf("UNF:6:");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
             dv.setFileOrder(i);
@@ -1484,7 +1484,7 @@ public class SAVFileReader  extends TabularDataFileReader{
     void decodeRecordType3and4(BufferedInputStream stream) throws IOException {
         dbgLog.fine("decodeRecordType3and4(): start");
         Map<String, Map<String, String>> valueLabelTable
-                = new LinkedHashMap<String, Map<String, String>>();
+                = new LinkedHashMap<>();
 
         int safteyCounter = 0;
         while (true) {
@@ -1662,7 +1662,7 @@ public class SAVFileReader  extends TabularDataFileReader{
 
                 boolean isNumeric = OBSwiseTypelList.get(variableIndex[0] - 1) == 0 ? true : false;
 
-                Map<String, String> valueLabelPair = new LinkedHashMap<String, String>();
+                Map<String, String> valueLabelPair = new LinkedHashMap<>();
                 if (isNumeric) {
                     // numeric variable
                     dbgLog.fine("processing of a numeric value-label table");
@@ -2405,7 +2405,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         // (this is something that was collected in the code below and passed
         // to the UNF calculator). 
         // -- L.A. 4.0 alpha
-        List<String> casewiseRecordForTabFile = new ArrayList<String>();
+        List<String> casewiseRecordForTabFile = new ArrayList<>();
 
         try {
             // this compression is applied only to non-float data, i.e. integer;
@@ -2611,7 +2611,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                             StringBuilder sb = new StringBuilder("");
                             int firstPosition = 0;
 
-                            Set<Integer> removeJset = new HashSet<Integer>();
+                            Set<Integer> removeJset = new HashSet<>();
                             for (int j = 0; j < nOBS; j++) {
                                 dbgLog.fine("RTD: j=" + j + "-th type =" + OBSwiseTypelList.get(j));
                                 if ((OBSwiseTypelList.get(j) == -1) ||
@@ -2653,7 +2653,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                             //out.println("removeJset="+removeJset);
 
                             // a new list that stores a new case with concatanated string data
-                            List<String> newDataLine = new ArrayList<String>();
+                            List<String> newDataLine = new ArrayList<>();
 
                             for (int jl = 0; jl < casewiseRecordForTabFile.size(); jl++) {
                                 //out.println("jl="+jl+"-th datum =["+casewiseRecordForTabFile.get(jl)+"]");
@@ -2991,7 +2991,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         // to the UNF calculator). 
         // -- L.A. 4.0 alpha
         
-        List<String> casewiseRecordForTabFile = new ArrayList<String>();
+        List<String> casewiseRecordForTabFile = new ArrayList<>();
         
         
         // missing values are written to the tab-delimited file by
@@ -3092,7 +3092,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                     StringBuilder sb = new StringBuilder("");
                     int firstPosition = 0;
 
-                    Set<Integer> removeJset = new HashSet<Integer>();
+                    Set<Integer> removeJset = new HashSet<>();
                     for (int j=0; j< nOBS; j++){
                         dbgLog.finer("j="+j+"-th type ="+OBSwiseTypelList.get(j));
                         if (OBSwiseTypelList.get(j) == -1){
@@ -3125,7 +3125,7 @@ public class SAVFileReader  extends TabularDataFileReader{
                         } // end-of-if: continuous-OBS only
                     } // end of loop-j
 
-                    List<String> newDataLine = new ArrayList<String>();
+                    List<String> newDataLine = new ArrayList<>();
                     
                     for (int jl=0; jl<casewiseRecordForTabFile.size();jl++){
                         //out.println("jl="+jl+"-th datum =["+casewiseRecordForTabFile.get(jl)+"]");
@@ -3574,7 +3574,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         int length_unit_length = 4;
         int length_number_of_units = 4;
         int storage_size = length_unit_length + length_number_of_units;
-        List<byte[]> dataList = new ArrayList<byte[]>();
+        List<byte[]> dataList = new ArrayList<>();
         int[] headerSection = new int[2];
         
         byte[] byteStorage = new byte[storage_size];

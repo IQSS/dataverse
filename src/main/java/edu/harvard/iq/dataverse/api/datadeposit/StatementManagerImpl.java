@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
@@ -89,7 +88,7 @@ public class StatementManagerImpl implements StatementManager {
                 AtomDate atomDate = new AtomDate(lastUpdatedFinal);
                 String datedUpdated = atomDate.toString();
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
-                Map<String, String> states = new HashMap<String, String>();
+                Map<String, String> states = new HashMap<>();
                 states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
 //                Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
 //                states.put("isMinorUpdate", isMinorUpdate.toString());

@@ -79,7 +79,7 @@ public class DataFileServiceBean {
     public Boolean isPreviouslyPublished(Long fileId){
         Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
         query.setParameter("fileId", fileId);
-        List retList = query.getResultList();
+        List<DataFile> retList = query.getResultList();
         return (retList.size() > 1);
     }
     

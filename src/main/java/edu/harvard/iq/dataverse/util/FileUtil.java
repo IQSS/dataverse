@@ -55,7 +55,7 @@ public class FileUtil implements java.io.Serializable  {
     
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
-    private static Map<String, String> STATISTICAL_SYNTAX_FILE_EXTENSION = new HashMap<String, String>();
+    private static Map<String, String> STATISTICAL_SYNTAX_FILE_EXTENSION = new HashMap<>();
     
     static {
         STATISTICAL_SYNTAX_FILE_EXTENSION.put("do",  "x-stata-syntax");

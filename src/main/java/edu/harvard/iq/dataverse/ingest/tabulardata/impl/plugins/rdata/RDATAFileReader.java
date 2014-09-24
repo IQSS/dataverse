@@ -21,30 +21,24 @@ package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
 
 import java.io.*;
-import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.text.*;
 import java.util.logging.*;
 import java.util.*;
-import java.security.NoSuchAlgorithmException;
-
 import javax.inject.Inject;
 
 // Rosuda Wrappers and Methods for R-calls to Rserve
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.RList;
-import org.rosuda.REngine.Rserve.RFileInputStream;
-import org.rosuda.REngine.Rserve.RFileOutputStream;
 import org.rosuda.REngine.Rserve.*;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
-import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
-import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
@@ -55,7 +49,6 @@ import javax.naming.NamingException;
 
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.ArrayUtils;
 /**
  * Dataverse 4.0 implementation of <code>TabularDataFileReader</code> for the 
  * RData Binary Format.
@@ -605,7 +598,7 @@ public class RDATAFileReader extends TabularDataFileReader {
             //mDataTypes = fileInformation.at("dataTypes").asStrings();
 
             // Initialize variables: 
-            List<DataVariable> variableList = new ArrayList<DataVariable>();
+            List<DataVariable> variableList = new ArrayList<>();
 
             for (String varName : variableNames) {
                 DataVariable dv = new DataVariable();
@@ -615,10 +608,10 @@ public class RDATAFileReader extends TabularDataFileReader {
                 // Check if variables have real descriptive labels defined, 
                 // via the mechanismm provided by that special optional package... 
                 // (?) -- L.A. 
-                dv.setInvalidRanges(new ArrayList());
-                dv.setSummaryStatistics(new ArrayList());
+                dv.setInvalidRanges(new ArrayList<VariableRange>());
+                dv.setSummaryStatistics(new ArrayList<SummaryStatistic>());
                 dv.setUnf("UNF:6:XYZXYZXYZ");
-                dv.setCategories(new ArrayList());
+                dv.setCategories(new ArrayList<VariableCategory>());
                 variableList.add(dv);
 
                 dv.setFileOrder(varQnty);

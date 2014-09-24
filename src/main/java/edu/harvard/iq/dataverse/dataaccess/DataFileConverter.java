@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import java.util.List; 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedHashMap; 
 
@@ -265,11 +264,11 @@ public class DataFileConverter {
     }
 
     private static Map<String, Map<String, String>> getValueTableForRequestedVariables(List<DataVariable> dvs){
-        Map<String, Map<String, String>> vls = new LinkedHashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> vls = new LinkedHashMap<>();
         for (DataVariable dv : dvs){
-            List<VariableCategory> varCat = new ArrayList<VariableCategory>();
+            List<VariableCategory> varCat = new ArrayList<>();
             varCat.addAll(dv.getCategories());
-            Map<String, String> vl = new HashMap<String, String>();
+            Map<String, String> vl = new HashMap<>();
             for (VariableCategory vc : varCat){
                 if (vc.getLabel() != null){
                     vl.put(vc.getValue(), vc.getLabel());

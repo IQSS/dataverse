@@ -11,7 +11,6 @@ import java.lang.annotation.Annotation;
 import javax.ejb.Singleton;
 import java.io.InputStream; 
 import java.io.OutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ws.rs.WebApplicationException;
