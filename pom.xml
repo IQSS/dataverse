@@ -267,6 +267,8 @@
                     <compilerArguments>
                         <endorseddirs>${endorsed.dir}</endorseddirs>
                     </compilerArguments>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
