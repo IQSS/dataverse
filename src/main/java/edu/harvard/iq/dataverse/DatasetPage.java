@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -108,7 +110,9 @@ public class DatasetPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
-
+    @EJB
+    BuiltinUserServiceBean builtinUserService;      
+    
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -480,6 +484,11 @@ public class DatasetPage implements java.io.Serializable {
     private void resetVersionUI() {
         datasetVersionUI = new DatasetVersionUI(workingVersion);
         User user = session.getUser();
+        
+        //Get builtin user to supply default values for contact email author name, etc.
+        String userIdentifier = user.getIdentifier();
+        userIdentifier = userIdentifier.startsWith("@") ? userIdentifier.substring(1) : userIdentifier;
+        BuiltinUser builtinUser = builtinUserService.findByUserName(userIdentifier);
 
         //On create set pre-populated fields
         for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
@@ -490,27 +499,25 @@ public class DatasetPage implements java.io.Serializable {
                 dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
             }
             
-            // the following only applies if this is a "real", authenticated user:
-            if (user.isAuthenticated()) {
-                AuthenticatedUser authUser = (AuthenticatedUser) user;
+            // the following only applies if this is a "real", builit-in user - has an account:           
+            if (user.isBuiltInUser() && builtinUser != null) {               
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                    dsf.getDatasetFieldValues().get(0).setValue(authUser.getEmail());
+                    dsf.getDatasetFieldValues().get(0).setValue(builtinUser.getEmail());
                 }
                 if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
                     for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
                         for (DatasetField subField : authorValue.getChildDatasetFields()) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                                subField.getDatasetFieldValues().get(0).setValue(authUser.getName());
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getLastName() +  ", " + builtinUser.getFirstName() );
                             }
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                                subField.getDatasetFieldValues().get(0).setValue(authUser.getAffiliation());
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getAffiliation());
                             }
                         }
                     }
                 }
             }
         }
-
     }
 
     public void edit(EditMode editMode) {
@@ -1097,15 +1104,36 @@ public class DatasetPage implements java.io.Serializable {
         List<DatasetVersion> retList = new ArrayList();
 
         if (canIssueUpdateCommand()) {
-            return dataset.getVersions();
+            for (DatasetVersion version : dataset.getVersions()) {
+                version.setContributorNames(getContributorsNames(version));
+                retList.add(version);
+            }
+
         } else {
             for (DatasetVersion version : dataset.getVersions()) {
                 if (version.isReleased() || version.isDeaccessioned()) {
+                    version.setContributorNames(getContributorsNames(version));
                     retList.add(version);
                 }
             }
-            return retList;
         }
+        return retList;
+    }
+
+    private String getContributorsNames(DatasetVersion version) {
+        String contNames = "";
+        for (String id : version.getVersionContributorIdentifiers()) {
+            id = id.startsWith("@") ? id.substring(1) : id;
+            BuiltinUser builtinUser = builtinUserService.findByUserName(id);
+            if (builtinUser != null) {
+                if (contNames.isEmpty()) {
+                    contNames = builtinUser.getDisplayName();
+                } else {
+                    contNames = contNames + ", " + builtinUser.getDisplayName();
+                }
+            }
+        }
+        return contNames;
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
