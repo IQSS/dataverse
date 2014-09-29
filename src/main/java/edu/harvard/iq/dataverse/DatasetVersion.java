@@ -26,6 +26,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
@@ -211,7 +212,7 @@ public class DatasetVersion implements Serializable {
     public void setUserDatasets(List<DatasetVersionUser> datasetVersionDataverseUsers){
         this.datasetVersionDataverseUsers = datasetVersionDataverseUsers;
     }
-    
+        
     public List<String> getVersionContributorIdentifiers(){
         if (this.getDatasetVersionDataverseUsers() == null){
             return Collections.emptyList();
@@ -221,6 +222,17 @@ public class DatasetVersion implements Serializable {
              ret.add(contributor.getUserIdentifier());
         }
         return ret;
+    }
+    
+    @Transient
+    private String contributorNames;
+
+    public String getContributorNames() {
+        return contributorNames;
+    }
+
+    public void setContributorNames(String contributorNames) {
+        this.contributorNames = contributorNames;
     }
 
     
