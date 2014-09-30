@@ -521,10 +521,10 @@ public class IngestServiceBean {
             contentType = null;
         }
 
-        if ((contentType==null)||(contentType=="")){
-            contentType = "MIME_TYPE_UNDETERMINED_DEFAULT";
-        }
-        return contentType;
+       if ((contentType==null)||(contentType.equals(""))){
+            contentType = MIME_TYPE_UNDETERMINED_DEFAULT;
+       }
+       return contentType;
         
     }
     /* 
