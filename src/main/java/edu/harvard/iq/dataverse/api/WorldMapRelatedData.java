@@ -43,6 +43,13 @@ import javax.ws.rs.core.Response;
 /**
  *
  * @author raprasad
+ * 
+ * Bean used to communicate information to the WorldMap (currently a Django project)
+ * 
+ * The information sent is validated by the model/form in this project:
+ * 
+ *  https://github.com/IQSS/shared-dataverse-information
+ * 
  */
 @Path("worldmap")
 public class WorldMapRelatedData extends AbstractApiBean {
@@ -309,43 +316,64 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // (4) Roll it all up in a JSON response
         final JsonObjectBuilder dfile_json = Json.createObjectBuilder();
         
-        // Dataverse
-        dfile_json.add("dv_id", dverse.getId());
         
-        //dfile_json.add("dv_name", dverse.getName());  // old variable 
-        dfile_json.add("dataverse_name", dverse.getName());
+        //------------------------------------
+        // DataverseUser Info
+        //------------------------------------
+        dfile_json.add("dv_user_id", dv_user.getId());
+        dfile_json.add("dv_username", dv_user.getName());
+        dfile_json.add("dv_user_email", dv_user.getEmail());
+                
+        //------------------------------------
+        // Dataverse URLs to this server 
+        //------------------------------------
+        String serverName =  this.getServerNamePort(request);
+        dfile_json.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
+        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
 
+        //------------------------------------
+        // Dataverse
+        //------------------------------------
+        dfile_json.add("dataverse_installation_name", "Harvard Dataverse"); // todo / fix
+        dfile_json.add("dataverse_id", dverse.getId());      
+        dfile_json.add("dataverse_name", dverse.getName());
+        dfile_json.add("dataverse_description", dverse.getDescription());
+
+        //------------------------------------
+        // Dataset Info
+        //------------------------------------
+        dfile_json.add("dataset_id", dset.getId());
+
+        //------------------------------------
         // DatasetVersion Info
+        //------------------------------------
+        dfile_json.add("dataset_version_id", dset_version.getId());   // database id
+        dfile_json.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
+        
         dfile_json.add("dataset_name", dset_version.getTitle());
-        dfile_json.add("dataset_description", dset_version.getCitation());
-        dfile_json.add("dataset_id", dset_version.getId());
-        dfile_json.add("dataset_version_id", dset_version.getVersion());
-               
+        dfile_json.add("dataset_citation", dset_version.getCitation());
+
+        dfile_json.add("dataset_description", "");  // Need to fix to/do
+
+                
+        //------------------------------------
         // DataFile/FileMetaData Info
+        //------------------------------------
         dfile_json.add("datafile_id", dfile.getId());
-        dfile_json.add("filename", dfile_meta.getLabel());
         dfile_json.add("datafile_label", dfile_meta.getLabel());
+        //dfile_json.add("filename", dfile_meta.getLabel());
         dfile_json.add("datafile_expected_md5_checksum", dfile.getmd5());
         Long fsize = dfile.getFilesize();
         if (fsize == null){
             fsize= new Long(-1);
         }
             
-        dfile_json.add("filesize", fsize); 
-        dfile_json.add("datafile_type", dfile.getContentType());
-        dfile_json.add("created", dfile.getCreateDate().toString());
+        dfile_json.add("datafile_filesize", fsize); 
+        dfile_json.add("datafile_content_type", dfile.getContentType());
+        dfile_json.add("datafile_create_datetime", dfile.getCreateDate().toString());
                       
-        /* Dataverse URLs to this server */
-        String serverName =  this.getServerNamePort(request);
-        dfile_json.add("datafile_download_url", dfile.getMapItFileDownloadURL(serverName));
-        dfile_json.add("return_to_dataverse_url", dset_version.getReturnToDatasetURL(serverName, dset));
-
+       
         
-        // DataverseUser Info
-        dfile_json.add("dv_user_email", dv_user.getEmail());
-        dfile_json.add("dv_username", dv_user.getName());
-        dfile_json.add("dv_user_id", dv_user.getId());
-                
         
         return okResponse(dfile_json);
  
