@@ -41,7 +41,7 @@
                 </p:confirmDialog>  
             </ui:fragment>
 
-            <ui:fragment rendered="#{(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                      or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
                 <h:form id="shareForm">
                     <div class="btn-group">
