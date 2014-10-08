@@ -37,8 +37,10 @@ import javax.naming.NamingException;
 
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
 import edu.harvard.iq.dataverse.datavariable.VariableFormatType;
+import edu.harvard.iq.dataverse.datavariable.VariableRange;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;
@@ -261,9 +263,12 @@ public class SAVFileReader  extends TabularDataFileReader{
 
     Map<String, String> OBSTypeHexValue = new LinkedHashMap<String, String>();    
     
-    
-    /* We should be defaulting to ISO-Latin, NOT US-ASCII! -- L.A. */
+    /*
+     * TODO: add a comment explaining the whole thing about this default
+     * character set. -- L.A. 4.0 beta
+    */
     private String defaultCharSet = "ISO-8859-1";
+    //private String defaultCharSet = "US-ASCII"; // -- temporary! -- 4.0 beta 6
     private int    spssVersionNumber = 0; 
 
 
@@ -589,10 +594,6 @@ public class SAVFileReader  extends TabularDataFileReader{
             throw new IllegalArgumentException("given file is not spss-sav type");
         }
 
-        // TODO: 
-        // Decide what to do with the charset, where should it be stored?
-        // -- 4.0 alpha
-        //4.0//smd.getFileInformation().put("charset", defaultCharSet);
         dbgLog.fine("***** decodeHeader(): end *****");
 
     }
@@ -634,23 +635,53 @@ public class SAVFileReader  extends TabularDataFileReader{
                 offset_end),"US-ASCII");
                 
             dbgLog.fine("productInfo:\n"+productInfo+"\n");
+            dataTable.setOriginalFormatVersion(productInfo);
+
             
             // try to parse out the SPSS version that created this data
             // file: 
             
-            String spssVersionNumberTag = null; 
+            String spssVersionTag = null; 
             
             String regexpVersionNumber = ".*Release ([0-9]*)";
             Pattern versionTagPattern = Pattern.compile(regexpVersionNumber);
             Matcher matcher = versionTagPattern.matcher(productInfo);
             if ( matcher.find() ) {
-                spssVersionNumberTag = matcher.group(1); 
-                dbgLog.fine("SPSS Version Number: "+spssVersionNumberTag); 
-                dataTable.setOriginalFormatVersion(spssVersionNumberTag);
+                spssVersionTag = matcher.group(1); 
+                dbgLog.fine("SPSS Version Number: "+spssVersionTag); 
             }
             
-            if (spssVersionNumberTag != null && !spssVersionNumberTag.equals("")) {
-                spssVersionNumber = Integer.valueOf(spssVersionNumberTag).intValue();
+            // TODO: 
+            // try a more elaborate regex (like the one for the "new-style" 
+            // productInfo line, below), to select the version number, the 
+            // minor version number and the platform (windows vs. mac) separately. 
+            // would be cleaner to save just that, rather than the entire 
+            // productInfo tag. 
+            // -- L.A. 4.0 beta
+            
+            if (spssVersionTag == null || spssVersionTag.equals("")) {
+                // Later versions of SPSS have different formatting of the
+                // productInfo line:
+                regexpVersionNumber = ".* IBM SPSS STATISTICS.* ([^ ]*) ([0-9][0-9]*)([^ ]*)";
+                versionTagPattern = Pattern.compile(regexpVersionNumber);
+                matcher = versionTagPattern.matcher(productInfo);
+                if (matcher.find()) {
+                    String spssPlatformTag = matcher.group(1);
+                    spssVersionTag = matcher.group(2);
+                    String spssVersionTagMinor = matcher.group(3);
+                    
+                    dbgLog.fine("SPSS Version Number (new style): " + spssVersionTag);
+                    dbgLog.fine("SPSS Version/Platform Identification (new style:) " +
+                            spssPlatformTag + " " + spssVersionTag + spssVersionTagMinor);
+                    dataTable.setOriginalFormatVersion(spssVersionTag + 
+                            spssVersionTagMinor + " " + 
+                            spssPlatformTag);
+                    
+                }
+            }
+            
+            if (spssVersionTag != null && !spssVersionTag.equals("")) {
+                spssVersionNumber = Integer.valueOf(spssVersionTag).intValue();
                 
 
                 /*
@@ -659,17 +690,26 @@ public class SAVFileReader  extends TabularDataFileReader{
                  *  But we are only going to use it if the user did not explicitly
                  *  specify the encoding on the addfiles page. Then we'd want 
                  *  to stick with whatever they entered. 
+                 *  (also, it appears that (starting with the same version 16?)
+                 *  it is actually possible to define the locale/character set
+                 *  in the file - section 7, sub-type 20; TODO: decide which 
+                 *  one takes precedence, if we have the encoding defined both
+                 *  in the file and through the UI. -- L.A. 4.0 beta)
                  */
                 if (spssVersionNumber > 15) {
                     if (getDataLanguageEncoding() == null) {
-                        defaultCharSet = "UTF-8";
+                        //defaultCharSet = "windows-1252"; // temporary! -- L.A. "UTF-8";
+                        defaultCharSet = "UTF-8"; 
                     }
                 }
             }
              
             // TODO: 
-            // decide what to do with the charset? -- 4.0 alpha
-            //4.0//smd.getFileInformation().put("charset", defaultCharSet); 
+            // decide if we want to save the [determined/guessed] character set
+            // somewhere in the dataset object. 
+            // this may be relevant in cases when accented/non-latin characters
+            // get ingested incorrectly; 
+            // -- L.A. 4.0 beta
             
             // 1.2) 4-byte file-layout-code (byte-order)
             
@@ -845,27 +885,6 @@ public class SAVFileReader  extends TabularDataFileReader{
             dbgLog.fine("fileDate="+ fileCreationDate);
             dbgLog.fine("fileTime="+ fileCreationTime);
             dbgLog.fine("fileNote"+ fileCreationNote);
-            
-            // 4.0 - my comments from the DTA reader: 
-            /* All these time/date stamps - I don't think we are using 
-             * them anywhere. -- L.A. 4.0
-             */
-            /* As for the "varformat schema" - storing this information was 
-             * largely redundant, since we know that all the variables in 
-             * this data table come from a Stata file. -- L.A. 4.0
-             */
-            ///smd.getFileInformation().put("fileDate", fileCreationDate);
-            ///smd.getFileInformation().put("fileTime", fileCreationTime);
-            ///smd.getFileInformation().put("fileNote", fileCreationNote);
-            ///smd.getFileInformation().put("varFormat_schema", "SPSS");
-            
-            
-            /// mime type has already been set on the newly created dataTable,
-            /// earlier. 
-            //smd.getFileInformation().put("mimeType", MIME_TYPE[0]);
-            //smd.getFileInformation().put("fileFormat", MIME_TYPE[0]);
-            
-            ///smd.setValueLabelMappingTable(valueVariableMappingTable);
             
             
         } catch (IOException ex) {
@@ -1429,10 +1448,10 @@ public class SAVFileReader  extends TabularDataFileReader{
             }
             dv.setLabel(varLabel);
             
-            dv.setInvalidRanges(new ArrayList());
-            dv.setSummaryStatistics( new ArrayList() );
+            dv.setInvalidRanges(new ArrayList<VariableRange>());
+            dv.setSummaryStatistics( new ArrayList<SummaryStatistic>());
             dv.setUnf("UNF:6:");
-            dv.setCategories(new ArrayList());
+            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
             dv.setFileOrder(i);
@@ -2146,10 +2165,16 @@ public class SAVFileReader  extends TabularDataFileReader{
                     parseRT7SubTypefield(stream);
                     break;
                 case 20:
-                    // Encoding, aka code page
-                    parseRT7SubTypefield(stream);
-                    /* TODO: This needs to be researched; 
-                     * Is this field really used, ever?
+                    // Character encoding, aka code page.
+                    // Must be a version 16+ feature (?).
+                    // Starting v.16, the default character encoding for SAV
+                    // files is UTF-8; but then it is possible to specify an 
+                    // alternative encoding here. 
+                    // A typical use case would be people setting it to "ISO-Latin" 
+                    // or "windows-1252", or a similar 8-bit encoding to store 
+                    // text with standard Western European accents.
+                    // -- L.A.
+                    
                     headerSection = parseRT7SubTypefieldHeader(stream);
 
                     if (headerSection != null){
@@ -2166,11 +2191,13 @@ public class SAVFileReader  extends TabularDataFileReader{
                             dbgLog.fine("RT7-20: data charset: "+ dataCharSet);
                             defaultCharSet = dataCharSet; 
                         }
-                    } else {
+                    } /*else {
+                        // TODO: 
+                        // decide if the exception should actually be thrown here!
+                        // -- L.A. 4.0 beta
                         // throw new IOException
-                    }
-                     * 
-                     */
+                    }*/
+                     
 
                     break;
                 case 21:
@@ -2717,7 +2744,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                                 if (paddRemoved.equals("")) {
                                     paddRemoved = " ";
                                 }
-                                casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                                //casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                                casewiseRecordForTabFile.set(k, escapeCharacterString(paddRemoved));
 
                             // end of String var case
 
@@ -2814,7 +2842,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                                             String newDatum = sdf_hms.format(new Date(dateDatum));
                                             dbgLog.finer("k=" + k + ":" + newDatum);
                                             casewiseRecordForTabFile.set(k, newDatum);
-                                            dateFormatList[k] = sdf_hms.toPattern();
+                                            if (dateFormatList[k] == null) {
+                                                dateFormatList[k] = sdf_hms.toPattern();
+                                            }
                                         } else {
                                             // decimal point included
                                             String[] timeData = casewiseRecordForTabFile.get(k).toString().split("\\.");
@@ -2830,7 +2860,11 @@ public class SAVFileReader  extends TabularDataFileReader{
                                             }
                                             dbgLog.finer("k=" + k + ":" + sb_time.toString());
                                             casewiseRecordForTabFile.set(k, sb_time.toString());
-                                            dateFormatList[k] = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                            
+                                            String format_hmsS = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "");
+                                            if (dateFormatList[k] == null || (format_hmsS.length() > dateFormatList[k].length())) {
+                                                dateFormatList[k] = format_hmsS;
+                                            }
                                         }
                                     }
 				    
@@ -3148,7 +3182,8 @@ public class SAVFileReader  extends TabularDataFileReader{
 			    paddRemoved = " ";
 			}
 
-			casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+			//casewiseRecordForTabFile.set(k, "\"" + paddRemoved.replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"");
+                        casewiseRecordForTabFile.set(k, escapeCharacterString(paddRemoved));
 			
 			// end of String var case
 
@@ -3243,7 +3278,9 @@ public class SAVFileReader  extends TabularDataFileReader{
                                     String newDatum = sdf_hms.format(new Date(dateDatum));
                                     dbgLog.finer("k="+k+":"+newDatum);
                                     casewiseRecordForTabFile.set(k, newDatum);
-                                    dateFormatList[k] = sdf_hms.toPattern();
+                                    if (dateFormatList[k] == null) {
+                                        dateFormatList[k] = sdf_hms.toPattern();
+                                    }
                                 } else {
                                     // decimal point included
                                     String[] timeData = casewiseRecordForTabFile.get(k).toString().split("\\.");
@@ -3259,8 +3296,11 @@ public class SAVFileReader  extends TabularDataFileReader{
                                     }
                                     dbgLog.finer("k="+k+":"+sb_time.toString());
                                     casewiseRecordForTabFile.set(k, sb_time.toString());
-                                    // time with milliseconds:
-                                    dateFormatList[k] = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                    // time, possibly with milliseconds:
+                                    String format_hmsS = sdf_hms.toPattern() + (formatDecimalPointPosition > 0 ? ".S" : "" );
+                                    if (dateFormatList[k] == null || (format_hmsS.length() > dateFormatList[k].length())) {
+                                        dateFormatList[k] = format_hmsS;
+                                    }
                                 }
                             }
                         } else if (variableFormatType.equals("other")){
@@ -3489,6 +3529,11 @@ public class SAVFileReader  extends TabularDataFileReader{
 	}
     }
     
+    // TODO: 
+    // rename this method "skipRT7SubTypefield or parseAndSkip... 
+    // -- because that's what it really does. We only call it 
+    // on RT7 sub-fields that we don't know what to do with.
+    // -- L.A. 4.0 beta
     private void parseRT7SubTypefield(BufferedInputStream stream) throws IOException {
         int length_unit_length = 4;
         int length_number_of_units = 4;

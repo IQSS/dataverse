@@ -11,14 +11,12 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.ForeignMetadataFormatMapping;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -59,7 +57,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(collectionUri);
         String dvAlias = urlManager.getTargetIdentifier();
@@ -102,15 +100,15 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                          * from these hard-coded protocol and authority values:
                          * https://github.com/IQSS/dataverse/issues/757
                          */
-                        dataset.setProtocol(DatasetPage.fixMeDontHardCodeProtocol);
-                        dataset.setAuthority(DatasetPage.fixMeDontHardCodeAuthority);
+                        dataset.setProtocol(DatasetPage.getProtocol());
+                        dataset.setAuthority(DatasetPage.getAuthority());
 
                         /**
                          * @todo why is generateIdentifierSequence off by one?
                          * (10 vs. 9):
                          * https://github.com/IQSS/dataverse/issues/758
                          */
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.fixMeDontHardCodeProtocol, DatasetPage.fixMeDontHardCodeAuthority));
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.getProtocol(), DatasetPage.getAuthority()));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 
@@ -217,7 +215,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "expected deposit types are isEntryOnly, isBinaryOnly, and isMultiPart");
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to modify dataset");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to modify dataset");
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse: " + dvAlias);

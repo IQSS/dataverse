@@ -139,7 +139,7 @@
                         <ui:fragment rendered="#{empty DatasetPage.editMode}">
                             <div id="topDatasetBlock">
                                 <div id="actionButtonBlock" class="clearfix" style="margin-bottom:.55em;">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and ((DatasetPage.workingVersion == DatasetPage.dataset.latestVersion and (DatasetPage.workingVersion.draft or DatasetPage.workingVersion.released))
                                                              or (DatasetPage.workingVersion != DatasetPage.dataset.latestVersion and DatasetPage.dataset.latestVersion.deaccessioned and  DatasetPage.workingVersion == DatasetPage.dataset.releasedVersion))
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')
@@ -191,7 +191,7 @@
                                             </div>
                                         </div>
                                     </ui:fragment>
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
@@ -260,16 +260,19 @@
                                     <p:confirmDialog message="Dataverse 4.0 Beta cannot email dataset contacts. Look for this feature in Dataverse 4.0!" header="Email Dataset Contact" widgetVar="contact_confirmation">
                                     </p:confirmDialog>
                                 </div>
-                                <div id="datasetVersionBlock">
+                                <div id="datasetVersionBlock" class="container-fluid">
                                     <ui:fragment rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                        <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                        <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
-                                        <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        <div class="row" >
+                                            <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                            <h:outputText value="Draft" styleClass="label label-warning" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                            <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!DatasetPage.dataset.released}"/>
+                                            <h:outputText value="Deaccessioned" styleClass="label label-info" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                        </div>
+                                            
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
-                                        <div class="row" style="margin-bottom:.5em; padding-left:15px;">
-                                            <div id="citation" class="bg-info col-md-9">
+                                        <div class="row" >
+                                            <div id="citation" class="bg-info col-md-9" style="margin-bottom:.5em;">
                                                 <span>#{DatasetPage.displayCitation}</span>
                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released}">
                                                     <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DRAFT VERSION will be replaced in the citation with V1 once the dataset has been published."></span>
@@ -280,10 +283,10 @@
                                                 <ui:fragment rendered="#{DatasetPage.workingVersion.deaccessioned}">
                                                     <span class="glyphicon glyphicon-question-sign text-primary" style="cursor:pointer; cursor:hand;" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="DEACCESSIONED VERSION has been added to the citation for this version since it is no longer available."></span>
                                                 </ui:fragment>
+                                                <span id="whycitelink" class="bg-warning small"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
                                             </div>
-                                            <div class="row col-md-3" style="padding-right:0;">
-                                                <span id="whycitelink" class="bg-warning small pull-left"><a href="/guides/Data_Citation/index.html" target="_blank">Why Cite?</a></span>
-                                                <div class="dropdown pull-right">
+                                            <div class="col-md-3 text-right" style="padding-right:0; margin-bottom:.5em;">
+                                                <div class="dropdown">
                                                     <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                                         <span class="glyphicon glyphicon-download-alt" style="margin-right:.3em;"/> Download Citation <span class="caret"></span>
                                                     </button>
@@ -291,7 +294,7 @@
                                                         <li>
                                                             <h:commandLink id="endNoteLink" action="#{DatasetPage.downloadXMLFile()}" >
 
-                                                                <h:outputText value="End Note XML" />
+                                                                <h:outputText value="EndNote XML" />
                                                             </h:commandLink>
                                                         </li>
                                                         <li>
@@ -475,7 +478,7 @@
                                         </div>
                                     </ui:fragment>
                                     <!-- View -->
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-bottom:.5em;">
@@ -563,9 +566,8 @@
                                                 <p:graphicImage value="/resources/images/icon_inprogress.gif"/>
                                             </ui:fragment>-->
 
-
-                                            <ui:fragment rendered="#{ !(dataverseSession.user.guest) and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
-                                                <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" role="button">
+                                             <ui:fragment rendered="#{ dataverseSession.user.authenticated and (DatasetPage.isShapefileType(fileMetadata)) }"> <!-- and (!(DatasetPage.hasMapLayerMetadata(fileMetadata))) }"-->                                                  
+                                                 <a style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default" href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}" target="_blank" role="button">
                                                     <span class="glyphicon glyphicon-map-marker" style="margin-right:.3em;"/> 
                                                     <h:outputText rendered="#{DatasetPage.hasMapLayerMetadata(fileMetadata)}" value="Re-Map Data" />
                                                     <h:outputText rendered="#{!(DatasetPage.hasMapLayerMetadata(fileMetadata))}" value="Map Data" />
@@ -615,7 +617,7 @@
                                 </p:tab>
 
                                 <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
-                                    <ui:fragment rendered="#{!dataverseSession.user.guest and empty DatasetPage.editMode
+                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
                                         <div class="" style="text-align:right; margin-bottom:.5em;">
@@ -715,7 +717,8 @@
                                                            value="Show Details" style="margin-left:1em;"></p:commandLink>
                                         </p:column>
                                         <p:column style="min-width:140px;">
-                                            <h:outputText value="#{versionTab.versionContributors}" />
+											<!-- FIXME Commented this out, as there is no such property at this time. Michael --> 
+                                                                                        <h:outputText value="#{versionTab.contributorNames}" />
                                         </p:column>
                                         <p:column>
                                             <h:outputText  id="versionDate" value="#{versionTab.versionDate}" style="white-space:nowrap;" />

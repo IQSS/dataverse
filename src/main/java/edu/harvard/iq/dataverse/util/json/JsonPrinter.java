@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.util.json;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetAuthor;
 import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -11,12 +10,14 @@ import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRole;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import java.util.Set;
 import javax.json.Json;
@@ -24,7 +25,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
@@ -47,11 +47,19 @@ public class JsonPrinter {
 	
 	public static final BriefJsonPrinter brief = new BriefJsonPrinter();
 	
-	public static JsonObjectBuilder json( RoleAssignment ra ) {
+	public static JsonObjectBuilder json( User u ) {
+        RoleAssigneeDisplayInfo displayInfo = u.getDisplayInfo();
+        return jsonObjectBuilder()
+                .add("identifier", u.getIdentifier() )
+                .add("displayInfo", jsonObjectBuilder()
+                           .add("Title", displayInfo.getTitle())
+                           .add("email", displayInfo.getEmailAddress()));
+    }
+    
+    public static JsonObjectBuilder json( RoleAssignment ra ) {
 		return jsonObjectBuilder()
 				.add("id", ra.getId())
-				.add("userId", ra.getUser().getId() )
-				.add("_username", ra.getUser().getUserName())
+				.add("assignee", ra.getAssigneeIdentifier() )
 				.add("roleId", ra.getRole().getId() )
 				.add("_roleAlias", ra.getRole().getAlias())
 				.add("definitionPointId", ra.getDefinitionPoint().getId() );
@@ -97,7 +105,7 @@ public class JsonPrinter {
 		return bld;
 	}
 	
-	public static JsonObjectBuilder json( DataverseUser user ) {
+	public static JsonObjectBuilder json( BuiltinUser user ) {
 		return (user == null ) 
 				? null 
 				: jsonObjectBuilder()

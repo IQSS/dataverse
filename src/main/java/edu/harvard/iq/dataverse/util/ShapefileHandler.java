@@ -290,7 +290,7 @@ public class ShapefileHandler{
             return null;
         }
         String unzipFileName = new File(fileName).getName();
-        if (unzipFileName==""){
+        if (unzipFileName.equals("")){
             logger.info("getFileBasename.  fileName is an empty string: " + fileName);
             return null;
         }
@@ -464,7 +464,7 @@ public class ShapefileHandler{
             this.addErrorMessage("getRedistributeFilePath. file_ext is null");
             return null;
         }
-        if (file_ext == BLANK_EXTENSION ){
+        if (file_ext.equals(BLANK_EXTENSION)){
             return dirname + "/" + file_basename;
         }
         return dirname + "/" + file_basename + "." + file_ext;
@@ -649,7 +649,7 @@ public class ShapefileHandler{
     } // end updateFileGroupHash
     
     private boolean isFileToSkip(String fname){
-        if ((fname==null)||(fname=="")){
+        if ((fname==null)||(fname.equals(""))){
             return true;
         }
         

@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.DataverseUser;
-import edu.harvard.iq.dataverse.DataverseUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -20,7 +23,9 @@ public class PasswordResetPage {
     @EJB
     PasswordResetServiceBean passwordResetService;
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    BuiltinUserServiceBean dataverseUserService;
+    @EJB
+    AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
 
@@ -33,7 +38,7 @@ public class PasswordResetPage {
     /**
      * The user looked up by the token who will be setting a new password.
      */
-    DataverseUser user;
+    BuiltinUser user;
 
     /**
      * The email address that is entered to initiate the password reset process.
@@ -69,7 +74,7 @@ public class PasswordResetPage {
             PasswordResetInitResponse passwordResetInitResponse = passwordResetService.requestReset(emailAddress);
             PasswordResetData passwordResetData = passwordResetInitResponse.getPasswordResetData();
             if (passwordResetData != null) {
-                DataverseUser user = passwordResetData.getDataverseUser();
+                BuiltinUser user = passwordResetData.getDataverseUser();
                 passwordResetUrl = passwordResetInitResponse.getResetUrl();
                 logger.info("Found account using " + emailAddress + ": " + user.getUserName() + " and sending link " + passwordResetUrl);
             } else {
@@ -88,7 +93,9 @@ public class PasswordResetPage {
         PasswordChangeAttemptResponse response = passwordResetService.attemptPasswordReset(user, newPassword, this.token);
         if (response.isChanged()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, response.getMessageSummary(), response.getMessageDetail()));
-            session.setUser(user);
+            String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
+            AuthenticatedUser au = authSvc.lookupUser(builtinAuthProviderId, user.getUserName());
+            session.setUser(au);
             return "/dataverse.xhtml?faces-redirect=true";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, response.getMessageSummary(), response.getMessageDetail()));
@@ -104,7 +111,7 @@ public class PasswordResetPage {
         this.token = token;
     }
 
-    public DataverseUser getUser() {
+    public BuiltinUser getUser() {
         return user;
     }
 

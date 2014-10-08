@@ -255,7 +255,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     fnumvalue = null; 
                 }
                 if (fnumvalue != null) {
-                    if ((fnumvalue.intValue() < 112497)) { // && (fnumvalue.intValue() > 60015)) {
+                    //if ((fnumvalue.intValue() < 112497)) { // && (fnumvalue.intValue() > 60015)) {
+                    if ((fnumvalue.intValue() < 111931)) { // && (fnumvalue.intValue() > 60015)) {
                         if (!(fnumvalue.intValue() == 60007
                                 || fnumvalue.intValue() == 59997
                                 || fnumvalue.intValue() == 60015
@@ -274,7 +275,18 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                                 || fnumvalue.intValue() == 55002
                                 || fnumvalue.intValue() == 55006
                                 || fnumvalue.intValue() == 54998
-                                || fnumvalue.intValue() == 52552)) {
+                                || fnumvalue.intValue() == 52552
+                                // SPSS/SAV cases with similar issue - compat mode must be disabled
+                                //|| fnumvalue.intValue() == 101826 // temporary - tricky file with accents and v. 16...
+                                || fnumvalue.intValue() == 54618 // another SAV file, with long strings...
+                                || fnumvalue.intValue() == 54619 // [same]
+                                || fnumvalue.intValue() == 57983 
+                                || fnumvalue.intValue() == 58262
+                                || fnumvalue.intValue() == 58288
+                                || fnumvalue.intValue() == 58656
+                                || fnumvalue.intValue() == 59144
+                                // || fnumvalue.intValue() == 69626 [nope!]
+                                )) {
                             dbgLog.info("\"Old\" file name detected; using \"compatibility mode\" for a character vector subset;");
                             return subsetObjectVector(tabfile, column, varcount, casecount, columntype, true);
                         }
@@ -298,6 +310,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         boolean isDouble = false;
         boolean isLong   = false; 
         boolean isFloat  = false; 
+        
+        //Locale loc = new Locale("en", "US");
         
         if (columntype == COLUMN_TYPE_STRING) {
             isString = true; 
@@ -441,7 +455,9 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                                         token = token.substring(0, 129);
                                     } else {
                                         token = token.substring(0, 128);
+                                        //token = String.format(loc, "%.128s", token);
                                         token = token.trim();
+                                        //dbgLog.info("formatted and trimmed: "+token);
                                     }
                                 } else {
                                     if ("".equals(token.trim())) {
@@ -487,8 +503,33 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     }
                 } else {
                     if (bytecount == bytesRead - 1) {
-                        leftover = new byte[(int)bytesRead - byteoffset];
-                        System.arraycopy(columnBytes, byteoffset, leftover, 0, (int)bytesRead - byteoffset);
+                        // We've reached the end of the buffer; 
+                        // This means we'll save whatever unused bytes left in 
+                        // it - i.e., the bytes between the last new line 
+                        // encountered and the end - in the leftover buffer. 
+                        
+                        // *EXCEPT*, there may be a case of a very long String
+                        // that is actually longer than MAX_COLUMN_BUFFER, in 
+                        // which case it is possible that we've read through
+                        // an entire buffer of bytes without finding any 
+                        // new lines... in this case we may need to add this
+                        // entire byte buffer to an already existing leftover 
+                        // buffer!
+                        if (leftover == null) {
+                            leftover = new byte[(int)bytesRead - byteoffset];
+                            System.arraycopy(columnBytes, byteoffset, leftover, 0, (int)bytesRead - byteoffset);
+                        } else {
+                            if (byteoffset != 0) {
+                                throw new IOException("Reached the end of the byte buffer, with some leftover left from the last read; yet the offset is not zero!");
+                            }
+                            byte[] merged = new byte[leftover.length + (int)bytesRead];
+
+                            System.arraycopy(leftover, 0, merged, 0, leftover.length);
+                            System.arraycopy(columnBytes, byteoffset, merged, leftover.length, (int)bytesRead);
+                            //leftover = null;
+                            leftover = merged;
+                            merged = null;   
+                        }
                         byteoffset = 0;
 
                     }

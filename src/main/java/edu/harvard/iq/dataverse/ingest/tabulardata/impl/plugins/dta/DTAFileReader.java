@@ -132,6 +132,10 @@ public class DTAFileReader extends TabularDataFileReader{
                                                     // 114 means release 11 - ?
                                                     // confused. -- L.A.
         STATA_RELEASE_NUMBER.put(115, "rel_12");
+        // 115 is the *last* development of the "classic" Stata format. 
+        // STATA v. 13 introduced format 117 (116 was an in-house, 
+        // experimental version that was never released), it is a completely
+        // new development, incompatible with the old format. 
         
         release105type.put("STRING",  127);
         release105type.put("BYTE",     98);

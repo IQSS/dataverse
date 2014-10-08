@@ -5,6 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -232,18 +234,18 @@ public class DatasetServiceBean {
 
     }
 
-    public DatasetVersionDatasetUser getDatasetVersionDatasetUser(DatasetVersion version, DataverseUser user) {
+    public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
 
-        DatasetVersionDatasetUser ddu = null;
-        Query query = em.createQuery("select object(o) from DatasetVersionDatasetUser as o "
-                + "where o.datasetversionid =:versionId and o.dataverseuserid =:userId");
+        DatasetVersionUser ddu = null;
+        Query query = em.createQuery("select object(o) from DatasetVersionUser as o "
+                + "where o.datasetversionid =:versionId and o.userIdentifier =:userId");
         query.setParameter("versionId", version.getId());
-        query.setParameter("userId", user.getId());
+        query.setParameter("userId", user.getIdentifier());
         System.out.print("versionId: " + version.getId());
-        System.out.print("userId: " + user.getId());
+        System.out.print("userId: " + user.getIdentifier());
         System.out.print(query.toString());
         try {
-            ddu = (DatasetVersionDatasetUser) query.getSingleResult();
+            ddu = (DatasetVersionUser) query.getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             // DO nothing, just return null.
         }
@@ -265,7 +267,7 @@ public class DatasetServiceBean {
         lock.setStartTime(new Date());
 
         if (userId != null) {
-            DataverseUser user = em.find(DataverseUser.class, userId);
+            AuthenticatedUser user = em.find(AuthenticatedUser.class, userId);
             lock.setUser(user);
             if (user.getDatasetLocks() == null) {
                 user.setDatasetLocks(new ArrayList());
@@ -283,7 +285,7 @@ public class DatasetServiceBean {
         //em.refresh(dataset); (?)
         DatasetLock lock = dataset.getDatasetLock();
         if (lock != null) {
-            DataverseUser user = lock.getUser();
+            AuthenticatedUser user = lock.getUser();
             dataset.setDatasetLock(null);
             user.getDatasetLocks().remove(lock);
             /* 

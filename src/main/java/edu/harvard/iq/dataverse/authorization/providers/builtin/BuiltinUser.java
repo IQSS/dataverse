@@ -1,30 +1,31 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
  * @author xyang
+ * @author mbarsinai
  */
 @NamedQueries({
-		@NamedQuery( name="DataverseUser.findAll",
-				query = "SELECT u FROM DataverseUser u ORDER BY u.lastName"),
-		@NamedQuery( name="DataverseUser.listByUserNameLike",
-				query = "SELECT u FROM DataverseUser u WHERE u.userName LIKE :userNameLike")
+		@NamedQuery( name="BuiltinUser.findAll",
+				query = "SELECT u FROM BuiltinUser u ORDER BY u.lastName"),
+		@NamedQuery( name="BuiltinUser.findByUserName",
+				query = "SELECT u FROM BuiltinUser u WHERE u.userName=:userName"),
+		@NamedQuery( name="BuiltinUser.listByUserNameLike",
+				query = "SELECT u FROM BuiltinUser u WHERE u.userName LIKE :userNameLike")
 })
 @Entity
-public class DataverseUser implements Serializable {
+public class BuiltinUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -48,12 +49,6 @@ public class DataverseUser implements Serializable {
     private String affiliation;
     private String position;
     
-    @OneToMany(mappedBy = "dataverseUser")
-    private List<DatasetVersionDatasetUser> datasetDataverseUsers;
-    
-    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DatasetLock> datasetLocks;
-	
     public Long getId() {
         return id;
     }
@@ -118,30 +113,14 @@ public class DataverseUser implements Serializable {
         this.position = position;
     }
     
-    public boolean isGuest() {
-        return "__GUEST__".equals( getUserName() );
-    }
-        
-    public List<DatasetVersionDatasetUser> getDatasetDataverseUsers(){
-        return datasetDataverseUsers;
-    }
-    
-    public void setDatasetDataverseUsers(List<DatasetVersionDatasetUser> datasetDataverseUsers){
-        this.datasetDataverseUsers = datasetDataverseUsers;
-    }
-    
-    public List<DatasetLock> getDatasetLocks() {
-        return datasetLocks;
-    }
-
-    public void setDatasetLocks(List<DatasetLock> datasetLocks) {
-        this.datasetLocks = datasetLocks;
-    }
-    
     public String getDisplayName(){
         return this.getFirstName() + " " + this.getLastName(); 
     }
-	
+    
+    public RoleAssigneeDisplayInfo createDisplayInfo() {
+        return new RoleAssigneeDisplayInfo(getDisplayName(), getEmail(), getAffiliation() );
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -152,10 +131,10 @@ public class DataverseUser implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof DataverseUser)) {
+        if (!(object instanceof BuiltinUser)) {
             return false;
         }
-        DataverseUser other = (DataverseUser) object;
+        BuiltinUser other = (BuiltinUser) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -164,7 +143,11 @@ public class DataverseUser implements Serializable {
 
 	@Override
 	public String toString() {
-		return "DataverseUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
+		return "BuiltinUser{" + "id=" + id + ", userName=" + userName + ", email=" + email + '}';
 	}
+
+    RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo(getDisplayName(), getEmail(), getAffiliation());
+    }
    
 }

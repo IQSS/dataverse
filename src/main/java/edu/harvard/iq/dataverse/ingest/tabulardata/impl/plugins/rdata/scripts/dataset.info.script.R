@@ -3,7 +3,7 @@
 #' @since 2013-04-11
 
 #' Create a variable.meta.data Object
-#' Generates an object that represents the meta-data associated with a vector
+#' Generates an object that represents the metadata associated with a vector
 #' in R. This is used to later recreate the object at a later step.
 #' @param values a vector that 
 #' @return a list containing the slots: type, type.string, class, and levels
@@ -41,7 +41,8 @@ VariableMetaData.numeric <- function (values) {
 }
 #' @param values a vector of POSIXt objects
 VariableMetaData.POSIXt <- function (values) {
-  list(type = 1, type.string = "DateTime", class = class(values), levels = NULL, format = "Y-m-d H:M:s:S z")
+#  list(type = 1, type.string = "DateTime", class = class(values), levels = NULL, format = "Y-m-d H:M:s:S z")
+  list(type = 1, type.string = "DateTime", class = class(values), levels = NULL, format = "yyyy-MM-dd HH:mm:ss.SSS z")
 }
 #' @param values a vector of Date objects
 VariableMetaData.Date <- function (values) {

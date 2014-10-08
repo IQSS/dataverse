@@ -5,8 +5,9 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,19 +52,19 @@ public class StatementManagerImpl implements StatementManager {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "swordAuth is null");
         }
 
-        DataverseUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser authUser = swordAuth.auth(authCredentials);
         urlManager.processUrl(editUri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
-            logger.fine("request for sword statement by user " + dataverseUser.getUserName());
+            logger.fine("request for sword statement by user " + authUser.getDisplayInfo().getTitle() );
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);
             }
 
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatOwnsDataset)) {
+            if (swordAuth.hasAccessToModifyDataverse(authUser, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
                 /**
                  * @todo In DVN 3.x this included author affiliation.
@@ -147,7 +148,7 @@ public class StatementManagerImpl implements StatementManager {
                 }
                 return statement;
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getUserName() + " is not authorized to view study with global ID " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + authUser.getDisplayInfo().getTitle() + " is not authorized to view study with global ID " + globalId);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + editUri);

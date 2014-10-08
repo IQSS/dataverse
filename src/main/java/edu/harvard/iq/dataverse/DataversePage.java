@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -104,7 +105,6 @@ public class DataversePage implements java.io.Serializable {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
     public void init() {
-
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
@@ -112,8 +112,8 @@ public class DataversePage implements java.io.Serializable {
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
-            dataverse.setContactEmail(session.getUser().getEmail());            
-            dataverse.setAffiliation(session.getUser().getAffiliation());
+            dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
+            dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse (or create root dataverse)
             try {
@@ -127,7 +127,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-
+        
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
 
@@ -213,7 +213,9 @@ public class DataversePage implements java.io.Serializable {
 
         try {
             dataverse = commandEngine.submit(cmd);
-            userNotificationService.sendNotification(session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            if ( session.getUser() instanceof AuthenticatedUser ) {
+                userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            }
             editMode = null;
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());

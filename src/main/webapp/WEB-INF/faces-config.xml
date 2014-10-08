@@ -10,4 +10,8 @@
             <renderer-class>edu.harvard.iq.dataverse.FileUploadRenderer</renderer-class>
         </renderer>
     </render-kit>
+    <validator>
+        <validator-id>requiredCheckboxValidator</validator-id>
+        <validator-class>edu.harvard.iq.dataverse.util.RequiredCheckboxValidator</validator-class>
+    </validator>
 </faces-config>

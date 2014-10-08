@@ -27,7 +27,7 @@
                 </h:form>
             </ui:fragment>
 
-            <ui:fragment rendered="#{dataverseSession.user.guest and (dataverse.owner == null or dataverse.alias.endsWith('_open'))}">
+            <ui:fragment rendered="#{!dataverseSession.user.authenticated and (dataverse.owner == null or dataverse.alias.endsWith('_open'))}">
                 <div style="float:right;">
                     <button type="button" class="btn btn-default" onclick="addData_popup.show()">
                         <span class="glyphicon glyphicon-plus"/> Add Data <span class="caret"></span>
@@ -41,7 +41,7 @@
                 </p:confirmDialog>  
             </ui:fragment>
 
-            <ui:fragment rendered="#{(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
+            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
                                      or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand'))}">
                 <h:form id="shareForm">
                     <div class="btn-group">
@@ -225,15 +225,15 @@
                                 <!--THIS IS EMPTY / SEARCH-->
                                 <p>Sorry, there are no Dataverses, Datasets, or Files that match your search. Please try a new search. You can also check out the <a href="/guides/User/find-use-data.html" target="_blank">search guide</a> for tips.</p>
                             </ui:fragment>
-                            <ui:fragment rendered="#{dataverseSession.user.guest and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / GUEST-->
                                 <p>This Dataverse currently has no Dataverses, Datasets, or Files. Please <h:outputLink value="/loginpage.xhtml">log in</h:outputLink> to see if you are able to add to it.</p>
                             </ui:fragment>
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and !(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <ui:fragment rendered="#{dataverseSession.user.authenticated and !(permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS-->
                                 <p>This Dataverse currently has no Dataverses, Datasets, or Files. You can contact the Dataverse administrator to gain access.</p>
                             </ui:fragment>
-                            <ui:fragment rendered="#{!dataverseSession.user.guest and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                            <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand') or permissionServiceBean.on(SearchIncludeFragment.dataverse).canIssueCommand('CreateDatasetCommand')) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
                                 <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
                                 <p>This Dataverse currently has no Dataverses, Datasets, or Files. You can add to it by using the Add Data button on this page.</p>
                             </ui:fragment>

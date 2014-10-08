@@ -170,24 +170,8 @@ public class RTabFileParser implements java.io.Serializable {
                         }
                         caseRow[i] = charToken;
                     } else {
-                        /*
-                         * Note the commented-out code below; it was converting
-                         * missing values into " " (a double-quoted space - ?)
-                         * I'm pretty positive that was a result of a misreading 
-                         * of some spec many years ago. I'm also fairly positive
-                         * that the only way to store an NA unambiguously is as 
-                         * an *empty* string, no quotes, no nothing!
-                         * TODO: 
-                         * Not sure about the above anymore; need to figure it out. 
-                         * -- L.A.
-                         */
-                        /*
-                        if (isDateVariable==null || (!isDateVariable[i])) {
-                           caseRow[i] = " ";
-                        } else {
-                        */
+                        // missing value:
                            caseRow[i] = ""; 
-                        /*}*/
                     }
 
                 } else if (isContinuousVariable[i]) {

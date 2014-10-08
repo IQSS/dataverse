@@ -5,7 +5,11 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.MD5Checksum;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -25,9 +29,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -110,7 +110,9 @@ public class DatasetPage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
-
+    @EJB
+    BuiltinUserServiceBean builtinUserService;      
+    
     private Dataset dataset = new Dataset();
     private EditMode editMode;
     private Long ownerId;
@@ -139,9 +141,12 @@ public class DatasetPage implements java.io.Serializable {
      * @todo ticket to get away from these hard-coded protocol and authority
      * values: https://github.com/IQSS/dataverse/issues/757
      */
-    public static String fixMeDontHardCodeProtocol = "doi";
-    public static String fixMeDontHardCodeAuthority = "10.5072/FK2";
-
+    static String fixMeDontHardCodeProtocol = "doi";
+    static String fixMeDontHardCodeAuthority = "10.5072/FK2";
+    
+    public static String getProtocol() { return fixMeDontHardCodeProtocol; }
+    public static String getAuthority() { return fixMeDontHardCodeAuthority; }
+    
     public String getShowVersionList() {
         return showVersionList;
     }
@@ -468,34 +473,51 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    private String getUserName(User user) {
+        if (user.isAuthenticated()) {
+            AuthenticatedUser authUser = (AuthenticatedUser)user;
+            return authUser.getName();
+        }
+        return "Guest";
+    }
+    
     private void resetVersionUI() {
         datasetVersionUI = new DatasetVersionUI(workingVersion);
+        User user = session.getUser();
+        
+        //Get builtin user to supply default values for contact email author name, etc.
+        String userIdentifier = user.getIdentifier();
+        userIdentifier = userIdentifier.startsWith("@") ? userIdentifier.substring(1) : userIdentifier;
+        BuiltinUser builtinUser = builtinUserService.findByUserName(userIdentifier);
 
         //On create set pre-populated fields
         for (DatasetField dsf : dataset.getEditVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
+                dsf.getDatasetFieldValues().get(0).setValue(getUserName(user));
             }
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
                 dsf.getDatasetFieldValues().get(0).setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(new Date().getTime())));
             }
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(session.getUser().getEmail());
-            }
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getLastName() + ", " + session.getUser().getFirstName());
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            subField.getDatasetFieldValues().get(0).setValue(session.getUser().getAffiliation());
+            
+            // the following only applies if this is a "real", builit-in user - has an account:           
+            if (user.isBuiltInUser() && builtinUser != null) {               
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
+                    dsf.getDatasetFieldValues().get(0).setValue(builtinUser.getEmail());
+                }
+                if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
+                    for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                        for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getLastName() +  ", " + builtinUser.getFirstName() );
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                                subField.getDatasetFieldValues().get(0).setValue(builtinUser.getAffiliation());
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 
     public void edit(EditMode editMode) {
@@ -806,9 +828,8 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
             if (editMode == EditMode.CREATE) {
-                userNotificationService.sendNotification(session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
-                if (selectedTemplate != null) {
-                    commandEngine.submit(new UpdateDataverseTemplateCountCommand(session.getUser(), selectedTemplate, dataset));
+                if ( session.getUser() instanceof AuthenticatedUser ) {
+                    userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
                 }
             }
         } catch (EJBException ex) {
@@ -833,7 +854,7 @@ public class DatasetPage implements java.io.Serializable {
 
         // Call Ingest Service one more time, to 
         // queue the data ingest jobs for asynchronous execution: 
-        ingestService.startIngestJobs(dataset, session.getUser());
+        ingestService.startIngestJobs(dataset, (AuthenticatedUser)session.getUser());
 
         return "/dataset.xhtml?id=" + dataset.getId() + "&versionId=" + dataset.getLatestVersion().getId() + "&faces-redirect=true";
     }
@@ -1083,15 +1104,36 @@ public class DatasetPage implements java.io.Serializable {
         List<DatasetVersion> retList = new ArrayList();
 
         if (canIssueUpdateCommand()) {
-            return dataset.getVersions();
+            for (DatasetVersion version : dataset.getVersions()) {
+                version.setContributorNames(getContributorsNames(version));
+                retList.add(version);
+            }
+
         } else {
             for (DatasetVersion version : dataset.getVersions()) {
                 if (version.isReleased() || version.isDeaccessioned()) {
+                    version.setContributorNames(getContributorsNames(version));
                     retList.add(version);
                 }
             }
-            return retList;
         }
+        return retList;
+    }
+
+    private String getContributorsNames(DatasetVersion version) {
+        String contNames = "";
+        for (String id : version.getVersionContributorIdentifiers()) {
+            id = id.startsWith("@") ? id.substring(1) : id;
+            BuiltinUser builtinUser = builtinUserService.findByUserName(id);
+            if (builtinUser != null) {
+                if (contNames.isEmpty()) {
+                    contNames = builtinUser.getDisplayName();
+                } else {
+                    contNames = contNames + ", " + builtinUser.getDisplayName();
+                }
+            }
+        }
+        return contNames;
     }
 
     private List<DatasetVersion> resetReleasedVersionTabList() {
@@ -1112,7 +1154,7 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
-        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.xml";
+        String fileNameString = "attachment;filename=" + getFileNameDOI() + ".xml";
         response.setHeader("Content-Disposition", fileNameString);
         try {
             ServletOutputStream out = response.getOutputStream();
@@ -1123,6 +1165,11 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
+    
+    private String getFileNameDOI(){
+        Dataset ds = workingVersion.getDataset();
+        return "DOI:" + ds.getAuthority()  + "_" + ds.getId().toString();
+    }
 
     public void downloadRISFile() {
 
@@ -1130,7 +1177,8 @@ public class DatasetPage implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("application/download");
-        String fileNameString = "attachment;filename=" + workingVersion.getDataset().getId().toString() + "file.ris";
+
+        String fileNameString = "attachment;filename="  + getFileNameDOI() + ".ris";
         response.setHeader("Content-Disposition", fileNameString);
 
         try {

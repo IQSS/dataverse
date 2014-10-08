@@ -33,9 +33,9 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessObject;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -149,6 +149,8 @@ public class IngestServiceBean {
     private static final String MIME_TYPE_FITS  = "application/fits";
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
+    
+    private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
       
@@ -521,10 +523,10 @@ public class IngestServiceBean {
             contentType = null;
         }
 
-        if ((contentType==null)||(contentType=="")){
-            contentType = "MIME_TYPE_UNDETERMINED_DEFAULT";
-        }
-        return contentType;
+       if ((contentType==null)||(contentType.equals(""))){
+            contentType = MIME_TYPE_UNDETERMINED_DEFAULT;
+       }
+       return contentType;
         
     }
     /* 
@@ -792,7 +794,7 @@ public class IngestServiceBean {
     // TODO: consider creating a version of this method that would take 
     // datasetversion as the argument. 
     // -- L.A. 4.0 post-beta. 
-    public void startIngestJobs(Dataset dataset, DataverseUser user) {
+    public void startIngestJobs(Dataset dataset, AuthenticatedUser user) {
         int count = 0;
         IngestMessage ingestMessage = null;
         for (DataFile dataFile : dataset.getFiles()) {

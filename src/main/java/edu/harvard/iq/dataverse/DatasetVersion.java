@@ -26,6 +26,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
@@ -202,32 +203,36 @@ public class DatasetVersion implements Serializable {
     }
     
     @OneToMany(mappedBy = "datasetVersion")
-    private List<DatasetVersionDatasetUser> datasetVersionDataverseUsers;
+    private List<DatasetVersionUser> datasetVersionDataverseUsers;
     
-    public List<DatasetVersionDatasetUser> getDatasetVersionDataverseUsers(){
+    public List<DatasetVersionUser> getDatasetVersionDataverseUsers(){
         return datasetVersionDataverseUsers;
     }
     
-    public void setUserDatasets(List<DatasetVersionDatasetUser> datasetVersionDataverseUsers){
+    public void setUserDatasets(List<DatasetVersionUser> datasetVersionDataverseUsers){
         this.datasetVersionDataverseUsers = datasetVersionDataverseUsers;
     }
-    
-    public String getVersionContributors(){
-        String retString = ""; 
+        
+    public List<String> getVersionContributorIdentifiers(){
         if (this.getDatasetVersionDataverseUsers() == null){
-            return retString;
+            return Collections.emptyList();
         }
-        for (DatasetVersionDatasetUser contributor: this.getDatasetVersionDataverseUsers()){
-             if (retString.isEmpty()){
-                 retString = contributor.getDataverseUser().getDisplayName();
-             } else {
-                 retString += ", " + contributor.getDataverseUser().getDisplayName();
-             }
+        List<String> ret = new LinkedList<>();
+        for (DatasetVersionUser contributor: this.getDatasetVersionDataverseUsers()){
+             ret.add(contributor.getUserIdentifier());
         }
-        if (retString.isEmpty()){
-            retString = this.getDataset().getCreator().getDisplayName();
-        }
-        return retString;
+        return ret;
+    }
+    
+    @Transient
+    private String contributorNames;
+
+    public String getContributorNames() {
+        return contributorNames;
+    }
+
+    public void setContributorNames(String contributorNames) {
+        this.contributorNames = contributorNames;
     }
 
     

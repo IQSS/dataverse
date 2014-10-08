@@ -10,6 +10,9 @@ As a registered user, you can:
 
 Create User Account
 ===================
+
+FIXME: Shibboleth needs to be documented.
+
 #. In the top right corner of each page, click on the Sign Up link.
 #. Fill out all the fields, then click the Create Account button at the end. Congrats! 
 

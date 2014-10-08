@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -50,7 +54,7 @@ public class SearchServiceBean {
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
-    DataverseUserServiceBean dataverseUserService;
+    AuthenticationServiceBean authSvc;
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 
@@ -63,11 +67,11 @@ public class SearchServiceBean {
         PUBLISHED, UNPUBLISHED
     };
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
-        return search(dataverseUser, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, PublishedToggle publishedToggle) {
+        return search(user, dataverse, query, filterQueries, sortField, sortOrder, paginationStart, false);
     }
 
-    public SolrQueryResponse search(DataverseUser dataverseUser, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
+    public SolrQueryResponse search(User user, Dataverse dataverse, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {//        if (publishedToggle.equals(PublishedToggle.PUBLISHED)) {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getPUBLISHED_STRING());
 //        } else {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
@@ -126,39 +130,37 @@ public class SearchServiceBean {
         String publicOnly = "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getPublicGroupString();
         // initialize to public only to be safe
         String permissionFilterQuery = publicOnly;
-        if (dataverseUser != null) {
-            if (dataverseUser.isGuest()) {
-                permissionFilterQuery = publicOnly;
-//                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS); // remove ... just for dev
-            } else {
-                solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
-                /**
-                 * Non-guests might get more than public stuff with an OR or
-                 * two.
-                 *
-                 * Unless you're part of some special group, you get the "User
-                 * Private Group" (UGP) that corresponds to your username:
-                 * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
-                 */
-                String publicPlusUserPrivateGroup = "("
-                        + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-                        + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId() + ")";
-                /**
-                 * @todo: replace this with a real group... look up the user's
-                 * groups (once you can)
-                 */
-                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
-                    String publicPlusUserPrivateGroupPlusNSA = "("
-                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-                            + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
-                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
-                            + ")";
-                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
-                } else {
-                    // not part of any particular group 
-                    permissionFilterQuery = publicPlusUserPrivateGroup;
-                }
-            }
+        if (user instanceof GuestUser) {
+            permissionFilterQuery = publicOnly;
+        } else if (user instanceof AuthenticatedUser) {
+            // Non-guests might get more than public stuff with an OR or two
+            AuthenticatedUser au = (AuthenticatedUser) user;
+            solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
+            /**
+             * Every AuthenticatedUser is part of a "User Private Group" (UGP),
+             * a concept we borrow from RHEL:
+             * https://access.redhat.com/site/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/ch-Managing_Users_and_Groups.html#s2-users-groups-private-groups
+             */
+            String publicPlusUserPrivateGroup = "("
+                    + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+                    + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+            /**
+             * @todo: replace this with a real group... look up the user's
+             * groups (once you can)
+             */
+            // Michael - commenting this out, should be impleneted by permissions.
+//                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
+//                    String publicPlusUserPrivateGroupPlusNSA = "("
+//                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
+//                            + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
+//                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
+//                            + ")";
+//                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
+//                } else {
+            // not part of any particular group 
+            permissionFilterQuery = publicPlusUserPrivateGroup;
+        } else {
+            logger.info("Should never reach here. A User must be an AuthenticatedUser or a Guest");
         }
 
         /**

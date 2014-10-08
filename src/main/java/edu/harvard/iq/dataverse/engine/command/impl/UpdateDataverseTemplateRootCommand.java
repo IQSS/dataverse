@@ -3,9 +3,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseUser;
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -21,7 +22,7 @@ public class UpdateDataverseTemplateRootCommand extends AbstractCommand<Datavers
     	private final boolean newValue;
         private  Dataverse dv;
         
-    public UpdateDataverseTemplateRootCommand(boolean newValue, DataverseUser aUser, Dataverse anAffectedDataverse) {
+    public UpdateDataverseTemplateRootCommand(boolean newValue, User aUser, Dataverse anAffectedDataverse) {
         super(aUser, anAffectedDataverse);
         this.newValue = newValue;
         this.dv = anAffectedDataverse;

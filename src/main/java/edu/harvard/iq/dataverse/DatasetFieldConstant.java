@@ -6,7 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.inject.Named;
 
 /**
@@ -14,7 +14,7 @@ import javax.inject.Named;
  * @author skraffmiller
  */
 @Named("dfc")
-@ApplicationScoped
+@Dependent
 public class DatasetFieldConstant implements java.io.Serializable  {
     
     public final static String publication = "publication";

@@ -35,7 +35,7 @@ public class Mail {
         notificationsList = userNotificationService.findUnemailed();
         if (notificationsList != null) {
             for (UserNotification notification : notificationsList) {
-                mailService.sendCreateDataverseNotification(notification.getUser().getEmail(), dataverseService.find(notification.getObjectId()).getName(), dataverseService.find(notification.getObjectId()).getOwner().getName());
+                mailService.sendCreateDataverseNotification(notification.getUser().getDisplayInfo().getEmailAddress(), dataverseService.find(notification.getObjectId()).getName(), dataverseService.find(notification.getObjectId()).getOwner().getName());
                 notification.setEmailed(true);
                 userNotificationService.save(notification);
             }

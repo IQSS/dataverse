@@ -1,10 +1,9 @@
 
 package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseRole;
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.engine.Permission;
+import edu.harvard.iq.dataverse.authorization.Permission;
 
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -19,7 +18,7 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
     	private final Template created;
 	private final Dataverse dv;
 	
-	public CreateTemplateCommand(Template template, DataverseUser aUser, Dataverse anAffectedDataverse) {
+	public CreateTemplateCommand(Template template, User aUser, Dataverse anAffectedDataverse) {
 		super(aUser, anAffectedDataverse);
 		created = template;
 		dv = anAffectedDataverse;

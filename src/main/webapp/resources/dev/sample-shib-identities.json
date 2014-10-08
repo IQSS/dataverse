@@ -1,0 +1,39 @@
+[
+    {
+        "entityID": "https://idp.testshib.org/idp/shibboleth",
+        "DisplayNames": [
+            {
+                "value": "TestShib Test IdP",
+                "lang": "en"
+            }
+        ],
+        "Descriptions": [
+            {
+                "value": "TestShib IdP. Use this as a source of attributes\n                        for your test SP.",
+                "lang": "en"
+            }
+        ],
+        "Logos": [
+            {
+                "value": "http://testshib.org/images/testshib-transp.png",
+                "height": "75",
+                "width": "88"
+            }
+        ]
+    }, {
+        "entityID": "https://stage.fed.huit.harvard.edu/idp/shibboleth",
+        "DisplayNames": [
+            {
+                "value": "Harvard Test IdP",
+                "lang": "en"
+            }
+        ],
+        "Logos": [
+            {
+                "value": "http://dataverse-demo.iq.harvard.edu/logos/1/harvard.png",
+                "height": "100",
+                "width": "158"
+            }
+        ]
+    }
+]

@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import org.hibernate.validator.constraints.NotBlank;
 import edu.harvard.iq.dataverse.DataTable;
+import javax.persistence.OrderBy;
 
 /**
  *
@@ -144,6 +145,7 @@ public class DataVariable implements Serializable {
      * VariableCategory is itself an entity. 
      */
     @OneToMany (mappedBy="dataVariable", cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST})
+    @OrderBy("catOrder")
     private Collection<VariableCategory> categories;
     
     /*

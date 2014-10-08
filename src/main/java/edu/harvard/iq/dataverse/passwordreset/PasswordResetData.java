@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
-import edu.harvard.iq.dataverse.DataverseUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -30,7 +30,7 @@ public class PasswordResetData implements Serializable {
      */
     @OneToOne
     @JoinColumn(nullable = false)
-    private DataverseUser dataverseUser;
+    private BuiltinUser dataverseUser;
 
     @Column(nullable = false)
     private Timestamp created;
@@ -47,7 +47,7 @@ public class PasswordResetData implements Serializable {
     public PasswordResetData() {
     }
 
-    public PasswordResetData(DataverseUser dataverseUser) {
+    public PasswordResetData(BuiltinUser dataverseUser) {
         this.dataverseUser = dataverseUser;
         this.token = UUID.randomUUID().toString();
         long nowInMilliseconds = new Date().getTime();
@@ -75,7 +75,7 @@ public class PasswordResetData implements Serializable {
         return token;
     }
 
-    public DataverseUser getDataverseUser() {
+    public BuiltinUser getDataverseUser() {
         return dataverseUser;
     }
 
