@@ -149,6 +149,8 @@ public class IngestServiceBean {
     private static final String MIME_TYPE_FITS  = "application/fits";
     
     private static final String MIME_TYPE_UNDETERMINED_DEFAULT = "application/octet-stream";
+    
+    private static String timeFormat_hmsS = "HH:mm:ss.SSS";
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
       

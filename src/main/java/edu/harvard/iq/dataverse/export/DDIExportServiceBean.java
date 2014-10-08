@@ -224,6 +224,10 @@ public class DDIExportServiceBean {
             writeAttribute(xmlw, "dcml", dv.getNumberOfDecimalPoints().toString());
         }
 
+        if (dv.isOrderedCategorical()) {
+            writeAttribute(xmlw, "nature", "ordinal");
+        }
+        
         if (dv.getVariableIntervalType() != null) {
             String interval = dv.getVariableIntervalType().getName();
             interval = DB_VAR_INTERVAL_TYPE_CONTINUOUS.equals(interval) ? VAR_INTERVAL_CONTIN : interval;

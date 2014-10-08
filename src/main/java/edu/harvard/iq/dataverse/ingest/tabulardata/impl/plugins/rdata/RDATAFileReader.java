@@ -97,6 +97,8 @@ public class RDATAFileReader extends TabularDataFileReader {
   private static String RSERVE_PASSWORD = System.getProperty("dataverse.rserve.pwrd");
   private static int RSERVE_PORT;
   
+  // TODO: 
+  // we're not using these time/data formats for anything, are we?
   // DATE FORMATS
   private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[] {
     new SimpleDateFormat("yyyy-MM-dd")
@@ -169,7 +171,7 @@ public class RDATAFileReader extends TabularDataFileReader {
     LOG.finer("R SCRIPTS AS STRINGS --------------");
     LOG.finer(RSCRIPT_WRITE_DVN_TABLE);
     LOG.finer(RSCRIPT_GET_DATASET);
-    LOG.finer(RSCRIPT_CREATE_WORKSPACE);
+    LOG.info(RSCRIPT_CREATE_WORKSPACE);
     LOG.finer(RSCRIPT_GET_LABELS);
     LOG.finer(RSCRIPT_DATASET_INFO_SCRIPT);
     LOG.finer("END OF R SCRIPTS AS STRINGS -------");
@@ -200,19 +202,52 @@ public class RDATAFileReader extends TabularDataFileReader {
     public void create () {
       try {
         LOG.fine("RDATAFileReader: Creating R Workspace");
+        RRequestBuilder scriptBuilder = mRequestBuilder.script(RSCRIPT_CREATE_WORKSPACE);
+        LOG.info("got a sript request builder");
         
+        RRequest scriptRequest = scriptBuilder.build();
+        LOG.info("script request built.");
+        
+        /*
         REXP result = mRequestBuilder
                 .script(RSCRIPT_CREATE_WORKSPACE)
                 .build()
                 .eval();
+        */
+        REXP result = scriptRequest.eval(); 
+        
+        LOG.info("evaluated the script");
         
         RList directoryNames = result.asList();
         
-        mParent = directoryNames.at("parent").asString();
+        mParent = null; 
         
-        LOG.fine(String.format("RDATAFileReader: Parent directory of R Workspace is %s", mParent));
+        if (directoryNames != null) {
+            if (directoryNames.at("parent") != null) {
+                mParent = directoryNames.at("parent").asString();
+            } else {
+                LOG.info("WARNING: directoryNames at \"parent\" is null!");
+                if(directoryNames.isEmpty()) {
+                    LOG.info("WARNING: directoryNames is empty!");
+                } else {
+                    Set<String> dirKeySet = directoryNames.keySet();
+                    Iterator iter = dirKeySet.iterator();
+                    String key;
+
+                    while (iter.hasNext()) {
+                        key = (String) iter.next();
+                        LOG.info("directoryNames list key: "+key);
+                    }
+                }
+            }
+            
+        } else {
+            LOG.info("WARNING: directoryNames is null!");
+        }
         
-        LOG.fine("RDATAFileReader: Creating file handle");
+        LOG.info(String.format("RDATAFileReader: Parent directory of R Workspace is %s", mParent));
+        
+        LOG.info("RDATAFileReader: Creating file handle");
         
         mDataFile = new File(mParent, "data.Rdata");
       }
@@ -490,16 +525,16 @@ public class RDATAFileReader extends TabularDataFileReader {
             // created!
             // - L.A. 
             RTabFileParser csvFileReader = new RTabFileParser('\t');
-            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile)));
+            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(localCsvFile), "UTF-8"));
 
             File tabFileDestination = File.createTempFile("data-", ".tab");
-            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
+            PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath(), "UTF-8");
         
             int lineCount = csvFileReader.read(localBufferedReader, dataTable, tabFileWriter);
 
             LOG.fine("RDATAFileReader: successfully read "+lineCount+" lines of tab-delimited data.");
         
-            dataTable.setUnf("UNF:6:NOTCALCULATED");
+            dataTable.setUnf("UNF:pending");
         
             ingesteddata.setTabDelimitedFile(tabFileDestination);
             ingesteddata.setDataTable(dataTable);
@@ -671,7 +706,7 @@ public class RDATAFileReader extends TabularDataFileReader {
    */
     private static String readLocalResource(String path) {
         // Debug
-        LOG.fine(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
+        LOG.info(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
 
         // Get stream
         InputStream resourceStream = RDATAFileReader.class.getResourceAsStream(path);
@@ -770,23 +805,30 @@ public class RDATAFileReader extends TabularDataFileReader {
                     if (variableLevels != null && variableLevels.length > 0) {
                         // yes, this is a factor, with levels defined.
                         LOG.fine("this is a factor.");
+                        boolean ordered = false; 
+                        
+                        if (variableFormat != null && variableFormat.equals("ordered")) {
+                            LOG.fine("an ordered factor, too");
+                            ordered = true;
+                        }
                         
                         for (int i = 0; i < variableLevels.length; i++) {
                             VariableCategory cat = new VariableCategory();
                             cat.setValue(variableLevels[i]);
                             // Sadly, R factors don't have descriptive labels;
                             cat.setLabel(variableLevels[i]);
+                            
+                            if (ordered) {
+                                cat.setOrder(i+1);
+                            }
 
                             /* cross-link the variable and category to each other: */
                             cat.setDataVariable(dataTable.getDataVariables().get(k));
                             dataTable.getDataVariables().get(k).getCategories().add(cat);
                         }
                         
+                        dataTable.getDataVariables().get(k).setOrderedCategorical(ordered);
 
-                        if (variableFormat != null && variableFormat.equals("ordered")) {
-                            LOG.fine("this is an ordered factor.");
-                            dataTable.getDataVariables().get(k).setOrderedCategorical(true);
-                        }
                     }
 
                 } // And finally, a special case for logical variables: 
