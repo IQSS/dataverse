@@ -53,6 +53,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     private String[] testFormatSet;
     // Map that returns a Stata Release number
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
+    private static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
     // Map that returns a reader-implemented mime-type
     private static Set<String> readableFileTypes = new HashSet<String>();
     private static Map<String, Method> testMethods = new HashMap<String, Method>();
@@ -78,11 +79,18 @@ public class IngestableDataChecker implements java.io.Serializable {
         stataReleaseNumber.put((byte) 111, "rel_7scnd");
         stataReleaseNumber.put((byte) 113, "rel_8_or_9");
         stataReleaseNumber.put((byte) 114, "rel_10");
+        stataReleaseNumber.put((byte) 115, "rel_12"); 
+        // 116 was an in-house experimental version that was never 
+        // released.
+        // STATA v.13 introduced a new format, 117. It's a completely
+        // new development, unrelated to the old format. 
+        stataReleaseNumber.put((byte) 117, "rel_13");
 
         readableFileTypes.add("application/x-stata");
         readableFileTypes.add("application/x-spss-sav");
         readableFileTypes.add("application/x-spss-por");
         readableFileTypes.add("application/x-rlang-transport");
+        readableFileTypes.add("application/x-stata-13");
 
         Pattern p = Pattern.compile(regex);
         ptn = Pattern.compile(rdargx);
@@ -176,31 +184,34 @@ public class IngestableDataChecker implements java.io.Serializable {
             out.println("applying the dta test\n");
         }
 
+        // We first check if it's a "classic", old DTA format 
+        // (up to version 115): 
+        
         byte[] hdr4 = new byte[4];
         buff.get(hdr4, 0, 4);
 
         if (DEBUG) {
             for (int i = 0; i < hdr4.length; ++i) {
-                out.printf("%d\t%02X\n", i, hdr4[i]);
+                dbgLog.info(String.format("%d\t%02X\n", i, hdr4[i]));
             }
         }
 
         if (hdr4[2] != 1) {
             if (DEBUG) {
-                out.println("3rd byte is not 1: given file is not stata-dta type");
+                dbgLog.info("3rd byte is not 1: given file is not stata-dta type");
             }
-            return result;
+            //return result;
         } else if ((hdr4[1] != 1) && (hdr4[1] != 2)) {
             if (DEBUG) {
-                out.println("2nd byte is neither 0 nor 1: this file is not stata-dta type");
+                dbgLog.info("2nd byte is neither 0 nor 1: this file is not stata-dta type");
             }
-            return result;
+            //return result;
         } else if (!IngestableDataChecker.stataReleaseNumber.containsKey(hdr4[0])) {
             if (DEBUG) {
-                out.println("1st byte (" + hdr4[0] +
+                dbgLog.info("1st byte (" + hdr4[0] +
                     ") is not within the ingestable range [rel. 3-10]: this file is NOT stata-dta type");
             }
-            return result;
+            //return result;
         } else {
             if (DEBUG) {
                 out.println("this file is stata-dta type: " +
@@ -209,6 +220,28 @@ public class IngestableDataChecker implements java.io.Serializable {
             }
             result = "application/x-stata";
         }
+        
+        if (result == null) {
+            // Let's see if it's a "new" STATA (v.13+) format: 
+            buff.rewind();
+            byte[] headerBuffer = null; 
+            String headerString = null; 
+            try {
+                headerBuffer = new byte[STATA_13_HEADER.length()];
+                buff.get(headerBuffer, 0, STATA_13_HEADER.length());
+                headerString = new String(headerBuffer, "US-ASCII");
+            } catch (Exception ex) {
+                // probably a buffer underflow exception; 
+                // we don't have to do anything... null will 
+                // be returned, below. 
+            }
+            
+            if (STATA_13_HEADER.equals(headerString)) {
+                result = "application/x-stata-13";
+            }
+            
+        }
+        
         return result;
     }
 
