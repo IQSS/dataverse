@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.logging.Logger;
 
 /**
  *
@@ -30,7 +29,6 @@ import java.util.logging.Logger;
 })
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
-    private static final Logger logger = Logger.getLogger(PublishDatasetCommand.class.getCanonicalName());
     boolean minorRelease = false;
     Dataset theDataset;
 

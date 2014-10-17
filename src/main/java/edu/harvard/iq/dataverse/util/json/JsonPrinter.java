@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import java.util.Set;
@@ -341,5 +342,16 @@ public class JsonPrinter {
                 valueArrStack.peek().add( jsonField );
             }
         }
+    }
+    
+    public static JsonObjectBuilder json( AuthenticationProviderRow aRow ) {
+        return jsonObjectBuilder()
+                        .add("id", aRow.getId())
+                        .add("factoryAlias", aRow.getFactoryAlias() )
+                        .add("title", aRow.getTitle())
+                        .add("subtitle",aRow.getSubtitle())
+                        .add("factoryData", aRow.getFactoryData())
+                        .add("enabled", aRow.isEnabled())
+                ;
     }
 }

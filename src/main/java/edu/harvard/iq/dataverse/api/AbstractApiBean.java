@@ -139,7 +139,7 @@ public abstract class AbstractApiBean {
             .add("status", "OK")
             .add("data", bld).build() ).build();
     }
-
+    
     protected Response okResponse(JsonArrayBuilder bld, Format format) {
         return Response.ok(Util.jsonObject2prettyString(
                 Json.createObjectBuilder()

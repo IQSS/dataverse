@@ -18,44 +18,57 @@
             <ui:param name="showBreadcrumbs" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <div class="row">
-                    <div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
-                        <h:form id="loginForm" styleClass="form-horizontal">
-                            <p:focus context="loginForm"/>
-                            <ui:fragment rendered="#{not empty param.debug}">
-                                <div class="form-group">
-                                    <p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
-                                    <h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
-                                        <f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
-                                                       itemLabel="#{ap.title}" itemValue="#{ap.id}" />
-                                        <f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
-                                    </h:selectOneMenu>
-                                </div>
-                            </ui:fragment>
-                            <ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
-                                <div class="form-group">
-                                    <p:outputLabel value="#{fc.credential.title}" for="credValue" styleClass="col-sm-2 control-label"/>
-                                    <div class="col-sm-9">
-                                        <h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" size="40" style="width:auto;" styleClass="form-control"/>
-                                        <p:message rendered="#{not fc.credential.secret}" for="credValue"/>
-                                        <h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" size="40" style="width:auto;" styleClass="form-control"/>
-                                        <p:message rendered="#{not fc.credential.secret}" for="sCredValue"/>
-                                    </div>
-                                </div>
-                            </ui:repeat>
-                            <div class="form-group">
-                                <div class="col-sm-offset-2 col-sm-9">
-                                    <p:commandButton id="login" value="Log In" action="#{LoginPage.login}"/>
-                                    <p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
-                                </div>
-                            </div>
-                            <div style="margin-top:.5em;">
-                                <a href="passwordreset.xhtml">
-                                    Forgot your password?
-                                </a>
-                            </div>
-                        </h:form>
-                    </div>
+				<ui:fragment rendered="#{not LoginPage.authenticationProvidersAvailable}">
+					<div class="row">
+						<div class="col-sm-12">
+							<div class="alert alert-danger">
+								<h3>There are no active authentication providers</h3>
+								If you are a system administrator, please enable one using the api.<br />
+								If you are not a system administrator, please talk to one.
+							</div>
+						</div>
+					</div>
+				</ui:fragment>
+				<div class="row">
+					<ui:fragment rendered="#{LoginPage.authenticationProvidersAvailable}">
+						<div id="builtinColumn" class="col-md-5" style="margin-top:3em;">
+							<h:form id="loginForm" styleClass="form-horizontal">
+								<p:focus context="loginForm"/>
+								<ui:fragment rendered="#{LoginPage.multipleProvidersAvailable}">
+									<div class="form-group">
+										<p:outputLabel value="Login System" for="loginSystemSelect" styleClass="col-sm-2 control-label"/>
+										<h:selectOneMenu id="loginSystemSelect" value="#{LoginPage.credentialsAuthProviderId}">
+											<f:selectItems value="#{LoginPage.listCredentialsAuthenticationProviders()}" var="ap"
+														   itemLabel="#{ap.title}" itemValue="#{ap.id}" />
+											<f:ajax render="@all" listener="#{LoginPage.resetFilledCredentials}"/>
+										</h:selectOneMenu>
+									</div>
+								</ui:fragment>
+								<ui:repeat id="credentialsContainer2" value="#{LoginPage.filledCredentials}" var="fc">
+									<div class="form-group">
+										<p:outputLabel value="#{fc.credential.title}" for="credValue" styleClass="col-sm-2 control-label"/>
+										<div class="col-sm-9">
+											<h:inputText rendered="#{not fc.credential.secret}" value="#{fc.value}" id="credValue" size="40" style="width:auto;" styleClass="form-control"/>
+											<p:message rendered="#{not fc.credential.secret}" for="credValue"/>
+											<h:inputSecret rendered="#{fc.credential.secret}" value="#{fc.value}" id="sCredValue" size="40" style="width:auto;" styleClass="form-control"/>
+											<p:message rendered="#{not fc.credential.secret}" for="sCredValue"/>
+										</div>
+									</div>
+								</ui:repeat>
+								<div class="form-group">
+									<div class="col-sm-offset-2 col-sm-9">
+										<p:commandButton id="login" value="Log In" action="#{LoginPage.login}"/>
+										<p:button value="Cancel" style="margin-left:1em;" outcome="/dataverse.xhtml"/>
+									</div>
+								</div>
+								<div style="margin-top:.5em;">
+									<a href="passwordreset.xhtml">
+										Forgot your password?
+									</a>
+								</div>
+							</h:form>
+						</div>
+					</ui:fragment>
                     <ui:fragment rendered="#{LoginPage.shibEnabled}">
                         <div class="col-md-7" style="margin-top:3em;">
                             <div class="panel panel-default highlight">

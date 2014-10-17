@@ -16,9 +16,23 @@ import java.util.List;
 public class EchoAuthenticationProvider implements CredentialsAuthenticationProvider {
     
     private final String id;
+    private final String prefix;
+    private final String postfix;
+    private final AuthenticationProviderDisplayInfo info;
+    
 
-    public EchoAuthenticationProvider(String id) {
+    public EchoAuthenticationProvider(String id, String prefix, String postfix, AuthenticationProviderDisplayInfo someInfo) {
         this.id = id;
+        this.prefix = prefix;
+        this.postfix = postfix;
+        info = someInfo;
+    }
+    
+    public EchoAuthenticationProvider(String id) {
+        this(id, "", "", 
+                new AuthenticationProviderDisplayInfo(id, "Echo",
+                "Authenticate everyone using their credentials")
+            );
     }
     
     @Override
@@ -35,13 +49,13 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        return new AuthenticationProviderDisplayInfo(getId(), "Echo",
-                "Authenticate everyone using their credentials");
+        return info;
     }
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        RoleAssigneeDisplayInfo disinf = new RoleAssigneeDisplayInfo(request.getCredential("Name"),
+        RoleAssigneeDisplayInfo disinf = new RoleAssigneeDisplayInfo(
+                prefix + " " + request.getCredential("Name") + " " + postfix,
                 request.getCredential("Email"),
                 request.getCredential("Affiliation"));
         return AuthenticationResponse.makeSuccess(disinf.getEmailAddress(), disinf);

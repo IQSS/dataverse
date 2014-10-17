@@ -1,0 +1,8 @@
+{
+    "id":"echo-simple",
+    "factoryAlias":"Echo",
+    "title":"Echo provider", 
+    "subtitle":"Approves everyone, based on their credentials",
+    "factoryData":",",
+    "enabled":true
+}

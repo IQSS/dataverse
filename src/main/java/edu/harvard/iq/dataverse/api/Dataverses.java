@@ -54,7 +54,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 /**
- * A REST API for dataverses. To be unified with {@link Dataverses}.
+ * A REST API for dataverses.
  * @author michael
  */
 @Stateless
@@ -64,7 +64,7 @@ public class Dataverses extends AbstractApiBean {
 	
 	@GET
 	public String list() {
-        // TODO rethink this
+        // FIXME remove this, this goes against permissions.
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		for ( Dataverse d : dataverseSvc.findAll() ) {
 			bld.add(json(d));
@@ -133,7 +133,7 @@ public class Dataverses extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             json = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonBody);
+            logger.log(Level.SEVERE, "Json: {0}", jsonBody);
             return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -282,7 +282,7 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
         User u = findUserByApiToken(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
@@ -296,7 +296,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String body  ) {
         
         if ( ! Util.isBoolean(body) ) {

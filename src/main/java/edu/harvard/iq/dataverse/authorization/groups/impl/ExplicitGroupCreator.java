@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
 
 /**
- * Creates and managed explicit groups. Also provides services they might need.
+ * Creates and manages explicit groups. Also provides services they might need.
  * @author michael
  */
 public class ExplicitGroupCreator implements GroupCreator {

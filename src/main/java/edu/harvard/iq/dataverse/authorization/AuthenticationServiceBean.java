@@ -2,15 +2,19 @@ package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.exceptions.DuplicateAuthenticationProviderException;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +24,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -32,7 +35,6 @@ import javax.persistence.PersistenceContext;
  * Register the providers in the {@link #startup()} method.
  */
 @Singleton
-@Startup
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
@@ -40,6 +42,8 @@ public class AuthenticationServiceBean {
      * Where all registered authentication providers live.
      */
     final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
+    
+    final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
@@ -51,25 +55,77 @@ public class AuthenticationServiceBean {
     
     @PostConstruct
     public void startup() {
+        
+        // First, set up the factories
         try {
-            registerProvider( new BuiltinAuthenticationProvider(builtinUserServiceBean) );
-            registerProvider( new EchoAuthenticationProvider("echo1") );
+            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
+            registerProviderFactory( new EchoAuthenticationProviderFactory() );
+            // TODO register shib provider factory here
             
-        } catch (DuplicateAuthenticationProviderException ex) {
-            Logger.getLogger(AuthenticationServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (AuthorizationSetupException ex) {
+            logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
+        }
+        
+        // Now, load the providers.
+        for ( AuthenticationProviderRow row : 
+                em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
+                    .getResultList() 
+        ) {
+            try {
+                registerProvider( loadProvider(row) );
+                
+            } catch ( AuthenticationProviderFactoryNotFoundException e ) {
+                logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
+                
+            } catch (AuthorizationSetupException ex) {
+                logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
+            }
         }
     }
     
-    public void registerProvider(AuthenticationProvider aProvider) throws DuplicateAuthenticationProviderException {
+    public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
+            throws AuthorizationSetupException 
+    {
+        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
+            throw new AuthorizationSetupException(
+                    "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
+        }
+        providerFactories.put( aFactory.getAlias(), aFactory);
+        logger.log( Level.INFO, "Registered Authentication Provider Facotry {0} as {1}", 
+                new Object[]{aFactory.getInfo(), aFactory.getAlias()});
+    }
+    
+    /**
+     * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
+     * @param aRow The row to load the provider from.
+     * @return The provider, if successful
+     * @throws AuthenticationProviderFactoryNotFoundException If the row specifies a non-existent factory
+     * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
+     */
+    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
+                throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
+        AuthenticationProviderFactory fact = getProviderFactory(aRow.getFactoryAlias());
+        
+        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
+        
+        return fact.buildProvider(aRow);
+    }
+    
+    public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
         if ( authenticationProviders.containsKey(aProvider.getId()) ) {
-            throw new DuplicateAuthenticationProviderException(aProvider.getId(), 
-                    authenticationProviders.get(aProvider.getId()),
+            throw new AuthorizationSetupException(
                     "Duplicate id " + aProvider.getId() + " for authentication provider.");
         }
         authenticationProviders.put( aProvider.getId(), aProvider);
         logger.log( Level.INFO, "Registered Authentication Provider {0} as {1}", new Object[]{aProvider.getInfo().getTitle(), aProvider.getId()});
     }
 
+    public void deregisterProvider( String id ) {
+        authenticationProviders.remove( id );
+        logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
+        logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
+    }
+    
     public Set<String> getAuthenticationProviderIds() {
         return authenticationProviders.keySet();
     }
@@ -82,6 +138,10 @@ public class AuthenticationServiceBean {
             }
         }
         return retVal;
+    }
+    
+    public AuthenticationProviderFactory getProviderFactory( String alias ) {
+        return providerFactories.get(alias);
     }
     
     public AuthenticationProvider getAuthenticationProvider( String id ) {
@@ -117,8 +177,6 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
-            //this.setBuiltInProviderFlag(prv, user);
-            
             return ( user == null ) ?
                 createAuthenticatedUser( authenticationProviderId, resp.getUserId(), resp.getUserDisplayInfo() )
                 : updateAuthenticatedUser( user, resp.getUserDisplayInfo() );
@@ -227,5 +285,9 @@ public class AuthenticationServiceBean {
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
         return em.createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
     }
-
+    
+    
+    public Set<AuthenticationProviderFactory> listProviderFactories() {
+        return new HashSet<>( providerFactories.values() ); 
+    }
 }

@@ -188,3 +188,30 @@ Set `name` to `content`. Note that `content` is assumed to be url-encoded.
 	DELETE http://{{SERVER}}/api/s/settings/{{name}}
 
 Delete the setting under `name`.
+
+	GET http://{{SERVER}}/api/s/authenticationProviderFactories
+
+List the authentication provider factories. The alias field of these is used while configuring the providers themselves.
+
+	GET http://{{SERVER}}/api/s/authenticationProviders
+
+List all the authentication providers in the system (both enabled and disabled).
+
+	POST http://{{SERVER}}/api/s/authenticationProviders	
+
+Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's `GET` counterpart.
+
+	GET http://{{SERVER}}/api/s/authenticationProviders/{id}
+
+Show data about an authentication provider.
+
+	POST http://{{SERVER}}/api/s/authenticationProviders/{id}/:enabled
+
+Enable or disable an authentication provider (denoted by `id`). The body of the request should be either `true` or `false`. Content type has to be `application/json`, like so:
+
+	curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/s/authenticationProviders/echo-dignified/:enabled
+
+
+	DELETE http://{{SERVER}}/api/s/authenticationProviders/{id}/
+
+Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns.
