@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+  curl -s http://localhost:8080/api/datasetfield
+else
+  curl -s http://localhost:8080/api/datasetfield/$1
+fi
