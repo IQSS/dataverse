@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -148,16 +149,29 @@ public abstract class AbstractApiBean {
         ).build();
     }
     
+    protected Response createdResponse( String uri, JsonObjectBuilder bld ) {
+        return Response.created( URI.create(uri) )
+                .entity( Json.createObjectBuilder()
+                .add("status", "OK")
+                .add("data", bld).build())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    
     protected Response okResponse( JsonObjectBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", bld).build() ).build();
+            .add("data", bld).build() )
+            .type(MediaType.APPLICATION_JSON)
+            .build();
     }
     
     protected Response okResponse( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", "OK")
-            .add("data", Json.createObjectBuilder().add("message",msg)).build() ).build();
+            .add("data", Json.createObjectBuilder().add("message",msg)).build() )
+            .type(MediaType.APPLICATION_JSON)
+            .build();
     }
     
     protected <T> T execCommand( Command<T> com, String messageSeed ) throws FailedCommandResult {

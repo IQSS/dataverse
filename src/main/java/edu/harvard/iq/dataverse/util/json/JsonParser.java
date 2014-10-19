@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DatasetAuthor;
-import edu.harvard.iq.dataverse.DatasetDistributor;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -13,7 +11,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -22,7 +19,6 @@ import java.util.Set;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-import javax.persistence.NoResultException;
 
 /**
  * Parses JSON objects into domain objects.

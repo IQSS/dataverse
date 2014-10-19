@@ -141,8 +141,8 @@ public class Dataverses extends AbstractApiBean {
                 DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
 
                 // force "initial version" properties
-                version.setMinorVersionNumber(0l);
-                version.setVersionNumber(1l);
+                version.setMinorVersionNumber(null);
+                version.setVersionNumber(null);
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
                 LinkedList<DatasetVersion> versions = new LinkedList<>();
                 versions.add(version);
@@ -162,7 +162,8 @@ public class Dataverses extends AbstractApiBean {
         
         try {
             Dataset managedDs = engineSvc.submit( new CreateDatasetCommand(ds, u));
-            return okResponse( Json.createObjectBuilder().add("id", managedDs.getId()) );
+            return createdResponse( "/datasets/" + managedDs.getId(),
+                                    Json.createObjectBuilder().add("id", managedDs.getId()) );
             
         } catch (CommandException ex) {
             String incidentId = UUID.randomUUID().toString();
