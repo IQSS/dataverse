@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
@@ -62,9 +63,13 @@ public abstract class AbstractApiBean {
 	@EJB
 	protected EjbDataverseEngine engineSvc;
 	
+    // FIXME remove?
 	@EJB
 	protected BuiltinUserServiceBean builtinUserSvc;
 	
+    @EJB
+    protected DatasetServiceBean datasetSvc;
+    
 	@EJB
 	protected DataverseServiceBean dataverseSvc;
     
@@ -128,6 +133,19 @@ public abstract class AbstractApiBean {
 		return em.createNamedQuery("DvObject.findById", DvObject.class)
 				.setParameter("id", id)
 				.getSingleResult();
+	}
+	
+	protected DvObject findDvo( String id ) {
+        if ( isNumeric(id) ) {
+            return em.createNamedQuery("DvObject.findById", DvObject.class)
+				.setParameter("id", Long.valueOf(id))
+                	.getSingleResult();
+        } else {
+            Dataverse d = dataverseSvc.findByAlias(id);
+            return ( d == null ) ?
+                    d : datasetSvc.findByGlobalId(id);
+            
+        }
 	}
 	
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
@@ -235,6 +253,7 @@ public abstract class AbstractApiBean {
         return Response.status(sts)
                 .entity( Json.createObjectBuilder().add("status", "ERROR")
                         .add( "message", msg ).build())
+                .type(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
     

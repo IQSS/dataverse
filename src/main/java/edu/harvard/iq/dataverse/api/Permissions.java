@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -25,7 +25,7 @@ public class Permissions extends AbstractApiBean {
 		User u = findUserByApiToken(apiKey);
 		if ( u==null ) return errorResponse( Status.FORBIDDEN, "Invalid API key '" + apiKey + "'");
 		
-		Dataverse d = findDataverse(dvoIdtf);
+		DvObject d = findDvo(dvoIdtf);
 		if ( d==null ) notFound("Can't find object with identifier '" + dvoIdtf );
 		
 		return okResponse( json(permissions.on(d).user(u).get()) ) ;
