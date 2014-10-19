@@ -1,7 +1,7 @@
 {
     "id":"echo-dignified",
     "factoryAlias":"Echo",
-    "title":"Echo provider+", 
+    "title":"Dignified Echo provider", 
     "subtitle":"Approves everyone, based on their credentials, and adds some flair",
     "factoryData":"Sir,Esq.",
     "enabled":true
