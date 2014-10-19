@@ -62,16 +62,6 @@ import javax.ws.rs.core.Response.Status;
 public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
 	
-	@GET
-	public String list() {
-        // FIXME remove this, this goes against permissions.
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-		for ( Dataverse d : dataverseSvc.findAll() ) {
-			bld.add(json(d));
-		}
-		return ok( bld.build() );
-	}
-	
 	@POST
 	public Response addRoot( Dataverse d, @QueryParam("key") String apiKey ) {
 		return addDataverse(d, "", apiKey);

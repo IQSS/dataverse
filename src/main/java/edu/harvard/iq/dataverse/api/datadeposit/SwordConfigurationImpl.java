@@ -40,6 +40,7 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     public boolean returnStackTraceInError() {
         /**
          * @todo make this a JVM option
+         * Or better - a SettingsServiceBean option
          */
         return false;
     }

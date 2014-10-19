@@ -16,31 +16,24 @@ import java.util.regex.Pattern;
 public class StringUtil {
        
     public static final boolean isEmpty(String str) {
-        if (str==null || str.trim().equals("")) {
-            return true;
-        } else {
-            return false;
-        }        
+        return str==null || str.trim().equals("");        
     }
 
     public static final boolean isAlphaNumeric(String str) {
       final char[] chars = str.toCharArray();
       for (int x = 0; x < chars.length; x++) {      
         final char c = chars[x];
-        if(isAlphaNumericChar(c)) {
-            continue;
+        if(! isAlphaNumericChar(c)) {
+            return false;
         }
-        return false;
       }  
       return true;
 }
     public static final boolean isAlphaNumericChar(char c) {
-        if ((c >= 'a') && (c <= 'z')) return true; // lowercase
-        if ((c >= 'A') && (c <= 'Z')) return true; // uppercase
-        if ((c >= '0') && (c <= '9')) return true; // numeric
-        return false;
-        
-      
+        // TODO: consider using Character.isLetterOrDigit(c)
+        return ( (c >= 'a') && (c <= 'z') ||
+                 (c >= 'A') && (c <= 'Z') ||
+                 (c >= '0') && (c <= '9') );
 }
 
     public static String truncateString(String originalString, int maxLength) {

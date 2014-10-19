@@ -23,6 +23,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import java.util.Objects;
 
 /**
  *
@@ -188,13 +189,11 @@ public class DataTable implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof DataTable)) {
             return false;
         }
         DataTable other = (DataTable)object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) return false;
-        return true;
+        return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+  "alias": "creator",
+  "name": "Creator",
+  "description": "Allows creation of DataSet/Verse",
+  "permissions": [
+    "CreateDataverse",
+    "CreateDataset"
+  ]
+}

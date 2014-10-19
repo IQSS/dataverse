@@ -265,7 +265,7 @@ public class DatasetVersionUI {
             Date relDate = datasetVersion.getReleaseTime();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(relDate);
-            return new Integer(calendar.get(Calendar.YEAR)).toString();
+            return Integer.toString(calendar.get(Calendar.YEAR));
         }
         return "";
     }
@@ -275,7 +275,7 @@ public class DatasetVersionUI {
             Date relDate = datasetVersion.getCreateTime();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(relDate);
-            return new Integer(calendar.get(Calendar.YEAR)).toString();
+            return Integer.toString(calendar.get(Calendar.YEAR));
         }
         return "";
     }

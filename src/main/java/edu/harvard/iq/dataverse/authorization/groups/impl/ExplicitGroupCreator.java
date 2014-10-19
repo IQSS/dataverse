@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupCreator;
  * @author michael
  */
 public class ExplicitGroupCreator implements GroupCreator {
-
+    
     @Override
     public ExplicitGroup createGroup() {
         ExplicitGroup grp = new ExplicitGroup();
@@ -18,7 +18,7 @@ public class ExplicitGroupCreator implements GroupCreator {
     
     
     public Group getGroup( String groupID ) {
-        // FIXME delegate to the groups bean.
+        // TODO - when we get groups, delegate to the groups bean.
         return null;
     }
 }

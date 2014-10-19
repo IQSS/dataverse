@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
@@ -126,11 +127,19 @@ public class Admin extends AbstractApiBean {
     @POST
     public Response addProvider( AuthenticationProviderRow row ) {
         try {
-            em.persist(row);
-            if ( row.isEnabled() ) {
-                authSvc.registerProvider(authSvc.loadProvider(row));
+            AuthenticationProviderRow managed = em.find(AuthenticationProviderRow.class,row.getId());
+            if ( managed != null ) {
+                managed = em.merge(row);
+            } else  {
+                em.persist(row);
+                managed = row;
             }
-            return Response.created( new URI("/s/authenticationProviders/"+row.getId()))
+            if ( managed.isEnabled() ) {
+                AuthenticationProvider provider = authSvc.loadProvider(managed);
+                authSvc.deregisterProvider(provider.getId());
+                authSvc.registerProvider(provider);
+            }
+            return Response.created( new URI("/s/authenticationProviders/"+managed.getId()))
                     .build();
         } catch ( AuthorizationSetupException | URISyntaxException e ) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage() );

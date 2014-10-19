@@ -109,12 +109,13 @@ public class PermissionServiceBean {
         // get as much or as little permissions as the local dataverse are 
         // willing to give it. 
         // - Leonid, 4.0 beta 7 (merge party)
+        // NOT solvable until we get groups in. Then, we assign this roel to a
+        // the authenticated users group.
         
         if (d instanceof Dataverse) {
             Dataverse dv = (Dataverse) d;
             if (u.isAuthenticated()) {
                 if (dv.getOwner() == null || dv.getAlias().endsWith("_open")) {
-                    retVal.add(Permission.UndoableEdit);
                     retVal.add(Permission.AddDataset);
                     retVal.add(Permission.AddDataverse);
                 }

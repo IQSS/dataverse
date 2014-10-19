@@ -58,15 +58,23 @@ public class DatasetFieldServiceApi {
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
-            sb.append(ex + " ");
+            sb.append(ex).append(" ");
             while (cause.getCause() != null) {
                 cause = cause.getCause();
-                sb.append(cause.getClass().getCanonicalName() + " ");
-                sb.append(cause.getMessage() + " ");
+                sb.append(cause.getClass().getCanonicalName()).append(" ");
+                sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
                     for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<" + violation.getInvalidValue() + ">>> for " + violation.getPropertyPath() + " at " + violation.getLeafBean() + " - " + violation.getMessage() + ")");
+                        sb.append("(invalid value: <<<")
+                                .append(violation.getInvalidValue())
+                                .append(">>> for ")
+                                .append(violation.getPropertyPath())
+                                .append(" at ")
+                                .append(violation.getLeafBean())
+                                .append(" - ")
+                                .append(violation.getMessage())
+                                .append(")");
                     }
                 }
             }
@@ -213,13 +221,13 @@ public class DatasetFieldServiceApi {
         dsf.setDescription(values[3]);
         dsf.setWatermark(values[4]);
         dsf.setFieldType(values[5]);
-        dsf.setDisplayOrder(new Integer(values[6]).intValue());
-        dsf.setAdvancedSearchFieldType(new Boolean(values[7]).booleanValue());
-        dsf.setAllowControlledVocabulary(new Boolean(values[8]).booleanValue());
-        dsf.setAllowMultiples(new Boolean(values[9]).booleanValue());
-        dsf.setFacetable(new Boolean(values[10]).booleanValue());
-        dsf.setDisplayOnCreate(new Boolean(values[11]).booleanValue());
-        dsf.setRequired(new Boolean(values[12]).booleanValue());
+        dsf.setDisplayOrder( Integer.parseInt(values[6]) );
+        dsf.setAdvancedSearchFieldType(Boolean.parseBoolean(values[7]));
+        dsf.setAllowControlledVocabulary(Boolean.parseBoolean(values[8]));
+        dsf.setAllowMultiples(Boolean.parseBoolean(values[9]));
+        dsf.setFacetable(Boolean.parseBoolean(values[10]));
+        dsf.setDisplayOnCreate(Boolean.parseBoolean(values[11]));
+        dsf.setRequired(Boolean.parseBoolean(values[12]));
         if (!StringUtils.isEmpty(values[13])) {
             dsf.setParentDatasetFieldType(datasetFieldService.findByName(values[13]));
         }

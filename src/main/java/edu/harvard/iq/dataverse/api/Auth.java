@@ -29,6 +29,7 @@ public class Auth extends AbstractApiBean {
             userStuff.add(authenticatedUser.getIdentifier() + ":" + displayInfo);
         }
         
+        // TODO - who gets the user's API keys here? Not sure it's a very secure solution...
         List<ApiToken> apiKeys = userSvc.findAllApiKeys();
         for (ApiToken apiKey : apiKeys) {
             userStuff.add(apiKey.getTokenString());
