@@ -1,8 +1,9 @@
 /*
  *  (C) Michael Bar-Sinai
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
