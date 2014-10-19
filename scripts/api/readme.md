@@ -123,9 +123,9 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
 
 ### permissions
 
-	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}
+	GET http://{{SERVER}}/api/permissions?on={{dvoId}}&key={{uid}}
 
-Retrieves a list of permissions a user has on the DvObject. Both ids can be the database id or the alias/username.
+Retrieves a list of permissions a user has on the DvObject.
 
 ### users
 
