@@ -17,6 +17,7 @@ public interface RoleAssignee {
      *
      * - g:internal:all
      *
+     * @return the unique identifier of the role assignee within the system. 
      */
     public String getIdentifier();
 

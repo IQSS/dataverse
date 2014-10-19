@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
@@ -9,6 +10,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -27,6 +29,9 @@ import javax.ws.rs.core.Response.Status;
 public class BuiltinUsers extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
 	
+    @EJB
+	protected BuiltinUserServiceBean builtinUserSvc;
+    
 	@GET
 	public Response list() {
 		JsonArrayBuilder bld = Json.createArrayBuilder();

@@ -63,10 +63,6 @@ public abstract class AbstractApiBean {
 	@EJB
 	protected EjbDataverseEngine engineSvc;
 	
-    // FIXME remove?
-	@EJB
-	protected BuiltinUserServiceBean builtinUserSvc;
-	
     @EJB
     protected DatasetServiceBean datasetSvc;
     
@@ -120,10 +116,6 @@ public abstract class AbstractApiBean {
         return authSvc.lookupUser(apiKey);
     }
     
-    protected User findUserById( String userIdtf ) {
-        return engineSvc.getContext().users().findByIdentifier(userIdtf);
-    }
-	
 	protected Dataverse findDataverse( String idtf ) {
 		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
 	 							  : dataverseSvc.findByAlias(idtf);
