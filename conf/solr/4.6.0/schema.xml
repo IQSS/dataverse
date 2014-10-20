@@ -336,6 +336,17 @@
    <field name="grantNumber" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="grantNumberAgency" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="grantNumberValue" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdCoordinator" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdCourseName" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="gsdFacultyName" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdProgramBrief" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdRecommendation" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdSemester" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="gsdSiteType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdStudentName" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdStudentProgram" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdTags" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="gsdTypes" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="keyword" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
    <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
@@ -529,6 +540,17 @@
    <copyField source="grantNumber" dest="text" maxChars="3000"/>
    <copyField source="grantNumberAgency" dest="text" maxChars="3000"/>
    <copyField source="grantNumberValue" dest="text" maxChars="3000"/>
+   <copyField source="gsdCoordinator" dest="text" maxChars="3000"/>
+   <copyField source="gsdCourseName" dest="text" maxChars="3000"/>
+   <copyField source="gsdFacultyName" dest="text" maxChars="3000"/>
+   <copyField source="gsdProgramBrief" dest="text" maxChars="3000"/>
+   <copyField source="gsdRecommendation" dest="text" maxChars="3000"/>
+   <copyField source="gsdSemester" dest="text" maxChars="3000"/>
+   <copyField source="gsdSiteType" dest="text" maxChars="3000"/>
+   <copyField source="gsdStudentName" dest="text" maxChars="3000"/>
+   <copyField source="gsdStudentProgram" dest="text" maxChars="3000"/>
+   <copyField source="gsdTags" dest="text" maxChars="3000"/>
+   <copyField source="gsdTypes" dest="text" maxChars="3000"/>
    <copyField source="keyword" dest="text" maxChars="3000"/>
    <copyField source="kindOfData" dest="text" maxChars="3000"/>
    <copyField source="language" dest="text" maxChars="3000"/>
