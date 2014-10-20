@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+See also Sword API: Can't create study when hidden characters are introduced in atom.xml · Issue #894 · IQSS/dataverse - https://github.com/IQSS/dataverse/issues/894
+
+The bad characeter is in "dcterms:publisher".
+-->
+<entry xmlns="http://www.w3.org/2005/Atom"
+       xmlns:dcterms="http://purl.org/dc/terms/">
+   <!-- some embedded metadata -->
+   <dcterms:title>smoke36_study</dcterms:title>
+   <dcterms:creator>last, first</dcterms:creator>
+   <dcterms:creator>Sotiri, elda</dcterms:creator>
+   <!-- Producer with financial or admin responsibility of the data --> 
+   <dcterms:publisher></dcterms:publisher>
+   <!-- related publications --> 
+   <dcterms:isReferencedBy holdingsURI="http://dx.doi.org/10.1038/dvn333" agency="DOI" IDNo="10.1038/dvn333">Peets, J., &amp; Stumptown, J. (2013). Roasting at Home. New England Journal of Coffee, 3(1), 22-34.</dcterms:isReferencedBy>
+   <!-- production date -->
+   <dcterms:date>2013-07-11</dcterms:date>
+   <!-- Other Identifier for the data in this study -->
+   <!--<dcterms:identifier>hdl:1XXZY.1/XYXZ</dcterms:identifier>-->
+   <dcterms:description>Considerations before you start roasting your own coffee at home.</dcterms:description>
+   <!-- keywords -->
+   <dcterms:subject>drink</dcterms:subject>
+   <dcterms:subject>beverage</dcterms:subject>
+   <dcterms:subject>caffeine</dcterms:subject>
+   <!-- geographic coverage -->
+   <dcterms:coverage>United States</dcterms:coverage>
+   <dcterms:coverage>World</dcterms:coverage>
+   <!-- kind of data -->
+   <dcterms:type>aggregate data</dcterms:type>
+   <!-- List of sources of the data collection-->
+   <dcterms:source>. something something something something</dcterms:source>
+   <!-- restrictions -->
+   <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
+   <!-- related materials -->
+   <dcterms:relation>Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press</dcterms:relation>
+</entry>

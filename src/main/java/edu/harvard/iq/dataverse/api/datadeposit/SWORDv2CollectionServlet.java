@@ -35,10 +35,10 @@ public class SWORDv2CollectionServlet extends SwordServlet {
             this.api.post(req, resp);
         } catch (ParseException ex) {
             /**
-             * @todo close https://redmine.hmdc.harvard.edu/issues/3305 if/when
+             * @todo close https://github.com/IQSS/dataverse/issues/893 if/when
              * https://github.com/swordapp/JavaServer2.0/issues/6 is closed
              */
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Attempt to upload an empty Atom entry? org.apache.abdera.parser.ParseException caught. See also https://redmine.hmdc.harvard.edu/issues/3305 and https://github.com/swordapp/JavaServer2.0/issues/6");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Attempt to upload an empty Atom entry? org.apache.abdera.parser.ParseException caught. See also https://github.com/IQSS/dataverse/issues/893 and https://github.com/swordapp/JavaServer2.0/issues/6");
         }
     }
 
