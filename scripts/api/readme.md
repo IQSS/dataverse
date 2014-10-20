@@ -120,9 +120,9 @@ Lists all the metadata blocks and their content, for the given dataset and versi
 
 Lists the metadata block block named `blockname`, for the given dataset and version.
 
-    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:edit?key={{apiKey}}
+    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:draft?key={{apiKey}}
 
-Updates the current edit version of dataset `{{id}}`. If the dataset does not have an edit version - e.g. when its most recent version is published, a new dreaft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
+Updates the current draft version of dataset `{{id}}`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
 
     POST http://{{SERVER}}/api/datasets/{{id}}/actions/:publish?type={{type}}&key={{apiKey}}
 

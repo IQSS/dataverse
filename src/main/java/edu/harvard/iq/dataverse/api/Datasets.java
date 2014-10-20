@@ -182,13 +182,11 @@ public class Datasets extends AbstractApiBean {
 		User u = findUserByApiToken(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
-		// FIXME filter by what the user can see.
-		
         Dataset ds = datasetService.find(datasetId);
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
         try {
-            DatasetVersion dsv = getDatasetVersion( versionId, ds );
+            DatasetVersion dsv = getDatasetVersion( u, versionId, ds );
             return (dsv==null)
                     ? errorResponse(Response.Status.NOT_FOUND, "dataset version not found")
                     : okResponse( JsonPrinter.jsonByBlocks(dsv.getDatasetFields())  );
@@ -208,13 +206,11 @@ public class Datasets extends AbstractApiBean {
 		User u = findUserByApiToken(apiKey);
 		if ( u == null ) return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
-		// FIXME filter by what the user can see.
-		
         final Dataset ds = datasetService.find(datasetId);
         if (ds == null) return errorResponse(Response.Status.NOT_FOUND, "dataset " + datasetId + " not found");
 		
         try {
-            DatasetVersion dsv = getDatasetVersion(versionNumber, ds);
+            DatasetVersion dsv = getDatasetVersion(u, versionNumber, ds);
             if ( dsv == null ) return errorResponse(Response.Status.NOT_FOUND, "dataset version not found");
             Map<MetadataBlock, List<DatasetField>> fieldsByBlock = DatasetField.groupByBlock(dsv.getDatasetFields());
             for ( Map.Entry<MetadataBlock, List<DatasetField>> p : fieldsByBlock.entrySet() ) {
@@ -230,47 +226,7 @@ public class Datasets extends AbstractApiBean {
 		
     }
 
-    private DatasetVersion getDatasetVersion(String versionNumber, final Dataset ds) throws WrappedResponse {
-        return handleVersion( versionNumber, new DsVersionHandler<DatasetVersion>(){
-            
-            @Override
-            public DatasetVersion handleLatest() {
-                return ds.getLatestVersion();
-            }
-            
-            @Override
-            public DatasetVersion handleDraft() {
-                return ds.getEditVersion();
-            }
-            
-            @Override
-            public DatasetVersion handleSpecific(long major, long minor) {
-                for ( DatasetVersion aDsv : ds.getVersions() ) {
-                    if ( aDsv.getVersionNumber().equals(major) &&
-                            aDsv.getMinorVersionNumber().equals(minor)) {
-                        return aDsv;
-                    }
-                }
-                return null;
-            }
-            
-            @Override
-            public DatasetVersion handleLatestPublished() {
-                // Sort by version
-                List<DatasetVersion> versions = new ArrayList<>(ds.getVersions());
-                Collections.sort( versions, Collections.reverseOrder(DatasetVersion.compareByVersion) );
-                
-                // return the latest published
-                for ( DatasetVersion v : versions ) {
-                    if ( v.isReleased() ) {
-                        return v;
-                    }
-                }
-                return null;
-            }
-        });
-    }
-	
+    
 	@GET
 	@Path("{id}/versions/{versionId}/files/")
 	public String listFiles() {
@@ -371,4 +327,30 @@ public class Datasets extends AbstractApiBean {
                 }
 		}
     }
+    
+    private DatasetVersion getDatasetVersion( final User u, String versionNumber, final Dataset ds ) throws WrappedResponse {
+        return execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
+
+                @Override
+                public Command<DatasetVersion> handleLatest() {
+                    return new GetLatestAccessibleDatasetVersionCommand(u, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleDraft() {
+                    return new GetDraftDatasetVersionCommand(u, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                    return new GetSpecificPublishedDatasetVersionCommand(u, ds, major, minor);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleLatestPublished() {
+                    return new GetLatestPublishedDatasetVersionCommand(u, ds);
+                }
+            }), "Accessing dataset version");
+    }
+    
 }
