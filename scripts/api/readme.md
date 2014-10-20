@@ -128,6 +128,10 @@ Updates the current draft version of dataset `{{id}}`. If the dataset does not h
 
 Publishes the dataset whose id is passed. The new dataset version number is determined by the most recent version number and the `type` parameter. Passing `type=minor` increases the minor version number (2.3 &rarr; 2.4). Passing `type=major` increases the major version number (2.3 &rarr; 3.0).
 
+	DELETE http://{{SERVER}}/api/datasets/{{id}}/versions/:draft?key={{apiKey}}
+
+Deletes the draft version of dataset `{{id}}`. Only the draft version can be deleted.
+
 ### permissions
 
 	GET http://{{SERVER}}/api/permissions?on={{dvoId}}&key={{uid}}

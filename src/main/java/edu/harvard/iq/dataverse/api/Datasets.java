@@ -9,10 +9,10 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -25,8 +25,6 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -99,16 +97,11 @@ public class Datasets extends AbstractApiBean {
         if (ds == null) return errorResponse( Response.Status.NOT_FOUND, "dataset not found");
 		
 		try {
-			engineSvc.submit( new DeleteDatasetCommand(ds, u));
+			execCommand( new DeleteDatasetCommand(ds, u), "Delete dataset " + id);
 			return okResponse("Dataset " + id + " deleted");
 			
-		} catch (CommandExecutionException ex) {
-			// internal error
-			logger.log( Level.SEVERE, "Error deleting dataset " + id + ":  " + ex.getMessage(), ex );
-			return errorResponse( Response.Status.FORBIDDEN, "Can't delete dataset: " + ex.getMessage() );
-			
-		} catch (CommandException ex) {
-			return errorResponse( Response.Status.INTERNAL_SERVER_ERROR, "Can't delete dataset: " + ex.getMessage() );
+		} catch (WrappedResponse ex) {
+			return ex.getResponse();
 		}
 		
 	}
@@ -225,7 +218,6 @@ public class Datasets extends AbstractApiBean {
         }
 		
     }
-
     
 	@GET
 	@Path("{id}/versions/{versionId}/files/")
@@ -234,6 +226,25 @@ public class Datasets extends AbstractApiBean {
 		return error("Not implemented yet");
 	}
 	
+    @DELETE
+	@Path("{id}/versions/{versionId}")
+	public Response deleteDraftVersion( @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
+        if ( ! ":draft".equals(versionId) ) 
+            return errorResponse( Response.Status.BAD_REQUEST, "Only the :draft version can be deleted");
+        
+        User u = findUserByApiToken(apiKey);
+        if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        Dataset ds = datasetService.find(id);
+        if ( ds == null ) return notFound("Can't find dataset with id '" + id + "'");
+        
+        try {
+            execCommand( new DeleteDatasetVersionCommand(u,ds), "Deleting draft version of dataset " + id );
+            return okResponse("Draft version of dataset " + id + " deleted");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
     @PUT
 	@Path("{id}/versions/{versionId}")
 	public Response updateDraftVersion( String jsonBody, @PathParam("id") Long id,  @PathParam("versionId") String versionId, @QueryParam("key") String apiKey ){
