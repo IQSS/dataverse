@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +38,23 @@ import javax.persistence.Version;
 @Entity
 public class DatasetVersion implements Serializable {
 
+    /**
+     * Convenience comparator to compare dataset versions by their version number.
+     * The draft version is considered the latest.
+     */
+    public static final Comparator<DatasetVersion> compareByVersion = new Comparator<DatasetVersion>() {
+        @Override
+        public int compare(DatasetVersion o1, DatasetVersion o2) {
+            if ( o1.isDraft() ) {
+                return o2.isDraft() ? 0 : 1;
+            } else {
+               return (int)Math.signum( (o1.getVersionNumber().equals(o2.getVersionNumber())) ?
+                        o1.getMinorVersionNumber() - o2.getMinorVersionNumber()
+                       : o1.getVersionNumber() - o2.getVersionNumber() );
+            }   
+        }
+    };
+        
     // TODO: Determine the UI implications of various version states
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle

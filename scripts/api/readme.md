@@ -87,6 +87,14 @@ Publish the Dataverse pointed by `identifier`, which can either by the dataverse
 
 ### Datasets
 
+#### Note
+In all commands below, dataset versions can be referred to as:
+
+* `:draft`  the draft version, if any
+* `:latest` either a draft (if exists) or the latest published version.
+* `:latest-published` the latest published version
+* `x.y` a specific version, where `x` is the major version number and `y` is the minor version number.
+* `x` same as `x.0`
 
 	GET http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
 
@@ -102,8 +110,7 @@ List versions of the dataset.
 	
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionNumber}}?key={{apikey}}
 
-Show a version of the dataset. The `versionNumber` can be a specific version number (in the form of `major.minor`, e.g. `1.2` or `3.0`), or the values `:edit` for the edit version, and `:latest` for the latest one.
-The Dataset also include any metadata blocks the data might have.
+Show a version of the dataset. The Dataset also include any metadata blocks the data might have.
 
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
 

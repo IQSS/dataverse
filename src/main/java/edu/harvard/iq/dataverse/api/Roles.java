@@ -98,7 +98,7 @@ public class Roles extends AbstractApiBean {
 		try {
 			return okResponse( json(execCommand( new AssignRoleCommand(ras,r,d, issuer), "Assign Role")) );
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			logger.log( Level.WARNING, "Error Assigning role", ex );
 			return ex.getResponse();
 		}
@@ -117,7 +117,7 @@ public class Roles extends AbstractApiBean {
 		
 		try {
 			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), issuer, d), "Create New Role")));
-		} catch ( FailedCommandResult ce ) {
+		} catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
 	}

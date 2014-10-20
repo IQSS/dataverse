@@ -45,13 +45,12 @@ import javax.ws.rs.core.Response.Status;
 public abstract class AbstractApiBean {
 	
     /**
-     * Utility class to convey a proper error response on failed commands.
-     * @see #execCommand(edu.harvard.iq.dataverse.engine.command.Command, java.lang.String) 
+     * Utility class to convey a proper error response using Java's exceptions.
      */
-    public static class FailedCommandResult extends Exception {
+    public static class WrappedResponse extends Exception {
         private final Response response;
 
-        public FailedCommandResult(Response response) {
+        public WrappedResponse(Response response) {
             this.response = response;
         }
 
@@ -184,19 +183,19 @@ public abstract class AbstractApiBean {
             .build();
     }
     
-    protected <T> T execCommand( Command<T> com, String messageSeed ) throws FailedCommandResult {
+    protected <T> T execCommand( Command<T> com, String messageSeed ) throws WrappedResponse {
         try {
             return engineSvc.submit(com);
             
         } catch (IllegalCommandException ex) {
-            throw new FailedCommandResult( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
+            throw new WrappedResponse( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
           
         } catch (PermissionException ex) {
-            throw new FailedCommandResult(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
+            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
             
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
-            throw new FailedCommandResult(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
+            throw new WrappedResponse(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
         }
     }
     

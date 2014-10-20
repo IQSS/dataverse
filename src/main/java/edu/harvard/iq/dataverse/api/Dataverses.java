@@ -184,7 +184,7 @@ public class Dataverses extends AbstractApiBean {
         try {
 			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d), "Get Dataverse" );
 			return okResponse( json(retrieved));
-		} catch ( FailedCommandResult ex ) {
+		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
 		}
         
@@ -204,7 +204,7 @@ public class Dataverses extends AbstractApiBean {
 		try {
 			execCommand( new DeleteDataverseCommand(u, d), "Delete Dataverse" );
 			return okResponse( "Dataverse " + idtf  +" deleted");
-		} catch ( FailedCommandResult ex ) {
+		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
 		}
 	}
@@ -342,7 +342,7 @@ public class Dataverses extends AbstractApiBean {
 			for ( DvObject o : execCommand(new ListDataverseContentCommand(u, dataverse), "List Dataverse") ) {
 				o.accept(ser);
 			}
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			return ex.getResponse();
 		}
 		return okResponse(jab);
@@ -360,7 +360,7 @@ public class Dataverses extends AbstractApiBean {
         
 		try {
 			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), u, dataverse), "Create Role")));
-        } catch ( FailedCommandResult ce ) {
+        } catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
 	}
@@ -380,7 +380,7 @@ public class Dataverses extends AbstractApiBean {
 			}
 			return okResponse(jab);
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			return ex.getResponse();
 		}
 	}
@@ -418,7 +418,7 @@ public class Dataverses extends AbstractApiBean {
 			RoleAssignment roleAssignment = execCommand( new AssignRoleCommand(assignee, theRole, dataverse, actingUser), "Assign role");
 			return okResponse(json(roleAssignment));
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
 			return ex.getResponse();
 		}
