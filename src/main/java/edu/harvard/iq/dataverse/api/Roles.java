@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -82,22 +84,21 @@ public class Roles extends AbstractApiBean {
 			@FormParam("definitionPointId") long dvObjectId,
 			@QueryParam("key") String key ) {
 		
-        User issuer = usersSvc.findByIdentifier(key);
+        User issuer = findUserByApiToken(key);
 		if ( issuer == null ) return errorResponse( Status.UNAUTHORIZED, "invalid api key '" + key +"'" );
 		
-        User u = usersSvc.findByIdentifier(username);
-		if ( u == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
+        RoleAssignee ras = findAssignee(username);
+		if ( ras == null ) return errorResponse( Status.BAD_REQUEST, "no user with username " + username );
 		
-        // FIXME should get a DvObject
-        Dataverse d = dvSvc.find( dvObjectId );
+        DvObject d = dvSvc.find( dvObjectId );
 		if ( d == null ) return errorResponse( Status.BAD_REQUEST, "no DvObject with id " + dvObjectId );
 		DataverseRole r = rolesSvc.find(roleId);
 		if ( r == null ) return errorResponse( Status.BAD_REQUEST, "no role with id " + roleId );
 		
 		try {
-			return okResponse( json(execCommand( new AssignRoleCommand(u,r,d, issuer), "Assign Role")) );
+			return okResponse( json(execCommand( new AssignRoleCommand(ras,r,d, issuer), "Assign Role")) );
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			logger.log( Level.WARNING, "Error Assigning role", ex );
 			return ex.getResponse();
 		}
@@ -116,7 +117,7 @@ public class Roles extends AbstractApiBean {
 		
 		try {
 			return okResponse(json(execCommand(new CreateRoleCommand(roleDto.asRole(), issuer, d), "Create New Role")));
-		} catch ( FailedCommandResult ce ) {
+		} catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
 	}

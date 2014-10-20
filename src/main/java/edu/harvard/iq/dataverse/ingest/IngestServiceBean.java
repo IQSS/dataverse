@@ -48,6 +48,7 @@ import edu.harvard.iq.dataverse.ingest.metadataextraction.impl.plugins.fits.FITS
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReader;
+import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTA117FileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.dta.DTAFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata.RDATAFileReaderSpi;
@@ -137,6 +138,7 @@ public class IngestServiceBean {
     QueueConnectionFactory factory;
     
     private static final String MIME_TYPE_STATA = "application/x-stata";
+    private static final String MIME_TYPE_STATA13 = "application/x-stata-13";
     private static final String MIME_TYPE_RDATA = "application/x-rlang-transport";
     private static final String MIME_TYPE_CSV   = "text/csv";
     private static final String MIME_TYPE_CSV_ALT = "text/comma-separated-values";
@@ -1088,8 +1090,6 @@ public class IngestServiceBean {
         
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
-        //TabularDataFileReader ingestPlugin = IngestSP.getTabDataReaderByMIMEType(dFile.getContentType());
-        //TabularDataFileReader ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
 
@@ -1257,7 +1257,7 @@ public class IngestServiceBean {
                 errorReport.setDataFile(dataFile);
                 dataFile.setIngestReport(errorReport);
 
-            // blank the datatable that may have already been attached to the
+                // blank the datatable that may have already been attached to the
                 // datafile (it may have something "unsave-able" in it!)
                 dataFile.setDataTables(null);
                 if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
@@ -1298,6 +1298,8 @@ public class IngestServiceBean {
         
         if (mimeType.equals(MIME_TYPE_STATA)) {
             return true;
+        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
+            return true;
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             return true;
         } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
@@ -1330,6 +1332,8 @@ public class IngestServiceBean {
 
         if (mimeType.equals(MIME_TYPE_STATA)) {
             ingestPlugin = new DTAFileReader(new DTAFileReaderSpi());
+        } else if (mimeType.equals(MIME_TYPE_STATA13)) {
+            ingestPlugin = new DTA117FileReader(new DTAFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_RDATA)) {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(MIME_TYPE_CSV) || mimeType.equals(MIME_TYPE_CSV_ALT)) {
@@ -1753,11 +1757,21 @@ public class IngestServiceBean {
             String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
             for (int i = 0; i < dataVector.length; i++) {
                 if (dataVector[i] != null) {
+                    /* TODO: 
+                     * add handling for cases of non-uniform precision among
+                     * the time values in the vector; for ex., if some have 
+                     * milliseconds, and some don't. (that in turn would only 
+                     * be an issue if the timezone is specified... otherwise 
+                     * the time string would still evaluate to the end...
+                     * of course this should really be handled in the UNF6!
+                     * -- L.A. 4.0 beta 8
+                    */
                     if (savedDateFormat != null && !savedDateFormat.equals("")) {
                         dateFormats[i] = savedDateFormat;
                     } else {
                         dateFormats[i] = dateTimeFormat_ymdhmsS;
                     }
+                    //dateFormats[i] = "yyyy-MM-dd HH:mm:ss z";
                 }
             }
         } else if ("date".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {

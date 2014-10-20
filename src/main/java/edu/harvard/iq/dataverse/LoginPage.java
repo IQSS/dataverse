@@ -10,8 +10,10 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -80,8 +82,15 @@ public class LoginPage implements java.io.Serializable {
     private List<FilledCredential> filledCredentials;
     
     public void init() {
-        setCredentialsAuthProviderId(authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator().next());
+        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
+        if ( credentialsIterator.hasNext() ) {
+            setCredentialsAuthProviderId(credentialsIterator.next());
+        }
         resetFilledCredentials(null);
+    }
+    
+    public boolean isAuthenticationProvidersAvailable() {
+        return ! authSvc.getAuthenticationProviderIds().isEmpty();
     }
     
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
@@ -120,7 +129,7 @@ public class LoginPage implements java.io.Serializable {
         
         try {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
-            logger.info("User authenticated: " + r.getEmail() );
+            logger.log(Level.INFO, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             return "/dataverse.xhtml?faces-redirect=true";
             
@@ -136,6 +145,8 @@ public class LoginPage implements java.io.Serializable {
     }
     
     public void resetFilledCredentials( AjaxBehaviorEvent event) {
+        if ( selectedCredentialsProvider()==null ) return;
+        
         filledCredentials = new LinkedList<>();
         for ( CredentialsAuthenticationProvider.Credential c : selectedCredentialsProvider().getRequiredCredentials() ) {
             filledCredentials.add( new FilledCredential(c, ""));
@@ -158,5 +169,9 @@ public class LoginPage implements java.io.Serializable {
         boolean safeDefaultIfKeyNotFound = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibEnabled, safeDefaultIfKeyNotFound);
     }
-
+    
+    public boolean isMultipleProvidersAvailable() {
+        return authSvc.getAuthenticationProviderIds().size()>1;
+    }
+    
 }

@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -76,22 +77,20 @@ public class DataverseFeaturedDataverse implements Serializable {
         this.displayOrder = displayOrder;
     } 
   
+    @Override
     public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
 
+    @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof DatasetFieldType)) {
             return false;
         }
         DataverseFeaturedDataverse other = (DataverseFeaturedDataverse) object;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
     }
 
     @Override

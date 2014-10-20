@@ -42,7 +42,7 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         
         DatasetVersion edit = ds.getEditVersion();
         edit.setDatasetFields( newVersion.getDatasetFields() );
-        
+        edit.setLastUpdateTime( new java.util.Date() );
         DatasetVersion managed = ctxt.em().merge(edit);
         
         ctxt.index().indexDataset(ds);

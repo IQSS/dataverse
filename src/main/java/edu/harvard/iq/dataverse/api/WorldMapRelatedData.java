@@ -168,10 +168,15 @@ public class WorldMapRelatedData extends AbstractApiBean {
              return "";
         }
         int portNumber = request.getServerPort();
-        if (portNumber==80){
-           return "http://" + serverName;
+        
+        String http_prefix = "https://";
+        if (serverName.contains("localhost")){
+            http_prefix = "http://";
         }
-        return "http://" + serverName + ":" + portNumber;
+        if (portNumber==80){
+           return http_prefix + serverName;
+        }
+        return http_prefix + serverName + ":" + portNumber;
                
     }
     
@@ -321,7 +326,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // DataverseUser Info
         //------------------------------------
         dfile_json.add("dv_user_id", dv_user.getId());
-        dfile_json.add("dv_username", dv_user.getName());
+        dfile_json.add("dv_username", dv_user.getUserIdentifier()); 
         dfile_json.add("dv_user_email", dv_user.getEmail());
                 
         //------------------------------------

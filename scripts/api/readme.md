@@ -87,6 +87,14 @@ Publish the Dataverse pointed by `identifier`, which can either by the dataverse
 
 ### Datasets
 
+#### Note
+In all commands below, dataset versions can be referred to as:
+
+* `:draft`  the draft version, if any
+* `:latest` either a draft (if exists) or the latest published version.
+* `:latest-published` the latest published version
+* `x.y` a specific version, where `x` is the major version number and `y` is the minor version number.
+* `x` same as `x.0`
 
 	GET http://{{SERVER}}/api/datasets/{{id}}?key={{apikey}}
 
@@ -102,8 +110,7 @@ List versions of the dataset.
 	
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionNumber}}?key={{apikey}}
 
-Show a version of the dataset. The `versionNumber` can be a specific version number (in the form of `major.minor`, e.g. `1.2` or `3.0`), or the values `:edit` for the edit version, and `:latest` for the latest one.
-The Dataset also include any metadata blocks the data might have.
+Show a version of the dataset. The Dataset also include any metadata blocks the data might have.
 
 	GET http://{{SERVER}}/api/datasets/{{id}}/versions/{{versionId}}/metadata?key={{apikey}}
 
@@ -113,9 +120,9 @@ Lists all the metadata blocks and their content, for the given dataset and versi
 
 Lists the metadata block block named `blockname`, for the given dataset and version.
 
-    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:edit?key={{apiKey}}
+    PUT http://{{SERVER}}/api/datasets/{{id}}/versions/:draft?key={{apiKey}}
 
-Updates the current edit version of dataset `{{id}}`. If the dataset does not have an edit version - e.g. when its most recent version is published, a new dreaft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
+Updates the current draft version of dataset `{{id}}`. If the dataset does not have an draft version - e.g. when its most recent version is published, a new draft version is created. The invariant is - after a successful call to this command, the dataset has a DRAFT version with the passed data.
 
     POST http://{{SERVER}}/api/datasets/{{id}}/actions/:publish?type={{type}}&key={{apiKey}}
 
@@ -123,9 +130,9 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
 
 ### permissions
 
-	GET http://{{SERVER}}/api/permissions?user={{uid}}&on={{dvoId}}
+	GET http://{{SERVER}}/api/permissions?on={{dvoId}}&key={{uid}}
 
-Retrieves a list of permissions a user has on the DvObject. Both ids can be the database id or the alias/username.
+Retrieves a list of permissions a user has on the DvObject.
 
 ### users
 
@@ -188,3 +195,30 @@ Set `name` to `content`. Note that `content` is assumed to be url-encoded.
 	DELETE http://{{SERVER}}/api/s/settings/{{name}}
 
 Delete the setting under `name`.
+
+	GET http://{{SERVER}}/api/s/authenticationProviderFactories
+
+List the authentication provider factories. The alias field of these is used while configuring the providers themselves.
+
+	GET http://{{SERVER}}/api/s/authenticationProviders
+
+List all the authentication providers in the system (both enabled and disabled).
+
+	POST http://{{SERVER}}/api/s/authenticationProviders	
+
+Add new authentication provider. The POST data is in JSON format, similar to the JSON retrieved from this command's `GET` counterpart.
+
+	GET http://{{SERVER}}/api/s/authenticationProviders/{id}
+
+Show data about an authentication provider.
+
+	POST http://{{SERVER}}/api/s/authenticationProviders/{id}/:enabled
+
+Enable or disable an authentication provider (denoted by `id`). The body of the request should be either `true` or `false`. Content type has to be `application/json`, like so:
+
+	curl -H "Content-type: application/json"  -X POST -d"false" http://localhost:8080/api/s/authenticationProviders/echo-dignified/:enabled
+
+
+	DELETE http://{{SERVER}}/api/s/authenticationProviders/{id}/
+
+Deletes an authentication provider from the system. The command succeeds even if there is no such provider, as the postcondition holds: there is no provider by that id after the command returns.

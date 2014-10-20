@@ -65,14 +65,6 @@
           "typeName": "author"
         },
         {
-          "value": [
-            "pete@malinator.com"
-          ],
-          "typeClass": "primitive",
-          "multiple": true,
-          "typeName": "distributorContact"
-        },
-        {
           "value": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos, eos, natus soluta porro harum beatae voluptatem unde rerum eius quaerat officiis maxime autem asperiores facere.",
           "typeClass": "primitive",
           "multiple": false,
@@ -141,18 +133,6 @@
         {
           "value": [
             {
-              "contributorAbbreviation": {
-                "value": "DDD",
-                "typeClass": "primitive",
-                "multiple": false,
-                "typeName": "contributorAbbreviation"
-              },
-              "contributorAffiliation": {
-                "value": "Denmark",
-                "typeClass": "primitive",
-                "multiple": false,
-                "typeName": "contributorAffiliation"
-              },
               "contributorName": {
                 "value": "Dennis",
                 "typeClass": "primitive",
@@ -160,7 +140,7 @@
                 "typeName": "contributorName"
               },
               "contributorType": {
-                "value": "Distributor",
+                "value": "Funder",
                 "typeClass": "controlledVocabulary",
                 "multiple": false,
                 "typeName": "contributorType"

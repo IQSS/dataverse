@@ -54,23 +54,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 /**
- * A REST API for dataverses. To be unified with {@link Dataverses}.
+ * A REST API for dataverses.
  * @author michael
  */
 @Stateless
 @Path("dvs")
 public class Dataverses extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(Dataverses.class.getName());
-	
-	@GET
-	public String list() {
-        // TODO rethink this
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-		for ( Dataverse d : dataverseSvc.findAll() ) {
-			bld.add(json(d));
-		}
-		return ok( bld.build() );
-	}
 	
 	@POST
 	public Response addRoot( Dataverse d, @QueryParam("key") String apiKey ) {
@@ -133,7 +123,7 @@ public class Dataverses extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             json = Json.createReader(rdr).readObject();
         } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: " + jsonBody);
+            logger.log(Level.SEVERE, "Json: {0}", jsonBody);
             return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
         }
         
@@ -151,8 +141,8 @@ public class Dataverses extends AbstractApiBean {
                 DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
 
                 // force "initial version" properties
-                version.setMinorVersionNumber(0l);
-                version.setVersionNumber(1l);
+                version.setMinorVersionNumber(null);
+                version.setVersionNumber(null);
                 version.setVersionState(DatasetVersion.VersionState.DRAFT);
                 LinkedList<DatasetVersion> versions = new LinkedList<>();
                 versions.add(version);
@@ -172,7 +162,8 @@ public class Dataverses extends AbstractApiBean {
         
         try {
             Dataset managedDs = engineSvc.submit( new CreateDatasetCommand(ds, u));
-            return okResponse( Json.createObjectBuilder().add("id", managedDs.getId()) );
+            return createdResponse( "/datasets/" + managedDs.getId(),
+                                    Json.createObjectBuilder().add("id", managedDs.getId()) );
             
         } catch (CommandException ex) {
             String incidentId = UUID.randomUUID().toString();
@@ -193,7 +184,7 @@ public class Dataverses extends AbstractApiBean {
         try {
 			Dataverse retrieved = execCommand( new GetDataverseCommand(u, d), "Get Dataverse" );
 			return okResponse( json(retrieved));
-		} catch ( FailedCommandResult ex ) {
+		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
 		}
         
@@ -213,7 +204,7 @@ public class Dataverses extends AbstractApiBean {
 		try {
 			execCommand( new DeleteDataverseCommand(u, d), "Delete Dataverse" );
 			return okResponse( "Dataverse " + idtf  +" deleted");
-		} catch ( FailedCommandResult ex ) {
+		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
 		}
 	}
@@ -282,7 +273,7 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey  ) {
         User u = findUserByApiToken(apiKey);
 		if ( u == null ) return badApiKey(apiKey);
@@ -296,7 +287,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/metadatablocks/:isRoot")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response setMetadataRoot( @PathParam("identifier")String dvIdtf, @QueryParam("key") String apiKey, String body  ) {
         
         if ( ! Util.isBoolean(body) ) {
@@ -351,7 +342,7 @@ public class Dataverses extends AbstractApiBean {
 			for ( DvObject o : execCommand(new ListDataverseContentCommand(u, dataverse), "List Dataverse") ) {
 				o.accept(ser);
 			}
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			return ex.getResponse();
 		}
 		return okResponse(jab);
@@ -369,7 +360,7 @@ public class Dataverses extends AbstractApiBean {
         
 		try {
 			return okResponse( json(execCommand(new CreateRoleCommand(roleDto.asRole(), u, dataverse), "Create Role")));
-        } catch ( FailedCommandResult ce ) {
+        } catch ( WrappedResponse ce ) {
 			return ce.getResponse();
 		}
 	}
@@ -389,7 +380,7 @@ public class Dataverses extends AbstractApiBean {
 			}
 			return okResponse(jab);
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			return ex.getResponse();
 		}
 	}
@@ -427,7 +418,7 @@ public class Dataverses extends AbstractApiBean {
 			RoleAssignment roleAssignment = execCommand( new AssignRoleCommand(assignee, theRole, dataverse, actingUser), "Assign role");
 			return okResponse(json(roleAssignment));
 			
-		} catch (FailedCommandResult ex) {
+		} catch (WrappedResponse ex) {
 			logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
 			return ex.getResponse();
 		}

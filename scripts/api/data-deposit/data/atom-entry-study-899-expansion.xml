@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:dcterms="http://purl.org/dc/terms/">
+  <dcterms:title>“Changes in test-taking patterns over time” concerning the Flynn Effect in Estonia</dcterms:title>
+  <!-- description of the data rather than the article -->
+  <dcterms:description>The dataset from our previous Intelligence paper consists of data collected with the National Intelligence Tests (NIT, Estonian adaptation) in two historical time points: in 1934/36 (N=890) and 2006 (N=913) for students with an average age of 13. The data-file consists of information about cohort, age, and gender and test results at the item level for nine of the ten NIT subtests and subtest scores for the 10th subtest. Three answer types are separated: right answer, wrong answer and missing answer. Data can be used for psychometric research of cohort and sex differences at the scale and item level.</dcterms:description>
+  <!-- Author and Affiliation are being used by this particular user. Affiliation is another attribute hack -->
+  <dcterms:creator affiliation="Department of Psychology, University of Tartu, Estonia">Must, Olev</dcterms:creator>
+  <dcterms:creator affiliation="Department of Psychology, University of Tartu, Estonia">Must, Aasa</dcterms:creator>
+  <dcterms:contributor type="Funder">Estonian Scientific Foundation: grant no 2387 and 5856.   European Social Fund: a Primus  grant (#3-8.2/60) to Anu Realo.  Baylor University financial support for data quality control in archive.</dcterms:contributor>
+  <!-- dataset producer rather than Journal Publisher: -->
+  <dcterms:publisher>Insert Dataset publisher</dcterms:publisher>
+  <dcterms:rights>Journal copyright, license or terms of use notice</dcterms:rights>
+  <!-- production date in Dataverse: -->
+  <!-- date, if published: -->
+  <dcterms:date>2014-09-22</dcterms:date>
+  <dcterms:available>2014-09-22</dcterms:available>
+  <!-- URI attributes, if published: -->
+  <dcterms:isReferencedBy agency="DOI" IDNo="" holdingsURI="http://dx.doi.org/">Must, O., &amp; Must, A. (2014). Sample submission. Journal Of Plugin Testing, 1(2).</dcterms:isReferencedBy>
+  <!-- Discipline, subject classification, keywords & coverage, if journal has enabled these fields enabled in article metadata forms -->
+  <dcterms:subject>Academic discipline</dcterms:subject>
+  <dcterms:subject>Subject classification</dcterms:subject>
+  <dcterms:subject>Article keywords</dcterms:subject>
+  <dcterms:subject>Geographic coverage</dcterms:subject>
+  <!-- Supplementary file: subject, type -->
+  <dcterms:subject>Keyword 1, keyword 2, keyword 3</dcterms:subject>
+  <dcterms:type>Data Set</dcterms:type>
+</entry>

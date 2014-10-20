@@ -15,6 +15,8 @@ TMP=setup.temp
 
 ./datasetfields.sh
 
+# Setup the authentication providers
+./setup-identity-providers.sh
 ./setup-users.sh | tee $TMP
 
 PETE=$(cat $TMP | grep :result: | grep Pete | cut -d: -f4)

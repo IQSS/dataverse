@@ -1,0 +1,8 @@
+{
+    "id":"builtin",
+    "factoryAlias":"BuiltinAuthenticationProvider",
+    "title":"Dataverse Local", 
+    "subtitle":"Datavers' Internal Authentication provider",
+    "factoryData":"",
+    "enabled":true
+}

@@ -166,6 +166,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                     try {
                         // TODO: verify that NaN and +-Inf are going to be
                         // handled correctly here! -- L.A. 
+                        // NO, "+-Inf" is not handled correctly; see the 
+                        // comment further down below. 
                         retVector[j][caseIndex] = new Double(line[i]);
                     } catch (NumberFormatException ex) {
                         retVector[j][caseIndex] = null; // missing value
@@ -477,9 +479,26 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         try {
                             // TODO: verify that NaN and +-Inf are 
                             // handled correctly here! -- L.A.
-                            retVector[caseindex] = new Double(token);
+                            // Verified: new Double("nan") works correctly, 
+                            // resulting in Double.NaN;
+                            // Double("[+-]Inf") doesn't work however; 
+                            // (the constructor appears to be expecting it
+                            // to be spelled as "Infinity", "-Infinity", etc. 
+                            if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
+                                retVector[caseindex] = java.lang.Double.POSITIVE_INFINITY;
+                            } else if ("-inf".equalsIgnoreCase(token)) {
+                                retVector[caseindex] = java.lang.Double.NEGATIVE_INFINITY;
+                            } else if (token == null || token.equals("")) {
+                                // missing value:
+                                retVector[caseindex] = null;
+                            } else {
+                                retVector[caseindex] = new Double(token);
+                            }
                         } catch (NumberFormatException ex) {
+                            dbgLog.warning("NumberFormatException thrown for "+token+" as Double");
+
                             retVector[caseindex] = null; // missing value
+                            // TODO: ?
                         }
                     } else if (isLong) {
                         try {
@@ -489,9 +508,19 @@ public class TabularSubsetGenerator implements SubsetGenerator {
                         }
                     } else if (isFloat) {
                         try {
-                            retVector[caseindex] = new Float(token);
+                            if ("inf".equalsIgnoreCase(token) || "+inf".equalsIgnoreCase(token)) {
+                                retVector[caseindex] = java.lang.Float.POSITIVE_INFINITY;
+                            } else if ("-inf".equalsIgnoreCase(token)) {
+                                retVector[caseindex] = java.lang.Float.NEGATIVE_INFINITY;
+                            } else if (token == null || token.equals("")) {
+                                // missing value:
+                                retVector[caseindex] = null;
+                            } else {
+                                retVector[caseindex] = new Float(token);
+                            }
                         } catch (NumberFormatException ex) {
-                            retVector[caseindex] = null; // assume missing value
+                            dbgLog.warning("NumberFormatException thrown for "+token+" as Float");
+                            retVector[caseindex] = null; // assume missing value (TODO: ?)
                         }
                     }
                     caseindex++;
