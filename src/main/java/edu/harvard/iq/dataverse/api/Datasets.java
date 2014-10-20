@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -26,6 +25,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.StringReader;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -142,6 +142,7 @@ public class Datasets extends AbstractApiBean {
                 cmd = new GetLatestAccessibleDatasetVersionCommand(u, ds);
                 break;	
 			case ":draft":
+			case ":edit":
                 cmd = new GetDraftDatasetVersionCommand(u, ds);
                 break;
             case ":latest-published":
@@ -283,7 +284,11 @@ public class Datasets extends AbstractApiBean {
         try ( StringReader rdr = new StringReader(jsonBody) ) {
             JsonObject json = Json.createReader(rdr).readObject();
             DatasetVersion version = jsonParser().parseDatasetVersion(json);
+            
+            version.setCreateTime(new Date());
+            version.setLastUpdateTime(version.getCreateTime());
             version.setDataset(ds);
+
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion managedVersion = engineSvc.submit( updateDraft
                                                                 ? new UpdateDatasetVersionCommand(u, version)
