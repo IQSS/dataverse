@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/dataverse_template.xhtml">
+            <ui:param name="pageTitle" value="404 Not Found - Dataverse"/>
+            <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showBreadcrumbs" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:define name="body">
+                <div class="alert alert-danger" role="alert" style="margin-top:3em;">
+                    <strong>Page Not Found</strong> - The page you are looking was not found.
+                </div>
+                <div class="row text-center">
+                    <h:form>
+                        <p:focus/>
+                        <p:inputText id="formerAutoCompleteSearch" size="40" value=""/>
+                        <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
+                        <a href="#" id="searchbutton" class="btn btn-default">
+                            <span class="glyphicon glyphicon-search"/> Find
+                        </a>
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
