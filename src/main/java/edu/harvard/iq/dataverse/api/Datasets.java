@@ -112,7 +112,6 @@ public class Datasets extends AbstractApiBean {
 		User u = findUserByApiToken(apiKey);
 		if ( u == null ) return errorResponse( Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
 		
-		
         Dataset ds = datasetService.find(id);
         if (ds == null) return notFound("dataset not found");
 		
@@ -218,13 +217,6 @@ public class Datasets extends AbstractApiBean {
         }
 		
     }
-    
-	@GET
-	@Path("{id}/versions/{versionId}/files/")
-	public String listFiles() {
-		// TODO implement
-		return error("Not implemented yet");
-	}
 	
     @DELETE
 	@Path("{id}/versions/{versionId}")

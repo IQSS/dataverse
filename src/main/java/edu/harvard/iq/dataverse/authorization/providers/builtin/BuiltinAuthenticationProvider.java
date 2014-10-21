@@ -54,11 +54,11 @@ public class BuiltinAuthenticationProvider implements CredentialsAuthenticationP
     @Override
     public AuthenticationResponse authenticate( AuthenticationRequest authReq ) {
         BuiltinUser u = bean.findByUserName( authReq.getCredential(KEY_USERNAME) );
-        if ( u == null ) return AuthenticationResponse.makeFail("Bad username");
-        if ( u.getEncryptedPassword().equals( bean.encryptPassword(authReq.getCredential(KEY_PASSWORD)))) {
-            return AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo());
-        } 
-        return AuthenticationResponse.makeFail("Bad username or password");
+        if ( u == null ) return AuthenticationResponse.makeFail("Bad username or password");
+        
+        return ( u.getEncryptedPassword().equals( bean.encryptPassword(authReq.getCredential(KEY_PASSWORD))))
+            ? AuthenticationResponse.makeSuccess(u.getUserName(), u.getDisplayInfo())
+             : AuthenticationResponse.makeFail("Bad username or password");
    }
 
     @Override

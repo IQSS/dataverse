@@ -1,21 +1,21 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -78,19 +78,22 @@ public abstract class AbstractApiBean {
     protected MetadataBlockServiceBean metadataBlockSvc;
     
     @EJB
-    UserServiceBean userSvc;
+    protected UserServiceBean userSvc;
     
 	@EJB
-	DataverseRoleServiceBean rolesSvc;
+	protected DataverseRoleServiceBean rolesSvc;
     
     @EJB
-    SettingsServiceBean settingsSvc;
+    protected SettingsServiceBean settingsSvc;
     
     @EJB
-    RoleAssigneeServiceBean roleAssigneeSvc;
+    protected RoleAssigneeServiceBean roleAssigneeSvc;
+    
+    @EJB
+    protected PermissionServiceBean permissionSvc;
     
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
-	EntityManager em;
+	protected EntityManager em;
 	
     /**
      * For pretty printing (indenting) of JSON output.

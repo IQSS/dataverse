@@ -17,7 +17,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import org.hibernate.validator.constraints.NotBlank;
-//import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -77,12 +76,13 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getPersistentURL() {
-        if (this.getProtocol().equals("hdl")) {
-            return getHandleURL();
-        } else if (this.getProtocol().equals("doi")) {
-            return getEZIdURL();
-        } else {
-            return "";
+        switch (this.getProtocol()) {
+            case "hdl":
+                return getHandleURL();
+            case "doi":
+                return getEZIdURL();
+            default:
+                return "";
         }
     }
 
@@ -223,7 +223,7 @@ public class Dataset extends DvObjectContainer {
         }
 
         if (this.getAuthority() != null && this.getIdentifier() != null) {
-            studyDir = Paths.get(filesRootDirectory, this.getAuthority().toString(), this.getIdentifier().toString());
+            studyDir = Paths.get(filesRootDirectory, this.getAuthority(), this.getIdentifier());
         }
 
         return studyDir;
@@ -232,7 +232,7 @@ public class Dataset extends DvObjectContainer {
     public String getNextMajorVersionString() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return new Integer(dv.getVersionNumber().intValue() + 1).toString() + ".0";
+                return ".0" + Integer.toString(dv.getVersionNumber().intValue() + 1);
             }
         }
         return "1.0";
@@ -241,8 +241,8 @@ public class Dataset extends DvObjectContainer {
     public String getNextMinorVersionString() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return new Integer(dv.getVersionNumber().intValue()).toString() + "."
-                        + new Integer(dv.getMinorVersionNumber().intValue() + 1).toString();
+                return Integer.toString(dv.getVersionNumber().intValue()) + "."
+                        + Integer.toString(dv.getMinorVersionNumber().intValue() + 1);
             }
         }
         return "1.0";
@@ -251,16 +251,16 @@ public class Dataset extends DvObjectContainer {
     public Integer getVersionNumber() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return new Integer(dv.getVersionNumber().intValue());
+                return dv.getVersionNumber().intValue();
             }
         }
-        return new Integer(1);
+        return 1;
     }
 
     public Integer getMinorVersionNumber() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return new Integer(dv.getMinorVersionNumber().intValue());
+                return dv.getMinorVersionNumber().intValue();
             }
         }
         return 0;

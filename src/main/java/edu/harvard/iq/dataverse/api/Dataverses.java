@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -21,8 +22,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ListMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListRoleAssignments;
+import edu.harvard.iq.dataverse.engine.command.impl.ListRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlocksCommand;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
@@ -112,7 +116,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/datasets")
     public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey ) {
         User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return badApiKey(apiKey);
 		
         Dataverse owner = findDataverse(parentIdtf);
         if ( owner == null ) {
@@ -176,7 +180,7 @@ public class Dataverses extends AbstractApiBean {
 	@Path("{identifier}")
 	public Response viewDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
 		Dataverse d = findDataverse(idtf);
-        if (d == null) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+        if (d == null) return badApiKey(apiKey);
         
         User u = findUserByApiToken(apiKey);
         if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
@@ -187,16 +191,13 @@ public class Dataverses extends AbstractApiBean {
 		} catch ( WrappedResponse ex ) {
 			return ex.getResponse();
 		}
-        
-		/*return ( d==null) ? errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'")
-						  : okResponse( json(d) ); */
 	}
 	
 	@DELETE
 	@Path("{identifier}")
 	public Response deleteDataverse( @PathParam("identifier") String idtf, @QueryParam("key") String apiKey ) {
 		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiKey + "'");
+		if ( u == null ) return badApiKey(apiKey);
 		
 		Dataverse d = findDataverse(idtf);
 		if ( d == null ) return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier '" + idtf + "'");
@@ -210,40 +211,28 @@ public class Dataverses extends AbstractApiBean {
 	}
 	
 	@GET
-	@Path("{identifier}/roles")
-	public Response listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
-
-		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
-		
-		JsonArrayBuilder jab = Json.createArrayBuilder();
-		for ( DataverseRole r : dataverse.getRoles() ){
-			jab.add( json(r) );
-		}
-		return okResponse(jab);
-	}
-	
-	@GET
 	@Path("{identifier}/metadatablocks")
 	public Response listMetadataBlocks( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
-		User u = findUserByApiToken(apiKey);
-		if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
-
-		Dataverse dataverse = findDataverse(dvIdtf);
-		if ( dataverse == null ) {
-			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
-		}
-		
-		JsonArrayBuilder jab = Json.createArrayBuilder();
-		for ( MetadataBlock blk : dataverse.getMetadataBlocks()){
-			jab.add( brief.json(blk) );
-		}
-        
-		return okResponse(jab);
+        try {
+            User u = findUserByApiToken(apiKey);
+            if ( u == null ) return errorResponse( Status.FORBIDDEN, "Invalid apikey '" + apiKey + "'");
+            
+            Dataverse dataverse = findDataverse(dvIdtf);
+            if ( dataverse == null ) {
+                return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
+            }
+            
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for ( MetadataBlock blk : execCommand( new ListMetadataBlocksCommand(u, dataverse), 
+                                                    "Listing Metadata blocks for dataverse " + dvIdtf)){
+                jab.add( brief.json(blk) );
+            }
+            
+            return okResponse(jab);
+            
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
 	}
 	
     @POST
@@ -268,7 +257,14 @@ public class Dataverses extends AbstractApiBean {
             blocks.add( blk );
         }
         
-        return execute( new UpdateDataverseMetadataBlocksCommand.SetBlocks(u, dataverse, blocks) );
+        try {
+            execCommand( new UpdateDataverseMetadataBlocksCommand.SetBlocks(u, dataverse, blocks),
+                    "updating metadata blocks for dataverse " + dvIdtf );
+            return okResponse("Metadata blocks of dataverse " + dvIdtf + " updated.");
+            
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
     }
     
     @GET
@@ -282,7 +278,12 @@ public class Dataverses extends AbstractApiBean {
 		if ( dataverse == null ) 
 			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
-        return okResponseWithValue( dataverse.isMetadataBlockRoot() );
+        if ( permissionSvc.on(dataverse).user(u).has(Permission.EditMetadata) ) {
+            return okResponseWithValue( dataverse.isMetadataBlockRoot() );
+        } else {
+            return errorResponse( Status.FORBIDDEN, "Not authorized" );
+        }
+       
     }
     
     @POST
@@ -348,6 +349,28 @@ public class Dataverses extends AbstractApiBean {
 		return okResponse(jab);
 	}
 	
+    @GET
+	@Path("{identifier}/roles")
+	public Response listRoles( @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
+		User u = findUserByApiToken(apiKey);
+		if ( u == null ) return badApiKey(apiKey);
+       	Dataverse dataverse = findDataverse(dvIdtf);
+        
+		if ( dataverse == null ) {
+			return errorResponse( Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'");
+		}
+		
+        try {
+            JsonArrayBuilder jab = Json.createArrayBuilder();
+            for ( DataverseRole r : execCommand( new ListRolesCommand(u, dataverse), "Listing roles defined at Dataverse " + dvIdtf) ){
+                jab.add( json(r) );
+            }
+            return okResponse(jab);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+	}
+    
 	@POST
 	@Path("{identifier}/roles")
 	public Response createRole( RoleDTO roleDto, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey ) {
@@ -434,9 +457,14 @@ public class Dataverses extends AbstractApiBean {
 		
 		RoleAssignment ra = em.find( RoleAssignment.class, assignmentId );
 		if ( ra != null ) {
-			em.remove( ra );
-			em.flush();
-			return okResponse("Role assignment " + assignmentId + " removed");
+            try {
+                execCommand( new RevokeRoleCommand(ra, actingUser), "revoking role");
+                return okResponse("Role " + ra.getRole().getName() 
+                                            + " revoked for assignee " + ra.getAssigneeIdentifier()
+                                            + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter) );
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
+            }
 		} else {
 			return errorResponse( Status.NOT_FOUND, "Role assignment " + assignmentId + " not found" );
 		}

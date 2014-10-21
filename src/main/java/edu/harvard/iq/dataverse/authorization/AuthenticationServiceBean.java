@@ -170,7 +170,6 @@ public class AuthenticationServiceBean {
         AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         
-        
         AuthenticationResponse resp = prv.authenticate(req);
         
         if ( resp.getStatus() == AuthenticationResponse.Status.SUCCESS ) {
