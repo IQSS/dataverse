@@ -49,15 +49,7 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        try {
-            this.api.put(req, resp);
-        } catch (ParseException ex) {
-            /**
-             * @todo close https://github.com/IQSS/dataverse/issues/893 if/when
-             * https://github.com/swordapp/JavaServer2.0/issues/6 is closed
-             */
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Attempt to upload an empty Atom entry? org.apache.abdera.parser.ParseException caught. See also https://github.com/IQSS/dataverse/issues/893 and https://github.com/swordapp/JavaServer2.0/issues/6");
-        }
+        this.api.put(req, resp);
     }
 
     @Override

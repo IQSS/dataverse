@@ -2,10 +2,8 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -25,12 +23,14 @@ import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordConfiguration;
+import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
@@ -52,6 +52,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     ForeignMetadataImportServiceBean foreignMetadataImportService;
+    @EJB
+    SwordServiceBean swordService;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
@@ -78,7 +80,13 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     logger.fine("metadata relevant: " + deposit.isMetadataRelevant());
 
                     if (deposit.isEntryOnly()) {
-                        logger.fine("deposit XML received by createNew():\n" + deposit.getSwordEntry());
+                        // do a sanity check on the XML received
+                        try {
+                            SwordEntry swordEntry = deposit.getSwordEntry();
+                            logger.fine("deposit XML received by createNew():\n" + swordEntry.toString());
+                        } catch (ParseException ex) {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not create dataset due to malformed Atom entry: " + ex);
+                        }
                         // require title *and* exercise the SWORD jar a bit
                         Map<String, List<String>> dublinCore = deposit.getSwordEntry().getDublinCore();
                         if (dublinCore.get("title") == null || dublinCore.get("title").get(0) == null || dublinCore.get("title").get(0).isEmpty()) {
@@ -126,14 +134,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         }
                         logger.info("required fields: " + requiredFields);
 
-                        DatasetField emailDatasetField = new DatasetField();
-                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
-                        List<DatasetFieldValue> values = new ArrayList<>();
-                        values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
-                        emailDatasetField.setDatasetFieldValues(values);
-                        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
-                        List<DatasetField> fieldList = newDatasetVersion.getDatasetFields();
-                        fieldList.add(emailDatasetField);
+                        swordService.addDatasetContact(newDatasetVersion);
 
                         List<String> createdFields = new ArrayList<>();
                         final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();

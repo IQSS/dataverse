@@ -72,7 +72,15 @@
         <dependency>
             <groupId>org.swordapp</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
+            <!--
+            Built from https://github.com/IQSS/swordv2-java-server-library
+            to return a proper SWORD error message rather than a Glassfish
+            Exception per https://github.com/IQSS/dataverse/issues/893
+            If the fix is merged upstream at
+            https://github.com/swordapp/JavaServer2.0/issues/6
+            we can switch back to the official SWORD library.
+            -->
+            <version>1.1-SNAPSHOT</version>
             <type>war</type>
         </dependency>
         <dependency>

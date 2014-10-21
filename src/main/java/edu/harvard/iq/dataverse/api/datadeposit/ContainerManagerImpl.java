@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -31,12 +30,14 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordConfiguration;
+import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.UriRegistry;
@@ -62,6 +63,8 @@ public class ContainerManagerImpl implements ContainerManager {
     @Inject
     UrlManager urlManager;
 //    SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
+    @EJB
+    SwordServiceBean swordService;
 
     @Override
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
@@ -116,7 +119,13 @@ public class ContainerManagerImpl implements ContainerManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Metadata replace of dataverse is not supported.");
             } else if ("study".equals(targetType)) {
                 logger.fine("replacing metadata for dataset");
-                logger.fine("deposit XML received by replaceMetadata():\n" + deposit.getSwordEntry());
+                // do a sanity check on the XML received
+                try {
+                    SwordEntry swordEntry = deposit.getSwordEntry();
+                    logger.fine("deposit XML received by replaceMetadata():\n" + swordEntry);
+                } catch (ParseException ex) {
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not replace dataset metadata due to malformed Atom entry: " + ex);
+                }
 
                 String globalId = urlManager.getTargetIdentifier();
                 Dataset dataset = datasetService.findByGlobalId(globalId);
@@ -148,6 +157,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
+                        swordService.addDatasetContact(datasetVersion);
                         try {
                             engineSvc.submit(new UpdateDatasetCommand(dataset, vdcUser));
                         } catch (CommandException ex) {
@@ -158,7 +168,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
                         return depositReceipt;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getDisplayInfo().getTitle()+ " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + vdcUser.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study based on global id (" + globalId + ") in URL: " + uri);
@@ -409,7 +419,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Pass 'In-Progress: false' header to release a study.");
                             }
                         } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getDisplayInfo().getTitle()+ " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsStudy.getAlias());
                         }
                     } else {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study using globalId " + globalId);
