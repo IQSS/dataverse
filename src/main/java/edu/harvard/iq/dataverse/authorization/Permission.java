@@ -27,15 +27,20 @@ public enum Permission implements java.io.Serializable {
     AddDataverse("Add a dataverse within another dataverse", Dataverse.class),
     AddDataset("Add a dataset to a dataverse", Dataverse.class),
     AddDatasetVersion("Add a version to a dataset", Dataset.class),
+    DeleteDatasetDraft("Delete dataset draft", Dataset.class),
+    DeaccessionDataset("Deaccession Dataset", Dataset.class),
 	ChooseTemplate("Choose metadata template for dataverses and datasets", DvObjectContainer.class),
 	ChooseFacets("Choose facets", Dataverse.class),
 	Publish("Release a dataverse or a dataset", Dataverse.class, Dataset.class),
 	Style("Customize the appearance of objects", Dataverse.class, Dataset.class),
-	GrantPermissions("Manage permissions of other users", Dataset.class, Dataverse.class),
+	CreateRole("Create new Roles", Dataset.class, Dataverse.class),
+	AssignRole("Assign roles to users and groups", Dataset.class, Dataverse.class),
+	DeleteRole("Delete Roles", Dataset.class, Dataverse.class),
 	Tracking("Manage guestbook, download statistics, etc.", Dataverse.class),
     CreateTemplates("Create new templates", DvObjectContainer.class ),
     RestrictFile("Restrict File Access", DataFile.class),
-    RestrictMetadata("Mark metadata as restricted", DvObject.class)
+    RestrictMetadata("Mark metadata as restricted", DvObject.class),
+    RequestAccess("Request Access to an object", DvObject.class)
 	;
 	
 	private final String humanName;

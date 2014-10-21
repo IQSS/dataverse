@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Revokes a role for a user on a dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.AssignRole )
 public class RevokeRoleCommand extends AbstractVoidCommand {
 	
 	private final RoleAssignment toBeRevoked;

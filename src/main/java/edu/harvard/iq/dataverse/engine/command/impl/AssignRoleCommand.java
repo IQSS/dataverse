@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Assign a in a dataverse to a user.
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.AssignRole )
 public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 	
 	private final DataverseRole role;

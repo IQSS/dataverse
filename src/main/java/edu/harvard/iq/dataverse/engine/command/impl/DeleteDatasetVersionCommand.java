@@ -18,7 +18,7 @@ import java.util.Iterator;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.DestructiveEdit)
+@RequiredPermissions(Permission.DeleteDatasetDraft)
 public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;

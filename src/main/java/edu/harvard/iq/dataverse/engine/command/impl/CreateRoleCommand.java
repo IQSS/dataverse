@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Create a new role in a dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.CreateRole )
 public class CreateRoleCommand extends AbstractCommand<DataverseRole> {
 	
 	private final DataverseRole created;

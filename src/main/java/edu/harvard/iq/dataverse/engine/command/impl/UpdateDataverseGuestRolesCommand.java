@@ -17,7 +17,7 @@ import java.util.Set;
  * Update the roles the guest user has on a dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.AssignRole )
 public class UpdateDataverseGuestRolesCommand extends AbstractVoidCommand {
 	private final Set<DataverseRole> newRoleSet;
 	private final Dataverse dv;

@@ -53,7 +53,7 @@ public class Roles extends AbstractApiBean {
             if ( role == null ) {
                 return notFound("role with id " + id + " not found");
             } else  {
-                return ( permissionSvc.userOn(u, role.getOwner()).has(Permission.GrantPermissions) ) 
+                return ( permissionSvc.userOn(u, role.getOwner()).has(Permission.AssignRole) ) 
                     ? okResponse( json(role) )
                         : errorResponse(Status.UNAUTHORIZED, "");
             }

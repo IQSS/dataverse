@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  * Deletes a role.
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.DeleteRole )
 public class DeleteRoleCommand extends AbstractVoidCommand {
     
     private final DataverseRole doomed;

@@ -14,7 +14,7 @@ import java.util.List;
  * 
  * @author michael
  */
-@RequiredPermissions( Permission.GrantPermissions )
+@RequiredPermissions( Permission.AssignRole )
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 	
 	private final Dataverse definitionPoint;
