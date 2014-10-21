@@ -25,7 +25,7 @@ If there is no pre-existing issue, please click on the "New Issue" button, log i
 
 ## Writing an Issue
 
-For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e.-Create Account: or Dataset Page:. In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as possible.
+For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e.-Create Account: or Dataset Page:. In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide.
 
 ### Issue Labels
 
