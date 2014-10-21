@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -64,6 +63,8 @@ public class ContainerManagerImpl implements ContainerManager {
     @Inject
     UrlManager urlManager;
 //    SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
+    @EJB
+    SwordServiceBean swordService;
 
     @Override
     public DepositReceipt getEntry(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
@@ -156,6 +157,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         } catch (Exception ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
+                        swordService.addDatasetContact(datasetVersion);
                         try {
                             engineSvc.submit(new UpdateDatasetCommand(dataset, vdcUser));
                         } catch (CommandException ex) {

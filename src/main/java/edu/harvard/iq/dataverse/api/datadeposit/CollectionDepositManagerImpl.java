@@ -2,10 +2,8 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -54,6 +52,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     ForeignMetadataImportServiceBean foreignMetadataImportService;
+    @EJB
+    SwordServiceBean swordService;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
@@ -134,7 +134,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         }
                         logger.info("required fields: " + requiredFields);
 
-                        addDatasetContact(newDatasetVersion);
+                        swordService.addDatasetContact(newDatasetVersion);
 
                         List<String> createdFields = new ArrayList<>();
                         final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
@@ -224,22 +224,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + collectionUri);
         }
-    }
-
-    /**
-     * Mutate the dataset version, adding a datasetContact (email address) from
-     * the dataverse that will own the dataset.
-     */
-    private void addDatasetContact(DatasetVersion newDatasetVersion) {
-        DatasetField emailDatasetField = new DatasetField();
-        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
-        List<DatasetFieldValue> values = new ArrayList<>();
-        values.add(new DatasetFieldValue(emailDatasetField, newDatasetVersion.getDataset().getOwner().getContactEmail()));
-        emailDatasetField.setDatasetFieldValues(values);
-        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
-        List<DatasetField> currentFields = newDatasetVersion.getDatasetFields();
-        currentFields.add(emailDatasetField);
-        newDatasetVersion.setDatasetFields(currentFields);
     }
 
 }
