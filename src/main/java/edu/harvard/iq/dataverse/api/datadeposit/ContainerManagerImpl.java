@@ -123,7 +123,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     SwordEntry swordEntry = deposit.getSwordEntry();
                     logger.fine("deposit XML received by replaceMetadata():\n" + swordEntry);
                 } catch (ParseException ex) {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not create dataset due to malformed Atom entry: " + ex);
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not replace dataset metadata due to malformed Atom entry: " + ex);
                 }
 
                 String globalId = urlManager.getTargetIdentifier();
