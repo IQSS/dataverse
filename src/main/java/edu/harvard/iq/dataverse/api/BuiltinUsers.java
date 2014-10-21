@@ -29,11 +29,20 @@ import javax.ws.rs.core.Response.Status;
 public class BuiltinUsers extends AbstractApiBean {
 	private static final Logger logger = Logger.getLogger(BuiltinUsers.class.getName());
 	
+    private static final String API_KEY_IN_SETTINGS = "BuiltinUsers.KEY";
+    
     @EJB
 	protected BuiltinUserServiceBean builtinUserSvc;
     
 	@GET
-	public Response list() {
+	public Response list(@QueryParam("key") String key ) {
+        String expectedKey = settingsSvc.get( API_KEY_IN_SETTINGS );
+        if ( expectedKey==null ) {
+            return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
+        }
+        if ( ! expectedKey.equals(key) ) {
+            return badApiKey(key);
+        }
 		JsonArrayBuilder bld = Json.createArrayBuilder();
 		
 		for ( BuiltinUser u : builtinUserSvc.findAll() ) {
@@ -44,7 +53,14 @@ public class BuiltinUsers extends AbstractApiBean {
 	}
 	
 	@POST
-	public Response save( BuiltinUser user, @QueryParam("password") String password ) {
+	public Response save( BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key ) {
+        String expectedKey = settingsSvc.get( API_KEY_IN_SETTINGS );
+        if ( expectedKey==null ) {
+            return errorResponse(Status.SERVICE_UNAVAILABLE, "Dataverse config issue: No API key defined for built in user management");
+        }
+        if ( ! expectedKey.equals(key) ) {
+            return badApiKey(key);
+        }
 		try { 
 			if ( password != null ) {
 				user.setEncryptedPassword(builtinUserSvc.encryptPassword(password));

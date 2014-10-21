@@ -40,8 +40,11 @@ public class DataTagsAPI extends AbstractApiBean {
     DataTagsContainer container;
     
     
+    /**
+     * send GET request to tagging server API for URL for user
+     * @return the URL at which the interview waits.
+     */
     public String requestInterview() {
-        // send GET request to tagging server API for URL for user
         Client client = ClientBuilder.newClient();
         WebTarget endpoint = client.target(TAGGING_SERVER_ENDPOINT);
                 //.path("{repositoryName}").path("{callbackURL}");
@@ -80,13 +83,7 @@ public class DataTagsAPI extends AbstractApiBean {
         CACHE.put(uniqueCacheId, container);
         
         // return an OK message with the redirect URL for the user to return to Dataverse through postBackTo or unacceptableDataset in DataTags
-        return okResponse( USER_REDIRECT_URL);
-    }
-    
-    
-    @GET
-    public String test() {
-        return "Working";
+        return okResponse( USER_REDIRECT_URL );
     }
     
 }

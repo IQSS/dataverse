@@ -78,24 +78,6 @@ public class Admin extends AbstractApiBean {
         return okResponse("Setting " + name +  " deleted.");
     }
     
-    @Path("setup")
-    @POST
-    public Response setup() {
-        settingsSvc.setValueForKey( SettingsServiceBean.Key.AllowSignUp, "1" );
-        settingsSvc.setValueForKey( SettingsServiceBean.Key.SignUpUrl, "builtin/signup.xhtml" );
-        return okResponse("setup done");
-    }
-    
-    @Path("test")
-    @GET
-    public Response test() {
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        for ( Setting s : settingsSvc.listAll() ) {
-            bld.add(s.getName(), settingsSvc.get(s.getName()));
-        }
-        return okResponse(bld);
-    }
-    
     @Path("authenticationProviderFactories")
     @GET
     public Response listAuthProviderFactories() {

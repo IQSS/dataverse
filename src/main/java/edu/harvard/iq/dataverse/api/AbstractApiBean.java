@@ -126,11 +126,16 @@ public abstract class AbstractApiBean {
 				.getSingleResult();
 	}
 	
+    /**
+     * Tries to find a DvObject. If the passed id can be interpreted as a number,
+     * it tries to get the DvObject by its id. Else, it tries to get a {@link Dataverse}
+     * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
+     * @param id a value identifying the DvObject, either numeric of textual.
+     * @return A DvObject, or {@code null}
+     */
 	protected DvObject findDvo( String id ) {
         if ( isNumeric(id) ) {
-            return em.createNamedQuery("DvObject.findById", DvObject.class)
-				.setParameter("id", Long.valueOf(id))
-                	.getSingleResult();
+            return findDvo( Long.valueOf(id)) ;
         } else {
             Dataverse d = dataverseSvc.findByAlias(id);
             return ( d == null ) ?
@@ -142,6 +147,22 @@ public abstract class AbstractApiBean {
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
         return isNumeric(idtf) ? metadataBlockSvc.findById(Long.parseLong(idtf))
                 : metadataBlockSvc.findByName(idtf);
+    }
+    
+    protected <T> T execCommand( Command<T> com, String messageSeed ) throws WrappedResponse {
+        try {
+            return engineSvc.submit(com);
+            
+        } catch (IllegalCommandException ex) {
+            throw new WrappedResponse( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
+          
+        } catch (PermissionException ex) {
+            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
+            
+        } catch (CommandException ex) {
+            Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
+            throw new WrappedResponse(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
+        }
     }
     
     protected Response okResponse( JsonArrayBuilder bld ) {
@@ -183,22 +204,6 @@ public abstract class AbstractApiBean {
             .build();
     }
     
-    protected <T> T execCommand( Command<T> com, String messageSeed ) throws WrappedResponse {
-        try {
-            return engineSvc.submit(com);
-            
-        } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
-          
-        } catch (PermissionException ex) {
-            throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));
-            
-        } catch (CommandException ex) {
-            Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while " + messageSeed, ex);
-            throw new WrappedResponse(errorResponse(Status.INTERNAL_SERVER_ERROR, messageSeed + " failed: " + ex.getMessage()));
-        }
-    }
-    
     /**
      * Returns an OK response (HTTP 200, status:OK) with the passed value
      * in the data field.
@@ -233,7 +238,7 @@ public abstract class AbstractApiBean {
     }
     
     protected Response badApiKey( String apiKey ) {
-        return errorResponse(Status.UNAUTHORIZED, "Bad api key '" + apiKey +"'");
+        return errorResponse(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX)");
     }
     
     protected Response permissionError( PermissionException pe ) {

@@ -60,26 +60,26 @@ public class BuiltinUserServiceBean {
     }
 	
 	public List<BuiltinUser> listByUsernamePart ( String part ) {
-		return em.createNamedQuery("DataverseUser.listByUserNameLike", BuiltinUser.class)
+		return em.createNamedQuery("BuiltinUser.listByUserNameLike", BuiltinUser.class)
 				.setParameter("userNameLike", "%" + part + "%")
 				.getResultList();
 	}
 
     /**
+     * @param email email of the user.
      * @return A {@link BuiltinUser} or null if not found
      */
     public BuiltinUser findByEmail(String email) {
-        TypedQuery<BuiltinUser> typedQuery = em.createQuery("SELECT OBJECT(o) FROM BuiltinUser o WHERE o.email = :email", BuiltinUser.class);
-        typedQuery.setParameter("email", email);
         try {
-            BuiltinUser builtinUser = typedQuery.getSingleResult();
-            return builtinUser;
+            return em.createNamedQuery("BuiltinUser.findByEmail", BuiltinUser.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }
     }
     
     public List<BuiltinUser> findAll() {
-		return em.createNamedQuery("DataverseUser.findAll", BuiltinUser.class).getResultList();
+		return em.createNamedQuery("BuiltinUser.findAll", BuiltinUser.class).getResultList();
 	}
 }
