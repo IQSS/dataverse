@@ -114,9 +114,22 @@ public abstract class AbstractApiBean {
     	return roleAssigneeSvc.getRoleAssignee(identifier);
 	}
     
+    /**
+     * 
+     * @param apiKey the key to find the user with
+     * @return the user, or null
+     * @see #findUserOrDie(java.lang.String) 
+     */
     protected AuthenticatedUser findUserByApiToken( String apiKey ) {
         return authSvc.lookupUser(apiKey);
     }
+    
+    protected AuthenticatedUser findUserOrDie( String apiKey ) throws WrappedResponse {
+        AuthenticatedUser u = authSvc.lookupUser(apiKey);
+        if ( u != null ) return u;
+        throw new WrappedResponse( badApiKey(apiKey) );
+    }
+    
     
 	protected Dataverse findDataverse( String idtf ) {
 		return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))

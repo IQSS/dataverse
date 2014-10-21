@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import java.util.List;
 import java.util.logging.Logger;
@@ -16,6 +17,8 @@ import javax.validation.ConstraintViolationException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 @Path("files")
 public class Files extends AbstractApiBean {
@@ -29,12 +32,12 @@ public class Files extends AbstractApiBean {
     DataFileServiceBean dataFileService;
         
     @POST
-    public String add(DataFile dataFile, @QueryParam("key") String apiKey) {
+    public Response add(DataFile dataFile, @QueryParam("key") String apiKey) {
         Dataset dataset;
         try {
             dataset = datasetService.find(dataFile.getOwner().getId());
         } catch (EJBException ex) {
-            return Util.message2ApiError("Couldn't find dataset to save file to. File was " + dataFile);
+            return errorResponse( Status.NOT_FOUND, "Couldn't find dataset to save file to. File was " + dataFile);
         }
         List<DataFile> newListOfFiles = dataset.getFiles();
         newListOfFiles.add(dataFile);
@@ -42,14 +45,16 @@ public class Files extends AbstractApiBean {
         try {
             User u = findUserByApiToken(apiKey);
             if (u == null) {
-                return error("Invalid apikey '" + apiKey + "'");
+                return badApiKey(apiKey);
             }
             engineSvc.submit(new UpdateDatasetCommand(dataset, u));
             String fileName = "[No name?]";
             if (dataFile.getFileMetadata() != null) {
                 fileName = dataFile.getFileMetadata().getLabel(); 
             }
-            return "file " + fileName + " created/updated with dataset " + dataset.getId() + " (and probably indexed, check server.log)\n";
+            return okResponse( "file " + fileName + " created/updated with dataset " + dataset.getId() 
+                               + " (and probably indexed, check server.log)\n");
+            
         } catch (EJBException ex) {
             Throwable cause = ex;
             StringBuilder sb = new StringBuilder();
@@ -64,11 +69,12 @@ public class Files extends AbstractApiBean {
                     }
                 }
             }
-            return Util.message2ApiError("POST failed: " + sb.toString());
+            return errorResponse(Status.INTERNAL_SERVER_ERROR, "POST failed: " + sb.toString());
+        } catch (PermissionException ex) {
+            return errorResponse( Status.UNAUTHORIZED, "Can't update dataset: " + ex.getMessage());
         } catch (CommandException ex) {
-            return error("Can't update dataset: " + ex.getMessage());
+            return errorResponse( Status.INTERNAL_SERVER_ERROR, "Can't update dataset: " + ex.getMessage());
         }
-//        return "file " + dataFile.getName() + " indexed dataset " + dataFile.getName() + " files updated (and probably indexed, check server.log)\n";
     }
 
 }

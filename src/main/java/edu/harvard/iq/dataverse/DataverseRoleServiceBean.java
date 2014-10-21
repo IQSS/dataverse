@@ -93,6 +93,12 @@ public class DataverseRoleServiceBean {
 		return retVal;
 	}
 	
+    public List<RoleAssignment> roleAssignments( Long roleId ) {
+        return em.createNamedQuery("RoleAssignment.listByRoleId", RoleAssignment.class)
+                .setParameter("roleId", roleId)
+                .getResultList();
+    }
+    
 	public RoleAssignmentSet assignmentsFor( final User u, final DvObject d ) {
 		return d.accept( new DvObject.Visitor<RoleAssignmentSet>() {
 
