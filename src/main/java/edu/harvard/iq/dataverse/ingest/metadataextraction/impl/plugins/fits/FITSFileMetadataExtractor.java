@@ -97,7 +97,7 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             // The following fields have been dropped from the configuration 
             // map, not because we are not interested in them anymore - but
             // because they are now *mandatory*, i.e. non-configurable. 
-            // We will be checking for the "telescope" and "instrument" 
+            // We will be checking for the "telescope", "instrument", etc.
             // fields on all files and HDUs:
             // -- 4.0 beta
             
@@ -108,7 +108,9 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             // both coverage.Temporal.StartTime and .EndTime are derived from 
             // the DATE-OBS values; extra rules apply (coded further down)
             //defaultRecognizedFitsMetadataKeys.put("OBJECT", FIELD_TYPE_TEXT);
-            
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
+            //defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
             
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StartTime");
             //defaultIndexableFitsMetaKeys.put("DATE-OBS", "coverage.Temporal.StopTime");
@@ -116,15 +118,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
             //defaultIndexableFitsMetaKeys.put("OBJECT", "astroObject");
             //defaultIndexableFitsMetaKeys.put("CRVAL1", "coverage.Spatial");
             //defaultIndexableFitsMetaKeys.put("CRVAL2", "coverage.Spatial");
-            //defaultRecognizedFitsMetadataKeys.put("CRVAL1", FIELD_TYPE_TEXT);
-            //defaultRecognizedFitsMetadataKeys.put("CRVAL2", FIELD_TYPE_TEXT);
+            
 
             // Optional, configurable fields: 
             
             defaultRecognizedFitsMetadataKeys.put("FILTER", FIELD_TYPE_TEXT);
             defaultRecognizedFitsMetadataKeys.put("CD1_1", FIELD_TYPE_FLOAT);
             defaultRecognizedFitsMetadataKeys.put("CDELT", FIELD_TYPE_FLOAT);
-            defaultRecognizedFitsMetadataKeys.put("EXPTIME", FIELD_TYPE_DATE);
             
             // And the mapping to the corresponding values in the 
             // metadata block:
@@ -516,7 +516,13 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                         
                         // Check if we have the EXPTIME stored, that would allow us
                         // to recalculate the end time: 
-                        float expTimeValue = hduHeader.getFloatValue("EXPTIME");
+                        // getDoubleValue isn't advertised to throw any exceptions; 
+                        // so I'm going to assume that it just returns 0
+                        // if there's not such header value, or if the value
+                        // is not a valid double. (their document does say that 
+                        // it returns 0.0 "if not found"; but what does it return
+                        // if the value of the header is "foo"?")
+                        double expTimeValue = hduHeader.getDoubleValue("EXPTIME");
                         if (expTimeValue != 0.0) {
                             long expTimeInMillis = (long) (expTimeValue * 1000);
                             dbgLog.fine("EXPTIME in MILLISECONDS: " + expTimeInMillis);
@@ -532,6 +538,16 @@ public class FITSFileMetadataExtractor extends FileMetadataExtractor {
                             } else {
                                 endDateFormatted = TIME_FORMATS[1].format(endDate);
                             }
+                            
+                            // While we are at it, we will also populate the 
+                            // Resolution.Temporal field, where EXPTIME 
+                            // maps in the Astro metadata block: 
+                            String indexableKeyExpTime = getIndexableMetaKey("EXPTIME");
+                            if (fitsMetaMap.get(indexableKeyExpTime) == null) {
+                                fitsMetaMap.put(indexableKeyExpTime, new HashSet<String>());
+                            }
+                            fitsMetaMap.get(indexableKeyExpTime).add(Double.toString(expTimeValue));
+                            metadataKeys.add("EXPTIME");
                         }
                         
                         // Check if it's the max. end date value so far: 
