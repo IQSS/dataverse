@@ -134,14 +134,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         }
                         logger.info("required fields: " + requiredFields);
 
-                        DatasetField emailDatasetField = new DatasetField();
-                        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
-                        List<DatasetFieldValue> values = new ArrayList<>();
-                        values.add(new DatasetFieldValue(emailDatasetField, dvThatWillOwnDataset.getContactEmail()));
-                        emailDatasetField.setDatasetFieldValues(values);
-                        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
-                        List<DatasetField> fieldList = newDatasetVersion.getDatasetFields();
-                        fieldList.add(emailDatasetField);
+                        addDatasetContact(newDatasetVersion);
 
                         List<String> createdFields = new ArrayList<>();
                         final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
@@ -231,6 +224,22 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + collectionUri);
         }
+    }
+
+    /**
+     * Mutate the dataset version, adding a datasetContact (email address) from
+     * the dataverse that will own the dataset.
+     */
+    private void addDatasetContact(DatasetVersion newDatasetVersion) {
+        DatasetField emailDatasetField = new DatasetField();
+        DatasetFieldType emailDatasetFieldType = datasetFieldService.findByName(DatasetFieldConstant.datasetContact);
+        List<DatasetFieldValue> values = new ArrayList<>();
+        values.add(new DatasetFieldValue(emailDatasetField, newDatasetVersion.getDataset().getOwner().getContactEmail()));
+        emailDatasetField.setDatasetFieldValues(values);
+        emailDatasetField.setDatasetFieldType(emailDatasetFieldType);
+        List<DatasetField> currentFields = newDatasetVersion.getDatasetFields();
+        currentFields.add(emailDatasetField);
+        newDatasetVersion.setDatasetFields(currentFields);
     }
 
 }
