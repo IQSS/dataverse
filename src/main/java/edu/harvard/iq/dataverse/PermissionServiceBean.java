@@ -18,6 +18,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
+import java.util.ArrayList;
 
 /**
  * Your one-stop-shop for deciding which user can do what action on which
@@ -38,6 +39,9 @@ public class PermissionServiceBean {
 
     @EJB
     DataverseRoleServiceBean roleService;
+
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @PersistenceContext
     EntityManager em;
@@ -187,4 +191,24 @@ public class PermissionServiceBean {
         return userOn(session.getUser(), d);
     }
 
+    /**
+     * Go from (User, Permission) to a list of Dataverse objects that the user
+     * has the permission on.
+     *
+     * @todo Refactor this into something more performant:
+     * https://github.com/IQSS/dataverse/issues/784
+     *
+     * In DVN 3.x we had this: List<VDC> vdcList =
+     * vdcService.getUserVDCs(vdcUser.getId());
+     */
+    public List<Dataverse> getDataversesUserHasPermissionOn(User user, Permission permission) {
+        List<Dataverse> allDataverses = dataverseService.findAll();
+        List<Dataverse> dataversesUserHasPermissionOn = new ArrayList<>();
+        for (Dataverse dataverse : allDataverses) {
+            if (userOn(user, dataverse).has(permission)) {
+                dataversesUserHasPermissionOn.add(dataverse);
+            }
+        }
+        return dataversesUserHasPermissionOn;
+    }
 }
