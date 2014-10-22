@@ -855,7 +855,7 @@ unless ( $exitcode == 0 ) {
     print STDERR "Do you have java installed?\n";
     exit 1;
 }
-my $DOMAIN;    # FIXME: what is this supposed to be? It was never set.
+my $DOMAIN = "domain1";
 my $DOMAIN_DOWN =
   `$CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'}/bin/asadmin list-domains | grep "$DOMAIN " | grep "not running"`;
 print STDERR $DOMAIN_DOWN . "\n";
