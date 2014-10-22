@@ -195,6 +195,8 @@ public class PermissionServiceBean {
      * Go from (User, Permission) to a list of Dataverse objects that the user
      * has the permission on.
      *
+     * @todo Check isPermissionRoot (or [sic] isEffectivlyPermissionRoot?)
+     *
      * @todo Refactor this into something more performant:
      * https://github.com/IQSS/dataverse/issues/784
      *
