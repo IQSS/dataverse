@@ -135,6 +135,11 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         logger.info("required fields: " + requiredFields);
 
                         swordService.addDatasetContact(newDatasetVersion);
+                        /**
+                         * @todo uncomment when addDatasetSubject is working:
+                         * https://github.com/IQSS/dataverse/issues/921
+                         */
+//                        swordService.addDatasetSubject(newDatasetVersion);
 
                         List<String> createdFields = new ArrayList<>();
                         final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
