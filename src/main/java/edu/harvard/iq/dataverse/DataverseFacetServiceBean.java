@@ -15,7 +15,7 @@ import javax.persistence.Query;
  */
 @Stateless
 @Named
-public class DataverseFacetServiceBean {
+public class DataverseFacetServiceBean implements java.io.Serializable {
     
     public static final LruCache<Long,List<DataverseFacet>> cache = new LruCache();
     

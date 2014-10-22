@@ -11,7 +11,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 @Named
-public class DvObjectServiceBean {
+public class DvObjectServiceBean implements java.io.Serializable {
 	
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

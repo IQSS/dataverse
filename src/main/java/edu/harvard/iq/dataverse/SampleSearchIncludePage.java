@@ -5,6 +5,6 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named("SampleSearchIncludePage")
-public class SampleSearchIncludePage {
+public class SampleSearchIncludePage implements java.io.Serializable  {
 
 }

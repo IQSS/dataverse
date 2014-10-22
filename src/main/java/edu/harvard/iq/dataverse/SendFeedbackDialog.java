@@ -13,7 +13,7 @@ import org.hibernate.validator.constraints.Email;
  */
 @ViewScoped
 @Named
-public class SendFeedbackDialog {
+public class SendFeedbackDialog implements java.io.Serializable {
 
     String userEmail = "";
     String userMessage = "";

@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("AdvancedSearchPage")
-public class AdvancedSearchPage {
+public class AdvancedSearchPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(AdvancedSearchPage.class.getCanonicalName());
 

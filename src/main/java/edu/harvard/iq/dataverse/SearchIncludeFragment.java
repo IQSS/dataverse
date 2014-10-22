@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
-public class SearchIncludeFragment {
+public class SearchIncludeFragment implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(SearchIncludeFragment.class.getCanonicalName());
 

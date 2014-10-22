@@ -26,7 +26,7 @@ import javax.persistence.TypedQuery;
  */
 @Stateless
 @Named
-public class DataverseServiceBean {
+public class DataverseServiceBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB

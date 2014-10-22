@@ -16,7 +16,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named("PasswordResetPage")
-public class PasswordResetPage {
+public class PasswordResetPage implements java.io.Serializable  {
 
     private static final Logger logger = Logger.getLogger(PasswordResetPage.class.getCanonicalName());
 

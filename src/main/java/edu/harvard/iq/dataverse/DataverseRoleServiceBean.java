@@ -20,7 +20,7 @@ import javax.persistence.TypedQuery;
  */
 @Stateless
 @Named
-public class DataverseRoleServiceBean {
+public class DataverseRoleServiceBean implements java.io.Serializable {
 	
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

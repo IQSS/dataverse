@@ -33,7 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
  */
 @Stateless
 @Named
-public class DatasetServiceBean {
+public class DatasetServiceBean implements java.io.Serializable  {
 
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB

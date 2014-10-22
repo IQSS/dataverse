@@ -27,7 +27,7 @@ import javax.persistence.PersistenceContext;
  */
 @ViewScoped
 @Named
-public class ManageTemplatesPage {
+public class ManageTemplatesPage implements java.io.Serializable {
 
     @EJB
     DataverseServiceBean dvService;

@@ -20,7 +20,7 @@ import javax.persistence.Query;
  */
 @Stateless
 @Named
-public class DatasetFieldServiceBean {
+public class DatasetFieldServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

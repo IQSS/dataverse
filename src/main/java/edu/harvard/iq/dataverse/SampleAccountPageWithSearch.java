@@ -8,7 +8,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named("SampleAccountPageWithSearch")
-public class SampleAccountPageWithSearch {
+public class SampleAccountPageWithSearch implements java.io.Serializable  {
 
     private static final Logger logger = Logger.getLogger(SampleAccountPageWithSearch.class.getCanonicalName());
 

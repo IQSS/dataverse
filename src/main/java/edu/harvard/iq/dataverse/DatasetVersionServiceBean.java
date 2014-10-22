@@ -17,7 +17,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 @Named
-public class DatasetVersionServiceBean {
+public class DatasetVersionServiceBean implements java.io.Serializable {
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

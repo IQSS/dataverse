@@ -27,7 +27,7 @@ import javax.persistence.Query;
 
 @Stateless
 @Named
-public class DataFileServiceBean {
+public class DataFileServiceBean implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB

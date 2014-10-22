@@ -18,7 +18,7 @@ import org.apache.solr.client.solrj.response.TermsResponse.Term;
  * @todo: move to service bean
  */
 @Named
-public class AutoCompleteBean {
+public class AutoCompleteBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(AutoCompleteBean.class.getCanonicalName());
 
