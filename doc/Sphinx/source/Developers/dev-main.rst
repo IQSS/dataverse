@@ -27,7 +27,7 @@ Once some dataverses, datasets, and files have been created and indexed, you can
 Setting up your dev environment
 +++++++++++++++++++++++++++++++
 
-(This section HAS CHANGED!) Once you install glassfish4 and PostgresQL, you need to configure the environment for the dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you:
+Once you install Glassfish 4 and PostgreSQL, you need to configure the environment for the dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you:
 
 ``cd scripts/install``
 
@@ -44,7 +44,7 @@ All the future changes to the configuration that are Glassfish-specific and can 
 Rebuilding your dev environment
 +++++++++++++++++++++++++++++++
 
-(NOTE: this has also changed!) If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps: 
+If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps: 
 
 - drop your old database
 - clear out your existing Solr index: ``scripts/search/clear``
