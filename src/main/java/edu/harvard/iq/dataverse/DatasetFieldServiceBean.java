@@ -11,8 +11,9 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -94,6 +95,26 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public ControlledVocabularyValue findControlledVocabularyValue(Object pk) {
         return (ControlledVocabularyValue) em.find(ControlledVocabularyValue.class, pk);
     }        
+
+    /**
+     * @param dsft The DatasetFieldType in which to look up a
+     * ControlledVocabularyValue.
+     * @param strValue String value that may exist in a controlled vocabulary of
+     * the provided DatasetFieldType.
+     *
+     * @return The ControlledVocabularyValue found or null.
+     */
+    public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue) {
+        TypedQuery<ControlledVocabularyValue> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValue AS o WHERE o.strValue = :strvalue AND o.datasetFieldType = :dsft", ControlledVocabularyValue.class);
+        typedQuery.setParameter("strvalue", strValue);
+        typedQuery.setParameter("dsft", dsft);
+        try {
+            ControlledVocabularyValue cvv = typedQuery.getSingleResult();
+            return cvv;
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
+    }
     
     public DatasetFieldType save(DatasetFieldType dsfType) {
        return em.merge(dsfType);

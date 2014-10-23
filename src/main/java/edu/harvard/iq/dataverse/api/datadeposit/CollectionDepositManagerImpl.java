@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -14,7 +12,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -127,44 +124,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
 
-                        List<String> requiredFields = new ArrayList<>();
-                        final List<DatasetFieldType> requiredDatasetFieldTypes = datasetFieldService.findAllRequiredFields();
-                        for (DatasetFieldType requiredField : requiredDatasetFieldTypes) {
-                            requiredFields.add(requiredField.getName());
-                        }
-                        logger.info("required fields: " + requiredFields);
-
                         swordService.addDatasetContact(newDatasetVersion);
-                        /**
-                         * @todo uncomment when addDatasetSubject is working:
-                         * https://github.com/IQSS/dataverse/issues/921
-                         */
-//                        swordService.addDatasetSubject(newDatasetVersion);
-
-                        List<String> createdFields = new ArrayList<>();
-                        final List<DatasetField> createdDatasetFields = newDatasetVersion.getFlatDatasetFields();
-                        for (DatasetField createdField : createdDatasetFields) {
-                            createdFields.add(createdField.getDatasetFieldType().getName());
-                            logger.info(createdField.getDatasetFieldType().getName() + ":" + createdField.getValue());
-                        }
-                        logger.info("created fields: " + createdFields);
-
-                        boolean doRequiredFieldCheck = true;
-                        if (doRequiredFieldCheck) {
-                            for (String requiredField : requiredFields) {
-                                if (requiredField.equals("subject")) {
-                                    /**
-                                     * @todo the plan, for now anyway, is to
-                                     * silently choose "Other" for the user
-                                     */
-                                    logger.info("WARNING: required field \"subject\" not populated!");
-                                    break;
-                                }
-                                if (!createdFields.contains(requiredField)) {
-                                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't create/update dataset. " + SwordUtil.DCTERMS + " equivalent of required field not found: " + requiredField);
-                                }
-                            }
-                        }
+                        swordService.addDatasetSubject(newDatasetVersion);
 
                         Dataset createdDataset = null;
                         try {

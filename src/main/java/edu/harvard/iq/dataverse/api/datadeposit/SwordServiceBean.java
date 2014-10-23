@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -16,6 +17,8 @@ import javax.inject.Named;
 @Stateless
 @Named
 public class SwordServiceBean {
+
+    private static final Logger logger = Logger.getLogger(SwordServiceBean.class.getCanonicalName());
 
     @EJB
     DatasetFieldServiceBean datasetFieldService;
@@ -44,20 +47,21 @@ public class SwordServiceBean {
          * @todo Rather than hard coding "Other" here, inherit the Subject from
          * the parent dataverse, when it's available once
          * https://github.com/IQSS/dataverse/issues/769 has been implemented
-         *
-         * @todo is it safe to hard-code "13l" here?
-         *
-         * @todo why does this create two "Other" values under "Subject"?
          */
-        ControlledVocabularyValue cvv = new ControlledVocabularyValue(13l, "Other", subjectDatasetFieldType);
-        List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
-        controlledVocabularyValues.add(cvv);
-        subjectDatasetField.setControlledVocabularyValues(controlledVocabularyValues);
+        String subjectOther = "Other";
+        ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(subjectDatasetFieldType, subjectOther);
+        if (cvv != null) {
+            List<ControlledVocabularyValue> controlledVocabularyValues = new ArrayList();
+            controlledVocabularyValues.add(cvv);
+            subjectDatasetField.setControlledVocabularyValues(controlledVocabularyValues);
 
-        // add the new subject field to the rest of the fields
-        List<DatasetField> currentFields = datasetVersion.getDatasetFields();
-        currentFields.add(subjectDatasetField);
-        datasetVersion.setDatasetFields(currentFields);
+            // add the new subject field to the rest of the fields
+            List<DatasetField> currentFields = datasetVersion.getDatasetFields();
+            currentFields.add(subjectDatasetField);
+            datasetVersion.setDatasetFields(currentFields);
+        } else {
+            logger.info(subjectDatasetFieldType.getName() + "could not be populated with '" + subjectOther + "': null returned from lookup.");
+        }
     }
 
 }
