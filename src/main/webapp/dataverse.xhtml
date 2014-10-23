@@ -360,59 +360,6 @@
                         </ui:fragment>
                     </ui:fragment>
                     
-                    <!-- Roles + Permissions Popup -->
-                    <p:dialog header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
-                        <div class="alert alert-danger form-horizontal" role="alert">
-                            <div class="form-group" style="margin-bottom:0; padding-top:0;">
-                              <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
-                              <div class="col-sm-8 checkbox" style="padding-top:0;min-height:20px;">
-                                  <p:selectBooleanCheckbox  /> <span style="vertical-align:top;">Inherit all roles and permissions from parent dataverse.</span>
-                              </div>
-                            </div>
-                        </div>
-                        <p:tabView id="rolesPermissionsTabView" widgetVar="content" styleClass="popupSubTabParent">
-                            <p:tab id="permissionsTab" title="Permissions">
-                                <p:tabView id="permissionsSubTabView" widgetVar="subContent">
-                                    <p:tab id="usersGroupsSubTab" title="Users/Groups">
-                                        <div class="highlight">
-                                            <button type="button" class="btn btn-default" style="margin-right:1em;">Invite User</button> Invite a user to create a Dataverse account, and assign them a role to your dataverse.
-                                        </div>
-                                        <div class="highlight form-inline">
-                                            <div class="form-group">
-                                                <label class="control-label">User/Group Name</label> <p:inputText id="userGroupNameAssign" styleClass="form-control"/>
-                                                <label class="control-label">Role</label> 
-                                                <p:selectOneMenu id="assignRoleOptions" styleClass="form-control">
-                                                    <f:selectItem id="one" itemLabel="One" itemValue="One" />
-                                                    <f:selectItem id="two" itemLabel="Two" itemValue="Two" />
-                                                    <f:selectItem id="three" itemLabel="Three" itemValue="Three" />
-                                                </p:selectOneMenu>
-                                                <button type="button" class="btn btn-default">Assign</button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            DATATABLE
-                                        </div>
-                                    </p:tab>
-                                </p:tabView>
-                                <div>
-                                    <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
-                                        <h:outputText value="Visit Old Roles + Permissions Page" />
-                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                        <f:param name="objectType" value="USERS" />
-                                    </h:link>
-                                </div>
-                            </p:tab>
-                            <p:tab id="GroupsTab" title="Groups">
-                                <!-- FORM -->
-                                Groups
-                            </p:tab>
-                            <p:tab id="rolesTab" title="Roles">
-                                <!-- FORM -->
-                                Roles
-                            </p:tab>
-                        </p:tabView>
-                        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="rolesPermissionsForm.hide()" value="Done">Done</button>
-                    </p:dialog>
 
                     <!-- Browsing Options Popup -->
                     <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
@@ -437,7 +384,8 @@
                     </p:dialog>
 
                     <ui:include src="themeAndWidgetsFragment.xhtml"/>
-
+                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    
                     <!-- Publish Confirmation Popup -->
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
                         <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
