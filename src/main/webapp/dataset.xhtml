@@ -907,6 +907,7 @@
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
                                      update=":datasetForm"
+                                     oncomplete="javascript:bind_bsui_components();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
                 </h:form>
