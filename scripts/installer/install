@@ -354,10 +354,11 @@ while (<DATATEMPLATEIN>) {
 close DATATEMPLATEIN;
 close SQLDATAOUT;
 
-# 3. CHECK POSTGRES AVAILABILITY:
+# 3. CHECK POSTGRES AND JQ AVAILABILITY:
 
 my $pg_local_connection = 0;
 my $psql_exec;
+my $jq_exec = "";
 my $pg_major_version = 0;
 my $pg_minor_version = 0;
 
@@ -394,6 +395,18 @@ if ( $CONFIG_DEFAULTS{'POSTGRES_SERVER'} eq 'localhost' ) {
             $psql_exec = $sys_path_dir;
             last;
         }
+    }
+
+    for my $sys_path_dir (@sys_path_dirs) {
+        if ( -x $sys_path_dir . "/jq" ) {
+            $jq_exec = $sys_path_dir;
+            last;
+        }
+    }
+    if ( $jq_exec eq "" ) {
+        print STDERR "\nERROR: I haven't been able to find the jq command in your PATH! Please install it from http://stedolan.github.io/jq/\n";
+        exit 1;
+
     }
 
     my $psql_major_version = 0;
