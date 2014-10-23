@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,6 +25,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
     private static final Logger logger = Logger.getLogger(ServiceDocumentManagerImpl.class.getCanonicalName());
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    PermissionServiceBean permissionService;
     @Inject
     SwordAuth swordAuth;
     @Inject
@@ -52,33 +56,26 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             ServiceDocument serviceDocument = new ServiceDocument();
             return serviceDocument;
         }
-        /**
-         * @todo All dataverses? listing all dataverse here is horribly
-         * inefficient. We need the equivalent of this from 3.x:
-         *
-         * List<VDC> vdcList = vdcService.getUserVDCs(vdcUser.getId());
-         */
-        List<Dataverse> allDataverses = dataverseService.findAll();
-        for (Dataverse dataverse : allDataverses) {
-            if (swordAuth.hasAccessToModifyDataverse(user, dataverse)) {
-                String dvAlias = dataverse.getAlias();
-                if (dvAlias != null && !dvAlias.isEmpty()) {
-                    SwordCollection swordCollection = new SwordCollection();
-                    swordCollection.setTitle(dataverse.getName());
-                    swordCollection.setHref(hostnamePlusBaseUrl + "/collection/dataverse/" + dvAlias);
-                    swordCollection.addAcceptPackaging(UriRegistry.PACKAGE_SIMPLE_ZIP);
-                    /**
-                     * @todo for backwards-compatibility with DVN 3.x, display
-                     * terms of uses for root dataverse and the dataverse we are
-                     * iterating over. What if the root dataverse is not the
-                     * direct parent of the dataverse we're iterating over? Show
-                     * the terms of use each generation back to the root?
-                     *
-                     * See also https://github.com/IQSS/dataverse/issues/551
-                     */
-                    // swordCollection.setCollectionPolicy(dvnNetworkName + " deposit terms of use: " + vdcNetworkService.findRootNetwork().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
-                    swordWorkspace.addCollection(swordCollection);
-                }
+
+        List<Dataverse> dataverses = permissionService.getDataversesUserHasPermissionOn(user, Permission.AddDataset);
+        for (Dataverse dataverse : dataverses) {
+            String dvAlias = dataverse.getAlias();
+            if (dvAlias != null && !dvAlias.isEmpty()) {
+                SwordCollection swordCollection = new SwordCollection();
+                swordCollection.setTitle(dataverse.getName());
+                swordCollection.setHref(hostnamePlusBaseUrl + "/collection/dataverse/" + dvAlias);
+                swordCollection.addAcceptPackaging(UriRegistry.PACKAGE_SIMPLE_ZIP);
+                /**
+                 * @todo for backwards-compatibility with DVN 3.x, display terms
+                 * of uses for root dataverse and the dataverse we are iterating
+                 * over. What if the root dataverse is not the direct parent of
+                 * the dataverse we're iterating over? Show the terms of use
+                 * each generation back to the root?
+                 *
+                 * See also https://github.com/IQSS/dataverse/issues/551
+                 */
+                // swordCollection.setCollectionPolicy(dvnNetworkName + " deposit terms of use: " + vdcNetworkService.findRootNetwork().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
+                swordWorkspace.addCollection(swordCollection);
             }
         }
         service.addWorkspace(swordWorkspace);
