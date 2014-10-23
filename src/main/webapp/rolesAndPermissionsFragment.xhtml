@@ -5,7 +5,7 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui">
     <!-- Roles + Permissions Popup -->
-    <p:dialog header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
+    <p:dialog header="Roles + Permissions" rendered="#{dataverse.id != null}" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
         <div class="alert alert-danger form-horizontal" role="alert">
             <div class="form-group" style="margin-bottom:0; padding-top:0;">
                 <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
@@ -58,6 +58,11 @@
                             </p:dataTable>
                         </div>
                     </p:tab>
+                    <p:tab id="dataversesSubTab" title="Dataverses">
+                        
+                    </p:tab>
+                    <p:tab id="datasetsSubTab" title="Datasets"></p:tab>
+                    <p:tab id="filesSubTab" title="Files"></p:tab>
                 </p:tabView>
                 <div>
                     <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
