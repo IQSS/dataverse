@@ -66,6 +66,9 @@ public class EjbDataverseEngine {
         
         @EJB
 	TemplateServiceBean templateService; 
+        
+        @EJB
+	DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels; 
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -155,6 +158,11 @@ public class EjbDataverseEngine {
                                 @Override
 				public TemplateServiceBean templates() {
 					return templateService;
+				}
+                                
+                                @Override
+				public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels() {
+					return fieldTypeInputLevels;
 				}
 				@Override
 				public DataverseEngine engine() { 

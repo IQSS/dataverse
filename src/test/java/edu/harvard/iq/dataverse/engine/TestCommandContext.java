@@ -73,6 +73,12 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
         
+        @Override
+	public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels() {
+		return null;
+	}
+        
+        
 	@Override
 	public DataverseEngine engine() { return new TestDataverseEngine(this); }
 

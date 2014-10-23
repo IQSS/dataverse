@@ -111,7 +111,9 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
     @EJB
-    BuiltinUserServiceBean builtinUserService;      
+    BuiltinUserServiceBean builtinUserService;  
+    @EJB
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;  
     
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -321,16 +323,31 @@ public class DatasetPage implements java.io.Serializable {
         selectedTemplate = (Template) event.getNewValue();
         if (selectedTemplate != null) {
             workingVersion = dataset.getEditVersion(selectedTemplate);
+            updateDatasetFieldInputLevels();
         } else {
-
             dataset = new Dataset();
             workingVersion = dataset.getLatestVersion();
+            updateDatasetFieldInputLevels();
             dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             dataset.setOwner(dataverseService.find(ownerId));
-
         }
-
         resetVersionUI();
+    }
+    
+    private void updateDatasetFieldInputLevels(){
+        for (DatasetField dsf: workingVersion.getDatasetFields()){
+           System.out.print(dsf.getDatasetFieldType().getDisplayName());
+           DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerId, dsf.getDatasetFieldType().getId());
+           if (dsfIl != null){
+               System.out.print("not null " + dsf.getDatasetFieldType().getDisplayName());
+               dsf.setRequired(dsfIl.isRequired());
+               dsf.setInclude(dsfIl.isInclude());
+           } else {
+               System.out.print("null " + dsf.getDatasetFieldType().getDisplayName());
+               dsf.setRequired(dsf.getDatasetFieldType().isRequired());
+               dsf.setInclude(true);
+           }                     
+        }
     }
 
     public void handleChange() {
@@ -425,14 +442,17 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
                 workingVersion = dataset.getLatestVersion();
+                updateDatasetFieldInputLevels();
             } else {
                 workingVersion = datasetVersionService.find(versionId);
+                updateDatasetFieldInputLevels();
             }
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
             try {
                 datasetVersionUI = new DatasetVersionUI(workingVersion);
+                updateDatasetFieldInputLevels();
             } catch (NullPointerException npe) {
                 //This will happen when solr is down and will allow any link to be displayed.
                 throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
@@ -461,8 +481,10 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
                 workingVersion = dataset.getEditVersion(selectedTemplate);
+                updateDatasetFieldInputLevels();
             } else {
                 workingVersion = dataset.getLatestVersion();
+                updateDatasetFieldInputLevels();
             }
             dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             dataset.setOwner(dataverseService.find(ownerId));

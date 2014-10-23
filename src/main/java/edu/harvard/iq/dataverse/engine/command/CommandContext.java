@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseFacetServiceBean;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevelServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -45,10 +46,12 @@ public interface CommandContext {
 	
 	public DataverseFacetServiceBean facets(); 
         
-        public FeaturedDataverseServiceBean featuredDataverses();
+        public FeaturedDataverseServiceBean featuredDataverses();       
         
         public DataFileServiceBean files(); 
         
         public TemplateServiceBean templates();
+        
+        public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
 	
 }

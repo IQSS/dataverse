@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
@@ -21,8 +22,10 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	private final Dataverse editedDv;
 	private final List<DatasetFieldType> facetList;
         private final List<Dataverse> featuredDataverseList;
+        private final List<DataverseFieldTypeInputLevel> inputLevelList;
 
-	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, User aUser) {
+	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
+                    User aUser,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
 		super(aUser, editedDv);
 		this.editedDv = editedDv;
                 // add update template uses this command but does not
@@ -36,7 +39,12 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
                     this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
                 } else {
                     this.featuredDataverseList = null;
-                }                
+                }
+                if (inputLevelList != null){
+                   this.inputLevelList = new ArrayList<>(inputLevelList); 
+                } else {
+                   this.inputLevelList = null;
+                }
 	}
 	
 	@Override
@@ -52,16 +60,17 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
         if ( featuredDataverseList != null ) {
-            System.out.print("List not null");
             ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
             int i=0;
             for ( Object obj : featuredDataverseList ) {
-                System.out.print("in loop");
-                System.out.print(obj);
-                System.out.print("string " + obj.toString());
-                System.out.print("class " + obj.getClass());
                 Dataverse dv = (Dataverse) obj;
                 ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
+            }
+        }
+        if ( inputLevelList != null ) {
+            ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
+            for ( DataverseFieldTypeInputLevel obj : inputLevelList ) {               
+                ctxt.fieldTypeInputLevels().create(obj);
             }
         }
 		ctxt.index().indexDataverse(result);

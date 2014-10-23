@@ -27,7 +27,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         DatasetFieldType dsfType = value.getDatasetFieldType();
         //SEK Additional logic turns off validation for templates
         //TODO more needs to be done for 'multi-layer' compound fields
-        if (dsfType.isPrimitive() && dsfType.isRequired() && value.getTemplate() == null && StringUtils.isBlank(value.getValue())) {
+        if (dsfType.isPrimitive() && value.isRequired() && value.getTemplate() == null && StringUtils.isBlank(value.getValue())) {
             if (value.getParentDatasetFieldCompoundValue() != null && value.getParentDatasetFieldCompoundValue().getParentDatasetField().getTemplate() != null){
                 return true;
             }
