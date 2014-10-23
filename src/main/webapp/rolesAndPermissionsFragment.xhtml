@@ -72,7 +72,7 @@
                 Groups
             </p:tab>
             <p:tab id="rolesTab" title="Roles">
-                <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true">
+                <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
                     <div style="float:right; margin-bottom:.5em;">
                         <p:commandLink styleClass="btn btn-default" actionListener="#{DataversePage.createNewRole}"
                                        update=":#{p:component('editRolePanel')}"
@@ -103,7 +103,7 @@
                         </ui:repeat>
                     </div>
                 </p:panel>
-                <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole" visible="false" toggleable="true" closable="true">
+                <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole" visible="false" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
                     <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
                         <div class="row form-horizontal">
                             <div class="col-xs-6 form-group">
@@ -150,8 +150,15 @@
                         </h:selectManyCheckbox>
                     </p:panel>
                     <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
-                        <p:commandButton value="Save Role" actionListener="#{DataversePage.updateRole}" 
-                                         update="rolePanel" oncomplete="editRole.close();roles.show();"/>
+                        <p:commandLink styleClass="btn btn-default" 
+                                       value="Save Role" 
+                                       actionListener="#{DataversePage.updateRole}"
+                                       update="rolePanel"
+                                       oncomplete="editRole.close();roles.show();"
+                                       style="color:black;margin-right:0.5em;"/>                       
+                        <button type="button" style="color:black;margin-right:0.5em;" class="btn btn-default" onclick="editRole.close();
+                                roles.show();" value="Cancel">Cancel</button>
+
                     </p:panel>
                 </p:panel>
             </p:tab>
