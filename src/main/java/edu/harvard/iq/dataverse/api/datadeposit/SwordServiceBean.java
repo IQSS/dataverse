@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.swordapp.server.SwordError;
+import org.swordapp.server.UriRegistry;
 
 @Stateless
 @Named
@@ -62,6 +64,79 @@ public class SwordServiceBean {
         } else {
             logger.info(subjectDatasetFieldType.getName() + "could not be populated with '" + subjectOther + "': null returned from lookup.");
         }
+    }
+
+    public void doRequiredFieldCheck(DatasetVersion dataset) throws SwordError {
+        List<String> requiredFields = new ArrayList<>();
+        /**
+         * @todo call into a method (once it exists) that pays attention to
+         * which fields are required for the dataset passed in rather thatn
+         * findAllRequiredFields() which check *all* metadata blocks. Without
+         * this method in place, we simply skip over all the GSD fields during
+         * the check below. See also
+         * https://github.com/IQSS/dataverse/issues/268#issuecomment-60301025
+         *
+         * Alternatively, remove this entire doRequiredFieldCheck method when
+         * CreateDatasetCommand and UpdateDatasetCommand throw
+         * IllegalCommandException("Can't create or update dataset because the
+         * following required fields were not supplied: description, subject")
+         * as suggested at
+         * https://github.com/IQSS/dataverse/issues/605#issuecomment-60297583
+         */
+        final List<DatasetFieldType> requiredDatasetFieldTypes = datasetFieldService.findAllRequiredFields();
+        for (DatasetFieldType requiredField : requiredDatasetFieldTypes) {
+            requiredFields.add(requiredField.getName());
+        }
+
+        List<String> createdFields = new ArrayList<>();
+        final List<DatasetField> createdDatasetFields = dataset.getFlatDatasetFields();
+        for (DatasetField createdField : createdDatasetFields) {
+            createdFields.add(createdField.getDatasetFieldType().getName());
+            logger.info(createdField.getDatasetFieldType().getName() + ":" + createdField.getValue());
+        }
+        logger.info("created fields: " + createdFields);
+
+        for (String requiredField : requiredFields) {
+            /**
+             * @todo see the node about findAllRequiredFields() above
+             */
+            if (requiredField.equals("gsdStudentName")) {
+                continue;
+            }
+            if (requiredField.equals("gsdStudentProgram")) {
+                continue;
+            }
+            if (requiredField.equals("gsdCourseName")) {
+                continue;
+            }
+            if (requiredField.equals("gsdFacultyName")) {
+                continue;
+            }
+            if (requiredField.equals("gsdSemester")) {
+                continue;
+            }
+            if (requiredField.equals("gsdRecommendation")) {
+                continue;
+            }
+            if (requiredField.equals("gsdSiteType")) {
+                continue;
+            }
+            if (requiredField.equals("gsdProgramBrief")) {
+                continue;
+            }
+            if (requiredField.equals("gsdTags")) {
+                continue;
+            }
+            if (!createdFields.contains(requiredField)) {
+                /**
+                 * @todo It would be nicer to return not our internal name for
+                 * the metadata field (authorName) and instead the SWORD
+                 * equivalent (dcterms:creator).
+                 */
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't create/update dataset. " + SwordUtil.DCTERMS + " equivalent of required field not found: " + requiredField);
+            }
+        }
+
     }
 
 }
