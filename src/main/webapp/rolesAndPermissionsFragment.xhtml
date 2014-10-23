@@ -1,0 +1,163 @@
+<div 
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:p="http://primefaces.org/ui">
+    <!-- Roles + Permissions Popup -->
+    <p:dialog header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
+        <div class="alert alert-danger form-horizontal" role="alert">
+            <div class="form-group" style="margin-bottom:0; padding-top:0;">
+                <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
+                <div class="col-sm-8 checkbox" style="padding-top:0;min-height:20px;">
+                    <p:selectBooleanCheckbox  /> <span style="vertical-align:top;">Inherit all roles and permissions from parent dataverse.</span>
+                </div>
+            </div>
+        </div>
+        <p:tabView id="rolesPermissionsTabView" widgetVar="permissionsContent" styleClass="popupSubTabParent">
+            <p:tab id="permissionsTab" title="Permissions">
+                <p:tabView id="permissionsSubTabView" widgetVar="subContent">
+                    <p:tab id="usersGroupsSubTab" title="Users/Groups">
+                        <div class="highlight">
+                            <button type="button" class="btn btn-default" style="margin-right:1em;">Invite User</button> Invite a user to create a Dataverse account, and assign them a role to your dataverse.
+                        </div>
+                        <div class="highlight form-inline">
+                            <div class="form-group">
+                                <label class="control-label">User/Group Name</label>
+                                <p:inputText id="userGroupNameAssign" styleClass="form-control" value="#{DataversePage.assignRoleUsername}"/>
+                                <label class="control-label">Role</label> 
+                                <p:selectOneMenu id="assignRoleOptions" styleClass="form-control" value="#{DataversePage.assignRoleRoleId}">
+                                    <f:selectItems value="#{DataversePage.availableRoles}" var="role"
+                                                   itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
+                                </p:selectOneMenu>
+                                <p:commandLink styleClass="btn btn-default" 
+                                               value="Assign" 
+                                               actionListener="#{DataversePage.assignRole}"
+                                               update="assignedRoles"
+                                               style="color:black;margin-right:0.5em;"/>
+                            </div>
+                        </div>
+                        <div>
+                            <p:dataTable id="assignedRoles" var="roleAssignment" value="#{DataversePage.roleAssignments}">
+                                <p:column width="35%" sortBy="name" headerText="User / Group">
+                                    <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title} " />
+                                </p:column>
+                                <p:column width="15%" sortBy="createDate" headerText="Role">
+                                    <h:outputText value="#{roleAssignment.roleName} " />
+                                </p:column>
+                                <p:column width="10%" sortBy="usageCount" headerText="Object">
+                                    <h:outputText value="#{roleAssignment.assignedDvName}" />
+                                </p:column>
+                                <p:column width="40%" headerText="Action">
+                                    <p:commandLink styleClass="btn btn-default" 
+                                                   value="Revoke" 
+                                                   action="#{DataversePage.revokeRole(roleAssignment.id)}"
+                                                   update="assignedRoles"
+                                                   style="color:black;margin-right:0.5em;"/>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </p:tab>
+                </p:tabView>
+                <div>
+                    <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
+                        <h:outputText value="Visit Old Roles + Permissions Page" />
+                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
+                        <f:param name="objectType" value="USERS" />
+                    </h:link>
+                </div>
+            </p:tab>
+            <p:tab id="GroupsTab" title="Groups">
+                <!-- FORM -->
+                Groups
+            </p:tab>
+            <p:tab id="rolesTab" title="Roles">
+                <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true">
+                    <div style="float:right; margin-bottom:.5em;">
+                        <p:commandLink styleClass="btn btn-default" actionListener="#{DataversePage.createNewRole}"
+                                       update=":#{p:component('editRolePanel')}"
+                                       oncomplete="roles.close();editRole.show();">
+
+                            <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
+                            <h:outputText value="Create Role"/>
+                        </p:commandLink>
+                    </div>
+                    <div>
+                        <ui:repeat id="roleList" value="#{DataversePage.roles}" var="role" rendered="#{DataversePage.hasRoles}">
+                            <f:passThroughAttribute name="class" value="list-unstyled" />
+                            <div class="bg-info" style="margin-bottom:1em;padding:5px;">
+                                <span style="font-weight:bold">#{role.name}</span>
+                                <p:commandLink title="Edit role" style="margin-left:1em;"
+                                               actionListener="#{DataversePage.editRole(role.id)}"
+                                               update=":#{p:component('editRolePanel')}"
+                                               oncomplete="roles.close();editRole.show();">
+                                    <span class="glyphicon glyphicon-pencil"></span></p:commandLink>
+
+
+                                <div>
+                                    <ui:repeat value="#{role.permissions().toArray()}" var="prm">
+                                        <span class="label label-default">#{prm}</span>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </p:panel>
+                <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole" visible="false" toggleable="true" closable="true">
+                    <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
+                        <div class="row form-horizontal">
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the role.">Name</label>
+                                <div class="col-sm-9">
+                                    <p:panelGrid columns="2">
+                                        <p:inputText id="roleName" value="#{DataversePage.role.name}"/>
+                                        <p:message for="roleName"/>
+                                    </p:panelGrid>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Enter a name for the alias.">Alias</label>
+                                <div class="col-sm-9">
+                                    <p:panelGrid columns="2">
+                                        <p:inputText id="roleAlias" value="#{DataversePage.role.alias}"/>
+                                        <p:message for="roleAlias"/>
+                                    </p:panelGrid>
+                                </div>
+                            </div>
+                            <div class="col-xs-6 form-group">
+                                <label class="col-sm-3 control-label tooltiplabel right" for="roleName" data-toggle="tooltip" data-container="body" data-placement="auto right" data-original-title="Describe the role (1000 characters max).">Description</label>
+                                <div class="col-sm-9">
+                                    <p:panelGrid columns="2">
+                                        <h:panelGroup>
+                                            <p:inputTextarea id="roleDescription" value="#{DataversePage.role.description}"
+                                                             rows="5" cols="50" counter="counter" maxlength="1000"
+                                                             counterTemplate="{0} characters remaining" autoResize="false"/>
+                                            <h:outputText id="counter" style="display:block;"/>
+                                        </h:panelGroup>
+                                        <p:message for="roleDescription"/>
+                                    </p:panelGrid>
+                                </div>
+                            </div>
+                        </div>
+                    </p:panel>
+                    <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock" header="Role Permissions" toggleable="true">
+                        <h:selectManyCheckbox value="#{DataversePage.selectedPermissions}"
+                                              layout="pageDirection">
+                            <f:selectItems value="#{DataversePage.permissions}" var="pmsn"
+                                           itemLabel="#{pmsn.humanName} (#{pmsn.name()})"
+                                           itemValue="#{pmsn.name()}"
+                                           />
+                        </h:selectManyCheckbox>
+                    </p:panel>
+                    <p:panel id="editRoleButtonPanel" styleClass="panelLayoutButtonBlock">
+                        <p:commandButton value="Save Role" actionListener="#{DataversePage.updateRole}" 
+                                         update="rolePanel" oncomplete="editRole.close();roles.show();"/>
+                    </p:panel>
+                </p:panel>
+            </p:tab>
+        </p:tabView>
+        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="rolesPermissionsForm.hide()" value="Done">Done</button>
+    </p:dialog>
+
+
+</div>
