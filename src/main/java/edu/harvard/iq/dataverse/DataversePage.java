@@ -6,12 +6,20 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.UserNotification.Type;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
@@ -31,6 +39,14 @@ import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -65,6 +81,13 @@ public class DataversePage implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     FeaturedDataverseServiceBean featuredDataverseService;
+    @EJB
+    DataverseRoleServiceBean roleService;
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeService;
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    EntityManager em;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -127,7 +150,7 @@ public class DataversePage implements java.io.Serializable {
                 }
             }
         }
-        
+
         List<DatasetFieldType> facetsSource = new ArrayList<>();
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
 
@@ -157,11 +180,10 @@ public class DataversePage implements java.io.Serializable {
     // this method will need to be moved somewhere else, possibly some
     // equivalent of the old VDCRequestBean - but maybe application-scoped?
     // -- L.A. 4.0 beta
-    
     public String getDataverseSiteUrl() {
         String hostUrl = System.getProperty("dataverse.siteUrl");
         if (hostUrl != null && !"".equals(hostUrl)) {
-            return hostUrl; 
+            return hostUrl;
         }
         String hostName = System.getProperty("dataverse.fqdn");
         if (hostName == null) {
@@ -171,11 +193,10 @@ public class DataversePage implements java.io.Serializable {
                 return null;
             }
         }
-        hostUrl = "https://"+hostName;
+        hostUrl = "https://" + hostName;
         return hostUrl;
     }
-    
-    
+
     public List<Dataverse> getCarouselFeaturedDataverses() {
         List<Dataverse> retList = new ArrayList();
         List<DataverseFeaturedDataverse> featuredList = featuredDataverseService.findByDataverseId(dataverse.getId());
@@ -213,8 +234,8 @@ public class DataversePage implements java.io.Serializable {
 
         try {
             dataverse = commandEngine.submit(cmd);
-            if ( session.getUser() instanceof AuthenticatedUser ) {
-                userNotificationService.sendNotification((AuthenticatedUser)session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
+            if (session.getUser() instanceof AuthenticatedUser) {
+                userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataverse.getCreateDate(), Type.CREATEDV, dataverse.getId());
             }
             editMode = null;
         } catch (CommandException ex) {
@@ -372,4 +393,170 @@ public class DataversePage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
+
+    /* permissions tab related methods */
+    private String assignRoleUsername;
+    private Long assignRoleRoleId;
+
+    public List<DataverseRole> getAvailableRoles() {
+        List<DataverseRole> roles = new LinkedList<>();
+        for (Map.Entry<Dataverse, Set<DataverseRole>> e
+                : roleService.availableRoles(getDataverse().getId()).entrySet()) {
+            for (DataverseRole aRole : e.getValue()) {
+                roles.add(aRole);
+            }
+        }
+        Collections.sort(roles, DataverseRole.CMP_BY_NAME);
+        return roles;
+    }
+
+    public List<DataversePage.RoleAssignmentRow> getRoleAssignments() {
+        Set<RoleAssignment> ras = roleService.rolesAssignments(getDataverse());
+        List<DataversePage.RoleAssignmentRow> raList = new ArrayList<>(ras.size());
+        for (RoleAssignment ra : ras) {
+            raList.add(new DataversePage.RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));
+        }
+
+        return raList;
+    }
+
+    public void assignRole(ActionEvent evt) {
+        RoleAssignee roas = roleAssigneeService.getRoleAssignee(getAssignRoleUsername());
+        DataverseRole r = roleService.find(getAssignRoleRoleId());
+
+        try {
+            commandEngine.submit(new AssignRoleCommand(roas, r, getDataverse(), session.getUser()));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + roas.getDisplayInfo().getTitle() + " on " + getDataverse().getName());
+        } catch (CommandException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
+        }
+    }
+
+    public void revokeRole(Long roleAssignmentId) {
+        try {
+            commandEngine.submit(new RevokeRoleCommand(em.find(RoleAssignment.class, roleAssignmentId), session.getUser()));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role assignment revoked successfully");
+        } catch (PermissionException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment - you're missing permission", ex.getRequiredPermissions().toString());
+            logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
+
+        } catch (CommandException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot revoke role assignment: " + ex.getMessage());
+            logger.log(Level.SEVERE, "Error revoking role assignment: " + ex.getMessage(), ex);
+        }
+    }
+
+    public String getAssignRoleUsername() {
+        return assignRoleUsername;
+    }
+
+    public void setAssignRoleUsername(String assignRoleUsername) {
+        this.assignRoleUsername = assignRoleUsername;
+    }
+
+    public Long getAssignRoleRoleId() {
+        return assignRoleRoleId;
+    }
+
+    public void setAssignRoleRoleId(Long assignRoleRoleId) {
+        this.assignRoleRoleId = assignRoleRoleId;
+    }
+
+    public static class RoleAssignmentRow {
+
+        private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
+        private final RoleAssignment ra;
+
+        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
+            ra = anRa;
+            assigneeDisplayInfo = disInf;
+        }
+
+        public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
+            return assigneeDisplayInfo;
+        }
+
+        public DataverseRole getRole() {
+            return ra.getRole();
+        }
+
+        public Dataverse getAssignDv() {
+            return (Dataverse) ra.getDefinitionPoint();
+        }
+
+        public String getRoleName() {
+            return getRole().getName();
+        }
+
+        public String getAssignedDvName() {
+            return getAssignDv().getName();
+        }
+
+        public Long getId() {
+            return ra.getId();
+        }
+
+    }
+
+    /* Roles tab related methods */
+    private DataverseRole role = new DataverseRole();
+    private List<String> selectedPermissions;    
+
+    public List<Permission> getPermissions() {
+        return Arrays.asList(Permission.values());
+    }    
+    
+    public List<DataverseRole> getRoles() {
+        return roleService.findByOwnerId(dataverse.getId());
+    }
+
+    public boolean isHasRoles() {
+        return !getRoles().isEmpty();
+    }
+       
+    public void createNewRole(ActionEvent e) {
+        setRole(new DataverseRole());
+    }
+
+    public void editRole(String roleId) {
+        setRole(roleService.find(Long.parseLong(roleId)));
+    }
+
+    public void updateRole(ActionEvent e) {
+        role.setOwner(getDataverse());
+        role.clearPermissions();
+        for (String pmsnStr : getSelectedPermissions()) {
+            role.addPermission(Permission.valueOf(pmsnStr));
+        }
+        try {
+            setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), getDataverse())));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+        } catch (CommandException ex) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
+            Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public DataverseRole getRole() {
+        return role;
+    }
+    
+    public void setRole(DataverseRole role) {
+        this.role = role;
+        selectedPermissions = new LinkedList<>();
+        if (role != null) {
+            for (Permission p : role.permissions()) {
+                selectedPermissions.add(p.name());
+            }
+        }
+    }     
+
+    public List<String> getSelectedPermissions() {
+        return selectedPermissions;
+    }
+
+    public void setSelectedPermissions(List<String> selectedPermissions) {
+        this.selectedPermissions = selectedPermissions;
+    }
+
 }
