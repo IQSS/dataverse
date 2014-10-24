@@ -335,7 +335,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void updateDatasetFieldInputLevels(){
-        for (DatasetField dsf: workingVersion.getDatasetFields()){         
+        for (DatasetField dsf: workingVersion.getDatasetFields()){ 
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerId, dsf.getDatasetFieldType().getId());
            if (dsfIl != null){
                dsf.setRequired(dsfIl.isRequired());
@@ -343,7 +343,7 @@ public class DatasetPage implements java.io.Serializable {
            } else {
                dsf.setRequired(dsf.getDatasetFieldType().isRequired());
                dsf.setInclude(true);
-           }                     
+           }  
         }
     }
 
@@ -550,6 +550,7 @@ public class DatasetPage implements java.io.Serializable {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             datasetVersionUI = new DatasetVersionUI(workingVersion);
+            updateDatasetFieldInputLevels();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }
