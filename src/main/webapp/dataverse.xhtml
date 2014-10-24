@@ -215,12 +215,12 @@
                                             </label>
                                         </div>
                                         </ui:fragment>
-                                        <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes}"
+                                        <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes and mdb.selected}"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
                                                     <h:outputText value="Update Fields" />
                                         </p:commandLink>
-                                        <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes}"
+                                        <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes and mdb.selected}"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
                                                     <h:outputText value="Hide Fields" />
