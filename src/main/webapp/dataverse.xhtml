@@ -316,7 +316,8 @@
 
                                     <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                 itemLabel="#{facet.displayName}" itemValue="#{facet}" 
-                                                rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
+                                                disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
+                                                rendered="true"/>
                                 </div>
                             </div>
                         </div>
