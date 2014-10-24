@@ -360,7 +360,10 @@
                                                 </li>
                                             </ui:fragment>
                                             <li>
-                                                <p:commandLink id="rolesPermissionsOpts" onclick="rolesPermissionsForm.show()">
+                                                <p:commandLink id="rolesPermissionsOpts" 
+                                                               actionListener="#{rolePermissionFragment.setDvObject(DataversePage.dataverse)}" 
+                                                               update="rolesPermissionsDialog"
+                                                               oncomplete="rolesPermissionsForm.show()">
                                                     <h:outputText value="Roles + Permissions" />
                                                 </p:commandLink>
                                             </li>
