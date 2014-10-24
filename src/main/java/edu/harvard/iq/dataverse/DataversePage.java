@@ -225,6 +225,10 @@ public class DataversePage implements java.io.Serializable {
         }
     }
     
+    public void refresh(){
+        
+    }
+    
     public void showDatasetFieldTypes(Long  mdbId) {
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){

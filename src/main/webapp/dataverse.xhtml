@@ -175,7 +175,7 @@
                                     </ui:fragment>
                                     
                                     <ui:repeat value="#{DataversePage.allMetadataBlocks}"  var="mdb">
-                                        <ui:fragment rendered="#{mdb.required and DataversePage.inheritMetadataBlockFromParent  }">
+                                        <ui:fragment rendered="#{mdb.required }">
                                         <div class="checkbox" >
                                             <label>
                                                 <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}"                                                    
@@ -185,20 +185,12 @@
                                             </label>
                                         </div>
                                         </ui:fragment>
-                                         <ui:fragment rendered="#{mdb.required and !DataversePage.inheritMetadataBlockFromParent  }">
-                                        <div class="checkbox" >
-                                            <label>
-                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}"                                                    
-                                                       name="mdbSelectRequiredNotInherited" disabled="disabled" checked="checked" />
-                                                <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
-                                                              />
-                                            </label>
-                                        </div>
-                                        </ui:fragment>
+
                                        <ui:fragment rendered="#{!mdb.required and DataversePage.inheritMetadataBlockFromParent  }">
                                         <div class="checkbox" >
                                             <label>
-                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}"                                                    
+                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}" onclick="updateInclude();"    
+                                                                                                      
                                                        name="mdbSelectRequiredInherited" disabled="disabled"  />
                                                 <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
                                                               />
@@ -208,19 +200,20 @@
                                         <ui:fragment rendered="#{!mdb.required and !DataversePage.inheritMetadataBlockFromParent}">
                                         <div class="checkbox" >
                                             <label>
-                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"                                                    
+                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"  onclick="updateInclude();"                                                      
+                                                        
                                                        name="mdbSelectOptional"  />
                                                 <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
                                                               />
                                             </label>
                                         </div>
                                         </ui:fragment>
-                                        <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes }"
+                                        <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes and mdb.selected }"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
                                                     <h:outputText value="Update Fields" />
                                         </p:commandLink>
-                                        <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes }"
+                                        <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes and mdb.selected  }"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
                                                     <h:outputText value="Hide Fields" />
