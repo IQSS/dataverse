@@ -335,15 +335,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void updateDatasetFieldInputLevels(){
-        for (DatasetField dsf: workingVersion.getDatasetFields()){
-           System.out.print(dsf.getDatasetFieldType().getDisplayName());
+        for (DatasetField dsf: workingVersion.getDatasetFields()){         
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerId, dsf.getDatasetFieldType().getId());
            if (dsfIl != null){
-               System.out.print("not null " + dsf.getDatasetFieldType().getDisplayName());
                dsf.setRequired(dsfIl.isRequired());
                dsf.setInclude(dsfIl.isInclude());
            } else {
-               System.out.print("null " + dsf.getDatasetFieldType().getDisplayName());
                dsf.setRequired(dsf.getDatasetFieldType().isRequired());
                dsf.setInclude(true);
            }                     
@@ -468,6 +465,8 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+            dataset.setOwner(dataverseService.find(ownerId));
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             if (dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -483,11 +482,10 @@ public class DatasetPage implements java.io.Serializable {
                 workingVersion = dataset.getEditVersion(selectedTemplate);
                 updateDatasetFieldInputLevels();
             } else {
-                workingVersion = dataset.getLatestVersion();
+                workingVersion = dataset.getCreateVersion();
                 updateDatasetFieldInputLevels();
             }
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
-            dataset.setOwner(dataverseService.find(ownerId));
+
             resetVersionUI();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {

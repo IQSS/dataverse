@@ -195,6 +195,19 @@ public class Dataset extends DvObjectContainer {
             return latestVersion;
         }
     }
+    
+    public DatasetVersion getCreateVersion() {
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+        dsv.setDataset(this);
+        dsv.setDatasetFields(dsv.initDatasetFields());;
+        dsv.setFileMetadatas(new ArrayList());
+
+        this.setVersions(new ArrayList());
+        getVersions().add(0, dsv);
+
+        return dsv;
+    }
 
     public Date getMostRecentMajorVersionReleaseDate() {
         for (DatasetVersion version : this.getVersions()) {
