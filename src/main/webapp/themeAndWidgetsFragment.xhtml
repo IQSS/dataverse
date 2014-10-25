@@ -3,9 +3,10 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:p="http://primefaces.org/ui">
     <!-- Theme and Widgets Popup -->
-    <p:dialog header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
+    <p:dialog id="themeAndWidgetsDlg" header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
         <p:tabView id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="widgetsTab" title="Widgets">
                 <div>
@@ -34,62 +35,77 @@
             </p:tab>
             <p:tab id="themeTab" title="Theme">
                 <!-- Dataverse Theme Panel -->
-                <ui:remove>
-                    <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
-                        <p:panelGrid columns="3">
-                            <h:outputLabel value="Logo"/>
-                            <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
-                            <p:message for="logo"/>
+                <ui:fragment rendered="#{ empty DataversePage.dataverse.logo}"> 
+                    <p:panelGrid columns="3">
+                    <h:outputLabel  value="Upload Logo"/>
+                    <p:fileUpload id="uploadlogo"  update=":dataverseForm:themeWidgetsTabView:themeTab" dragDropSupport="true" auto="true" multiple="false"
+                                  fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
+                    <p:message for="uploadlogo"/>
+                </p:panelGrid>
+                </ui:fragment>
+                <ui:fragment rendered="#{not empty DataversePage.dataverse.logo}">
+                    <p:panelGrid columns="3">
+                       
+                         <ui:fragment rendered="#{themeWidgetFragment.uploadExists()}">                                        
+                            <img src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{DataversePage.dataverse.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                        </ui:fragment> 
+                        <ui:fragment rendered="#{not themeWidgetFragment.uploadExists()}">                                        
+                            <img src="/logos/#{DataversePage.dataverse.id}/#{DataversePage.dataverse.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                        </ui:fragment> 
+                      
+                      
+                    <p:fileUpload id="changelogo"  update=":dataverseForm:themeWidgetsTabView:themeTab" dragDropSupport="true" auto="true" multiple="false"
+                                  fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Change File"/>
+                    <p:message for="changelogo"/>
+                        <h:outputLabel value="Logo Format"/>
+                        <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
+                            <f:selectItem  itemLabel="SQUARE" itemValue="SQUARE"/>
+                            <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                        </p:selectOneRadio>
+                        <p:message for="logoFormat"/>
 
-                            <h:outputLabel value="Logo Format"/>
-                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
-                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
-                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
-                            </p:selectOneRadio>
-                            <p:message for="logoFormat"/>
+                        <h:outputLabel value="Logo Alignment"/>
+                        <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
+                            <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
+                            <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
+                            <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                        </p:selectOneMenu>
+                        <p:message for="logoFormat"/>
 
-                            <h:outputLabel value="Logo Alignment"/>
-                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
-                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
-                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
-                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
-                            </p:selectOneMenu>
-                            <p:message for="logoFormat"/>
+                        <h:outputLabel value="Logo Background Color"/>
+                        <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
+                        <p:message for="logoBackgroundColor"/>
+                    </p:panelGrid>
+                </ui:fragment>
+                <p:panelGrid columns="3">
+                    <h:outputLabel value="Tagline"/>
+                    <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
+                    <p:message for="tagline"/>
 
-                            <h:outputLabel value="Logo Background Color"/>
-                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
-                            <p:message for="logoBackgroundColor"/>
+                    <h:outputLabel value="Link URL"/>
+                    <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
+                    <p:message for="linkUrl"/>
 
-                            <h:outputLabel value="Tagline"/>
-                            <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
-                            <p:message for="tagline"/>
+                    <h:outputLabel value="Link Text"/>
+                    <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
+                    <p:message for="linkText"/>
 
-                            <h:outputLabel value="Link URL"/>
-                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
-                            <p:message for="linkUrl"/>
+                    <h:outputLabel value="Link Color"/>
+                    <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
+                    <p:message for="linkColor"/>
 
-                            <h:outputLabel value="Link Text"/>
-                            <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
-                            <p:message for="linkText"/>
+                    <h:outputLabel value="Text Color"/>
+                    <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
+                    <p:message for="textColor"/>
 
-                            <h:outputLabel value="Link Color"/>
-                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
-                            <p:message for="linkColor"/>
+                    <h:outputLabel value="Background Color"/>
+                    <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
+                    <p:message for="backgroundColor"/>
+                </p:panelGrid>
+                <h:commandButton type="submit"  action="#{themeWidgetFragment.save()}" class="btn btn-success" value="Save Changes"/>
 
-                            <h:outputLabel value="Text Color"/>
-                            <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
-                            <p:message for="textColor"/>
-
-                            <h:outputLabel value="Background Color"/>
-                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
-                            <p:message for="backgroundColor"/>
-                        </p:panelGrid>
-                        <h:commandButton type="submit" disabled="true" action="#{DataversePage.save()}" class="btn btn-success" value="Save Changes"/>
-                    </ui:fragment>
-                </ui:remove>
-                <h:outputText value="Theme updates are not available at this time." />
             </p:tab>
         </p:tabView>
-        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Done">Done</button>
+      <!--  <button type="button" jsf: style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()"  value="Done">Done</button>  -->
     </p:dialog>
 </div>
