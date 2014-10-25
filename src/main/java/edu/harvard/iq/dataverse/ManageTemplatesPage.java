@@ -127,7 +127,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
             successMessage = "Dataverse Template data updated";
         }
         try {
-            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser()));
+            engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, session.getUser(), null));
             JH.addMessage(FacesMessage.SEVERITY_INFO, successMessage);
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: " + ex.getMessage());

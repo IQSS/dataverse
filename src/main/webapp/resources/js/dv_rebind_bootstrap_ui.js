@@ -22,7 +22,16 @@ function bind_bsui_components(){
     // Permissions + Dataset Tooltips/Popovers                
     $("[data-toggle='tooltip'], #citation span.glyphicon").tooltip({container: 'body'});
     $("a[data-toggle='popover']").popover();
+    
+    // Metadata add/edit; tooltips for "+" button
+    bind_tooltip_plus_minus_buttons();
+    
+}
 
+function bind_tooltip_plus_minus_buttons(){
+    // rebind tooltips to metadata "+" and "-" buttons
+    $("button[title='Add Record']").attr("data-toggle", "tooltip").attr("data-placement", "auto right").tooltip();
+    $("button[title='Delete Record']").attr("data-toggle", "tooltip").attr("data-placement", "auto right").tooltip();
 }
 
 /*

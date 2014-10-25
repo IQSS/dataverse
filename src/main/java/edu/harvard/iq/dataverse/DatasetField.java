@@ -297,7 +297,29 @@ public class DatasetField implements Serializable {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
-
+    
+    @Transient 
+    private boolean required;
+    
+    public void setRequired(boolean required){
+        this.required = required;
+    }
+    
+    public boolean isRequired(){
+        return this.required;
+    }
+    
+    @Transient 
+    private boolean include;
+    
+    public void setInclude(boolean include){
+        this.include = include;
+    }
+    
+    public boolean isInclude(){
+        return this.include;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -339,7 +361,7 @@ public class DatasetField implements Serializable {
         
         if (version != null) {
             if (version.getClass().getName().equals("edu.harvard.iq.dataverse.DatasetVersion")) {
-                dsf.setDatasetVersion((DatasetVersion) version);
+                dsf.setDatasetVersion((DatasetVersion) version);               
             } else {
                 dsf.setTemplate((Template) version);
             }

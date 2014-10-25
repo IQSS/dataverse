@@ -158,11 +158,8 @@ public class ContainerManagerImpl implements ContainerManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
                         }
                         swordService.addDatasetContact(datasetVersion);
-                        /**
-                         * @todo uncomment when addDatasetSubject is working:
-                         * https://github.com/IQSS/dataverse/issues/921
-                         */
-//                        swordService.addDatasetSubject(datasetVersion);
+                        swordService.addDatasetSubject(datasetVersion);
+                        swordService.doRequiredFieldCheck(datasetVersion);
                         try {
                             engineSvc.submit(new UpdateDatasetCommand(dataset, vdcUser));
                         } catch (CommandException ex) {

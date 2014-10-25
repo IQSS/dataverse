@@ -94,7 +94,33 @@ public class MetadataBlock implements Serializable {
     public void setEmpty(boolean empty) {
         this.empty = empty;
     }
-   
+    
+    @Transient
+    private boolean selected;
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+    
+    public boolean isSelected() {         
+        return selected;
+    }
+
+    public String getIdString(){
+        return id.toString();
+    }
+
+    @Transient
+    private boolean showDatasetFieldTypes;
+
+    public void setShowDatasetFieldTypes(boolean showDatasetFieldTypes) {
+        this.showDatasetFieldTypes = showDatasetFieldTypes;
+    }
+    
+    public boolean isShowDatasetFieldTypes() {         
+        return showDatasetFieldTypes;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

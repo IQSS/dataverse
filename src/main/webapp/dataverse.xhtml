@@ -3,7 +3,8 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
     </h:head>
@@ -85,7 +86,7 @@
                             <div class="col-xs-6 form-group">
                                 <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
                                     <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Short name used for the URL of this Dataverse.">
-                                        Alias <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
+                                        URL <span class="glyphicon glyphicon-asterisk text-danger" title="Required field"></span>
                                     </a>
                                 </label>
                                 <div class="col-sm-9">
@@ -157,7 +158,11 @@
                         </div>
                     </p:panel>
 
-                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}">
+                          <p:commandButton id="hiddenRefresh" value="back"  style="display:none" rendered="#{DataversePage.editMode == 'INFO'}"
+                             actionListener="#{DataversePage.refresh}" 
+                             update="@widgetVar(optionBlock)" />
+                    <p:panel styleClass="panelLayoutBlock" rendered="#{DataversePage.editMode == 'INFO'}"  widgetVar="optionBlock">
+
                         <div class="row form-horizontal">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="mdbSelect">Metadata Elements</label>
@@ -165,16 +170,126 @@
                                     <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the sets of Metadata Elements for datasets in this Dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                                         <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
-                                            <p:ajax update="@widgetVar(metadataBlocks)" listener="#{DataversePage.editMetadataBlocks}"/>
+                                            <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
                                         </p:selectBooleanCheckbox>
                                     </ui:fragment>
+                                    
+                                    <ui:repeat value="#{DataversePage.allMetadataBlocks}"  var="mdb">
+                                        <ui:fragment rendered="#{mdb.required }">
+                                        <div class="checkbox" >
+                                            <label>
+                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}"                                                    
+                                                       name="mdbSelectRequired" disabled="disabled" checked="checked" />
+                                                <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
+                                                              />
+                                            </label>
+                                        </div>
+                                        </ui:fragment>
 
-                                    <p:selectManyCheckbox id="mdbSelect" styleClass="metadata-blocks-select" value="#{DataversePage.dataverse.metadataBlocks}" converter="metadataBlockConverter"
-                                                          widgetVar="metadataBlocks" layout="pageDirection">
-                                        <f:selectItems value="#{dataverseServiceBean.findAllMetadataBlocks()}" var="mdb"
-                                                       itemLabel="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}" itemValue="#{mdb}"
-                                                       itemDisabled="#{(DataversePage.dataverse.owner != null and DataversePage.inheritMetadataBlockFromParent)}"/>
-                                    </p:selectManyCheckbox>
+                                       <ui:fragment rendered="#{!mdb.required and DataversePage.inheritMetadataBlockFromParent  }">
+                                        <div class="checkbox" >
+                                            <label>
+                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"  jsf:value="#{mdb.selected}" onclick="updateInclude();"    
+                                                                                                      
+                                                       name="mdbSelectRequiredInherited" disabled="disabled"  />
+                                                <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
+                                                              />
+                                            </label>
+                                        </div>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{!mdb.required and !DataversePage.inheritMetadataBlockFromParent}">
+                                        <div class="checkbox" >
+                                            <label>
+                                                <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"  onclick="updateInclude();"                                                      
+                                                        
+                                                       name="mdbSelectOptional"  />
+                                                <h:outputText value="#{mdb.displayName}#{mdb.required ? ' (Required)' : ' (Examples: '.concat(DataversePage.getMetadataBlockPreview(mdb,3)).concat(')')}"
+                                                              />
+                                            </label>
+                                        </div>
+                                        </ui:fragment>
+                                        <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes and mdb.selected }"
+                                                       immediate="true"
+                                                       update="@widgetVar(optionBlock)" >
+                                                    <h:outputText value="Update Fields" />
+                                        </p:commandLink>
+                                        <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes and mdb.selected  }"
+                                                       immediate="true"
+                                                       update="@widgetVar(optionBlock)" >
+                                                    <h:outputText value="Hide Fields" />
+                                        </p:commandLink>
+                                        <ui:fragment rendered="#{mdb.showDatasetFieldTypes}">
+                                        <div class="panel panel-default" style="width:70%;margin-left:60px;">
+                                            <div class="panel-body">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">    
+                                                            <tr>
+                                                                <td>
+                                                                   <ui:fragment rendered="#{!dsft.hasParent and !dsft.hasRequiredChildren and !dsft.required and dsft.include}">
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                <input type="checkbox" checked="checked" jsf:itemValue="#{dsft}" jsf:value="#{dsft.include}" 
+                                                                                       onClick="updateInclude()"/> <h:outputText value="#{dsft.displayName}"/>
+                                                                            </label>
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{!dsft.hasParent and !dsft.hasRequiredChildren and !dsft.required and !dsft.include}">
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                <input type="checkbox"  jsf:itemValue="#{dsft}" jsf:value="#{dsft.include}" onClick="updateInclude()"  /> <h:outputText value="#{dsft.displayName}"/>
+                                                                            </label>
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">                                                                           
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                <input  type="checkbox" checked="checked"  disabled="disabled" /> <h:outputText value="#{dsft.displayName}"/>
+                                                                            </label>                                                                        
+                                                                        </div>                                                                            
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{dsft.hasParent}">
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                <h:outputText value="#{dsft.displayName}"/>
+                                                                            </label>
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </td>
+                                                                <td>
+                                                                    
+                                                                    
+                                                                    <ui:fragment rendered="#{(!dsft.hasChildren  and !dsft.required  and dsft.include and !dsft.hasParent) 
+                                                                                             or ( dsft.hasParent and !dsft.required and (dsft.parentDatasetFieldType.required or dsft.parentDatasetFieldType.include))}">                                                                        
+                                                                        <p:selectOneRadio  id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}">
+                                                                        
+                                                                        <f:selectItem itemLabel="Required" itemValue="#{true}" />
+                                                                        <f:selectItem itemLabel="Optional" itemValue="#{false}" />                                                                        
+                                                                    </p:selectOneRadio>
+                                                                        
+                                                                    </ui:fragment>
+
+                                                                    <ui:fragment rendered="#{(!dsft.hasChildren  and !dsft.required and !dsft.requiredDV and !dsft.include and !dsft.hasParent)
+                                                                              or (dsft.hasParent  and !(dsft.parentDatasetFieldType.required or dsft.parentDatasetFieldType.include) )  }">                                                                        
+                                                                        Hidden
+                                                                    </ui:fragment>
+                                                                     
+                                                                    
+                                                                    <ui:fragment rendered="#{!dsft.hasChildren  and dsft.required}">
+                                                                        System Requirement
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{dsft.hasChildren  and dsft.hasRequiredChildren}">
+                                                                        System Requirement
+                                                                    </ui:fragment>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div> 
+                                        </ui:fragment>
+                                    </ui:repeat>
                                 </div>
                             </div>
                         </div>
@@ -194,7 +309,8 @@
 
                                     <p:pickList id="facetPickListCreate" value="#{DataversePage.facets}" var="facet" converter="facetConverter"
                                                 itemLabel="#{facet.displayName}" itemValue="#{facet}" 
-                                                rendered="#{DataversePage.dataverse.facetRoot or DataversePage.dataverse.owner == null }"/>
+                                                disabled ="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null }"
+                                                rendered="true"/>
                                 </div>
                             </div>
                         </div>
@@ -244,7 +360,10 @@
                                                 </li>
                                             </ui:fragment>
                                             <li>
-                                                <p:commandLink id="rolesPermissionsOpts" onclick="rolesPermissionsForm.show()">
+                                                <p:commandLink id="rolesPermissionsOpts" 
+                                                               actionListener="#{rolePermissionFragment.setDvObject(DataversePage.dataverse)}" 
+                                                               update="rolesPermissionsDialog"
+                                                               oncomplete="rolesPermissionsForm.show()">
                                                     <h:outputText value="Roles + Permissions" />
                                                 </p:commandLink>
                                             </li>
@@ -360,59 +479,6 @@
                         </ui:fragment>
                     </ui:fragment>
                     
-                    <!-- Roles + Permissions Popup -->
-                    <p:dialog header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
-                        <div class="alert alert-danger form-horizontal" role="alert">
-                            <div class="form-group" style="margin-bottom:0; padding-top:0;">
-                              <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
-                              <div class="col-sm-8 checkbox" style="padding-top:0;min-height:20px;">
-                                  <p:selectBooleanCheckbox  /> <span style="vertical-align:top;">Inherit all roles and permissions from parent dataverse.</span>
-                              </div>
-                            </div>
-                        </div>
-                        <p:tabView id="rolesPermissionsTabView" widgetVar="content" styleClass="popupSubTabParent">
-                            <p:tab id="permissionsTab" title="Permissions">
-                                <p:tabView id="permissionsSubTabView" widgetVar="subContent">
-                                    <p:tab id="usersGroupsSubTab" title="Users/Groups">
-                                        <div class="highlight">
-                                            <button type="button" class="btn btn-default" style="margin-right:1em;">Invite User</button> Invite a user to create a Dataverse account, and assign them a role to your dataverse.
-                                        </div>
-                                        <div class="highlight form-inline">
-                                            <div class="form-group">
-                                                <label class="control-label">User/Group Name</label> <p:inputText id="userGroupNameAssign" styleClass="form-control"/>
-                                                <label class="control-label">Role</label> 
-                                                <p:selectOneMenu id="assignRoleOptions" styleClass="form-control">
-                                                    <f:selectItem id="one" itemLabel="One" itemValue="One" />
-                                                    <f:selectItem id="two" itemLabel="Two" itemValue="Two" />
-                                                    <f:selectItem id="three" itemLabel="Three" itemValue="Three" />
-                                                </p:selectOneMenu>
-                                                <button type="button" class="btn btn-default">Assign</button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            DATATABLE
-                                        </div>
-                                    </p:tab>
-                                </p:tabView>
-                                <div>
-                                    <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
-                                        <h:outputText value="Visit Old Roles + Permissions Page" />
-                                        <f:param name="dataverseId" value="#{DataversePage.dataverse.id}" />
-                                        <f:param name="objectType" value="USERS" />
-                                    </h:link>
-                                </div>
-                            </p:tab>
-                            <p:tab id="GroupsTab" title="Groups">
-                                <!-- FORM -->
-                                Groups
-                            </p:tab>
-                            <p:tab id="rolesTab" title="Roles">
-                                <!-- FORM -->
-                                Roles
-                            </p:tab>
-                        </p:tabView>
-                        <button type="button" style="margin-top:1em;" class="btn btn-default" onclick="rolesPermissionsForm.hide()" value="Done">Done</button>
-                    </p:dialog>
 
                     <!-- Browsing Options Popup -->
                     <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
@@ -437,7 +503,8 @@
                     </p:dialog>
 
                     <ui:include src="themeAndWidgetsFragment.xhtml"/>
-
+                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>
+                    
                     <!-- Publish Confirmation Popup -->
                     <p:confirmDialog message="Are you sure you want to publish your dataverse? Once you do so it must remain 'Published'." header="Publish Dataverse" widgetVar="confirmation">
                         <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DataversePage.releaseDataverse}">
@@ -540,6 +607,11 @@
                             });
                         });
                     }
+                    
+                    function updateInclude(){
+                       $('button[id$="hiddenRefresh"]').trigger('click');
+                    }
+
 
                     function characterCounter() {
                         $.fn.extend({

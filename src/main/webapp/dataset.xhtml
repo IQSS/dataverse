@@ -591,7 +591,7 @@
                                                             </h:outputLink>
                                                         </li>
                                                         <li>
-                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  disabled="#{empty fileMetadata.dataFile.id}">
+                                                            <h:outputLink value="/api/access/datafile/#{fileMetadata.dataFile.id}?format=RData"  rendered="#{!fileMetadata.dataFile.originalFormatLabel == 'RData'}" disabled="#{empty fileMetadata.dataFile.id}">
                                                                 <h:outputText value="As RData"/>
                                                             </h:outputLink>
                                                         </li>
@@ -907,6 +907,7 @@
                     <p:commandButton value="Direct" id="datasetSave"
                                      style="display:none"
                                      update=":datasetForm"
+                                     oncomplete="javascript:bind_bsui_components();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
                 </h:form>

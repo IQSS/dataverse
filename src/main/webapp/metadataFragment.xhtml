@@ -86,16 +86,16 @@
                         <div id="collapse#{block.index}" class="collapse #{block.first || DatasetPage.editMode == 'CREATE'?'in':''}">
                             <div class="panel-body">
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
-
-                                    <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty())
-                                                             or (!empty TemplatePage.editMode)}">
+                                    <ui:fragment rendered="#{((DatasetPage.editMode == 'METADATA' 
+                                                             or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
+                                                             or (!empty TemplatePage.editMode and dsf.include)}">
 
                                         <div class="form-group">
                                             <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
                                                     #{dsf.datasetFieldType.title}
                                                 </a>
-                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.datasetFieldType.required}" />
+                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required}" />
                                             </label>
 
 
@@ -120,12 +120,14 @@
                                                                         <div class="col-xs-3">
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
                                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
-                                                                                             actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}">
+                                                                                             actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
+                                                                                             oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
                                                                             </p:commandButton>
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
                                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                              rendered="#{dsf.datasetFieldValues.size() > 1}"
-                                                                                             actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}">
+                                                                                             actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
+                                                                                             oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
                                                                             </p:commandButton>
                                                                         </div>
                                                                     </ui:fragment>
@@ -207,12 +209,14 @@
                                                             <div class="col-sm-3">
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
                                                                                  title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
-                                                                                 actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}">
+                                                                                 actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"
+                                                                                 oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
                                                                 </p:commandButton>
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
                                                                                  title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                  rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
-                                                                                 actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}">
+                                                                                 actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
+                                                                                 oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
                                                                 </p:commandButton>
                                                             </div>
                                                         </ui:fragment>

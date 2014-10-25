@@ -111,7 +111,9 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
     @EJB
-    BuiltinUserServiceBean builtinUserService;      
+    BuiltinUserServiceBean builtinUserService;  
+    @EJB
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;  
     
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -321,16 +323,28 @@ public class DatasetPage implements java.io.Serializable {
         selectedTemplate = (Template) event.getNewValue();
         if (selectedTemplate != null) {
             workingVersion = dataset.getEditVersion(selectedTemplate);
+            updateDatasetFieldInputLevels();
         } else {
-
             dataset = new Dataset();
             workingVersion = dataset.getLatestVersion();
+            updateDatasetFieldInputLevels();
             dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             dataset.setOwner(dataverseService.find(ownerId));
-
         }
-
         resetVersionUI();
+    }
+    
+    private void updateDatasetFieldInputLevels(){
+        for (DatasetField dsf: workingVersion.getDatasetFields()){ 
+           DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerId, dsf.getDatasetFieldType().getId());
+           if (dsfIl != null){
+               dsf.setRequired(dsfIl.isRequired());
+               dsf.setInclude(dsfIl.isInclude());
+           } else {
+               dsf.setRequired(dsf.getDatasetFieldType().isRequired());
+               dsf.setInclude(true);
+           }  
+        }
     }
 
     public void handleChange() {
@@ -425,14 +439,17 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             if (versionId == null) {
                 workingVersion = dataset.getLatestVersion();
+                updateDatasetFieldInputLevels();
             } else {
                 workingVersion = datasetVersionService.find(versionId);
+                updateDatasetFieldInputLevels();
             }
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
             try {
                 datasetVersionUI = new DatasetVersionUI(workingVersion);
+                updateDatasetFieldInputLevels();
             } catch (NullPointerException npe) {
                 //This will happen when solr is down and will allow any link to be displayed.
                 throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
@@ -448,6 +465,8 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+            dataset.setOwner(dataverseService.find(ownerId));
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             if (dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -461,11 +480,12 @@ public class DatasetPage implements java.io.Serializable {
                     }
                 }
                 workingVersion = dataset.getEditVersion(selectedTemplate);
+                updateDatasetFieldInputLevels();
             } else {
-                workingVersion = dataset.getLatestVersion();
+                workingVersion = dataset.getCreateVersion();
+                updateDatasetFieldInputLevels();
             }
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
-            dataset.setOwner(dataverseService.find(ownerId));
+
             resetVersionUI();
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
@@ -530,6 +550,7 @@ public class DatasetPage implements java.io.Serializable {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
             datasetVersionUI = new DatasetVersionUI(workingVersion);
+            updateDatasetFieldInputLevels();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }
     }

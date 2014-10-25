@@ -98,6 +98,18 @@ public class Dataverse extends DvObjectContainer {
     @OneToMany(mappedBy = "dataverse")
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
+    
+        @OneToMany(mappedBy = "dataverse")
+    private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList();
+
+    public void setDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels) {
+        this.dataverseFieldTypeInputLevels = dataverseFieldTypeInputLevels;
+    }
+
+    public List<DataverseFieldTypeInputLevel> getDataverseFieldTypeInputLevels() {
+        return dataverseFieldTypeInputLevels;
+    }
+
 
     private boolean templateRoot;
 
