@@ -39,7 +39,7 @@ import javax.persistence.PersistenceContext;
  */
 @ViewScoped
 @Named
-public class RolePermissionFragment {
+public class RolePermissionFragment implements java.io.Serializable {
     
     private static final Logger logger = Logger.getLogger(RolePermissionFragment.class.getCanonicalName());    
 
