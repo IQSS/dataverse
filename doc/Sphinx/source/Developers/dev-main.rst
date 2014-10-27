@@ -36,7 +36,7 @@ Setting up your dev environment
 
 Once you install Glassfish 4 and PostgreSQL, you need to configure the environment for the Dataverse app - configure the database connection, set some options, etc. We have a new installer script that should do it all for you:
 
-``cd scripts/install``
+``cd scripts/installer``
 
 ``./install``
 
