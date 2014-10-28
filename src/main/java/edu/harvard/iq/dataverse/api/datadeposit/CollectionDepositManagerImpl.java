@@ -146,6 +146,13 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                                  * we should be able to drop EJBException from
                                  * the catch above and only catch
                                  * CommandException
+                                 *
+                                 * See also Have commands catch
+                                 * ConstraintViolationException and turn them
+                                 * into something that inherits from
+                                 * CommandException · Issue #1009 ·
+                                 * IQSS/dataverse -
+                                 * https://github.com/IQSS/dataverse/issues/1009
                                  */
                                 if (cause instanceof ConstraintViolationException) {
                                     ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
