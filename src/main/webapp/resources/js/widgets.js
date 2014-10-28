@@ -30,7 +30,7 @@ if(params.widget === 'search') {
     /*
     * Dataverse Search Box
     */
-   document.write('<input type="text"/>&#160;<input value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?id=' + params.id + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" />');
+   document.write('<input type="text" onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()"/>&#160;<input id="btnDataverseSearch" value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?id=' + params.id + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" />');
 }
 
 if(params.widget === 'iframe') {

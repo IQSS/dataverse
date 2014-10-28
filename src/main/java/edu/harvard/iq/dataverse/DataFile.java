@@ -168,18 +168,7 @@ public class DataFile extends DvObject {
      * A user-friendly version of the "original format":
      */
     public String getOriginalFormatLabel() {
-        String originalFormat = getOriginalFileFormat(); 
-        
-        if (originalFormat != null) {
-            if (originalFormat.equals("application/x-stata")) {
-                return "Stata";
-            } else if (originalFormat.equals("application/x-rlang-transport")) {
-                return "RData";
-            }
-            return originalFormat; 
-        }
-        
-        return null; 
+        return FileUtil.getUserFriendlyOriginalType(this);
     }
    
     // The dvObject field "name" should not be used in

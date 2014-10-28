@@ -74,7 +74,7 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
                  *
                  * See also https://github.com/IQSS/dataverse/issues/551
                  */
-                // swordCollection.setCollectionPolicy(dvnNetworkName + " deposit terms of use: " + vdcNetworkService.findRootNetwork().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
+                swordCollection.setCollectionPolicy(dataverseService.findRootDataverse().getName() + " deposit terms of use: " + dataverseService.findRootDataverse().getDepositTermsOfUse() + "\n---\n" + dataverse.getName() + " deposit terms of use: " + dataverse.getDepositTermsOfUse());
                 swordWorkspace.addCollection(swordCollection);
             }
         }

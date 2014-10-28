@@ -13,7 +13,6 @@
   <!-- production date in Dataverse: -->
   <!-- date, if published: -->
   <dcterms:date>2014-09-22</dcterms:date>
-  <dcterms:available>2014-09-22</dcterms:available>
   <!-- URI attributes, if published: -->
   <dcterms:isReferencedBy agency="DOI" IDNo="" holdingsURI="http://dx.doi.org/">Must, O., &amp; Must, A. (2014). Sample submission. Journal Of Plugin Testing, 1(2).</dcterms:isReferencedBy>
   <!-- Discipline, subject classification, keywords & coverage, if journal has enabled these fields enabled in article metadata forms -->
