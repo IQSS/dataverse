@@ -156,6 +156,23 @@ public class FileUtil implements java.io.Serializable  {
         return "unknown"; 
     }
     
+    public static String getUserFriendlyOriginalType(DataFile dataFile) {
+        String fileType = dataFile.getOriginalFileFormat();
+         
+        if (fileType != null && !fileType.equals("")) {
+            if (fileType.indexOf(";") != -1) {
+                fileType = fileType.substring(0, fileType.indexOf(";"));
+            }
+            try {
+                return ResourceBundle.getBundle("MimeTypeDisplay").getString(fileType);
+            } catch (MissingResourceException e) {
+                return fileType;
+            }
+        } 
+        
+        return "UNKNOWN";
+    }
+    
     public static String determineFileType(File f, String fileName) throws IOException{
         String fileType = null;
         String fileExtension = getFileExtension(fileName);

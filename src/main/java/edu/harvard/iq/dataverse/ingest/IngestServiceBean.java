@@ -79,6 +79,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1851,7 +1852,7 @@ public class IngestServiceBean {
         }
     }
     
-    private void calculateUNF(DataFile dataFile, int varnum, String[] dataVector) {
+    private void calculateUNF(DataFile dataFile, int varnum, String[] dataVector) throws IOException {
         String unf = null;
         
         String[] dateFormats = null; 
@@ -1860,24 +1861,61 @@ public class IngestServiceBean {
         
         if ("time".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
             dateFormats = new String[dataVector.length];
-            String savedDateFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
+            String savedDateTimeFormat = dataFile.getDataTable().getDataVariables().get(varnum).getFormatSchemaName();
+            String timeFormat = null;
+            if (savedDateTimeFormat != null && !savedDateTimeFormat.equals("")) {
+                timeFormat = savedDateTimeFormat;
+            } else {
+                timeFormat = dateTimeFormat_ymdhmsS;
+            }
+            
+            /* What follows is special handling of a special case of time values
+             * non-uniform precision; specifically, when some have if some have 
+             * milliseconds, and some don't. (and that in turn is only 
+             * n issue when the timezone is present... without the timezone
+             * the time string would still evaluate to the end, even if the 
+             * format has the .SSS part and the string does not.
+             * This case will be properly handled internally, once we permanently
+             * switch to UNF6.
+             * -- L.A. 4.0 beta 8
+             */
+            String simplifiedFormat = null;
+            SimpleDateFormat fullFormatParser = null;
+            SimpleDateFormat simplifiedFormatParser = null;
+            
+            if (timeFormat.matches(".*\\.SSS z$")) {
+                simplifiedFormat = timeFormat.replace(".SSS", "");
+                
+                fullFormatParser = new SimpleDateFormat(timeFormat);
+                simplifiedFormatParser = new SimpleDateFormat(simplifiedFormat);
+            } 
+            
             for (int i = 0; i < dataVector.length; i++) {
                 if (dataVector[i] != null) {
-                    /* TODO: 
-                     * add handling for cases of non-uniform precision among
-                     * the time values in the vector; for ex., if some have 
-                     * milliseconds, and some don't. (that in turn would only 
-                     * be an issue if the timezone is specified... otherwise 
-                     * the time string would still evaluate to the end...
-                     * of course this should really be handled in the UNF6!
-                     * -- L.A. 4.0 beta 8
-                    */
-                    if (savedDateFormat != null && !savedDateFormat.equals("")) {
-                        dateFormats[i] = savedDateFormat;
-                    } else {
-                        dateFormats[i] = dateTimeFormat_ymdhmsS;
-                    }
-                    //dateFormats[i] = "yyyy-MM-dd HH:mm:ss z";
+                    
+                    if (simplifiedFormatParser != null) {
+                        // first, try to parse the value against the "full" 
+                        // format (with the milliseconds part):
+                        fullFormatParser.setLenient(false);
+                    
+                        try {
+                            logger.fine("trying the \"full\" time format, with milliseconds: "+timeFormat+", "+dataVector[i]);
+                            fullFormatParser.parse(dataVector[i]);
+                         } catch (ParseException ex) {
+                            // try the simplified (no time zone) format instead:
+                            logger.fine("trying the simplified format: "+simplifiedFormat+", "+dataVector[i]);
+                            simplifiedFormatParser.setLenient(false);
+                            try {
+                                simplifiedFormatParser.parse(dataVector[i]);
+                                timeFormat = simplifiedFormat;
+                            } catch (ParseException ex1) {
+                                logger.warning("no parseable format found for time value "+i+" - "+dataVector[i]);
+                                throw new IOException("no parseable format found for time value "+i+" - "+dataVector[i]);
+                            }
+                        }
+
+                    } 
+                    dateFormats[i] = timeFormat;
                 }
             }
         } else if ("date".equals(dataFile.getDataTable().getDataVariables().get(varnum).getFormatCategory())) {
@@ -1896,6 +1934,7 @@ public class IngestServiceBean {
                 
         try {
             if (dateFormats == null) {
+                logger.fine("calculating the UNF value for string vector; first value: "+dataVector[0]);
                 unf = UNF5Util.calculateUNF(dataVector);
             } else {
                 unf = UNF5Util.calculateUNF(dataVector, dateFormats);
