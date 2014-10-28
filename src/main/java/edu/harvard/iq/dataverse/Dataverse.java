@@ -417,4 +417,11 @@ public class Dataverse extends DvObjectContainer {
         return v.visit(this);
     }
 
+    /**
+     * @todo implement in https://github.com/IQSS/dataverse/issues/551
+     */
+    public String getDepositTermsOfUse() {
+        return "Dataverse Deposit Terms of Use will be implemented in https://github.com/IQSS/dataverse/issues/551";
+    }
+
 }
