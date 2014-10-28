@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
  */
 @RequiredPermissions( Permission.EditMetadata )
 public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
-
     private final Dataverse editedDv;
     private final File uploadedFile;
     private final Path logoPath = Paths.get("../docroot/logos");
@@ -42,19 +41,31 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
      */
     @Override
     public Dataverse execute(CommandContext ctxt) throws CommandException {
+        // Get current dataverse, so we can delete current logo file if necessary
+        Dataverse currentDv = ctxt.dataverses().find(editedDv.getId());
         File logoFileDir = new File(logoPath.toFile(), editedDv.getId().toString());
-        File logoFile = new File(logoFileDir, editedDv.getLogo());
+        File currentFile=null;
+        if (currentDv.getLogo()!=null) {
+             currentFile = new File(logoFileDir, currentDv.getLogo());
+        }
         try {
-            // If logo field is empty, and a logoFile currently exists, delete it
-            if (StringUtils.isEmpty(editedDv.getLogo()) && logoFile.exists()) {
-                logoFile.delete();
-            } // If uploadedFile exists, copy uploaded file from temp dir to logos dir
-            else if (uploadedFile != null) {
+            // If edited logo field is empty, and a logoFile currently exists, delete it
+            if ( editedDv.getLogo()==null ) {
+                if (currentFile!=null) {
+                    currentFile.delete();
+                }
+            } // If edited logo file isn't empty,and uploaded File exists, delete currentFile and copy uploaded file from temp dir to logos dir
+            else if (uploadedFile!=null) {
+                File newFile = new File(logoFileDir,editedDv.getLogo());
+                if (currentFile!=null) {
+                    currentFile.delete();
+                }
                 logoFileDir.mkdirs();
-                Files.copy(uploadedFile.toPath(), logoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(uploadedFile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             // save updated dataverse to db
             return ctxt.dataverses().save(editedDv);
+            
         } catch (IOException e) {
             throw new CommandException("Error saving logo file", e,this); // improve error handling
 

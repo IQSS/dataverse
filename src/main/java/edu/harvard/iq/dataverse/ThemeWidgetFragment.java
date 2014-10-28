@@ -35,13 +35,16 @@ import org.primefaces.model.UploadedFile;
 public class ThemeWidgetFragment implements java.io.Serializable {
 
     @Inject DataversePage dataversePage;
-    File tempDir;
-    File uploadedFile;
-    String uploadedFileName;
+    private File tempDir;
+    private File uploadedFile;
+    private String uploadedFileName;
+    private Dataverse editDv;
       @Inject
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
+    @EJB
+    DataverseServiceBean dataverseServiceBean;
     /**
      *     create tempDir, needs to be under docroot so that uploaded image is accessible in the page
      */
@@ -49,7 +52,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private  void createTempDir() {
           try {
             File tempRoot = Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-            tempDir = Files.createTempDirectory(tempRoot.toPath(),dataversePage.getDataverse().getId().toString()).toFile();
+            tempDir = Files.createTempDirectory(tempRoot.toPath(),editDv.getId().toString()).toFile();
         } catch (IOException e) {
             throw new RuntimeException("Error creating temp directory", e); // improve error handling
         }
@@ -57,17 +60,35 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     
     @PreDestroy
     /**
-     *  Cleanup by deleting temp directory and file  
+     *  Cleanup by deleting temp directory and uploaded file  
      */
-    public void preDestroy() {
+    public void cleanupTempDirectory() {
         try {
-        if (uploadedFile!=null) {
-            Files.deleteIfExists(uploadedFile.toPath());
-        }
-        Files.delete(tempDir.toPath());
+           
+            if (tempDir != null) {
+                for (File f : tempDir.listFiles()) {
+                    Files.deleteIfExists(f.toPath());
+                }
+                Files.deleteIfExists(tempDir.toPath());
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Error creating temp directory", e); // improve error handling
-        }  
+            throw new RuntimeException("Error deleting temp directory", e); // improve error handling
+        }
+        uploadedFile=null;
+        tempDir=null;
+    }
+
+    public void initEditDv(Long dataverseId) {
+        editDv = dataverseServiceBean.find(dataverseId);
+    }
+    public Dataverse getEditDv() {
+        return editDv; 
+    }
+
+    public void setEditDv(Dataverse editDV) {
+         this.editDv = editDV;
+      
+          
     }
     
     public String getTempDirName() {
@@ -92,35 +113,41 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             }
             UploadedFile uFile = event.getFile();
         try {         
-            uploadedFile = new File(tempDir, uFile.getFileName());      
+            uploadedFile = new File(tempDir, uFile.getFileName());     
+            if (!uploadedFile.exists()) {
+                uploadedFile.createNewFile();
+            }
             Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
-            dataversePage.getDataverse().setLogo(uFile.getFileName());
+            editDv.setLogo(uFile.getFileName());
 
         } catch (IOException e) {
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
-        if (dataversePage.getDataverse().getLogoFormat()==null) {
-            dataversePage.getDataverse().setLogoFormat(Dataverse.ImageFormat.SQUARE);
+        if (editDv.getLogoFormat()==null) {
+            editDv.setLogoFormat(Dataverse.ImageFormat.SQUARE);
         }
 
     }
     
     public void removeLogo() {
-        dataversePage.getDataverse().setLogo(null);
+        editDv.setLogo(null);
+        this.cleanupTempDirectory();
        
     }
 
    
 
     public void save() {
-        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(dataversePage.getDataverse(), this.uploadedFile, session.getUser());  
+        Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, session.getUser());  
         try {
             dataversePage.setDataverse(commandEngine.submit(cmd));           
             dataversePage.setEditMode(null);
+            
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
+        this.cleanupTempDirectory();
        
     }
 }

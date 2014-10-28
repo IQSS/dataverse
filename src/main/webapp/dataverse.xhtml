@@ -348,7 +348,8 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink id="themeWidgetsOpts" onclick="themeAndWidgetsForm.show()">
+                                                <p:commandLink actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" 
+                                                               update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show()">
                                                     <h:outputText value="Theme + Widgets" />
                                                 </p:commandLink>
                                             </li>
