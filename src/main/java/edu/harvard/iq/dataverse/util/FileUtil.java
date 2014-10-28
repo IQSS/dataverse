@@ -56,12 +56,21 @@ public class FileUtil implements java.io.Serializable  {
     private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
     
     private static Map<String, String> STATISTICAL_SYNTAX_FILE_EXTENSION = new HashMap<String, String>();
+   
+    /*
+     * The following are Stata, SAS and SPSS syntax/control cards: 
+     * These are recognized as text files (because they are text files; so 
+     * we check all the uploaded "text/plain" files for these extensions, and 
+     * assign the following types when they are matched;
+     * Note that these types are only used in the metadata displayed on the 
+     * dataset page. We don't support ingest on control cards. 
+     * -- L.A. 4.0 Oct. 2014
+    */
     
     static {
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("do",  "x-stata-syntax");
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sas", "x-sas-syntax");
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sps", "x-spss-syntax");
-        STATISTICAL_SYNTAX_FILE_EXTENSION.put("rdat", "x-rdata-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("do",  "application/x-stata-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
+        STATISTICAL_SYNTAX_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
     }
     
     private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
