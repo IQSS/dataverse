@@ -91,9 +91,9 @@
                         <h:outputText value="If you have lost or forgotten your password, please enter your username or email address below and click Submit. We will send you an e-mail with your new password." style="color: green" />
                     </p:panel>
 
-                    <p:tabView id="tabView2" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
+                    <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" />
-                        <p:tab id="somedata" title="Data Related To Me">
+                        <p:tab id="dataRelatedToMe" title="Data Related To Me">
                             <ui:fragment>
                                 <ui:include src="search-include-fragment.xhtml">
                                     <ui:param name="showFacets" value="true"/>
@@ -151,9 +151,12 @@
                                 </div>
                             </ui:repeat>
                         </p:tab>
+                        <p:tab id="groupsRoles" title="Groups + Roles">
+                            <span class="glyphicon glyphicon-info-sign"></span> Here is where you can access and manage all the groups you belong to, and the roles you have been assigned.
+                        </p:tab>
                     </p:tabView>
 
-                    <p:tabView id="tabView1" rendered="#{!empty DataverseUserPage.editMode}">
+                    <p:tabView id="accountInfoView" rendered="#{!empty DataverseUserPage.editMode}">
                         <p:tab id="accountInfo" title="Account Information">
                             <div class="clearfix" style="padding-bottom:.75em; border-bottom:1px solid #DDDDDD;">
                                 <div>
