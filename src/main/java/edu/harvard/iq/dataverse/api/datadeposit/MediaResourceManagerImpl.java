@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -82,7 +81,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + authUser.getDisplayInfo().getTitle()+ " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + authUser.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
                     }
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://redmine.hmdc.harvard.edu/issues/3595");
@@ -153,7 +152,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + authUser.getDisplayInfo().getTitle()+ " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + authUser.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -248,25 +247,17 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         }
 
                         /**
-                         * @todo confirm that this DVN 3.x zero-length file
-                         * check that was put in because of
-                         * https://redmine.hmdc.harvard.edu/issues/3273 is done
-                         * in the back end, if it's still important in 4.0.
-                         */
-                        // We now have the unzipped file saved in the upload directory;
-                        // zero-length dta files (for example) are skipped during zip
-                        // upload in the GUI, so we'll skip them here as well
-//                        if (tempUploadedFile.length() != 0) {
-                        /**
                          * @todo set the category (or categories) for files once
-                         * we can: https://redmine.hmdc.harvard.edu/issues/3717
+                         * we can: https://github.com/IQSS/dataverse/issues/303
                          */
                         // And, if this file was in a legit (non-null) directory, 
                         // we'll use its name as the file category: 
 //                        tempFileBean.getFileMetadata().setCategory(dirName);
                         String guessContentTypeForMe = null;
-                        DataFile dFile = ingestService.createDataFile(editVersion, ziStream, finalFileName, guessContentTypeForMe);
-                        newFiles.add(dFile);
+                        List<DataFile> dataFiles = ingestService.createDataFiles(editVersion, ziStream, finalFileName, guessContentTypeForMe);
+                        for (DataFile dataFile : dataFiles) {
+                            newFiles.add(dataFile);
+                        }
                     } else {
                         logger.fine("directory found: " + zEntry.getName());
                     }
