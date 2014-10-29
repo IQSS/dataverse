@@ -1475,7 +1475,7 @@ public class IngestServiceBean {
                                             
                                             // (all of these resolution.* fields have allowedMultiple set to FALSE, 
                                             // so there can be only one!)
-                                            
+                                            //logger.fine("Min value: "+minValue+", Max value: "+maxValue);
                                             if (minValue != null && maxValue != null) {
                                                 Double storedMinValue = null; 
                                                 Double storedMaxValue = null;
@@ -1495,41 +1495,37 @@ public class IngestServiceBean {
                                                                 storedMinValue = Double.parseDouble(storedValue);
                                                                 storedMaxValue = storedMinValue;
                                                             }
+                                                            if (storedMinValue != null && storedMinValue.compareTo(minValue) < 0) {
+                                                                minValue = storedMinValue;
+                                                            }
+                                                            if (storedMaxValue != null && storedMaxValue.compareTo(maxValue) > 0) {
+                                                                maxValue = storedMaxValue;
+                                                            }
                                                         } catch (NumberFormatException e) {}
+                                                    } else {
+                                                        storedValue = "";
                                                     }
                                                 }
                                             
+                                                //logger.fine("Stored min value: "+storedMinValue+", Stored max value: "+storedMaxValue);
+                                                
                                                 String newAggregateValue = "";
-                                            
-                                                if (storedMinValue == null || minValue.compareTo(storedMinValue) < 0) {
+                                                
+                                                if (minValue.equals(maxValue)) {
                                                     newAggregateValue = minValue.toString();
-                                                } else if (storedMinValue != null) {
-                                                    newAggregateValue = storedMinValue.toString();
-                                                }
-                                            
-                                                if (storedMaxValue == null || maxValue.compareTo(storedMaxValue) > 0) {
-                                                    if (newAggregateValue.equals("")) {
-                                                        newAggregateValue = maxValue.toString();
-                                                    } else {
-                                                        newAggregateValue = " - " + maxValue.toString();
-                                                    }
-                                                } else if (storedMaxValue != null) {
-                                                    if (newAggregateValue.equals("")) {
-                                                        newAggregateValue = storedMaxValue.toString();
-                                                    } else {
-                                                        newAggregateValue = " - " + storedMaxValue.toString();
-                                                    }
+                                                } else {
+                                                    newAggregateValue = minValue.toString() + " - " + maxValue.toString();
                                                 }
                                                 
                                                 // finally, compare it to the value we have now:
                                                 if (!storedValue.equals(newAggregateValue)) {
+                                                    if (dsf.getDatasetFieldValues() == null) {
+                                                        dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
+                                                    }
                                                     if (dsf.getDatasetFieldValues().get(0) == null) {
                                                         DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
                                                         dsf.getDatasetFieldValues().add(newDsfv);
                                                     }
-                                                    // TODO: 
-                                                    // here and below, we seem to be making the assumption that 
-                                                    // dsf.getDatasetFieldValues() != null ... is that legit? -- L.A. 4.0
                                                     dsf.getDatasetFieldValues().get(0).setValue(newAggregateValue);
                                                 }
                                             }
