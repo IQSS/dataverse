@@ -14,12 +14,12 @@
                     <p:focus/>
                     <!--autocomplete disabled for now, too buggy: https://redmine.hmdc.harvard.edu/issues/3447#note-2 -->
                     <!--<p:autoComplete id="autoCompleteSearch" size="40" value="SearchIncludeFragment.query" completeMethod="autoCompleteBean.complete" style="margin-right:1em;"/>-->
-                    <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}"/>
+                    <p:inputText id="formerAutoCompleteSearch" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                     <p:watermark for="formerAutoCompleteSearch" value="Search this Dataverse..."/>
                     <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
                         <span class="glyphicon glyphicon-search"/> Find
                     </p:commandLink>
-                    <p:commandButton id="hiddensearchbutton" styleClass="hidden" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                       
+                    <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>                  
                     <h:outputLink id="advsearchlink" value="/search/advanced.xhtml" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{showAdvancedSearchLink}">
                         <h:outputText value="Advanced Search"/>
                         <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
