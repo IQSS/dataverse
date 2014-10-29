@@ -6,7 +6,7 @@
     xmlns:p="http://primefaces.org/ui">
     <!-- Roles + Permissions Popup -->
     <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
-        <p:fragment autoUpdate="true">
+        <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
             #{rolePermissionFragment.dvObject.name} Dataverse
             <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">

@@ -19,6 +19,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
@@ -41,6 +42,7 @@ public class DataFile extends DvObject {
     private String name;
     
     @NotBlank    
+    @Pattern(regexp = "^.*/.*$", message = "Content-Type must contain a slash")
     private String contentType;
     
     private String fileSystemName;
@@ -168,18 +170,7 @@ public class DataFile extends DvObject {
      * A user-friendly version of the "original format":
      */
     public String getOriginalFormatLabel() {
-        String originalFormat = getOriginalFileFormat(); 
-        
-        if (originalFormat != null) {
-            if (originalFormat.equals("application/x-stata")) {
-                return "Stata";
-            } else if (originalFormat.equals("application/x-rlang-transport")) {
-                return "RData";
-            }
-            return originalFormat; 
-        }
-        
-        return null; 
+        return FileUtil.getUserFriendlyOriginalType(this);
     }
    
     // The dvObject field "name" should not be used in

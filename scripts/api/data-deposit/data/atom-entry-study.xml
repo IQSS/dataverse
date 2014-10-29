@@ -2,16 +2,14 @@
 <!--
 modified from http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_editingcontent_metadata
 
-comments at https://docs.google.com/document/d/1Rn70XItfA6_mJ4JA3I7m4em0spfdXIIHhwkrgCl40uE/edit?usp=sharing
-
-see also https://redmine.hmdc.harvard.edu/issues/3246
+see also https://github.com/IQSS/dvn/blob/develop/doc/sphinx/source/dataverse-api-main.rst#data-deposit-api
 -->
 <entry xmlns="http://www.w3.org/2005/Atom"
        xmlns:dcterms="http://purl.org/dc/terms/">
    <!-- some embedded metadata -->
    <dcterms:title>Roasting at Home</dcterms:title>
    <dcterms:creator>Peets, John</dcterms:creator>
-   <dcterms:creator>Stumptown, Jane</dcterms:creator>
+   <dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>
    <!-- Producer with financial or admin responsibility of the data -->
    <dcterms:publisher>Coffee Bean State University</dcterms:publisher>
    <!-- related publications -->
@@ -29,9 +27,7 @@ see also https://redmine.hmdc.harvard.edu/issues/3246
    <dcterms:subject>caffeine</dcterms:subject>
    <!-- geographic coverage -->
    <dcterms:coverage>United States</dcterms:coverage>
-   <!-- geographicCoverage doesn't allowmultiples. Is this a backward-incompatible change?
    <dcterms:coverage>Canada</dcterms:coverage>
-   -->
    <!-- kind of data -->
    <dcterms:type>aggregate data</dcterms:type>
    <!-- List of sources of the data collection-->
@@ -40,4 +36,5 @@ see also https://redmine.hmdc.harvard.edu/issues/3246
    <dcterms:rights>Creative Commons CC-BY 3.0 (unported) http://creativecommons.org/licenses/by/3.0/</dcterms:rights>
    <!-- related materials -->
    <dcterms:relation>Peets, John. 2010. Roasting Coffee at the Coffee Shop. Coffeemill Press</dcterms:relation>
+   <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
 </entry>

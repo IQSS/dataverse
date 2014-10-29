@@ -44,7 +44,11 @@ public class ForeignMetadataFieldMapping implements Serializable {
     
     @Column(name = "datasetfieldName", columnDefinition = "TEXT")
     private String datasetfieldName;    
-    
+
+    /**
+     * @todo should this column be removed if it isn't used?
+     * https://github.com/IQSS/dataverse/issues/572#issuecomment-51202171
+     */
     @Column(name = "metadatablockName", columnDefinition = "TEXT")
     private String metadatablockName;    
     
