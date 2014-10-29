@@ -79,6 +79,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public void initEditDv(Long dataverseId) {
         editDv = dataverseServiceBean.find(dataverseId);
+        // When you open the popup, the first tab (widgets) should be active
+        tabView.setActiveIndex(0);
     }
     public Dataverse getEditDv() {
         return editDv; 
