@@ -8,7 +8,7 @@
     <!-- Theme and Widgets Popup -->
     <p:dialog  id="themeAndWidgetsDlg" header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
         
-        <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+        <p:tabView binding="#{themeWidgetFragment.tabView}"  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="widgetsTab" title="Widgets">
                 <div>
                     <p class="bg-info" style="padding: 15px;">Copy and paste this code into the HTML on your site.</p>
@@ -34,12 +34,12 @@
                     </textarea>
                 </div>
             </p:tab>
-            <p:tab id="themeTab" title="Theme">
+            <p:tab  id="themeTab" title="Theme">
                 <!-- Dataverse Theme Panel -->
                  <ui:fragment rendered="#{ empty themeWidgetFragment.editDv.logo}"> 
                     <p:panelGrid columns="3">
                     <h:outputLabel  value="Upload Logo"/>
-                    <p:fileUpload id="uploadlogo"  update=":dataverseForm:themeWidgetsTabView:themeTab" dragDropSupport="true" auto="true" multiple="false"
+                    <p:fileUpload id="uploadlogo"  update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                   fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                     <p:message for="uploadlogo"/>
                 </p:panelGrid>

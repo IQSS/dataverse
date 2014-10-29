@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
@@ -15,13 +14,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.component.tabview.TabView;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -37,8 +36,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
-    private String uploadedFileName;
     private Dataverse editDv;
+    private TabView tabView;
       @Inject
     DataverseSession session;
     @EJB
@@ -60,7 +59,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     
     @PreDestroy
     /**
-     *  Cleanup by deleting temp directory and uploaded file  
+     *  Cleanup by deleting temp directory and uploaded files  
      */
     public void cleanupTempDirectory() {
         try {
@@ -89,6 +88,14 @@ public class ThemeWidgetFragment implements java.io.Serializable {
          this.editDv = editDV;
       
           
+    }
+
+    public TabView getTabView() {
+        return tabView;
+    }
+
+    public void setTabView(TabView tabView) {
+        this.tabView = tabView;
     }
     
     public String getTempDirName() {
@@ -127,6 +134,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         if (editDv.getLogoFormat()==null) {
             editDv.setLogoFormat(Dataverse.ImageFormat.SQUARE);
         }
+        // Set the active index, so that Theme tab will still display after upload
+        tabView.setActiveIndex(1);
 
     }
     
