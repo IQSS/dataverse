@@ -269,7 +269,6 @@ public class IngestServiceBean {
                 
         // If it's a ZIP file, we are going to unpack it and create multiple 
         // DataFile objects from its contents:
-       // } else if (( finalType.equals("application/zip")) || (finalType.equals(ShapefileHandler.SHAPEFILE_FILE_TYPE))) {   
           } else if (finalType.equals("application/zip")) {   
             
             ZipInputStream unZippedIn = null; 

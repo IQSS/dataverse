@@ -744,8 +744,13 @@ public class ShapefileHandler{
            this.addErrorMessage("IOException File name");
            msgt("IOException");
            return false;
+       }catch(IllegalArgumentException ex){
+           this.addErrorMessage("IllegalArgumentException when parsing zipfile");
+           msgt("IllegalArgumentException when parsing zipfile");
+           return false;
+           
        }finally{
-           // we must always close the zip file.
+           
        }
 
    } // end examineFile
