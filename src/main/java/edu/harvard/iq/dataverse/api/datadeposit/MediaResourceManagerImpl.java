@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
@@ -201,78 +199,60 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
             // in the future maybe we'll support other formats? Rdata files? Stata files?
+            /**
+             * @todo decide if we want non zip files to work. Technically, now
+             * that we're letting ingestService.createDataFiles unpack the zip
+             * for us, the following *does* work:
+             *
+             * curl--data-binary @path/to/trees.png -H "Content-Disposition:
+             * filename=trees.png" -H "Content-Type: image/png" -H "Packaging:
+             * http://purl.org/net/sword/package/SimpleZip"
+             *
+             * We *might* want to continue to force API users to only upload zip
+             * files so that some day we can support a including a file or files
+             * that contain the metadata (i.e. description) for each file in the
+             * zip: https://github.com/IQSS/dataverse/issues/723
+             */
             if (!deposit.getPackaging().equals(UriRegistry.PACKAGE_SIMPLE_ZIP)) {
                 throw new SwordError(UriRegistry.ERROR_CONTENT, 415, "Package format " + UriRegistry.PACKAGE_SIMPLE_ZIP + " is required but format specified in 'Packaging' HTTP header was " + deposit.getPackaging());
             }
 
             String uploadedZipFilename = deposit.getFilename();
-            ZipInputStream ziStream = new ZipInputStream(deposit.getInputStream());
-            ZipEntry zEntry;
-
             DatasetVersion editVersion = dataset.getEditVersion();
-            List<DataFile> newFiles = new ArrayList<>();
+
+            if (deposit.getInputStream() == null) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Deposit input stream was null.");
+            }
+
+            int bytesAvailableInInputStream = 0;
             try {
-                // copied from createStudyFilesFromZip in AddFilesPage
-                while ((zEntry = ziStream.getNextEntry()) != null) {
-                    // Note that some zip entries may be directories - we 
-                    // simply skip them:
-                    if (!zEntry.isDirectory()) {
-
-                        String finalFileName = "UNKNOWN";
-                        if (zEntry.getName() != null) {
-                            String zentryFilename = zEntry.getName();
-                            int ind = zentryFilename.lastIndexOf('/');
-
-                            String dirName = "";
-                            if (ind > -1) {
-                                finalFileName = zentryFilename.substring(ind + 1);
-                                if (ind > 0) {
-                                    dirName = zentryFilename.substring(0, ind);
-                                    dirName = dirName.replace('/', '-');
-                                }
-                            } else {
-                                finalFileName = zentryFilename;
-                            }
-
-                        }
-
-                        // skip junk files
-                        if (".DS_Store".equals(finalFileName)) {
-                            continue;
-                        }
-
-                        // http://superuser.com/questions/212896/is-there-any-way-to-prevent-a-mac-from-creating-dot-underscore-files
-                        if (finalFileName.startsWith("._")) {
-                            continue;
-                        }
-
-                        /**
-                         * @todo set the category (or categories) for files once
-                         * we can: https://github.com/IQSS/dataverse/issues/303
-                         */
-                        // And, if this file was in a legit (non-null) directory, 
-                        // we'll use its name as the file category: 
-//                        tempFileBean.getFileMetadata().setCategory(dirName);
-                        String guessContentTypeForMe = null;
-                        List<DataFile> dataFiles = ingestService.createDataFiles(editVersion, ziStream, finalFileName, guessContentTypeForMe);
-                        for (DataFile dataFile : dataFiles) {
-                            newFiles.add(dataFile);
-                        }
-                    } else {
-                        logger.fine("directory found: " + zEntry.getName());
-                    }
-                }
+                bytesAvailableInInputStream = deposit.getInputStream().available();
             } catch (IOException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with file: " + uploadedZipFilename);
-            } catch (EJBException ex) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine number of bytes available in input stream: " + ex);
+            }
+
+            if (bytesAvailableInInputStream == 0) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Bytes available in input stream was " + bytesAvailableInInputStream + ". Please check the file you are attempting to deposit.");
+            }
+
+            /**
+             * @todo Think about if we should instead pass in "application/zip"
+             * rather than letting ingestService.createDataFiles() guess the
+             * contentType by passing it "null". See also the note above about
+             * SimpleZip vs. other contentTypes.
+             */
+            String guessContentTypeForMe = null;
+            List<DataFile> dataFiles = new ArrayList<>();
+            try {
+                dataFiles = ingestService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+            } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
-
-            if (newFiles.isEmpty()) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem with zip file '" + uploadedZipFilename + "'. Number of files unzipped: " + newFiles.size());
+            if (!dataFiles.isEmpty()) {
+                ingestService.addFiles(editVersion, dataFiles);
+            } else {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");
             }
-
-            ingestService.addFiles(editVersion, newFiles);
 
             Command<Dataset> cmd;
             cmd = new UpdateDatasetCommand(dataset, vdcUser);

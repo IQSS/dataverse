@@ -17,6 +17,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
+                    <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
                     <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
@@ -348,8 +349,7 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" 
-                                                               update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show()">
+                                                <p:commandLink id="themeWidgetsOpts" onclick="themeAndWidgetsForm.show()">
                                                     <h:outputText value="Theme + Widgets" />
                                                 </p:commandLink>
                                             </li>
@@ -432,21 +432,21 @@
                                                 <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                                     <div class="item" style="min-height:80px;">
                                                         <ui:fragment rendered="#{empty dv.logo}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                            <a href="/dataverse.xhtml?alias=#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                                 <img src="/resources/images/icon_dataverse.png" style="height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'SQUARE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.id}/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                            <a href="/dataverse.xhtml?alias=#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
+                                                                <img src="/logos/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'RECTANGLE'}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.id}/#{dv.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                            <a href="/dataverse.xhtml?alias=#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
+                                                                <img src="/logos/#{dv.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                        <a href="/dataverse.xhtml?alias=#{dv.alias}" title="#{dv.name} Dataverse" style="display:block;">
                                                             <h:outputText value="#{dv.name} Dataverse"/>
                                                         </a>
                                                     </div>
@@ -520,7 +520,48 @@
                         <p:commandButton value="Cancel" onclick="deleteConfirmation.hide();" type="button" />
                     </p:confirmDialog>
 
-                  
+                    <!-- Dataverse Theme Panel -->
+                    <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
+                        <p:panelGrid columns="3">
+                            <h:outputLabel value="Logo"/>
+                            <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
+                            <p:message for="logo"/>
+                            <h:outputLabel value="Logo Format"/>
+                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
+                                <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
+                                <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
+                            </p:selectOneRadio>
+                            <p:message for="logoFormat"/>
+                            <h:outputLabel value="Logo Alignment"/>
+                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
+                                <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
+                                <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
+                                <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
+                            </p:selectOneMenu>
+                            <p:message for="logoFormat"/>
+                            <h:outputLabel value="Logo Background Color"/>
+                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
+                            <p:message for="logoBackgroundColor"/>
+                            <h:outputLabel value="Tagline"/>
+                            <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
+                            <p:message for="tagline"/>
+                            <h:outputLabel value="Link URL"/>
+                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
+                            <p:message for="linkUrl"/>
+                            <h:outputLabel value="Link Text"/>
+                            <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
+                            <p:message for="linkText"/>
+                            <h:outputLabel value="Link Color"/>
+                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
+                            <p:message for="linkColor"/>
+                            <h:outputLabel value="Text Color"/>
+                            <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
+                            <p:message for="textColor"/>
+                            <h:outputLabel value="Background Color"/>
+                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
+                            <p:message for="backgroundColor"/>
+                        </p:panelGrid>
+                    </ui:fragment>
 
                     <!-- Save / Cancel Button Panel -->
                     <p:panel styleClass="panelLayoutButtonBlock" rendered="#{!empty DataversePage.editMode}">

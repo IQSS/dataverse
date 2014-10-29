@@ -42,6 +42,8 @@ public class SolrSearchResult {
     private String dataverseAffiliation;
     private String citation;
     private String filetype;
+    private String dataverseAlias;
+    private String dataverseParentAlias;
 //    private boolean statePublished;
     private boolean unpublishedState;
     private boolean draftState;
@@ -425,6 +427,34 @@ public class SolrSearchResult {
 
     public String getFileUrl() {
         return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
+    }
+
+    /**
+     * @return the dataverseAlias
+     */
+    public String getDataverseAlias() {
+        return dataverseAlias;
+    }
+
+    /**
+     * @param dataverseAlias the dataverseAlias to set
+     */
+    public void setDataverseAlias(String dataverseAlias) {
+        this.dataverseAlias = dataverseAlias;
+    }
+
+    /**
+     * @return the dataverseParentAlias
+     */
+    public String getDataverseParentAlias() {
+        return dataverseParentAlias;
+    }
+
+    /**
+     * @param dataverseParentAlias the dataverseParentAlias to set
+     */
+    public void setDataverseParentAlias(String dataverseParentAlias) {
+        this.dataverseParentAlias = dataverseParentAlias;
     }
 
 }

@@ -315,12 +315,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
                 if (solrSearchResult.getType().equals("dataverses")) {
                     Dataverse dataverseInCard = dataverseService.find(solrSearchResult.getEntityId());
+                    String parentId = solrSearchResult.getParent().get("id");
+                    if (parentId != null){
+                        Dataverse parentDataverseInCard = dataverseService.find(Long.parseLong(parentId));
+                        solrSearchResult.setDataverseParentAlias(parentDataverseInCard.getAlias());
+                    }
+                    
                     if (dataverseInCard != null) {
                         //Omit deaccessioned datasets
                         List<Dataset> datasets = datasetService.findByOwnerId(dataverseInCard.getId(), true);
                         solrSearchResult.setDatasets(datasets);
                         solrSearchResult.setDataverseAffiliation(dataverseInCard.getAffiliation());
                         solrSearchResult.setStatus(getCreatedOrReleasedDate(dataverseInCard, solrSearchResult.getReleaseOrCreateDate()));
+                        solrSearchResult.setDataverseAlias(dataverseInCard.getAlias());                        
                     }
                 } else if (solrSearchResult.getType().equals("datasets")) {
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();

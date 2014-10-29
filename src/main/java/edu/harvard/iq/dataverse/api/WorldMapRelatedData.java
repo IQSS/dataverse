@@ -359,6 +359,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         dfile_json.add("dataset_description", "");  // Need to fix to/do
 
+        dfile_json.add("dataset_is_public", dset_version.isReleased());
                 
         //------------------------------------
         // DataFile/FileMetaData Info

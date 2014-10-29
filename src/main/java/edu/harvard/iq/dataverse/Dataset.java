@@ -245,7 +245,7 @@ public class Dataset extends DvObjectContainer {
     public String getNextMajorVersionString() {
         for (DatasetVersion dv : this.getVersions()) {
             if (!dv.isWorkingCopy()) {
-                return ".0" + Integer.toString(dv.getVersionNumber().intValue() + 1);
+                return Integer.toString(dv.getVersionNumber().intValue() + 1) + ".0";
             }
         }
         return "1.0";
