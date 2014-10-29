@@ -1003,6 +1003,7 @@ chdir($cwd);
 print "\nOK, done!\n";
 
 # FIXME: don't just sleep... figure out if the app is up yet.
+print "\n--Sleeping for 3 minutes--\n";
 sleep 180;
 
 # Populate the metadata block field values, create users
