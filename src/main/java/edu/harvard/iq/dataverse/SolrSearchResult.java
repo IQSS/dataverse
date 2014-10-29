@@ -43,6 +43,7 @@ public class SolrSearchResult {
     private String citation;
     private String filetype;
     private String dataverseAlias;
+    private String dataverseParentAlias;
 //    private boolean statePublished;
     private boolean unpublishedState;
     private boolean draftState;
@@ -440,6 +441,20 @@ public class SolrSearchResult {
      */
     public void setDataverseAlias(String dataverseAlias) {
         this.dataverseAlias = dataverseAlias;
+    }
+
+    /**
+     * @return the dataverseParentAlias
+     */
+    public String getDataverseParentAlias() {
+        return dataverseParentAlias;
+    }
+
+    /**
+     * @param dataverseParentAlias the dataverseParentAlias to set
+     */
+    public void setDataverseParentAlias(String dataverseParentAlias) {
+        this.dataverseParentAlias = dataverseParentAlias;
     }
 
 }
