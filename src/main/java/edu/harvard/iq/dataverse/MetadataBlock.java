@@ -105,6 +105,17 @@ public class MetadataBlock implements Serializable {
     public boolean isSelected() {         
         return selected;
     }
+    
+    @Transient
+    private boolean hasRequired;
+
+    public void setHasRequired(boolean hasRequired) {
+        this.hasRequired = hasRequired;
+    }
+    
+    public boolean isHasRequired() {         
+        return hasRequired;
+    }
 
     public String getIdString(){
         return id.toString();

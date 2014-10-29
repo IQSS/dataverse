@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,13 +17,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  *
  * @author skraffmiller
  */
-public class DatasetVersionUI {
+@ViewScoped
+public class DatasetVersionUI implements Serializable {
 
+     @EJB
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelServiceBean;
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    private EntityManager em;   
+    
     public DatasetVersionUI() {
     }
 
@@ -109,7 +122,79 @@ public class DatasetVersionUI {
         }
         
         datasetVersion.setDatasetFields(initDatasetFields());
+        
         setMetadataValueBlocks(datasetVersion);
+    }
+    
+    public DatasetVersionUI  initDatasetVersionUI(DatasetVersion datasetVersion) {
+        /*takes in the values of a dataset version 
+         and apportions them into lists for 
+         viewing and editng in the dataset page.
+         */
+        
+        setDatasetVersion(datasetVersion);
+        this.setDatasetAuthors(new ArrayList());
+        this.setDatasetRelPublications(new ArrayList());
+
+        // loop through vaues to get fields for view mode
+        for (DatasetField dsf : datasetVersion.getDatasetFields()) {
+            //Special Handling for various fields displayed above tabs in dataset page view.
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.title)) {
+                setTitle(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText)) {
+                setDescription(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.keyword)) {
+                setKeyword(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
+                setSubject(dsf);
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.notesText)) {
+                this.setNotes(dsf);                
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
+                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
+                    DatasetAuthor datasetAuthor = new DatasetAuthor();
+                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                            datasetAuthor.setName(subField);
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                            datasetAuthor.setAffiliation(subField);
+                        }
+                    }
+                    this.getDatasetAuthors().add(datasetAuthor);
+                }                
+            } else if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
+                //Special handling for Related Publications
+                // Treated as below the tabs for editing, but must get first value for display above tabs    
+                if (this.datasetRelPublications.isEmpty()) {
+                    for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
+                        DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
+                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getTitle());
+                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getDescription());
+                        for (DatasetField subField : relPubVal.getChildDatasetFields()) {
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                                datasetRelPublication.setText(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                                datasetRelPublication.setIdNumber(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                                datasetRelPublication.setIdType(subField.getValue());
+                            }
+                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                                datasetRelPublication.setUrl(subField.getValue());
+                            }
+                        }
+                        this.getDatasetRelPublications().add(datasetRelPublication);
+                    }
+                }
+            }
+        }
+        
+        datasetVersion.setDatasetFields(initDatasetFields());
+        
+        setMetadataValueBlocks(datasetVersion);
+        
+        return this;
     }
 
     private Dataset getDataset() {
@@ -383,17 +468,34 @@ public class DatasetVersionUI {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
+        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(this.datasetVersion.getDataset().getOwner().getId());
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
             mdb.setEmpty(true);
+            mdb.setHasRequired(false);
             List<DatasetField> datasetFieldsForView = new ArrayList();
             List<DatasetField> datasetFieldsForEdit = new ArrayList();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
+                DataverseFieldTypeInputLevel dftil = dataverseFieldTypeInputLevelServiceBean.findByDataverseIdDatasetFieldTypeId(this.datasetVersion.getDataset().getOwner().getId(), dsf.getDatasetFieldType().getId());
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
-                    if (!dsf.isEmpty()) {
+                    if(dsf.isRequired() || (dftil != null &&  dftil.isRequired())){   
+                        dsf.getDatasetFieldType().setRequiredDV(true);  
+                        mdb.setHasRequired(true);
+                        mdb.setEmpty(false);
+                    }                    
+                    if (!dsf.isEmpty()) {                                         
                         mdb.setEmpty(false);
                         datasetFieldsForView.add(dsf);
                     }
+                }
+                if (dsf.getDatasetFieldType().isHasChildren() && (!dftilList.isEmpty())){
+                    for (DatasetFieldType child :dsf.getDatasetFieldType().getChildDatasetFieldTypes() ){
+                        for (DataverseFieldTypeInputLevel dftilTest : dftilList){
+                            if (child.equals(dftilTest.getDatasetFieldType())){
+                                dsf.setRequired(true);                                
+                            }
+                        }
+                    }                    
                 }
             }
             
@@ -402,8 +504,8 @@ public class DatasetVersionUI {
             }
             if (!datasetFieldsForEdit.isEmpty()) {
                 metadataBlocksForEdit.put(mdb, datasetFieldsForEdit);
-            }            
         }
+    }
     }
 
 }

@@ -48,8 +48,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
             return (DataverseFieldTypeInputLevel) query.getSingleResult();
         } catch ( NoResultException nre ) {
             return null;
-        } 
-        
+        }         
     }
 
     public void delete(DataverseFieldTypeInputLevel dataverseFieldTypeInputLevel) {
