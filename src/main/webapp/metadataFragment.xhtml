@@ -121,13 +121,13 @@
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
                                                                                              title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
                                                                                              actionListener="#{dsf.addDatasetFieldValue(valCount.index + 1)}"
-                                                                                             oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
+                                                                                             oncomplete="javascript:bind_bsui_components();">
                                                                             </p:commandButton>
                                                                             <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
                                                                                              title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                              rendered="#{dsf.datasetFieldValues.size() > 1}"
                                                                                              actionListener="#{dsf.removeDatasetFieldValue(valCount.index)}"
-                                                                                             oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
+                                                                                             oncomplete="javascript:bind_bsui_components();">
                                                                             </p:commandButton>
                                                                         </div>
                                                                     </ui:fragment>
@@ -210,13 +210,13 @@
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin:1.8em 1em 0 0;' : 'margin:0 1em 0 0;'}"
                                                                                  title="Add Record" value="&lt;span class='glyphicon glyphicon-plus'&gt;&lt;/span&gt;" escape="false"
                                                                                  actionListener="#{dsf.addDatasetFieldCompoundValue(valCount.index + 1)}"
-                                                                                 oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
+                                                                                 oncomplete="javascript:bind_bsui_components();">
                                                                 </p:commandButton>
                                                                 <p:commandButton styleClass="btn btn-default btn-sm" style="#{dsf.datasetFieldType.compound ? 'margin-top:1.8em;' : ''}"
                                                                                  title="Delete Record" value="&lt;span class='glyphicon glyphicon-minus'&gt;&lt;/span&gt;" escape="false"
                                                                                  rendered="#{dsf.datasetFieldCompoundValues.size() > 1}"
                                                                                  actionListener="#{dsf.removeDatasetFieldCompoundValue(valCount.index)}"
-                                                                                 oncomplete="javascript:bind_tooltip_plus_minus_buttons();">
+                                                                                 oncomplete="javascript:bind_bsui_components();">
                                                                 </p:commandButton>
                                                             </div>
                                                         </ui:fragment>
