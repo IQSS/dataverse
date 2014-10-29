@@ -114,6 +114,8 @@ public class DatasetPage implements java.io.Serializable {
     BuiltinUserServiceBean builtinUserService;  
     @EJB
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;  
+    @Inject 
+    DatasetVersionUI datasetVersionUI;
     
     private Dataset dataset = new Dataset();
     private EditMode editMode;
@@ -122,7 +124,6 @@ public class DatasetPage implements java.io.Serializable {
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList();
     private DatasetVersion workingVersion;
-    private DatasetVersionUI datasetVersionUI = new DatasetVersionUI();
     private int releaseRadio = 1;
     private int deaccessionRadio = 0;
     private int deaccessionReasonRadio = 0;
@@ -326,24 +327,25 @@ public class DatasetPage implements java.io.Serializable {
             updateDatasetFieldInputLevels();
         } else {
             dataset = new Dataset();
-            workingVersion = dataset.getLatestVersion();
-            updateDatasetFieldInputLevels();
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
             dataset.setOwner(dataverseService.find(ownerId));
+            workingVersion = dataset.getCreateVersion();
+            updateDatasetFieldInputLevels();
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));            
         }
         resetVersionUI();
     }
     
     private void updateDatasetFieldInputLevels(){
-        for (DatasetField dsf: workingVersion.getDatasetFields()){ 
+        for (DatasetField dsf: workingVersion.getFlatDatasetFields()){ 
            DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(ownerId, dsf.getDatasetFieldType().getId());
            if (dsfIl != null){
                dsf.setRequired(dsfIl.isRequired());
+               dsf.getDatasetFieldType().setRequiredDV(dsfIl.isRequired());               
                dsf.setInclude(dsfIl.isInclude());
            } else {
                dsf.setRequired(dsf.getDatasetFieldType().isRequired());
                dsf.setInclude(true);
-           }  
+           } 
         }
     }
 
@@ -448,7 +450,7 @@ public class DatasetPage implements java.io.Serializable {
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
             try {
-                datasetVersionUI = new DatasetVersionUI(workingVersion);
+                datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
                 updateDatasetFieldInputLevels();
             } catch (NullPointerException npe) {
                 //This will happen when solr is down and will allow any link to be displayed.
@@ -487,6 +489,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             resetVersionUI();
+            
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
             throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
@@ -502,7 +505,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private void resetVersionUI() {
-        datasetVersionUI = new DatasetVersionUI(workingVersion);
+        datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
         User user = session.getUser();
         
         //Get builtin user to supply default values for contact email author name, etc.
@@ -549,7 +552,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (editMode == EditMode.FILE) {
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Upload + Edit Dataset Files", " - You can drag and drop your files from your desktop, directly into the upload widget."));
         } else if (editMode == EditMode.METADATA) {
-            datasetVersionUI = new DatasetVersionUI(workingVersion);
+            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
             updateDatasetFieldInputLevels();
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         }

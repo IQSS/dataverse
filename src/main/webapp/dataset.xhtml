@@ -400,7 +400,7 @@
                                         </p:selectOneMenu>
                                         <p:commandButton value="Direct" id="updateTemplate"
                                                          style="display:none"
-                                                         update="@all"
+                                                         update="@form"
                                                          action="#{DatasetPage.handleChangeButton}">
                                         </p:commandButton>
                                     </div>
@@ -616,7 +616,9 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab id="metadataMapTab" title="Metadata" rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
+                                <p:tab  id="metadataMapTab" title="Metadata" 
+                                        rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}"
+                                        >
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
