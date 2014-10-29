@@ -78,7 +78,7 @@
         <div class="panel-group">
             <ui:repeat value="#{(!empty DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray()) ? 
                                 DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray() : TemplatePage.template.metadataBlocksForEdit.entrySet().toArray()}" var="metadataBlockVal" varStatus="block">
-                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()  ) or (!empty TemplatePage.editMode) }">
+                <ui:fragment rendered="#{(DatasetPage.editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty() or metadataBlockVal.key.isHasRequired() ) or (!empty TemplatePage.editMode) }">
                     <div class="panel panel-default">
                         <div data-toggle="collapse" data-target="#collapse#{block.index}" class="panel-heading text-info">
                             #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}" style="margin-left:.3em;top:3px;"/>
@@ -87,7 +87,7 @@
                             <div class="panel-body">
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                     <ui:fragment rendered="#{((DatasetPage.editMode == 'METADATA' 
-                                                             or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required) and dsf.include)
+                                                             or dsf.datasetFieldType.displayOnCreate or !dsf.isEmpty() or dsf.required or dsf.datasetFieldType.requiredDV or dsf.datasetFieldType.hasRequiredChildren) and dsf.include)
                                                              or (!empty TemplatePage.editMode and dsf.include)}">
 
                                         <div class="form-group">
@@ -95,7 +95,7 @@
                                                 <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="#{dsf.datasetFieldType.description}">
                                                     #{dsf.datasetFieldType.title}
                                                 </a>
-                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required}" />
+                                                <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required or dsf.datasetFieldType.requiredDV }" />
                                             </label>
 
 
@@ -169,7 +169,7 @@
                                                                     <ui:fragment>
                                                                         <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
                                                                             <a class="tooltiplabel right" data-original-title="#{subdsf.datasetFieldType.description}" data-placement="auto right" data-toggle="tooltip" href="#">#{subdsf.datasetFieldType.title}</a>
-                                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required}" />
+                                                                            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.datasetFieldType.required or subdsf.datasetFieldType.requiredDV }" />
                                                                         </label>
                                                                     </ui:fragment>
                                                                     <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
