@@ -78,8 +78,9 @@
                     <p:message for="logoFormat"/>
 
                     <h:outputLabel value="Logo Background Color"/>
-                    <p:inputText id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.logoBackgroundColor}"/>
-                    <p:message for="logoBackgroundColor"/>
+                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.logoBackgroundColor}"/>
+                                       
+                        <p:message for="logoBackgroundColor"/>
                     </p:panelGrid>
                 </ui:fragment>
                 <p:panelGrid columns="3">
@@ -96,15 +97,15 @@
                     <p:message for="linkText"/>
 
                     <h:outputLabel value="Link Color"/>
-                    <p:inputText id="linkColor" value="#{themeWidgetFragment.editDv.linkColor}"/>
+                    <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.linkColor}"/>
                     <p:message for="linkColor"/>
 
                     <h:outputLabel value="Text Color"/>
-                    <p:inputText id="textColor" value="#{themeWidgetFragment.editDv.textColor}"/>
+                    <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.textColor}"/>
                     <p:message for="textColor"/>
 
                     <h:outputLabel value="Background Color"/>
-                    <p:inputText id="backgroundColor" value="#{themeWidgetFragment.editDv.backgroundColor}"/>
+                    <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.backgroundColor}"/>
                     <p:message for="backgroundColor"/>
                 </p:panelGrid>
                 <h:commandButton      action="#{themeWidgetFragment.save()}" class="btn btn-success" value="Save Changes"/>
@@ -113,4 +114,5 @@
         </p:tabView>
       <!--  <button type="button" jsf: style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()"  value="Done">Done</button>  -->
     </p:dialog>
+     
 </div>
