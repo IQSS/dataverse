@@ -168,7 +168,7 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="mdbSelect">Metadata Elements</label>
                                 <div class="col-sm-9">
-                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the sets of Metadata Elements for datasets in this Dataverse.</p>
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose metadata fields to use in dataset templates and when adding a dataset to this dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                                         <p:selectBooleanCheckbox styleClass="metadata-blocks-default" value="#{DataversePage.inheritMetadataBlockFromParent}" itemLabel="Metadata Elements from Host Dataverse">
                                             <p:ajax update="@widgetVar(optionBlock)" listener="#{DataversePage.editMetadataBlocks}"/>
@@ -212,12 +212,12 @@
                                         <p:commandLink id="showDSFT" actionListener="#{DataversePage.showDatasetFieldTypes(mdb.id)}" rendered="#{!mdb.showDatasetFieldTypes and mdb.selected }"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
-                                                    <h:outputText value="Update Fields" />
+                                                    <h:outputText value="Select metadata fields as hidden, required, or optional" />
                                         </p:commandLink>
                                         <p:commandLink id="hideDSFT" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" rendered="#{mdb.showDatasetFieldTypes and mdb.selected  }"
                                                        immediate="true"
                                                        update="@widgetVar(optionBlock)" >
-                                                    <h:outputText value="Hide Fields" />
+                                                    <h:outputText value="Close" />
                                         </p:commandLink>
                                         <ui:fragment rendered="#{mdb.showDatasetFieldTypes}">
                                         <div class="panel panel-default" style="width:70%;margin-left:60px;">
@@ -277,10 +277,10 @@
                                                                      
                                                                     
                                                                     <ui:fragment rendered="#{!dsft.hasChildren  and dsft.required}">
-                                                                        System Requirement
+                                                                        Required by Dataverse
                                                                     </ui:fragment>
                                                                     <ui:fragment rendered="#{dsft.hasChildren  and dsft.hasRequiredChildren}">
-                                                                        System Requirement
+                                                                        Required by Dataverse
                                                                     </ui:fragment>
                                                                 </td>
                                                             </tr>
@@ -301,7 +301,7 @@
                             <div class="form-group">
                                 <label class="col-sm-3 control-label" for="facetPickListCreate">Select Facets</label>
                                 <div class="col-sm-9">
-                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Choose the search result facets to display for this Dataverse.</p>
+                                    <p style="display:block; margin-bottom:.5em;" class="text-primary"><span class="glyphicon glyphicon-info-sign"></span> Pick the metadata fields to use as facets for browsing datasets and dataverses in this dataverse.</p>
                                     <ui:fragment rendered="#{DataversePage.dataverse.owner != null}">
                                         <p:selectBooleanCheckbox styleClass="facet-category-default" value="#{DataversePage.inheritFacetFromParent}" itemLabel="Facets from Host Dataverse">
                                             <p:ajax update="editFacets" listener="#{DataversePage.editFacets}"/>
