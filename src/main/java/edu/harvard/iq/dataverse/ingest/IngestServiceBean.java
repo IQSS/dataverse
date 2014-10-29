@@ -294,7 +294,7 @@ public class IngestServiceBean {
                             // Check if it's a "fake" file - a zip archive entry 
                             // created for a MacOS X filesystem element: (these 
                             // start with "._")
-                            if (!fileEntryName.startsWith("._")) {
+                            if (!fileEntryName.startsWith("._") && !fileEntryName.startsWith(".DS_Store")) {
                                 // OK, this seems like an OK file entry - we'll try 
                                 // to read it and create a DataFile with it:
 
