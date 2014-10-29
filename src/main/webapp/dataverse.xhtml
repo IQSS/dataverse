@@ -230,14 +230,14 @@
                                                                         <div class="checkbox">
                                                                             <label>
                                                                                 <input type="checkbox" checked="checked" jsf:itemValue="#{dsft}" jsf:value="#{dsft.include}" 
-                                                                                       onClick="updateInclude()"/> <h:outputText value="#{dsft.displayName}"/>
+                                                                                       onclick="updateInclude()"/> <h:outputText value="#{dsft.displayName}"/>
                                                                             </label>
                                                                         </div>
                                                                     </ui:fragment>
                                                                     <ui:fragment rendered="#{!dsft.hasParent and !dsft.hasRequiredChildren and !dsft.required and !dsft.include}">
                                                                         <div class="checkbox">
                                                                             <label>
-                                                                                <input type="checkbox"  jsf:itemValue="#{dsft}" jsf:value="#{dsft.include}" onClick="updateInclude()"  /> <h:outputText value="#{dsft.displayName}"/>
+                                                                                <input type="checkbox"  jsf:itemValue="#{dsft}" jsf:value="#{dsft.include}" onclick="updateInclude()"  /> <h:outputText value="#{dsft.displayName}"/>
                                                                             </label>
                                                                         </div>
                                                                     </ui:fragment>
