@@ -162,6 +162,14 @@
                                                             <h:outputText value="Metadata" />
                                                         </p:commandLink>
                                                     </li>
+                                                    <li>                                                    
+                                                        <p:commandLink id="rolesPermissionsOpts" 
+                                                                       actionListener="#{rolePermissionFragment.setDvObject(DatasetPage.dataset)}" 
+                                                                       update="rolesPermissionsDialog"
+                                                                       oncomplete="rolesPermissionsForm.show()">
+                                                            <h:outputText value="Roles + Permissions" />
+                                                        </p:commandLink>  
+                                                    </li>
                                                     <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('DeleteDatasetCommand')}">
                                                         <li class="divider"></li>
                                                         <li>
@@ -912,6 +920,8 @@
                                      oncomplete="javascript:bind_bsui_components();"
                                      action="#{DatasetPage.save}">
                     </p:commandButton>
+                    
+                    <ui:include src="rolesAndPermissionsFragment.xhtml"/>                    
                 </h:form>
             </ui:define>
         </ui:composition>
