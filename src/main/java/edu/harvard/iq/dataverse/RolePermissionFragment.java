@@ -58,13 +58,13 @@ public class RolePermissionFragment implements java.io.Serializable {
     @Inject
     DataverseSession session;    
     
-    Dataverse dvObject; 
+    DvObject dvObject; 
 
-    public Dataverse getDvObject() {
+    public DvObject getDvObject() {
         return dvObject;
     }
 
-    public void setDvObject(Dataverse dvObject) {
+    public void setDvObject(DvObject dvObject) {
         this.dvObject = dvObject;
     }
     
@@ -77,8 +77,11 @@ public class RolePermissionFragment implements java.io.Serializable {
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
         if (dvObject != null) {
+            // current the avaialable roles for a dataset are gotten from its parent
+            Dataverse dv = dvObject instanceof Dataverse ? (Dataverse) dvObject : ((Dataset) dvObject).getOwner();
+            
             for (Map.Entry<Dataverse, Set<DataverseRole>> e
-                    : roleService.availableRoles(dvObject.getId()).entrySet()) {
+                    : roleService.availableRoles(dv.getId()).entrySet()) {
                 for (DataverseRole aRole : e.getValue()) {
                     roles.add(aRole);
                 }
@@ -106,7 +109,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
         try {
             commandEngine.submit(new AssignRoleCommand(roas, r, dvObject, session.getUser()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + roas.getDisplayInfo().getTitle() + " on " + dvObject.getName());
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + roas.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
         }
@@ -160,16 +163,12 @@ public class RolePermissionFragment implements java.io.Serializable {
             return ra.getRole();
         }
 
-        public Dataverse getAssignDv() {
-            return (Dataverse) ra.getDefinitionPoint();
-        }
-
         public String getRoleName() {
             return getRole().getName();
         }
 
         public String getAssignedDvName() {
-            return getAssignDv().getName();
+            return ra.getDefinitionPoint().getDisplayName();
         }
 
         public Long getId() {
@@ -206,17 +205,21 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
 
     public void updateRole(ActionEvent e) {
-        role.setOwner(dvObject);
-        role.clearPermissions();
-        for (String pmsnStr : getSelectedPermissions()) {
-            role.addPermission(Permission.valueOf(pmsnStr));
-        }
-        try {
-            setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), dvObject)));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
-        } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
-            Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+        // @todo currently only works for Dataverse since CreateRoleCommand only takes a dataverse
+        // we need to decide if we want roles at the dataset level or not
+        if (dvObject instanceof Dataverse) {
+            role.setOwner(dvObject);
+            role.clearPermissions();
+            for (String pmsnStr : getSelectedPermissions()) {
+                role.addPermission(Permission.valueOf(pmsnStr));
+            }
+            try {
+                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) dvObject)));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
+            } catch (CommandException ex) {
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
+                Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -242,4 +245,8 @@ public class RolePermissionFragment implements java.io.Serializable {
         this.selectedPermissions = selectedPermissions;
     }
 
+    public boolean isDvObjectInstanceofDataverse() {
+        return dvObject instanceof Dataverse;
+    }        
+    
 }
