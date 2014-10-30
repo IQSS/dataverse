@@ -310,4 +310,8 @@ public class Dataset extends DvObjectContainer {
         return protocol + ":" + authority + "/" + getIdentifier();
     }
 
+    public String getDisplayName() {
+        DatasetVersion dsv = getReleasedVersion();
+        return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+    }   
 }
