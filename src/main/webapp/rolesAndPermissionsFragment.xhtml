@@ -7,7 +7,7 @@
     <!-- Roles + Permissions Popup -->
     <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
         <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
-            #{rolePermissionFragment.dvObject.name} Dataverse
+            #{rolePermissionFragment.dvObject.displayName}
             <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">
                 <h:outputText value="(Up)" />
@@ -64,7 +64,7 @@
                                 </p:dataTable>
                             </div>
                         </p:tab>
-                        <p:tab id="dataversesSubTab" title="Dataverses">
+                        <p:tab id="dataversesSubTab" title="Dataverses" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
                             <p:dataTable id="dataverses" var="dv" value="#{dataverseServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
                                 <p:column width="35%" sortBy="name" headerText="Dataverse">
                                     <h:outputText value="#{dv.name} " />
@@ -83,7 +83,7 @@
                                 </p:column>
                             </p:dataTable>                        
                         </p:tab>
-                        <p:tab id="datasetsSubTab" title="Datasets">
+                        <p:tab id="datasetsSubTab" title="Datasets"  rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
                             <p:dataTable id="datasets" var="ds" value="#{datasetServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
                                 <p:column width="35%" sortBy="name" headerText="Dataset">
                                     <h:outputText value="#{ds.latestVersion.title} " />
