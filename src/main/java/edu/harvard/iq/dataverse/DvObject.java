@@ -145,4 +145,7 @@ public abstract class DvObject implements java.io.Serializable {
     protected String toStringExtras() {
         return "";
     }
+    
+    public abstract String getDisplayName();
+
 }
