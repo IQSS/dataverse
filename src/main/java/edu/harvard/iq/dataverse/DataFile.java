@@ -452,4 +452,10 @@ public class DataFile extends DvObject {
 	public <T> T accept( Visitor<T> v ) {
 		return v.visit(this);
 	}
+        
+    public String getDisplayName() {
+        // @todo should we show the published version label instead?
+        // currently this method is not being used
+        return getLatestFileMetadata().getLabel();
+    }
 }
