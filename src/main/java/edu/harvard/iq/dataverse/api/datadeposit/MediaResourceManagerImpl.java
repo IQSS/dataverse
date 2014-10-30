@@ -244,7 +244,29 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             String guessContentTypeForMe = null;
             List<DataFile> dataFiles = new ArrayList<>();
             try {
-                dataFiles = ingestService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+                try {
+                    dataFiles = ingestService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+                } catch (EJBException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause != null) {
+                        if (cause instanceof IllegalArgumentException) {
+                            /**
+                             * @todo should be safe to remove this catch of
+                             * EJBException and IllegalArgumentException once
+                             * this ticket is resolved:
+                             *
+                             * IllegalArgumentException: MALFORMED when
+                             * uploading certain zip files
+                             * https://github.com/IQSS/dataverse/issues/1021
+                             */
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. Problem with zip file, perhaps: " + cause);
+                        } else {
+                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + cause);
+                        }
+                    } else {
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
+                    }
+                }
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
             }
