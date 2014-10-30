@@ -1,0 +1,200 @@
+                     <ice:outputText styleClass="warnMessage" value="[Experimental!]" rendered="#{AddFilesPage.SAVIngestRequested}"/>
+                     <ice:outputText styleClass="vdcTextStandout" value=" Specify character encoding for the SAV data file" rendered="#{AddFilesPage.SAVIngestRequested}"/>
+                     <ice:selectBooleanCheckbox partialSubmit="true" id="charEncodingCheckbox" rendered="#{AddFilesPage.SAVIngestRequested}" value="#{AddFilesPage.showCharEncodingMenu}"/>
+                     <p/>
+                         <ice:outputText styleClass="vdcTextStandout" value="Selected Character Encoding: " rendered="#{AddFilesPage.SAVIngestRequested and AddFilesPage.showCharEncodingMenu}"/>
+                         
+                    <ice:menuBar orientation="horizontal" rendered="#{AddFilesPage.SAVIngestRequested and AddFilesPage.showCharEncodingMenu}">
+                         <ice:menuItem value="#{empty AddFilesPage.dataLanguageEncoding ? 'Default' : AddFilesPage.dataLanguageEncoding} (click to change)" id="dataCharEncoding">
+                             <ice:menuItem value="West European">
+                                 <ice:menuItem id="iso-8859-1" value="Western (ISO-8859-1)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-1"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-15" value="Western (ISO-8859-15)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-15"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="windows-1252" value="Western (Windows-1252)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="windows-1252"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="macintosh" value="Western (MacRoman)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="macintosh"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="ibm850" value="Western (IBM-850)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="ibm850"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-14" value="Celtic (ISO-8859-14)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-14"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-7" value="Greek (ISO-8859-7)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-7"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="windows-1253" value="Greek (Windows-1253)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="windows-1253"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-greek" value="Greek (MacGreek)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-greek"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-icelandic" value="Icelandic (MacIcelandic)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-icelandic"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-10" value="Nordic (ISO-8859-10)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-10"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-3" value="South European (ISO-8859-3)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-3"/>
+                                 </ice:menuItem>
+                             </ice:menuItem>
+                             <ice:menuItem value="East European">
+                                 <ice:menuItem id="iso-8859-4" value="Baltic (ISO-8859-4)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-4"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-13" value="Baltic (ISO-8859-13)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-13"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="windows-1257" value="Baltic (Windows-1257)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="windows-1257"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-5" value="Cyrillic (ISO-8859-5)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-5"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-ir-111" value="Cyrillic (ISO-IR-111)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-ir-111"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="windows-1251" value="Cyrillic (Windows-1251)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="windows-1251"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-cyrillic" value="Cyrillic (MacCyrillic)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-cyrillic"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-ukrainian" value="Cyrillic/Ukrainian (MacUkrainian)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-ukrainian"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="koi8-r" value="Cyrillic (KOI8-R)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="koi8-r"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="koi8-u" value="Cyrillic/Ukrainian (KOI8-U)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="koi8-u"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-croatian" value="Croatian (MacCroatian)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-croatian"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-romanian" value="Romanian (MacRomanian)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-romanian"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-16" value="Romanian (ISO-8859-16)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-16"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-8859-2" value="Central European (ISO-8859-2)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-8859-2"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="windows-1250" value="Central European (Windows-1250)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="windows-1250"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-mac-ce" value="Central European (MacCE)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-mac-ce"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="ibm855" value="Cyrillic (IBM-855)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="ibm855"/>
+                                 </ice:menuItem>
+                             </ice:menuItem>
+                             <ice:menuItem value="East Asian">
+                                 <ice:menuItem id="iso-2022-jp" value="Japanese (ISO-2022-JP)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-2022-jp"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="shift_jis" value="Japanese (Shift_JIS)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="shift_jis"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="euc-jp" value="Japanese (EUC-JP)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="euc-jp"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="big5" value="Chinese Traditional (Big5)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="big5"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="big5-hkscs" value="Chinese Traditional (Big5-HKSCS)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="big5-hkscs"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-euc-tw" value="Chinese Traditional (EUC-TW)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-euc-tw"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="gb2312" value="Chinese Simplified (GB2312)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="gb2312"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="hz-gb-2312" value="Chinese Simplified (HZ)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="hz-gb-2312"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="gbk" value="Chinese Simplified (GBK)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="gbk"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-2022-cn" value="Chinese Simplified (ISO-2022-CN)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-2022-cn"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="euc-kr" value="Korean (EUC-KR)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="euc-kr"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="x-johab" value="Korean (JOHAB)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="x-johab"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="iso-2022-kr" value="Korean (ISO-2022-KR)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="iso-2022-kr"/>
+                                 </ice:menuItem>
+                             </ice:menuItem>
+                             <ice:menuItem value="Unicode">
+                                 <ice:menuItem id="utf-8" value="Unicode (UTF-8)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="utf-8"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="utf-16le" value="Unicode (UTF-16LE)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="utf-16le"/>
+                                 </ice:menuItem>
+                                 <ice:menuItem id="utf-16be" value="Unicode (UTF-16BE)"
+                                               actionListener="#{AddFilesPage.encodingListener}">
+                                     <f:param name="characterEncoding" value="utf-16be"/>
+                                 </ice:menuItem>
+                             </ice:menuItem>
+                         </ice:menuItem>
+                     </ice:menuBar>
+    
+    

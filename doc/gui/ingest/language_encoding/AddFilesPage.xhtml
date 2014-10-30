@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:dvn="/WEB-INF/tlds/dvn-components"
+      xmlns:ace="http://www.icefaces.org/icefaces/components"
+      xmlns:ice="http://www.icesoft.com/icefaces/component">
+<h:head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</h:head>
+<h:body>
+  <ui:composition template="/template.xhtml">
+    <ui:param name="pageTitle" value="#{bundlePageInfo.addFilesTitle} - #{VDCRequest.dataversePageTitle}"/>
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="studyId" value="#{AddFilesPage.studyId}"/>
+            <f:event type="preRenderView" listener="#{AddFilesPage.preRenderView}"/>
+        </f:metadata>
+    </ui:define>
+    <ui:define name="body">
+      <script type="text/javascript">
+          // <![CDATA[
+          // functions to work with category selection note a few assumptions that these functions have:
+          // the id of the dropdown (including parent nodes); the partial id of the checkboxes;
+          // and that the checkbox is two elements before the text field (there is empty text
+          // in between, created by the div)
+          function updateCategory( checkbox ) {
+              if (checkbox.checked) {
+                  dropdown = document.getElementById("form1:dummy_datatable:0:fileDataTable:catDropdown");
+                  textField = (document.getElementById(checkbox.id)).nextSibling;
+                  textField.value= dropdown.value;
+                  textField.focus();
+                 // document.forms['form1'].elements[textFiled.id].select();
+                  //
+                  //alert("text value "+ textField.value);
+              }
+          }
+          function deselectCategory( textField ) {
+              checkbox = document.getElementById(textField.id).previousSibling;
+              checkbox.checked = false;
+          }
+          function updateAllCheckedCategories( dropdown ) {
+              checkboxes=document.getElementsByTagName("input");
+              for(i=0; i < checkboxes.length; i++) {
+                  if (checkboxes[i].id.indexOf("catCheckbox") != -1 && checkboxes[i].checked == true) {
+                      textField = checkboxes[i].nextSibling;
+                      textField.value = dropdown.value;
+                      textField.focus();
+                  }
+              }
+          }
+          
+          // this method is a workaround for handling the two click submit needed by the fileEntry component; it is added as on onchange event tot he file input
+          // by the backing bean in preRenderView (so that it will exist after every partial submit)
+          function clickHiddenAddFileButton() {
+              jQuery('input#form1\\:addFile').click();
+          }
+          
+          function disableSave() {
+              document.getElementById("form1:saveButton").disabled = true;
+          }        
+          // ]]>
+      </script>
+      <div class="dvn_section">
+        <div class="dvnstudytitlefloat dvn_padBot">
+            <ice:outputText styleClass="dvnstudytitle" value="#{AddFilesPage.studyVersion.metadata.title}"/>
+            <div jsfc="ice:panelGroup" styleClass="dvnstudyversioninfo">
+                <ice:outputText value="#{AddFilesPage.study.globalId}"/> <ice:outputText value="#{AddFilesPage.studyVersion.metadata.UNF}" rendered="#{!empty AddFilesPage.studyVersion.metadata.UNF}"/>
+            </div>
+            <div jsfc="ice:panelGroup" styleClass="dvnstudystatusbox #{AddFilesPage.studyVersion.inReview ? 'dvnstudystatusreview' : '' or AddFilesPage.studyVersion.draft ? 'dvnstudystatusdraft' : ''}">
+                <ice:outputText styleClass="dvnstudystatuslabel" value="In Review " rendered="#{AddFilesPage.studyVersion.inReview}"/>
+                <ice:outputText styleClass="dvnstudystatuslabel" value="Draft " rendered="#{AddFilesPage.studyVersion.draft}"/>
+                <ice:outputText value="Study Version: #{AddFilesPage.studyVersion.versionNumber}"/>
+                <ice:outputText nospan="true"><br/></ice:outputText>
+                <ice:outputText value="Created: #{AddFilesPage.studyVersion.createTime} - Last Updated: #{AddFilesPage.studyVersion.lastUpdateTime}" rendered="#{!empty AddFilesPage.studyVersion.lastUpdateTime}"/>
+                <ice:outputText value="Created: &lt;i&gt;Draft study version is not created until the form is saved&lt;/i&gt;" rendered="#{null == AddFilesPage.studyVersion.lastUpdateTime}" escape="false"/>
+                <ice:outputText nospan="true" rendered="#{!empty AddFilesPage.studyVersion.versionNote}"><br/></ice:outputText>
+                <ice:outputText value="Study Version Notes: " rendered="#{!empty AddFilesPage.studyVersion.versionNote}"/>
+                <ice:outputText styleClass="dvnstudystatusversionnote" value="#{AddFilesPage.studyVersion.versionNote}" rendered="#{!empty AddFilesPage.studyVersion.versionNote}"/>
+            </div>
+        </div>
+        <div class="dvn_sectionTitle">
+          <ice:outputText value="#{bundlePageInfo.addFilesTitle}"/>
+        </div>
+        <div class="dvn_sectionBox">
+          <div class="dvn_margin12">
+            <div jsfc="ice:panelGroup" styleClass="dvnInformationMessage">
+              <div class="dvnMsgBlockContainer">
+                <ice:outputText value="#{bundlePageInfo.addFilesHelp}" escape="false"/>
+              </div>
+            </div>
+            <ice:form id="form1">
+              <ice:inputHidden id="vdcId" value="#{VDCRequest.currentVDCId}"/>
+              <ice:inputHidden id="studyId" value="#{AddFilesPage.study.id}"/>
+              <input type="hidden" name="pageName" value="AddFilesPage"/>
+
+              <ice:panelGroup id="filetypePanelGroup" styleClass="dvnAddFilesInputBlock">
+
+                  <div class="dvnAddFilesInputContainer">
+                                        <div style="float:left; width:250px;">
+                    <ice:selectOneMenu id="filetypeDropdown" binding="#{AddFilesPage.selectFileType}" onchange="getElementById('form1:filetypeButton').click();" rendered="#{!AddFilesPage.controlCardIngestInProgress}">
+                        <f:selectItems value="#{AddFilesPage.fileTypes}"/>
+                    </ice:selectOneMenu>
+
+                    <ice:outputText rendered="#{AddFilesPage.controlCardIngestInProgress}" value="Control Card: #{AddFilesPage.controlCardFilename}"/>
+
+                    <ice:commandButton id="filetypeButton"  visible="false" value="Change" action="#{AddFilesPage.changeFileTypeAction}"/>
+                    </div>
+                                        <div style="float:left; width:450px;">
+                        <ice:panelGroup rendered="#{AddFilesPage.typeNotSelected}">
+                            <ice:outputText value="&#60;strong&#62;Tabular&#60;/strong&#62; and &#60;strong&#62;Network Data&#60;/strong&#62; files can
+                                            be subset and analyzed using the Dataverse Network analysis tools. These files will take longer to upload and
+                                            you'll get a notification once the upload is completed. Tabular files will also get Universal Numerical
+                                            Fingerprint (UNF). All other files types will be available for download only." escape="false"/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.controlCardIngestRequested}">
+                            <ice:outputText id="controlCardValidationError" nospan="true" escape="false" value="&#60;p style=&#34;margin-top:0;&#34; class=&#34;warnMessage&#34;&#62;&#60;img src=&#34;/dvn/resources/images/icon_warning.18.png&#34; class=&#34;dvn_icon&#34; /&#62; #{AddFilesPage.controlCardValidationErrorMessage} &#60;p&#62;" rendered="#{AddFilesPage.controlCardValidationErrorMessage != null}"/>
+
+                            <ice:outputText id="controlCardIngestMessageSPSS1" nospan="true" escape="false"
+                                            value="&#60;p style=&#34;margin-top:0;&#34; class=&#34;warnMessage&#34;&#62;&#60;img src=&#34;/dvn/resources/images/icon_warning.18.png&#34; class=&#34;dvn_icon&#34; /&#62; You have selected a CSV (character-separated values) file, which requires a Control Card. (Please report any issues found in our open beta release of Control Card Based Ingest to the Network Administrator using the &lt;a href=&#34;/dvn#{VDCRequest.currentVDCURL}/faces/ContactUsPage.xhtml&#34;&gt;Contact&lt;/a&gt; form.)&#60;p&#62;"
+                                            rendered="#{AddFilesPage.SPSSCCIngestRequested and AddFilesPage.controlCardValidationErrorMessage == null}"/>
+                            <ice:outputText id="controlCardIngestMessageSPSS2" nospan="true" escape="false"
+                                            value="&#60;p&#62;First, click Browse to select an SPSS Control Card file. Once you've selected the Control Card, click Browse again to select the CSV file.&#60;/p&#62;" rendered="#{AddFilesPage.SPSSCCIngestRequested}"/>
+                            
+                            <ice:outputText id="controlCardIngestMessageDDI1" nospan="true" escape="false"
+                                            value="&#60;p style=&#34;margin-top:0;&#34; class=&#34;warnMessage&#34;&#62;&#60;img src=&#34;/dvn/resources/images/icon_warning.18.png&#34; class=&#34;dvn_icon&#34; /&#62; You have selected a TAB (tab-delimited) file, which requires a Control Card. (Please report any issues found in our open beta release of Control Card Based Ingest to the Network Administrator using the &lt;a href=&#34;/dvn#{VDCRequest.currentVDCURL}/faces/ContactUsPage.xhtml&#34;&gt;Contact&lt;/a&gt; form.)&#60;p&#62;"
+                                            rendered="#{AddFilesPage.DDICCIngestRequested and AddFilesPage.controlCardValidationErrorMessage == null}"/>
+                            <ice:outputText id="controlCardIngestMessageDDI2" nospan="true" escape="false"
+                                            value="&#60;p&#62;First, click Browse to select a DDI Control Card file. Once you've selected the DDI, click Browse again to select the TAB file.&#60;/p&#62;" rendered="#{AddFilesPage.DDICCIngestRequested}"/>
+                            
+                            <ice:outputText id="controlCardIngestMessagePorExtra1" nospan="true" escape="false"
+                                            value="&#60;p style=&#34;margin-top:0;&#34; class=&#34;warnMessage&#34;&#62;&#60;img src=&#34;/dvn/resources/images/icon_warning.18.png&#34; class=&#34;dvn_icon&#34; /&#62; You have selected to ingest a SPSS-Portable file, *with the extended labels in an auxilary file*. (The support for this type of ingest is still in beta; please report any issues found to the Network Administrator using the &lt;a href=&#34;/dvn#{VDCRequest.currentVDCURL}/faces/ContactUsPage.xhtml&#34;&gt;Contact&lt;/a&gt; form.)&#60;p&#62;"
+                                            rendered="#{AddFilesPage.porExtraIngestRequested and AddFilesPage.controlCardValidationErrorMessage == null}"/>
+                            
+                            <ice:outputText id="controlCardIngestMessagePorExtra2" nospan="true" escape="false"
+                                            value="&#60;p&#62;First, click Browse to select a text file with the extended variable labels. Once you've selected the labels file, click Browse again to select the SPSS/POR file.&#60;/p&#62;" rendered="#{AddFilesPage.porExtraIngestRequested}"/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.controlCardIngestInProgress}">
+                            <ice:outputText styleClass="vdcTextStandout" value="SPSS Control Card uploaded. Please click Browse to select the CSV file." rendered="#{AddFilesPage.SPSSCCIngestInProgress}"/>
+                            <ice:outputText styleClass="vdcTextStandout" value="DDI Control Card uploaded. Please click Browse to select the TAB file." rendered="#{AddFilesPage.DDICCIngestInProgress}"/>
+                            <ice:outputText styleClass="vdcTextStandout" value="Extra Labels uploaded. Please click Browse to select the POR file." rendered="#{AddFilesPage.porExtraIngestInProgress}"/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.otherSubsettableIngestRequested}">
+                                                <table>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="60%">
+                            <ice:outputText styleClass="vdcTextStandout" value="SPSS and STATA files will be converted to a tab delimited format and made available for automated subsetting. You will still be able to download the original file, as well as other formats."/>
+                                                            </td>
+                                                                <td width="40%">
+                                                                <ice:outputText styleClass="warnMessage" value="[Experimental!]" rendered="#{AddFilesPage.SAVIngestRequested}"/>
+                                                                <ice:outputText styleClass="vdcTextStandout" value=" Specify character encoding for the SAV data file" rendered="#{AddFilesPage.SAVIngestRequested}"/>
+                                                                <ice:selectBooleanCheckbox partialSubmit="true" id="charEncodingCheckbox" rendered="#{AddFilesPage.SAVIngestRequested}" value="#{AddFilesPage.showCharEncodingMenu}"/>
+                                                                <p/>
+                                                                    <ice:outputText styleClass="vdcTextStandout" value="Selected Character Encoding: " rendered="#{AddFilesPage.SAVIngestRequested and AddFilesPage.showCharEncodingMenu}"/>
+                                                                    
+                                                               <ice:menuBar orientation="horizontal" rendered="#{AddFilesPage.SAVIngestRequested and AddFilesPage.showCharEncodingMenu}">
+                                                                    <ice:menuItem value="#{empty AddFilesPage.dataLanguageEncoding ? 'Default' : AddFilesPage.dataLanguageEncoding} (click to change)" id="dataCharEncoding">
+                                                                        <ice:menuItem value="West European">
+                                                                            <ice:menuItem id="iso-8859-1" value="Western (ISO-8859-1)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-1"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-15" value="Western (ISO-8859-15)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-15"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="windows-1252" value="Western (Windows-1252)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="windows-1252"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="macintosh" value="Western (MacRoman)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="macintosh"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="ibm850" value="Western (IBM-850)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="ibm850"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-14" value="Celtic (ISO-8859-14)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-14"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-7" value="Greek (ISO-8859-7)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-7"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="windows-1253" value="Greek (Windows-1253)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="windows-1253"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-greek" value="Greek (MacGreek)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-greek"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-icelandic" value="Icelandic (MacIcelandic)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-icelandic"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-10" value="Nordic (ISO-8859-10)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-10"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-3" value="South European (ISO-8859-3)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-3"/>
+                                                                            </ice:menuItem>
+                                                                        </ice:menuItem>
+                                                                        <ice:menuItem value="East European">
+                                                                            <ice:menuItem id="iso-8859-4" value="Baltic (ISO-8859-4)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-4"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-13" value="Baltic (ISO-8859-13)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-13"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="windows-1257" value="Baltic (Windows-1257)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="windows-1257"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-5" value="Cyrillic (ISO-8859-5)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-5"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-ir-111" value="Cyrillic (ISO-IR-111)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-ir-111"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="windows-1251" value="Cyrillic (Windows-1251)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="windows-1251"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-cyrillic" value="Cyrillic (MacCyrillic)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-cyrillic"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-ukrainian" value="Cyrillic/Ukrainian (MacUkrainian)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-ukrainian"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="koi8-r" value="Cyrillic (KOI8-R)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="koi8-r"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="koi8-u" value="Cyrillic/Ukrainian (KOI8-U)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="koi8-u"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-croatian" value="Croatian (MacCroatian)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-croatian"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-romanian" value="Romanian (MacRomanian)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-romanian"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-16" value="Romanian (ISO-8859-16)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-16"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-8859-2" value="Central European (ISO-8859-2)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-8859-2"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="windows-1250" value="Central European (Windows-1250)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="windows-1250"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-mac-ce" value="Central European (MacCE)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-mac-ce"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="ibm855" value="Cyrillic (IBM-855)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="ibm855"/>
+                                                                            </ice:menuItem>
+                                                                        </ice:menuItem>
+                                                                        <ice:menuItem value="East Asian">
+                                                                            <ice:menuItem id="iso-2022-jp" value="Japanese (ISO-2022-JP)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-2022-jp"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="shift_jis" value="Japanese (Shift_JIS)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="shift_jis"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="euc-jp" value="Japanese (EUC-JP)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="euc-jp"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="big5" value="Chinese Traditional (Big5)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="big5"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="big5-hkscs" value="Chinese Traditional (Big5-HKSCS)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="big5-hkscs"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-euc-tw" value="Chinese Traditional (EUC-TW)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-euc-tw"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="gb2312" value="Chinese Simplified (GB2312)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="gb2312"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="hz-gb-2312" value="Chinese Simplified (HZ)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="hz-gb-2312"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="gbk" value="Chinese Simplified (GBK)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="gbk"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-2022-cn" value="Chinese Simplified (ISO-2022-CN)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-2022-cn"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="euc-kr" value="Korean (EUC-KR)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="euc-kr"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="x-johab" value="Korean (JOHAB)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="x-johab"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="iso-2022-kr" value="Korean (ISO-2022-KR)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="iso-2022-kr"/>
+                                                                            </ice:menuItem>
+                                                                        </ice:menuItem>
+                                                                        <ice:menuItem value="Unicode">
+                                                                            <ice:menuItem id="utf-8" value="Unicode (UTF-8)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="utf-8"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="utf-16le" value="Unicode (UTF-16LE)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="utf-16le"/>
+                                                                            </ice:menuItem>
+                                                                            <ice:menuItem id="utf-16be" value="Unicode (UTF-16BE)"
+                                                                                          actionListener="#{AddFilesPage.encodingListener}">
+                                                                                <f:param name="characterEncoding" value="utf-16be"/>
+                                                                            </ice:menuItem>
+                                                                        </ice:menuItem>
+                                                                    </ice:menuItem>
+                                                                </ice:menuBar>
+    
+    
+    
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                        </ice:panelGroup>
+
+                        <ice:panelGroup rendered="#{AddFilesPage.networkDataIngestRequested}">
+                            <ice:outputText styleClass="vdcTextStandout" value="GraphML files will be made available for online network data analysis."/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.zipMultipleFilesSelected}">
+                            <ice:outputText styleClass="vdcTextStandout" escape="false" value="You have selected to upload *multiple files* in a zipped archive. Click Browse to select the valid Zip file; it will be unpacked, and the individual items will be ingested as separate Study Files. &#60;strong&#62;If you would like to ingest a Zip archive as a single file, upload it as type &quot;other&quot;&#60;/strong&#62;."/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.tarMultipleFilesSelected}">
+                            <ice:outputText styleClass="vdcTextStandout" escape="false" value="You have selected to upload *multiple files* in a tar archive. Click Browse to select the valid .tar (or .tar.gz or .tgz or .tar.bz2) file; it will be unpacked, and the individual items will be ingested as separate Study Files. &#60;strong&#62;If you would like to ingest a tar archive as a single file, upload it as type &quot;other&quot;&#60;/strong&#62;."/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{AddFilesPage.FITSIngestRequested}">
+                            <ice:outputText styleClass="vdcTextStandout" value="(NEW/Beta!) Basic metadata extracted from FITS files will be made searchable in the application."/>
+                        </ice:panelGroup>
+                        <ice:panelGroup rendered="#{!AddFilesPage.typeNotSelected and !AddFilesPage.controlCardIngestRequested and !AddFilesPage.controlCardIngestInProgress and !AddFilesPage.otherSubsettableIngestRequested and !AddFilesPage.networkDataIngestRequested and !AddFilesPage.zipMultipleFilesSelected}">
+                            <ice:outputText styleClass="vdcTextStandout" value="Click Browse to select the file you wish to upload."/>
+                        </ice:panelGroup>
+                    </div>
+                  </div>
+                  <ice:outputText id="tarValidationError" nospan="true" escape="false" value="&#60;p style=&#34;margin-top:0;&#34; class=&#34;warnMessage&#34;&#62;&#60;img src=&#34;/dvn/resources/images/icon_warning.18.png&#34; class=&#34;dvn_icon&#34; /&#62; #{AddFilesPage.tarValidationErrorMessage} &#60;p&#62;" rendered="#{AddFilesPage.tarValidationErrorMessage != null}"/>
+
+                  <!-- l.a. "inputfile" component commented out: 
+                  <ice:inputFile id="inputFileComponent"
+                                   autoUpload="true"
+                                   submitOnUpload="postUpload"
+                                   actionListener="#{AddFilesPage.uploadFile}"
+                                   binding="#{AddFilesPage.inputFile}"
+                                   styleClass="dvnAddFilesInput"
+                                   disabled="#{AddFilesPage.typeNotSelected}">
+                  l.a. -->
+                      <!-- <ice:commandButton binding="#{AddFilesPage.inputFile}"/> -->
+                  <!-- l.a. rest of "inputfile" component commented out
+                      <ice:outputStyle rel="stylesheet" type="text/css" href="/resources/css/stylesheet.css"/>
+                  </ice:inputFile>
+                  <br/>
+                  <ice:message layout="table" globalOnly="false" for="inputFileComponent"
+                                  showDetail="true" showSummary="false" styleClass="errorMessage"/>
+                  
+                  l.a. -->
+                  
+                  <!-- l.a. new "file entry" icefaces-ace component: -->
+                  <span class="top">
+                      <ace:fileEntry id="file-entry"          
+                                     disabled="#{AddFilesPage.typeNotSelected}"             
+                                     relativePath="/temp/" 
+                                     maxFileCount="1" 
+                                     maxFileCountMessage="Limited to 1 file upload only (for now)" 
+                                     fileEntryListener="#{AddFilesPage.uploadFileListener}" 
+                                     maxFileSize="2147483648" 
+                                     maxFileSizeMessage="Submitted file is too large." 
+                                     maxTotalSize="2147483648" 
+                                     maxTotalSizeMessage="Total size of submitted files is too large." 
+                                     useOriginalFilename="true" 
+                                     useSessionSubdir="false" />
+
+                      <h:commandButton  id="addFile" value="Add File" style="display:none"/>
+                  </span>                  
+              </ice:panelGroup>
+
+              <!--
+              This is a very basic table comprising four columns. Each
+              row represents an inventory item. Each column represents a
+              inventory item property. commandSortHeader components have been
+              added ot the table headers.
+
+              The sortAscending and sortColumn attributes are set when a command
+              sortColumnName header is activated.  The sortColumn and sortAscending
+              data can then be sortColumnName by a sortColumnName algorithm if a
+              change is detected.
+              -->
+              <!-- this is a dummy datatable wrapper used to force data retention on validation error-->
+            <ice:dataTable cellpadding="0" cellspacing="0" width="100%" id="dummy_datatable"
+                             value="dummy_datatable" styleClass="dvnAddFilesOuterTable">
+                <ice:column>
+                  <ice:dataTable cellpadding="0" cellspacing="0" width="100%" rendered="true"
+                                 id="fileDataTable" styleClass="dvnAddFilesTable"
+                                 columnWidths="20%,20%,40%,10%,10%"
+                                 value="#{AddFilesPage.fileList}" binding="#{AddFilesPage.filesDataTable}" var="fileBean">
+                    <ice:column id="catCol">
+                      <ice:panelGroup block="true" id="panel1" styleClass="dvnAddFilesCatCol">
+                        <!-- note that the Javascript functions currently depends on the placement and ids of these fields (and the dropdown box;
+                                          changing them may require corresponding changes in the Javascript  -->
+                        <ice:selectBooleanCheckbox id="catCheckbox" onclick="updateCategory(this);"/>
+                        <ice:inputText id="catTextField" size="28" value="#{fileBean.fileMetadata.category}" onfocus="deselectCategory(this);"/>
+                      </ice:panelGroup>
+                      <f:facet name="header" id="f1">
+                        <ice:panelGroup id="catColPanelGroup" styleClass="dvnAddFilesTableCategory">
+                          <ice:outputLabel id="catDesc" value="Category"/>
+                          <!-- l.a. -->
+                          <ice:selectOneMenu id="catDropdown" onchange="updateAllCheckedCategories(this);">
+                            <f:selectItems value="#{AddFilesPage.fileCategories}"/>
+                          </ice:selectOneMenu>
+                          <!-- l.a. -->
+                        </ice:panelGroup>
+                      </f:facet>
+                    </ice:column>
+                    <ice:column>
+                      <f:facet name="header">
+                        <ice:outputLabel value="File Name"/>
+                      </f:facet>
+                      <ice:inputText id="input_filename" size="24" value="#{fileBean.fileMetadata.label}" required="true"
+                                     requiredMessage="This field is required."
+                                     validator="#{AddFilesPage.validateFileName}" />
+                                     <!-- "this.form.submit();"/>
+                      <f:param name="fileName" value="#{fileBean.fileMetadata.label}"/> -->
+                      <ice:message for="input_filename" styleClass="errorMessage"/>
+                      <!--<ice:outputText rendered="#{AddFilesPage.controlCardFilename != null}" value="Control Card: #{AddFilesPage.controlCardFilename}"/>-->
+                      <ice:outputText rendered="#{fileBean.controlCardFileName != null}" value="Control Card: #{fileBean.controlCardFileName}"/>
+                    </ice:column>
+                    <ice:column>
+                      <f:facet name="header">
+                        <ice:outputLabel value="Description"/>
+                      </f:facet>
+                      <ice:inputTextarea id="description_filename" styleClass="dvnTextareaAuto" cols="38" rows="2"
+                                         value="#{fileBean.fileMetadata.description}" />
+                    </ice:column>
+                    <ice:column>
+                      <f:facet name="header">
+                        <ice:outputLabel value="Size (bytes)"/>
+                      </f:facet>
+                      <ice:outputText size="25" value="#{fileBean.sizeFormatted}"/>
+                    </ice:column>
+                    <ice:column>
+                      <f:facet name="header">
+                        <ice:outputLabel value="Remove"/>
+                      </f:facet>
+                      <ice:commandLink value="Remove" id="removeFile" actionListener="#{AddFilesPage.removeFile_action}">
+                        <f:param name="removeAction" value="#{AddFilesPage.filesDataTable.rowIndex}"/>
+                      </ice:commandLink>
+                    </ice:column>
+                  </ice:dataTable>
+                </ice:column>
+              </ice:dataTable>
+              <ice:panelGroup block="true" styleClass="dvnFormPadding" rendered="#{AddFilesPage.emailRequested}">
+                <ice:outputText styleClass="vdcTextStandout" value="NOTE:"/>
+                <ice:outputText id="email" escape="false" styleClass="warnMessage"
+                                value="Subsettable files might take a long time to upload and be processed. We will send you an e-mail notification when the upload process starts and when it completes."/>
+                <br/>
+                <ice:outputText value="E-Mail Address:"/>
+                <ice:inputText id="textField3" size="50" value="#{AddFilesPage.ingestEmail}">
+                  <f:validator validatorId="EmailValidator"/>
+                </ice:inputText>
+                <br/>
+                <ice:outputText id="emailmany" escape="false" styleClass="warnMessage"
+                                value="Separate multiple e-mail addresses with a comma (and no spaces)."/>
+                <ice:message for="textField3" id="validatorMessage" styleClass="errorMessage"/>
+              </ice:panelGroup>
+              <div class="dvnFormPadding dvnFormMargin">
+                <ice:commandButton id="saveButton" value="Save" actionListener="#{AddFilesPage.openPopup}" disabled ="#{empty AddFilesPage.fileList}"/>
+                <ice:commandButton id="cancelButton" value="Cancel" immediate="true" action="#{AddFilesPage.cancel_action}"/>
+              </div>
+            </ice:form>
+          </div>
+        </div>
+      </div>     
+    </ui:define>
+  </ui:composition>
+</h:body>
+</html>
