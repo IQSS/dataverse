@@ -19,15 +19,7 @@ Generates root dataverse and some other dataverses for Pete and Uma.
 
 ### dvs (will be dataverses)
 
-	GET http://{{SERVER}}/api/dvs
-
-List all dataverses.
-
-	POST http://{{SERVER}}/api/dvs?key={{username}}
-
-or
-
-	POST http://{{SERVER}}/api/dvs/{{id}}?key={{username}}
+    POST http://{{SERVER}}/api/dvs/{{id}}?key={{username}}
 
 Generates a new dataverse under `{{id}}`. Expects a `json` content descripting the dataverse.
 If `{{id}}` is omitted, a root dataverse is created. `{{id}}` can either be a dataverse id (long) or a dataverse alias (more robust).
