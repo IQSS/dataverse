@@ -10,8 +10,8 @@
 	gsdRecommendation	Faculty Recommendation	Indicate the recommendation(s) from the faculty for this project.		text	6	FALSE	TRUE	TRUE	FALSE	FALSE	TRUE		customGSD
 	gsdSiteType	Site Type	Describe the type of building or site, based on function / purpose. Example: Military base.		text	7	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE		customGSD
 	gsdProgramBrief	Program Brief	Example: redevelopment, restoration, ...		text	8	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE		customGSD
-	gsdTypes	Types of Representation/ Medium/ Format	Choose from dropdown list.		text	9	FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
-	gsdTags	GSD Tags	Use tags to describe the project. Write one keyword per field. To add more tags, click on the plus sign on the right.		text	0	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE		customGSD
+	gsdTypes	Types of Representation/ Medium/ Format	Choose from list.		text	9	FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customGSD
+	gsdTags	GSD Tags	Use tags to describe the project. Write one keyword per field. To add more tags, click on the plus sign on the right.		text	10	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE		customGSD
 #controlledVocabulary	DatasetField	Value	displayOrder											
 	gsdFacultyName	Abalos, Inaki	0											
 	gsdFacultyName	Adjaye, David	1											
