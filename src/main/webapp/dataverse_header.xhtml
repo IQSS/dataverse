@@ -122,9 +122,9 @@
 
     <!-- Header Panel -->
     <ui:fragment rendered="#{showDataverseHeader}">
-        <div id="dataverseHeader" class="container" style="background:#{!empty dataverse.backgroundColor ? dataverse.backgroundColor : '#F5F5F5'};">
+        <div id="dataverseHeader" class="container" style="background:##{!empty dataverse.backgroundColor ? dataverse.backgroundColor : 'F5F5F5'};">
             <ui:fragment rendered="#{!empty dataverse.logo and dataverse.logoFormat == 'RECTANGLE'}">
-                <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.logoAlignment ? dataverse.logoAlignment : 'center'};; background:#{!empty dataverse.logoBackgroundColor ? dataverse.logoBackgroundColor : 'inherit'};">
+                <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.logoAlignment ? dataverse.logoAlignment : 'center'};; background:##{!empty dataverse.logoBackgroundColor ? dataverse.logoBackgroundColor : 'F5F5F5'};">
                     <img src="/logos/#{dataverse.id}/#{dataverse.logo}" style="max-width:900px;max-height:120px" alt="logo"/>
                 </div>
             </ui:fragment>
@@ -136,8 +136,8 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.name}">
                     <div class="dataverseHeaderCell dataverseHeaderName">
-                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};">#{dataverse.name} Dataverse</a> 
-                        <h:outputText style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
+                        <a href="/dataverse.xhtml?id=#{dataverse.id}" style="font-size: 1.3em; color:##{!empty dataverse.linkColor ? dataverse.linkColor : '428bca'};">#{dataverse.name} Dataverse</a> 
+                        <h:outputText style="color:##{!empty dataverse.textColor ? dataverse.textColor : '888888'};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                         <h:outputText value="Unpublished" styleClass="label label-danger" rendered="#{!dataverse.released}"/>
                     </div>
                 </ui:fragment>
@@ -148,12 +148,12 @@
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.tagline}">
                     <div class="dataverseHeaderCell dataverseHeaderTagline">
-                        <h:outputText escape="false" style="color:#{!empty dataverse.textColor ? dataverse.textColor : '#888'};" value="#{dataverse.tagline}" />
+                        <h:outputText escape="false" style="color:##{!empty dataverse.textColor ? dataverse.textColor : '888888'};" value="#{dataverse.tagline}" />
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!empty dataverse.linkUrl}">
                     <div class="dataverseHeaderCell dataverseHeaderLink">
-                        <h:outputLink value="#{dataverse.linkUrl}" style="color:#{!empty dataverse.linkColor ? dataverse.linkColor : 'inheret'};" target="_blank">
+                        <h:outputLink value="#{dataverse.linkUrl}" style="color:##{!empty dataverse.linkColor ? dataverse.linkColor : '428bca'};" target="_blank">
                             <h:outputText value="#{dataverse.linkText}" escape="false"/>
                         </h:outputLink>
                     </div>

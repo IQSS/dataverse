@@ -137,7 +137,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.setLogoFormat(Dataverse.ImageFormat.SQUARE);
         }
         // Set the active index, so that Theme tab will still display after upload
-        tabView.setActiveIndex(1);
+        tabView.setActiveIndex(0);
 
     }
     
