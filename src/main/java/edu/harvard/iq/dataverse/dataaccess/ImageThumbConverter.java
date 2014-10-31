@@ -25,7 +25,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.util.Iterator;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
@@ -107,38 +117,6 @@ public class ImageThumbConverter {
 
         // let's attempt to generate the thumb:
 
-        /*
-         * update: 
-         * Note that the thumb size has been made configurable, as of 3.6.1
-         * - needs to be added here. 
-        */
-
-        /* 
-         * Skipping ImageMagick hack, for now (as in, 4alpha1) -- L.A. 
-         *
-        if (new File("/usr/bin/convert").exists()) {
-
-            String ImageMagick = "/usr/bin/convert -size 64x64 " + fileLocation + " -resize 64 -flatten png:" + thumbFileLocation;
-            int exitValue = 1;
-
-            try {
-                Runtime runtime = Runtime.getRuntime();
-                Process process = runtime.exec(ImageMagick);
-                exitValue = process.waitFor();
-            } catch (Exception e) {
-                exitValue = 1;
-            }
-
-            if (exitValue == 0) {
-                return true;
-            }
-        }
-         */
-
-        // For whatever reason, creating the thumbnail with ImageMagick
-        // has failed.
-        // Let's try again, this time with Java's standard Image
-        // library:
 
         try {
             BufferedImage fullSizeImage = ImageIO.read(new File(fileLocation));
@@ -174,9 +152,31 @@ public class ImageThumbConverter {
 	    // SCALE_FAST would trade quality for speed. 
 
             //logger.fine("Start image rescaling ("+size+" pixels), SCALE_FAST used;");
-	    java.awt.Image thumbImage = fullSizeImage.getScaledInstance(thumbWidth, thumbHeight, java.awt.Image.SCALE_FAST);
+	    Image thumbImage = fullSizeImage.getScaledInstance(thumbWidth, thumbHeight, java.awt.Image.SCALE_FAST);
             //logger.fine("Finished image rescaling.");
 
+            // if transparency is defined, we should preserve it in the png:
+            /*   
+            OK, turns out *nothing* special needs to be done in order to preserve
+            the transparency; the transparency is already there, because ImageIO.read()
+            creates a BufferedImage with the color type BufferedImage.TYPE_INT_ARGB;
+            all we need to do, is to create the output BufferedImage lowRes, 
+            below, with this same color type. The transparency was getting lost 
+            only because that BufferedImage was made with TYPE_INT_RGB, thus
+            stripping the transparency off.
+            
+            BufferedImage bufferedImageForTransparency = new BufferedImage(thumbWidth, thumbgetHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = bufferedImageForTransparency.createGraphics();
+            g2.drawImage(thumbImage, 0, 0, null);
+            g2.dispose();
+            
+            int color = bufferedImageForTransparency.getRGB(0, 0);
+            
+            logger.info("color we'll be using for transparency: "+color);
+            
+            thumbImage = makeColorTransparent(bufferedImageForTransparency, new Color(color));
+            */
+            
             ImageWriter writer = null;
             Iterator iter = ImageIO.getImageWritersByFormatName("png");
             if (iter.hasNext()) {
@@ -185,8 +185,10 @@ public class ImageThumbConverter {
                 return null;
             }
 
-            BufferedImage lowRes = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
-            lowRes.getGraphics().drawImage(thumbImage, 0, 0, null);
+            BufferedImage lowRes = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = lowRes.createGraphics();
+            g2.drawImage(thumbImage, 0, 0, null);
+            g2.dispose();
 
             ImageOutputStream ios = ImageIO.createImageOutputStream(new File(thumbFileLocation));
             writer.setOutput(ios);
@@ -277,4 +279,30 @@ public class ImageThumbConverter {
         return null; 
         
     }
+    
+    /*
+       The method below takes a BufferedImage, and makes the specified color
+       transparent. Turns out we don't really need to do this explicitly, since 
+       the original transparency can easily be preserved. 
+    
+    private static Image makeColorTransparent(final BufferedImage im, final Color color) {
+        final ImageFilter filter = new RGBImageFilter() {
+            // the color we are looking for (white)... Alpha bits are set to opaque
+            public int markerRGB = color.getRGB() | 0xFFFFFFFF;
+
+            public final int filterRGB(final int x, final int y, final int rgb) {
+                if ((rgb | 0xFF000000) == markerRGB) {
+                    // Mark the alpha bits as zero - transparent
+                    return 0x00FFFFFF & rgb;
+                } else {
+                    // nothing to do
+                    return rgb;
+                }
+            }
+        };
+
+        final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+        return Toolkit.getDefaultToolkit().createImage(ip);
+    }
+    */
 }
