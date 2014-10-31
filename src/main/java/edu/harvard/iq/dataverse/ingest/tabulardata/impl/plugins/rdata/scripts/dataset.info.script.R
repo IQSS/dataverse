@@ -46,7 +46,8 @@ VariableMetaData.POSIXt <- function (values) {
 }
 #' @param values a vector of Date objects
 VariableMetaData.Date <- function (values) {
-  list(type = 1, type.string = "Date", class = class(values), levels = NULL, format = "Y-m-d")
+#  list(type = 1, type.string = "Date", class = class(values), levels = NULL, format = "Y-m-d")
+  list(type = 1, type.string = "Date", class = class(values), levels = NULL, format = "yyyy-MM-dd")
 }
 
 #' Create a List Pairing Column-numbers

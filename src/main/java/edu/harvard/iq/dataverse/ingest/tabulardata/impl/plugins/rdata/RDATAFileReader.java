@@ -76,7 +76,7 @@ public class RDATAFileReader extends TabularDataFileReader {
     @Inject
     VariableServiceBean varService;
     
-  // Date-time things
+// Date-time things
   public static final String[] FORMATS = { "other", "date", "date-time", "date-time-timezone" };
 
   // R-ingest recognition files
@@ -165,13 +165,13 @@ public class RDATAFileReader extends TabularDataFileReader {
     RSCRIPT_GET_DATASET = readLocalResource("scripts/get.dataset.R");
     RSCRIPT_CREATE_WORKSPACE = readLocalResource("scripts/create.workspace.R");
     RSCRIPT_GET_LABELS = readLocalResource("scripts/get.labels.R");
-    RSCRIPT_DATASET_INFO_SCRIPT = readLocalResource("scripts/dataset.info.script.R");
+    RSCRIPT_DATASET_INFO_SCRIPT = readLocalResource("scripts/dataset.fine.script.R");
     
     
     LOG.finer("R SCRIPTS AS STRINGS --------------");
     LOG.finer(RSCRIPT_WRITE_DVN_TABLE);
     LOG.finer(RSCRIPT_GET_DATASET);
-    LOG.info(RSCRIPT_CREATE_WORKSPACE);
+    LOG.fine(RSCRIPT_CREATE_WORKSPACE);
     LOG.finer(RSCRIPT_GET_LABELS);
     LOG.finer(RSCRIPT_DATASET_INFO_SCRIPT);
     LOG.finer("END OF R SCRIPTS AS STRINGS -------");
@@ -203,10 +203,10 @@ public class RDATAFileReader extends TabularDataFileReader {
       try {
         LOG.fine("RDATAFileReader: Creating R Workspace");
         RRequestBuilder scriptBuilder = mRequestBuilder.script(RSCRIPT_CREATE_WORKSPACE);
-        LOG.info("got a sript request builder");
+        LOG.fine("got a sript request builder");
         
         RRequest scriptRequest = scriptBuilder.build();
-        LOG.info("script request built.");
+        LOG.fine("script request built.");
         
         /*
         REXP result = mRequestBuilder
@@ -216,7 +216,7 @@ public class RDATAFileReader extends TabularDataFileReader {
         */
         REXP result = scriptRequest.eval(); 
         
-        LOG.info("evaluated the script");
+        LOG.fine("evaluated the script");
         
         RList directoryNames = result.asList();
         
@@ -226,9 +226,9 @@ public class RDATAFileReader extends TabularDataFileReader {
             if (directoryNames.at("parent") != null) {
                 mParent = directoryNames.at("parent").asString();
             } else {
-                LOG.info("WARNING: directoryNames at \"parent\" is null!");
+                LOG.fine("WARNING: directoryNames at \"parent\" is null!");
                 if(directoryNames.isEmpty()) {
-                    LOG.info("WARNING: directoryNames is empty!");
+                    LOG.fine("WARNING: directoryNames is empty!");
                 } else {
                     Set<String> dirKeySet = directoryNames.keySet();
                     Iterator iter = dirKeySet.iterator();
@@ -236,18 +236,18 @@ public class RDATAFileReader extends TabularDataFileReader {
 
                     while (iter.hasNext()) {
                         key = (String) iter.next();
-                        LOG.info("directoryNames list key: "+key);
+                        LOG.fine("directoryNames list key: "+key);
                     }
                 }
             }
             
         } else {
-            LOG.info("WARNING: directoryNames is null!");
+            LOG.fine("WARNING: directoryNames is null!");
         }
         
-        LOG.info(String.format("RDATAFileReader: Parent directory of R Workspace is %s", mParent));
+        LOG.fine(String.format("RDATAFileReader: Parent directory of R Workspace is %s", mParent));
         
-        LOG.info("RDATAFileReader: Creating file handle");
+        LOG.fine("RDATAFileReader: Creating file handle");
         
         mDataFile = new File(mParent, "data.Rdata");
       }
@@ -706,7 +706,7 @@ public class RDATAFileReader extends TabularDataFileReader {
    */
     private static String readLocalResource(String path) {
         // Debug
-        LOG.info(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
+        LOG.fine(String.format("RDATAFileReader: readLocalResource: reading local path \"%s\"", path));
 
         // Get stream
         InputStream resourceStream = RDATAFileReader.class.getResourceAsStream(path);
