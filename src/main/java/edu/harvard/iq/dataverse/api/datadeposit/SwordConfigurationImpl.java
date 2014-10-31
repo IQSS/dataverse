@@ -39,8 +39,11 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     @Override
     public boolean returnStackTraceInError() {
         /**
-         * @todo make this a JVM option
-         * Or better - a SettingsServiceBean option
+         * @todo make this a JVM option Or better - a SettingsServiceBean option
+         *
+         * Do this at the same time as SWORD: implement equivalent of
+         * dvn.dataDeposit.maxUploadInBytes
+         * https://github.com/IQSS/dataverse/issues/1043
          */
         return false;
     }
@@ -76,47 +79,23 @@ public class SwordConfigurationImpl implements SwordConfiguration {
         return true;
     }
 
+    /**
+     * @returns null (unused)
+     */
     @Override
     public String getTempDirectory() {
-        /**
-         * @todo is it safe to use dataverse.files.directory for this?
-         */
-//        String tmpFileDir = System.getProperty("vdc.temp.file.dir");
-        String tmpFileDir = System.getProperty("dataverse.files.directory");
-        if (tmpFileDir != null) {
-            String swordDirString = tmpFileDir + File.separator + "sword";
-            File swordDirFile = new File(swordDirString);
-            /**
-             * @todo Do we really need this check? It seems like we do because
-             * if you create a dataset via the native API and then later try to
-             * upload a file via SWORD, the directory defined by
-             * dataverse.files.directory may not exist and we get errors deep in
-             * the SWORD library code. Could maybe use a try catch in the doPost
-             * method of our SWORDv2MediaResourceServlet.
-             */
-            if (swordDirFile.exists()) {
-                return swordDirString;
-            } else {
-                boolean mkdirSuccess = swordDirFile.mkdirs();
-                if (mkdirSuccess) {
-                    logger.info("Created directory " + swordDirString);
-                    return swordDirString;
-                } else {
-                    String msgForSwordUsers = ("Could not determine or create SWORD temp directory. Check logs for details.");
-                    logger.severe(msgForSwordUsers + " Failed to create " + swordDirString);
-                    throw new RuntimeException(msgForSwordUsers);
-                }
-            }
-        } else {
-            return null;
-        }
+        logger.info("getTempDirectory() called unexpectedly!");
+        return null;
     }
 
     @Override
     public int getMaxUploadSize() {
         int unlimited = -1;
         /**
-         * @todo rename this from dvn to dataverse?
+         * @todo Move this from a JVM option to a setting in the database.
+         *
+         * SWORD: implement equivalent of dvn.dataDeposit.maxUploadInBytes
+         * https://github.com/IQSS/dataverse/issues/1043
          */
         String jvmOption = "dvn.dataDeposit.maxUploadInBytes";
         String maxUploadInBytes = System.getProperty(jvmOption);

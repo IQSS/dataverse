@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.Date;
@@ -39,36 +38,24 @@ public class StatementManagerImpl implements StatementManager {
     SwordAuth swordAuth;
     @Inject
     UrlManager urlManager;
-    SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
 
     @Override
     public Statement getStatement(String editUri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordError, SwordAuthException {
-        this.swordConfiguration = (SwordConfigurationImpl) swordConfiguration;
-        swordConfiguration = (SwordConfigurationImpl) swordConfiguration;
-        if (authCredentials == null) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "auth credentials are null");
-        }
-        if (swordAuth == null) {
-            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "swordAuth is null");
-        }
 
-        AuthenticatedUser authUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
         urlManager.processUrl(editUri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
 
-            logger.fine("request for sword statement by user " + authUser.getDisplayInfo().getTitle() );
+            logger.fine("request for sword statement by user " + user.getDisplayInfo().getTitle());
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "couldn't find dataset with global ID of " + globalId);
             }
 
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (swordAuth.hasAccessToModifyDataverse(authUser, dvThatOwnsDataset)) {
+            if (swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
                 String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
-                /**
-                 * @todo In DVN 3.x this included author affiliation.
-                 */
                 String author = dataset.getLatestVersion().getAuthorsStr();
                 String title = dataset.getLatestVersion().getTitle();
                 // in the statement, the element is called "updated"
@@ -89,10 +76,10 @@ public class StatementManagerImpl implements StatementManager {
                 AtomDate atomDate = new AtomDate(lastUpdatedFinal);
                 String datedUpdated = atomDate.toString();
                 Statement statement = new AtomStatement(feedUri, author, title, datedUpdated);
-                Map<String, String> states = new HashMap<String, String>();
+                Map<String, String> states = new HashMap<>();
                 states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
-//                Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
-//                states.put("isMinorUpdate", isMinorUpdate.toString());
+                Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
+                states.put("isMinorUpdate", isMinorUpdate.toString());
                 DatasetLock lock = dataset.getDatasetLock();
                 if (lock != null) {
                     states.put("locked", "true");
@@ -110,14 +97,14 @@ public class StatementManagerImpl implements StatementManager {
                     //
                     // Replace spaces to avoid IRISyntaxException
                     String fileNameFinal = fileMetadata.getLabel().replace(' ', '_');
-                    String studyFileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
-                    IRI studyFileUrl;
+                    String fileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
+                    IRI fileUrl;
                     try {
-                        studyFileUrl = new IRI(studyFileUrlString);
+                        fileUrl = new IRI(fileUrlString);
                     } catch (IRISyntaxException ex) {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL for file ( " + studyFileUrlString + " ) resulted in " + ex.getMessage());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid URL for file ( " + fileUrlString + " ) resulted in " + ex.getMessage());
                     }
-                    ResourcePart resourcePart = new ResourcePart(studyFileUrl.toString());
+                    ResourcePart resourcePart = new ResourcePart(fileUrl.toString());
                     // default to something that doesn't throw a org.apache.abdera.util.MimeTypeParseException
                     String finalFileFormat = "application/octet-stream";
                     String contentType = dataFile.getContentType();
@@ -140,15 +127,15 @@ public class StatementManagerImpl implements StatementManager {
                     statement.addResource(resourcePart);
                     /**
                      * @todo it's been noted at
-                     * https://redmine.hmdc.harvard.edu/issues/3271#note-2 that
-                     * at the file level the "updated" date is always "now",
-                     * which seems to be set here:
+                     * https://github.com/IQSS/dataverse/issues/892#issuecomment-54159284
+                     * that at the file level the "updated" date is always
+                     * "now", which seems to be set here:
                      * https://github.com/swordapp/JavaServer2.0/blob/sword2-server-1.0/src/main/java/org/swordapp/server/AtomStatement.java#L70
                      */
                 }
                 return statement;
             } else {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + authUser.getDisplayInfo().getTitle() + " is not authorized to view study with global ID " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
             }
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not determine target type or identifier from URL: " + editUri);

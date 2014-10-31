@@ -14,14 +14,14 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
     ServiceDocumentManagerImpl serviceDocumentManagerImpl;
     protected ServiceDocumentAPI api;
 
+    @Override
     public void init() throws ServletException {
         super.init();
         this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, this.config);
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.get(req, resp);
     }
 

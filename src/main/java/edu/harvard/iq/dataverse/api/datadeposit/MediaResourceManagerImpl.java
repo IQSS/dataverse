@@ -55,7 +55,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public MediaResource getMediaResourceRepresentation(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
 
-        AuthenticatedUser authUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
@@ -66,12 +66,18 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                  * @todo: support downloading of files (SWORD 2.0 Profile 6.4. -
                  * Retrieving the content)
                  * http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_retrievingcontent
-                 * https://redmine.hmdc.harvard.edu/issues/3595
+                 *
+                 * This ticket is mostly about terms of use:
+                 * https://github.com/IQSS/dataverse/issues/183
                  */
                 boolean getMediaResourceRepresentationSupported = false;
                 if (getMediaResourceRepresentationSupported) {
-                    Dataverse dvThatOwnsStudy = dataset.getOwner();
-                    if (swordAuth.hasAccessToModifyDataverse(authUser, dvThatOwnsStudy)) {
+                    Dataverse dvThatOwnsDataset = dataset.getOwner();
+                    if (swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
+                        /**
+                         * @todo Zip file download is being implemented in
+                         * https://github.com/IQSS/dataverse/issues/338
+                         */
                         InputStream fixmeInputStream = new ByteArrayInputStream("FIXME: replace with zip of all dataset files".getBytes());
                         String contentType = "application/zip";
                         String packaging = UriRegistry.PACKAGE_SIMPLE_ZIP;
@@ -79,10 +85,10 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                         MediaResource mediaResource = new MediaResource(fixmeInputStream, contentType, packaging, isPackaged);
                         return mediaResource;
                     } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + authUser.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
+                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to get a media resource representation of the dataset with global ID " + dataset.getGlobalId());
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://redmine.hmdc.harvard.edu/issues/3595");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Downloading files via the SWORD-based Dataverse Data Deposit API is not (yet) supported: https://github.com/IQSS/dataverse/issues/183");
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't find dataset with global ID of " + globalId);
@@ -95,7 +101,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     @Override
     public DepositReceipt replaceMediaResource(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
         /**
-         * @todo: Perhaps create a new version of a study here?
+         * @todo: Perhaps create a new version of a dataset here?
          *
          * "The server MUST effectively replace all the existing content in the
          * item, although implementations may choose to provide versioning or
@@ -112,7 +118,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
 
     @Override
     public void deleteMediaResource(String uri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        AuthenticatedUser authUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
         urlManager.processUrl(uri);
         String targetType = urlManager.getTargetType();
         String fileId = urlManager.getTargetIdentifier();
@@ -134,7 +140,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                             SwordUtil.datasetLockCheck(dataset);
                             Dataset datasetThatOwnsFile = fileToDelete.getOwner();
                             Dataverse dataverseThatOwnsFile = datasetThatOwnsFile.getOwner();
-                            if (swordAuth.hasAccessToModifyDataverse(authUser, dataverseThatOwnsFile)) {
+                            if (swordAuth.hasAccessToModifyDataverse(user, dataverseThatOwnsFile)) {
                                 try {
                                     /**
                                      * @todo with only one command, should we be
@@ -145,12 +151,12 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                      * suspenders and do our normal sword auth
                                      * check.
                                      */
-                                    commandEngine.submit(new DeleteDataFileCommand(fileToDelete, authUser));
+                                    commandEngine.submit(new DeleteDataFileCommand(fileToDelete, user));
                                 } catch (CommandException ex) {
                                     throw SwordUtil.throwSpecialSwordErrorWithoutStackTrace(UriRegistry.ERROR_BAD_REQUEST, "Could not delete file: " + ex);
                                 }
                             } else {
-                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + authUser.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
+                                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to find file id " + fileIdLong + " from URL: " + uri);
@@ -176,25 +182,20 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     }
 
     DepositReceipt replaceOrAddFiles(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration, boolean shouldReplace) throws SwordError, SwordAuthException, SwordServerException {
-        AuthenticatedUser vdcUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(uri);
         String globalId = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("study") && globalId != null) {
-            logger.fine("looking up study with globalId " + globalId);
+            logger.fine("looking up dataset with globalId " + globalId);
             Dataset dataset = datasetService.findByGlobalId(globalId);
             if (dataset == null) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find study with global ID of " + globalId);
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset with global ID of " + globalId);
             }
             SwordUtil.datasetLockCheck(dataset);
-//            DatasetLock datasetLock = dataset.getDatasetLock();
-//            if (datasetLock != null) {
-//                String message = "Unable to delete file due to dataset lock (" + datasetLock.getInfo() + "). Please try again later.";
-//                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, message);
-//            }
             Dataverse dvThatOwnsDataset = dataset.getOwner();
-            if (!swordAuth.hasAccessToModifyDataverse(vdcUser, dvThatOwnsDataset)) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + vdcUser.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
+            if (!swordAuth.hasAccessToModifyDataverse(user, dvThatOwnsDataset)) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataset with global ID " + dataset.getGlobalId());
             }
 
             // Right now we are only supporting UriRegistry.PACKAGE_SIMPLE_ZIP but
@@ -277,12 +278,20 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             }
 
             Command<Dataset> cmd;
-            cmd = new UpdateDatasetCommand(dataset, vdcUser);
+            cmd = new UpdateDatasetCommand(dataset, user);
             try {
                 dataset = commandEngine.submit(cmd);
             } catch (CommandException ex) {
                 throw returnEarly("couldn't update dataset");
             } catch (EJBException ex) {
+                /**
+                 * @todo stop bothering to catch an EJBException once this has
+                 * been implemented:
+                 *
+                 * Have commands catch ConstraintViolationException and turn
+                 * them into something that inherits from CommandException ·
+                 * https://github.com/IQSS/dataverse/issues/1009
+                 */
                 Throwable cause = ex;
                 StringBuilder sb = new StringBuilder();
                 sb.append(ex.getLocalizedMessage());
@@ -302,11 +311,11 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw returnEarly("EJBException: " + sb.toString());
             }
 
-            ingestService.startIngestJobs(dataset, vdcUser);
+            ingestService.startIngestJobs(dataset, user);
 
             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
-            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, dataset);
+            DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
             return depositReceipt;
         } else {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to determine target type or identifier from URL: " + uri);
@@ -314,28 +323,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     }
 
     /**
-     * @todo This validation was in DVN 3.x and should go into the 4.0 ingest
-     * service
+     * @todo get rid of this method
      */
-    // copied from AddFilesPage
-//    private void validateFileName(List<String> existingFilenames, String fileName, Study study) throws SwordError {
-//        if (fileName.contains("\\")
-//                || fileName.contains("/")
-//                || fileName.contains(":")
-//                || fileName.contains("*")
-//                || fileName.contains("?")
-//                || fileName.contains("\"")
-//                || fileName.contains("<")
-//                || fileName.contains(">")
-//                || fileName.contains("|")
-//                || fileName.contains(";")
-//                || fileName.contains("#")) {
-//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Invalid File Name - cannot contain any of the following characters: \\ / : * ? \" < > | ; . Filename was '" + fileName + "'");
-//        }
-//        if (existingFilenames.contains(fileName)) {
-//            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Filename " + fileName + " already exists in study " + study.getGlobalId());
-//        }
-//    }
     private SwordError returnEarly(String error) {
         SwordError swordError = new SwordError(error);
         StackTraceElement[] emptyStackTrace = new StackTraceElement[0];

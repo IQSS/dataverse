@@ -70,7 +70,7 @@ public class SwordServiceBean {
         List<String> requiredFields = new ArrayList<>();
         /**
          * @todo call into a method (once it exists) that pays attention to
-         * which fields are required for the dataset passed in rather thatn
+         * which fields are required for the dataset passed in rather than
          * findAllRequiredFields() which check *all* metadata blocks. Without
          * this method in place, we simply skip over all the GSD fields during
          * the check below. See also
@@ -82,6 +82,9 @@ public class SwordServiceBean {
          * following required fields were not supplied: description, subject")
          * as suggested at
          * https://github.com/IQSS/dataverse/issues/605#issuecomment-60297583
+         *
+         * It is much preferred to simply remove this whole method once #605 is
+         * complete.
          */
         final List<DatasetFieldType> requiredDatasetFieldTypes = datasetFieldService.findAllRequiredFields();
         for (DatasetFieldType requiredField : requiredDatasetFieldTypes) {
@@ -131,7 +134,8 @@ public class SwordServiceBean {
                 /**
                  * @todo It would be nicer to return not our internal name for
                  * the metadata field (authorName) and instead the SWORD
-                 * equivalent (dcterms:creator).
+                 * equivalent (dcterms:creator):
+                 * https://github.com/IQSS/dataverse/issues/1019
                  */
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can't create/update dataset. " + SwordUtil.DCTERMS + " equivalent of required field not found: " + requiredField);
             }

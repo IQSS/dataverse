@@ -624,9 +624,6 @@ public class DatasetVersion implements Serializable {
         return getAuthorsStr(true);
     }
 
-    /**
-     * @todo Does this correctly include affiliation if you ask for it?
-     */
     public String getAuthorsStr(boolean affiliation) {
         String str = "";
         for (DatasetAuthor sa : getDatasetAuthors()) {

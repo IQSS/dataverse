@@ -48,6 +48,8 @@ public class UrlManager {
              * java.lang.IllegalStateException: SSLEngine is null at
              * org.glassfish.grizzly.ssl.SSLSupportImpl
              *
+             * https://github.com/IQSS/dataverse/issues/643
+             *
              * SSLOptions +StdEnvVars +ExportCertData ?
              *
              * [#GLASSFISH-20694] Glassfish 4.0 and jk Unable to populate SSL
@@ -102,6 +104,18 @@ public class UrlManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No dataverse alias provided in URL: " + url);
                     }
                     this.targetIdentifier = dvAlias;
+                    /**
+                     * @todo it would be nice to support "dataset" as an alias
+                     * for "study" since that's what we call them now in
+                     * Dataverse 4.0. We should continue to support "study" in
+                     * the URL however because some API users have these URLs
+                     * stored in databases:
+                     * http://irclog.iq.harvard.edu/dvn/2014-05-14#i_9404
+                     *
+                     * Also, to support "dataset" in URLs properly, we'd need to
+                     * examine all the places where we return the string "study"
+                     * such as in the Deposit Receipt.
+                     */
                 } else if (targetType.equals("study")) {
                     String globalId;
                     try {

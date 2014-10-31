@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api.datadeposit;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -12,8 +11,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -56,7 +53,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
 
-        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(collectionUri);
         String dvAlias = urlManager.getTargetIdentifier();
@@ -68,7 +65,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
             if (dvThatWillOwnDataset != null) {
 
-                if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dvThatWillOwnDataset)) {
+                if (swordAuth.hasAccessToModifyDataverse(user, dvThatWillOwnDataset)) {
 
                     logger.fine("multipart: " + deposit.isMultipart());
                     logger.fine("binary only: " + deposit.isBinaryOnly());
@@ -83,16 +80,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                             logger.fine("deposit XML received by createNew():\n" + swordEntry.toString());
                         } catch (ParseException ex) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Can not create dataset due to malformed Atom entry: " + ex);
-                        }
-                        // require title *and* exercise the SWORD jar a bit
-                        Map<String, List<String>> dublinCore = deposit.getSwordEntry().getDublinCore();
-                        if (dublinCore.get("title") == null || dublinCore.get("title").get(0) == null || dublinCore.get("title").get(0).isEmpty()) {
-                            /**
-                             * @todo make sure business rules such as required
-                             * fields are enforced deeper in the system:
-                             * https://github.com/IQSS/dataverse/issues/605
-                             */
-//                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "title field is required");
                         }
 
                         Dataset dataset = new Dataset();
@@ -116,7 +103,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset createdDataset = null;
                         try {
-                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, dataverseUser));
+                            createdDataset = engineSvc.submit(new CreateDatasetCommand(dataset, user));
                         } catch (EJBException | CommandException ex) {
                             Throwable cause = ex;
                             StringBuilder sb = new StringBuilder();
@@ -156,7 +143,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         if (createdDataset != null) {
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(collectionUri);
-                            DepositReceipt depositReceipt = receiptGenerator.createReceipt(baseUrl, createdDataset);
+                            DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
                             return depositReceipt;
                         } else {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Problem creating dataset. Null returned.");
@@ -176,7 +163,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "expected deposit types are isEntryOnly, isBinaryOnly, and isMultiPart");
                     }
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to create a dataset in this dataverse.");
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to create a dataset in this dataverse.");
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataverse: " + dvAlias);
