@@ -529,12 +529,16 @@
 
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}#{!empty fileMetadata.dataFile.md5 ? ', ' : ''}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
 
-                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
+                                            <!--h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}" rendered="#{!(empty fileMetadata.dataFile.md5) and !(fileMetadata.dataFile.tabularData) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/-->
+                                            <h:outputText id="fileMD5" value="MD5: #{fileMetadata.dataFile.md5}; " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode != 'FILE' and DatasetPage.editMode != 'CREATE') or !DatasetPage.isDuplicate(fileMetadata))}"/>
                                             <h:outputText id="duplicateFileMD5" style="color:red" value="MD5: #{fileMetadata.dataFile.md5} " rendered="#{!(empty fileMetadata.dataFile.md5) and ((DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and DatasetPage.isDuplicate(fileMetadata))}"/>
                                             <h:outputText id="fileDuplicateWarning" style="color:red" value=" (A file with this MD5 already exists in the dataset!)" rendered="#{DatasetPage.isDuplicate(fileMetadata) and (DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and (empty fileMetadata.id)}"/>
 
-                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                            <h:outputText id="fileTypeOutputTabular" value="Tabular Data, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} observations#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}, " rendered="#{!empty fileMetadata.dataFile.unf}"/>
+
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">
                                                 <br /><br /> <a href="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }">View on WorldMap</a> 		
