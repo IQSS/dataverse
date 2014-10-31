@@ -459,7 +459,8 @@
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
                                         <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
-                                            <img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/>
+                                            <!--img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/-->
+                                             <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}"/>
                                         </h:outputLink>
                                     </div>
 
