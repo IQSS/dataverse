@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -91,7 +92,7 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     DataFileServiceBean datafileService;
     @EJB
-    PermissionServiceBean permissionServiceBean;
+    PermissionServiceBean permissionService;
     @EJB
     DataverseServiceBean dataverseService;
     @EJB
@@ -426,27 +427,34 @@ public class DatasetPage implements java.io.Serializable {
 
     }// A DataFile may have a related MapLayerMetadata object
 
-    public void init() {
+    public String init() {
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
+            if (dataset == null) {
+                return "/404.xhtml";
+            }
+            // now get the correct version
             if (versionId == null) {
-                workingVersion = dataset.getLatestVersion();
-                updateDatasetFieldInputLevels();
+                // If we don't have a version ID, we will get the latest published version; if not publised, then go ahead and get the latest
+                workingVersion = dataset.getReleasedVersion();
+                if (workingVersion == null) {
+                    workingVersion = dataset.getLatestVersion();
+                }
             } else {
                 workingVersion = datasetVersionService.find(versionId);
-                updateDatasetFieldInputLevels();
             }
+            
+            if (workingVersion == null) {
+                return "/404.xhtml";
+            }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.Discover)) {
+                return "/loginpage.xhtml";
+            }             
+            
             ownerId = dataset.getOwner().getId();
             datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
             datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
-            try {
-                datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
-                updateDatasetFieldInputLevels();
-            } catch (NullPointerException npe) {
-                //This will happen when solr is down and will allow any link to be displayed.
-                throw new RuntimeException("You do not have permission to view this dataset version."); // improve error handling
-            }
-
+            datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion);
+            updateDatasetFieldInputLevels();
             displayCitation = dataset.getCitation(false, workingVersion);
             setVersionTabList(resetVersionTabList());
             setReleasedVersionTabList(resetReleasedVersionTabList());
@@ -459,6 +467,12 @@ public class DatasetPage implements java.io.Serializable {
             editMode = EditMode.CREATE;
             dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
             dataset.setOwner(dataverseService.find(ownerId));
+            if (dataset.getOwner() == null) {
+                return "/404.xhtml";
+            } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
+                return "/loginpage.xhtml";
+            }             
+            
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             if (dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -482,10 +496,11 @@ public class DatasetPage implements java.io.Serializable {
             
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Add New Dataset", " - Enter metadata to create the dataset's citation. You can add more metadata about this dataset after it's created."));
         } else {
-            throw new RuntimeException("On Dataset page without id or ownerid."); // improve error handling
+            return "/404.xhtml";
         }
+        
+        return null;
     }
-
     private String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser)user;
@@ -1103,7 +1118,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private boolean canIssueUpdateCommand() {
         try {
-            if (permissionServiceBean.on(dataset).canIssueCommand("UpdateDatasetCommand")) {
+            if (permissionService.on(dataset).canIssueCommand("UpdateDatasetCommand")) {
                 return true;
             } else {
                 return false;
