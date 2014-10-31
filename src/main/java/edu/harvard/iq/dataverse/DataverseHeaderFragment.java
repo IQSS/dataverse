@@ -6,12 +6,18 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -91,5 +97,27 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         String signUpUrl = settingsService.getValueForKey(SettingsServiceBean.Key.SignUpUrl, nonNullDefaultIfKeyNotFound);
         return signUpUrl;
     }
+    
+    // @todo consider creating a base bean, for now just make this static
+    public  String getLoginRedirectPage() {
+        return getRedirectPage();
+    }
+    
+    // @todo consider creating a base bean, for now just make this static
+    public static String getRedirectPage() {
+        try {
+            HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            StringBuilder redirectPage = new StringBuilder();
+            redirectPage.append(req.getServletPath());
+            if (req.getQueryString() != null) {
+                redirectPage.append("?").append(req.getQueryString());
+            }
+            return "?redirectPage=" + URLEncoder.encode(redirectPage.toString(), "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(DataverseHeaderFragment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return "";
+    }    
 
 }
