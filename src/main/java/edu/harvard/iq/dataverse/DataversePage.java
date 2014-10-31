@@ -5,21 +5,15 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.PermissionServiceBean.PermissionQuery;
 import edu.harvard.iq.dataverse.UserNotification.Type;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.authorization.RoleAssignee;
-import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
@@ -39,14 +33,6 @@ import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -83,7 +69,8 @@ public class DataversePage implements java.io.Serializable {
     FeaturedDataverseServiceBean featuredDataverseService;
     @EJB
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
-
+    @EJB
+    PermissionServiceBean permissionService;
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -123,14 +110,24 @@ public class DataversePage implements java.io.Serializable {
 //    public void setTreeWidgetRootNode(TreeNode treeWidgetRootNode) {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
-    public void init() {
+    public String init() {
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
+            if (dataverse == null) {
+                return "/404.xhtml";
+            } else if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
+                return "/loginpage.xhtml";
+            }            
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
+            if (dataverse.getOwner() == null) {
+                return "/404.xhtml";
+            } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
+                return "/loginpage.xhtml";
+            }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
@@ -171,6 +168,8 @@ public class DataversePage implements java.io.Serializable {
         }
         featuredDataverses = new DualListModel<>(featuredSource, featuredTarget);
         refreshAllMetadataBlocks();
+        
+        return null;
     }
 
     // TODO: 
@@ -217,6 +216,7 @@ public class DataversePage implements java.io.Serializable {
         } else if (editMode == EditMode.SETUP) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataverse Setup", " - Edit the Metadata Blocks and Facets you want to associate with your dataverse. Note: facets will appear in the order shown on the list."));
         }
+
     }
     
     public void refresh(){
