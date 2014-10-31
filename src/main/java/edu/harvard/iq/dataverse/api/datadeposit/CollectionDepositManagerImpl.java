@@ -97,23 +97,9 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
-
-                        /**
-                         * @todo check in on DatasetPage to see when it stops
-                         * hard coding protocol and authority. For now, re-use
-                         * the exact strings it uses. The ticket to get away
-                         * from these hard-coded protocol and authority values:
-                         * https://github.com/IQSS/dataverse/issues/757
-                         */
-                        dataset.setProtocol(DatasetPage.getProtocol());
-                        dataset.setAuthority(DatasetPage.getAuthority());
-
-                        /**
-                         * @todo why is generateIdentifierSequence off by one?
-                         * (10 vs. 9):
-                         * https://github.com/IQSS/dataverse/issues/758
-                         */
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(DatasetPage.getProtocol(), DatasetPage.getAuthority()));
+                        dataset.setProtocol(datasetService.getProtocol());
+                        dataset.setAuthority(datasetService.getAuthority());
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 

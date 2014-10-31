@@ -25,6 +25,14 @@ public final class PasswordEncryption  implements java.io.Serializable {
     public synchronized String encrypt(String plaintext) {
         MessageDigest md = null;
         try {
+            /**
+             * @todo For better security, switch from SHA to Bcrypt with mode
+             * set to SHA256 or SHA512 (SHA2, seeded hash, includes salting)
+             * https://github.com/IQSS/dataverse/issues/1034
+             *
+             * What impact will this change have on migrated passwords that were
+             * created with SHA in DVN 3.6?
+             */
             md = MessageDigest.getInstance("SHA");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
