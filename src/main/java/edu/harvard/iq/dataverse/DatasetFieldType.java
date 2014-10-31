@@ -33,6 +33,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public String getIdString(){
+        return id.toString();
+    }
 
     @Column(name = "name", columnDefinition = "TEXT")
     private String name;    // This is the internal, DDI-like name, no spaces, etc.

@@ -223,10 +223,21 @@ public class DataversePage implements java.io.Serializable {
         
     }
     
+    private boolean openMetadataBlock;
+
+    public boolean isOpenMetadataBlock() {
+        return openMetadataBlock;
+    }
+
+    public void setOpenMetadataBlock(boolean openMetadataBlock) {
+        this.openMetadataBlock = openMetadataBlock;
+    }
+    
     public void showDatasetFieldTypes(Long  mdbId) {
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){
                 mdb.setShowDatasetFieldTypes(true);
+                openMetadataBlock = true;
             }
         }
     }
@@ -235,9 +246,69 @@ public class DataversePage implements java.io.Serializable {
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){
                 mdb.setShowDatasetFieldTypes(false);
+                openMetadataBlock = false;
             }
         }
     }
+    public void updateInclude(Long mdbId, long dsftId) {
+        List<DatasetFieldType> childDSFT = new ArrayList();
+        
+        for (MetadataBlock mdb : allMetadataBlocks) {
+            if (mdb.getId().equals(mdbId)) {
+                for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
+                    if (dsftTest.getId().equals(dsftId)) {
+                        if (dsftTest.isHasChildren() && !dsftTest.isInclude()) {
+                            childDSFT.addAll(dsftTest.getChildDatasetFieldTypes());
+                        }
+                    }
+                }
+            }
+        }
+        if (!childDSFT.isEmpty()) {
+            for (DatasetFieldType dsftUpdate : childDSFT) {
+                for (MetadataBlock mdb : allMetadataBlocks) {
+                    if (mdb.getId().equals(mdbId)) {
+                        for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
+                            if (dsftTest.getId().equals(dsftUpdate.getId())) {
+                                
+                                dsftTest.setInclude(false);
+                            }
+                        }
+                    }
+                }                
+            }
+            
+        }
+    }
+    
+    public void updateRequiredDatasetFieldTypes(Long  mdbId, Long dsftId, boolean inVal) {
+        System.out.print(inVal);
+        for (MetadataBlock mdb : allMetadataBlocks){
+            if(mdb.getId().equals(mdbId)){
+               for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()){
+                   if (dsft.getId().equals(dsftId)){
+                       dsft.setRequiredDV(!inVal);
+                   }
+               }
+            }
+        }
+    }
+    
+     public void updateOptionsRadio(Long  mdbId, Long dsftId) {
+        System.out.print(dsftId);
+        for (MetadataBlock mdb : allMetadataBlocks){
+            if(mdb.getId().equals(mdbId)){
+               for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()){
+                   if (dsft.getId().equals(dsftId)){
+                       boolean oVal = dsft.isRequiredDV();
+                       System.out.print(oVal);
+                       dsft.setRequiredDV(!oVal);
+                       System.out.print("after "  + oVal);
+                   }
+               }
+            }
+        }
+    } 
 
     public String save() {
         List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList();
