@@ -140,13 +140,11 @@
             <artifactId>omnifaces</artifactId>
             <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>          
-        
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>5.0.1.Final</version>
-        </dependency>
-         
+	<dependency>
+	    <groupId>org.hibernate</groupId>
+	    <artifactId>hibernate-validator</artifactId>
+	    <version>5.0.3.Final</version>
+	</dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
