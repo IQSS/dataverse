@@ -117,7 +117,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse == null) {
                 return "/404.xhtml";
             } else if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
-                return "/loginpage.xhtml";
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }            
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else if (ownerId != null) { // create mode for a new child dataverse
@@ -126,22 +126,14 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
-                return "/loginpage.xhtml";
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
-        } else { // view mode for root dataverse (or create root dataverse)
-            try {
-                dataverse = dataverseService.findRootDataverse();
-            } catch (EJBException e) {
-                if (e.getCause() instanceof NoResultException) {
-                    editMode = EditMode.INFO;
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create Root Dataverse", " - To get started, you need to create your root dataverse. Asterisks indicate required fields."));
-                } else {
-                    throw e;
-                }
-            }
+        } else { // view mode for root dataverse)
+            dataverse = dataverseService.findRootDataverse();            
+            // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root
         }
 
         List<DatasetFieldType> facetsSource = new ArrayList<>();
