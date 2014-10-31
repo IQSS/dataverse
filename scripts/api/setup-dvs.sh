@@ -36,11 +36,6 @@ echo
 curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "$SERVER/dvs/umaTop?key=$2"
 echo
 
-echo Assign sensible role for the guest on root
-curl -s -H "Content-type:application/json" -X POST -d @data/role-guest.json "$SERVER/dvs/root/roles?key=$1"
-echo
-curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\":Guest\",\"role\":\"guest-role\"}" $SERVER/dvs/root/assignments/?key=$1
-echo
 
 echo Set the metadata block for Root
 curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dvs/:root/metadatablocks/?key=$1
