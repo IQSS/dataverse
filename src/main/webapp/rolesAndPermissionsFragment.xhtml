@@ -7,8 +7,8 @@
     <!-- Roles + Permissions Popup -->
     <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
         <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
-            #{rolePermissionFragment.dvObject.displayName}
-            <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner}"
+            #{rolePermissionFragment.dvObject.displayName}         
+            <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionServiceBean.on(rolePermissionFragment.dvObject.owner).has('AssignRole')}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">
                 <h:outputText value="(Up)" />
             </p:commandLink>              
@@ -106,19 +106,12 @@
                         </p:tab>
                         <p:tab id="filesSubTab" title="Files"></p:tab>
                     </p:tabView>
-                    <div>
-                        <h:link id="manageRoles" styleClass="ui-commandlink ui-widget" outcome="manage-roles">
-                            <h:outputText value="Visit Old Roles + Permissions Page" />
-                            <f:param name="dataverseId" value="#{rolePermissionFragment.dvObject.id}" />
-                            <f:param name="objectType" value="USERS" />
-                        </h:link>
-                    </div>
                 </p:tab>
-                <p:tab id="GroupsTab" title="Groups">
+                <p:tab id="GroupsTab" title="Groups" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
                     <!-- FORM -->
                     Groups
                 </p:tab>
-                <p:tab id="rolesTab" title="Roles">
+                <p:tab id="rolesTab" title="Roles" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
                     <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
                         <div style="float:right; margin-bottom:.5em;">
                             <p:commandLink styleClass="btn btn-default" actionListener="#{rolePermissionFragment.createNewRole}"
