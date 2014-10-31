@@ -447,7 +447,7 @@
                                 <!--DATAVERSE CARDS-->
                                 <ui:fragment rendered="#{result.type == 'dataverses'}">
                                     <div>
-                                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}">
+                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}">
                                             <h:outputText value="#{result.name} Dataverse" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                             <h:outputText value="#{result.nameHighlightSnippet} Dataverse" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                             <h:outputText value=" (#{result.status})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
@@ -458,7 +458,7 @@
                                         <h:outputText value="#{SearchIncludeFragment.UNPUBLISHED}" styleClass="label label-danger" rendered="#{result.unpublishedState}"/>
                                     </div>
                                     <div style="width:48px; float:left; margin:4px 12px 6px 0;">
-                                        <h:outputLink value="#{dataversePage}?alias=#{result.dataverseAlias}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
+                                        <h:outputLink value="#{dataversePage}?id=#{result.entityId}" target="#{showFacets == true ? '_self' : '_blank'}" style="display:block; clear:left; margin-bottom: .5em;">
                                             <!--img src="/resources/images/icon_dataverse.png" style="width:48px;" border="0" alt="Dataverse"/-->
                                              <p:graphicImage value="/api/access/dvCardImage/#{result.entityId}"/>
                                         </h:outputLink>
@@ -466,7 +466,7 @@
 
                                     <h:outputText value="#{result.dateToDisplayOnCard}" style="color:#999999; margin-right:.5em;"/>
 
-                                    <h:outputLink value="#{dataversePage}?alias=#{result.dataverseParentAlias}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                    <h:outputLink value="#{dataversePage}?id=#{result.parent.id}" target="#{showFacets == true ? '_self' : '_blank'}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                         <h:outputText value="#{result.parent.get('name')} Dataverse"/>
                                     </h:outputLink>
 
