@@ -165,7 +165,7 @@ public class RDATAFileReader extends TabularDataFileReader {
     RSCRIPT_GET_DATASET = readLocalResource("scripts/get.dataset.R");
     RSCRIPT_CREATE_WORKSPACE = readLocalResource("scripts/create.workspace.R");
     RSCRIPT_GET_LABELS = readLocalResource("scripts/get.labels.R");
-    RSCRIPT_DATASET_INFO_SCRIPT = readLocalResource("scripts/dataset.fine.script.R");
+    RSCRIPT_DATASET_INFO_SCRIPT = readLocalResource("scripts/dataset.info.script.R");
     
     
     LOG.finer("R SCRIPTS AS STRINGS --------------");
