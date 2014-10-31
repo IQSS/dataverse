@@ -17,6 +17,11 @@ public class SystemConfig {
      * The equivalent in DVN 3.x was "dvn.inetAddress".
      */
     public static final String FQDN = "dataverse.fqdn";
+    
+    /**
+     * A JVM option for where files are stored on the file system.
+     */
+    public static final String FILES_DIRECTORY = "dataverse.files.directory";
 
     /**
      * A JVM option to override the number of minutes for which a password reset

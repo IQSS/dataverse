@@ -1,12 +1,18 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import org.swordapp.server.SwordConfiguration;
 
 public class SwordConfigurationImpl implements SwordConfiguration {
+
+    @EJB
+    SettingsServiceBean settingsService;
 
     private static final Logger logger = Logger.getLogger(SwordConfigurationImpl.class.getCanonicalName());
 
@@ -79,38 +85,57 @@ public class SwordConfigurationImpl implements SwordConfiguration {
         return true;
     }
 
-    /**
-     * @returns null (unused)
-     */
     @Override
     public String getTempDirectory() {
-        logger.info("getTempDirectory() called unexpectedly!");
-        return null;
+        String tmpFileDir = System.getProperty(SystemConfig.FILES_DIRECTORY);
+        if (tmpFileDir != null) {
+            String swordDirString = tmpFileDir + File.separator + "sword";
+            File swordDirFile = new File(swordDirString);
+            /**
+             * @todo Do we really need this check? It seems like we do because
+             * if you create a dataset via the native API and then later try to
+             * upload a file via SWORD, the directory defined by
+             * dataverse.files.directory may not exist and we get errors deep in
+             * the SWORD library code. Could maybe use a try catch in the doPost
+             * method of our SWORDv2MediaResourceServlet.
+             */
+            if (swordDirFile.exists()) {
+                return swordDirString;
+            } else {
+                boolean mkdirSuccess = swordDirFile.mkdirs();
+                if (mkdirSuccess) {
+                    logger.info("Created directory " + swordDirString);
+                    return swordDirString;
+                } else {
+                    String msgForSwordUsers = ("Could not determine or create SWORD temp directory. Check logs for details.");
+                    logger.severe(msgForSwordUsers + " Failed to create " + swordDirString);
+                    // sadly, must throw RunTimeException to communicate with SWORD user
+                    throw new RuntimeException(msgForSwordUsers);
+                }
+            }
+        } else {
+            String msgForSwordUsers = ("JVM option \"" + SystemConfig.FILES_DIRECTORY + "\" not defined. Check logs for details.");
+            logger.severe(msgForSwordUsers);
+            // sadly, must throw RunTimeException to communicate with SWORD user
+            throw new RuntimeException(msgForSwordUsers);
+        }
     }
 
     @Override
     public int getMaxUploadSize() {
         int unlimited = -1;
-        /**
-         * @todo Move this from a JVM option to a setting in the database.
-         *
-         * SWORD: implement equivalent of dvn.dataDeposit.maxUploadInBytes
-         * https://github.com/IQSS/dataverse/issues/1043
-         */
-        String jvmOption = "dvn.dataDeposit.maxUploadInBytes";
-        String maxUploadInBytes = System.getProperty(jvmOption);
+        String maxUploadInBytes = settingsService.getValueForKey(SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes);
         if (maxUploadInBytes != null) {
             try {
                 int maxUploadSizeInBytes = Integer.parseInt(maxUploadInBytes);
                 return maxUploadSizeInBytes;
             } catch (NumberFormatException ex) {
-                logger.fine("Could not convert " + maxUploadInBytes + " from JVM option " + jvmOption + " to int. Setting Data Deposit APU max upload size limit to unlimited.");
+                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit APU max upload size limit to unlimited.");
                 return unlimited;
             }
         } else {
-            logger.fine("JVM option " + jvmOption + " is undefined. Setting Data Deposit APU max upload size limit to unlimited.");
+            logger.info("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit APU max upload size limit to unlimited.");
             return unlimited;
-
         }
     }
 

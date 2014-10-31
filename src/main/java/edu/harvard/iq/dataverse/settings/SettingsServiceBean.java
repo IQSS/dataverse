@@ -25,6 +25,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /** Key for limiting the number of bytes uploaded via the Data Deposit API. */
+        DataDepositApiMaxUploadInBytes,
         /** Key for if Shibboleth is enabled or disabled. */
         ShibEnabled,
         /** Key for the url to send users who want to sign up to. */
