@@ -140,16 +140,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
-    /**
-     * @todo ticket to get away from these hard-coded protocol and authority
-     * values: https://github.com/IQSS/dataverse/issues/757
-     */
-    static String fixMeDontHardCodeProtocol = "doi";
-    static String fixMeDontHardCodeAuthority = "10.5072/FK2";
-    
-    public static String getProtocol() { return fixMeDontHardCodeProtocol; }
-    public static String getAuthority() { return fixMeDontHardCodeAuthority; }
-    
     public String getShowVersionList() {
         return showVersionList;
     }
@@ -330,7 +320,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             workingVersion = dataset.getCreateVersion();
             updateDatasetFieldInputLevels();
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));            
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
         }
         resetVersionUI();
     }
@@ -467,7 +457,7 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(fixMeDontHardCodeProtocol, fixMeDontHardCodeAuthority));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
             dataset.setOwner(dataverseService.find(ownerId));
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
             if (dataverseService.find(ownerId).isTemplateRoot()) {
@@ -746,8 +736,8 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         //TODO get real application-wide protocol/authority https://github.com/IQSS/dataverse/issues/757
-        dataset.setProtocol(fixMeDontHardCodeProtocol);
-        dataset.setAuthority(fixMeDontHardCodeAuthority);
+        dataset.setProtocol(datasetService.getProtocol());
+        dataset.setAuthority(datasetService.getAuthority());
 
         /*
          * Save and/or ingest files, if there are any:
