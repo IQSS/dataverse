@@ -14,6 +14,7 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
     MediaResourceManagerImpl mediaResourceManagerImpl;
     protected MediaResourceAPI api;
 
+    @Override
     public void init() throws ServletException {
         super.init();
 
@@ -22,32 +23,27 @@ public class SWORDv2MediaResourceServlet extends SwordServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.get(req, resp);
     }
 
     @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.head(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.post(req, resp);
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.put(req, resp);
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.delete(req, resp);
     }
 }

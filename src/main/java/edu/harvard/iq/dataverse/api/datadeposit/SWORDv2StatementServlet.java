@@ -16,6 +16,7 @@ public class SWORDv2StatementServlet extends SwordServlet {
     private StatementManager sm;
     private StatementAPI statementApi;
 
+    @Override
     public void init() throws ServletException {
         super.init();
 
@@ -27,8 +28,7 @@ public class SWORDv2StatementServlet extends SwordServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.statementApi.get(req, resp);
     }
 

@@ -59,7 +59,7 @@ public class FileUtil implements java.io.Serializable  {
    
     /*
      * The following are Stata, SAS and SPSS syntax/control cards: 
-     * These are recognized as text files (because they are text files; so 
+     * These are recognized as text files (because they are!) so 
      * we check all the uploaded "text/plain" files for these extensions, and 
      * assign the following types when they are matched;
      * Note that these types are only used in the metadata displayed on the 

@@ -84,6 +84,11 @@ public class SwordAuth {
         }
     }
 
+    /**
+     * @todo Review every place this method is called and think about how we can
+     * use more granular permissions rather than the old equivalent of "admin"
+     * in DVN 3.x.
+     */
     boolean hasAccessToModifyDataverse(User dataverseUser, Dataverse dataverse) throws SwordError {
         boolean authorized = false;
 

@@ -5,7 +5,6 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.ContainerAPI;
 import org.swordapp.server.ContainerManager;
 import org.swordapp.server.StatementManager;
@@ -21,6 +20,7 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     private ContainerAPI api;
     private StatementManager sm;
 
+    @Override
     public void init() throws ServletException {
         super.init();
 
@@ -35,32 +35,27 @@ public class SWORDv2ContainerServlet extends SwordServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.get(req, resp);
     }
 
     @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.head(req, resp);
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.put(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.post(req, resp);
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.api.delete(req, resp);
     }
 

@@ -37,7 +37,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
 
     @Override
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
-        AuthenticatedUser dataverseUser = swordAuth.auth(authCredentials);
+        AuthenticatedUser user = swordAuth.auth(authCredentials);
 
         urlManager.processUrl(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
@@ -46,30 +46,36 @@ public class CollectionListManagerImpl implements CollectionListManager {
             Dataverse dv = dataverseService.findByAlias(dvAlias);
 
             if (dv != null) {
-                if (swordAuth.hasAccessToModifyDataverse(dataverseUser, dv)) {
+                if (swordAuth.hasAccessToModifyDataverse(user, dv)) {
                     Abdera abdera = new Abdera();
                     Feed feed = abdera.newFeed();
                     feed.setTitle(dv.getName());
                     /**
-                     * @todo how do I get a list of datasets belonging to a
-                     * user?
+                     * @todo For the supplied dataverse, should we should only
+                     * the datasets that are *owned* by the user? Probably not!
+                     * We be using the permission system? Show the equivalent of
+                     * datasets the user is "admin" on? What permission should
+                     * we check?
+                     *
+                     * And should we only show datasets at the current level or
+                     * should we show datasets that are in sub-dataverses as
+                     * well?
                      */
-//                    Collection<Study> studies = dv.getOwnedStudies();
                     List childDvObjects = dataverseService.findByOwnerId(dv.getId());
                     childDvObjects.addAll(datasetService.findByOwnerId(dv.getId()));
-                    List<Dataset> studies = new ArrayList<>();
+                    List<Dataset> datasets = new ArrayList<>();
                     for (Object object : childDvObjects) {
                         if (object instanceof Dataset) {
-                            studies.add((Dataset) object);
+                            datasets.add((Dataset) object);
                         }
                     }
                     String baseUrl = urlManager.getHostnamePlusBaseUrlPath(iri.toString());
-                    for (Dataset study : studies) {
-                        String editUri = baseUrl + "/edit/study/" + study.getGlobalId();
-                        String editMediaUri = baseUrl + "/edit-media/study/" + study.getGlobalId();
+                    for (Dataset dataset : datasets) {
+                        String editUri = baseUrl + "/edit/study/" + dataset.getGlobalId();
+                        String editMediaUri = baseUrl + "/edit-media/study/" + dataset.getGlobalId();
                         Entry entry = feed.addEntry();
                         entry.setId(editUri);
-                        entry.setTitle(study.getLatestVersion().getTitle());
+                        entry.setTitle(dataset.getLatestVersion().getTitle());
                         entry.setBaseUri(new IRI(editUri));
                         entry.addLink(editMediaUri, "edit-media");
                         feed.addEntry(entry);
@@ -78,7 +84,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
                     feed.addSimpleExtension(new QName(UriRegistry.SWORD_STATE, "dataverseHasBeenReleased"), dvHasBeenReleased.toString());
                     return feed;
                 } else {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + dataverseUser.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to list datasets in dataverse " + dv.getAlias());
                 }
 
             } else {

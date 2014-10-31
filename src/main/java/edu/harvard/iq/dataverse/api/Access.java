@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 
@@ -21,7 +23,9 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -59,6 +63,7 @@ public class Access {
     
     private static final String DEFAULT_FILE_ICON = "icon_file.png";
     private static final String DEFAULT_DATASET_ICON = "icon_dataset.png";
+    private static final String DEFAULT_DATAVERSE_ICON = "icon_dataverse.png";
     
     @EJB
     DataFileServiceBean dataFileService;
@@ -66,6 +71,8 @@ public class Access {
     DatasetServiceBean datasetService; 
     @EJB
     DatasetVersionServiceBean versionService;
+    @EJB
+    DataverseServiceBean dataverseService; 
 
     //@EJB
     
@@ -280,6 +287,112 @@ public class Access {
         }
 
         return null; 
+    }
+    
+    @Path("dvCardImage/{dataverseId}")
+    @GET
+    @Produces({ "image/png" })
+    public InputStream dvCardImage(@PathParam("dataverseId") Long dataverseId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {        
+        
+        
+        Dataverse dataverse = dataverseService.find(dataverseId);
+        
+        if (dataverse == null) {
+            logger.warning("Preview: Version service could not locate a DatasetVersion object for id "+dataverseId+"!");
+            return null; 
+        }
+        
+        String imageThumbFileName = null; 
+        
+        // First, check if the dataverse has a defined logo: 
+        
+        if (dataverse.getLogo() != null && !dataverse.getLogo().equals("")) {
+            String dataverseLogoPath = getLogoPath(dataverse);
+            if (dataverseLogoPath != null) {
+                String logoThumbNailPath = null;
+                InputStream in = null;
+
+                try {
+                    if (new File(dataverseLogoPath).exists()) {
+                        logoThumbNailPath =  ImageThumbConverter.generateImageThumb(dataverseLogoPath, 48);
+                        if (logoThumbNailPath != null) {
+                            in = new FileInputStream(logoThumbNailPath);
+                        }
+                    }
+                } catch (Exception ex) {
+                    in = null; 
+                }
+                if (in != null) {
+                    return in;
+                }    
+            }
+        }
+        
+        // If there's no uploaded logo for this dataverse, go through its 
+        // [released] datasets and see if any of them have card images:
+        
+        List<Dataset> childDatasets = datasetService.findByOwnerId(dataverseId, Boolean.TRUE);
+
+        for (Dataset dataset : datasetService.findByOwnerId(dataverseId, Boolean.TRUE)) {
+            if (dataset != null) {
+                DatasetVersion releasedVersion = dataset.getReleasedVersion();
+                // TODO: 
+                // put the Version-related code below away in its own method, 
+                // share it between this and the "dataset card image" method 
+                // above. 
+                // -- L.A. 4.0 beta 8
+                if (releasedVersion != null) {
+                    for (FileMetadata fileMetadata : releasedVersion.getFileMetadatas()) {
+                        DataFile dataFile = fileMetadata.getDataFile();
+                        if ("application/pdf".equalsIgnoreCase(dataFile.getContentType())) {
+                            imageThumbFileName = ImageThumbConverter.generatePDFThumb(dataFile.getFileSystemLocation().toString(), 48);
+                            break;
+                        } else if (dataFile.isImage()) {
+                            imageThumbFileName = ImageThumbConverter.generateImageThumb(dataFile.getFileSystemLocation().toString(), 48);
+                            break;
+                        }
+                    }
+                }
+                if (imageThumbFileName != null) {
+                    break;
+                }
+            }
+        }
+        
+        // Finally, if we haven't found anything - we'll give them the default 
+        // dataverse icon: 
+        
+        if (imageThumbFileName == null) {
+            imageThumbFileName = getWebappImageResource (DEFAULT_DATAVERSE_ICON);
+        }
+        
+        if (imageThumbFileName != null) {
+            InputStream in;
+
+            try {
+                in = new FileInputStream(imageThumbFileName);
+            } catch (Exception ex) {
+                return null;
+            }
+            return in;
+        }
+
+        return null; 
+    }
+    
+    private String getLogoPath(Dataverse dataverse) {
+        if (dataverse.getId() == null) {
+            return null; 
+        }
+        
+        Properties p = System.getProperties();
+        String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
+  
+        return domainRoot + File.separator + 
+                "docroot" + File.separator + 
+                "logos" + File.separator + 
+                dataverse.getId() + File.separator + 
+                dataverse.getLogo();
     }
     
     private String getWebappImageResource(String imageName) {
