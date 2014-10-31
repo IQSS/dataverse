@@ -324,7 +324,7 @@
                                                         </h:outputLink>
                                                     </li>
                                                 </c:forEach>
-                                                <li>
+                                                <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="Next &gt;"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -338,7 +338,7 @@
                                                         <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
                                                     </h:outputLink>
                                                 </li>
-                                                <li>
+                                                <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                                     <h:outputLink>
                                                         <h:outputText value="&#187;"/>
                                                         <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -690,7 +690,7 @@
                                                 </h:outputLink>
                                             </li>
                                         </c:forEach>
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="Next &gt;"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>
@@ -704,7 +704,7 @@
                                                 <f:param name="page" value="#{Math:min(SearchIncludeFragment.page+1,SearchIncludeFragment.totalPages).intValue()}"/>
                                             </h:outputLink>
                                         </li>
-                                        <li>
+                                        <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
                                             <h:outputLink>
                                                 <h:outputText value="&#187;"/>
                                                 <f:param name="id" value="#{SearchIncludeFragment.dataverseId}"/>

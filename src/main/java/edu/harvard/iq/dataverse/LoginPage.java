@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,6 +83,8 @@ public class LoginPage implements java.io.Serializable {
     
     private List<FilledCredential> filledCredentials;
     
+    private String redirectPage = "dataverse.xhtml";
+    
     public void init() {
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
         if ( credentialsIterator.hasNext() ) {
@@ -131,7 +135,18 @@ public class LoginPage implements java.io.Serializable {
             AuthenticatedUser r = authSvc.authenticate(credentialsAuthProviderId, authReq);
             logger.log(Level.INFO, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
-            return "/dataverse.xhtml?faces-redirect=true";
+            
+            try {            
+                redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
+                redirectPage = "dataverse.xhtml";
+            }
+
+            logger.log(Level.INFO, "Sending user to = " + redirectPage);
+
+            return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
+
             
         } catch (AuthenticationFailedException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Login Failed", ex.getResponse().getMessage());
@@ -172,6 +187,14 @@ public class LoginPage implements java.io.Serializable {
     
     public boolean isMultipleProvidersAvailable() {
         return authSvc.getAuthenticationProviderIds().size()>1;
+    }
+
+    public String getRedirectPage() {
+        return redirectPage;
+    }
+
+    public void setRedirectPage(String redirectPage) {
+        this.redirectPage = redirectPage;
     }
     
 }

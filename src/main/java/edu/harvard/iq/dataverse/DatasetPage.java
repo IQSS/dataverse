@@ -447,7 +447,7 @@ public class DatasetPage implements java.io.Serializable {
             if (workingVersion == null) {
                 return "/404.xhtml";
             }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.Discover)) {
-                return "/loginpage.xhtml";
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }             
             
             ownerId = dataset.getOwner().getId();
@@ -470,7 +470,7 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
-                return "/loginpage.xhtml";
+                return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }             
             
             dataverseTemplates = dataverseService.find(ownerId).getTemplates();
