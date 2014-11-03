@@ -9,12 +9,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
-  # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-centos-65-x64-virtualbox-puppet.box"
-
-  # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
-  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-puppet.box"
+  operating_system = "centos"
+  if ENV['OPERATING_SYSTEM'].nil?
+    puts "OPERATING_SYSTEM environment variable not specified. Using #{operating_system} by default.\nTo specify it in bash: export OPERATING_SYSTEM=debian"
+    config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-65-x64-virtualbox-puppet.box"
+    config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-centos-65-x64-virtualbox-puppet.box"
+  elsif ENV['OPERATING_SYSTEM'] == 'debian'
+    puts "WARNING: Debian specified. Here be dragons! https://github.com/IQSS/dataverse/issues/1059"
+    config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/debian-607-x64-vbox4210.box"
+    config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-debian-607-x64-vbox4210.box"
+  else
+    operating_system = ENV['OPERATING_SYSTEM']
+    puts "Not sure what do to with operating system: #{operating_system}"
+    exit 1
+  end
 
   mailserver = "localhost"
   if ENV['MAIL_SERVER'].nil?
