@@ -11,15 +11,21 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.component.tabview.TabView;
 
 import org.primefaces.event.FileUploadEvent;
@@ -92,6 +98,22 @@ public class ThemeWidgetFragment implements java.io.Serializable {
           
     }
 
+public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+    try {
+        if (!StringUtils.isEmpty((String)value)){
+            URL test = new URL((String)value);
+        }
+    } catch(MalformedURLException e) {
+        System.out.println("url validation failed.");
+        FacesMessage msg =
+              new FacesMessage(" URL validation failed.",
+              "Please provide URL.");
+      msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+    
+      throw new ValidatorException(msg);
+    }
+    
+  }
     public TabView getTabView() {
         return tabView;
     }

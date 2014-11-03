@@ -26,7 +26,7 @@
                                     </p>
                                     <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}"/>
                                 </p:column>
-                                <p:fileUpload id="changelogo" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                               fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
                                 <p:message for="changelogo"/>
                             </p:panelGrid>
@@ -152,7 +152,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:inputText styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
+                                <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
                                 <p:message for="linkUrl"/>
                             </p:panelGrid>
                         </div>
@@ -171,7 +171,7 @@
                         </div>
                     </div>
                 </div>
-                <h:commandButton class="btn btn-success" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton update=":dataverseForm:themeWidgetsTabView" oncomplete="saveThemeHandleComplete(xhr, status, args);" class="btn btn-success" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
                 <button id="widgetsDone" type="button" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Cancel">Cancel</button>
             </p:tab>
             <p:tab id="widgetsTab" title="Widgets">
@@ -202,4 +202,21 @@
             </p:tab>
         </p:tabView>
     </p:dialog>
-</div>
+
+  <script type="text/javascript">
+        // <![CDATA[
+        
+   function saveThemeHandleComplete(xhr, status, args) {
+            // We only want to close the CreateSet pop-up
+            // if there
+            // are no validation or creation errors
+          //  alert("xhr="+xhr.responseText);
+            if (xhr.responseText.search('class="error"') === -1 && args.validationFailed === undefined) {
+                PF('themeAndWidgetsForm').hide();
+               
+            } else {
+         //        alert(" contains class error = "+ xhr.responseText.search('class="error"')!==-1);
+            }
+        }    // ]]>
+    </script>
+   </div> 
