@@ -11,13 +11,31 @@
             <p:tab  id="themeTab" title="Theme">
                 <!-- Dataverse Theme Panel -->
                 <div class="row form-horizontal">
+                    
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
+                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                Inherit Customization
+                            </a>
+                        </label>
+                        <div class="col-sm-9">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" id="inheritCustomization"
+                                           name="inheritCustomization" />
+                                    Inherit the customization from the parent dataverse to this dataverse.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
                                 Logo Image
                             </a>
                         </label>
-                        <div class="col-sm-8">
+                        <div class="form-group col-sm-9">
                             <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
                                 <p:column>
                                     <p>
@@ -31,104 +49,112 @@
                                 <p:message for="changelogo"/>
                             </p:panelGrid>
 
-                            <p:panelGrid rendered="#{ empty themeWidgetFragment.editDv.logo}" columns="2" styleClass="noBorders">
+                            <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.logo}" columns="2" styleClass="noBorders">
                                 <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                               fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                                 <p:message for="uploadlogo"/>
                             </p:panelGrid>
+                            
+                            <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.logo}">
+                                <div class="form-col-container col-sm-4">
+                                    <label for="logoFormat" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Logo Format
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.logoFormat}">
+                                                <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
+                                                <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
+                                            </p:selectOneRadio>
+                                            <p:message for="logoFormat"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-col-container col-sm-3">
+                                    <label for="logoAlignment" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Logo Alignment
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.logoAlignment}">
+                                                <f:selectItem id="left" itemLabel="Left" itemValue="LEFT" />
+                                                <f:selectItem id="center" itemLabel="Center" itemValue="CENTER" />
+                                                <f:selectItem id="right" itemLabel="Right" itemValue="RIGHT" />
+                                            </p:selectOneMenu>
+                                            <p:message for="logoAlignment"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-col-container col-sm-4">
+                                    <label for="logoBackgroundColor" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Logo Background Color
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.logoBackgroundColor}"/>
+                                            <p:message for="logoBackgroundColor"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            
                         </div>
                     </div>
                 </div>
                 
-                <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.logo}">
-                    <div class="row form-horizontal">
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
-                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                    Logo Format
-                                </a>
-                            </label>
-                            <div class="col-sm-8">
-                                <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.logoFormat}">
-                                        <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
-                                        <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
-                                    </p:selectOneRadio>
-                                    <p:message for="logoFormat"/>
-                                </p:panelGrid>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="logoAlignment" style="white-space:nowrap;">
-                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                    Logo Alignment
-                                </a>
-                            </label>
-                            <div class="col-sm-8">
-                                <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.logoAlignment}">
-                                        <f:selectItem id="left" itemLabel="Left" itemValue="LEFT" />
-                                        <f:selectItem id="center" itemLabel="Center" itemValue="CENTER" />
-                                        <f:selectItem id="right" itemLabel="Right" itemValue="RIGHT" />
-                                    </p:selectOneMenu>
-                                    <p:message for="logoAlignment"/>
-                                </p:panelGrid>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label" for="logoBackgroundColor" style="white-space:nowrap;">
-                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                    Logo Background Color
-                                </a>
-                            </label>
-                            <div class="col-sm-8">
-                                <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.logoBackgroundColor}"/>
-                                    <p:message for="logoBackgroundColor"/>
-                                </p:panelGrid>
-                            </div>
-                        </div>
-                    </div>
-                </ui:fragment>
-                
                 <div class="row form-horizontal">
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="backgroundColor" style="white-space:nowrap;">
+                        <label class="col-sm-3 control-label" style="white-space:nowrap;">
                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Background Color
+                                Header Colors
                             </a>
                         </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.backgroundColor}"/>
-                                <p:message for="backgroundColor"/>
-                            </p:panelGrid>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="linkColor" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Link Color
-                            </a>
-                        </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.linkColor}"/>
-                                <p:message for="linkColor"/>
-                            </p:panelGrid>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="textColor" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Text Color
-                            </a>
-                        </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.textColor}"/>
-                                <p:message for="textColor"/>
-                            </p:panelGrid>
+                        <div class="form-group col-sm-9">
+                                <div class="form-col-container col-sm-4">
+                                    <label for="backgroundColor" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Background Color
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.backgroundColor}"/>
+                                            <p:message for="backgroundColor"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-col-container col-sm-4">
+                                    <label for="linkColor" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Link Color
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.linkColor}"/>
+                                            <p:message for="linkColor"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                                <div class="form-col-container col-sm-4">
+                                    <label for="textColor" class="control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                            Text Color
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <p:panelGrid columns="2" styleClass="noBorders">
+                                            <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.textColor}"/>
+                                            <p:message for="textColor"/>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -138,7 +164,7 @@
                             </a>
                         </label>
                         <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
                                 <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.tagline}"/>
                                 <p:message for="tagline"/>
                             </p:panelGrid>
@@ -151,7 +177,7 @@
                             </a>
                         </label>
                         <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
                                 <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
                                 <p:message for="linkUrl"/>
                             </p:panelGrid>
@@ -164,15 +190,15 @@
                             </a>
                         </label>
                         <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
                                 <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.linkText}"/>
                                 <p:message for="linkText"/>
                             </p:panelGrid>
                         </div>
                     </div>
                 </div>
-                <p:commandButton update=":dataverseForm:themeWidgetsTabView" oncomplete="saveThemeHandleComplete(xhr, status, args);" styleClass="btn btn-success" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                <button id="widgetsDone" type="button" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Cancel">Cancel</button>
+                <p:commandButton update=":dataverseForm:themeWidgetsTabView" oncomplete="saveThemeHandleComplete(xhr, status, args);" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton id="widgetsDone" type="button" onclick="themeAndWidgetsForm.hide()" value="Cancel"></p:commandButton>
             </p:tab>
             <p:tab id="widgetsTab" title="Widgets">
                 <div>
