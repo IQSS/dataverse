@@ -171,29 +171,34 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="linkUrl" style="white-space:nowrap;">
+                        <label class="col-sm-3 control-label" style="white-space:nowrap;">
                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Link URL
+                                Additional Link
                             </a>
                         </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
-                                <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
-                                <p:message for="linkUrl"/>
-                            </p:panelGrid>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="linkText" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Link Text
-                            </a>
-                        </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
-                                <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.linkText}"/>
-                                <p:message for="linkText"/>
-                            </p:panelGrid>
+                        <div class="form-group col-sm-9">
+                            <div class="form-col-container col-sm-6">
+                                <label for="linkUrl" class="control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        Link URL
+                                    </a>
+                                </label>
+                                <div>
+                                    <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
+                                    <p:message for="linkUrl"/>
+                                </div>
+                            </div>
+                            <div class="form-col-container col-sm-6">
+                                <label for="linkText" class="control-label">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        Link Text
+                                    </a>
+                                </label>
+                                <div>
+                                    <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.linkText}"/>
+                                    <p:message for="linkText"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
