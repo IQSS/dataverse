@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     DataverseSession session;    
     
     DvObject dvObject; 
+    boolean inheritAssignments;
 
     public DvObject getDvObject() {
         return dvObject;
@@ -66,9 +68,28 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void setDvObject(DvObject dvObject) {
         this.dvObject = dvObject;
+        if (dvObject instanceof Dataverse) {
+            inheritAssignments = !((Dataverse)dvObject).isPermissionRoot();
+        }
     }
+
+    public boolean isInheritAssignments() {
+        return inheritAssignments;
+    }
+
+    public void setInheritAssignments(boolean inheritAssignments) {
+        this.inheritAssignments = inheritAssignments;
+    }
+        
     
-    
+    public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
+        try {
+            dvObject = commandEngine.submit(new UpdateDataversePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
+            inheritAssignments = !((Dataverse)dvObject).isPermissionRoot();
+        } catch (CommandException ex) {
+            Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
             
     /* permissions tab related methods */
     private String assignRoleUsername;
@@ -166,6 +187,10 @@ public class RolePermissionFragment implements java.io.Serializable {
         public String getRoleName() {
             return getRole().getName();
         }
+        
+        public DvObject getDefinitionPoint() {
+            return ra.getDefinitionPoint();
+        }        
 
         public String getAssignedDvName() {
             return ra.getDefinitionPoint().getDisplayName();
