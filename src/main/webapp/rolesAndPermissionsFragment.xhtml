@@ -11,15 +11,20 @@
             <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionServiceBean.on(rolePermissionFragment.dvObject.owner).has('AssignRole')}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">
                 <h:outputText value="(Up)" />
-            </p:commandLink>              
-            <div class="alert alert-danger form-horizontal" role="alert">
-                <div class="form-group" style="margin-bottom:0; padding-top:0;">
-                    <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
-                    <div class="col-sm-8 checkbox" style="padding-top:0;min-height:20px;">
-                        <p:selectBooleanCheckbox  /> <span style="vertical-align:top;">Inherit all roles and permissions from parent dataverse.</span>
+            </p:commandLink>
+            <ui:fragment rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse and !empty rolePermissionFragment.dvObject.owner}">
+                <div class="alert alert-danger form-horizontal" role="alert">
+                    <div class="form-group" style="margin-bottom:0; padding-top:0;">
+                        <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
+                        <div class="col-sm-8 checkbox" style="padding-top:0;min-height:20px;">
+                            <h:selectBooleanCheckbox id="permissionRoot" value="#{rolePermissionFragment.inheritAssignments}">
+                                <p:ajax listener="#{rolePermissionFragment.updatePermissionRoot}" />
+                            </h:selectBooleanCheckbox>
+                            <span style="vertical-align:top;">Inherit all roles and permissions from parent dataverse.</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </ui:fragment>    
             <p:tabView id="rolesPermissionsTabView" widgetVar="permissionsContent" styleClass="popupSubTabParent">
                 <p:tab id="permissionsTab" title="Permissions">
                     <p:tabView id="permissionsSubTabView" widgetVar="subContent">
@@ -58,6 +63,7 @@
                                         <p:commandLink styleClass="btn btn-default" 
                                                        value="Revoke" 
                                                        action="#{rolePermissionFragment.revokeRole(roleAssignment.id)}"
+                                                       rendered="#{permissionServiceBean.on(roleAssignment.definitionPoint).has('AssignRole')}"
                                                        update="assignedRoles"
                                                        style="color:black;margin-right:0.5em;"/>
                                     </p:column>
@@ -78,7 +84,8 @@
                                 <p:column width="40%" headerText="Action">
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
-                                                   actionListener="#{rolePermissionFragment.setDvObject(dv)}" 
+                                                   actionListener="#{rolePermissionFragment.setDvObject(dv)}"
+                                                   rendered="#{permissionServiceBean.on(dv).has('AssignRole')}"
                                                    oncomplete="subContent.select(0);"                                                   
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
@@ -99,6 +106,7 @@
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="Edit" 
                                                    actionListener="#{rolePermissionFragment.setDvObject(ds)}"
+                                                   rendered="#{permissionServiceBean.on(ds).has('AssignRole')}"
                                                    oncomplete="subContent.select(0);"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </p:column>
