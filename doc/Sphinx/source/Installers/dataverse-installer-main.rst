@@ -67,6 +67,13 @@ Add the following to ``/etc/httpd/conf.d/dataverse.conf``
   # The leading slash is made optional so that this will work either in httpd.conf or .htaccess context
 
 
+Dropbox Configuration
+++++++++++++++++++++++
+
+- Add JVM option in the domain.xml: 
+``asadmin create-jvm-options "-Ddataverse.dropbox.key=<Enter your dropbox key here>"``
+
+
 
 The guide is intended for anyone who needs to install the Dataverse app.
 

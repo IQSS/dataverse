@@ -4,7 +4,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <h:head>
     </h:head>
@@ -472,9 +473,8 @@
                                                       fileUploadListener="#{DatasetPage.handleFileUpload}" process="filesTable" update="filesTable" label="Select Files to Add"
                                                       oncomplete="javascript:bind_bsui_components();uploadWidgetDropMsg();addDeleteTooltip();" onstart="javascript:uploadWidgetDropRemoveMsg();"/>
 
-
-                                        <div class="panel panel-default" style="margin-top:1em;">
-                                            <ui:fragment  rendered="#{!empty DatasetPage.dropBoxKey}">
+                                        <ui:fragment rendered="#{!empty DatasetPage.dropBoxKey}">
+                                            <div id="dropboxUploadBlock" class="panel panel-default" style="margin-top:1em;">
                                                 <div class="panel-body">
                                                     <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{DatasetPage.dropBoxSelection}"/>
                                                     <p:commandButton id="dropBoxButton" actionListener="#{DatasetPage.handleDropBoxUpload}" update="@all" style="display:none">
@@ -482,14 +482,14 @@
                                                     <p:commandButton value="Upload from Dropbox" onclick="openDropboxChooser();" icon="dropin-btn-status"/>
                                                     <p class="help-block">Files can also be uploaded directly from Dropbox.</p>
                                                 </div>
-                                            </ui:fragment>
-                                        </div>
+                                            </div>
+                                        </ui:fragment>
                                     </ui:fragment>
                                     <!-- View -->
                                     <ui:fragment rendered="#{dataverseSession.user.authenticated and empty DatasetPage.editMode
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('UpdateDatasetCommand')}">
-                                        <div class="" style="text-align:right; margin-bottom:.5em;">
+                                        <div class="" style="text-align:right; margin-top:1em; margin-bottom:.5em;">
                                             <p:commandLink style="color:black;" styleClass="btn btn-default" title="Upload + Edit Files" actionListener="#{DatasetPage.edit('FILE')}" update="@form" oncomplete="javascript:post_edit_files();" disabled="#{DatasetPage.locked}">
                                                 <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
                                                 <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}" style="margin-right:.3em;"/> Upload + Edit Files
@@ -497,7 +497,7 @@
                                         </div>
                                     </ui:fragment>
                                     <!-- p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}" var="fileMetadata" -->
-                                    <p:dataTable id="filesTable" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
+                                    <p:dataTable id="filesTable" style="margin-top:1em;" value="#{empty DatasetPage.editMode ? DatasetPage.workingVersion.fileMetadatas : DatasetPage.dataset.latestVersion.fileMetadatas}"
                                                  rowIndexVar="rowNum"
                                                  selection="#{DatasetPage.selectedFiles}" rowKey="#{fileMetadata.dataFile.fileSystemName}" var="fileMetadata" widgetVar="filesTable">
                                         <p:column headerText="Delete?" selectionMode="multiple" rendered="#{DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE'}"
