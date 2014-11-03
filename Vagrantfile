@@ -16,8 +16,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-centos-65-x64-virtualbox-puppet.box"
   elsif ENV['OPERATING_SYSTEM'] == 'debian'
     puts "WARNING: Debian specified. Here be dragons! https://github.com/IQSS/dataverse/issues/1059"
-    config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/debian-607-x64-vbox4210.box"
-    config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-debian-607-x64-vbox4210.box"
+    config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/debian-73-x64-virtualbox-puppet.box"
+    config.vm.box = "puppet-vagrant-boxes.puppetlabs.com-debian-73-x64-virtualbox-puppet.box"
   else
     operating_system = ENV['OPERATING_SYSTEM']
     puts "Not sure what do to with operating system: #{operating_system}"
