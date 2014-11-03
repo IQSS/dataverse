@@ -71,7 +71,7 @@ Dropbox Configuration
 ++++++++++++++++++++++
 
 - Add JVM option in the domain.xml: 
-``asadmin create-jvm-options "-Ddataverse.dropbox.key=<Enter your dropbox key here>"
+``asadmin create-jvm-options "-Ddataverse.dropbox.key=<Enter your dropbox key here>"``
 
 
 
