@@ -160,6 +160,8 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 
 .logoPreview {max-width:80px;max-height:80px;}
 
+#metadataFieldOptions td {vertical-align: middle;}
+
 /* -------- SEARCH -------- */
 .panelLayoutBlock.panelSerchForm > .ui-widget-content {border:0;padding:0;}
 .panelLayoutBlock.panelSerchForm input.ui-inputfield {margin-right:1em;}
@@ -295,6 +297,9 @@ div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:tex
 .form-group table.ui-selectoneradio td {padding:1px;}
 .form-group table.ui-selectoneradio span.ui-icon-bullet {background-position: -81.5px -145.5px;}
 .form-group table.ui-selectoneradio label {font-weight: normal; margin-right:1em;}
+
+/* Primefaces vs Bootstrap checkbox fix */
+.form-group .ui-chkbox .ui-chkbox-box {margin: 4px 0 0 0;}
 
 #datasetForm .select-scroll-block, #templateForm .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
 #datasetForm .select-scroll-block table.ui-selectmanycheckbox label, #templateForm .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
