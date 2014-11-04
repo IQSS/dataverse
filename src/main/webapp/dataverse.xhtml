@@ -416,19 +416,19 @@
                                             <div id="featuredDataversesList" class="owl-carousel owl-theme" style="width:90%;float:left;">
                                                 <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
                                                     <div class="item" style="min-height:80px;">
-                                                        <ui:fragment rendered="#{empty dv.logo}">
-                                                            <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                        <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
+                                                            <a href="/dataverse.xhtml?id=#{dv.dataverseTheme.id}" title="#{dv.name} Dataverse" style="display:block;">
                                                                 <img src="/resources/images/icon_dataverse.png" style="height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'SQUARE'}">
+                                                        <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'SQUARE'}">
                                                             <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.id}/#{dv.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                                <img src="/logos/#{dv.id}/#{dv.dataverseTheme.logo}" style="max-width:60px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{!empty dv.logo and dv.logoFormat == 'RECTANGLE'}">
+                                                        <ui:fragment rendered="#{!empty dv.dataverseTheme.logo and dv.dataverseTheme.logoFormat == 'RECTANGLE'}">
                                                             <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
-                                                                <img src="/logos/#{dv.id}/#{dv.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
+                                                                <img src="/logos/#{dv.id}/#{dv.dataverseTheme.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
                                                         <a href="/dataverse.xhtml?di=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
@@ -518,7 +518,7 @@
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
                             <h:outputLabel value="Logo Alignment"/>
-                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.dataverse.dataverseTheme.logoAlignment}">
+                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.dataverseTheme.logoAlignment}">
                                 <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
                                 <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
                                 <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
