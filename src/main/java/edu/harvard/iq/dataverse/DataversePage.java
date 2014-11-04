@@ -113,6 +113,9 @@ public class DataversePage implements java.io.Serializable {
 //    }
     public String init() {
         // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
+        if (dataverse.getAlias() != null){
+            dataverse = dataverseService.findByAlias(dataverse.getAlias());
+        }
         if (dataverse.getId() != null) { // view mode for a dataverse           
             dataverse = dataverseService.find(dataverse.getId());
             if (dataverse == null) {
