@@ -20,4 +20,4 @@ Contents:
    :maxdepth: 2
 
   data-sharing
-  data-deposit
+  SWORD
