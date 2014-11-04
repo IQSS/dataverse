@@ -29,7 +29,7 @@ public class FileMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
 
     //@NotBlank(message = "Please specify a file name.")
-    @Pattern(regexp="^[^:<>;/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; .")    
+    @Pattern(regexp="^[^:<>;#/\"\\*\\|\\?\\\\]*$", message = "File Name cannot contain any of the following characters: \\ / : * ? \" < > | ; # .")    
     @NotBlank(message = "Please specify a file name.")
     private String label = "";
     @Column(columnDefinition = "TEXT")
