@@ -509,41 +509,41 @@
                     <ui:fragment rendered="#{DataversePage.editMode == 'THEME'}">
                         <p:panelGrid columns="3">
                             <h:outputLabel value="Logo"/>
-                            <p:inputText id="logo" value="#{DataversePage.dataverse.logo}"/>
+                            <p:inputText id="logo" value="#{DataversePage.dataverse.dataverseTheme.logo}"/>
                             <p:message for="logo"/>
                             <h:outputLabel value="Logo Format"/>
-                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.logoFormat}">
+                            <p:selectOneRadio id="logoFormat" value="#{DataversePage.dataverse.dataverseTheme.logoFormat}">
                                 <f:selectItem itemLabel="SQUARE" itemValue="SQUARE"/>
                                 <f:selectItem itemLabel="RECTANGLE" itemValue="RECTANGLE"/>
                             </p:selectOneRadio>
                             <p:message for="logoFormat"/>
                             <h:outputLabel value="Logo Alignment"/>
-                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.logoAlignment}">
+                            <p:selectOneMenu id="logoAlignment" value="#{DataversePage.dataverse.dataverse.dataverseTheme.logoAlignment}">
                                 <f:selectItem id="left" itemLabel="LEFT" itemValue="LEFT" />
                                 <f:selectItem id="center" itemLabel="CENTER" itemValue="CENTER" />
                                 <f:selectItem id="right" itemLabel="RIGHT" itemValue="RIGHT" />
                             </p:selectOneMenu>
                             <p:message for="logoFormat"/>
                             <h:outputLabel value="Logo Background Color"/>
-                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.logoBackgroundColor}"/>
+                            <p:inputText id="logoBackgroundColor" value="#{DataversePage.dataverse.dataverseTheme.logoBackgroundColor}"/>
                             <p:message for="logoBackgroundColor"/>
                             <h:outputLabel value="Tagline"/>
-                            <p:inputText id="tagline" value="#{DataversePage.dataverse.tagline}"/>
+                            <p:inputText id="tagline" value="#{DataversePage.dataverse.dataverseTheme.tagline}"/>
                             <p:message for="tagline"/>
                             <h:outputLabel value="Link URL"/>
-                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.linkUrl}"/>
+                            <p:inputText id="linkUrl" value="#{DataversePage.dataverse.dataverseTheme.linkUrl}"/>
                             <p:message for="linkUrl"/>
                             <h:outputLabel value="Link Text"/>
-                            <p:inputText id="linkText" value="#{DataversePage.dataverse.linkText}"/>
+                            <p:inputText id="linkText" value="#{DataversePage.dataverse.dataverseTheme.linkText}"/>
                             <p:message for="linkText"/>
                             <h:outputLabel value="Link Color"/>
-                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.linkColor}"/>
+                            <p:inputText id="linkColor" value="#{DataversePage.dataverse.dataverseTheme.linkColor}"/>
                             <p:message for="linkColor"/>
                             <h:outputLabel value="Text Color"/>
-                            <p:inputText id="textColor" value="#{DataversePage.dataverse.textColor}"/>
+                            <p:inputText id="textColor" value="#{DataversePage.dataverse.dataverseTheme.textColor}"/>
                             <p:message for="textColor"/>
                             <h:outputLabel value="Background Color"/>
-                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.backgroundColor}"/>
+                            <p:inputText id="backgroundColor" value="#{DataversePage.dataverse.dataverseTheme.backgroundColor}"/>
                             <p:message for="backgroundColor"/>
                         </p:panelGrid>
                     </ui:fragment>
