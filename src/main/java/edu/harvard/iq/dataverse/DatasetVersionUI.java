@@ -32,7 +32,8 @@ public class DatasetVersionUI implements Serializable {
 
      @EJB
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelServiceBean;
-
+    @EJB
+    DataverseServiceBean dataverseService;
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;   
     
@@ -468,14 +469,21 @@ public class DatasetVersionUI implements Serializable {
         //TODO: A lot of clean up on the logic of this method
         metadataBlocksForView.clear();
         metadataBlocksForEdit.clear();
-        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(this.datasetVersion.getDataset().getOwner().getId());
+        Long dvIdForInputLevel = datasetVersion.getDataset().getOwner().getId();
+        
+        if (!dataverseService.find(dvIdForInputLevel).isMetadataBlockRoot()){
+            dvIdForInputLevel = dataverseService.find(dvIdForInputLevel).getMetadataRootId();
+        }
+
+        System.out.print("In UI: " + dvIdForInputLevel);
+        List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(dvIdForInputLevel);
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
             mdb.setEmpty(true);
             mdb.setHasRequired(false);
             List<DatasetField> datasetFieldsForView = new ArrayList();
             List<DatasetField> datasetFieldsForEdit = new ArrayList();
             for (DatasetField dsf : datasetVersion.getDatasetFields()) {
-                DataverseFieldTypeInputLevel dftil = dataverseFieldTypeInputLevelServiceBean.findByDataverseIdDatasetFieldTypeId(this.datasetVersion.getDataset().getOwner().getId(), dsf.getDatasetFieldType().getId());
+                DataverseFieldTypeInputLevel dftil = dataverseFieldTypeInputLevelServiceBean.findByDataverseIdDatasetFieldTypeId(dvIdForInputLevel, dsf.getDatasetFieldType().getId());
                 if (dsf.getDatasetFieldType().getMetadataBlock().equals(mdb)) {
                     datasetFieldsForEdit.add(dsf);
                     if(dsf.isRequired() || (dftil != null &&  dftil.isRequired())){   

@@ -53,7 +53,7 @@ import javax.ws.rs.core.Response;
 @Path("worldmap")
 public class WorldMapRelatedData extends AbstractApiBean {
 
-    private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(WorldMapRelatedData.class.getCanonicalName());
 
     
     private static final String BASE_PATH = "/api/worldmap/";

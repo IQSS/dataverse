@@ -194,6 +194,14 @@ public class Dataverse extends DvObjectContainer {
             return getOwner().getMetadataBlocks();
         }
     }
+    
+    public Long getMetadataRootId(){
+        if(metadataBlockRoot || getOwner() == null){
+            return this.getId();
+        } else { 
+            return getOwner().getMetadataRootId();
+        }
+    }
 
     
     public DataverseTheme getDataverseTheme() {
@@ -234,6 +242,14 @@ public class Dataverse extends DvObjectContainer {
         } else {
             return getOwner().getDataverseFacets();
         }
+    }
+    
+    public Long getFacetRootId(){
+        if(facetRoot || getOwner() == null){
+            return this.getId();
+        } else { 
+            return getOwner().getMetadataRootId();
+        }        
     }
 
     public void setDataverseFacets(List<DataverseFacet> dataverseFacets) {

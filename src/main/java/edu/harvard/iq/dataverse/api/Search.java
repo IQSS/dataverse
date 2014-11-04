@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;

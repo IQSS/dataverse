@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
 /**
@@ -85,6 +86,21 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isInclude(){
         return this.include;
     }
+    
+    @Transient 
+    private List<SelectItem> optionSelectItems;
+
+    public List<SelectItem> getOptionSelectItems() {
+        return optionSelectItems;
+    }
+
+    public void setOptionSelectItems(List<SelectItem> optionSelectItems) {
+        this.optionSelectItems = optionSelectItems;
+    }
+    
+    
+    
+
     
     public DatasetFieldType() {}
 

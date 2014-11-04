@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.api.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchFields;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
