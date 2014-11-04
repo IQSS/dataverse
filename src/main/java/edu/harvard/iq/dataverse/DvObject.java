@@ -19,6 +19,12 @@ import javax.persistence.*;
 			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
 })
 @Entity
+// Inheritance strategy "JOINED" will create 4 db tables - 
+// the top-level dvobject, with the common columns, and the 3 child classes - 
+// dataverse, dataset and datafile. The ids from the main table will be reused
+// in the child tables. (i.e., the id sequences will be "sparse" in the 3 
+// child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
+//@Inheritance(strategy=InheritanceType.JOINED)
 public abstract class DvObject implements java.io.Serializable {
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){

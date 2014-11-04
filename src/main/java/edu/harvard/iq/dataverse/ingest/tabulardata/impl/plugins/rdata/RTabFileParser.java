@@ -88,7 +88,7 @@ public class RTabFileParser implements java.io.Serializable {
 
         boolean[] isCharacterVariable = new boolean[varQnty];
         boolean[] isContinuousVariable = new boolean[varQnty];
-        boolean[] isDateVariable = new boolean[varQnty];
+        boolean[] isTimeVariable = new boolean[varQnty];
         boolean[] isBooleanVariable = new boolean[varQnty];
         
         if (dataTable.getDataVariables() != null) {
@@ -104,8 +104,9 @@ public class RTabFileParser implements java.io.Serializable {
                     isCharacterVariable[i] = true; 
                     isContinuousVariable[i] = false; 
                     
-                    if (var.getFormatCategory() != null && var.getFormatCategory().startsWith("date")) {
-                            isDateVariable[i] = true; 
+                    if (var.getFormatCategory() != null && 
+                            (var.getFormatCategory().startsWith("date") || var.getFormatCategory().startsWith("time"))) {
+                            isTimeVariable[i] = true; 
                         }
                     
                 } else if (var.getVariableFormatType().getName().equals("numeric")) {
@@ -165,7 +166,7 @@ public class RTabFileParser implements java.io.Serializable {
                         // escape the remaining ones:
                         charToken = charToken.replace("\"", "\\\"");
                         // final pair of quotes:
-                        if (isDateVariable==null || (!isDateVariable[i])) {
+                        if (isTimeVariable==null || (!isTimeVariable[i])) {
                             charToken = "\"" + charToken + "\"";
                         }
                         caseRow[i] = charToken;
