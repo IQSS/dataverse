@@ -57,6 +57,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String fq8;
     private String fq9;
     private Long dataverseId;
+    private String dataverseAlias;
     private Dataverse dataverse;
     // commenting out dataverseSubtreeContext. it was not well-loved in the GUI
 //    private String dataverseSubtreeContext;
@@ -215,6 +216,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
+        if ( dataverseAlias != null){
+            this.dataverse = dataverseService.findByAlias(dataverseAlias);
+            dataverseId = dataverse.getId();
+        }
         if (dataverseId != null) {
             this.dataverse = dataverseService.find(dataverseId);
             String dataversePath = dataverseService.determineDataversePath(this.dataverse);
@@ -915,6 +920,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setErrorFromSolr(String errorFromSolr) {
         this.errorFromSolr = errorFromSolr;
+    }
+
+    /**
+     * @return the dataverseAlias
+     */
+    public String getDataverseAlias() {
+        return dataverseAlias;
+    }
+
+    /**
+     * @param dataverseAlias the dataverseAlias to set
+     */
+    public void setDataverseAlias(String dataverseAlias) {
+        this.dataverseAlias = dataverseAlias;
     }
 
 }
