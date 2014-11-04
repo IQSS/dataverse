@@ -33,6 +33,7 @@ import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import javax.faces.model.SelectItem;
 
 /**
  *
@@ -130,6 +131,7 @@ public class DataversePage implements java.io.Serializable {
             }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
+            dataverse.setFacetRoot(false);
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse)
             dataverse = dataverseService.findRootDataverse();            
@@ -140,8 +142,9 @@ public class DataversePage implements java.io.Serializable {
         List<DatasetFieldType> facetsTarget = new ArrayList<>();
 
         facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
+        
 
-        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getId());
+        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getFacetRootId());
         for (DataverseFacet dvFacet : facetsList) {
             DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
             facetsTarget.add(dsfType);
@@ -249,6 +252,7 @@ public class DataversePage implements java.io.Serializable {
             if (mdb.getId().equals(mdbId)) {
                 for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
                     if (dsftTest.getId().equals(dsftId)) {
+                        dsftTest.setOptionSelectItems(resetSelectItems(dsftTest));
                         if (dsftTest.isHasChildren() && !dsftTest.isInclude()) {
                             childDSFT.addAll(dsftTest.getChildDatasetFieldTypes());
                         }
@@ -261,9 +265,8 @@ public class DataversePage implements java.io.Serializable {
                 for (MetadataBlock mdb : allMetadataBlocks) {
                     if (mdb.getId().equals(mdbId)) {
                         for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
-                            if (dsftTest.getId().equals(dsftUpdate.getId())) {
-                                
-                                dsftTest.setInclude(false);
+                            if (dsftTest.getId().equals(dsftUpdate.getId())) {                                
+                                dsftTest.setOptionSelectItems(resetSelectItems(dsftTest));
                             }
                         }
                     }
@@ -273,8 +276,28 @@ public class DataversePage implements java.io.Serializable {
         }
     }
     
+    public List<SelectItem> resetSelectItems(DatasetFieldType typeIn){
+        List retList = new ArrayList();
+        if ((typeIn.isHasParent() && typeIn.getParentDatasetFieldType().isInclude()) || (!typeIn.isHasParent() && typeIn.isInclude())){
+             SelectItem requiredItem = new SelectItem();
+             requiredItem.setLabel("Required");
+             requiredItem.setValue(true);
+             retList.add(requiredItem);
+             SelectItem optional = new SelectItem();
+             optional.setLabel("Optional");
+             optional.setValue(false);
+             retList.add(optional);                         
+        } else {
+             SelectItem hidden = new SelectItem();
+             hidden.setLabel("Hidden");
+             hidden.setValue(false);
+             hidden.setDisabled(true);
+             retList.add(hidden);  
+        }
+        return retList;
+    }
+    
     public void updateRequiredDatasetFieldTypes(Long  mdbId, Long dsftId, boolean inVal) {
-        System.out.print(inVal);
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){
                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()){
@@ -287,15 +310,13 @@ public class DataversePage implements java.io.Serializable {
     }
     
      public void updateOptionsRadio(Long  mdbId, Long dsftId) {
-        System.out.print(dsftId);
+
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){
                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()){
                    if (dsft.getId().equals(dsftId)){
-                       boolean oVal = dsft.isRequiredDV();
-                       System.out.print(oVal);
-                       dsft.setRequiredDV(!oVal);
-                       System.out.print("after "  + oVal);
+                       boolean oVal = dsft.isRequiredDV();                       
+                       dsft.setRequiredDV(!oVal);                       
                    }
                }
             }
@@ -311,19 +332,21 @@ public class DataversePage implements java.io.Serializable {
 
         for (MetadataBlock mdb : this.allMetadataBlocks) {
             if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
-                System.out.print(mdb.getName()+ " selected or required");
                 
                 selectedBlocks.add(mdb);
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    if (dsft.isRequiredDV() && !dsft.isRequired()) {
-                        DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
+                    if (dsft.isRequiredDV() && !dsft.isRequired() 
+                            && ((!dsft.isHasParent() &&  dsft.isInclude()) || 
+                            (dsft.isHasParent() &&  dsft.getParentDatasetFieldType().isInclude()))) {
+                        DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();                       
                         dftil.setDatasetFieldType(dsft);
                         dftil.setDataverse(dataverse);
                         dftil.setRequired(true);
                         dftil.setInclude(true);
                         listDFTIL.add(dftil);
                     }
-                    if (!dsft.isInclude()) {
+                    if ( (!dsft.isHasParent() && !dsft.isInclude())  ||
+                            (dsft.isHasParent() &&  !dsft.getParentDatasetFieldType().isInclude())) {
                         DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
                         dftil.setDatasetFieldType(dsft);
                         dftil.setDataverse(dataverse);
@@ -400,9 +423,9 @@ public class DataversePage implements java.io.Serializable {
 
     public void editFacets() {
         if (dataverse.isFacetRoot()) {
-            dataverse.getDataverseFacets().addAll(dataverse.getOwner().getDataverseFacets());
+            dataverse.getDataverseFacets().addAll(dataverse.getDataverseFacets(true));
         } else {
-            dataverse.getDataverseFacets(true).clear();
+            dataverse.getDataverseFacets();
         }
     }
 
@@ -496,11 +519,13 @@ public class DataversePage implements java.io.Serializable {
     }
 
     private void refreshAllMetadataBlocks() {
+        Long dataverseIdForInputLevel = dataverse.getId();
         List<MetadataBlock> retList = new ArrayList();
         for (MetadataBlock mdb : dataverseService.findAllMetadataBlocks()) {
             mdb.setSelected(false);
             mdb.setShowDatasetFieldTypes(false);
             if (!dataverse.isMetadataBlockRoot() && dataverse.getOwner() != null) {
+                dataverseIdForInputLevel = dataverse.getMetadataRootId();
                 for (MetadataBlock mdbTest : dataverse.getOwner().getMetadataBlocks()) {
                     if (mdb.equals(mdbTest)) {
                         mdb.setSelected(true);
@@ -515,7 +540,7 @@ public class DataversePage implements java.io.Serializable {
             }
 
             for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverse.getId(), dsft.getId());
+                DataverseFieldTypeInputLevel dsfIl = dataverseFieldTypeInputLevelService.findByDataverseIdDatasetFieldTypeId(dataverseIdForInputLevel, dsft.getId());
                 if (dsfIl != null) {
                     dsft.setRequiredDV(dsfIl.isRequired());
                     dsft.setInclude(dsfIl.isInclude());
@@ -523,6 +548,7 @@ public class DataversePage implements java.io.Serializable {
                     dsft.setRequiredDV(dsft.isRequired());
                     dsft.setInclude(true);
                 }
+                dsft.setOptionSelectItems(resetSelectItems(dsft));
             }
             retList.add(mdb);
         }
