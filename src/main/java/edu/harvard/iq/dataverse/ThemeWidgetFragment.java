@@ -54,6 +54,22 @@ public class ThemeWidgetFragment implements java.io.Serializable {
      *     create tempDir, needs to be under docroot so that uploaded image is accessible in the page
      */
   
+    private boolean testVal;
+
+    public boolean isTestVal() {
+        System.out.println("getting testVal: "+testVal);
+        return testVal;
+    }
+
+    public void setTestVal(boolean testVal) {
+        System.out.println("setting testVal: "+testVal);
+        this.testVal = testVal;
+    }
+    
+    public void testValListener(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
+        System.out.println("listener clicked, testVal: "+testVal);
+    }
+    
     private  void createTempDir() {
           try {
             File tempRoot = Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
@@ -81,6 +97,10 @@ public class ThemeWidgetFragment implements java.io.Serializable {
         }
         uploadedFile=null;
         tempDir=null;
+    }
+    
+    public void checkboxListener() {
+        System.out.println("checkbox clicked, themeRoot value: "+editDv.getThemeRoot());
     }
 
     public void initEditDv(Long dataverseId) {
@@ -172,7 +192,21 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
        
     }
 
-   
+    public boolean getInheritCustomization() {
+        boolean inherit= editDv==null ? true : !editDv.getThemeRoot();
+        System.out.println("returning inherit: "+inherit);
+        return inherit;
+    }
+    
+    public void setInheritCustomization(boolean inherit) {
+        System.out.println("setting inherit : "+inherit+", themeRoot = "+!inherit);
+        editDv.setThemeRoot(!inherit);
+        if (!inherit) {
+            if (editDv.getDataverseTheme(true)==null) {
+                editDv.setDataverseTheme(new DataverseTheme());
+            }
+        }
+    }
 
     public void save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme

@@ -164,7 +164,7 @@ public class PermissionServiceBean {
     public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
         if (required.isEmpty() || required.get("") == null) {
-            logger.info("IsUserAllowedOn: empty-true");
+            logger.fine("IsUserAllowedOn: empty-true");
             return true;
         } else {
             Set<Permission> grantedUserPermissions = permissionsFor(u, dvo);

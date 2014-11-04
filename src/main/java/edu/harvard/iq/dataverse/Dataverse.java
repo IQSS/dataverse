@@ -163,6 +163,10 @@ public class Dataverse extends DvObjectContainer {
     public boolean isThemeRoot() {
         return themeRoot;
     }
+    
+    public boolean getThemeRoot() {
+        return themeRoot;
+    }
 
     public void setThemeRoot(boolean  themeRoot) {
         this.themeRoot = themeRoot;
