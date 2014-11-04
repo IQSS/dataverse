@@ -134,7 +134,7 @@
                                                                 </div>
                                                             </ui:repeat>
                                                             <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
-                                                                <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:80%; min-width:200px;" styleClass="form-control primitive SELECT TESTTEST"
+                                                                <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive SELECT TESTTEST"
                                                                                  rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="Select..." itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
@@ -183,7 +183,7 @@
                                                                     <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                                     <ui:fragment rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
                                                                         <div>
-                                                                            <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:80%; min-width:200px;" 
+                                                                            <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" 
                                                                                              rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                                 <f:selectItem itemLabel="Select..." itemValue="" noSelectionOption="true"/>
                                                                                 <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.strValue}" itemValue="#{cvv}" />
