@@ -41,6 +41,8 @@ New features as of v1.1
 
 - Dataverses can be published via SWORD
 
+- Datasets versions will only be increased to the next minor version (i.e. 1.1) rather than a major version (2.0) if possible. This depends on the nature of the change.
+
 - Granular permissions are used for certain operations. Previously, you needed to be "admin" on a dataverse to use the Data Deposit API at all.
 
   - The Service Document will return all the dataverses on which you have the "AddDataset" permission. This should resolve the issue reported at https://trello.com/c/F2ZQPFdM/6-reconcile-what-is-seen-by-the-data-deposit-api-and-the-gui-currently-python-api-hides-dvs-from-admin-unless-it-is-also-dv-creato 
@@ -209,8 +211,6 @@ These are features we'd like to add in the future:
 - Like the GUI, auto-populate "Depositor" and "Deposit Date": https://github.com/IQSS/dataverse/issues/457
 
 - Populate "Subject" from parent dataverse rather than always using "Other": https://github.com/IQSS/dataverse/issues/769
-
-- Do not force major version bumps of datasets: https://github.com/IQSS/dataverse/issues/795
 
 - Let file metadata (i.e. description) be specified during zip upload: https://github.com/IQSS/dataverse/issues/723
 
