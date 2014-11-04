@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -20,7 +21,7 @@ import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
-public class SwordAuth {
+public class SwordAuth extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(SwordAuth.class.getCanonicalName());
 
@@ -36,10 +37,6 @@ public class SwordAuth {
     AuthenticationServiceBean authSvc;
 
     /**
-     * @todo Allow the Data Deposit API to use API keys
-     * https://github.com/IQSS/dataverse/issues/890
-     */
-    /**
      * @todo How can Shibboleth users use the Data Deposit API?
      */
     public AuthenticatedUser auth(AuthCredentials authCredentials) throws SwordAuthException, SwordServerException {
@@ -54,6 +51,11 @@ public class SwordAuth {
         if (username == null) {
             logger.info("no username provided");
             throw new SwordAuthException();
+        }
+
+        AuthenticatedUser authenticatedUserFromToken = findUserByApiToken(username);
+        if (authenticatedUserFromToken != null) {
+            return authenticatedUserFromToken;
         }
 
         String password = authCredentials.getPassword();
