@@ -36,7 +36,7 @@
                     <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The logo or image file you wish to display in the header of this dataverse.">
                                 Logo Image
                             </a>
                         </label>
@@ -47,21 +47,21 @@
                                         <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
                                         <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
                                     </p>
-                                    <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}"/>
+                                    <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                 </p:column>
-                                <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                               fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
                                 <p:message for="changelogo"/>
                             </p:panelGrid>
                             <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
+                                <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                               fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                                 <p:message for="uploadlogo"/>
                             </p:panelGrid>
                             <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
                                 <div class="form-col-container col-sm-4">
                                     <label for="logoFormat" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The shape for the logo or image file you upload for this dataverse.">
                                             Logo Format
                                         </a>
                                     </label>
@@ -77,7 +77,7 @@
                                 </div>
                                 <div class="form-col-container col-sm-3">
                                     <label for="logoAlignment" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Where the logo or image should display in the header.">
                                             Logo Alignment
                                         </a>
                                     </label>
@@ -94,7 +94,7 @@
                                 </div>
                                 <div class="form-col-container col-sm-4">
                                     <label for="logoBackgroundColor" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Select a color to display behind the logo of this dataverse.">
                                             Logo Background Color
                                         </a>
                                     </label>
@@ -114,14 +114,14 @@
                 <div class="row form-horizontal">
                     <div class="form-group">
                         <label class="col-sm-3 control-label" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Colors you select to style the header of this dataverse.">
                                 Header Colors
                             </a>
                         </label>
                         <div class="form-group col-sm-9">
                             <div class="form-col-container col-sm-4">
                                 <label for="backgroundColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the header area that contains the image, tagline, URL, and text.">
                                         Background Color
                                     </a>
                                 </label>
@@ -134,7 +134,7 @@
                             </div>
                             <div class="form-col-container col-sm-4">
                                 <label for="linkColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the link to display as.">
                                         Link Color
                                     </a>
                                 </label>
@@ -147,7 +147,7 @@
                             </div>
                             <div class="form-col-container col-sm-4">
                                 <label for="textColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the tagline text and the name of this dataverse.">
                                         Text Color
                                     </a>
                                 </label>
@@ -162,7 +162,7 @@
                     </div>
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="tagline" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A phrase or sentence that describes this dataverse.">
                                 Tagline
                             </a>
                         </label>
@@ -175,14 +175,14 @@
                     </div>
                     <div class="form-group">
                         <label class="col-sm-3 control-label" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Additional link for your personal website, institution, or any website that relates to this dataverse.">
                                 Additional Link
                             </a>
                         </label>
                         <div class="form-group col-sm-9">
                             <div class="form-col-container col-sm-6">
                                 <label for="linkUrl" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="URL for your personal website, institution, or any website that relates to this dataverse.">
                                         Link URL
                                     </a>
                                 </label>
@@ -193,7 +193,7 @@
                             </div>
                             <div class="form-col-container col-sm-6">
                                 <label for="linkText" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Text to display instead of the URL.">
                                         Link Text
                                     </a>
                                 </label>

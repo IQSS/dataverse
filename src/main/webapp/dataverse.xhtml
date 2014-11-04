@@ -335,14 +335,14 @@
                                             </li>
                                             <li>
                                                 <p:commandLink actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}"
-                                                               update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show()">
+                                                               update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show();bind_bsui_components();">
                                                     <h:outputText value="Theme + Widgets" />
                                                 </p:commandLink>
                                             </li>
                                             <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
                                                 <li>
                                                     <p:commandLink id="browseOpts" onclick="browseOptsForm.show()">
-                                                        <h:outputText value="Browsing Options" />
+                                                        <h:outputText value="Featured Dataverses" />
                                                     </p:commandLink>
                                                 </li>
                                             </ui:fragment>
@@ -467,19 +467,19 @@
                     </ui:fragment>
 
 
-                    <!-- Browsing Options Popup -->
-                    <p:dialog header="Browsing Options" widgetVar="browseOptsForm" modal="true">
-                        <div class="form-group">
-                            <!--<p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}"
-                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>-->
-                        </div>
+                    <!-- Featured Dataverses Popup -->
+                    <p:dialog header="Featured Dataverses" widgetVar="browseOptsForm" modal="true">
+                        <!--<div class="form-group">
+                            <p:selectBooleanCheckbox value="    #    {DataversePage.dataverse.displayByType}"
+                                                 itemLabel="Display 'Dataverse by Category' Carousel on Front Page"/>
+                        </div>-->
                         <div class="form-group">
                             <p:selectBooleanCheckbox value="#{DataversePage.dataverse.displayFeatured}"
-                                                     itemLabel="Display 'Featured Dataverses' Carousel on Front Page"/>
+                                                     itemLabel="Display &#34;Featured Dataverses&#34; Carousel on Front Page"/>
                         </div>
                         <div class="form-group">
                             <label for="exampleInputFile">Featured Dataverses</label>
-                            <p class="help-block">Selected Dataverses to feature on the front page of your Dataverse.</p>
+                            <p class="help-block">Select dataverses to feature on the homepage of this dataverse.</p>
                             <p:pickList id="featuredDataverseList" value="#{DataversePage.featuredDataverses}" var="featureddataverse"
                                         itemLabel="#{featureddataverse.name}"
                                         itemValue="#{featureddataverse}" converter="dataverseConverter"
