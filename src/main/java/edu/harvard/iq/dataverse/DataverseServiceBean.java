@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -91,7 +92,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 				: em.createQuery("select d from Dataverse d WHERE d.alias=:alias", Dataverse.class)
 					.setParameter("alias", anAlias)
 					.getSingleResult();
-        } catch ( NoResultException nre ) {
+        } catch ( NoResultException|NonUniqueResultException ex ) {
             return null;
         }
     }
