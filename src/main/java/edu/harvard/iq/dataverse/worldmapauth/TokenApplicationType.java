@@ -6,7 +6,6 @@
 
 package edu.harvard.iq.dataverse.worldmapauth;
 
-import edu.harvard.iq.dataverse.api.Files;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -26,7 +25,7 @@ import javax.persistence.Table;
 @Table(name="worldmapauth_tokentype", indexes = {@Index(name = "application_name",  columnList="name", unique = true)})
 public class TokenApplicationType implements java.io.Serializable {    
 
-    private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(TokenApplicationType.class.getCanonicalName());
     public static final String DEFAULT_GEOCONNECT_APPLICATION_NAME = "GEOCONNECT";
     public static final int DEFAULT_TOKEN_TIME_LIMIT_MINUTES = 30;
     public static final String TEST_MAPIT_LINK = "http://127.0.0.1:8070/shapefile/map-it";  // local GeoConnect

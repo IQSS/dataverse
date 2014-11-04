@@ -7,7 +7,6 @@
 package edu.harvard.iq.dataverse.worldmapauth;
 
 import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +38,7 @@ public class WorldMapToken implements java.io.Serializable {
     @Transient
     public static final long MAX_HOURS_TOKEN_CAN_BE_USED = 10;
     
-    private static final Logger logger = Logger.getLogger(Files.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(WorldMapToken.class.getCanonicalName());
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
