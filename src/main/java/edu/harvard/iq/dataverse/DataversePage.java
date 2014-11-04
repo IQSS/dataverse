@@ -274,8 +274,7 @@ public class DataversePage implements java.io.Serializable {
                         }
                     }
                 }                
-            }
-            
+            }            
         }
     }
     
@@ -317,9 +316,8 @@ public class DataversePage implements java.io.Serializable {
         for (MetadataBlock mdb : allMetadataBlocks){
             if(mdb.getId().equals(mdbId)){
                for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()){
-                   if (dsft.getId().equals(dsftId)){
-                       boolean oVal = dsft.isRequiredDV();                       
-                       dsft.setRequiredDV(!oVal);                       
+                   if (dsft.getId().equals(dsftId)){                     
+                       dsft.setOptionSelectItems(resetSelectItems(dsft));
                    }
                }
             }

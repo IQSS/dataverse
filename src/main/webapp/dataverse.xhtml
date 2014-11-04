@@ -231,45 +231,34 @@
                                                 <div class="panel-body" style="max-height:400px;overflow-y:scroll;">
                                                     <table id="metadataFieldOptions" class="table table-striped">
                                                         <tbody>
-                                                            <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">
-                                                                <tr>
-                                                                    <td>
+                                                            <ui:repeat value="#{mdb.datasetFieldTypes}" var="dsft">                                                                
+                                                                    <tr>                                                               
+                                                                        <td>
                                                                         <p:selectBooleanCheckbox rendered="#{!dsft.hasParent}" value="#{dsft.include}" itemLabel="#{dsft.displayName}"
-                                                                                              disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)}">
-                                                                            <p:ajax update="@widgetVar(optionBlock)" />
-                                                                        </p:selectBooleanCheckbox>
-                                                                        <ui:fragment rendered="#{dsft.hasParent}">
-                                                                            <div class="checkbox">
-                                                                                <label>
-                                                                                    <h:outputText value="#{dsft.displayName}"/>
-                                                                                </label>
-                                                                            </div>
-                                                                        </ui:fragment>
-                                                                    </td>
-                                                                    <td>
-                                                                        <ui:fragment rendered="#{(!dsft.hasChildren and !dsft.required and dsft.include and !dsft.hasParent)
-                                                                                                 or ( dsft.hasParent and !dsft.required and (dsft.parentDatasetFieldType.required or dsft.parentDatasetFieldType.include))}">
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}">
-                                                                                <f:selectItem itemLabel="Required" itemValue="#{true}" />
-                                                                                <f:selectItem itemLabel="Optional" itemValue="#{false}" />
-                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})" />
+                                                                                              disabled="#{!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required) }">
+                                                                            <p:ajax  update="@widgetVar(OptButton#{dsft.id})"  listener="#{DataversePage.updateInclude(mdb.id, dsft.id)}"   />
+                                                                        </p:selectBooleanCheckbox> 
+                                                                            <ui:fragment rendered="#{dsft.hasParent}">
+                                                                                <div class="checkbox">
+                                                                                    <label>
+                                                                                        <h:outputText value="#{dsft.displayName}"/>
+                                                                                    </label>
+                                                                                </div>
+                                                                            </ui:fragment>
+                                                                        </td>
+                                                                        <td>  
+                                                                            
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" 
+                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren))}">
+                                                                                <f:selectItems value="#{dsft.optionSelectItems}"/>
+                                                                                <p:ajax update="@widgetVar(OptButton#{dsft.id})"   />
                                                                             </p:selectOneRadio>
-                                                                        </ui:fragment>
-
-                                                                        <ui:fragment rendered="#{(!dsft.hasChildren and !dsft.required and !dsft.requiredDV and !dsft.include and !dsft.hasParent)
-                                                                                                 or (dsft.hasParent and !(dsft.parentDatasetFieldType.required or dsft.parentDatasetFieldType.include))
-                                                                                                 or (!dsft.hasParent and !(dsft.include))}">
-                                                                            <span class="text-muted">Hidden</span>
-                                                                        </ui:fragment>
-
-                                                                        <ui:fragment rendered="#{!dsft.hasChildren  and dsft.required}">
-                                                                            Required by Dataverse
-                                                                        </ui:fragment>
-                                                                        <ui:fragment rendered="#{dsft.hasChildren  and dsft.hasRequiredChildren}">
-                                                                            Required by Dataverse
-                                                                        </ui:fragment>
-                                                                    </td>
-                                                                </tr>
+                                                                           
+                                                                            <ui:fragment rendered="#{(!dsft.hasChildren  and dsft.required) or (dsft.hasChildren  and dsft.hasRequiredChildren)}">
+                                                                                Required by Dataverse
+                                                                            </ui:fragment>
+                                                                        </td>                                                                  
+                                                                    </tr>                                                               
                                                             </ui:repeat>
                                                         </tbody>
                                                     </table>
@@ -432,7 +421,7 @@
                                                                 <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" style="max-width:210px;max-height:60px;" alt="#{dv.name} Dataverse"/>
                                                             </a>
                                                         </ui:fragment>
-                                                        <a href="/dataverse.xhtml?di=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
+                                                        <a href="/dataverse.xhtml?id=#{dv.id}" title="#{dv.name} Dataverse" style="display:block;">
                                                             <h:outputText value="#{dv.name} Dataverse"/>
                                                         </a>
                                                     </div>
