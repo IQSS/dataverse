@@ -31,4 +31,4 @@ rm $TMP
 echo Setting up the settings
 echo  - Allow internal signup
 curl -X PUT $SERVER/s/settings/:AllowSignUp/yes
-curl -X PUT $SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml%3FeditMode%3DCREATE
+curl -X PUT $SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml
