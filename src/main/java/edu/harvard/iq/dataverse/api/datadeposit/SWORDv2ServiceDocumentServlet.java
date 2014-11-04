@@ -14,10 +14,17 @@ public class SWORDv2ServiceDocumentServlet extends SwordServlet {
     ServiceDocumentManagerImpl serviceDocumentManagerImpl;
     protected ServiceDocumentAPI api;
 
+    /**
+     * @todo Should we inject this in all the SWORDv2 Servlets? Added here so
+     * that we can inject SettingsServiceBean in SwordConfigurationImpl.
+     */
+    @Inject
+    SwordConfigurationImpl swordConfigurationImpl;
+
     @Override
     public void init() throws ServletException {
         super.init();
-        this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, this.config);
+        this.api = new ServiceDocumentAPI(serviceDocumentManagerImpl, swordConfigurationImpl);
     }
 
     @Override

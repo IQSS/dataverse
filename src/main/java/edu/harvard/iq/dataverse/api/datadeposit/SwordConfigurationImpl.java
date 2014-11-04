@@ -130,11 +130,11 @@ public class SwordConfigurationImpl implements SwordConfiguration {
                 int maxUploadSizeInBytes = Integer.parseInt(maxUploadInBytes);
                 return maxUploadSizeInBytes;
             } catch (NumberFormatException ex) {
-                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit APU max upload size limit to unlimited.");
+                logger.info("Could not convert " + maxUploadInBytes + " from setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " to int. Setting Data Deposit API max upload size limit to unlimited.");
                 return unlimited;
             }
         } else {
-            logger.info("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit APU max upload size limit to unlimited.");
+            logger.info("Setting " + SettingsServiceBean.Key.DataDepositApiMaxUploadInBytes + " is undefined. Setting Data Deposit API max upload size limit to unlimited.");
             return unlimited;
         }
     }

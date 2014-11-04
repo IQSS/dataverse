@@ -155,19 +155,12 @@ public class BuiltinUserPage implements java.io.Serializable {
     }
 
     public void init() {
-        if (editMode == EditMode.CREATE) { //create mode is for sign up
-            builtinUser = new BuiltinUser();
-        } else {
-            if ( session.getUser().isAuthenticated() ) {
-                currentUser = (AuthenticatedUser) session.getUser();
-                notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
-                if (currentUser.isBuiltInUser()) {
-                    builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
-                }
-            } else {
-                notificationsList = Collections.<UserNotification>emptyList();
+        if ( session.getUser().isAuthenticated() ) {
+            currentUser = (AuthenticatedUser) session.getUser();
+            notificationsList = userNotificationService.findByUser(((AuthenticatedUser)currentUser).getId());
+            if (currentUser.isBuiltInUser()) {
+                builtinUser =  builtinUserService.findByUserName(currentUser.getUserIdentifier());
             }
-
             switch (selectTab) {
                 case "notifications":
                     activeIndex = 1;
@@ -179,7 +172,12 @@ public class BuiltinUserPage implements java.io.Serializable {
                 default:
                     activeIndex = 0;
                     break;
-            }
+            }            
+            
+        } else {
+            // if user is not logged in, go to sign up page
+            editMode = EditMode.CREATE;
+            builtinUser = new BuiltinUser();           
         }
     }
 
