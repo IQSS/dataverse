@@ -70,11 +70,13 @@
                                             <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
                                                 <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
                                                 <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
+                                                <p:ajax update="@widgetVar(content)"  />  
                                             </p:selectOneRadio>
                                             <p:message for="logoFormat"/>
                                         </p:panelGrid>
                                     </div>
                                 </div>
+                                <ui:fragment rendered="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat=='RECTANGLE'}">
                                 <div class="form-col-container col-sm-3">
                                     <label for="logoAlignment" class="control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Where the logo or image should display in the header.">
@@ -92,6 +94,7 @@
                                         </p:panelGrid>
                                     </div>
                                 </div>
+                                    </ui:fragment>
                                 <div class="form-col-container col-sm-4">
                                     <label for="logoBackgroundColor" class="control-label">
                                         <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Select a color to display behind the logo of this dataverse.">
