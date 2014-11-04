@@ -45,18 +45,18 @@ public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
         Dataverse currentDv = ctxt.dataverses().find(editedDv.getId());
         File logoFileDir = new File(logoPath.toFile(), editedDv.getId().toString());
         File currentFile=null;
-        if (currentDv.getLogo()!=null) {
-             currentFile = new File(logoFileDir, currentDv.getLogo());
+        if (currentDv.getDataverseTheme()!=null && currentDv.getDataverseTheme().getLogo()!=null) {
+             currentFile = new File(logoFileDir, currentDv.getDataverseTheme().getLogo());
         }
         try {
             // If edited logo field is empty, and a logoFile currently exists, delete it
-            if ( editedDv.getLogo()==null ) {
+            if (editedDv.getDataverseTheme()==null || editedDv.getDataverseTheme().getLogo()==null ) {
                 if (currentFile!=null) {
                     currentFile.delete();
                 }
             } // If edited logo file isn't empty,and uploaded File exists, delete currentFile and copy uploaded file from temp dir to logos dir
             else if (uploadedFile!=null) {
-                File newFile = new File(logoFileDir,editedDv.getLogo());
+                File newFile = new File(logoFileDir,editedDv.getDataverseTheme().getLogo());
                 if (currentFile!=null) {
                     currentFile.delete();
                 }

@@ -21,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -89,8 +90,13 @@ public class Dataverse extends DvObjectContainer {
     private boolean permissionRoot;
     private boolean metadataBlockRoot;
     private boolean facetRoot;
+    private boolean themeRoot;
     private boolean displayByType;
     private boolean displayFeatured;
+    
+    @OneToOne(cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    @JoinColumn(name="dataversetheme_id")
+    private DataverseTheme dataverseTheme;
 
     @OneToMany(cascade = {CascadeType.MERGE})
     private List<MetadataBlock> metadataBlocks = new ArrayList();
@@ -99,7 +105,7 @@ public class Dataverse extends DvObjectContainer {
     @OrderBy("displayOrder")
     private List<DataverseFacet> dataverseFacets = new ArrayList();
     
-        @OneToMany(mappedBy = "dataverse")
+    @OneToMany(mappedBy = "dataverse")
     private List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels = new ArrayList();
 
     public void setDataverseFieldTypeInputLevels(List<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels) {
@@ -112,7 +118,8 @@ public class Dataverse extends DvObjectContainer {
 
 
     private boolean templateRoot;
-
+ 
+    
     @ManyToOne
     @JoinColumn(nullable = true)
     private Template defaultTemplate;
@@ -152,7 +159,15 @@ public class Dataverse extends DvObjectContainer {
         }
             return  retList;
     }
+    
+    public boolean isThemeRoot() {
+        return themeRoot;
+    }
 
+    public void setThemeRoot(boolean  themeRoot) {
+        this.themeRoot = themeRoot;
+    }
+    
     public boolean isTemplateRoot() {
         return templateRoot;
     }
@@ -161,27 +176,8 @@ public class Dataverse extends DvObjectContainer {
         this.templateRoot = templateRoot;
     }
 
-    public enum ImageFormat {
+   
 
-        SQUARE, RECTANGLE
-    }
-
-    @Enumerated(EnumType.STRING)
-    private ImageFormat logoFormat;
-
-    public enum Alignment {
-        LEFT, CENTER, RIGHT
-    }
-    @Enumerated(EnumType.STRING)
-    private Alignment logoAlignment;
-    private String logoBackgroundColor;
-    private String logo;
-    private String tagline;
-    private String linkUrl;
-    private String linkText;
-    private String linkColor;
-    private String textColor;
-    private String backgroundColor;
 
     public List<MetadataBlock> getMetadataBlocks() {
         return getMetadataBlocks(false);
@@ -193,6 +189,31 @@ public class Dataverse extends DvObjectContainer {
         } else {
             return getOwner().getMetadataBlocks();
         }
+    }
+
+    
+    public DataverseTheme getDataverseTheme() {
+        return getDataverseTheme(false);
+    }
+
+    public DataverseTheme getDataverseTheme(boolean returnActualDB) {
+        if (returnActualDB || themeRoot || getOwner() == null) {
+            return dataverseTheme;
+        } else {
+            return getOwner().getDataverseTheme();
+        }
+    }
+    
+    public String getLogoOwnerId() {
+        if (themeRoot || getOwner()==null) {
+            return this.getId().toString();
+        } else {
+            return getOwner().getId().toString();
+        }
+    } 
+    
+    public void setDataverseTheme(DataverseTheme dataverseTheme) {
+        this.dataverseTheme=dataverseTheme;
     }
 
     public void setMetadataBlocks(List<MetadataBlock> metadataBlocks) {
@@ -299,85 +320,7 @@ public class Dataverse extends DvObjectContainer {
         this.displayFeatured = displayFeatured;
     }
 
-    public ImageFormat getLogoFormat() {
-        return logoFormat;
-    }
-
-    public void setLogoFormat(ImageFormat logoFormat) {
-        this.logoFormat = logoFormat;
-    }
-
-    public Alignment getLogoAlignment() {
-        return logoAlignment;
-    }
-
-    public void setLogoAlignment(Alignment logoAlignment) {
-        this.logoAlignment = logoAlignment;
-    }
-
-    public String getLogoBackgroundColor() {
-        return logoBackgroundColor;
-    }
-
-    public void setLogoBackgroundColor(String logoBackgroundColor) {
-        this.logoBackgroundColor = logoBackgroundColor;
-    }
-
-    public String getLogo() {
-        return logo;
-    }
-
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
-    public String getTagline() {
-        return tagline;
-    }
-
-    public void setTagline(String tagline) {
-        this.tagline = tagline;
-    }
-
-    public String getLinkUrl() {
-        return linkUrl;
-    }
-
-    public void setLinkUrl(String linkUrl) {
-        this.linkUrl = linkUrl;
-    }
-
-    public String getLinkText() {
-        return linkText;
-    }
-
-    public void setLinkText(String linkText) {
-        this.linkText = linkText;
-    }
-
-    public String getLinkColor() {
-        return linkColor;
-    }
-
-    public void setLinkColor(String linkColor) {
-        this.linkColor = linkColor;
-    }
-
-    public String getTextColor() {
-        return textColor;
-    }
-
-    public void setTextColor(String textColor) {
-        this.textColor = textColor;
-    }
-
-    public String getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public void setBackgroundColor(String backgroundColor) {
-        this.backgroundColor = backgroundColor;
-    }
+  
 
     public void addRole(DataverseRole role) {
         role.setOwner(this);

@@ -39,6 +39,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     private EntityManager em;
 
     public Dataverse save(Dataverse dataverse) {
+       
         Dataverse savedDataverse = em.merge(dataverse);
         String indexingResult = indexService.indexDataverse(savedDataverse);
         logger.info("during dataverse save, indexing result was: " + indexingResult);

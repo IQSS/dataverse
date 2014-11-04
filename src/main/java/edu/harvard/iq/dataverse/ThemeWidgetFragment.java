@@ -85,6 +85,9 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public void initEditDv(Long dataverseId) {
         editDv = dataverseServiceBean.find(dataverseId);
+        if (editDv.getDataverseTheme()==null && editDv.isThemeRoot()) {
+            editDv.setDataverseTheme(new DataverseTheme());
+        }
         // When you open the popup, the first tab (widgets) should be active
         tabView.setActiveIndex(0);
     }
@@ -149,14 +152,14 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
                 uploadedFile.createNewFile();
             }
             Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
-            editDv.setLogo(uFile.getFileName());
+            editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
         } catch (IOException e) {
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
-        if (editDv.getLogoFormat()==null) {
-            editDv.setLogoFormat(Dataverse.ImageFormat.SQUARE);
+        if (editDv.getDataverseTheme().getLogoFormat()==null) {
+            editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
         }
         // Set the active index, so that Theme tab will still display after upload
         tabView.setActiveIndex(0);
@@ -164,7 +167,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
     }
     
     public void removeLogo() {
-        editDv.setLogo(null);
+        editDv.getDataverseTheme().setLogo(null);
         this.cleanupTempDirectory();
        
     }
@@ -172,6 +175,12 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
    
 
     public void save() {
+        // If this Dv isn't the root, delete the uploaded file and remove theme
+        // before saving.
+        if (!editDv.isThemeRoot()) {
+            uploadedFile=null;
+            editDv.setDataverseTheme(null);
+        }
         Command<Dataverse>    cmd = new UpdateDataverseThemeCommand(editDv, this.uploadedFile, session.getUser());  
         try {
             dataversePage.setDataverse(commandEngine.submit(cmd));           
@@ -181,7 +190,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
         this.cleanupTempDirectory();
-       
+        
     }
 }
 

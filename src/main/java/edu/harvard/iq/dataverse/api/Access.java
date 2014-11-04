@@ -306,7 +306,7 @@ public class Access {
         
         // First, check if the dataverse has a defined logo: 
         
-        if (dataverse.getLogo() != null && !dataverse.getLogo().equals("")) {
+        if (dataverse.getDataverseTheme()!=null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             String dataverseLogoPath = getLogoPath(dataverse);
             if (dataverseLogoPath != null) {
                 String logoThumbNailPath = null;
@@ -392,7 +392,7 @@ public class Access {
                 "docroot" + File.separator + 
                 "logos" + File.separator + 
                 dataverse.getId() + File.separator + 
-                dataverse.getLogo();
+                dataverse.getDataverseTheme().getLogo();
     }
     
     private String getWebappImageResource(String imageName) {

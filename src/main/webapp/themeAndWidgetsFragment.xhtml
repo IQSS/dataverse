@@ -18,11 +18,11 @@
                             </a>
                         </label>
                         <div class="col-sm-8">
-                            <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
+                            <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
                                 <p:column>
                                     <p>
-                                        <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.logo}" alt="#{dv.name} Dataverse"/>
-                                        <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.logo}" alt="#{dv.name} Dataverse"/>
+                                        <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
+                                        <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
                                     </p>
                                     <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}"/>
                                 </p:column>
@@ -31,7 +31,7 @@
                                 <p:message for="changelogo"/>
                             </p:panelGrid>
 
-                            <p:panelGrid rendered="#{ empty themeWidgetFragment.editDv.logo}" columns="2" styleClass="noBorders">
+                            <p:panelGrid rendered="#{ empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
                                 <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" dragDropSupport="true" auto="true" multiple="false"
                                               fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                                 <p:message for="uploadlogo"/>
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 
-                <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.logo}">
+                <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
                     <div class="row form-horizontal">
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
@@ -50,7 +50,7 @@
                             </label>
                             <div class="col-sm-8">
                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.logoFormat}">
+                                    <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
                                         <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
                                         <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
                                     </p:selectOneRadio>
@@ -66,7 +66,7 @@
                             </label>
                             <div class="col-sm-8">
                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.logoAlignment}">
+                                    <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
                                         <f:selectItem id="left" itemLabel="Left" itemValue="LEFT" />
                                         <f:selectItem id="center" itemLabel="Center" itemValue="CENTER" />
                                         <f:selectItem id="right" itemLabel="Right" itemValue="RIGHT" />
@@ -83,7 +83,7 @@
                             </label>
                             <div class="col-sm-8">
                                 <p:panelGrid columns="2" styleClass="noBorders">
-                                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.logoBackgroundColor}"/>
+                                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
                                     <p:message for="logoBackgroundColor"/>
                                 </p:panelGrid>
                             </div>
@@ -100,7 +100,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.backgroundColor}"/>
+                                <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
                                 <p:message for="backgroundColor"/>
                             </p:panelGrid>
                         </div>
@@ -113,7 +113,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.linkColor}"/>
+                                <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
                                 <p:message for="linkColor"/>
                             </p:panelGrid>
                         </div>
@@ -126,7 +126,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.textColor}"/>
+                                <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
                                 <p:message for="textColor"/>
                             </p:panelGrid>
                         </div>
@@ -139,7 +139,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.tagline}"/>
+                                <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                 <p:message for="tagline"/>
                             </p:panelGrid>
                         </div>
@@ -152,7 +152,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.linkUrl}"/>
+                                <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.dataverseTheme.linkUrl}"/>
                                 <p:message for="linkUrl"/>
                             </p:panelGrid>
                         </div>
@@ -165,7 +165,7 @@
                         </label>
                         <div class="col-sm-8">
                             <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.linkText}"/>
+                                <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.dataverseTheme.linkText}"/>
                                 <p:message for="linkText"/>
                             </p:panelGrid>
                         </div>
@@ -213,7 +213,7 @@
           //  alert("xhr="+xhr.responseText);
             if (xhr.responseText.search('class="error"') === -1 && args.validationFailed === undefined) {
                 PF('themeAndWidgetsForm').hide();
-               
+               window.location.reload();
             } else {
          //        alert(" contains class error = "+ xhr.responseText.search('class="error"')!==-1);
             }
