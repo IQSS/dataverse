@@ -37,6 +37,8 @@ Differences in Dataverse 4.0 have lead to a few minor backward incompatible chan
 New features as of v1.1
 -----------------------
 
+- An API token can be used in place of a username and password. In the ``curl`` examples below, you will see ``curl -u $USERNAME:$PASSWORD`` but you can pass an API token for ``$USERNAME`` and nothing (or a random value) for ``$PASSWORD`` to authenticate. For example, if your API token is ``54b143b5-d001-4254-afc0-a1c0f6a5b5a7`` you can use ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:`` or ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:foobar`` to authenticate.
+
 - Dataverses can be published via SWORD
 
 - Granular permissions are used for certain operations. Previously, you needed to be "admin" on a dataverse to use the Data Deposit API at all.
@@ -199,8 +201,6 @@ Roadmap
 -------
 
 These are features we'd like to add in the future:
-
-- Allow the SWORD API to use API keys/tokens: https://github.com/IQSS/dataverse/issues/890
 
 - Implement SWORD 2.0 Profile 6.4: https://github.com/IQSS/dataverse/issues/183
 
