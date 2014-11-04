@@ -10,9 +10,9 @@
         <p:tabView  binding="#{themeWidgetFragment.tabView}" rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="Theme">
                 <p:fragment autoUpdate="true">
-                <h:outputText value="ThemeRoot: #{themeWidgetFragment.editDv.themeRoot}"/>
                 <!-- Dataverse Theme Panel -->
                 <div class="row form-horizontal">
+                    <ui:fragment rendered="#{themeWidgetFragment.editDv.owner!=null}">
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
                             <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
@@ -32,6 +32,7 @@
                             </div>
                         </div>
                     </div>
+                </ui:fragment>  
                     <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">

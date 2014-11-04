@@ -105,6 +105,9 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     public void initEditDv(Long dataverseId) {
         editDv = dataverseServiceBean.find(dataverseId);
+        if (editDv.getOwner()==null) {
+            editDv.setThemeRoot(true);
+        }
         if (editDv.getDataverseTheme()==null && editDv.isThemeRoot()) {
             editDv.setDataverseTheme(new DataverseTheme());
         }
