@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -108,10 +109,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         try {
             HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             StringBuilder redirectPage = new StringBuilder();
-            redirectPage.append(req.getServletPath());
-            if (req.getQueryString() != null) {
-                redirectPage.append("?").append(req.getQueryString());
-            }
+            redirectPage.append(req.getServletPath());           
+
+            if (req.getParameterMap() != null) {
+                StringBuilder queryString = new StringBuilder(); 
+                for (Map.Entry<String, String[]> entry : ((Map<String, String[]>)req.getParameterMap()).entrySet()) {
+                    String name = entry.getKey();
+                    String value = entry.getValue()[0];
+                    queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value);                            
+                }
+                redirectPage.append(queryString);
+            }            
+            
             return "?redirectPage=" + URLEncoder.encode(redirectPage.toString(), "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(DataverseHeaderFragment.class.getName()).log(Level.SEVERE, null, ex);
