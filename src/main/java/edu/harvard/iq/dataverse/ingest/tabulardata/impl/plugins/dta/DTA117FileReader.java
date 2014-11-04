@@ -372,7 +372,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     // TODO: this method needs to be actually called! 
     private void init() throws IOException {
         //
-        logger.info("release number=" + releaseNumber);
+        logger.fine("release number=" + releaseNumber);
 
         variableTypeTable = variableTypeTable117;
 
@@ -387,9 +387,9 @@ public class DTA117FileReader extends TabularDataFileReader{
 
         dataLabelLength = headerLength - (NVAR_FIELD_LENGTH
                 + NOBS_FIELD_LENGTH + TIME_STAMP_LENGTH);
-        logger.info("data_label_length=" + dataLabelLength);
+        logger.fine("data_label_length=" + dataLabelLength);
 
-        logger.info("constant table to be used:\n" + constantTable);
+        logger.fine("constant table to be used:\n" + constantTable);
 
         doubleNumberFormatter.setGroupingUsed(false);
         doubleNumberFormatter.setMaximumFractionDigits(340); // TODO: WTF???
@@ -486,13 +486,13 @@ public class DTA117FileReader extends TabularDataFileReader{
 
 
     private void readHeader(DataReader dataReader) throws IOException {
-        logger.info("readHeader(): start");
+        logger.fine("readHeader(): start");
 
         if (dataReader == null) {
             throw new IllegalArgumentException("stream == null!");
         }
 
-        logger.info("reading the version header.");
+        logger.fine("reading the version header.");
                
         dataReader.readOpeningTag(TAG_HEADER);
         String dtaVersionTag = dataReader.readPrimitiveStringSection(TAG_HEADER_FILEFORMATID, 3);
@@ -503,7 +503,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         String byteOrderTag = dataReader.readPrimitiveStringSection(TAG_HEADER_BYTEORDER);
         
-        logger.info("byte order: "+byteOrderTag);
+        logger.fine("byte order: "+byteOrderTag);
         
         if ("LSF".equals(byteOrderTag)) {
             dataReader.setLSF(true);
@@ -512,10 +512,10 @@ public class DTA117FileReader extends TabularDataFileReader{
         }
         
         int varNumber = dataReader.readIntegerSection(TAG_HEADER_VARNUMBER, 2);
-        logger.info("number of variables: " + varNumber);
+        logger.fine("number of variables: " + varNumber);
 
         int obsNumber = dataReader.readIntegerSection(TAG_HEADER_OBSNUMBER, 4);
-        logger.info("number of observations: " + obsNumber);
+        logger.fine("number of observations: " + obsNumber);
         
         dataTable.setVarQuantity(new Long(varNumber));
         dataTable.setCaseQuantity(new Long(obsNumber));
@@ -528,7 +528,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         // The word "dataset" below is used in its STATA parlance meaning, 
         // i.e., this is a label that describes the datafile. 
         String datasetLabel = dataReader.readDefinedStringSection(TAG_HEADER_FILELABEL, 80);
-        logger.info("dataset label: "+datasetLabel);
+        logger.fine("dataset label: "+datasetLabel);
         
         // TODO: 
         // do we want to do anything with this label? Add it to the 
@@ -538,7 +538,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         // -- L.A. 4.0 beta 8
         
         String datasetTimeStamp = dataReader.readDefinedStringSection(TAG_HEADER_TIMESTAMP, 17);
-        logger.info("dataset time stamp: "+datasetTimeStamp);
+        logger.fine("dataset time stamp: "+datasetTimeStamp);
         
         if (datasetTimeStamp == null ||
                 (datasetTimeStamp.length() > 0 && datasetTimeStamp.length() < 17)) {
@@ -550,59 +550,59 @@ public class DTA117FileReader extends TabularDataFileReader{
         }
         
         dataReader.readClosingTag("header");
-        logger.info("readHeader(): end");
+        logger.fine("readHeader(): end");
     }
 
     /* 
         TODO: add a comment. --L.A. DVN 4.0 beta 8 
     */
     private void readMap(DataReader reader) throws IOException {
-        logger.info("Map section; at offset "+reader.getByteOffset());
+        logger.fine("Map section; at offset "+reader.getByteOffset());
         reader.readOpeningTag(TAG_MAP);
 
         dtaMap = new DTADataMap();
 
         long dta_offset_stata_data = reader.readLongInteger();
-        logger.info("dta_offset_stata_data: " + dta_offset_stata_data);
+        logger.fine("dta_offset_stata_data: " + dta_offset_stata_data);
         dtaMap.setOffset_head(dta_offset_stata_data);
         long dta_offset_map = reader.readLongInteger();
-        logger.info("dta_offset_map: " + dta_offset_map);
+        logger.fine("dta_offset_map: " + dta_offset_map);
         dtaMap.setOffset_map(dta_offset_map);
         long dta_offset_variable_types = reader.readLongInteger();
-        logger.info("dta_offset_variable_types: " + dta_offset_variable_types);
+        logger.fine("dta_offset_variable_types: " + dta_offset_variable_types);
         dtaMap.setOffset_types(dta_offset_variable_types);
         long dta_offset_varnames = reader.readLongInteger();
-        logger.info("dta_offset_varnames: " + dta_offset_varnames);
+        logger.fine("dta_offset_varnames: " + dta_offset_varnames);
         dtaMap.setOffset_varnames(dta_offset_varnames);
         long dta_offset_sortlist = reader.readLongInteger();
-        logger.info("dta_offset_sortlist: " + dta_offset_sortlist);
+        logger.fine("dta_offset_sortlist: " + dta_offset_sortlist);
         dtaMap.setOffset_srtlist(dta_offset_sortlist);
         long dta_offset_formats = reader.readLongInteger();
-        logger.info("dta_offset_formats: " + dta_offset_formats);
+        logger.fine("dta_offset_formats: " + dta_offset_formats);
         dtaMap.setOffset_fmts(dta_offset_formats);
         long dta_offset_value_label_names = reader.readLongInteger();
-        logger.info("dta_offset_value_label_names: " + dta_offset_value_label_names);
+        logger.fine("dta_offset_value_label_names: " + dta_offset_value_label_names);
         dtaMap.setOffset_vlblnames(dta_offset_value_label_names);
         long dta_offset_variable_labels = reader.readLongInteger();
-        logger.info("dta_offset_variable_labels: " + dta_offset_variable_labels);
+        logger.fine("dta_offset_variable_labels: " + dta_offset_variable_labels);
         dtaMap.setOffset_varlabs(dta_offset_variable_labels);
         long dta_offset_characteristics = reader.readLongInteger();
-        logger.info("dta_offset_characteristics: " + dta_offset_characteristics);
+        logger.fine("dta_offset_characteristics: " + dta_offset_characteristics);
         dtaMap.setOffset_characteristics(dta_offset_characteristics);
         long dta_offset_data = reader.readLongInteger();
-        logger.info("dta_offset_data: " + dta_offset_data);
+        logger.fine("dta_offset_data: " + dta_offset_data);
         dtaMap.setOffset_data(dta_offset_data);
         long dta_offset_strls = reader.readLongInteger();
-        logger.info("dta_offset_strls: " + dta_offset_strls);
+        logger.fine("dta_offset_strls: " + dta_offset_strls);
         dtaMap.setOffset_strls(dta_offset_strls);
         long dta_offset_value_labels = reader.readLongInteger();
-        logger.info("dta_offset_value_labels: " + dta_offset_value_labels);
+        logger.fine("dta_offset_value_labels: " + dta_offset_value_labels);
         dtaMap.setOffset_vallabs(dta_offset_value_labels);
         long dta_offset_data_close = reader.readLongInteger();
-        logger.info("dta_offset_data_close: " + dta_offset_data_close);
+        logger.fine("dta_offset_data_close: " + dta_offset_data_close);
         dtaMap.setOffset_data_close(dta_offset_data_close);
         long dta_offset_eof = reader.readLongInteger();
-        logger.info("dta_offset_eof: " + dta_offset_eof);
+        logger.fine("dta_offset_eof: " + dta_offset_eof);
         dtaMap.setOffset_eof(dta_offset_eof);
 
         reader.readClosingTag(TAG_MAP);
@@ -619,7 +619,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     private void readVariableTypes(DataReader reader) throws IOException {
         // TODO: 
         // check that we are at the right byte offset!
-        logger.info("Type section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_types());
+        logger.fine("Type section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_types());
         reader.readOpeningTag(TAG_VARIABLE_TYPES);
         
         List<DataVariable> variableList = new ArrayList<DataVariable>();
@@ -629,7 +629,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             int type = reader.readShortInteger();
-            logger.info("variable "+i+": type="+type);
+            logger.fine("variable "+i+": type="+type);
             DataVariable dv = new DataVariable();
             
             dv.setInvalidRanges(new ArrayList<VariableRange>());
@@ -711,14 +711,14 @@ public class DTA117FileReader extends TabularDataFileReader{
      * (zero-padded and zero-terminated) character vectors. 
     */
     private void readVariableNames(DataReader reader) throws IOException {
-        logger.info("Variable names section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_varnames());
+        logger.fine("Variable names section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_varnames());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VARIABLE_NAMES);
 
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableName = reader.readString(33);
-            logger.info("variable "+i+": name=" + variableName);
+            logger.fine("variable "+i+": name=" + variableName);
             if ((variableName != null) && (!variableName.equals(""))) {
                 dataTable.getDataVariables().get(i).setName(variableName);
             } else {
@@ -734,7 +734,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     */
     
     private void readSortOrder(DataReader reader) throws IOException {
-        logger.info("Sort Order section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_srtlist());
+        logger.fine("Sort Order section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_srtlist());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_SORT_ORDER);
@@ -743,7 +743,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             int order = reader.readShortInteger();
-            logger.info("variable "+i+": sort order="+order);
+            logger.fine("variable "+i+": sort order="+order);
             // TODO: 
             // Double-check that we don't really need this sort order 
             // for any practical purposes. 
@@ -768,7 +768,7 @@ public class DTA117FileReader extends TabularDataFileReader{
      */
     
     private void readDisplayFormats(DataReader reader) throws IOException {
-        logger.info("Formats section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_fmts());
+        logger.fine("Formats section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_fmts());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_DISPLAY_FORMATS);
@@ -776,7 +776,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableFormat = reader.readString(49);
-            logger.info("variable "+i+": displayFormat=" + variableFormat);
+            logger.fine("variable "+i+": displayFormat=" + variableFormat);
             // TODO: 
             // Decide what we are doing with these. 
             // (saving them, for archival purposes?)
@@ -790,7 +790,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             } else {
                 variableFormatKey = variableFormat.substring(0, 2);
             }
-            logger.info(i + " th variableFormatKey=" + variableFormatKey);
+            logger.fine(i + " th variableFormatKey=" + variableFormatKey);
 
             /* 
              * Now, let's check if this format is a known time or date format. 
@@ -806,7 +806,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             if (DATE_TIME_FORMAT_TABLE.containsKey(variableFormatKey)) {
                 dateVariableFormats[i] = variableFormat; 
                 dataTable.getDataVariables().get(i).setFormatCategory(DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
-                logger.info(i + "th var: category=" +
+                logger.fine(i + "th var: category=" +
                         DATE_TIME_FORMAT_TABLE.get(variableFormatKey));
                 dataTable.getDataVariables().get(i).setVariableFormatType(varService.findVariableFormatTypeByName("character"));
                 dataTable.getDataVariables().get(i).setVariableIntervalType(varService.findVariableIntervalTypeByName("discrete"));
@@ -820,7 +820,7 @@ public class DTA117FileReader extends TabularDataFileReader{
      * Another fixed-field section
     */
     private void readValueLabelFormatNames(DataReader reader) throws IOException {
-        logger.info("Category valuable section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_vlblnames());
+        logger.fine("Category valuable section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_vlblnames());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VALUE_LABEL_FORMAT_NAMES);
@@ -831,7 +831,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             // TODO: 
             // Define all the byte lengths as constants!
             String valueLabelFormat = reader.readString(33);
-            logger.info("variable "+i+": value label format=" + valueLabelFormat);
+            logger.fine("variable "+i+": value label format=" + valueLabelFormat);
             if ((valueLabelFormat != null) && (!valueLabelFormat.equals(""))) {
                 valueLabelsLookupTable[i] = valueLabelFormat;
             }
@@ -845,14 +845,14 @@ public class DTA117FileReader extends TabularDataFileReader{
      * Another fixed-field section
     */
     private void readVariableLabels(DataReader reader) throws IOException {
-        logger.info("Variable labels section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_varlabs());
+        logger.fine("Variable labels section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_varlabs());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_VARIABLE_LABELS);
         
         for (int i = 0; i < dataTable.getVarQuantity(); i++) {
             String variableLabel = reader.readString(81);
-            logger.info("variable "+i+": label=" + variableLabel);
+            logger.fine("variable "+i+": label=" + variableLabel);
             if ((variableLabel != null) && (!variableLabel.equals(""))) {
                 dataTable.getDataVariables().get(i).setLabel(variableLabel);
             }
@@ -865,7 +865,7 @@ public class DTA117FileReader extends TabularDataFileReader{
      * TODO: add a comment
     */
     private void readCharacteristics(DataReader reader) throws IOException {
-        logger.info("Characteristics section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_characteristics());
+        logger.fine("Characteristics section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_characteristics());
         // TODO: 
         // check that we are at the right byte offset!
         reader.readOpeningTag(TAG_CHARACTERISTICS);
@@ -879,8 +879,8 @@ public class DTA117FileReader extends TabularDataFileReader{
      * TODO: add comments.
      */
     private void readData(DataReader reader) throws IOException {
-        logger.info("Data section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_data());
-        logger.info("readData(): start");
+        logger.fine("Data section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_data());
+        logger.fine("readData(): start");
         reader.readOpeningTag(TAG_DATA);
         // TODO: 
         // check that we are at the right byte offset!
@@ -891,9 +891,9 @@ public class DTA117FileReader extends TabularDataFileReader{
         int[] variableByteLengths = getVariableByteLengths(variableTypes);
         int bytes_per_row = calculateBytesPerRow(variableByteLengths);
 
-        logger.info("data dimensions[observations x variables] = (" + nobs + "x" + nvar + ")");
-        logger.info("bytes per row=" + bytes_per_row + " bytes");
-        logger.info("variableTypes=" + Arrays.deepToString(variableTypes));
+        logger.fine("data dimensions[observations x variables] = (" + nobs + "x" + nvar + ")");
+        logger.fine("bytes per row=" + bytes_per_row + " bytes");
+        logger.fine("variableTypes=" + Arrays.deepToString(variableTypes));
 
         // create a File object to save the tab-delimited data file
         FileOutputStream fileOutTab = null;
@@ -906,7 +906,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         fileOutTab = new FileOutputStream(tabDelimitedDataFile);
         pwout = new PrintWriter(new OutputStreamWriter(fileOutTab, "utf8"), true);
         
-        logger.info("Beginning to read data stream.");
+        logger.fine("Beginning to read data stream.");
 
         for (int i = 0; i < nobs; i++) {
             //byte[] dataRowBytes = new byte[bytes_per_row];
@@ -946,15 +946,15 @@ public class DTA117FileReader extends TabularDataFileReader{
                     // (signed) Byte
                     byte byte_datum = reader.readSignedByte();
 
-                    logger.info(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column byte =" + byte_datum);
                     if (byte_datum >= BYTE_MISSING_VALUE) {
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column byte MV=" + byte_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                     } else {
                         dataRow[columnCounter] = byte_datum;
-                        logger.info(i + "-th row " + columnCounter +
+                        logger.fine(i + "-th row " + columnCounter +
                                  "-th column byte value=" + byte_datum);
                     }
 
@@ -962,11 +962,11 @@ public class DTA117FileReader extends TabularDataFileReader{
                 } else if (varType.equals("Integer")) {
                     short short_datum = (short) reader.readShortSignedInteger();
 
-                    logger.info(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column stata int =" + short_datum);
 
                     if (short_datum >= INT_MISSIG_VALUE) {
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column stata long missing value=" + short_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                     } else {
@@ -974,14 +974,14 @@ public class DTA117FileReader extends TabularDataFileReader{
                         if (isDateTimeDatum) {
 
                             DecodedDateTime ddt = decodeDateTimeData("short", variableFormat, Short.toString(short_datum));
-                            logger.info(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             //dateFormat[columnCounter][i] = ddt.format;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                         } else {
                             dataRow[columnCounter] = short_datum;
-                            logger.info(i + "-th row " + columnCounter +
+                            logger.fine(i + "-th row " + columnCounter +
                                  "-th column \"integer\" value=" + short_datum);
                         }
                     }
@@ -996,13 +996,13 @@ public class DTA117FileReader extends TabularDataFileReader{
                     } else {
                         if (isDateTimeDatum) {
                             DecodedDateTime ddt = decodeDateTimeData("int", variableFormat, Integer.toString(int_datum));
-                            logger.info(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                         } else {
                             dataRow[columnCounter] = int_datum;
-                            logger.info(i + "-th row " + columnCounter +
+                            logger.fine(i + "-th row " + columnCounter +
                                  "-th column \"long\" value=" + int_datum);
                         }
 
@@ -1014,10 +1014,10 @@ public class DTA117FileReader extends TabularDataFileReader{
 
                     float float_datum = reader.readFloat();
 
-                    logger.info(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column float =" + float_datum);
                     if (FLOAT_MISSING_VALUE_SET.contains(float_datum)) {
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column float missing value=" + float_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
 
@@ -1025,12 +1025,12 @@ public class DTA117FileReader extends TabularDataFileReader{
 
                         if (isDateTimeDatum) {
                             DecodedDateTime ddt = decodeDateTimeData("float", variableFormat, doubleNumberFormatter.format(float_datum));
-                            logger.info(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                         } else {
                             dataRow[columnCounter] = float_datum;
-                            logger.info(i + "-th row " + columnCounter
+                            logger.fine(i + "-th row " + columnCounter
                                 + "=th column float value:" + float_datum);
                             // This may be temporary - but for now (as in, while I'm testing 
                             // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
@@ -1060,7 +1060,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                         } else {
-                            logger.info(i + "-th row " + columnCounter
+                            logger.fine(i + "-th row " + columnCounter
                                 + "=th column double value:" + double_datum); //doubleNumberFormatter.format(double_datum));
                                     
                             dataRow[columnCounter] = double_datum; //doubleNumberFormatter.format(double_datum);
@@ -1071,7 +1071,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                 } else if (varType.matches("^STR[1-9][0-9]*")) {
                     // String case
                     int strVarLength = variableByteLengths[columnCounter];
-                    logger.info(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column is a string (" + strVarLength + " bytes)");
                     //String raw_datum = new String(Arrays.copyOfRange(dataRowBytes, byte_offset,
                     //        (byte_offset + strVarLength)), "ISO-8859-1");
@@ -1087,15 +1087,15 @@ public class DTA117FileReader extends TabularDataFileReader{
                     //String string_datum = getNullStrippedString(raw_datum);
                     String string_datum = reader.readString(strVarLength);
                     if (string_datum.length() < 64) {
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column string =" + string_datum);
                     } else {
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column string =" + string_datum.substring(0, 64) + "... (truncated)");
                     }
                     if (string_datum.equals("")) {
 
-                        logger.info(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column string missing value=" + string_datum);
 
                         // TODO: 
@@ -1152,7 +1152,7 @@ public class DTA117FileReader extends TabularDataFileReader{
             // Dump the row of data to the tab-delimited file:
             pwout.println(StringUtils.join(dataRow, "\t"));
             
-            logger.info("finished reading "+i+"-th row");
+            logger.fine("finished reading "+i+"-th row");
 
 
         }  // for (rows)
@@ -1160,7 +1160,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         pwout.close();
 
         reader.readClosingTag(TAG_DATA);
-        logger.info("DTA117 Ingest: readData(): end.");
+        logger.fine("DTA117 Ingest: readData(): end.");
 
     }
    
@@ -1170,7 +1170,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     */
     
     private void readSTRLs(DataReader reader) throws IOException {
-        logger.info("STRLs section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_strls());
+        logger.fine("STRLs section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_strls());
         // TODO: 
         // check that we are at the right byte offset!
         //reader.readOpeningTag(TAG_STRLS);
@@ -1185,8 +1185,8 @@ public class DTA117FileReader extends TabularDataFileReader{
     }
     
     private void readValueLabels(DataReader reader) throws IOException {
-        logger.info("Value Labels section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_vallabs());
-        logger.info("readValueLabels(): start.");
+        logger.fine("Value Labels section; at offset "+reader.getByteOffset()+"; dta map offset: "+dtaMap.getOffset_vallabs());
+        logger.fine("readValueLabels(): start.");
 
         // TODO: 
         // check that we are at the right byte offset!
@@ -1285,7 +1285,7 @@ public class DTA117FileReader extends TabularDataFileReader{
         }
 
         reader.readClosingTag(TAG_VALUE_LABELS);
-        logger.info("readValueLabels(): end.");
+        logger.fine("readValueLabels(): end.");
 
     }
     
@@ -1357,7 +1357,7 @@ public class DTA117FileReader extends TabularDataFileReader{
 
     private DecodedDateTime decodeDateTimeData(String storageType, String FormatType, String rawDatum) throws IOException {
 
-        logger.info("(storageType, FormatType, rawDatum)=("
+        logger.fine("(storageType, FormatType, rawDatum)=("
                 + storageType + ", " + FormatType + ", " + rawDatum + ")");
         /*
          *         Historical note:
@@ -1378,15 +1378,15 @@ public class DTA117FileReader extends TabularDataFileReader{
             milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
-            logger.info("tc: result="+decodedDateTime+", format = "+format);
+            logger.fine("tc: result="+decodedDateTime+", format = "+format);
             
         } else if (FormatType.matches("^%t?d.*")){
             milliSeconds = Long.parseLong(rawDatum)*SECONDS_PER_YEAR + STATA_BIAS_TO_EPOCH;
-            logger.info("milliSeconds="+milliSeconds);
+            logger.fine("milliSeconds="+milliSeconds);
             
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
             format = sdf_ymd.toPattern();
-            logger.info("td:"+decodedDateTime+", format = "+format);
+            logger.fine("td:"+decodedDateTime+", format = "+format);
 
         } else if (FormatType.matches("^%t?w.*")){
 
@@ -1441,11 +1441,11 @@ public class DTA117FileReader extends TabularDataFileReader{
             month = "-"+twoDigitFormatter.format(monthdata).toString()+"-01";
             long year  = 1960L + years;
             String monthYear = Long.valueOf(year).toString() + month;
-            logger.info("rawDatum="+rawDatum+": monthYear="+monthYear);
+            logger.fine("rawDatum="+rawDatum+": monthYear="+monthYear);
             
             decodedDateTime = monthYear;
             format = "yyyy-MM-dd";
-            logger.info("tm:"+decodedDateTime+", format:"+format);
+            logger.fine("tm:"+decodedDateTime+", format:"+format);
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
@@ -1479,11 +1479,11 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             long year  = 1960L + years;
             String quaterYear = Long.valueOf(year).toString() + quater;
-            logger.info("rawDatum="+rawDatum+": quaterYear="+quaterYear);
+            logger.fine("rawDatum="+rawDatum+": quaterYear="+quaterYear);
 
             decodedDateTime = quaterYear;
             format = "yyyy-MM-dd";
-            logger.info("tq:"+decodedDateTime+", format:"+format);
+            logger.fine("tq:"+decodedDateTime+", format:"+format);
 
         } else if (FormatType.matches("^%t?h.*")){
             // half year
@@ -1512,17 +1512,17 @@ public class DTA117FileReader extends TabularDataFileReader{
             }
             long year  = 1960L + years;
             String halfYear = Long.valueOf(year).toString() + half;
-            logger.info("rawDatum="+rawDatum+": halfYear="+halfYear);
+            logger.fine("rawDatum="+rawDatum+": halfYear="+halfYear);
             
             decodedDateTime = halfYear;
             format = "yyyy-MM-dd";
-            logger.info("th:"+decodedDateTime+", format:"+format);
+            logger.fine("th:"+decodedDateTime+", format:"+format);
             
         } else if (FormatType.matches("^%t?y.*")){
             // year type's origin is 0 AD
             decodedDateTime = rawDatum;
             format = "yyyy";
-            logger.info("th:"+decodedDateTime);
+            logger.fine("th:"+decodedDateTime);
         } else {
             decodedDateTime = rawDatum;
             format=null;
@@ -1535,7 +1535,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     
     private class DataReader {
         private BufferedInputStream stream; 
-        private int DEFAULT_BUFFER_SIZE = 8192 * 2;
+        private int DEFAULT_BUFFER_SIZE = 8192;// * 2;
         private byte[] byte_buffer; 
         private int buffer_size; 
         private long byte_offset; 
@@ -1607,12 +1607,16 @@ public class DTA117FileReader extends TabularDataFileReader{
                 /* if there are any bytes left in the buffer, 
                  * copy them into the return array:
                 */
+                
                 if (this.buffer_size - buffer_byte_offset > 0) {
+                    logger.fine("reading the remaining "+(this.buffer_size - buffer_byte_offset)+" bytes from the buffer");
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, 0, this.buffer_size - buffer_byte_offset);
-                    buffer_byte_offset = this.buffer_size;
+                    //buffer_byte_offset = this.buffer_size;
                     bytes_read = this.buffer_size - buffer_byte_offset;
-                    bufferMoreBytes(); 
                 }
+                    
+                int morebytes = bufferMoreBytes(); 
+                logger.fine("buffered "+morebytes+" bytes");
                 
                 /* 
                  * TODO: combine this block with the one above -- ?
@@ -1620,16 +1624,19 @@ public class DTA117FileReader extends TabularDataFileReader{
                  * keep reading and buffering: 
                 */
                 while (n - bytes_read > this.buffer_size) {
+                    logger.fine("copying a full buffer-worth of bytes into the return array");
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, bytes_read, this.buffer_size);
-                    buffer_byte_offset = this.buffer_size;
+                    //buffer_byte_offset = this.buffer_size;
                     bytes_read += this.buffer_size;
-                    bufferMoreBytes();
+                    morebytes = bufferMoreBytes();
+                    logger.fine("buffered "+morebytes+" bytes");
                 }
                 
                 /* 
                  * finally, copy the last not-a-full-buffer-worth of bytes 
                  * into the return buffer:
                 */
+                logger.fine("copying the remaining "+(n-bytes_read)+" bytes.");
                 System.arraycopy(byte_buffer, 0, bytes, bytes_read, n - bytes_read);
                 buffer_byte_offset = n - bytes_read; 
             }
@@ -1676,7 +1683,7 @@ public class DTA117FileReader extends TabularDataFileReader{
              * return byte[] buffer of size 1. */
             byte ret; 
             if (buffer_byte_offset > this.buffer_size) {
-                throw new IOException ("<buffer overflow>");
+                throw new IOException ("TD - buffer overflow");
             }
             if (buffer_byte_offset < this.buffer_size) {
                 ret = byte_buffer[buffer_byte_offset];
@@ -1955,25 +1962,25 @@ public class DTA117FileReader extends TabularDataFileReader{
         // int followed by llll bytes.
         
         public void skipDefinedSections(String tag) throws IOException {
-            logger.info("entering at offset "+buffer_byte_offset);
+            logger.fine("entering at offset "+buffer_byte_offset);
             while (checkTag(tag)) {
                 // TODO: checkTag() should probably *read* the tag, if it is indeed
                 // encountered, rather then stop at the beginning of the tag. 
-                logger.info("tag "+tag+" encountered at offset "+buffer_byte_offset);
+                logger.fine("tag "+tag+" encountered at offset "+buffer_byte_offset);
                 readOpeningTag(tag);
                 long number = readInteger(4);
-                logger.info(number+" bytes in this section;");
+                logger.fine(number+" bytes in this section;");
                 if (number < 0) {
                     throw new IOException ("<negative number of bytes in skipDefinedSection(\"tag\")?>");
                 }
                 // TODO: implement skipBytes() instead:
                 byte[] skipped_bytes = readBytes((int)number);
                 readClosingTag(tag);
-                logger.info("read closing tag </"+tag+">;");
+                logger.fine("read closing tag </"+tag+">;");
 
 
             }
-            logger.info("exiting at offset "+buffer_byte_offset);
+            logger.fine("exiting at offset "+buffer_byte_offset);
         }
         
         private boolean checkTag(String tag) throws IOException {
@@ -2037,7 +2044,7 @@ public class DTA117FileReader extends TabularDataFileReader{
                 buffer_byte_offset++; 
                 
                 if (buffer_byte_offset == this.buffer_size) {
-                    logger.info("reached the end of buffer in readPrimitiveSectionBytes; offset "+buffer_byte_offset);
+                    logger.fine("reached the end of buffer in readPrimitiveSectionBytes; offset "+buffer_byte_offset);
                     cached_bytes = mergeCachedBytes(cached_bytes, cached_offset);
                     bufferMoreBytes();
                     cached_offset = 0; 
