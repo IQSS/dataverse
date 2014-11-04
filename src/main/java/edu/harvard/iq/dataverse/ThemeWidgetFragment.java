@@ -38,7 +38,11 @@ import org.primefaces.model.UploadedFile;
 @ViewScoped
 @Named
 public class ThemeWidgetFragment implements java.io.Serializable {
-
+    static final String DEFAULT_LOGO_BACKGROUND_COLOR = "F5F5F5";
+    static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
+    static final String DEFAULT_LINK_COLOR = "428BCA";
+    static final String DEFAULT_TEXT_COLOR = "888888";
+     
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
@@ -109,11 +113,22 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.setThemeRoot(true);
         }
         if (editDv.getDataverseTheme()==null && editDv.isThemeRoot()) {
-            editDv.setDataverseTheme(new DataverseTheme());
+            editDv.setDataverseTheme(initDataverseTheme());
+            
         }
         // When you open the popup, the first tab (widgets) should be active
         tabView.setActiveIndex(0);
     }
+    
+    private DataverseTheme initDataverseTheme() {
+        DataverseTheme dvt = new DataverseTheme();
+        dvt.setLinkColor(DEFAULT_LINK_COLOR);
+        dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
+        dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+        dvt.setTextColor(DEFAULT_TEXT_COLOR);
+        return dvt;
+    }
+    
     public Dataverse getEditDv() {
         return editDv; 
     }
@@ -206,7 +221,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
         editDv.setThemeRoot(!inherit);
         if (!inherit) {
             if (editDv.getDataverseTheme(true)==null) {
-                editDv.setDataverseTheme(new DataverseTheme());
+                editDv.setDataverseTheme(initDataverseTheme());
             }
         }
     }
