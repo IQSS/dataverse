@@ -48,8 +48,7 @@ my @CONFIG_VARIABLES = (
 );
 
 if ($pg_only) {
-    print "pg only!!";
-    exit;
+#    exit;
     @CONFIG_VARIABLES =
       ( 'POSTGRES_SERVER', 'POSTGRES_PORT', 'POSTGRES_DATABASE', 'POSTGRES_USER', 'POSTGRES_PASSWORD' );
 
@@ -700,8 +699,8 @@ else {
 
     # Find out what Postgres version is running remotely:
 
-    my $pg_major_version = 9;
-    my $pg_minor_version = 1;
+    $pg_major_version = 9;
+    $pg_minor_version = 1;
 
     print "What version of PostgresQL is installed on the remote server?\n ["
       . $pg_major_version . "."
