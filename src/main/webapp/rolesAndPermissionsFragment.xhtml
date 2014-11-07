@@ -3,16 +3,18 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:o="http://omnifaces.org/ui">
     <!-- Roles + Permissions Popup -->
-    <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp">
+    <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp"> 
+        <o:importFunctions type="edu.harvard.iq.dataverse.authorization.users.GuestUser" />
         <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
             #{rolePermissionFragment.dvObject.displayName}         
             <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionServiceBean.on(rolePermissionFragment.dvObject.owner).has('AssignRole')}"
                            actionListener="#{rolePermissionFragment.setDvObject(rolePermissionFragment.dvObject.owner)}">
                 <h:outputText value="(Up)" />
             </p:commandLink>
-            <ui:fragment rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse and !empty rolePermissionFragment.dvObject.owner}">
+            <ui:fragment rendered="#{rolePermissionFragment.dvObject.instanceofDataverse and !empty rolePermissionFragment.dvObject.owner}">
                 <div class="alert alert-danger form-horizontal" role="alert">
                     <div class="form-group" style="margin-bottom:0; padding-top:0;">
                         <label for="inputEmail3" class="col-sm-4 control-label" style="padding-top:0;">Inherit Roles + Permissions</label>
@@ -29,34 +31,46 @@
                 <p:tab id="permissionsTab" title="Permissions">
                     <p:tabView id="permissionsSubTabView" widgetVar="subContent">
                         <p:tab id="usersGroupsSubTab" title="Users/Groups">
-                            <div class="highlight">
-                                <button type="button" class="btn btn-default" style="margin-right:1em;">Invite User</button> Invite a user to create a Dataverse account, and assign them a role to your dataverse.
-                            </div>
+                            <ui:remove><!-- NOT YET IMPLEMENTED -->
+                                <div class="highlight">
+                                    <button type="button" class="btn btn-default" style="margin-right:1em;">Invite User</button> Invite a user to create a Dataverse account, and assign them a role to your dataverse.
+                                </div>
+                            </ui:remove>
                             <div class="highlight form-inline">
                                 <div class="form-group">
                                     <label class="control-label">User/Group Name</label>
-                                    <p:inputText id="userGroupNameAssign" styleClass="form-control" value="#{rolePermissionFragment.assignRoleUsername}"/>
-                                    <label class="control-label">Role</label> 
-                                    <p:selectOneMenu id="assignRoleOptions" styleClass="form-control" value="#{rolePermissionFragment.assignRoleRoleId}">
-                                        <f:selectItems value="#{rolePermissionFragment.availableRoles}" var="role"
-                                                       itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
-                                    </p:selectOneMenu>
+                                    <p:autoComplete id="userGroupNameAssign" styleClass="form-control" value="#{rolePermissionFragment.assignRoleUsername}" 
+                                                    forceSelection="true" completeMethod="#{rolePermissionFragment.getIdentifiers}"/>
+                                    <ui:fragment rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
+                                        <label class="control-label">Role</label> 
+                                        <p:selectOneMenu id="assignRoleOptions" styleClass="form-control" value="#{rolePermissionFragment.assignRoleRoleId}">
+                                            <f:selectItems value="#{rolePermissionFragment.availableRoles}" var="role"
+                                                           itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
+                                        </p:selectOneMenu>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{rolePermissionFragment.dvObject.instanceofDataFile}">
+                                        
+                                        <p:commandLink styleClass="btn btn-default" 
+                                                       value="Toggle" 
+                                                       actionListener="#{rolePermissionFragment.toggleFileRestrict}"
+                                                       style="color:black;margin-right:0.5em;"/>
+                                    </ui:fragment>
+                                    
                                     <p:commandLink styleClass="btn btn-default" 
-                                                   value="Assign" 
+                                                   value="#{rolePermissionFragment.dvObject.instanceofDataFile ? 'Grant Access' : 'Assign'}" 
                                                    actionListener="#{rolePermissionFragment.assignRole}"
-                                                   update="assignedRoles"
                                                    style="color:black;margin-right:0.5em;"/>
                                 </div>
                             </div>
                             <div>
                                 <p:dataTable id="assignedRoles" var="roleAssignment" value="#{rolePermissionFragment.roleAssignments}">
-                                    <p:column width="35%" sortBy="name" headerText="User / Group">
+                                    <p:column width="35%"  headerText="User / Group">
                                         <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title} " />
                                     </p:column>
-                                    <p:column width="15%" sortBy="createDate" headerText="Role">
+                                    <p:column width="15%"  headerText="Role" rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
                                         <h:outputText value="#{roleAssignment.roleName} " />
                                     </p:column>
-                                    <p:column width="10%" sortBy="usageCount" headerText="Object">
+                                    <p:column width="10%" headerText="Object" rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
                                         <h:outputText value="#{roleAssignment.assignedDvName}" />
                                     </p:column>
                                     <p:column width="40%" headerText="Action">
@@ -70,15 +84,15 @@
                                 </p:dataTable>
                             </div>
                         </p:tab>
-                        <p:tab id="dataversesSubTab" title="Dataverses" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
+                        <p:tab id="dataversesSubTab" title="Dataverses" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                             <p:dataTable id="dataverses" var="dv" value="#{dataverseServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
-                                <p:column width="35%" sortBy="name" headerText="Dataverse">
+                                <p:column width="35%"  headerText="Dataverse">
                                     <h:outputText value="#{dv.name} " />
                                 </p:column>
-                                <p:column width="15%" sortBy="createDate" headerText="Dataverse">
+                                <p:column width="15%" headerText="Dataverse">
                                     <h:outputText value="#{dv.owner.name} " />
                                 </p:column>
-                                <p:column width="10%" sortBy="usageCount" headerText="Publication Status">
+                                <p:column width="10%"  headerText="Publication Status">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column width="40%" headerText="Action">
@@ -91,15 +105,15 @@
                                 </p:column>
                             </p:dataTable>                        
                         </p:tab>
-                        <p:tab id="datasetsSubTab" title="Datasets"  rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
+                        <p:tab id="datasetsSubTab" title="Datasets"  rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                             <p:dataTable id="datasets" var="ds" value="#{datasetServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
-                                <p:column width="35%" sortBy="name" headerText="Dataset">
+                                <p:column width="35%"  headerText="Dataset">
                                     <h:outputText value="#{ds.latestVersion.title} " />
                                 </p:column>
-                                <p:column width="15%" sortBy="createDate" headerText="Dataverse">
+                                <p:column width="15%"  headerText="Dataverse">
                                     <h:outputText value="#{ds.owner.name} " />
                                 </p:column>
-                                <p:column width="10%" sortBy="usageCount" headerText="Publication Status">
+                                <p:column width="10%"  headerText="Publication Status">
                                     <h:outputText value="" />
                                 </p:column>
                                 <p:column width="40%" headerText="Action">
@@ -112,14 +126,37 @@
                                 </p:column>
                             </p:dataTable>           
                         </p:tab>
-                        <p:tab id="filesSubTab" title="Files"></p:tab>
+                        <p:tab id="filesSubTab" title="Files" rendered="#{rolePermissionFragment.dvObject.instanceofDataset}">
+                            <p:dataTable id="files" var="file" value="#{rolePermissionFragment.dvObject.asDataset.files}">
+                                <p:column width="35%" sortBy="name" headerText="Dataset">
+                                    <h:outputText value="#{file.fileMetadata.label} " />
+                                </p:column>
+                                <p:column width="10%"  headerText="Versions">
+                                    <ui:repeat value="#{file.fileMetadatas}" var="fmd" varStatus="status">
+                                        <h:outputText value="#{fmd.datasetVersion.semanticVersion}" />  
+                                        <h:outputText value=", " rendered="#{!status.last}"/> 
+                                    </ui:repeat>
+                                </p:column>
+                                <p:column width="35%" sortBy="name" headerText="Status">
+                                    <h:outputText value="#{permissionServiceBean.userOn(GuestUser:get(),file).has('Download') ? 'Public' : 'Restricted'}" />
+                                </p:column>                                
+                                <p:column width="40%" headerText="Action">
+                                    <p:commandLink styleClass="btn btn-default" 
+                                                   value="Edit" 
+                                                   actionListener="#{rolePermissionFragment.setDvObject(file)}"
+                                                   rendered="#{permissionServiceBean.on(file).has('AssignRole')}"
+                                                   oncomplete="subContent.select(0);"
+                                                   style="color:black;margin-right:0.5em;"/>
+                                </p:column>
+                            </p:dataTable>                             
+                        </p:tab>
                     </p:tabView>
                 </p:tab>
-                <p:tab id="GroupsTab" title="Groups" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
+                <p:tab id="GroupsTab" title="Groups" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                     <!-- FORM -->
                     Groups
                 </p:tab>
-                <p:tab id="rolesTab" title="Roles" rendered="#{rolePermissionFragment.dvObjectInstanceofDataverse}">
+                <p:tab id="rolesTab" title="Roles" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                     <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
                         <div style="float:right; margin-bottom:.5em;">
                             <p:commandLink styleClass="btn btn-default" actionListener="#{rolePermissionFragment.createNewRole}"
