@@ -19,7 +19,7 @@ public class RevokeRoleCommand extends AbstractVoidCommand {
 	private final RoleAssignment toBeRevoked;
 
 	public RevokeRoleCommand(RoleAssignment toBeRevoked, User aUser) {
-		super(aUser, (Dataverse)toBeRevoked.getDefinitionPoint());
+		super(aUser, toBeRevoked.getDefinitionPoint());
 		this.toBeRevoked = toBeRevoked;
 	}
 	
