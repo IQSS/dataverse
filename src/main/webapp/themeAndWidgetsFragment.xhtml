@@ -6,8 +6,8 @@
     xmlns:p="http://primefaces.org/ui"
     xmlns:o="http://omnifaces.org/ui">
     <!-- Theme and Widgets Popup -->
-    <p:dialog id="themeAndWidgetsDlg" closable="false"  header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
-        <p:remoteCommand process="@this" update=":dataverseForm:themeWidgetsTabView"   name="resetForm" action="#{themeWidgetFragment.resetForm(DataversePage.dataverse.id)}"/>                  
+    <p:dialog id="themeAndWidgetsDlg" onHide="resetForm();"   header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
+        <p:remoteCommand process="@this" update=":dataverseForm:themeWidgetsTabView"   name="resetForm" action="#{themeWidgetFragment.resetForm()}"/>                  
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="Theme">
                 <p:fragment autoUpdate="true">
@@ -219,7 +219,12 @@
                     </ui:fragment>
                 </p:fragment>
                 <p:commandButton update=":dataverseForm:themeWidgetsTabView"  oncomplete="saveThemeHandleComplete(xhr, status, args);" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                <p:commandButton process="@this" action="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" update=":dataverseForm:themeWidgetsTabView" partialSubmit="true"  id="widgetsDone"  oncomplete="themeAndWidgetsForm.hide()" value="Cancel"/>
+                <p:commandButton process="@this"   id="widgetsDone"  oncomplete="themeAndWidgetsForm.hide()" value="Cancel">
+            <p:resetInput target=":dataverseForm:themeWidgetsTabView" />     
+   <!--<p:ajax process="@this" listener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" ></p:ajax>-->
+            <!--   <f:ajax execute="@this" render="@form" />
+                <f:actionListener type="org.omnifaces.eventlistener.ResetInputAjaxActionListener" /> -->
+                </p:commandButton>    
                
 
             </p:tab>
