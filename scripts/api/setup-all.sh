@@ -30,5 +30,5 @@ rm $TMP
 # setup the local sign-in
 echo Setting up the settings
 echo  - Allow internal signup
-curl -X PUT $SERVER/s/settings/:AllowSignUp/yes
-curl -X PUT $SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml
+curl -X PUT "$SERVER/s/settings/:AllowSignUp/yes?key=burrito"
+curl -X PUT "$SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml?key=burrito"
