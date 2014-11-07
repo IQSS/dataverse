@@ -904,7 +904,7 @@ unless ($success) {
 my $JHOVE_CONFIG = "../../conf/jhove/jhove.conf";
 
 unless ( -f $JHOVE_CONFIG ) {
-    $JHOVE_CONFIG = "./config/jhove.conf";
+    $JHOVE_CONFIG = "jhove.conf";
 }
 
 unless ( -f $JHOVE_CONFIG ) {
@@ -979,10 +979,6 @@ if ($pg_local_connection) {
 else {
     # 7b. INSTRUCT THE USER TO POPULATE THE DB ON THE REMOTE SERVER:
     # NOT SUPPORTED YET -- TODO
-    print "The database needs to be populated with some intial content \n";
-    print "before we restart the DVN one last time. \n";
-    print "However, populating a database on a remote PostgresQL server ";
-    print "is not supported yet!\n";
     print "Please copy the file $SQL_REFERENCE_DATA (found in this directory)\n";
     print "onto the remote server and populate the database manually,\n";
     print "as user postgres, with the following command:\n\n";
@@ -990,7 +986,7 @@ else {
     print "then start glassfish again on this server with \n\n";
     print "   " . $glassfish_dir . "/bin/asadmin start-domain domain1\n\n";
 
-    exit 0;
+#    exit 0;
 
 }
 
