@@ -153,5 +153,22 @@ public abstract class DvObject implements java.io.Serializable {
     }
     
     public abstract String getDisplayName();
+    
+    // helper method used to mimic instanceof on JSF pge
+    public boolean isInstanceofDataverse() {
+        return this instanceof Dataverse;
+    }        
+
+    public boolean isInstanceofDataset() {
+        return this instanceof Dataset;
+    }
+    
+    public boolean isInstanceofDataFile() {
+        return this instanceof DataFile;
+    }
+    
+    public Dataset getAsDataset() {
+        return (Dataset) this;
+    }
 
 }
