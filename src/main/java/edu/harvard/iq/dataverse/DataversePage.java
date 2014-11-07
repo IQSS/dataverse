@@ -256,6 +256,9 @@ public class DataversePage implements java.io.Serializable {
                 for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
                     if (dsftTest.getId().equals(dsftId)) {
                         dsftTest.setOptionSelectItems(resetSelectItems(dsftTest));
+                        if ((dsftTest.isHasParent() && !dsftTest.getParentDatasetFieldType().isInclude()) || (!dsftTest.isHasParent() && !dsftTest.isInclude())){                         
+                            dsftTest.setRequiredDV(false);
+                        }
                         if (dsftTest.isHasChildren() && !dsftTest.isInclude()) {
                             childDSFT.addAll(dsftTest.getChildDatasetFieldTypes());
                         }
@@ -423,11 +426,17 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public void editFacets() {
-        if (dataverse.isFacetRoot()) {
-            dataverse.getDataverseFacets().addAll(dataverse.getDataverseFacets(true));
-        } else {
-            dataverse.getDataverseFacets();
+
+        List<DatasetFieldType> facetsSource = new ArrayList<>();
+        List<DatasetFieldType> facetsTarget = new ArrayList<>();
+        facetsSource.addAll(datasetFieldService.findAllFacetableFieldTypes());
+        List<DataverseFacet> facetsList = dataverseFacetService.findByDataverseId(dataverse.getFacetRootId());
+        for (DataverseFacet dvFacet : facetsList) {
+            DatasetFieldType dsfType = dvFacet.getDatasetFieldType();
+            facetsTarget.add(dsfType);
+            facetsSource.remove(dsfType);
         }
+        facets = new DualListModel<>(facetsSource, facetsTarget);
     }
 
     public DualListModel<DatasetFieldType> getFacets() {

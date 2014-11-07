@@ -946,25 +946,27 @@ public class DTA117FileReader extends TabularDataFileReader{
                     // (signed) Byte
                     byte byte_datum = reader.readSignedByte();
 
-                    logger.finer(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column byte =" + byte_datum);
                     if (byte_datum >= BYTE_MISSING_VALUE) {
-                        logger.finer(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column byte MV=" + byte_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                     } else {
                         dataRow[columnCounter] = byte_datum;
+                        logger.fine(i + "-th row " + columnCounter +
+                                 "-th column byte value=" + byte_datum);
                     }
 
                     byte_offset++;
                 } else if (varType.equals("Integer")) {
                     short short_datum = (short) reader.readShortSignedInteger();
 
-                    logger.finer(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column stata int =" + short_datum);
 
                     if (short_datum >= INT_MISSIG_VALUE) {
-                        logger.finer(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column stata long missing value=" + short_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
                     } else {
@@ -972,13 +974,15 @@ public class DTA117FileReader extends TabularDataFileReader{
                         if (isDateTimeDatum) {
 
                             DecodedDateTime ddt = decodeDateTimeData("short", variableFormat, Short.toString(short_datum));
-                            logger.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             //dateFormat[columnCounter][i] = ddt.format;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                         } else {
                             dataRow[columnCounter] = short_datum;
+                            logger.fine(i + "-th row " + columnCounter +
+                                 "-th column \"integer\" value=" + short_datum);
                         }
                     }
                     byte_offset += 2;
@@ -992,12 +996,14 @@ public class DTA117FileReader extends TabularDataFileReader{
                     } else {
                         if (isDateTimeDatum) {
                             DecodedDateTime ddt = decodeDateTimeData("int", variableFormat, Integer.toString(int_datum));
-                            logger.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
 
                         } else {
                             dataRow[columnCounter] = int_datum;
+                            logger.fine(i + "-th row " + columnCounter +
+                                 "-th column \"long\" value=" + int_datum);
                         }
 
                     }
@@ -1008,10 +1014,10 @@ public class DTA117FileReader extends TabularDataFileReader{
 
                     float float_datum = reader.readFloat();
 
-                    logger.finer(i + "-th row " + columnCounter
+                    logger.fine(i + "-th row " + columnCounter
                             + "=th column float =" + float_datum);
                     if (FLOAT_MISSING_VALUE_SET.contains(float_datum)) {
-                        logger.finer(i + "-th row " + columnCounter
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column float missing value=" + float_datum);
                         dataRow[columnCounter] = MissingValueForTabDelimitedFile;
 
@@ -1019,11 +1025,13 @@ public class DTA117FileReader extends TabularDataFileReader{
 
                         if (isDateTimeDatum) {
                             DecodedDateTime ddt = decodeDateTimeData("float", variableFormat, doubleNumberFormatter.format(float_datum));
-                            logger.finer(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
+                            logger.fine(i + "-th row , decodedDateTime " + ddt.decodedDateTime + ", format=" + ddt.format);
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                         } else {
                             dataRow[columnCounter] = float_datum;
+                            logger.fine(i + "-th row " + columnCounter
+                                + "=th column float value:" + float_datum);
                             // This may be temporary - but for now (as in, while I'm testing 
                             // 4.0 ingest against 3.* ingest, I need to be able to tell if a 
                             // floating point value was a single, or double float in the 
@@ -1052,15 +1060,19 @@ public class DTA117FileReader extends TabularDataFileReader{
                             dataRow[columnCounter] = ddt.decodedDateTime;
                             dataTable.getDataVariables().get(columnCounter).setFormatSchemaName(ddt.format);
                         } else {
-                            dataRow[columnCounter] = doubleNumberFormatter.format(double_datum);
+                            logger.fine(i + "-th row " + columnCounter
+                                + "=th column double value:" + double_datum); //doubleNumberFormatter.format(double_datum));
+                                    
+                            dataRow[columnCounter] = double_datum; //doubleNumberFormatter.format(double_datum);
                         }
 
                     }
                     byte_offset += 8;
                 } else if (varType.matches("^STR[1-9][0-9]*")) {
-                    logger.finer("This a string.");
                     // String case
                     int strVarLength = variableByteLengths[columnCounter];
+                    logger.fine(i + "-th row " + columnCounter
+                            + "=th column is a string (" + strVarLength + " bytes)");
                     //String raw_datum = new String(Arrays.copyOfRange(dataRowBytes, byte_offset,
                     //        (byte_offset + strVarLength)), "ISO-8859-1");
                     // (old) TODO: 
@@ -1074,11 +1086,18 @@ public class DTA117FileReader extends TabularDataFileReader{
 
                     //String string_datum = getNullStrippedString(raw_datum);
                     String string_datum = reader.readString(strVarLength);
-                    logger.finer(i + "-th row " + columnCounter
-                            + "=th column string =" + string_datum);
+                    if (string_datum.length() < 64) {
+                        logger.fine(i + "-th row " + columnCounter
+                                + "=th column string =" + string_datum);
+                    } else {
+                        logger.fine(i + "-th row " + columnCounter
+                                + "=th column string =" + string_datum.substring(0, 64) + "... (truncated)");
+                    }
                     if (string_datum.equals("")) {
-                        logger.finer(i + "-th row " + columnCounter
+
+                        logger.fine(i + "-th row " + columnCounter
                                 + "=th column string missing value=" + string_datum);
+
                         // TODO: 
                         /* Is this really a missing value case? 
                          * Or is it an honest empty string? 
@@ -1132,6 +1151,9 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             // Dump the row of data to the tab-delimited file:
             pwout.println(StringUtils.join(dataRow, "\t"));
+            
+            logger.fine("finished reading "+i+"-th row");
+
 
         }  // for (rows)
 
@@ -1335,7 +1357,7 @@ public class DTA117FileReader extends TabularDataFileReader{
 
     private DecodedDateTime decodeDateTimeData(String storageType, String FormatType, String rawDatum) throws IOException {
 
-        logger.finer("(storageType, FormatType, rawDatum)=("
+        logger.fine("(storageType, FormatType, rawDatum)=("
                 + storageType + ", " + FormatType + ", " + rawDatum + ")");
         /*
          *         Historical note:
@@ -1356,15 +1378,15 @@ public class DTA117FileReader extends TabularDataFileReader{
             milliSeconds = Long.parseLong(rawDatum)+ STATA_BIAS_TO_EPOCH;
             decodedDateTime = sdf_ymdhmsS.format(new Date(milliSeconds));
             format = sdf_ymdhmsS.toPattern();
-            logger.finer("tc: result="+decodedDateTime+", format = "+format);
+            logger.fine("tc: result="+decodedDateTime+", format = "+format);
             
         } else if (FormatType.matches("^%t?d.*")){
             milliSeconds = Long.parseLong(rawDatum)*SECONDS_PER_YEAR + STATA_BIAS_TO_EPOCH;
-            logger.finer("milliSeconds="+milliSeconds);
+            logger.fine("milliSeconds="+milliSeconds);
             
             decodedDateTime = sdf_ymd.format(new Date(milliSeconds));
             format = sdf_ymd.toPattern();
-            logger.finer("td:"+decodedDateTime+", format = "+format);
+            logger.fine("td:"+decodedDateTime+", format = "+format);
 
         } else if (FormatType.matches("^%t?w.*")){
 
@@ -1419,11 +1441,11 @@ public class DTA117FileReader extends TabularDataFileReader{
             month = "-"+twoDigitFormatter.format(monthdata).toString()+"-01";
             long year  = 1960L + years;
             String monthYear = Long.valueOf(year).toString() + month;
-            logger.finer("rawDatum="+rawDatum+": monthYear="+monthYear);
+            logger.fine("rawDatum="+rawDatum+": monthYear="+monthYear);
             
             decodedDateTime = monthYear;
             format = "yyyy-MM-dd";
-            logger.finer("tm:"+decodedDateTime+", format:"+format);
+            logger.fine("tm:"+decodedDateTime+", format:"+format);
 
         } else if (FormatType.matches("^%t?q.*")){
             // quater
@@ -1457,11 +1479,11 @@ public class DTA117FileReader extends TabularDataFileReader{
 
             long year  = 1960L + years;
             String quaterYear = Long.valueOf(year).toString() + quater;
-            logger.finer("rawDatum="+rawDatum+": quaterYear="+quaterYear);
+            logger.fine("rawDatum="+rawDatum+": quaterYear="+quaterYear);
 
             decodedDateTime = quaterYear;
             format = "yyyy-MM-dd";
-            logger.finer("tq:"+decodedDateTime+", format:"+format);
+            logger.fine("tq:"+decodedDateTime+", format:"+format);
 
         } else if (FormatType.matches("^%t?h.*")){
             // half year
@@ -1490,17 +1512,17 @@ public class DTA117FileReader extends TabularDataFileReader{
             }
             long year  = 1960L + years;
             String halfYear = Long.valueOf(year).toString() + half;
-            logger.finer("rawDatum="+rawDatum+": halfYear="+halfYear);
+            logger.fine("rawDatum="+rawDatum+": halfYear="+halfYear);
             
             decodedDateTime = halfYear;
             format = "yyyy-MM-dd";
-            logger.finer("th:"+decodedDateTime+", format:"+format);
+            logger.fine("th:"+decodedDateTime+", format:"+format);
             
         } else if (FormatType.matches("^%t?y.*")){
             // year type's origin is 0 AD
             decodedDateTime = rawDatum;
             format = "yyyy";
-            logger.finer("th:"+decodedDateTime);
+            logger.fine("th:"+decodedDateTime);
         } else {
             decodedDateTime = rawDatum;
             format=null;
@@ -1513,7 +1535,7 @@ public class DTA117FileReader extends TabularDataFileReader{
     
     private class DataReader {
         private BufferedInputStream stream; 
-        private int DEFAULT_BUFFER_SIZE = 8192;
+        private int DEFAULT_BUFFER_SIZE = 8192;// * 2;
         private byte[] byte_buffer; 
         private int buffer_size; 
         private long byte_offset; 
@@ -1585,12 +1607,16 @@ public class DTA117FileReader extends TabularDataFileReader{
                 /* if there are any bytes left in the buffer, 
                  * copy them into the return array:
                 */
+                
                 if (this.buffer_size - buffer_byte_offset > 0) {
+                    logger.fine("reading the remaining "+(this.buffer_size - buffer_byte_offset)+" bytes from the buffer");
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, 0, this.buffer_size - buffer_byte_offset);
-                    buffer_byte_offset = this.buffer_size;
+                    //buffer_byte_offset = this.buffer_size;
                     bytes_read = this.buffer_size - buffer_byte_offset;
-                    bufferMoreBytes(); 
                 }
+                    
+                int morebytes = bufferMoreBytes(); 
+                logger.fine("buffered "+morebytes+" bytes");
                 
                 /* 
                  * TODO: combine this block with the one above -- ?
@@ -1598,16 +1624,19 @@ public class DTA117FileReader extends TabularDataFileReader{
                  * keep reading and buffering: 
                 */
                 while (n - bytes_read > this.buffer_size) {
+                    logger.fine("copying a full buffer-worth of bytes into the return array");
                     System.arraycopy(byte_buffer, buffer_byte_offset, bytes, bytes_read, this.buffer_size);
-                    buffer_byte_offset = this.buffer_size;
+                    //buffer_byte_offset = this.buffer_size;
                     bytes_read += this.buffer_size;
-                    bufferMoreBytes();
+                    morebytes = bufferMoreBytes();
+                    logger.fine("buffered "+morebytes+" bytes");
                 }
                 
                 /* 
                  * finally, copy the last not-a-full-buffer-worth of bytes 
                  * into the return buffer:
                 */
+                logger.fine("copying the remaining "+(n-bytes_read)+" bytes.");
                 System.arraycopy(byte_buffer, 0, bytes, bytes_read, n - bytes_read);
                 buffer_byte_offset = n - bytes_read; 
             }
@@ -1654,7 +1683,7 @@ public class DTA117FileReader extends TabularDataFileReader{
              * return byte[] buffer of size 1. */
             byte ret; 
             if (buffer_byte_offset > this.buffer_size) {
-                throw new IOException ("<buffer overflow>");
+                throw new IOException ("TD - buffer overflow");
             }
             if (buffer_byte_offset < this.buffer_size) {
                 ret = byte_buffer[buffer_byte_offset];
@@ -1911,7 +1940,10 @@ public class DTA117FileReader extends TabularDataFileReader{
             if (number < 0 || number > limit) {
                 throw new IOException ("<more than limit characters in the section \"tag\">");
             }
-            String ret = new String(readBytes(number), "US-ASCII");
+            String ret = null;
+            if (number > 0) {
+                ret = new String(readBytes(number), "US-ASCII");
+            }
             readClosingTag(tag);
             return ret; 
         }

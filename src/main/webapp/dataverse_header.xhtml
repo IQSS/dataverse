@@ -80,7 +80,7 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                         <li class="dropdown accountName">
-                            <a value="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <a value="#" class="dropdown-toggle" data-toggle="dropdown" id="lnk_header_account_dropdown">
                                 <h:outputText value="#{dataverseSession.user.displayInfo.title}"/>
                                 <h:outputText styleClass="label label-danger" value="#{(userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id)).size()}" rendered="#{!empty (userNotificationServiceBean.findUnreadByUser(dataverseSession.user.id))}" />
                                 <b class="caret"></b>
@@ -107,7 +107,7 @@
                                 <li class="divider"></li>
                                 <li class="logout">
                                     <h:form styleClass="navbar-form navbar-left" pt:role="logout">
-                                        <h:commandLink action="#{dataverseHeaderFragment.logout}">
+                                        <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
                                             <h:outputText value="Log Out" />
                                         </h:commandLink>
                                     </h:form>

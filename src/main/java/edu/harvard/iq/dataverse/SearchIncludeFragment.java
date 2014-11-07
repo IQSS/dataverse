@@ -936,4 +936,54 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.dataverseAlias = dataverseAlias;
     }
 
+    public boolean isTabular(Long fileId) {
+        if (fileId == null) {
+            return false;
+        }
+        
+        DataFile datafile = dataFileService.find(fileId);
+        
+        if (datafile == null) {
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return false;
+        }
+        
+        return datafile.isTabularData();
+    }
+    
+    public String tabularDataDisplayInfo(Long fileId) {
+        String ret = "";
+        
+        if (fileId == null) {
+            return "";
+        }
+        
+        DataFile datafile = dataFileService.find(fileId);
+        
+        if (datafile == null) {
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return "";
+        }
+        
+        if (datafile.isTabularData() && datafile.getDataTable() != null) {
+            DataTable datatable = datafile.getDataTable();
+            String unf = datatable.getUnf();
+            Long varNumber = datatable.getVarQuantity();
+            Long obsNumber = datatable.getCaseQuantity();
+            if (varNumber != null && varNumber.intValue() != 0) {
+                ret = ret.concat(varNumber + " variables");
+                if (obsNumber != null && obsNumber.intValue() != 0) {
+                    ret = ret.concat(", " + obsNumber + " observations");
+                }
+                ret = ret.concat("; ");
+            }
+            if (unf != null && !unf.equals("")) {
+                ret = ret.concat("UNF: "+unf);
+            }
+        }        
+        
+        return ret; 
+    }
+    
+    
 }

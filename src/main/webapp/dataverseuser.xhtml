@@ -77,6 +77,11 @@
                                             </p:commandLink>
                                         </li>
                                         <li>
+                                            <h:outputLink value="/apitoken.xhtml">
+                                                <h:outputText value="API Token" />
+                                            </h:outputLink>
+                                        </li>
+                                        <li>
                                             <ui:fragment rendered="#{empty DataverseUserPage.builtinUser}">
                                                 You have logged in through your institution. To edit account details, please visit the account page for your institution.
                                             </ui:fragment>                        

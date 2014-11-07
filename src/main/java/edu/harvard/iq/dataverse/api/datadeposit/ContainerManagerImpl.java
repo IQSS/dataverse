@@ -304,17 +304,11 @@ public class ContainerManagerImpl implements ContainerManager {
                                     Command<Dataset> cmd;
                                     try {
                                         boolean doMinorVersionBump = false;
-                                        /**
-                                         * if business rules change, uncomment
-                                         * this code to always try a minor
-                                         * version bump when allowed:
-                                         * https://github.com/IQSS/dataverse/issues/795
-                                         */
-//                                        if (dataset.getLatestVersion().isMinorUpdate()) {
-//                                            doMinorVersionBump = true;
-//                                        } else {
-//                                            doMinorVersionBump = false;
-//                                        }
+                                        if (dataset.getLatestVersion().isMinorUpdate()) {
+                                            doMinorVersionBump = true;
+                                        } else {
+                                            doMinorVersionBump = false;
+                                        }
                                         cmd = new PublishDatasetCommand(dataset, user, doMinorVersionBump);
                                         dataset = engineSvc.submit(cmd);
                                     } catch (CommandException ex) {

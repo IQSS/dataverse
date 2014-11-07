@@ -50,6 +50,10 @@ button.btn.dropdown-toggle span.glyphicon {margin-right:.3em;}
 
 #footer {padding-bottom:4em;}
 
+#ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:1111;}
+#ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
+
+
 /* -------- HEADER -------- */
 #dataverseHeader {margin:0 auto .5em auto; background:#F5F5F5;}
 #dataverseHeader .dataverseHeaderBlock {display:table-row;}

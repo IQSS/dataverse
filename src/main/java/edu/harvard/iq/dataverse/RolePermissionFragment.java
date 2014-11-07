@@ -5,10 +5,13 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -49,7 +52,9 @@ public class RolePermissionFragment implements java.io.Serializable {
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
-    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
+    PermissionServiceBean permissionService; 
+    @EJB
+    AuthenticationServiceBean authenticationService;
     @EJB
     EjbDataverseEngine commandEngine;
     
@@ -94,6 +99,23 @@ public class RolePermissionFragment implements java.io.Serializable {
     /* permissions tab related methods */
     private String assignRoleUsername;
     private Long assignRoleRoleId;
+    
+    private List<String> identifierList = new ArrayList();
+    
+    public List<String> getIdentifiers(String query) {
+        if (identifierList.isEmpty()) {
+            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
+                identifierList.add(au.getIdentifier());
+            }
+        }
+        List<String> returnList = new ArrayList();
+        for (String identifier : identifierList) {
+            if (identifier.contains(query)) {
+                returnList.add(identifier);
+            }
+        }
+        return returnList;
+    }
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
@@ -124,9 +146,26 @@ public class RolePermissionFragment implements java.io.Serializable {
         return raList;
     }
 
+    // for files; assigns and revoke guest role (with Download permission) on file
+    public void toggleFileRestrict(ActionEvent evt) {
+        if (!permissionService.userOn(GuestUser.get(), dvObject).has(Permission.Download)) {
+            assignRole(GuestUser.get().getIdentifier(), new Long(1)); //@todo don't hard code this role!!!
+        } else {
+            //@todo can we only revoke specific role that was assigned
+            List<RoleAssignment> guestRoleAssignments = roleService.directRoleAssignments(GuestUser.get(), dvObject);
+            for (RoleAssignment roleAssignment : guestRoleAssignments) {
+                revokeRole(roleAssignment.getId());                
+            }
+        }
+    }    
+    
     public void assignRole(ActionEvent evt) {
-        RoleAssignee roas = roleAssigneeService.getRoleAssignee(getAssignRoleUsername());
-        DataverseRole r = roleService.find(getAssignRoleRoleId());
+       assignRole(assignRoleUsername, assignRoleRoleId);
+    }   
+    
+    private void assignRole(String identifier, Long assignedRoleId) {
+        RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);       
+        DataverseRole r = roleService.find(assignedRoleId);
 
         try {
             commandEngine.submit(new AssignRoleCommand(roas, r, dvObject, session.getUser()));
@@ -134,7 +173,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
         }
-    }
+    }    
 
     public void revokeRole(Long roleAssignmentId) {
         try {
@@ -269,9 +308,6 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setSelectedPermissions(List<String> selectedPermissions) {
         this.selectedPermissions = selectedPermissions;
     }
-
-    public boolean isDvObjectInstanceofDataverse() {
-        return dvObject instanceof Dataverse;
-    }        
+ 
     
 }

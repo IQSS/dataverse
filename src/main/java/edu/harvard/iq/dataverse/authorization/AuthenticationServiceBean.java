@@ -26,7 +26,9 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 /**
  * The AuthenticationManager is responsible for registering and listing
@@ -202,6 +204,18 @@ public class AuthenticationServiceBean {
         }
     }
     
+    public ApiToken findApiTokenByUser(AuthenticatedUser au) {
+        ApiToken apiToken = null;
+        TypedQuery<ApiToken> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiToken AS o WHERE o.authenticatedUser = :user", ApiToken.class);
+        typedQuery.setParameter("user", au);
+        try {
+            apiToken = typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            logger.info("When looking up API token for " + au + " caught " + ex);
+        }
+        return apiToken;
+    }
+
     public AuthenticatedUser lookupUser( String apiToken ) {
         ApiToken tkn = findApiToken(apiToken);
         if ( tkn == null ) return null;
