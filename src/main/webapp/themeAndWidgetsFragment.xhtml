@@ -45,8 +45,8 @@
                                     <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
                                         <p:column>
                                             <p>
-                                                <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
-                                                <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
+                                                <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
+                                                <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
                                             </p>
                                             <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                         </p:column>

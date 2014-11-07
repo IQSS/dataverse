@@ -323,11 +323,9 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}"
+                                                <p:commandLink process="@this" actionListener="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}"
                                                                update="themeAndWidgetsDlg" id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show();handleResizeDialog('themeAndWidgetsDlg');bind_bsui_components();">
-                                                <p:commandLink  process="@this" action="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}"  update="themeAndWidgetsDlg"
-                                                               id="themeWidgetsOpts" oncomplete="themeAndWidgetsForm.show();content.select(0);bind_bsui_components();">
-                                                    <h:outputText value="Theme + Widgets" />
+                                                         <h:outputText value="Theme + Widgets" />
                                                 </p:commandLink>
                                             </li>
                                             <ui:fragment rendered="#{!empty DataversePage.featuredDataverses.source or !empty DataversePage.featuredDataverses.target}">
