@@ -20,13 +20,14 @@ import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
+import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.component.tabview.TabView;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -47,32 +48,34 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     private File tempDir;
     private File uploadedFile;
     private Dataverse editDv;
-    private TabView tabView;
+    private HtmlInputText linkUrlInput;
+    private HtmlInputText linkTextInput;
+ 
       @Inject
     DataverseSession session;
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
     DataverseServiceBean dataverseServiceBean;
-    /**
-     *     create tempDir, needs to be under docroot so that uploaded image is accessible in the page
-     */
-  
-    private boolean testVal;
 
-    public boolean isTestVal() {
-        System.out.println("getting testVal: "+testVal);
-        return testVal;
+    public HtmlInputText getLinkUrlInput() {
+        return linkUrlInput;
     }
 
-    public void setTestVal(boolean testVal) {
-        System.out.println("setting testVal: "+testVal);
-        this.testVal = testVal;
+    public void setLinkUrlInput(HtmlInputText linkUrlInput) {
+        this.linkUrlInput = linkUrlInput;
     }
-    
-    public void testValListener(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
-        System.out.println("listener clicked, testVal: "+testVal);
+
+    public HtmlInputText getLinkTextInput() {
+        return linkTextInput;
     }
+
+    public void setLinkTextInput(HtmlInputText linkTextInput) {
+        this.linkTextInput = linkTextInput;
+    }
+   
+ 
+   
     
     private  void createTempDir() {
           try {
@@ -116,9 +119,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.setDataverseTheme(initDataverseTheme());
             
         }
-        // When you open the popup, the first tab (widgets) should be active
-        tabView.setActiveIndex(0);
-    }
+     }
     
     private DataverseTheme initDataverseTheme() {
         DataverseTheme dvt = new DataverseTheme();
@@ -155,13 +156,7 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
     }
     
   }
-    public TabView getTabView() {
-        return tabView;
-    }
-
-    public void setTabView(TabView tabView) {
-        this.tabView = tabView;
-    }
+   
     
     public String getTempDirName() {
         if (tempDir!=null) {
@@ -193,15 +188,16 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
         } catch (IOException e) {
+            // make sure that the error shows in the log, while we are trying 
+            // to debug the file upload problem
+            e.printStackTrace();
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
         if (editDv.getDataverseTheme().getLogoFormat()==null) {
             editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
         }
-        // Set the active index, so that Theme tab will still display after upload
-        tabView.setActiveIndex(0);
-
+        
     }
     
     public void removeLogo() {
@@ -225,6 +221,15 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             }
         }
     }
+    
+    public void cancel() {
+        
+    }
+    
+    public void resetForm(Long dataverseId ) {
+        System.out.println("resetForm");
+        initEditDv(dataverseId);
+    }
 
     public void save() {
         // If this Dv isn't the root, delete the uploaded file and remove theme
@@ -242,9 +247,10 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());          
         }
         this.cleanupTempDirectory();
-        
+        this.editDv=null;
     }
-}
+    
+ }
 
 
 

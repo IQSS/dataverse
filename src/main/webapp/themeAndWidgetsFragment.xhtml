@@ -2,217 +2,226 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:o="http://omnifaces.org/ui">
     <!-- Theme and Widgets Popup -->
-    <p:dialog id="themeAndWidgetsDlg" header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
-        <p:tabView  binding="#{themeWidgetFragment.tabView}" rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
+    <p:dialog id="themeAndWidgetsDlg" closable="false"  header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
+        <p:remoteCommand process="@this" update=":dataverseForm:themeWidgetsTabView"   name="resetForm" action="#{themeWidgetFragment.resetForm(DataversePage.dataverse.id)}"/>                  
+        <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="Theme">
                 <p:fragment autoUpdate="true">
-                <!-- Dataverse Theme Panel -->
-                <div class="row form-horizontal">
-                    <ui:fragment rendered="#{themeWidgetFragment.editDv.owner!=null}">
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
-                                Inherit Customization
-                            </a>
-                        </label>
-                        <div class="col-sm-9">
-                            <div class="checkbox">
-                               
-                                <label>
-                                    <p:selectBooleanCheckbox  id="inheritCustomization"
-                                                              value="#{themeWidgetFragment.inheritCustomization}">
-                                        <p:ajax update="@widgetVar(content)" listener="#{themeWidgetFragment.checkboxListener()}" />
-                                    </p:selectBooleanCheckbox>
-                                    Inherit the customization from the parent dataverse to this dataverse.
+                    <!-- Dataverse Theme Panel -->
+                    <div class="row form-horizontal">
+                        <ui:fragment rendered="#{themeWidgetFragment.editDv.owner!=null}">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="inheritCustomization" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Tooltip description.">
+                                        Inherit Customization
+                                    </a>
                                 </label>
+                                <div class="col-sm-9">
+                                    <div class="checkbox">
+
+                                        <label>
+                                            <p:selectBooleanCheckbox  id="inheritCustomization"
+                                                                      value="#{themeWidgetFragment.inheritCustomization}">
+                                                <p:ajax update="@widgetVar(content)" listener="#{themeWidgetFragment.checkboxListener()}" />
+                                            </p:selectBooleanCheckbox>
+                                            Inherit the customization from the parent dataverse to this dataverse.
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </ui:fragment>  
-                    <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The logo or image file you wish to display in the header of this dataverse.">
-                                Logo Image
-                            </a>
-                        </label>
-                        <div class="form-group col-sm-9">
-                            <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
-                                <p:column>
-                                    <p>
-                                        <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
-                                        <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
-                                    </p>
-                                    <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
-                                </p:column>
-                                <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                              fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
-                                <p:message for="changelogo"/>
-                            </p:panelGrid>
-                            <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                              fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
-                                <p:message for="uploadlogo"/>
-                            </p:panelGrid>
-                            <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
-                                <div class="form-col-container col-sm-4">
-                                    <label for="logoFormat" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The shape for the logo or image file you upload for this dataverse.">
-                                            Logo Format
-                                        </a>
-                                    </label>
-                                    <div>
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
-                                                <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
-                                                <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
-                                                <p:ajax update="@widgetVar(content)"  />  
-                                            </p:selectOneRadio>
-                                            <p:message for="logoFormat"/>
-                                        </p:panelGrid>
-                                    </div>
-                                </div>
-                                <ui:fragment rendered="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat=='RECTANGLE'}">
-                                <div class="form-col-container col-sm-3">
-                                    <label for="logoAlignment" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Where the logo or image should display in the header.">
-                                            Logo Alignment
-                                        </a>
-                                    </label>
-                                    <div>
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
-                                                <f:selectItem id="left" itemLabel="Left" itemValue="LEFT" />
-                                                <f:selectItem id="center" itemLabel="Center" itemValue="CENTER" />
-                                                <f:selectItem id="right" itemLabel="Right" itemValue="RIGHT" />
-                                            </p:selectOneMenu>
-                                            <p:message for="logoAlignment"/>
-                                        </p:panelGrid>
-                                    </div>
-                                </div>
+                        </ui:fragment>  
+                        <ui:fragment rendered="#{themeWidgetFragment.editDv.themeRoot}">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="logoFormat" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The logo or image file you wish to display in the header of this dataverse.">
+                                        Logo Image
+                                    </a>
+                                </label>
+                                <div class="form-group col-sm-9">
+                                    <p:panelGrid rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="3" styleClass="noBorders" columnClasses="text-center,uploadNewLogo,messageCell">
+                                        <p:column>
+                                            <p>
+                                                <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
+                                                <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{dv.name} Dataverse"/>
+                                            </p>
+                                            <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
+                                        </p:column>
+                                        <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                                      fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
+                                        <p:message for="changelogo"/>
+                                    </p:panelGrid>
+                                    <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
+                                        <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                                      fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
+                                        <p:message for="uploadlogo"/>
+                                    </p:panelGrid>
+                                    <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
+                                        <div class="form-col-container col-sm-4">
+                                            <label for="logoFormat" class="control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The shape for the logo or image file you upload for this dataverse.">
+                                                    Logo Format
+                                                </a>
+                                            </label>
+                                            <div>
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:selectOneRadio id="logoFormat" value="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat}">
+                                                        <f:selectItem itemLabel="Square" itemValue="SQUARE"/>
+                                                        <f:selectItem itemLabel="Rectangle" itemValue="RECTANGLE"/>
+                                                        <p:ajax update="@widgetVar(content)"  />  
+                                                    </p:selectOneRadio>
+                                                    <p:message for="logoFormat"/>
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                        <ui:fragment rendered="#{themeWidgetFragment.editDv.dataverseTheme.logoFormat=='RECTANGLE'}">
+                                            <div class="form-col-container col-sm-3">
+                                                <label for="logoAlignment" class="control-label">
+                                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Where the logo or image should display in the header.">
+                                                        Logo Alignment
+                                                    </a>
+                                                </label>
+                                                <div>
+                                                    <p:panelGrid columns="2" styleClass="noBorders">
+                                                        <p:selectOneMenu id="logoAlignment" styleClass="form-control" value="#{themeWidgetFragment.editDv.dataverseTheme.logoAlignment}">
+                                                            <f:selectItem id="left" itemLabel="Left" itemValue="LEFT" />
+                                                            <f:selectItem id="center" itemLabel="Center" itemValue="CENTER" />
+                                                            <f:selectItem id="right" itemLabel="Right" itemValue="RIGHT" />
+                                                        </p:selectOneMenu>
+                                                        <p:message for="logoAlignment"/>
+                                                    </p:panelGrid>
+                                                </div>
+                                            </div>
+                                        </ui:fragment>
+                                        <div class="form-col-container col-sm-4">
+                                            <label for="logoBackgroundColor" class="control-label">
+                                                <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Select a color to display behind the logo of this dataverse.">
+                                                    Logo Background Color
+                                                </a>
+                                            </label>
+                                            <div>
+                                                <p:panelGrid columns="2" styleClass="noBorders">
+                                                    <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
+                                                    <p:message for="logoBackgroundColor"/>
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
                                     </ui:fragment>
-                                <div class="form-col-container col-sm-4">
-                                    <label for="logoBackgroundColor" class="control-label">
-                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Select a color to display behind the logo of this dataverse.">
-                                            Logo Background Color
-                                        </a>
-                                    </label>
-                                    <div>
-                                        <p:panelGrid columns="2" styleClass="noBorders">
-                                            <p:colorPicker id="logoBackgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.logoBackgroundColor}"/>
-                                            <p:message for="logoBackgroundColor"/>
-                                        </p:panelGrid>
+                                </div>
+                            </div>
+                        </ui:fragment>
+                    </div>
+                    <ui:fragment rendered ="#{themeWidgetFragment.editDv.themeRoot}">
+                        <div class="row form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Colors you select to style the header of this dataverse.">
+                                        Header Colors
+                                    </a>
+                                </label>
+                                <div class="form-group col-sm-9">
+                                    <div class="form-col-container col-sm-4">
+                                        <label for="backgroundColor" class="control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the header area that contains the image, tagline, URL, and text.">
+                                                Background Color
+                                            </a>
+                                        </label>
+                                        <div>
+                                            <p:panelGrid columns="2" styleClass="noBorders">
+                                                <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
+                                                <p:message for="backgroundColor"/>
+                                            </p:panelGrid>
+                                        </div>
+                                    </div>
+                                    <div class="form-col-container col-sm-4">
+                                        <label for="linkColor" class="control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the link to display as.">
+                                                Link Color
+                                            </a>
+                                        </label>
+                                        <div>
+                                            <p:panelGrid columns="2" styleClass="noBorders">
+                                                <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
+                                                <p:message for="linkColor"/>
+                                            </p:panelGrid>
+                                        </div>
+                                    </div>
+                                    <div class="form-col-container col-sm-4">
+                                        <label for="textColor" class="control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the tagline text and the name of this dataverse.">
+                                                Text Color
+                                            </a>
+                                        </label>
+                                        <div>
+                                            <p:panelGrid columns="2" styleClass="noBorders">
+                                                <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
+                                                <p:message for="textColor"/>
+                                            </p:panelGrid>
+                                        </div>
                                     </div>
                                 </div>
-                            </ui:fragment>
-                        </div>
-                    </div>
-                </ui:fragment>
-                </div>
-                <ui:fragment rendered ="#{themeWidgetFragment.editDv.themeRoot}">
-                <div class="row form-horizontal">
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Colors you select to style the header of this dataverse.">
-                                Header Colors
-                            </a>
-                        </label>
-                        <div class="form-group col-sm-9">
-                            <div class="form-col-container col-sm-4">
-                                <label for="backgroundColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the header area that contains the image, tagline, URL, and text.">
-                                        Background Color
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="tagline" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A phrase or sentence that describes this dataverse.">
+                                        Tagline
                                     </a>
                                 </label>
-                                <div>
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <p:colorPicker id="backgroundColor" value="#{themeWidgetFragment.editDv.dataverseTheme.backgroundColor}"/>
-                                        <p:message for="backgroundColor"/>
+                                <div class="col-sm-8">
+                                    <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
+                                        <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
+                                        <p:message for="tagline"/>
                                     </p:panelGrid>
                                 </div>
                             </div>
-                            <div class="form-col-container col-sm-4">
-                                <label for="linkColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the link to display as.">
-                                        Link Color
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" style="white-space:nowrap;">
+                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Additional link for your personal website, institution, or any website that relates to this dataverse.">
+                                        Additional Link
                                     </a>
                                 </label>
-                                <div>
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <p:colorPicker id="linkColor" value="#{themeWidgetFragment.editDv.dataverseTheme.linkColor}"/>
-                                        <p:message for="linkColor"/>
-                                    </p:panelGrid>
-                                </div>
-                            </div>
-                            <div class="form-col-container col-sm-4">
-                                <label for="textColor" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Color for the tagline text and the name of this dataverse.">
-                                        Text Color
-                                    </a>
-                                </label>
-                                <div>
-                                    <p:panelGrid columns="2" styleClass="noBorders">
-                                        <p:colorPicker id="textColor" value="#{themeWidgetFragment.editDv.dataverseTheme.textColor}"/>
-                                        <p:message for="textColor"/>
-                                    </p:panelGrid>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="tagline" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="A phrase or sentence that describes this dataverse.">
-                                Tagline
-                            </a>
-                        </label>
-                        <div class="col-sm-8">
-                            <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
-                                <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
-                                <p:message for="tagline"/>
-                            </p:panelGrid>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" style="white-space:nowrap;">
-                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Additional link for your personal website, institution, or any website that relates to this dataverse.">
-                                Additional Link
-                            </a>
-                        </label>
-                        <div class="form-group col-sm-9">
-                            <div class="form-col-container col-sm-6">
-                                <label for="linkUrl" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="URL for your personal website, institution, or any website that relates to this dataverse.">
-                                        Link URL
-                                    </a>
-                                </label>
-                                <div>
-                                    <p:inputText validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.dataverseTheme.linkUrl}"/>
-                                    <p:message for="linkUrl"/>
-                                </div>
-                            </div>
-                            <div class="form-col-container col-sm-6">
-                                <label for="linkText" class="control-label">
-                                    <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Text to display instead of the URL.">
-                                        Link Text
-                                    </a>
-                                </label>
-                                <div>
-                                    <p:inputText styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.dataverseTheme.linkText}"/>
-                                    <p:message for="linkText"/>
+                                <h:inputHidden id="linkAndUrl" value="true">
+                                    <f:validator validatorId="linkValidator"/>
+                                    <f:attribute name="linkUrlInput" value="#{themeWidgetFragment.linkUrlInput}"/>
+                                    <f:attribute name="linkTextInput" value="#{themeWidgetFragment.linkTextInput}"/>
+                             
+                                </h:inputHidden>
+                          
+                                <div class="form-group col-sm-9">
+                                    <div class="form-col-container col-sm-6">
+                                        <label for="linkUrl" class="control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="URL for your personal website, institution, or any website that relates to this dataverse.">
+                                                Link URL
+                                            </a>
+                                        </label>
+                                        <div>
+                                            <p:inputText binding="#{themeWidgetFragment.linkUrlInput}" validatorMessage="Invalid URL." validator="#{themeWidgetFragment.validateUrl}" styleClass="form-control" id="linkUrl" value="#{themeWidgetFragment.editDv.dataverseTheme.linkUrl}"/>
+                                            <p:message  for="linkUrl"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-col-container col-sm-6">
+                                        <label for="linkText" class="control-label">
+                                            <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="Text to display instead of the URL.">
+                                                Link Text
+                                            </a>
+                                        </label>
+                                        <div>
+                                            <p:inputText binding="#{themeWidgetFragment.linkTextInput}" styleClass="form-control" id="linkText" value="#{themeWidgetFragment.editDv.dataverseTheme.linkText}"/>
+                                            <p:message  for="linkText"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </ui:fragment>
-               </p:fragment>
-                <p:commandButton update=":dataverseForm:themeWidgetsTabView" oncomplete="saveThemeHandleComplete(xhr, status, args);" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                <p:commandButton id="widgetsDone" type="button" onclick="themeAndWidgetsForm.hide()" value="Cancel"></p:commandButton>
+                    </ui:fragment>
+                </p:fragment>
+                <p:commandButton update=":dataverseForm:themeWidgetsTabView"  oncomplete="saveThemeHandleComplete(xhr, status, args);" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton process="@this" action="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" update=":dataverseForm:themeWidgetsTabView" partialSubmit="true"  id="widgetsDone"  oncomplete="themeAndWidgetsForm.hide()" value="Cancel"/>
                
+
             </p:tab>
             <p:tab id="widgetsTab" title="Widgets">
                 <div>
@@ -238,7 +247,7 @@
                     <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
                     </textarea>
                 </div>
-                <button id="widgetsDone" type="button" style="margin-top:1em;" class="btn btn-default" onclick="themeAndWidgetsForm.hide()" value="Done">Done</button>
+                <p:commandButton  process="@this" action="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" partialSubmit="true"  id="widgetsCancel"  oncomplete="themeAndWidgetsForm.hide()" value="Done"/>
             </p:tab>
         </p:tabView>
     </p:dialog>
