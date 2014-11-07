@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui">
 
     <h:head>
@@ -58,11 +59,8 @@
                                  </pre>
                             </div>
                             <div>
-                                <button class="btn btn-default">
-                                    Reset
-                                </button>
-                                <button class="btn btn-default">
-                                    Done
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
+                                    Generate
                                 </button>
                             </div>
                         </p:tab>

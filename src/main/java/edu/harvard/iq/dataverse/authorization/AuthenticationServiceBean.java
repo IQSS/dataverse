@@ -204,7 +204,7 @@ public class AuthenticationServiceBean {
         }
     }
     
-    public ApiToken findApiTokenStringByUser(AuthenticatedUser au) {
+    public ApiToken findApiTokenByUser(AuthenticatedUser au) {
         ApiToken apiToken = null;
         TypedQuery<ApiToken> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ApiToken AS o WHERE o.authenticatedUser = :user", ApiToken.class);
         typedQuery.setParameter("user", au);
