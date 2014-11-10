@@ -4,10 +4,12 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -22,8 +24,11 @@ import javax.persistence.TypedQuery;
 @Named
 public class DataverseRoleServiceBean implements java.io.Serializable {
 	
-	@PersistenceContext(unitName = "VDCNet-ejbPU")
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+      
+    @EJB RoleAssigneeServiceBean roleAssigneeService;
+    @EJB IndexServiceBean indexService;   
 	
 	public DataverseRole save( DataverseRole aRole ) {
 		if ( aRole.getId() == null ) {
@@ -38,10 +43,15 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		if ( assignment.getId() == null ) {
 			em.persist(assignment);
 			em.flush();
-			return assignment;
 		} else {
-			return em.merge( assignment );
+			assignment = em.merge( assignment );
 		}
+                RoleAssignee roleAssignee = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
+                // @todo index groups
+                if (roleAssignee instanceof AuthenticatedUser) {
+                    indexService.indexUser((AuthenticatedUser)  roleAssignee);
+                }
+                return assignment;
 	}
 	
 	public DataverseRole find( Long id ) {
@@ -63,6 +73,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 				.setParameter("ownerId", ownerId)
 				.getResultList();
 	}
+        
+	
+	public List<DataverseRole> findBuiltinRoles() {
+		return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
+				.getResultList();
+	}        
 	
 	public void revoke( Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint ) {
 		for ( DataverseRole role : roles ) {
@@ -179,8 +195,12 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @return map of available roles.
 	 */
 	public LinkedHashMap<Dataverse,Set<DataverseRole>> availableRoles( Long dvId ) {
-		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();
-		Dataverse dv = em.find(Dataverse.class, dvId);
+		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();               
+                Dataverse dv = em.find(Dataverse.class, dvId);
+                Set dvRoles = dv.getRoles();
+                // @todo check to see if OK to add built in roles here
+                dvRoles.addAll(findBuiltinRoles());
+             
 		roles.put( dv, dv.getRoles() );
 		while ( !dv.isEffectivlyPermissionRoot() ) {
 			dv = dv.getOwner();
