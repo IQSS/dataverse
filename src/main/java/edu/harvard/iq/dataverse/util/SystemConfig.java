@@ -1,13 +1,22 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.inject.Named;
 
 /**
  * System-wide configuration
  */
+@Stateless
+@Named
 public class SystemConfig {
 
     private static final Logger logger = Logger.getLogger(SystemConfig.class.getCanonicalName());
+
+    @EJB
+    SettingsServiceBean settingsService;
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -17,7 +26,7 @@ public class SystemConfig {
      * The equivalent in DVN 3.x was "dvn.inetAddress".
      */
     public static final String FQDN = "dataverse.fqdn";
-    
+
     /**
      * A JVM option for where files are stored on the file system.
      */
@@ -28,6 +37,17 @@ public class SystemConfig {
      * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
+
+    /**
+     * A common place to find the String for a sane Solr hostname:port
+     * combination.
+     */
+    private String saneDefaultForSolrHostColonPort = "localhost:8983";
+
+    public String getSolrHostColonPort() {
+        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
+        return solrHostColonPort;
+    }
 
     /**
      * The number of minutes for which a password reset token is valid. Can be

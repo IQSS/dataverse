@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,12 +39,6 @@ import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
-/**
- * @todo stop indexing with curl (commands below)
- */
-//mkdir data
-//curl http://localhost:8080/api/dataverses > data/dataverses.json
-//curl http://localhost:8983/solr/update/json?commit=true -H 'Content-type:application/json' --data-binary @data/dataverses.json
 @Stateless
 @Named
 public class SearchServiceBean {
@@ -55,6 +51,8 @@ public class SearchServiceBean {
     DataverseServiceBean dataverseService;
     @EJB
     AuthenticationServiceBean authSvc;
+    @EJB
+    SystemConfig systemConfig;
 
     PublishedToggle publishedToggle = PublishedToggle.PUBLISHED;
 
@@ -76,10 +74,7 @@ public class SearchServiceBean {
 //        } else {
 //            filterQueries.add(SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.getUNPUBLISHED_STRING());
 //        }
-        /**
-         * @todo make "localhost" and port number a config option
-         */
-        SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query);
 //        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);

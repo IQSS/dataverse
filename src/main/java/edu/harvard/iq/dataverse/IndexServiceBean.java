@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -56,6 +57,8 @@ public class IndexServiceBean {
     AuthenticationServiceBean userServiceBean;
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
+    @EJB
+    SystemConfig systemConfig;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -77,10 +80,7 @@ public class IndexServiceBean {
     private Dataverse rootDataverseCached;
 
     public String indexAll() {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         logger.info("deleting all Solr documents before a complete re-index");
         try {
             server.deleteByQuery("*:*");// CAUTION: deletes everything!
@@ -238,10 +238,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             if (dataverse.getId() != null) {
@@ -852,10 +849,7 @@ public class IndexServiceBean {
             }
         }
 
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -890,10 +884,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.GROUPS, id);
 
         docs.add(solrInputDocument);
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -928,10 +920,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.GROUPS, userid);
 
         docs.add(solrInputDocument);
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -1028,10 +1017,8 @@ public class IndexServiceBean {
     }
 
     public String delete(Dataverse doomed) {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         logger.info("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
@@ -1050,10 +1037,8 @@ public class IndexServiceBean {
     }
 
     public String removeSolrDocFromIndex(String doomed) {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         logger.info("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
@@ -1083,7 +1068,8 @@ public class IndexServiceBean {
 
     private List<String> findSolrDocIdsForDraftFilesToDelete(Dataset datasetWithDraftFilesToDelete) {
         Long datasetId = datasetWithDraftFilesToDelete.getId();
-        SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRows(Integer.MAX_VALUE);
         solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);

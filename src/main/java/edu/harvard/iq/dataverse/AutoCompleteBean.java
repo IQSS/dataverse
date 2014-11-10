@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -22,16 +22,13 @@ public class AutoCompleteBean implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(AutoCompleteBean.class.getCanonicalName());
 
-//    @EJB
-//    DatasetFieldServiceBean datasetFieldService;
+    @EJB
+    SystemConfig systemConfig;
 
     public List<String> complete(String query) {
         List<String> results = new ArrayList<>();
 
-        /**
-         * @todo make "localhost" and port number a config option
-         */
-        SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setParam("qt", "/terms");
         solrQuery.setTermsLower(query);

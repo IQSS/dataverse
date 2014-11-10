@@ -9,6 +9,13 @@ Installers Guide
 Settings
 ++++++++
 
+SolrHostColonPort
+-----------------
+
+Set ``SolrHostColonPort`` to override ``localhost:8983``.
+
+``curl -X PUT http://localhost:8080/api/s/settings/:SolrHostColonPort/localhost:8983``
+
 ShibEnabled
 -----------
 
