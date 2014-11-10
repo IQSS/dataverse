@@ -3,11 +3,9 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:o="http://omnifaces.org/ui">
+    xmlns:p="http://primefaces.org/ui">
     <!-- Roles + Permissions Popup -->
     <p:dialog id="rolesPermissionsDialog" header="Roles + Permissions" widgetVar="rolesPermissionsForm" modal="true" styleClass="largePopUp"> 
-        <o:importFunctions type="edu.harvard.iq.dataverse.authorization.users.GuestUser" />
         <p:fragment autoUpdate="true" rendered="#{rolePermissionFragment.dvObject!=null}">
             #{rolePermissionFragment.dvObject.displayName}         
             <p:commandLink id="ownerLink" rendered="#{!empty rolePermissionFragment.dvObject.owner and permissionServiceBean.on(rolePermissionFragment.dvObject.owner).has('AssignRole')}"
@@ -42,24 +40,23 @@
                                     <p:autoComplete id="userGroupNameAssign" styleClass="form-control" value="#{rolePermissionFragment.assignRoleUsername}" 
                                                     forceSelection="true" completeMethod="#{rolePermissionFragment.getIdentifiers}"/>
                                     <ui:fragment rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
-                                        <label class="control-label">Role</label> 
+                                        <label class="control-label">Role</label>
                                         <p:selectOneMenu id="assignRoleOptions" styleClass="form-control" value="#{rolePermissionFragment.assignRoleRoleId}">
-                                            <f:selectItems value="#{rolePermissionFragment.availableRoles}" var="role"
-                                                           itemLabel="#{role.name} (defined in #{role.owner.name} Dataverse)" itemValue="#{role.id}"/>
+                                            <f:selectItems value="#{rolePermissionFragment.availableRoles}" var="role" itemValue="#{role.id}"
+                                                           itemLabel="#{role.name}  #{(role.owner eq null ? ' (global role)' : ' (defined in '.concat(role.owner.name).concat(' Dataverse)'))}"/>
                                         </p:selectOneMenu>
-                                    </ui:fragment>
-                                    <ui:fragment rendered="#{rolePermissionFragment.dvObject.instanceofDataFile}">
-                                        
-                                        <p:commandLink styleClass="btn btn-default" 
-                                                       value="Toggle Restricted" 
-                                                       actionListener="#{rolePermissionFragment.toggleFileRestrict}"
-                                                       style="color:black;margin-right:0.5em;"/>
-                                    </ui:fragment>
-                                    
+                                    </ui:fragment>                                    
                                     <p:commandLink styleClass="btn btn-default" 
                                                    value="#{rolePermissionFragment.dvObject.instanceofDataFile ? 'Grant Access' : 'Assign'}" 
                                                    actionListener="#{rolePermissionFragment.assignRole}"
                                                    style="color:black;margin-right:0.5em;"/>
+                                    <ui:fragment rendered="#{rolePermissionFragment.dvObject.instanceofDataFile}">
+                                        
+                                        <p:commandLink styleClass="btn btn-default" 
+                                                       value="#{permissionServiceBean.isDataFilePublic(rolePermissionFragment.dvObject) ? 'Restrict' : 'Make Public'}" 
+                                                       actionListener="#{rolePermissionFragment.toggleFileRestrict}"
+                                                       style="color:black;margin-right:0.5em;"/>
+                                    </ui:fragment>                                                                        
                                 </div>
                             </div>
                             <div>
@@ -138,7 +135,7 @@
                                     </ui:repeat>
                                 </p:column>
                                 <p:column width="35%" sortBy="name" headerText="Status">
-                                    <h:outputText value="#{permissionServiceBean.userOn(GuestUser:get(),file).has('Download') ? 'Public' : 'Restricted'}" />
+                                    <h:outputText value="#{permissionServiceBean.isDataFilePublic(file) ? 'Public' : 'Restricted'}" />
                                 </p:column>                                
                                 <p:column width="40%" headerText="Action">
                                     <p:commandLink styleClass="btn btn-default" 
@@ -158,27 +155,29 @@
                 </p:tab>
                 <p:tab id="rolesTab" title="Roles" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                     <p:panel id="rolePanel" styleClass="panelLayoutBlock" widgetVar="roles" toggleable="true" closable="true" toggleSpeed="0" closeSpeed="0">
-                        <div style="float:right; margin-bottom:.5em;">
-                            <p:commandLink styleClass="btn btn-default" actionListener="#{rolePermissionFragment.createNewRole}"
-                                           update=":#{p:component('editRolePanel')}"
-                                           oncomplete="roles.close();editRole.show();">
+                        <ui:fragment rendered="#{permissionServiceBean.on(rolePermissionFragment.dvObject).has('CreateRole')}">
+                            <div style="float:right; margin-bottom:.5em;">
+                                <p:commandLink styleClass="btn btn-default" actionListener="#{rolePermissionFragment.createNewRole}"
+                                               update=":#{p:component('editRolePanel')}"
+                                               oncomplete="roles.close();editRole.show();">
 
-                                <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
-                                <h:outputText value="Create Role"/>
-                            </p:commandLink>
-                        </div>
+                                    <span class="glyphicon glyphicon-plus" style="margin-right:0.3em;"/> 
+                                    <h:outputText value="Create Role"/>
+                                </p:commandLink>
+                            </div>
+                        </ui:fragment>
                         <div>
-                            <ui:repeat id="roleList" value="#{rolePermissionFragment.roles}" var="role" rendered="#{rolePermissionFragment.hasRoles}">
+                            <ui:repeat id="roleList" value="#{rolePermissionFragment.availableRoles}" var="role">
                                 <f:passThroughAttribute name="class" value="list-unstyled" />
-                                <div class="bg-info" style="margin-bottom:1em;padding:5px;">
+                                <div class="#{(!empty role.owner and permissionServiceBean.on(role.owner).has('CreateRole')) ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
                                     <span style="font-weight:bold">#{role.name}</span>
-                                    <p:commandLink title="Edit role" style="margin-left:1em;"
-                                                   actionListener="#{rolePermissionFragment.editRole(role.id)}"
-                                                   update=":#{p:component('editRolePanel')}"
-                                                   oncomplete="roles.close();editRole.show();">
-                                        <span class="glyphicon glyphicon-pencil"></span></p:commandLink>
-
-
+                                    <ui:fragment rendered="#{!empty role.owner and permissionServiceBean.on(role.owner).has('CreateRole')}">
+                                        <p:commandLink title="Edit role" style="margin-left:1em;"
+                                                       actionListener="#{rolePermissionFragment.editRole(role.id)}"
+                                                       update=":#{p:component('editRolePanel')}"
+                                                       oncomplete="roles.close();editRole.show();">
+                                            <span class="glyphicon glyphicon-pencil"></span></p:commandLink>
+                                    </ui:fragment>
                                     <div>
                                         <ui:repeat value="#{role.permissions().toArray()}" var="prm">
                                             <span class="label label-default">#{prm}</span>
