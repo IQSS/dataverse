@@ -29,6 +29,8 @@ import javax.validation.constraints.Size;
 @NamedQueries({
 	@NamedQuery(name = "DataverseRole.findByOwnerId",
 			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
+	@NamedQuery(name = "DataverseRole.findBuiltinRoles",
+			    query= "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),    
 	@NamedQuery(name = "DataverseRole.listAll",
 			    query= "SELECT r FROM DataverseRole r"),
 	@NamedQuery(name = "DataverseRole.deleteById",
@@ -42,7 +44,11 @@ public class DataverseRole implements Serializable  {
 		public int compare(DataverseRole o1, DataverseRole o2) {
 			int cmp = o1.getName().compareTo(o2.getName());
 			if ( cmp != 0 ) return cmp;
-			return o1.getOwner().getId().compareTo( o2.getOwner().getId() );
+                        
+                        Long o1OwnerId = o1.getOwner() == null ? new Long(0) : o1.getOwner().getId();
+                        Long o2OwnerId = o2.getOwner() == null ? new Long(0) : o2.getOwner().getId();
+
+			return o1OwnerId.compareTo( o2OwnerId );
 		}
 	};
 	public static Set<Permission> permissionSet( Iterable<DataverseRole> roles ) {
@@ -57,7 +63,7 @@ public class DataverseRole implements Serializable  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Pattern(regexp=".+", message="A Role must ahve a name.")
+    @Pattern(regexp=".+", message="A Role must have a name.")
     private String name;
     
 	@Size(max = 1000, message = "Description must be at most 1000 characters.")
@@ -71,7 +77,7 @@ public class DataverseRole implements Serializable  {
 	private long permissionBits;
 	
 	@ManyToOne
-    @JoinColumn(nullable=false)     
+    @JoinColumn(nullable=true)     
     private DvObject owner;
 	
 	public Long getId() {
