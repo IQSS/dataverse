@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,11 +32,6 @@ public class Shib implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
 
     HttpServletRequest request;
-
-    /**
-     * @todo where should "shib" be defined?
-     */
-    String authPrvId = "shib";
 
     /**
      * @todo these are the attributes we are getting from the IdP at
@@ -159,7 +155,8 @@ public class Shib implements java.io.Serializable {
         displayInfo = new RoleAssigneeDisplayInfo(displayName, emailAddress);
 
         userPersistentId = shibIdp + "|" + userIdentifier;
-        AuthenticatedUser au = authSvc.lookupUser(authPrvId, userPersistentId);
+        ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
+        AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
             logger.info("Found user based on " + userPersistentId + ". Logging in.");
             session.setUser(au);
@@ -179,7 +176,8 @@ public class Shib implements java.io.Serializable {
 
     public String confirm() {
         logger.info("confirm called...");
-        AuthenticatedUser au = authSvc.createAuthenticatedUser(authPrvId, userPersistentId, displayInfo);
+        ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
+        AuthenticatedUser au = authSvc.createAuthenticatedUser(shibAuthProvider.getId(), userPersistentId, displayInfo);
         session.setUser(au);
         return homepage + "?faces-redirect=true";
     }

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
@@ -62,8 +63,10 @@ public class AuthenticationServiceBean {
         try {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
             registerProviderFactory( new EchoAuthenticationProviderFactory() );
-            // TODO register shib provider factory here
-            
+            /**
+             * Register shib provider factory here. Test enable/disable via Admin API, etc.
+             */
+            new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
