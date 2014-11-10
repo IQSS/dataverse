@@ -13,7 +13,7 @@ import javax.inject.Named;
 
 @ViewScoped
 @Named("ApiTokenPage")
-public class ApiTokenPage {
+public class ApiTokenPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(ApiTokenPage.class.getCanonicalName());
 
