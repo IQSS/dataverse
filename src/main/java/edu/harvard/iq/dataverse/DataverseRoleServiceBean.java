@@ -182,7 +182,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();
 		Dataverse dv = em.find(Dataverse.class, dvId);
 		roles.put( dv, dv.getRoles() );
-		while( !dv.isEffectivlyPermissionRoot() ) {
+		while ( !dv.isEffectivlyPermissionRoot() ) {
 			dv = dv.getOwner();
 			roles.put( dv, dv.getRoles() );
 		}
