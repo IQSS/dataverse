@@ -119,8 +119,8 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
-        if (dvObject != null) {
-            // current the avaialable roles for a dataset are gotten from its parent
+        if (dvObject != null && (dvObject instanceof Dataverse || dvObject instanceof Dataset)) {
+            // current the available roles for a dataset are gotten from its parent
             Dataverse dv = dvObject instanceof Dataverse ? (Dataverse) dvObject : ((Dataset) dvObject).getOwner();
             
             for (Map.Entry<Dataverse, Set<DataverseRole>> e
@@ -254,10 +254,6 @@ public class RolePermissionFragment implements java.io.Serializable {
             return roleService.findByOwnerId(dvObject.getId());
         }
         return new ArrayList();
-    }
-
-    public boolean isHasRoles() {
-        return !getRoles().isEmpty();
     }
 
     public void createNewRole(ActionEvent e) {
