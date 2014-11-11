@@ -210,12 +210,9 @@ public class ManageRolesPage implements java.io.Serializable {
 	
 	public List<DataverseRole> availableRoles() {
 		List<DataverseRole> roles = new LinkedList<>();
-		for ( Map.Entry<Dataverse,Set<DataverseRole>> e : 
-				rolesSvc.availableRoles(getDataverse().getId()).entrySet() ) {
-			for ( DataverseRole aRole : e.getValue() ) {
-				roles.add( aRole );
-			}
-		}
+
+                roles.addAll(rolesSvc.availableRoles(getDataverse().getId()));
+
 		Collections.sort(roles, DataverseRole.CMP_BY_NAME );
 		return roles;
 	}
