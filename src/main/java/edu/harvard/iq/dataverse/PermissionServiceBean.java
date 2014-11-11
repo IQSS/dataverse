@@ -221,8 +221,5 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
-    
-    public boolean isDataFilePublic(DataFile file) {
-        return userOn(GuestUser.get(),file).has(Permission.Download);
-    }
+
 }
