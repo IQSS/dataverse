@@ -56,18 +56,18 @@ public class EjbDataverseEngine {
 	DvObjectServiceBean dvObjectService;
 	
 	@EJB
-	DataverseFacetServiceBean dataverseFacetService; 
-
-        @EJB
+	DataverseFacetServiceBean dataverseFacetService;
+    
+    @EJB
 	FeaturedDataverseServiceBean featuredDataverseService; 
         
-        @EJB
+    @EJB
 	DataFileServiceBean dataFileService; 
         
-        @EJB
+    @EJB
 	TemplateServiceBean templateService; 
         
-        @EJB
+    @EJB
 	DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels; 
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")

@@ -90,7 +90,7 @@ public class DataFile extends DvObject {
     }    
     
     @Override
-    public boolean isPermissionRoot() {
+    public boolean isEffectivelyPermissionRoot() {
         return false;
     }
     

@@ -291,11 +291,6 @@ public class Dataverse extends DvObjectContainer {
         this.affiliation = affiliation;
     }
 
-    public boolean isEffectivlyPermissionRoot() {
-        return isPermissionRoot() || (getOwner() == null);
-    }
-
-
     public boolean isMetadataBlockRoot() {
         return metadataBlockRoot;
     }

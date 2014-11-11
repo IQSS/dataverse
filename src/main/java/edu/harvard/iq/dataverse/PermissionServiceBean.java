@@ -150,7 +150,7 @@ public class PermissionServiceBean {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
             assignments.addAll(roleService.directRoleAssignments(u, d));
-            if (d instanceof Dataverse && ((Dataverse) d).isEffectivlyPermissionRoot()) {
+            if (d instanceof Dataverse && ((Dataverse) d).isEffectivelyPermissionRoot()) {
                 return assignments;
             } else {
                 d = d.getOwner();
