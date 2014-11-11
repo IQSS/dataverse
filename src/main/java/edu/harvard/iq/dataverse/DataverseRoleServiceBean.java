@@ -46,13 +46,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		} else {
 			assignment = em.merge( assignment );
 		}
-                RoleAssignee roleAssignee = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
-                // @todo index groups
-                if (roleAssignee instanceof AuthenticatedUser) {
-                    indexService.indexUser((AuthenticatedUser)  roleAssignee);
-                }
+                indexRoleAssignee(roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier()));
                 return assignment;
 	}
+        
+        private void indexRoleAssignee(RoleAssignee roleAssignee) {
+            // @todo index groups
+            if (roleAssignee instanceof AuthenticatedUser) {
+                indexService.indexUser((AuthenticatedUser)  roleAssignee);
+            }            
+        }
 	
 	public DataverseRole find( Long id ) {
 		return em.find( DataverseRole.class, id );
@@ -90,6 +93,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			em.refresh(role);
 		}
 		em.refresh(assignee);
+                indexRoleAssignee(assignee);                
+                
 	}
 	
 	public void revoke( RoleAssignment ra ) {
@@ -97,6 +102,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			ra = em.merge(ra);
 		}
 		em.remove(ra);
+                indexRoleAssignee(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()));                              
 	}
 	
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {
