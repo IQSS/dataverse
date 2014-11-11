@@ -10,6 +10,16 @@ import javax.persistence.*;
  *
  * @author michael
  */
+@NamedQueries({
+    @NamedQuery(name = "DvObject.findAll",
+            query = "SELECT o FROM DvObject o ORDER BY o.id"),
+    @NamedQuery(name = "DvObject.findById",
+            query = "SELECT o FROM DvObject o WHERE o.id=:id"),
+	@NamedQuery(name = "DvObject.ownedObjectsById",
+			query="SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id")
+})
+@Entity
+// Inheritance strategy "JOINED" will create 4 db tables - 
 // the top-level dvobject, with the common columns, and the 3 child classes - 
 // dataverse, dataset and datafile. The ids from the main table will be reused
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
