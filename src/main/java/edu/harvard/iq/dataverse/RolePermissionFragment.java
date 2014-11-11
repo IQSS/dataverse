@@ -44,28 +44,27 @@ import javax.persistence.PersistenceContext;
 @ViewScoped
 @Named
 public class RolePermissionFragment implements java.io.Serializable {
-    
-    private static final Logger logger = Logger.getLogger(RolePermissionFragment.class.getCanonicalName());    
+
+    private static final Logger logger = Logger.getLogger(RolePermissionFragment.class.getCanonicalName());
 
     @EJB
     DataverseRoleServiceBean roleService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
-    PermissionServiceBean permissionService; 
+    PermissionServiceBean permissionService;
     @EJB
     AuthenticationServiceBean authenticationService;
     @EJB
     EjbDataverseEngine commandEngine;
-    
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;    
+    EntityManager em;
 
     @Inject
-    DataverseSession session;    
-    
-    DvObject dvObject; 
-    boolean inheritAssignments;
+    DataverseSession session;
+
+    DvObject dvObject;
 
     public DvObject getDvObject() {
         return dvObject;
@@ -74,10 +73,13 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setDvObject(DvObject dvObject) {
         this.dvObject = dvObject;
         if (dvObject instanceof Dataverse) {
-            inheritAssignments = !((Dataverse)dvObject).isPermissionRoot();
+            inheritAssignments = !((Dataverse) dvObject).isPermissionRoot();
         }
     }
 
+    /* Inherit assignments related code */
+    boolean inheritAssignments;
+    
     public boolean isInheritAssignments() {
         return inheritAssignments;
     }
@@ -85,23 +87,22 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setInheritAssignments(boolean inheritAssignments) {
         this.inheritAssignments = inheritAssignments;
     }
-        
-    
+
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
             dvObject = commandEngine.submit(new UpdateDataversePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
-            inheritAssignments = !((Dataverse)dvObject).isPermissionRoot();
+            inheritAssignments = !((Dataverse) dvObject).isPermissionRoot();
         } catch (CommandException ex) {
             Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }    
-            
+    }
+
     /* permissions tab related methods */
     private String assignRoleUsername;
     private Long assignRoleRoleId;
-    
+
     private List<String> identifierList = new ArrayList();
-    
+
     public List<String> getIdentifiers(String query) {
         if (identifierList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
@@ -122,20 +123,16 @@ public class RolePermissionFragment implements java.io.Serializable {
         if (dvObject != null && (dvObject instanceof Dataverse || dvObject instanceof Dataset)) {
             // current the available roles for a dataset are gotten from its parent
             Dataverse dv = dvObject instanceof Dataverse ? (Dataverse) dvObject : ((Dataset) dvObject).getOwner();
-            
-            for (Map.Entry<Dataverse, Set<DataverseRole>> e
-                    : roleService.availableRoles(dv.getId()).entrySet()) {
-                for (DataverseRole aRole : e.getValue()) {
-                    roles.add(aRole);
-                }
-            }
+
+            roles.addAll(roleService.availableRoles(dv.getId()));
+
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
         }
         return roles;
     }
 
     public List<RoleAssignmentRow> getRoleAssignments() {
-            List<RoleAssignmentRow> raList = null;
+        List<RoleAssignmentRow> raList = null;
         if (dvObject != null) {
             Set<RoleAssignment> ras = roleService.rolesAssignments(dvObject);
             raList = new ArrayList<>(ras.size());
@@ -146,25 +143,21 @@ public class RolePermissionFragment implements java.io.Serializable {
         return raList;
     }
 
-    // for files; assigns and revoke guest role (with Download permission) on file
     public void toggleFileRestrict(ActionEvent evt) {
-        if (!permissionService.userOn(GuestUser.get(), dvObject).has(Permission.Download)) {
-            assignRole(GuestUser.get().getIdentifier(), new Long(1)); //@todo don't hard code this role!!!
-        } else {
-            //@todo can we only revoke specific role that was assigned
-            List<RoleAssignment> guestRoleAssignments = roleService.directRoleAssignments(GuestUser.get(), dvObject);
-            for (RoleAssignment roleAssignment : guestRoleAssignments) {
-                revokeRole(roleAssignment.getId());                
-            }
-        }
-    }    
+        DataFile file = (DataFile) dvObject;
+        file.setRestricted(!file.isRestricted());
+    }
     
+    public void grantAccess(ActionEvent evt) {
+        // @todo add the logic to get the built in role for file download
+        assignRole(assignRoleUsername, new Long(1));
+    }
     public void assignRole(ActionEvent evt) {
-       assignRole(assignRoleUsername, assignRoleRoleId);
-    }   
-    
+        assignRole(assignRoleUsername, assignRoleRoleId);
+    }
+
     private void assignRole(String identifier, Long assignedRoleId) {
-        RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);       
+        RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);
         DataverseRole r = roleService.find(assignedRoleId);
 
         try {
@@ -173,7 +166,7 @@ public class RolePermissionFragment implements java.io.Serializable {
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
         }
-    }    
+    }
 
     public void revokeRole(Long roleAssignmentId) {
         try {
@@ -226,10 +219,10 @@ public class RolePermissionFragment implements java.io.Serializable {
         public String getRoleName() {
             return getRole().getName();
         }
-        
+
         public DvObject getDefinitionPoint() {
             return ra.getDefinitionPoint();
-        }        
+        }
 
         public String getAssignedDvName() {
             return ra.getDefinitionPoint().getDisplayName();
@@ -304,6 +297,5 @@ public class RolePermissionFragment implements java.io.Serializable {
     public void setSelectedPermissions(List<String> selectedPermissions) {
         this.selectedPermissions = selectedPermissions;
     }
- 
-    
+
 }
