@@ -200,19 +200,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @param dvId The id of dataverse whose available roles we query
 	 * @return map of available roles.
 	 */
-	public LinkedHashMap<Dataverse,Set<DataverseRole>> availableRoles( Long dvId ) {
-		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();               
+	public Set<DataverseRole> availableRoles( Long dvId ) {              
                 Dataverse dv = em.find(Dataverse.class, dvId);
-                Set dvRoles = dv.getRoles();
-                // @todo check to see if OK to add built in roles here
-                dvRoles.addAll(findBuiltinRoles());
-             
-		roles.put( dv, dv.getRoles() );
+                Set<DataverseRole> roles = dv.getRoles(); 
+                roles.addAll(findBuiltinRoles());
+
 		while ( !dv.isEffectivelyPermissionRoot() ) {
 			dv = dv.getOwner();
-			roles.put( dv, dv.getRoles() );
+			roles.addAll( dv.getRoles() );
 		}
 		
 		return roles;
-	}
+	}                
 }
