@@ -88,7 +88,12 @@ public class DataFile extends DvObject {
         this.contentType = contentType;
         this.fileMetadatas = new ArrayList<>();
     }    
-
+    
+    @Override
+    public boolean isPermissionRoot() {
+        return false;
+    }
+    
     public List<DataTable> getDataTables() {
         return dataTables;
     }
