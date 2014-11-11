@@ -42,6 +42,7 @@ public class AuthenticatedUser implements User, Serializable {
     private String name;
     private String email;
     private String affiliation;
+    private boolean superuser;
 
     @Override
     public String getIdentifier() {
@@ -118,6 +119,16 @@ public class AuthenticatedUser implements User, Serializable {
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
     }
+
+    public boolean isSuperuser() {
+        return superuser;
+    }
+
+    public void setSuperuser(boolean superuser) {
+        this.superuser = superuser;
+    }
+    
+    
 
     public boolean isBuiltInUser() {
         String authProviderString = authenticatedUserLookup.getId().getAuthenticationProviderId();
