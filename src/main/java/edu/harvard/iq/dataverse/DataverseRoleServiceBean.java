@@ -147,8 +147,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	
 	public Set<RoleAssignment> rolesAssignments( DvObject dv ) {
 		Set<RoleAssignment> ras = new HashSet<>();
-                // since currently a dataset /datafile is always permission root, we can skip the while loop
-		while ( dv instanceof Dataverse && !((Dataverse) dv).isEffectivelyPermissionRoot() ) {
+		while ( !dv.isEffectivelyPermissionRoot() ) {
 			ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
 					.setParameter("definitionPointId", dv.getId() ).getResultList() );
 			dv = dv.getOwner();
