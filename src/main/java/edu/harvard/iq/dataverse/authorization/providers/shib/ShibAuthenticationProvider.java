@@ -1,34 +1,31 @@
 package edu.harvard.iq.dataverse.authorization.providers.shib;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
-import edu.harvard.iq.dataverse.authorization.ExternalLinkAuthenticationProvider;
-import java.net.URL;
 
-public class ShibAuthenticationProvider implements ExternalLinkAuthenticationProvider {
+public class ShibAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public String getId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "shib";
     }
 
     @Override
     public AuthenticationProviderDisplayInfo getInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new AuthenticationProviderDisplayInfo(getId(), "Shibboleth Provider", "Shibboleth user repository");
     }
 
     @Override
-    public AuthenticationResponse authenticate( AuthenticationRequest req ) {
-        // TODO the credentials map will contain the shib* headers. Find the persistent id of the 
-        // user there, and return it.
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public AuthenticationResponse authenticate(AuthenticationRequest req) {
+        /**
+         * @todo Should we really implement this? It feels like unnecessary
+         * overhead to pass AuthenticationRequest and AuthenticationResponse
+         * back and forth when all the processing is done by the Shibboleth
+         * Identity Providers.
+         */
+        throw new UnsupportedOperationException("Not supported yet. ");
     }
-
-    @Override
-    public URL getAuthenticationUrl() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 
 }

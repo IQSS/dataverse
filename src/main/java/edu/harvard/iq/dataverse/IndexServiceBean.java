@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -56,6 +57,8 @@ public class IndexServiceBean {
     AuthenticationServiceBean userServiceBean;
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
+    @EJB
+    SystemConfig systemConfig;
 
     private final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -77,10 +80,7 @@ public class IndexServiceBean {
     private Dataverse rootDataverseCached;
 
     public String indexAll() {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         logger.info("deleting all Solr documents before a complete re-index");
         try {
             server.deleteByQuery("*:*");// CAUTION: deletes everything!
@@ -166,6 +166,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
+        solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getDataverseType());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -177,26 +178,29 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
 
+        // look for direct role assignments on dataverse itself as a definition point
         /**
-         * @todo check if you are at a permission root. If not, go up the
-         * dataverse hierarchy until you reach a permission root (may be the
-         * root dataverse).
-         *
-         * Below are approaches toward going beyond non-creator indexing
-         * permissions for https://github.com/IQSS/dataverse/issues/734
+         * @todo Could this be combined with the isEffectivelyPermissionRoot
+         * loop below?
          */
-        // this is the dumb way... iterate through every user each time
-//        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
-//            if (permissionService.isUserAllowedOn(user, UpdateDataverseCommand.class, dataverse)) {
-//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
-//            }
-//        }
-        // this should be the more performant way... given a dataverse, figure out who has the access in question
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
+        }
+
+        // loop throught dataverse ancestors/parents until a permission root is found
+        Dataverse currentDataverse = dataverse;
+        while (!currentDataverse.isEffectivelyPermissionRoot()) {
+            logger.info(currentDataverse.getAlias() + " is NOT effectively permissionRoot");
+            List<RoleAssignment> assignmentsOn2 = permissionService.assignmentsOn(currentDataverse);
+            for (RoleAssignment roleAssignment : assignmentsOn2) {
+                if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                    addPermissionToSolrDoc(solrInputDocument, roleAssignment);
+                }
+            }
+            currentDataverse = currentDataverse.getOwner();
         }
 
         /**
@@ -238,10 +242,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             if (dataverse.getId() != null) {
@@ -852,10 +853,7 @@ public class IndexServiceBean {
             }
         }
 
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -890,10 +888,8 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.GROUPS, id);
 
         docs.add(solrInputDocument);
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -928,10 +924,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.GROUPS, userid);
 
         docs.add(solrInputDocument);
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
 
         try {
             server.add(docs);
@@ -1028,10 +1021,8 @@ public class IndexServiceBean {
     }
 
     public String delete(Dataverse doomed) {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         logger.info("deleting Solr document for dataverse " + doomed.getId());
         UpdateResponse updateResponse;
         try {
@@ -1050,10 +1041,8 @@ public class IndexServiceBean {
     }
 
     public String removeSolrDocFromIndex(String doomed) {
-        /**
-         * @todo allow for configuration of hostname and port
-         */
-        SolrServer server = new HttpSolrServer("http://localhost:8983/solr/");
+        SolrServer server = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         logger.info("deleting Solr document: " + doomed);
         UpdateResponse updateResponse;
         try {
@@ -1083,7 +1072,8 @@ public class IndexServiceBean {
 
     private List<String> findSolrDocIdsForDraftFilesToDelete(Dataset datasetWithDraftFilesToDelete) {
         Long datasetId = datasetWithDraftFilesToDelete.getId();
-        SolrServer solrServer = new HttpSolrServer("http://localhost:8983/solr");
+        SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
+
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setRows(Integer.MAX_VALUE);
         solrQuery.setQuery(SearchFields.PARENT_ID + ":" + datasetId);
@@ -1206,6 +1196,16 @@ public class IndexServiceBean {
         AuthenticatedUser au = userServiceBean.getAuthenticatedUser(identifierWithoutPrefix);
         if (au != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + au.getId());
+        }
+    }
+
+    public String indexDvObject(DvObject definitionPoint) {
+        if (definitionPoint.isInstanceofDataverse()) {
+            return indexDataverse((Dataverse) definitionPoint);
+        } else if (definitionPoint.isInstanceofDataset() || definitionPoint.isInstanceofDataFile()) {
+            return indexDataset((Dataset) definitionPoint);
+        } else {
+            return "unexpected instance of " + DvObject.class.toString() + ": " + definitionPoint.getClass().getName();
         }
     }
 

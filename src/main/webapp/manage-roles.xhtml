@@ -120,7 +120,7 @@
                         </ui:repeat>
                         <p:panel rendered="#{! manageRolesPage.hasRoles}">
                             No roles are defined for Dataverse '#{DataversePage.dataverse.name}'.
-                            <h:outputText rendered="#{! DataversePage.dataverse.effectivlyPermissionRoot}">
+                            <h:outputText rendered="#{! DataversePage.dataverse.effectivelyPermissionRoot}">
                                 Any roles applied to users at parent dataverses, are valid in this
                                 dataverse as well.
                             </h:outputText>

@@ -7,8 +7,10 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -19,6 +21,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -29,6 +32,7 @@ import org.primefaces.model.TreeNode;
 @ViewScoped
 @Named
 public class DataverseHeaderFragment implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(DataverseHeaderFragment.class.getName());    
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -85,7 +89,21 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public String logout() {
         dataverseSession.setUser(null);
-        return "/dataverse.xhtml?faces-redirect=true";
+        
+        String redirectPage = getPageFromContext();       
+        try {            
+            redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
+            redirectPage = "dataverse.xhtml";
+        }
+        
+        if (StringUtils.isEmpty(redirectPage)) {
+            redirectPage = "dataverse.xhtml";
+        }
+        
+        logger.log(Level.INFO, "Sending user to = " + redirectPage);
+        return redirectPage + (redirectPage.indexOf("?") == -1 ? "?" : "&") + "faces-redirect=true";
     }
 
     public boolean isSignupAllowed() {
@@ -99,34 +117,48 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return signUpUrl;
     }
     
-    // @todo consider creating a base bean, for now just make this static
     public  String getLoginRedirectPage() {
         return getRedirectPage();
     }
     
     // @todo consider creating a base bean, for now just make this static
     public static String getRedirectPage() {
-        try {
+        
+        String redirectPage = getPageFromContext();
+        if (!StringUtils.isEmpty(redirectPage)) {
+            return "?redirectPage=" + redirectPage;
+        }    
+        return "";
+    }
+    private static  String getPageFromContext() {
+       try {
             HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             StringBuilder redirectPage = new StringBuilder();
             redirectPage.append(req.getServletPath());           
 
+            // to regenerate the query string, we need to use the parameter map; however this can contain internal POST parameters
+            // that we don't want, so we filter through a list of paramters we do allow
+            // @todo verify what needs to be in this list of available parameters (for example do we want to repeat searches when you login?
+            List acceptableParameters = new ArrayList();
+            acceptableParameters.addAll(Arrays.asList("id","alias","versionId"));
+            
             if (req.getParameterMap() != null) {
                 StringBuilder queryString = new StringBuilder(); 
                 for (Map.Entry<String, String[]> entry : ((Map<String, String[]>)req.getParameterMap()).entrySet()) {
                     String name = entry.getKey();
-                    String value = entry.getValue()[0];
-                    queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value);                            
+                    if (acceptableParameters.contains(name)) {
+                        String value = entry.getValue()[0];
+                        queryString.append(queryString.length() == 0 ? "?" : "&").append(name).append("=").append(value); 
+                    }
                 }
                 redirectPage.append(queryString);
             }            
             
-            return "?redirectPage=" + URLEncoder.encode(redirectPage.toString(), "UTF-8");
+            return URLEncoder.encode(redirectPage.toString(), "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(DataverseHeaderFragment.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return "";
-    }    
+        }        
+     return "";   
+    }
 
 }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import java.util.EnumSet;
@@ -103,6 +104,13 @@ public class PermissionServiceBean {
     }
 
     public Set<Permission> permissionsFor(User u, DvObject d) {
+        // super user check
+        // @todo for 4.0, we are allowing superusers all permissions
+        // for secure data, we may need to restrict some of the permissions
+        if (u instanceof AuthenticatedUser && ((AuthenticatedUser) u).isSuperuser()) {
+            return EnumSet.allOf(Permission.class);
+        }        
+        
         Set<Permission> retVal = EnumSet.noneOf(Permission.class);
         
         // temporary HACK for allowing any authenticated user create 
@@ -142,7 +150,7 @@ public class PermissionServiceBean {
         Set<RoleAssignment> assignments = new HashSet<>();
         while (d != null) {
             assignments.addAll(roleService.directRoleAssignments(u, d));
-            if (d instanceof Dataverse && ((Dataverse) d).isEffectivlyPermissionRoot()) {
+            if (d instanceof Dataverse && ((Dataverse) d).isEffectivelyPermissionRoot()) {
                 return assignments;
             } else {
                 d = d.getOwner();
@@ -161,7 +169,7 @@ public class PermissionServiceBean {
      * @param dvo
      * @return
      */
-    public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {
+    public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {        
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
         if (required.isEmpty() || required.get("") == null) {
             logger.fine("IsUserAllowedOn: empty-true");
@@ -213,4 +221,5 @@ public class PermissionServiceBean {
         }
         return dataversesUserHasPermissionOn;
     }
+
 }

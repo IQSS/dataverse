@@ -61,6 +61,7 @@ public abstract class DvObject implements java.io.Serializable {
     @ManyToOne
     private BuiltinUser creator;
 
+
     public interface Visitor<T> {
         public T visit(Dataverse dv);
         public T visit(Dataset   ds);
@@ -89,6 +90,11 @@ public abstract class DvObject implements java.io.Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    /**
+     * @return Whether {@code this} takes no permissions from roles assigned on its parents.
+     */
+    public abstract boolean isEffectivelyPermissionRoot();
 
     public Timestamp getPublicationDate() {
         return publicationDate;

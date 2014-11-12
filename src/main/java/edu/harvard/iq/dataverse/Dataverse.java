@@ -83,11 +83,6 @@ public class Dataverse extends DvObjectContainer {
             mappedBy = "owner")
     private Set<DataverseRole> roles;
 
-    /**
-     * When {@code true}, users are not granted permissions the got for parent
-     * dataverses.
-     */
-    private boolean permissionRoot;
     private boolean metadataBlockRoot;
     private boolean facetRoot;
     private boolean themeRoot;
@@ -294,18 +289,6 @@ public class Dataverse extends DvObjectContainer {
 
     public void setAffiliation(String affiliation) {
         this.affiliation = affiliation;
-    }
-
-    public boolean isEffectivlyPermissionRoot() {
-        return isPermissionRoot() || (getOwner() == null);
-    }
-
-    public boolean isPermissionRoot() {
-        return permissionRoot;
-    }
-
-    public void setPermissionRoot(boolean permissionRoot) {
-        this.permissionRoot = permissionRoot;
     }
 
     public boolean isMetadataBlockRoot() {

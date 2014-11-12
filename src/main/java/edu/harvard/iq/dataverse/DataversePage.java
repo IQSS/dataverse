@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.PermissionServiceBean.PermissionQuery;
 import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -18,14 +17,12 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -112,17 +109,20 @@ public class DataversePage implements java.io.Serializable {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
     public String init() {
-        // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Create Root Dataverse", " - To get started, you need to create your root dataverse."));  
-        if (dataverse.getAlias() != null){
-            dataverse = dataverseService.findByAlias(dataverse.getAlias());
-        }
-        if (dataverse.getId() != null) { // view mode for a dataverse           
-            dataverse = dataverseService.find(dataverse.getId());
+        if (dataverse.getAlias() != null || dataverse.getId() != null ){// view mode for a dataverse
+            if (dataverse.getAlias() != null) {
+                dataverse = dataverseService.findByAlias(dataverse.getAlias());
+            } else {          
+                dataverse = dataverseService.find(dataverse.getId());
+            }
+            // check if dv exists and user has permission
             if (dataverse == null) {
                 return "/404.xhtml";
-            } else if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
+            }
+            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
-            }            
+            } 
+            
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else if (ownerId != null) { // create mode for a new child dataverse
             editMode = EditMode.INFO;

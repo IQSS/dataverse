@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRo
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.echo.EchoAuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
@@ -62,8 +63,10 @@ public class AuthenticationServiceBean {
         try {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean) );
             registerProviderFactory( new EchoAuthenticationProviderFactory() );
-            // TODO register shib provider factory here
-            
+            /**
+             * Register shib provider factory here. Test enable/disable via Admin API, etc.
+             */
+            new ShibAuthenticationProvider();
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
         }
@@ -211,7 +214,7 @@ public class AuthenticationServiceBean {
         try {
             apiToken = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.info("When looking up API token for " + au + " caught " + ex);
+            logger.log(Level.INFO, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
         }
         return apiToken;
     }
@@ -264,6 +267,7 @@ public class AuthenticationServiceBean {
         
         // we now select a username
         // TODO make a better username selection
+            // Better - throw excpetion to the provider, which has a better chance of getting this right.
         // TODO should lock table authenticated users for write here
         if ( identifierExists(authPrvUserPersistentId) ) {
             int i=1;

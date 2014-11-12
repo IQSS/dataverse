@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 /**
- *
+ * REST API bean for managing {@link BuiltinUser}s.
  * @author michael
  */
 @Path("users")

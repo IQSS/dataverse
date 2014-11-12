@@ -25,6 +25,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        /** Solr hostname and port, such as "localhost:8983". */
+        SolrHostColonPort,
         /** Key for limiting the number of bytes uploaded via the Data Deposit API. */
         DataDepositApiMaxUploadInBytes,
         /** Key for if Shibboleth is enabled or disabled. */
