@@ -130,6 +130,7 @@ public class SearchServiceBean {
         } else if (user instanceof AuthenticatedUser) {
             // Non-guests might get more than public stuff with an OR or two
             AuthenticatedUser au = (AuthenticatedUser) user;
+            solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
             solrQuery.addFacetField(SearchFields.PUBLICATION_STATUS);
             /**
              * Every AuthenticatedUser is part of a "User Private Group" (UGP),
