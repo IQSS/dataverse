@@ -67,11 +67,9 @@
                                     <p:column width="35%"  headerText="User / Group">
                                         <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title} " />
                                     </p:column>
-                                    <p:column width="15%"  headerText="Role">
-                                        <h:outputText value="#{roleAssignment.roleName} " />
-                                    </p:column>
-                                    <p:column width="10%" headerText="Object" rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
-                                        <h:outputText value="#{roleAssignment.assignedDvName}" />
+                                    <p:column width="25%"  headerText="Role">
+                                        <h:outputText value="#{roleAssignment.roleName}"/>
+                                        <h:outputText value="#{rolePermissionFragment.dvObject eq roleAssignment.definitionPoint ? '' : ' ('.concat(roleAssignment.assignedDvName).concat(')')}" />
                                     </p:column>
                                     <p:column width="40%" headerText="Action">
                                         <p:commandLink styleClass="btn btn-default" 
