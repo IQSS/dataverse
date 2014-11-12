@@ -12,7 +12,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -22,6 +25,10 @@ import org.hibernate.validator.constraints.NotBlank;
  *
  * @author skraffmiller
  */
+@NamedQueries(
+        @NamedQuery( name="Dataset.findByIdentifier",
+                     query="SELECT d FROM Dataset d WHERE d.identifier=:identifier")
+)
 @Entity
 public class Dataset extends DvObjectContainer {
 
@@ -33,6 +40,7 @@ public class Dataset extends DvObjectContainer {
     private String protocol;
     private String authority;
     @NotBlank(message = "Please enter an identifier for your dataset.")
+    @Column( unique=true )
     private String identifier;
     @OneToMany(mappedBy = "dataset", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id DESC")

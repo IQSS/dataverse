@@ -133,9 +133,9 @@ public class Dataverses extends AbstractApiBean {
         
         Dataset ds = new Dataset();
         ds.setOwner(owner);
-        ds.setIdentifier( json.getString("identifier"));
-        ds.setAuthority(  json.getString("authority"));
-        ds.setProtocol(   json.getString("protocol"));
+        ds.setIdentifier( json.getString("identifier") );
+        ds.setAuthority(  json.getString("authority")  );
+        ds.setProtocol(   json.getString("protocol")   );
         JsonObject jsonVersion = json.getJsonObject("initialVersion");
         if ( jsonVersion == null) {
             return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
@@ -165,14 +165,12 @@ public class Dataverses extends AbstractApiBean {
         }
         
         try {
-            Dataset managedDs = engineSvc.submit( new CreateDatasetCommand(ds, u));
+            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u), "Creating Dataset");
             return createdResponse( "/datasets/" + managedDs.getId(),
                                     Json.createObjectBuilder().add("id", managedDs.getId()) );
             
-        } catch (CommandException ex) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "Error creating new dataset: " + ex.getMessage() + " incidentId:" + incidentId, ex);
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error executing command. More data in the server logs. Incident id is " + incidentId);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
         }
     }
 	
