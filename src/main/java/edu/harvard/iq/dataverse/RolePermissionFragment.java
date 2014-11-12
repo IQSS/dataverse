@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdatePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +89,7 @@ public class RolePermissionFragment implements java.io.Serializable {
     
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dvObject = commandEngine.submit(new UpdateDataversePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
+            dvObject = commandEngine.submit(new UpdatePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
             inheritAssignments = !((Dataverse)dvObject).isPermissionRoot();
         } catch (CommandException ex) {
             Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
