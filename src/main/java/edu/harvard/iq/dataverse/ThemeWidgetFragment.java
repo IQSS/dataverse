@@ -108,11 +108,11 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
     
     public void checkboxListener() {
-        System.out.println("checkbox clicked, themeRoot value: "+editDv.getThemeRoot());
+        // not sure if this is needed for the ajax component
     }
+   
 
     public void initEditDv(Long dataverseId) {
-        System.out.println("initEditDv");
         editDv = dataverseServiceBean.find(dataverseId);
         if (editDv.getOwner()==null) {
             editDv.setThemeRoot(true);
@@ -148,7 +148,6 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             URL test = new URL((String)value);
         }
     } catch(MalformedURLException e) {
-        System.out.println("url validation failed.");
         FacesMessage msg =
               new FacesMessage(" URL validation failed.",
               "Please provide URL.");
@@ -190,9 +189,6 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
         } catch (IOException e) {
-            // make sure that the error shows in the log, while we are trying 
-            // to debug the file upload problem
-            e.printStackTrace();
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
@@ -210,12 +206,10 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
 
     public boolean getInheritCustomization() {
         boolean inherit= editDv==null ? true : !editDv.getThemeRoot();
-        System.out.println("returning inherit: "+inherit);
-        return inherit;
+         return inherit;
     }
     
     public void setInheritCustomization(boolean inherit) {
-        System.out.println("setting inherit : "+inherit+", themeRoot = "+!inherit);
         editDv.setThemeRoot(!inherit);
         if (!inherit) {
             if (editDv.getDataverseTheme(true)==null) {
