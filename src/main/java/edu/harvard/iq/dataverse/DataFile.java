@@ -52,6 +52,8 @@ public class DataFile extends DvObject {
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
 
+    private boolean restricted;
+    
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -272,6 +274,14 @@ public class DataFile extends DvObject {
             return;
         }
        this.filesize = filesize;
+    }
+
+    public boolean isRestricted() {
+        return restricted;
+    }
+
+    public void setRestricted(boolean restricted) {
+        this.restricted = restricted;
     }
 
 

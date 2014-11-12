@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -23,7 +24,9 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DataverseRoleServiceBean implements java.io.Serializable {
-	
+
+    private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
       
@@ -46,16 +49,26 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 		} else {
 			assignment = em.merge( assignment );
 		}
-                indexRoleAssignee(roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier()));
+            String indexRoleAssigneeResult = indexRoleAssignee(roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier()));
+            String indexDefinitionPountResult = indexDefinitionPoint(assignment.getDefinitionPoint());
+            logger.info("output from indexing operations: " + indexRoleAssigneeResult + " " + indexDefinitionPountResult);
                 return assignment;
 	}
-        
-        private void indexRoleAssignee(RoleAssignee roleAssignee) {
-            // @todo index groups
-            if (roleAssignee instanceof AuthenticatedUser) {
-                indexService.indexUser((AuthenticatedUser)  roleAssignee);
-            }            
+
+    private String indexDefinitionPoint(DvObject definitionPoint) {
+        return indexService.indexDvObject(definitionPoint);
+    }
+
+    private String indexRoleAssignee(RoleAssignee roleAssignee) {
+        if (roleAssignee instanceof AuthenticatedUser) {
+            return indexService.indexUser((AuthenticatedUser) roleAssignee);
+        } else {
+            /**
+             * @todo index groups
+             */
+            return "Groups should be indexed here";
         }
+    }
 	
 	public DataverseRole find( Long id ) {
 		return em.find( DataverseRole.class, id );
@@ -102,7 +115,9 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 			ra = em.merge(ra);
 		}
 		em.remove(ra);
-                indexRoleAssignee(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()));                              
+            String indexRoleAssigneeResult = indexRoleAssignee(roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()));
+            String indexDefinitionPointResult = indexDefinitionPoint(ra.getDefinitionPoint());
+            logger.info("indexing operation results: " + indexRoleAssigneeResult + " " + indexDefinitionPointResult);
 	}
 	
 	public RoleAssignmentSet roleAssignments( User user, Dataverse dv ) {
@@ -147,8 +162,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	
 	public Set<RoleAssignment> rolesAssignments( DvObject dv ) {
 		Set<RoleAssignment> ras = new HashSet<>();
-                // since currently a dataset /datafile is always permission root, we can skip the while loop
-		while ( dv instanceof Dataverse && !((Dataverse) dv).isEffectivelyPermissionRoot() ) {
+		while ( !dv.isEffectivelyPermissionRoot() ) {
 			ras.addAll( em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
 					.setParameter("definitionPointId", dv.getId() ).getResultList() );
 			dv = dv.getOwner();
@@ -200,19 +214,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	 * @param dvId The id of dataverse whose available roles we query
 	 * @return map of available roles.
 	 */
-	public LinkedHashMap<Dataverse,Set<DataverseRole>> availableRoles( Long dvId ) {
-		LinkedHashMap<Dataverse,Set<DataverseRole>> roles = new LinkedHashMap<>();               
+	public Set<DataverseRole> availableRoles( Long dvId ) {              
                 Dataverse dv = em.find(Dataverse.class, dvId);
-                Set dvRoles = dv.getRoles();
-                // @todo check to see if OK to add built in roles here
-                dvRoles.addAll(findBuiltinRoles());
-             
-		roles.put( dv, dv.getRoles() );
+                Set<DataverseRole> roles = dv.getRoles(); 
+                roles.addAll(findBuiltinRoles());
+
 		while ( !dv.isEffectivelyPermissionRoot() ) {
 			dv = dv.getOwner();
-			roles.put( dv, dv.getRoles() );
+			roles.addAll( dv.getRoles() );
 		}
 		
 		return roles;
-	}
+	}                
 }

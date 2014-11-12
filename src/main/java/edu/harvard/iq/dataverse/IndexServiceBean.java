@@ -166,6 +166,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
+        solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getDataverseType());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -177,26 +178,29 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
 
+        // look for direct role assignments on dataverse itself as a definition point
         /**
-         * @todo check if you are at a permission root. If not, go up the
-         * dataverse hierarchy until you reach a permission root (may be the
-         * root dataverse).
-         *
-         * Below are approaches toward going beyond non-creator indexing
-         * permissions for https://github.com/IQSS/dataverse/issues/734
+         * @todo Could this be combined with the isEffectivelyPermissionRoot
+         * loop below?
          */
-        // this is the dumb way... iterate through every user each time
-//        for (DataverseUser user : dataverseUserServiceBean.findAll()) {
-//            if (permissionService.isUserAllowedOn(user, UpdateDataverseCommand.class, dataverse)) {
-//                solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + user.getId());
-//            }
-//        }
-        // this should be the more performant way... given a dataverse, figure out who has the access in question
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
+        }
+
+        // loop throught dataverse ancestors/parents until a permission root is found
+        Dataverse currentDataverse = dataverse;
+        while (!currentDataverse.isEffectivelyPermissionRoot()) {
+            logger.info(currentDataverse.getAlias() + " is NOT effectively permissionRoot");
+            List<RoleAssignment> assignmentsOn2 = permissionService.assignmentsOn(currentDataverse);
+            for (RoleAssignment roleAssignment : assignmentsOn2) {
+                if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                    addPermissionToSolrDoc(solrInputDocument, roleAssignment);
+                }
+            }
+            currentDataverse = currentDataverse.getOwner();
         }
 
         /**
@@ -1192,6 +1196,16 @@ public class IndexServiceBean {
         AuthenticatedUser au = userServiceBean.getAuthenticatedUser(identifierWithoutPrefix);
         if (au != null) {
             solrInputDocument.addField(SearchFields.PERMS, groupPerUserPrefix + au.getId());
+        }
+    }
+
+    public String indexDvObject(DvObject definitionPoint) {
+        if (definitionPoint.isInstanceofDataverse()) {
+            return indexDataverse((Dataverse) definitionPoint);
+        } else if (definitionPoint.isInstanceofDataset() || definitionPoint.isInstanceofDataFile()) {
+            return indexDataset((Dataset) definitionPoint);
+        } else {
+            return "unexpected instance of " + DvObject.class.toString() + ": " + definitionPoint.getClass().getName();
         }
     }
 
