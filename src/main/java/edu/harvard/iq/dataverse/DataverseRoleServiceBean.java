@@ -59,6 +59,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return indexService.indexDvObject(definitionPoint);
     }
 
+    /**
+     * @todo Do we even need this? Users are already indexed when they are
+     * created.
+     */
+    @Deprecated
     private String indexRoleAssignee(RoleAssignee roleAssignee) {
         if (roleAssignee instanceof AuthenticatedUser) {
             return indexService.indexUser((AuthenticatedUser) roleAssignee);
