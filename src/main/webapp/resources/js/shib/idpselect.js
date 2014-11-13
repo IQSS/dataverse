@@ -1129,6 +1129,14 @@ function IdPSelectUI() {
             return false;
         }
         if (null === returnString || returnString.length === 0) {
+            // The addition of redirectPage in https://github.com/IQSS/dataverse/issues/869
+            // broke Shibboleth login, resulting in the error
+            // "FATAL - DISCO UI:No URL return parameter provided"
+            // error in https://github.com/IQSS/dataverse/issues/1060
+            // So we try to add something reasonable back in.
+            returnString = paramsSupplied.defaultReturn;
+        }
+        if (null === returnString || returnString.length === 0) {
             fatal(getLocalizedMessage('fatal.noReturnURL'));
             return false;
         }
