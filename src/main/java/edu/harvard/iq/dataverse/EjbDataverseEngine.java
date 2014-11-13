@@ -69,6 +69,9 @@ public class EjbDataverseEngine {
         
     @EJB
 	DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels; 
+    
+        @EJB
+    DOIEZIdServiceBean doiEZId;
 
 	@PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -164,6 +167,11 @@ public class EjbDataverseEngine {
 				public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels() {
 					return fieldTypeInputLevels;
 				}
+                                
+                @Override
+                public DOIEZIdServiceBean doiEZId() {
+                    return doiEZId;
+                }
 				@Override
 				public DataverseEngine engine() { 
 					return new DataverseEngine() {

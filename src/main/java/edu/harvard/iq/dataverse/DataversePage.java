@@ -134,6 +134,10 @@ public class DataversePage implements java.io.Serializable {
             }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
+            dataverse.setProtocol(dataverse.getOwner().getProtocol());
+            dataverse.setAuthority(dataverse.getOwner().getAuthority());
+            dataverse.setDoiProvider(dataverse.getOwner().getDoiProvider());
+            dataverse.setDoiShoulderCharacter(dataverse.getOwner().getDoiShoulderCharacter());
             dataverse.setFacetRoot(false);
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse)
@@ -366,6 +370,10 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setMetadataBlocks(selectedBlocks);
         }
         
+        if(!dataverse.isFacetRoot()){
+            facets.getTarget().clear();
+        }
+        
         Command<Dataverse> cmd = null;
         //TODO change to Create - for now the page is expecting INFO instead.
         if (dataverse.getId() == null) {
@@ -581,7 +589,7 @@ public class DataversePage implements java.io.Serializable {
         }
         if (aliasFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage("This Alias is already taken.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "alias", "This Alias is already taken.");
             context.addMessage(toValidate.getClientId(context), message);
         }
     }

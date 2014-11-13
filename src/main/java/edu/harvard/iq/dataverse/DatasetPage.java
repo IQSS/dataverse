@@ -321,7 +321,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             workingVersion = dataset.getCreateVersion();
             updateDatasetFieldInputLevels();
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner() ));
         }
         resetVersionUI();
     }
@@ -471,8 +471,9 @@ public class DatasetPage implements java.io.Serializable {
         } else if (ownerId != null) {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
             dataset.setOwner(dataverseService.find(ownerId));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner()));
+           
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
@@ -586,23 +587,23 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String deaccessionVersions() {
-        Command<DatasetVersion> cmd;
+        Command<DatasetVersion> cmd;       
         try {
             if (selectedDeaccessionVersions == null) {
                 for (DatasetVersion dv : this.dataset.getVersions()) {
                     if (dv.isReleased()) {
-                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv));
+                        cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv), true);                       
                         DatasetVersion datasetv = commandEngine.submit(cmd);
                     }
                 }
             } else {
                 for (DatasetVersion dv : selectedDeaccessionVersions) {
-                    cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv));
+                    cmd = new DeaccessionDatasetVersionCommand(session.getUser(), setDatasetVersionDeaccessionReasonAndURL(dv), false);
                     DatasetVersion datasetv = commandEngine.submit(cmd);
                 }
             }
         } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Release Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Dataset Deaccession Failed", " - " + ex.toString()));
             logger.severe(ex.getMessage());
         }
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "DatasetDeaccessioned", "Your selected versions have been deaccessioned.");
@@ -757,8 +758,9 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         //TODO get real application-wide protocol/authority https://github.com/IQSS/dataverse/issues/757
-        dataset.setProtocol(datasetService.getProtocol());
-        dataset.setAuthority(datasetService.getAuthority());
+        dataset.setProtocol(dataset.getOwner().getProtocol());
+        dataset.setAuthority(dataset.getOwner().getAuthority());
+        dataset.setDoiShoulderCharacter(dataset.getOwner().getDoiShoulderCharacter());       
 
         /*
          * Save and/or ingest files, if there are any:
