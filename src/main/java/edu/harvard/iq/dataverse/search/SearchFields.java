@@ -61,7 +61,8 @@ public class SearchFields {
 //    public static final String DISTRIBUTOR = DatasetFieldConstant.distributorName + "_s";
     /**
      * @todo: if you search for "pdf" we probably want to return all PDFs...
-     * Could fix this with a copyField in schema.xml (and rename to just "filetype").
+     * Could fix this with a copyField in schema.xml (and rename to just
+     * "filetype").
      */
     public static final String FILE_NAME = "filename_en";
     public static final String FILE_DESCRIPTION = "fileDescription_en";
@@ -105,6 +106,11 @@ public class SearchFields {
     public static final String PARENT_ID = "parentid";
 
     public static final String DATASET_DESCRIPTION = "dsDescription";
+    /**
+     * In contrast to PUBLICATION_DATE, this field applies only to datasets for
+     * more targeted results.
+     */
+    public static final String DATASET_PUBLICATION_DATE = "dsPublicationDate_s";
     public static final String DATASET_VERSION_ID = "dataset_version_id_l";
 
     public static final String VARIABLE_NAME = "variable_name_en";
