@@ -2,5 +2,5 @@
 scripts/database/homebrew/run-reference_data.sql
 scripts/database/homebrew/run-non-dvnApp-role
 cd scripts/api
-./setup-all.sh
+./setup-all.sh > /tmp/setup-all.sh.out
 cd ../..

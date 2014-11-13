@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.logging.Level;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -43,7 +44,7 @@ public class DataverseServiceBean implements java.io.Serializable {
        
         Dataverse savedDataverse = em.merge(dataverse);
         String indexingResult = indexService.indexDataverse(savedDataverse);
-        logger.info("during dataverse save, indexing result was: " + indexingResult);
+        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }
 
@@ -114,7 +115,7 @@ public class DataverseServiceBean implements java.io.Serializable {
         indexService.findPathSegments(dataverse, dataversePathSegments);
         StringBuilder dataversePath = new StringBuilder();
         for (String segment : dataversePathSegments) {
-            dataversePath.append("/" + segment);
+            dataversePath.append("/").append(segment);
         }
         return dataversePath.toString();
     }

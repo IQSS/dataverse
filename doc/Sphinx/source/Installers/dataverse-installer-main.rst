@@ -4,7 +4,15 @@ Installers Guide
 
 .. _introduction:
 
-**Introduction**
+Solr Configuration
+++++++++++++++++++
+
+Dataverse requires a specific Solr schema file called `schema.xml` that can be found in the Dataverse distribution. It should replace the default `example/solr/collection1/conf/schema.xml` file that ships with Solr.
+
+Solr Security
+-------------
+
+Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://wiki.apache.org/solr/SolrSecurity
 
 Settings
 ++++++++

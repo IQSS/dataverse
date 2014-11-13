@@ -160,6 +160,11 @@ public abstract class AbstractApiBean {
         }
 	}
 	
+    protected <T> T failIfNull( T t, String errorMessage ) throws WrappedResponse {
+        if ( t != null ) return t;
+        throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST,errorMessage) );
+    }
+    
     protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
         return isNumeric(idtf) ? metadataBlockSvc.findById(Long.parseLong(idtf))
                 : metadataBlockSvc.findByName(idtf);
@@ -170,7 +175,7 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(com);
             
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( errorResponse( Response.Status.FORBIDDEN, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
+            throw new WrappedResponse( errorResponse( Response.Status.BAD_REQUEST, messageSeed + ": Not Allowed (" + ex.getMessage() + ")" ));
           
         } catch (PermissionException ex) {
             throw new WrappedResponse(errorResponse(Response.Status.UNAUTHORIZED, messageSeed + " unauthorized."));

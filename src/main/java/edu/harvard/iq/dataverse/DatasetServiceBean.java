@@ -112,7 +112,7 @@ public class DatasetServiceBean implements java.io.Serializable  {
      * Check that a studyId entered by the user is unique (not currently used
      * for any other study in this Dataverse Network)
      */
-    private boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority) {
+    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + protocol + "'";
         query += " and d.authority = '" + authority + "'";

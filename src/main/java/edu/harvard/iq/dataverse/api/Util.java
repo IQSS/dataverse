@@ -33,6 +33,7 @@ public class Util {
         booleanValues.add("0");
     }
 
+    @Deprecated
     static String jsonObject2prettyString(JsonObject jsonObject) {
         Map<String, Boolean> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
@@ -56,6 +57,7 @@ public class Util {
         return stringWriter.toString();
     }
 
+    @Deprecated
     static String message2ApiError(String message) {
         JsonObject error = Json.createObjectBuilder()
                 .add("message", message)

@@ -5,12 +5,13 @@ POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data
 DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
+SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
 
 installer:	dvinstall.zip
 
 dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA}
 	@echo 
 	@echo "Done!"
 
@@ -52,4 +53,7 @@ ${JHOVE_CONFIG}:	../../conf/jhove/jhove.conf
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhove.conf ${INSTALLER_ZIP_DIR}
 
-
+${JHOVE_CONFIG}:	../../conf/solr/4.6.0/schema.xml
+	echo copying Solr schema file
+	@mkdir -p ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/4.6.0/schema.xml ${INSTALLER_ZIP_DIR}

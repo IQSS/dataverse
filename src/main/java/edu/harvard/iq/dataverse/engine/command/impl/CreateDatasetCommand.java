@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.EnumSet;
@@ -39,12 +40,20 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        // add creator and create date to dataset
+        
+        // Test for duplicate identifier
+        if ( ! ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()) ) {
+            throw new IllegalCommandException(String.format("Dataset with idenfidier '%s', protocol '%s' and authority '%s' already exists",
+                                                             theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
+                                                this);
+        }
         
         // FIXME - need to revisit this. Either
         // theDataset.setCreator(getUser());
+        // if, at all, we decide to keep it.
         
         theDataset.setCreateDate(new Timestamp(new Date().getTime()));
+        
         Iterator<DatasetField> dsfIt = theDataset.getEditVersion().getDatasetFields().iterator();
         while (dsfIt.hasNext()) {
             if (dsfIt.next().removeBlankDatasetFieldValues()) {

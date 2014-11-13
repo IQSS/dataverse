@@ -1,0 +1,17 @@
+#!/bin/sh
+DIR=/tmp/keys
+mkdir -p $DIR
+key2tmp () {
+  #export $2=`grep apiToken /tmp/setup-all.sh.out | grep $1 | jq .data.apiToken | grep -v null | sed s/\"//g`
+  echo `grep apiToken /tmp/setup-all.sh.out | grep $1 | jq .data.apiToken | grep -v null | sed s/\"//g` > $DIR/$1
+}
+key2tmp pete PETEKEY
+key2tmp uma UMAKEY
+key2tmp gabbi GABBIKEY
+key2tmp cathy CATHYKEY
+key2tmp nick NICKKEY
+#echo "pete's key: $PETEKEY"
+#echo "uma's key: $UMAKEY"
+#echo "gabbi's key: $GABBIKEY"
+#echo "cathy's key: $CATHYKEY"
+#echo "nick's key: $NICKKEY"

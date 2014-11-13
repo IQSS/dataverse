@@ -1072,6 +1072,23 @@ function IdPSelectUI() {
         }
         var loc = win.location;
         var parmlist = loc.search;
+
+        //
+        // No parameters, so just collect the defaults:
+        // (we've made a small change to the original code here;
+        // we are now *always* setting these default values,
+        // wheather the URL has any parameters or not.
+        // the way it was working before, if there were any
+        // ?... parameters, the defaults were not getting set -
+        // so the code was bombing, because we are not supplying
+        // them as URL parameters either -- L.A. Nov. 13 2014)
+        //
+        suppliedEntityId  = paramsSupplied.myEntityID;
+        returnString = paramsSupplied.defaultReturn;
+        if (null != paramsSupplied.defaultReturnIDParam) {
+           returnIDParam = paramsSupplied.defaultReturnIDParam;
+        }
+
         if (null == parmlist || 0 == parmlist.length || parmlist.charAt(0) != '?') {
 
             if (null == paramsSupplied.defaultReturn) {
@@ -1079,15 +1096,7 @@ function IdPSelectUI() {
                 fatal(getLocalizedMessage('fatal.noparms'));
                 return false;
             }
-            //
-            // No parameters, so just collect the defaults
-            //
-            suppliedEntityId  = paramsSupplied.myEntityID;
-            returnString = paramsSupplied.defaultReturn;
-            if (null != paramsSupplied.defaultReturnIDParam) {
-                returnIDParam = paramsSupplied.defaultReturnIDParam;
-            }
-            
+
         } else {
             parmlist = parmlist.substring(1);
 
