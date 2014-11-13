@@ -994,5 +994,32 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return ret; 
     }
     
+    public String dataFileSizeDisplay(Long fileId) {
+        DataFile datafile = dataFileService.find(fileId);
+        if (datafile == null) {
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return "";
+        }
+        
+        if (datafile.getFilesize() > -1) {
+            return " Size: "+datafile.getFilesize()+" bytes.";
+        }
+        
+        return "";
+    }
+    
+    public String dataFileMD5Display(Long fileId) {
+        DataFile datafile = dataFileService.find(fileId);
+        if (datafile == null) {
+            logger.warning("isTabular: datafile service could not locate a DataFile object for id "+fileId+"!");
+            return "";
+        }
+        
+        if (datafile.getmd5() != null && datafile.getmd5() != "") {
+            return " MD5: "+datafile.getmd5()+" ";
+        }
+        
+        return "";
+    }
     
 }
