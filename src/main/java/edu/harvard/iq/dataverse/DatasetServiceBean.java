@@ -38,6 +38,9 @@ public class DatasetServiceBean implements java.io.Serializable  {
     private static final Logger logger = Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    DOIEZIdServiceBean doiEZIdServiceBean;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -92,33 +95,38 @@ public class DatasetServiceBean implements java.io.Serializable  {
         return foundDataset;
     }
 
-    /**
-     * @todo why is generateIdentifierSequence off by one? (10 vs. 9):
-     * https://github.com/IQSS/dataverse/issues/758
-     */
-    public String generateIdentifierSequence(String protocol, String authority) {
+
+    
+    public String generateIdentifierSequence(String protocol, String authority, Dataverse owner) {
 
         String identifier = null;
         do {
-            identifier = ((Long) em.createNativeQuery("select nextval('dvobject_id_seq')").getSingleResult()).toString();
+            identifier = ((Long) em.createNativeQuery("select nextval('identifier_id_seq')").getSingleResult()).toString();
 
-        } while (!isUniqueIdentifier(identifier, protocol, authority));
+        } while (!isUniqueIdentifier(identifier, protocol, authority, owner));
 
         return identifier;
 
     }
 
     /**
-     * Check that a studyId entered by the user is unique (not currently used
+     * Check that a identifier entered by the user is unique (not currently used
      * for any other study in this Dataverse Network)
+     * alos check for duplicate in EZID if needed
      */
-    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority) {
+    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority, Dataverse owner) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + protocol + "'";
         query += " and d.authority = '" + authority + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
+        if (owner.getDoiProvider() != null && owner.getDoiProvider().equals(Dataverse.DOIProvider.EZID)){
+            if( !doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol,  authority,  userIdentifier, owner.getDoiShoulderCharacter()).isEmpty()){
+                u = false;
+            }
+        }
         return u;
     }
+
 
     public String getRISFormat(DatasetVersion version) {
         String publisher = version.getRootDataverseNameforCitation();
@@ -355,19 +363,5 @@ public class DatasetServiceBean implements java.io.Serializable  {
      }
      */
 
-    /**
-     * @todo ticket to get away from these hard-coded protocol and authority
-     * values: https://github.com/IQSS/dataverse/issues/757
-     */
-    static String fixMeDontHardCodeProtocol = "doi";
-    static String fixMeDontHardCodeAuthority = "10.5072/FK2";
-
-    public static String getProtocol() {
-        return fixMeDontHardCodeProtocol;
-    }
-
-    public static String getAuthority() {
-        return fixMeDontHardCodeAuthority;
-    }
 
 }

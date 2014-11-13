@@ -43,6 +43,10 @@ public class Dataverse extends DvObjectContainer {
     public enum DataverseType {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
     };
+    
+    public enum DOIProvider {
+        EZID
+    };
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "Please enter a name.")
@@ -73,7 +77,26 @@ public class Dataverse extends DvObjectContainer {
     public void setDataverseType(DataverseType dataverseType) {
         this.dataverseType = dataverseType;
     }
-
+    
+    public String getFriendlyCategoryName(){
+       switch (this.dataverseType) {
+            case RESEARCHERS:
+                return "Researchers";
+            case RESEARCH_PROJECTS:
+                return "Research Projects";
+            case JOURNALS:
+                return "Journals";            
+            case ORGANIZATIONS_INSTITUTIONS:
+                return "Organizations &amp; Institutions";            
+            case TEACHING_COURSES:
+                return "Teaching Courses";            
+            case UNCATEGORIZED:
+                return "Uncategorized";
+            default:
+                return "";
+        }    
+    }
+    
     private String affiliation;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
@@ -113,6 +136,46 @@ public class Dataverse extends DvObjectContainer {
 
 
     private boolean templateRoot;
+    private String protocol;
+    private String authority;
+    private String doiShoulderCharacter;    
+
+    public String getDoiShoulderCharacter() {
+        return doiShoulderCharacter;
+    }
+
+    public void setDoiShoulderCharacter(String doiShoulderCharacter) {
+        this.doiShoulderCharacter = doiShoulderCharacter;
+    }
+
+    @Enumerated(EnumType.STRING)
+    private DOIProvider doiProvider;
+
+    public DOIProvider getDoiProvider() {
+        return doiProvider;
+    }
+
+    public void setDoiProvider(DOIProvider doiProvider) {
+        this.doiProvider = doiProvider;
+    }
+    
+    
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getAuthority() {
+        return authority;
+    }
+
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
  
     
     @ManyToOne
@@ -243,7 +306,7 @@ public class Dataverse extends DvObjectContainer {
         if(facetRoot || getOwner() == null){
             return this.getId();
         } else { 
-            return getOwner().getMetadataRootId();
+            return getOwner().getFacetRootId();
         }        
     }
 

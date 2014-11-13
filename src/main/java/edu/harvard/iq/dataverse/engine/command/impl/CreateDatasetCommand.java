@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -42,7 +43,7 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
         
         // Test for duplicate identifier
-        if ( ! ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()) ) {
+        if ( ! ctxt.datasets().isUniqueIdentifier(theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority(), theDataset.getOwner()) ) {
             throw new IllegalCommandException(String.format("Dataset with idenfidier '%s', protocol '%s' and authority '%s' already exists",
                                                              theDataset.getIdentifier(), theDataset.getProtocol(), theDataset.getAuthority()),
                                                 this);
@@ -69,6 +70,14 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         theDataset.getEditVersion().setLastUpdateTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
+        }
+        
+        theDataset.setGlobalIdCreateTime(null);
+        if (theDataset.getOwner().getProtocol().equals("doi") && theDataset.getOwner().getDoiProvider().equals(Dataverse.DOIProvider.EZID)) {
+            String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
+            if (!doiRetString.equals("Identifier not created")) {
+                theDataset.setGlobalIdCreateTime(createDate);
+            }
         }
               
         Dataset savedDataset = ctxt.em().merge(theDataset);

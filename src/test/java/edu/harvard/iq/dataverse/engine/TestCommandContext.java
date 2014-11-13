@@ -78,8 +78,12 @@ public class TestCommandContext implements CommandContext {
 		return null;
 	}
         
-        
+        @Override
+	public DOIEZIdServiceBean doiEZId() {
+		return null;
+	}        
 	@Override
+        
 	public DataverseEngine engine() { return new TestDataverseEngine(this); }
 
     @Override
