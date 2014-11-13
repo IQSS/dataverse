@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.settings.Setting;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.json.Json;
@@ -194,4 +194,16 @@ public class Admin extends AbstractApiBean {
             + ( authSvc.getAuthenticationProviderIds().isEmpty() 
                             ? "WARNING: no enabled authentication providers left." : ""));
     }
+    
+    @Path("roles")
+    @POST
+    public Response createNewBuiltinRole(RoleDTO roleDto) {
+        try {
+            rolesSvc.save(roleDto.asRole());
+            return okResponse(json(roleDto.asRole()));
+        } catch (Exception e) {
+            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+    
 }
