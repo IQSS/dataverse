@@ -1,0 +1,3 @@
+#!/bin/sh
+# so you don't have to sudo to postgres to create roles, etc.
+~/.homebrew/bin/psql -c "CREATE ROLE $USER UNENCRYPTED PASSWORD 'secret' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN REPLICATION" template1

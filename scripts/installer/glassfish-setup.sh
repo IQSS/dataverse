@@ -45,7 +45,7 @@ fi
 
 if [ -z "$DB_PORT" ]
  then
-  echo "You must specify database port (DB_NAME)."
+  echo "You must specify database port (DB_PORT)."
   exit 1
 fi
 
