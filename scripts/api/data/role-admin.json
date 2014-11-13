@@ -1,0 +1,8 @@
+{
+    "alias":"admin",
+    "name":"Admin",
+    "description":"Someone that can do anything.",
+    "permissions":[
+        "ALL"
+    ]
+}
