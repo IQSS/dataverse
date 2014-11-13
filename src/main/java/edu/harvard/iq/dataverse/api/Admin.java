@@ -199,8 +199,7 @@ public class Admin extends AbstractApiBean {
     @POST
     public Response createNewBuiltinRole(RoleDTO roleDto) {
         try {
-            rolesSvc.save(roleDto.asRole());
-            return okResponse(json(roleDto.asRole()));
+            return okResponse(json(rolesSvc.save(roleDto.asRole())));
         } catch (Exception e) {
             return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
