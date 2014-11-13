@@ -90,8 +90,8 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dvObject = commandEngine.submit(new UpdatePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
-            inheritAssignments = !((Dataverse) dvObject).isPermissionRoot();
+            dvObject = commandEngine.submit(new UpdatePermissionRootCommand(!inheritAssignments, session.getUser(),  (DvObjectContainer) dvObject));
+            inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
         } catch (CommandException ex) {
             Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
         }
