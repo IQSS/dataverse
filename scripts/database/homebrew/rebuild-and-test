@@ -12,12 +12,14 @@ mvn package
 #cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
 sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
+scripts/database/homebrew/keys2tmp
 echo "---"
 echo "Running tests..."
-scripts/search/tests/permissions
-echo "FIXME: make tests pass!"
-exit
 scripts/search/tests/query-unparseable
+scripts/search/tests/permissions
+echo "Done running tests. Silence is golden."
+exit
+# FIXME: clean up these old test and make them pass
 scripts/search/tests/delete-dataverse
 scripts/search/tests/highlighting-setup01 > /dev/null
 scripts/search/tests/highlighting-setup02 > /dev/null
@@ -38,4 +40,3 @@ scripts/search/tests/dataset-versioning03
 # https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning05
 # https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/dataset-versioning06
 # https://github.com/IQSS/dataverse/blob/e99f67cd82f18587e0b20eceef291b5f6df3d497/scripts/search/tests/special-characters
-echo "Done running tests. Silence is golden."

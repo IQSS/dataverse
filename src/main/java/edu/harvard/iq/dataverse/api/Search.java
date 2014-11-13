@@ -15,11 +15,11 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 @Path("search")
 public class Search extends AbstractApiBean {
@@ -32,10 +32,7 @@ public class Search extends AbstractApiBean {
     DataverseServiceBean dataverseService;
 
     @GET
-    /**
-     * @todo return errorResponse not error, which is a String.
-     */
-    public String search(@QueryParam("key") String apiToken,
+    public Response search(@QueryParam("key") String apiToken,
             @QueryParam("q") String query,
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("sort") String sortField,
@@ -57,10 +54,8 @@ public class Search extends AbstractApiBean {
                 if (apiToken != null) {
                     dataverseUser = findUserByApiToken(apiToken);
                     if (dataverseUser == null) {
-                        /**
-                         * @todo return a 404 here
-                         */
-                        return error("Unable to find a user with API token " + apiToken);
+                        String message = "Unable to find a user with API token provided.";
+                        return errorResponse(Response.Status.FORBIDDEN, message);
                     }
                 }
                 SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
@@ -77,7 +72,7 @@ public class Search extends AbstractApiBean {
                 }
                 String message = "Exception running search for [" + query + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]: " + sb.toString();
                 logger.info(message);
-                return Util.message2ApiError(message);
+                return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, message);
             }
 
             JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
@@ -137,23 +132,15 @@ public class Search extends AbstractApiBean {
                 value.add("facets", facets);
             }
             if (solrQueryResponse.getError() != null) {
-                value.add("error", solrQueryResponse.getError());
+                /**
+                 * @todo You get here if you pass only ":" as a query, for
+                 * example. Should we return more or better information?
+                 */
+                return errorResponse(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
-            return Util.jsonObject2prettyString(value.build());
+            return okResponse(value);
         } else {
-            /**
-             * @todo use Util.message2ApiError() instead
-             */
-            JsonObject value = Json.createObjectBuilder()
-                    .add("message", "Validation Failed")
-                    .add("documentation_url", "http://thedata.org")
-                    .add("errors", Json.createArrayBuilder()
-                            .add(Json.createObjectBuilder()
-                                    .add("field", "q")
-                                    .add("code", "missing")))
-                    .build();
-            logger.info("value: " + value);
-            return value.toString();
+            return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
     }
 }
