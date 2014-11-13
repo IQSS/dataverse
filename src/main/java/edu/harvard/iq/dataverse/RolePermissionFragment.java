@@ -152,16 +152,15 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
     
     public void grantAccess(ActionEvent evt) {
-        // @todo add the logic to get the built in role for file download
-        assignRole(assignRoleUsername, new Long(1));
+	// Find the built in file downloader role (currently by alias)        
+        assignRole(assignRoleUsername, roleService.findBuiltinRoleByAlias("filedownloader"));
     }
     public void assignRole(ActionEvent evt) {
-        assignRole(assignRoleUsername, assignRoleRoleId);
+        assignRole(assignRoleUsername, roleService.find(assignRoleRoleId));
     }
 
-    private void assignRole(String identifier, Long assignedRoleId) {
+    private void assignRole(String identifier, DataverseRole r) {
         RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);
-        DataverseRole r = roleService.find(assignedRoleId);
 
         try {
             commandEngine.submit(new AssignRoleCommand(roas, r, dvObject, session.getUser()));
