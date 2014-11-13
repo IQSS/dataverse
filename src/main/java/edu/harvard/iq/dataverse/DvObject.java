@@ -24,7 +24,7 @@ import javax.persistence.*;
 // dataverse, dataset and datafile. The ids from the main table will be reused
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
-//@Inheritance(strategy=InheritanceType.JOINED)
+@Inheritance(strategy=InheritanceType.JOINED)
 public abstract class DvObject implements java.io.Serializable {
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
