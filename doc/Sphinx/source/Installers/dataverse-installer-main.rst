@@ -4,6 +4,16 @@ Installers Guide
 
 .. _introduction:
 
+Glassfish Configuration
++++++++++++++++++++++++
+
+SSLEngine is null workaround
+----------------------------
+
+If you are fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null". 
+
+To hide these warnings, run ``asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
+
 Solr Configuration
 ++++++++++++++++++
 
