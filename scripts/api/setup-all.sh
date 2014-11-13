@@ -7,14 +7,18 @@ SERVER=http://localhost:8080/api
 
 # Everything + the kitchen sink, in a single script
 # - Push the metadata blocks
+# - Setup the builtin roles
 # - Create the usual suspect users
 # - Setup some basic dataverses
 # - Index everything
 
-# Setup the metadata blocks, the users, and the dataverses.
+# Setup the metadata blocks, builtin roles, the users, and the dataverses.
 TMP=setup.temp
 
 ./datasetfields.sh
+./setup-builtin-roles.sh
+
+
 
 # Setup the authentication providers
 ./setup-identity-providers.sh
