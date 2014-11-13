@@ -106,7 +106,14 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	public List<DataverseRole> findBuiltinRoles() {
 		return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
 				.getResultList();
-	}        
+	}
+        
+	
+	public DataverseRole findBuiltinRoleByAlias(String alias) {
+		return em.createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
+                                .setParameter("alias", alias)
+				.getSingleResult();
+        }
 	
 	public void revoke( Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint ) {
 		for ( DataverseRole role : roles ) {
