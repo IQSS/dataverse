@@ -82,14 +82,9 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
               
         Dataset savedDataset = ctxt.em().merge(theDataset);
                 
-        DataverseRole manager = new DataverseRole();
-        manager.addPermissions(EnumSet.allOf(Permission.class));
-        manager.setAlias("manager");
-        manager.setName("Dataset Manager");
-        manager.setDescription("Auto-generated role for the creator of this dataset");
-        manager.setOwner(savedDataset);
-        ctxt.roles().save(manager);
-        ctxt.roles().save(new RoleAssignment(manager, getUser(), savedDataset));
+	// Find the built in admin role (currently by alias)
+        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias("admin");
+        ctxt.roles().save(new RoleAssignment(adminRole, getUser(), savedDataset));
         
         try {
             // TODO make async
