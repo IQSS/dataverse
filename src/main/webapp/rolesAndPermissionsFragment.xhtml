@@ -85,13 +85,13 @@
                         <p:tab id="dataversesSubTab" title="Dataverses" rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                             <p:dataTable id="dataverses" var="dv" value="#{dataverseServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
                                 <p:column width="35%"  headerText="Dataverse">
-                                    <h:outputText value="#{dv.name} " />
+                                    <h:outputText value="#{dv.name}" />
                                 </p:column>
                                 <p:column width="15%" headerText="Dataverse">
-                                    <h:outputText value="#{dv.owner.name} " />
+                                    <h:outputText value="#{dv.owner.name}" />
                                 </p:column>
                                 <p:column width="10%"  headerText="Publication Status">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{dv.released ? 'Published' : 'Unpublished'}" />
                                 </p:column>
                                 <p:column width="40%" headerText="Action">
                                     <p:commandLink styleClass="btn btn-default" 
@@ -106,13 +106,13 @@
                         <p:tab id="datasetsSubTab" title="Datasets"  rendered="#{rolePermissionFragment.dvObject.instanceofDataverse}">
                             <p:dataTable id="datasets" var="ds" value="#{datasetServiceBean.findByOwnerId(rolePermissionFragment.dvObject.getId())}">
                                 <p:column width="35%"  headerText="Dataset">
-                                    <h:outputText value="#{ds.latestVersion.title} " />
+                                    <h:outputText value="#{ds.latestVersion.title}" />
                                 </p:column>
                                 <p:column width="15%"  headerText="Dataverse">
-                                    <h:outputText value="#{ds.owner.name} " />
+                                    <h:outputText value="#{ds.owner.name}" />
                                 </p:column>
                                 <p:column width="10%"  headerText="Publication Status">
-                                    <h:outputText value="" />
+                                    <h:outputText value="#{dv.released ? 'Published' : 'Unpublished'}" />
                                 </p:column>
                                 <p:column width="40%" headerText="Action">
                                     <p:commandLink styleClass="btn btn-default" 
@@ -127,7 +127,7 @@
                         <p:tab id="filesSubTab" title="Files" rendered="#{rolePermissionFragment.dvObject.instanceofDataset}">
                             <p:dataTable id="files" var="file" value="#{rolePermissionFragment.dvObject.asDataset.files}">
                                 <p:column width="35%" sortBy="name" headerText="Dataset">
-                                    <h:outputText value="#{file.fileMetadata.label} " />
+                                    <h:outputText value="#{file.fileMetadata.label}" />
                                 </p:column>
                                 <p:column width="10%"  headerText="Versions">
                                     <ui:repeat value="#{file.fileMetadatas}" var="fmd" varStatus="status">
