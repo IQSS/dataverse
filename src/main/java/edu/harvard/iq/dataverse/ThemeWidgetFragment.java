@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -44,7 +46,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
     static final String DEFAULT_LINK_COLOR = "428BCA";
     static final String DEFAULT_TEXT_COLOR = "888888";
-     
+    private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
@@ -187,9 +189,11 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
      * Copy filename into Dataverse logo 
      * @param event 
      */
-    public void handleImageFileUpload(FileUploadEvent event) {
+        public void handleImageFileUpload(FileUploadEvent event) {
+            logger.finer("entering fileUpload");
             if (this.tempDir==null) {
                 createTempDir();
+                logger.finer("created tempDir");
             }
             UploadedFile uFile = event.getFile();
         try {         
@@ -197,17 +201,21 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
             if (!uploadedFile.exists()) {
                 uploadedFile.createNewFile();
             }
+            logger.finer("created file");
             Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
         } catch (IOException e) {
+            logger.finer("caught IOException");
+            logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }
         // If needed, set the default values for the logo
         if (editDv.getDataverseTheme().getLogoFormat()==null) {
             editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
         }
-        
+        logger.finer("end handelImageFileUpload");
     }
     
     public void removeLogo() {
