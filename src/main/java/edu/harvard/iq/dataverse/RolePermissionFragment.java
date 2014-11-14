@@ -253,6 +253,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void createNewRole(ActionEvent e) {
         setRole(new DataverseRole());
+        role.setOwner(dvObject);
     }
 
     public void editRole(String roleId) {
@@ -263,13 +264,12 @@ public class RolePermissionFragment implements java.io.Serializable {
         // @todo currently only works for Dataverse since CreateRoleCommand only takes a dataverse
         // we need to decide if we want roles at the dataset level or not
         if (dvObject instanceof Dataverse) {
-            role.setOwner(dvObject);
             role.clearPermissions();
             for (String pmsnStr : getSelectedPermissions()) {
                 role.addPermission(Permission.valueOf(pmsnStr));
             }
             try {
-                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) dvObject)));
+                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) role.getOwner())));
                 JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());
