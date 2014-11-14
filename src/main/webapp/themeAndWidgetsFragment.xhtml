@@ -172,7 +172,7 @@
                                 </label>
                                 <div class="col-sm-8">
                                     <p:panelGrid columns="2" styleClass="noBorders" columnClasses="col-sm-6,col-sm-3" style="width:100%;">
-                                        <p:inputText styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
+                                        <p:inputText validator="#{themeWidgetFragment.validateTagline}" styleClass="form-control" id="tagline" value="#{themeWidgetFragment.editDv.dataverseTheme.tagline}"/>
                                         <p:message for="tagline"/>
                                     </p:panelGrid>
                                 </div>

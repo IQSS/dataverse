@@ -141,7 +141,19 @@ public class ThemeWidgetFragment implements java.io.Serializable {
       
           
     }
+    public void validateTagline(FacesContext context, UIComponent component, Object value) throws ValidatorException {
 
+        if (!StringUtils.isEmpty((String) value) && !StringUtils.isAlphanumericSpace((String) value)) {
+
+            FacesMessage msg
+                    = new FacesMessage("Tagline may only contain alphanumeric characters.");
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+
+            throw new ValidatorException(msg);
+        }
+
+    }
+    
 public void validateUrl(FacesContext context, UIComponent component, Object value) throws ValidatorException {
     try {
         if (!StringUtils.isEmpty((String)value)){
