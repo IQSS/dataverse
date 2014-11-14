@@ -425,7 +425,7 @@ public class Dataverses extends AbstractApiBean {
         Dataverse dv = dataverse;
         theRole = null;
         while ( (theRole==null) && (dv!=null) ) {
-            for ( DataverseRole aRole : dv.getRoles() ) {
+            for ( DataverseRole aRole : rolesSvc.availableRoles(dv.getId()) ) {
                 if ( aRole.getAlias().equals(ra.getRole()) ) {
                     theRole = aRole;
                     break;
