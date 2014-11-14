@@ -10,9 +10,6 @@ if [ $# -eq 0 ]
     echo "Or, just get them from the database"
     exit 1
 fi
-echo root
-curl -s -H "Content-type:application/json" -X POST -d @data/dv-root.json "$SERVER/dvs/?key=$1"
-echo
 
 echo Pete
 curl -s -H "Content-type:application/json" -X POST -d @data/dv-pete-top.json "$SERVER/dvs/root?key=$1"
@@ -28,16 +25,12 @@ echo Uma
 echo Pete creates top-level for Uma
 curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-top.json "$SERVER/dvs/root?key=$1"
 echo
-echo Pete makes Uma a manager on her own DV
-curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"manager\"}" $SERVER/dvs/umaTop/assignments/?key=$1
+echo Pete makes Uma an admin on her own DV
+curl -s -H "Content-type:application/json" -X POST -d"{\"assignee\":\"@uma\",\"role\":\"admin\"}" $SERVER/dvs/umaTop/assignments/?key=$1
 echo
 curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub1.json "$SERVER/dvs/umaTop?key=$2"
 echo
 curl -s -H "Content-type:application/json" -X POST -d @data/dv-uma-sub2.json "$SERVER/dvs/umaTop?key=$2"
 echo
-
-
-echo Set the metadata block for Root
-curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/dvs/:root/metadatablocks/?key=$1
 
 
