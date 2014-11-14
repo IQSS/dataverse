@@ -166,7 +166,7 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
-        solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getDataverseType());
+        solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getFriendlyCategoryName());
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -586,6 +586,8 @@ public class IndexServiceBean {
 
         /**
          * @todo DRY! Same code as for dataverses.
+         *
+         * @todo What about permission root?
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
         for (RoleAssignment roleAssignment : assignmentsOn) {
@@ -788,13 +790,13 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
                 /**
-                 * @todo Should we be checking permissions on the dataset like
-                 * this or the datafile?
+                 * @todo Can permissions on files be inherited from the dataset
+                 * or dataverse?
                  */
-                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(dataset);
+                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile);
                 for (RoleAssignment roleAssignment : assignmentsOnFile) {
                     if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
-                        addPermissionToSolrDoc(solrInputDocument, roleAssignment);
+                        addPermissionToSolrDoc(datafileSolrInputDocument, roleAssignment);
                     }
                 }
 
@@ -985,6 +987,7 @@ public class IndexServiceBean {
             calendar.setTimeInMillis(dataset.getPublicationDate().getTime());
             int YYYY = calendar.get(Calendar.YEAR);
             solrInputDocument.addField(SearchFields.PUBLICATION_DATE, YYYY);
+            solrInputDocument.addField(SearchFields.DATASET_PUBLICATION_DATE, YYYY);
         }
     }
 
@@ -1199,13 +1202,15 @@ public class IndexServiceBean {
         }
     }
 
-    public String indexDvObject(DvObject definitionPoint) {
-        if (definitionPoint.isInstanceofDataverse()) {
-            return indexDataverse((Dataverse) definitionPoint);
-        } else if (definitionPoint.isInstanceofDataset() || definitionPoint.isInstanceofDataFile()) {
-            return indexDataset((Dataset) definitionPoint);
+    public String indexDvObject(DvObject dvObject) {
+        if (dvObject.isInstanceofDataverse()) {
+            return indexDataverse((Dataverse) dvObject);
+        } else if (dvObject.isInstanceofDataset()) {
+            return indexDataset((Dataset) dvObject);
+        } else if (dvObject.isInstanceofDataFile()) {
+            return indexDataset((Dataset) dvObject.getOwner());
         } else {
-            return "unexpected instance of " + DvObject.class.toString() + ": " + definitionPoint.getClass().getName();
+            return "unexpected instance of " + DvObject.class.toString() + ": " + dvObject.getClass().getName();
         }
     }
 

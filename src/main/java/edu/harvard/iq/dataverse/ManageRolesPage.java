@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRolesCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdatePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,7 +137,7 @@ public class ManageRolesPage implements java.io.Serializable {
     
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dataverse = engineSvc.submit( new UpdateDataversePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
+            dataverse = (Dataverse) engineSvc.submit(new UpdatePermissionRootCommand(!isInheritAssignmentsCbValue(), session.getUser(), getDataverse()) );
             setInheritAssignmentsCbValue( ! dataverse.isPermissionRoot() );
         } catch (CommandException ex) {
             Logger.getLogger(ManageRolesPage.class.getName()).log(Level.SEVERE, null, ex);
@@ -155,7 +155,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		
 		try {
 			engineSvc.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
-			engineSvc.submit( new UpdateDataversePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
+			engineSvc.submit(new UpdatePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
 		} catch (CommandException ex) {
 			JH.addMessage(FacesMessage.SEVERITY_ERROR, "Update failed: "+ ex.getMessage());

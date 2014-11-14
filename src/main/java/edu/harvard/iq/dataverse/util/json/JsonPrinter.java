@@ -94,7 +94,7 @@ public class JsonPrinter {
                         .add("affiliation", dv.getAffiliation())
 						.add("contactEmail", dv.getContactEmail())
 						.add("permissionRoot", dv.isPermissionRoot())
-						.add("creator",json(dv.getCreator()))
+						//.add("creator",json(dv.getCreator()))
 						.add("description", dv.getDescription());
 		if ( dv.getOwner() != null ) {
 			bld.add("ownerId", dv.getOwner().getId());

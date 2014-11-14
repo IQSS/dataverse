@@ -1,10 +1,12 @@
-
 {
-    "q":"*",
-    "fq_provided":"[]",
-    "fq_actual":"[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user3)]",
-    "total_count":0,
-    "start":0,
-    "count_in_response":0,
-    "items":"[]"
+  "data": {
+    "items": "[]",
+    "count_in_response": 0,
+    "start": 0,
+    "total_count": 0,
+    "fq_actual": "[({!join from=groups_s to=perms_ss}id:group_public OR {!join from=groups_s to=perms_ss}id:group_user3)]",
+    "fq_provided": "[]",
+    "q": "*"
+  },
+  "status": "OK"
 }

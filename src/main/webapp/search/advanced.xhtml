@@ -25,7 +25,7 @@
                 <p:panel styleClass="panelLayoutBlock" style="margin-bottom:1em;">
                     <h:form id="advancedSearchForm" styleClass="form-horizontal">
                         <p:focus/>
-                        
+
                         <p:panel styleClass="panelLayoutButtonBlock" style="border-top: 1px solid #dddddd;margin-bottom:.5em;">
                             <p:commandButton value="Find" action="#{AdvancedSearchPage.find()}"/>
                         </p:panel>
@@ -67,6 +67,25 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="panel panel-default">
+                            <div data-toggle="collapse" data-target="#datasetsStaticFields" class="panel-heading">
+                                <h:outputText value="Datasets"/>
+                            </div>
+                            <div id="datasetsStaticFields" style="margin-bottom:.5em; overflow: hidden; padding-top:1em;">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        <a href="#" data-toggle="tooltip" data-placement="auto right" class="tooltiplabel right" data-original-title="The publication date of a dataset.">
+                                            Publication Date
+                                        </a>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <p:inputText id="dvFieldNamez" styleClass="form-control" value="#{AdvancedSearchPage.dsPublicationDate}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
 
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">                        
                             <ui:fragment rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">

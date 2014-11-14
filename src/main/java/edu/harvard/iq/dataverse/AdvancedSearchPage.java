@@ -32,6 +32,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dvFieldName;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
+    private String dsPublicationDate;
     private String fileFieldName;
     private String fileFieldDescription;
     private String fileFieldFiletype;
@@ -81,6 +82,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
                 }
                 queryStrings.add(constructQuery(listQueryStrings, false));
             }
+        }
+        if (!dsPublicationDate.isEmpty()) {
+            queryStrings.add(constructQuery(SearchFields.DATASET_PUBLICATION_DATE, dsPublicationDate));
         }
         return constructQuery(queryStrings, true);
 
@@ -240,6 +244,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDvFieldAffiliation(String dvFieldAffiliation) {
         this.dvFieldAffiliation = dvFieldAffiliation;
+    }
+
+    public String getDsPublicationDate() {
+        return dsPublicationDate;
+    }
+
+    public void setDsPublicationDate(String dsPublicationDate) {
+        this.dsPublicationDate = dsPublicationDate;
     }
 
     public String getFileFieldName() {

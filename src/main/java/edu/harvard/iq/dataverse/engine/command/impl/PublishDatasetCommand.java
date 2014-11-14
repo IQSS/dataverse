@@ -101,7 +101,8 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
             datasetDataverseUser.setUserIdentifier(getUser().getIdentifier());
             ctxt.em().merge(datasetDataverseUser);
         }
-
+        
+        ctxt.doiEZId().publicizeIdentifier(savedDataset);
         return savedDataset;
     }
 

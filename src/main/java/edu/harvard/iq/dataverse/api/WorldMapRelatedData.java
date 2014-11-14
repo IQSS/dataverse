@@ -45,7 +45,7 @@ import javax.ws.rs.core.Response;
  * 
  * Bean used to communicate information to the WorldMap (currently a Django project)
  * 
- * The information sent is validated by the model/form in this project:
+ * Within geoconnect, the information sent is validated by the DataverseInfoModel in this project:
  * 
  *  https://github.com/IQSS/shared-dataverse-information
  * 
@@ -107,20 +107,33 @@ public class WorldMapRelatedData extends AbstractApiBean {
     }
     
     
+    // test call to track down problems
+    /*
+    @GET
+    @Path("t/{identifier}")
+    public Response checkWorldMapAPI(@Context HttpServletRequest request
+                                    , @PathParam("identifier") int identifier) {
+       return okResponse( "Looks good " + identifier);
+    }
+    */
+    
     /*
         Link used within Dataverse for MapIt button
         Sends file link to GeoConnect using a Redirect
     
     */
-    @GET
-    @Path(MAP_IT_API_PATH_FRAGMENT + "{datafile_id}" + "/" + "{dvuser_id}") ///{dvuser_id}")
+    @GET    
+    @Path( MAP_IT_API_PATH_FRAGMENT + "{datafile_id}/{dvuser_id}")
     public Response mapDataFile(@Context HttpServletRequest request
                                 , @PathParam("datafile_id") Long datafile_id
                                 , @PathParam("dvuser_id") Long dvuser_id){ 
         
-         logger.info("mapDataFile datafile_id: " + datafile_id );
-        logger.info("mapDataFile dvuser_id: " + dvuser_id );
+        logger.log(Level.INFO, "mapDataFile datafile_id: {0}", datafile_id);
+        logger.log(Level.INFO, "mapDataFile dvuser_id: {0}", dvuser_id);
+        
+
         if (true){
+            //return okResponse( "Looks good " + datafile_id);
            //tokenAppServiceBean.getGeoConnectApplication();           
            //return okResponse("Currently deactivated (mapDataFile)");
         }
@@ -134,7 +147,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         // Check if this file exists
         DataFile dfile = dataFileService.find(datafile_id);
         if (dfile==null){
-           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for md5: " + datafile_id);
+           return errorResponse(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
         
         // TO ADD WHEN PERMISSIONS ARE READY

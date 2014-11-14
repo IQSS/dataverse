@@ -25,19 +25,24 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
 
 
    final DatasetVersion theVersion;
+   final boolean deleteDOIIdentifier;
     
-    public DeaccessionDatasetVersionCommand(User aUser, DatasetVersion deaccessionVersion) {
+    public DeaccessionDatasetVersionCommand(User aUser, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
         super(aUser, deaccessionVersion.getDataset());
         theVersion = deaccessionVersion;
+        deleteDOIIdentifier = deleteDOIIdentifierIn;
     }
 
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         Dataset ds = theVersion.getDataset();        
-        
+
         theVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
         
+        if (deleteDOIIdentifier){
+           ctxt.doiEZId().deleteIdentifier(ds);
+        }       
         DatasetVersion managed = ctxt.em().merge(theVersion);
         
         ctxt.index().indexDataset(ds);

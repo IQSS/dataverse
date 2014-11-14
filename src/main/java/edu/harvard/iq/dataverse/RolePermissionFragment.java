@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataversePermissionRootCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdatePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,8 +90,8 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void updatePermissionRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
         try {
-            dvObject = commandEngine.submit(new UpdateDataversePermissionRootCommand(!inheritAssignments, session.getUser(), (Dataverse) dvObject));
-            inheritAssignments = !((Dataverse) dvObject).isPermissionRoot();
+            dvObject = commandEngine.submit(new UpdatePermissionRootCommand(!inheritAssignments, session.getUser(),  (DvObjectContainer) dvObject));
+            inheritAssignments = !((DvObjectContainer) dvObject).isPermissionRoot();
         } catch (CommandException ex) {
             Logger.getLogger(RolePermissionFragment.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -152,16 +152,15 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
     
     public void grantAccess(ActionEvent evt) {
-        // @todo add the logic to get the built in role for file download
-        assignRole(assignRoleUsername, new Long(1));
+	// Find the built in file downloader role (currently by alias)        
+        assignRole(assignRoleUsername, roleService.findBuiltinRoleByAlias("filedownloader"));
     }
     public void assignRole(ActionEvent evt) {
-        assignRole(assignRoleUsername, assignRoleRoleId);
+        assignRole(assignRoleUsername, roleService.find(assignRoleRoleId));
     }
 
-    private void assignRole(String identifier, Long assignedRoleId) {
+    private void assignRole(String identifier, DataverseRole r) {
         RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);
-        DataverseRole r = roleService.find(assignedRoleId);
 
         try {
             commandEngine.submit(new AssignRoleCommand(roas, r, dvObject, session.getUser()));
@@ -254,6 +253,7 @@ public class RolePermissionFragment implements java.io.Serializable {
 
     public void createNewRole(ActionEvent e) {
         setRole(new DataverseRole());
+        role.setOwner(dvObject);
     }
 
     public void editRole(String roleId) {
@@ -264,13 +264,12 @@ public class RolePermissionFragment implements java.io.Serializable {
         // @todo currently only works for Dataverse since CreateRoleCommand only takes a dataverse
         // we need to decide if we want roles at the dataset level or not
         if (dvObject instanceof Dataverse) {
-            role.setOwner(dvObject);
             role.clearPermissions();
             for (String pmsnStr : getSelectedPermissions()) {
                 role.addPermission(Permission.valueOf(pmsnStr));
             }
             try {
-                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) dvObject)));
+                setRole(commandEngine.submit(new CreateRoleCommand(role, session.getUser(), (Dataverse) role.getOwner())));
                 JH.addMessage(FacesMessage.SEVERITY_INFO, "Role '" + role.getName() + "' saved", "");
             } catch (CommandException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, "Cannot save role", ex.getMessage());

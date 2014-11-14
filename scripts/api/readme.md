@@ -124,12 +124,6 @@ Publishes the dataset whose id is passed. The new dataset version number is dete
 
 Deletes the draft version of dataset `{{id}}`. Only the draft version can be deleted.
 
-### permissions
-
-	GET http://{{SERVER}}/api/permissions?on={{dvoId}}&key={{uid}}
-
-Retrieves a list of permissions a user has on the DvObject.
-
 ### users
 
 This endopint deals with users of the built-in authentication provider. Note that users may come from different authentication services as well, such as Shibboleth.

@@ -538,6 +538,7 @@
                                             <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} variables, " rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} observations#{!empty fileMetadata.dataFile.unf ? ', ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}, " rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                            <h:outputText id="fileSize" value=" Size: #{fileMetadata.dataFile.filesize} bytes." rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
 
 
                                             <ui:fragment rendered="#{ DatasetPage.hasMapLayerMetadata(fileMetadata)}">

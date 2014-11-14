@@ -618,6 +618,10 @@
                                             <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                                         </ui:repeat>
                                     </ui:fragment>
+                                    <ui:fragment>
+                                        <h:outputText value="#{SearchIncludeFragment.dataFileSizeDisplay(result.entityId)}"/>
+                                        <h:outputText value="#{SearchIncludeFragment.dataFileMD5Display(result.entityId)}" rendered="#{!SearchIncludeFragment.isTabular(result.entityId)}"/>
+                                    </ui:fragment>
                                     <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
                                     <ui:fragment rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}">
                                         <h:outputText value="Tabular Data; #{SearchIncludeFragment.tabularDataDisplayInfo(result.entityId)}"/>

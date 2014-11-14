@@ -115,64 +115,64 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/datasets")
     public Response createDataset( String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("key") String apiKey ) {
-        User u = findUserByApiToken(apiKey);
-		if ( u == null ) return badApiKey(apiKey);
-		
-        Dataverse owner = findDataverse(parentIdtf);
-        if ( owner == null ) {
-            return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
-        }
-        
-        JsonObject json;
-        try ( StringReader rdr = new StringReader(jsonBody) ) {
-            json = Json.createReader(rdr).readObject();
-        } catch ( JsonParsingException jpe ) {
-            logger.log(Level.SEVERE, "Json: {0}", jsonBody);
-            return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
-        }
-        
-        Dataset ds = new Dataset();
-        ds.setOwner(owner);
-        ds.setIdentifier( json.getString("identifier"));
-        ds.setAuthority(  json.getString("authority"));
-        ds.setProtocol(   json.getString("protocol"));
-        JsonObject jsonVersion = json.getJsonObject("initialVersion");
-        if ( jsonVersion == null) {
-            return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
-        }
         try {
-            try {
-                DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
-
-                // force "initial version" properties
-                version.setMinorVersionNumber(null);
-                version.setVersionNumber(null);
-                version.setVersionState(DatasetVersion.VersionState.DRAFT);
-                LinkedList<DatasetVersion> versions = new LinkedList<>();
-                versions.add(version);
-                version.setDataset(ds);
-                
-                ds.setVersions( versions );
-            } catch ( javax.ejb.TransactionRolledbackLocalException rbe ) {
-                throw rbe.getCausedByException();
-            }
-        } catch (JsonParseException ex) {
-            logger.log( Level.INFO, "Error parsing dataset version from Json", ex);
-            return errorResponse(Status.BAD_REQUEST, "Error parsing initialVersion: " + ex.getMessage() );
-        } catch ( Exception e ) {
-            logger.log( Level.WARNING, "Error parsing dataset version from Json", e);
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing initialVersion: " + e.getMessage() );
-        }
-        
-        try {
-            Dataset managedDs = engineSvc.submit( new CreateDatasetCommand(ds, u));
-            return createdResponse( "/datasets/" + managedDs.getId(),
-                                    Json.createObjectBuilder().add("id", managedDs.getId()) );
+            User u = findUserByApiToken(apiKey);
+            if ( u == null ) return badApiKey(apiKey);
             
-        } catch (CommandException ex) {
-            String incidentId = UUID.randomUUID().toString();
-            logger.log(Level.SEVERE, "Error creating new dataset: " + ex.getMessage() + " incidentId:" + incidentId, ex);
-            return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error executing command. More data in the server logs. Incident id is " + incidentId);
+            Dataverse owner = findDataverse(parentIdtf);
+            if ( owner == null ) {
+                return errorResponse( Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + parentIdtf + "'");
+            }
+            
+            JsonObject json;
+            try ( StringReader rdr = new StringReader(jsonBody) ) {
+                json = Json.createReader(rdr).readObject();
+            } catch ( JsonParsingException jpe ) {
+                logger.log(Level.SEVERE, "Json: {0}", jsonBody);
+                return errorResponse( Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage() );
+            }
+            
+            Dataset ds = new Dataset();
+            ds.setOwner(owner);
+            ds.setIdentifier( failIfNull(json.getString("identifier", null), "Identifier cannot be null") );
+            ds.setAuthority(  failIfNull(json.getString("authority", null), "Authority cannot be null") );
+            ds.setProtocol(   failIfNull(json.getString("protocol", null), "Protocol cannot be null") );
+             ds.setDoiShoulderCharacter(json.getString("doiShoulderCharacter"));
+
+            JsonObject jsonVersion = json.getJsonObject("initialVersion");
+            if ( jsonVersion == null) {
+                return errorResponse(Status.BAD_REQUEST, "Json POST data are missing initialVersion object.");
+            }
+            try {
+                try {
+                    DatasetVersion version = jsonParser().parseDatasetVersion(jsonVersion);
+                    
+                    // force "initial version" properties
+                    version.setMinorVersionNumber(null);
+                    version.setVersionNumber(null);
+                    version.setVersionState(DatasetVersion.VersionState.DRAFT);
+                    LinkedList<DatasetVersion> versions = new LinkedList<>();
+                    versions.add(version);
+                    version.setDataset(ds);
+                    
+                    ds.setVersions( versions );
+                } catch ( javax.ejb.TransactionRolledbackLocalException rbe ) {
+                    throw rbe.getCausedByException();
+                }
+            } catch (JsonParseException ex) {
+                logger.log( Level.INFO, "Error parsing dataset version from Json", ex);
+                return errorResponse(Status.BAD_REQUEST, "Error parsing initialVersion: " + ex.getMessage() );
+            } catch ( Exception e ) {
+                logger.log( Level.WARNING, "Error parsing dataset version from Json", e);
+                return errorResponse(Status.INTERNAL_SERVER_ERROR, "Error parsing initialVersion: " + e.getMessage() );
+            }
+            
+            Dataset managedDs = execCommand(new CreateDatasetCommand(ds, u), "Creating Dataset");
+            return createdResponse( "/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder().add("id", managedDs.getId()) );
+                
+        } catch ( WrappedResponse ex ) {
+            return ex.getResponse();
         }
     }
 	
@@ -425,7 +425,7 @@ public class Dataverses extends AbstractApiBean {
         Dataverse dv = dataverse;
         theRole = null;
         while ( (theRole==null) && (dv!=null) ) {
-            for ( DataverseRole aRole : dv.getRoles() ) {
+            for ( DataverseRole aRole : rolesSvc.availableRoles(dv.getId()) ) {
                 if ( aRole.getAlias().equals(ra.getRole()) ) {
                     theRole = aRole;
                     break;

@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -66,7 +67,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         Dataset savedDataset = ctxt.em().merge(theDataset);
         ctxt.em().flush();
         String indexingResult = ctxt.index().indexDataset(savedDataset);
-        logger.info("during dataset save, indexing result was: " + indexingResult);
+        logger.log(Level.INFO, "during dataset save, indexing result was: {0}", indexingResult);
         DatasetVersionUser ddu = ctxt.datasets().getDatasetVersionUser(theDataset.getLatestVersion(), this.getUser());
         
         if (ddu != null){

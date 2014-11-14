@@ -84,9 +84,10 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
-                        dataset.setProtocol(datasetService.getProtocol());
-                        dataset.setAuthority(datasetService.getAuthority());
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(datasetService.getProtocol(), datasetService.getAuthority()));
+                        dataset.setProtocol(dvThatWillOwnDataset.getProtocol());
+                        dataset.setAuthority(dvThatWillOwnDataset.getAuthority());
+                        dataset.setDoiShoulderCharacter(dvThatWillOwnDataset.getDoiShoulderCharacter());
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(dvThatWillOwnDataset.getProtocol(), dvThatWillOwnDataset.getAuthority(), dvThatWillOwnDataset));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 

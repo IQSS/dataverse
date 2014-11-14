@@ -36,9 +36,16 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	public DataverseRole save( DataverseRole aRole ) {
 		if ( aRole.getId() == null ) {
 			em.persist(aRole);
+                    /**
+                     * @todo Why would getId be null? Should we call
+                     * indexDefinitionPoint here too?
+                     */
 			return aRole;
 		} else {
-			return em.merge( aRole );
+                    DataverseRole merged = em.merge(aRole);
+                    String indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
+                    logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
+                    return merged;
 		}
 	}
 	
@@ -59,6 +66,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         return indexService.indexDvObject(definitionPoint);
     }
 
+    /**
+     * @todo Do we even need this? Users are already indexed when they are
+     * created.
+     */
+    @Deprecated
     private String indexRoleAssignee(RoleAssignee roleAssignee) {
         if (roleAssignee instanceof AuthenticatedUser) {
             return indexService.indexUser((AuthenticatedUser) roleAssignee);
@@ -94,7 +106,14 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	public List<DataverseRole> findBuiltinRoles() {
 		return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
 				.getResultList();
-	}        
+	}
+        
+	
+	public DataverseRole findBuiltinRoleByAlias(String alias) {
+		return em.createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
+                                .setParameter("alias", alias)
+				.getSingleResult();
+        }
 	
 	public void revoke( Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint ) {
 		for ( DataverseRole role : roles ) {

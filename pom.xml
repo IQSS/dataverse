@@ -39,6 +39,17 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
+		 <repository>
+            <id>dataone.org</id>
+            <url>http://dev-testing.dataone.org/maven</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
     </repositories>
              
     <dependencies>
@@ -256,6 +267,12 @@
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
             <version>2.0.12.Final</version>
+        </dependency>
+		 <dependency>
+			<groupId>edu.ucsb.nceas</groupId>
+            <artifactId>ezid</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 

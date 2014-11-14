@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
 import java.util.Objects;
 import javax.persistence.*;
@@ -24,7 +24,7 @@ import javax.persistence.*;
 // dataverse, dataset and datafile. The ids from the main table will be reused
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
-//@Inheritance(strategy=InheritanceType.JOINED)
+@Inheritance(strategy=InheritanceType.JOINED)
 public abstract class DvObject implements java.io.Serializable {
     
     public static final Visitor<String> NamePrinter = new Visitor<String>(){
@@ -59,7 +59,7 @@ public abstract class DvObject implements java.io.Serializable {
     private Timestamp createDate;
 
     @ManyToOne
-    private BuiltinUser creator;
+    private AuthenticatedUser creator;
 
 
     public interface Visitor<T> {
@@ -124,11 +124,11 @@ public abstract class DvObject implements java.io.Serializable {
         this.createDate = createDate;
     }
 
-    public BuiltinUser getCreator() {
+    public AuthenticatedUser getCreator() {
         return creator;
     }
 
-    public void setCreator(BuiltinUser creator) {
+    public void setCreator(AuthenticatedUser creator) {
         this.creator = creator;
     }
     
