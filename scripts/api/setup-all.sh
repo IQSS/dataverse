@@ -16,7 +16,7 @@ SERVER=http://localhost:8080/api
 
 
 echo "Setup the metadata blocks"
-./datasetfields.sh
+./setup-datasetfields.sh
 
 echo "Setup the builtin roles"
 ./setup-builtin-roles.sh
@@ -46,4 +46,4 @@ curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/d
 echo
 
 # OPTIONAL USERS AND DATAVERSES
-./setup-optional.sh
+#./setup-optional.sh
