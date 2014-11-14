@@ -55,8 +55,8 @@ public class DatasetVersionDTOTest {
             
             ArrayList<ArrayList<FieldDTO>> authors = dto.getMetadataBlocks().get("citation").getFields().get(1).getMultipleCompound();
            
-            dto.metadataBlocks.get("geospatial").fields.get(1);
-            System.out.println("jontext is " + jsontext);
+           
+            System.out.println("jsontext is " + jsontext);
         }catch (IOException e) {
             e.printStackTrace();
         }

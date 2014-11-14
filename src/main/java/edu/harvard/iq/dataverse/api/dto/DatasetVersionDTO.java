@@ -141,7 +141,7 @@ public class DatasetVersionDTO {
             return value.getAsString();
         }
         
-        List<String> getMultiplePrimitive() {
+        public List<String> getMultiplePrimitive() {
             List<String> values = new ArrayList<>();
             Iterator<JsonElement> iter =  value.getAsJsonArray().iterator();
             while (iter.hasNext()) {
@@ -151,7 +151,7 @@ public class DatasetVersionDTO {
             return values;
         }
         
-         List<FieldDTO> getSingleCompound() {
+         public List<FieldDTO> getSingleCompound() {
              Gson gson = new Gson();
              JsonObject elem = (JsonObject) value;
              ArrayList<FieldDTO> elemFields = new ArrayList<FieldDTO>();
@@ -167,7 +167,7 @@ public class DatasetVersionDTO {
              return elemFields;
          }
         
-        ArrayList<ArrayList<FieldDTO>> getMultipleCompound() {
+        public ArrayList<ArrayList<FieldDTO>> getMultipleCompound() {
             Gson gson = new Gson();
             ArrayList<ArrayList<FieldDTO>> fields = new ArrayList<ArrayList<FieldDTO>>();            
             JsonArray array = value.getAsJsonArray();
@@ -190,7 +190,7 @@ public class DatasetVersionDTO {
             return fields;
         }
         
-        Object getConvertedValue() {
+        public Object getConvertedValue() {
             if (multiple) {
                 if (typeClass.equals("compound")) {
                     return getMultipleCompound();
