@@ -5,7 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.ResourceBundle;
@@ -42,6 +44,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public Dataverse save(Dataverse dataverse) {
        
+        dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
         String indexingResult = indexService.indexDataverse(savedDataverse);
         logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);

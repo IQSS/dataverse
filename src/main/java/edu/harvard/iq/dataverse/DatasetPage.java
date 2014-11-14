@@ -796,6 +796,7 @@ public class DatasetPage implements java.io.Serializable {
 
             while (fmIt.hasNext()) {
                 FileMetadata dfn = fmIt.next();
+                dfn.getDataFile().setModificationTime(new Timestamp(new Date().getTime()));
                 for (FileMetadata markedForDelete : this.selectedFiles) {
                     if (markedForDelete.getId() == null && markedForDelete.getDataFile().getFileSystemName().equals(dfn.getDataFile().getFileSystemName())) {
                         fmIt.remove();

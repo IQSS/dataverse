@@ -65,9 +65,10 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         while (dsfItSort.hasNext()) {
             dsfItSort.next().setValueDisplayOrder();
         }
-        Date createDate = new Timestamp(new Date().getTime());
+        Timestamp createDate = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setCreateTime(createDate);
         theDataset.getEditVersion().setLastUpdateTime(createDate);
+        theDataset.setModificationTime(createDate);
         for (DataFile dataFile: theDataset.getFiles() ){
             dataFile.setCreateDate(theDataset.getCreateDate());
         }

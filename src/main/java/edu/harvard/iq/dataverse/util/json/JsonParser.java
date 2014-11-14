@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,6 +56,7 @@ public class JsonParser {
             
             dsv.setReleaseTime( parseDate(obj.getString("releaseDate", null)) );
             dsv.setLastUpdateTime( parseDate(obj.getString("lastUpdateTime", null)) );
+            dsv.getDataset().setModificationTime(new Timestamp(new Date().getTime()));
             dsv.setCreateTime( parseDate(obj.getString("createTime", null)) );
             dsv.setArchiveTime( parseDate(obj.getString("archiveTime", null)) );
             
