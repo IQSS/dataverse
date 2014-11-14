@@ -259,6 +259,10 @@ public class DataFile extends DvObject {
      * @return value of property filesize.
      */
     public long getFilesize() {
+        if (this.filesize == null) {
+            // -1 means "unknown"
+            return -1;
+        } 
         return this.filesize;
     }
 
