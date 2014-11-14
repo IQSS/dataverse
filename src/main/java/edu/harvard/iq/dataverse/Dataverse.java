@@ -87,7 +87,7 @@ public class Dataverse extends DvObjectContainer {
             case JOURNALS:
                 return "Journals";            
             case ORGANIZATIONS_INSTITUTIONS:
-                return "Organizations &amp; Institutions";            
+                return "Organizations & Institutions";            
             case TEACHING_COURSES:
                 return "Teaching Courses";            
             case UNCATEGORIZED:
