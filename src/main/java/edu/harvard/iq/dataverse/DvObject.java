@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Objects;
 import javax.persistence.*;
 
@@ -57,6 +58,27 @@ public abstract class DvObject implements java.io.Serializable {
     private String releaseUserIdtf;
     
     private Timestamp createDate;
+
+    @Column(nullable = false)
+    private Timestamp modificationTime;
+
+    private Timestamp indexTime;
+
+    /**
+     * modificationTime is used for comparison with indexTime so we know if the
+     * Solr index is stale.
+     */
+    public void setModificationTime(Timestamp modificationTime) {
+        this.modificationTime = modificationTime;
+    }
+
+    /**
+     * indexTime is used for comparison with modificationTime so we know if the
+     * Solr index is stale.
+     */
+    public void setIndexTime(Timestamp indexTime) {
+        this.indexTime = indexTime;
+    }
 
     @ManyToOne
     private AuthenticatedUser creator;

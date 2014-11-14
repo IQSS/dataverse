@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -43,6 +44,11 @@ public class AuthenticatedUser implements User, Serializable {
     private String email;
     private String affiliation;
     private boolean superuser;
+
+    @Column(nullable = false)
+    private Timestamp modificationTime;
+
+    private Timestamp indexTime;
 
     @Override
     public String getIdentifier() {
@@ -127,8 +133,14 @@ public class AuthenticatedUser implements User, Serializable {
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
     }
-    
-    
+
+    public void setModificationTime(Timestamp modificationTime) {
+        this.modificationTime = modificationTime;
+    }
+
+    public void setIndexTime(Timestamp indexTime) {
+        this.indexTime = indexTime;
+    }
 
     public boolean isBuiltInUser() {
         String authProviderString = authenticatedUserLookup.getId().getAuthenticationProviderId();

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -34,8 +35,10 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
             throw new IllegalCommandException("Latests version is already a draft. Cannot add another draft", this);
         }
         
-        newVersion.setCreateTime( new Date() );
-        newVersion.setLastUpdateTime( new Date() );
+        Timestamp now = new Timestamp(new Date().getTime());
+        newVersion.setCreateTime(now);
+        newVersion.setLastUpdateTime(now);
+        dataset.setModificationTime(now);
         newVersion.setDataset(dataset);
         ctxt.em().persist(newVersion);
 

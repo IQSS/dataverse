@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Updates a {@link DatasetVersion}, as long as that version is in a "draft" state.
@@ -42,7 +44,9 @@ public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         
         DatasetVersion edit = ds.getEditVersion();
         edit.setDatasetFields( newVersion.getDatasetFields() );
-        edit.setLastUpdateTime( new java.util.Date() );
+        Timestamp now = new Timestamp(new Date().getTime());
+        edit.setLastUpdateTime(now);
+        ds.setModificationTime(now);
         DatasetVersion managed = ctxt.em().merge(edit);
         
         ctxt.index().indexDataset(ds);
