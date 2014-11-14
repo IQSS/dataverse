@@ -31,6 +31,7 @@ import org.primefaces.model.DualListModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.faces.model.SelectItem;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -575,22 +576,25 @@ public class DataversePage implements java.io.Serializable {
 
 
     public void validateAlias(FacesContext context, UIComponent toValidate, Object value) {
-        String alias = (String) value;
-        boolean aliasFound = false;
-        Dataverse dv = dataverseService.findByAlias(alias);
-        if (editMode == DataversePage.EditMode.CREATE) {
-            if (dv != null) {
-                aliasFound = true;
+        if (!StringUtils.isEmpty((String)value)) {
+            String alias = (String) value;
+
+            boolean aliasFound = false;
+            Dataverse dv = dataverseService.findByAlias(alias);
+            if (editMode == DataversePage.EditMode.CREATE) {
+                if (dv != null) {
+                    aliasFound = true;
+                }
+            } else {
+                if (dv != null && !dv.getId().equals(dataverse.getId())) {
+                    aliasFound = true;
+                }
             }
-        } else {
-            if (dv != null && !dv.getId().equals(dataverse.getId())) {
-                aliasFound = true;
+            if (aliasFound) {
+                ((UIInput) toValidate).setValid(false);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "alias", "This Alias is already taken.");
+                context.addMessage(toValidate.getClientId(context), message);
             }
-        }
-        if (aliasFound) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "alias", "This Alias is already taken.");
-            context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
