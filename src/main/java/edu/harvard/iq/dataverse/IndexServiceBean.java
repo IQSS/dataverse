@@ -949,7 +949,7 @@ public class IndexServiceBean {
             if (dataverse.getOwner() != null) {
                 findPathSegments(dataverse.getOwner(), segments);
             }
-            segments.add(dataverse.getAlias());
+            segments.add(dataverse.getId().toString());
             return segments;
         } else {
             // base case
