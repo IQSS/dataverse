@@ -37,8 +37,17 @@
                             <div class="highlight form-inline">
                                 <div class="form-group">
                                     <label class="control-label">User/Group Name</label>
-                                    <p:autoComplete id="userGroupNameAssign" styleClass="form-control" value="#{rolePermissionFragment.assignRoleUsername}" 
-                                                    forceSelection="true" completeMethod="#{rolePermissionFragment.getIdentifiers}"/>
+                                    <p:autoComplete id="userGroupNameAssign" styleClass="form-control" forceSelection="true" emptyMessage="No matches found."
+                                                    value="#{rolePermissionFragment.assignRoleRoleAssignee}"  completeMethod="#{rolePermissionFragment.completeRoleAssignee}"
+                                                    var="roleAssignee" itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
+
+                                        <p:column>
+                                            <h:outputText value="#{roleAssignee.displayInfo.title}" />
+                                        </p:column>  
+                                        <p:column>
+                                            <h:outputText value="#{roleAssignee.displayInfo.emailAddress}" />
+                                        </p:column>                                  
+                                    </p:autoComplete>
                                     <ui:fragment rendered="#{!rolePermissionFragment.dvObject.instanceofDataFile}">
                                         <label class="control-label">Role</label>
                                         <p:selectOneMenu id="assignRoleOptions" styleClass="form-control" value="#{rolePermissionFragment.assignRoleRoleId}">
