@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
@@ -143,4 +144,43 @@ public class Search extends AbstractApiBean {
             return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
     }
+
+    /**
+     * This method is for integration tests of search and should be disabled
+     * with the boolean within it before release.
+     */
+    @GET
+    @Path("test")
+    public Response searchDebug(
+            @QueryParam("key") String apiToken,
+            @QueryParam("q") String query,
+            @QueryParam("fq") final List<String> filterQueries) {
+
+        boolean searchTestMethodDisabled = false;
+        if (searchTestMethodDisabled) {
+            return errorResponse(Response.Status.BAD_REQUEST, "disabled");
+        }
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+        Dataverse subtreeScope = dataverseService.findRootDataverse();
+
+        String sortField = SearchFields.ID;
+        String sortOrder = "asc";
+        int paginationStart = 0;
+        SolrQueryResponse solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
+
+        JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+        List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
+        for (SolrSearchResult solrSearchResult : solrSearchResults) {
+            itemsArrayBuilder.add(solrSearchResult.getType() + ":" + solrSearchResult.getNameSort());
+        }
+
+        return okResponse(itemsArrayBuilder);
+    }
+
 }

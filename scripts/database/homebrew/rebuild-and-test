@@ -16,15 +16,20 @@ scripts/database/homebrew/run-fix.sql
 scripts/database/homebrew/run-non-dvnApp-role
 scripts/database/homebrew/keys2tmp
 echo "---"
-echo "Running sanity checks..."
-scripts/search/tests/query-unparseable
-echo "Done running sanity checks. Silence is golden."
 echo "Creating search users"
 scripts/search/populate-users > /dev/null
 scripts/search/create-users > /dev/null
+echo "Creating bird and tree dataverses"
+scripts/search/populate-bird-dvs1
+scripts/search/create-bird-dvs1 > /dev/null
+scripts/search/populate-tree-dvs1
+scripts/search/create-tree-dvs1 > /dev/null
+echo "Running sanity checks..."
+scripts/search/tests/query-unparseable
+scripts/search/tests/permissions
+echo "Done running sanity checks. Silence is golden."
 exit
 # FIXME: clean up these old test and make them pass
-scripts/search/tests/permissions
 scripts/search/tests/delete-dataverse
 scripts/search/tests/highlighting-setup01 > /dev/null
 scripts/search/tests/highlighting-setup02 > /dev/null

@@ -1,0 +1,4 @@
+name	alias	permissionRoot	contactEmail	description	affiliation
+Trees	trees	true	trees@trees.com	A tree dataverse with some birds	Trees Inc.
+Spruce	spruce	false	spruce@trees.com	A spruce with some birds	Trees Inc.
+Chestnut Trees	chestnuttrees	false	chestnuttrees@trees.com	A dataverse with chestnut trees and an oriole	Trees Inc.

@@ -1,0 +1,8 @@
+#!/bin/bash
+BASEDIR='scripts/search'
+OUTDIR='data/in/dv-birds1'
+FULL_OUTDIR="$BASEDIR/$OUTDIR"
+rm -rf $FULL_OUTDIR
+mkdir -p $FULL_OUTDIR
+cd $BASEDIR
+count=1; ./tab2json-users data/dv-birds1.tsv | while read i; do echo $i | python -m json.tool > $OUTDIR/$count; let count++; done
