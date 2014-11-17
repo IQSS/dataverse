@@ -146,8 +146,8 @@ Shibboleth Installation and Configuration
 ``sudo curl -k -o /etc/yum.repos.d/security:shibboleth.repo  http://download.opensuse.org/repositories/security://shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
 $ yum install -y shibboleth shibboleth-embedded-ds
 
-Configure shib to authenticate against SP for TestShib IdP 
-***********************************************************
+Configure Shibboleth to authenticate against SP for TestShib IdP 
+****************************************************************
 
 - Set ShibEnabled to true to enable Shibboleth login
 ``curl -X PUT http://localhost:8080/api/s/settings/:ShibEnabled/true``
@@ -184,8 +184,10 @@ $ setenforce permissive
 
 $ service shibd restart
 
+To use "Permissive" mode at the next reboot modify /etc/selinix/config to SELINUX=permisive 
+
 Register  with `TestShib <http://www.testshib.org/>`__. by uploading your server metadata
-**********************************************************
+******************************************************************************************
 
 - Go to https://<servername> and download your server metadata to your local machine
 ``wget https://<servername>/Shibboleth.sso/Metadata``
