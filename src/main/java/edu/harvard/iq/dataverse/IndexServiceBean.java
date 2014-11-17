@@ -46,6 +46,8 @@ public class IndexServiceBean {
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
     @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
@@ -259,6 +261,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
+        dvObjectService.updateIndexTime(dataverse);
         return "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
 
     }
@@ -868,6 +871,8 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
+        dvObjectService.updateIndexTime(dataset);
+
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
@@ -1212,6 +1217,42 @@ public class IndexServiceBean {
         } else {
             return "unexpected instance of " + DvObject.class.toString() + ": " + dvObject.getClass().getName();
         }
+    }
+
+    public List findStaleDataverses() {
+        List<Dataverse> staleDataverses = new ArrayList<>();
+        for (Dataverse dataverse : dataverseService.findAll()) {
+            if (dataverse.equals(dataverseService.findRootDataverse())) {
+                continue;
+            }
+            if (stale(dataverse)) {
+                staleDataverses.add(dataverse);
+            }
+        }
+        return staleDataverses;
+    }
+
+    public List findStaleDatasets() {
+        List<Dataset> staleDatasets = new ArrayList<>();
+        for (Dataset dataset : datasetService.findAll()) {
+            if (stale(dataset)) {
+                staleDatasets.add(dataset);
+            }
+        }
+        return staleDatasets;
+    }
+
+    private boolean stale(DvObject dvObject) {
+        Timestamp indexTime = dvObject.getIndexTime();
+        Timestamp modificationTime = dvObject.getModificationTime();
+        if (indexTime == null) {
+            return true;
+        } else {
+            if (indexTime.before(modificationTime)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -64,12 +64,20 @@ public abstract class DvObject implements java.io.Serializable {
 
     private Timestamp indexTime;
 
+    public Timestamp getModificationTime() {
+        return modificationTime;
+    }
+
     /**
      * modificationTime is used for comparison with indexTime so we know if the
      * Solr index is stale.
      */
     public void setModificationTime(Timestamp modificationTime) {
         this.modificationTime = modificationTime;
+    }
+
+    public Timestamp getIndexTime() {
+        return indexTime;
     }
 
     /**

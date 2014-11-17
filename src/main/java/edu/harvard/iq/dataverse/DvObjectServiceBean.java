@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -25,5 +27,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
 				.setParameter("id", dvoc.getId())
 				.getSingleResult() > 0;
 	}
-	
+
+    public DvObject updateIndexTime(DvObject dvObject) {
+        dvObject.setIndexTime(new Timestamp(new Date().getTime()));
+        DvObject savedDvObject = em.merge(dvObject);
+        return savedDvObject;
+    }
+
 }
