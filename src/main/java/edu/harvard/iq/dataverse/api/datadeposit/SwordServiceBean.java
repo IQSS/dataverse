@@ -101,7 +101,13 @@ public class SwordServiceBean {
 
         for (String requiredField : requiredFields) {
             /**
-             * @todo see the node about findAllRequiredFields() above
+             * @todo See the note about findAllRequiredFields() above.
+             *
+             * @todo We can probably pull these out after these GSD fields after
+             * this ticket is closed:
+             *
+             * Make all fields in GSD block tsv "optional"
+             * https://github.com/IQSS/dataverse/issues/1137
              */
             if (requiredField.equals("gsdStudentName")) {
                 continue;
