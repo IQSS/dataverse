@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.search.Highlight;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -238,7 +237,7 @@ public class SearchServiceBean {
          */
         int numResultsPerPage = 10;
         solrQuery.setRows(numResultsPerPage);
-        logger.info("Solr query:" + solrQuery);
+        logger.fine("Solr query:" + solrQuery);
 
         QueryResponse queryResponse;
         try {
