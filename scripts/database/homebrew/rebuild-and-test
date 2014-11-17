@@ -16,9 +16,12 @@ scripts/database/homebrew/run-fix.sql
 scripts/database/homebrew/run-non-dvnApp-role
 scripts/database/homebrew/keys2tmp
 echo "---"
-echo "Running tests..."
+echo "Running sanity checks..."
 scripts/search/tests/query-unparseable
-echo "Done running tests. Silence is golden."
+echo "Done running sanity checks. Silence is golden."
+echo "Creating search users"
+scripts/search/populate-users > /dev/null
+scripts/search/create-users > /dev/null
 exit
 # FIXME: clean up these old test and make them pass
 scripts/search/tests/permissions

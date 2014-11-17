@@ -1,0 +1,8 @@
+#!/bin/bash
+BASEDIR='scripts/search'
+USERDIR='data/in/users'
+FULL_USERDIR="$BASEDIR/$USERDIR"
+rm -rf $FULL_USERDIR
+mkdir -p $FULL_USERDIR
+cd $BASEDIR
+count=1; ./tab2json-users users.tsv | while read i; do echo $i | python -m json.tool > $USERDIR/$count; let count++; done
