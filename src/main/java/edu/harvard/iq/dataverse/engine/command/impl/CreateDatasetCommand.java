@@ -74,7 +74,8 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
         }
         
         theDataset.setGlobalIdCreateTime(null);
-        if (theDataset.getOwner().getProtocol().equals("doi") && theDataset.getOwner().getDoiProvider().equals(Dataverse.DOIProvider.EZID)) {
+        if (theDataset.getOwner().getProtocol() != null && theDataset.getOwner().getProtocol().equals("doi") 
+              && theDataset.getOwner().getDoiProvider() != null  && theDataset.getOwner().getDoiProvider().equals(Dataverse.DOIProvider.EZID)) {
             String doiRetString = ctxt.doiEZId().createIdentifier(theDataset);
             if (!doiRetString.equals("Identifier not created")) {
                 theDataset.setGlobalIdCreateTime(createDate);

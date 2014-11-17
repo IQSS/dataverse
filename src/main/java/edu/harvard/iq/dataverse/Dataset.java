@@ -120,7 +120,8 @@ public class Dataset extends DvObjectContainer {
     }
 
     private String getEZIdURL() {
-        return "http://dx.doi.org/" + authority + doiShoulderCharacter + getIdentifier();
+        String doiShoulderCharacterRet = doiShoulderCharacter == null ? "" : doiShoulderCharacter;
+        return "http://dx.doi.org/" + authority + doiShoulderCharacterRet + getIdentifier();
     }
 
     public List<DataFile> getFiles() {
@@ -336,7 +337,8 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getGlobalId() {
-        return protocol + ":" + authority + doiShoulderCharacter + getIdentifier();
+        String doiShoulderCharacterRet = doiShoulderCharacter == null ? "" : doiShoulderCharacter;
+        return protocol + ":" + authority + doiShoulderCharacterRet + getIdentifier();
     }
 
     public String getDisplayName() {

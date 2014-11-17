@@ -106,7 +106,8 @@ public class DOIEZIdServiceBean  {
     }
     
     public String getIdentifierForLookup(String protocol, String authority, String identifier, String doiShoulderCharacter ) {
-        return protocol + ":" + authority + doiShoulderCharacter + identifier;
+        String doiShoulderCharacterRet = doiShoulderCharacter == null ? "" : doiShoulderCharacter;
+        return protocol + ":" + authority + doiShoulderCharacterRet  + identifier;
     }
     
     
@@ -156,7 +157,9 @@ public class DOIEZIdServiceBean  {
             //if public then it has been released set to unavaialble and reset target to n2t url
             updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
             HashMap metadata = new HashMap();
-            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() + datasetIn.getDoiShoulderCharacter() + datasetIn.getIdentifier());
+             String doiShoulderCharacterRet = datasetIn.getDoiShoulderCharacter() == null ? "" : datasetIn.getDoiShoulderCharacter();
+            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
+                    + doiShoulderCharacterRet  + datasetIn.getIdentifier());
             modifyIdentifier(datasetIn, metadata);
         }
     }
@@ -183,12 +186,16 @@ public class DOIEZIdServiceBean  {
         String inetAddress = getSiteUrl();
         String targetUrl = "";     
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
-
+        String doiShoulderCharacterRet = datasetIn.getDoiShoulderCharacter() == null ? "" : datasetIn.getDoiShoulderCharacter();
         if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER + datasetIn.getOwner().getDoiShoulderCharacter() + datasetIn.getIdentifier();
+           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER 
+                   + doiShoulderCharacterRet
+                           + datasetIn.getIdentifier();
            System.out.print("inetAddress.equals localhost" + targetUrl);
         } else{
-           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER + datasetIn.getOwner().getDoiShoulderCharacter()  + datasetIn.getIdentifier();
+           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER 
+                   + doiShoulderCharacterRet 
+                   + datasetIn.getIdentifier();
         }            
         System.out.print("targetUrl: " + targetUrl);
         metadata.put("_target", targetUrl);
