@@ -186,7 +186,7 @@ $ service shibd restart
 
 To use "Permissive" mode at the next reboot modify /etc/selinix/config to SELINUX=permisive 
 
-Register  with `TestShib <http://www.testshib.org/>`__. by uploading your server metadata
+Register  with `TestShib <http://www.testshib.org/>`__ by uploading your server metadata
 ******************************************************************************************
 
 - Go to https://<servername> and download your server metadata to your local machine
