@@ -12,11 +12,7 @@ installer:	dvinstall.zip
 
 dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-<<<<<<< Updated upstream
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA}
-=======
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
->>>>>>> Stashed changes
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
