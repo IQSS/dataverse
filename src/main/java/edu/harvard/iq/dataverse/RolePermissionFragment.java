@@ -281,6 +281,16 @@ public class RolePermissionFragment implements java.io.Serializable {
         setRole(new DataverseRole());
         role.setOwner(dvObject);
     }
+    
+    public void cloneRole(String roleId) {
+        DataverseRole clonedRole = new DataverseRole();
+        clonedRole.setOwner(dvObject);
+        
+        DataverseRole originalRole = roleService.find(Long.parseLong(roleId));
+        clonedRole.addPermissions(originalRole.permissions());
+        setRole(clonedRole);
+    }
+    
 
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));
