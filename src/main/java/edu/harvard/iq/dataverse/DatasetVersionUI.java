@@ -477,7 +477,6 @@ public class DatasetVersionUI implements Serializable {
 
         List <DataverseFieldTypeInputLevel> dftilList = dataverseFieldTypeInputLevelServiceBean.findByDataverseId(dvIdForInputLevel);
         for (MetadataBlock mdb : this.datasetVersion.getDataset().getOwner().getMetadataBlocks()) {
-            System.out.print("Start of loop " + mdb.getName());
             mdb.setEmpty(true);
             mdb.setHasRequired(false);
             List<DatasetField> datasetFieldsForView = new ArrayList();

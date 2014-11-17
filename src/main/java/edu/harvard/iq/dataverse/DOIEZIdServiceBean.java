@@ -44,7 +44,6 @@ public class DOIEZIdServiceBean  {
         logger.log(Level.INFO, "baseURLString " + baseURLString);
         try {
            ezidService.login(USERNAME, PASSWORD);  
-           System.out.print("Login successful");
         } catch(Exception e){
             logger.log(Level.INFO, "login failed ");
             logger.log(Level.INFO, "String " + e.toString() );
@@ -58,7 +57,6 @@ public class DOIEZIdServiceBean  {
         String retString = "";
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        System.out.print(identifier);
         metadata.put("_status", "reserved");;       
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
@@ -71,7 +69,6 @@ public class DOIEZIdServiceBean  {
             logger.log(Level.INFO, "message " + e.getMessage());
             return "Identifier not created";
         }
-        System.out.print("createIdentifier return string : " + retString);
         return retString;
     }
     
@@ -191,13 +188,11 @@ public class DOIEZIdServiceBean  {
            targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER 
                    + doiShoulderCharacterRet
                            + datasetIn.getIdentifier();
-           System.out.print("inetAddress.equals localhost" + targetUrl);
         } else{
            targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER 
                    + doiShoulderCharacterRet 
                    + datasetIn.getIdentifier();
         }            
-        System.out.print("targetUrl: " + targetUrl);
         metadata.put("_target", targetUrl);
         return metadata;
     }
