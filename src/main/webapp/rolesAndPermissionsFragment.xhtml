@@ -178,7 +178,7 @@
                         <div>
                             <ui:repeat id="roleList" value="#{rolePermissionFragment.availableRoles}" var="role">
                                 <f:passThroughAttribute name="class" value="list-unstyled" />
-                                <div class="#{(!empty role.owner and permissionServiceBean.on(role.owner).has('CreateRole')) ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
+                                <div class="#{!empty role.owner ? 'bg-info' : 'bg-warning'}" style="margin-bottom:1em;padding:5px;">
                                     <span style="font-weight:bold">#{role.name}</span>
                                     <h:outputText value=" - #{role.description}" rendered="#{!empty role.description}"/>
                                     <ui:fragment rendered="#{!empty role.owner and permissionServiceBean.on(role.owner).has('CreateRole')}">
