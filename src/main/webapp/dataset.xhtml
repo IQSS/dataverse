@@ -565,7 +565,7 @@
 
                                         <p:column styleClass="col-sm-4" style="overflow: visible;text-align:right;" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
                                             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData or fileMetadata.dataFile.ingestInProgress}">
-                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="/dataexplore/gui.html?dfId=#{fileMetadata.dataFile.id}" target="_blank">
+                                                <h:outputLink style="margin-right:1em;color:black;font-size:1em;" class="btn btn-default #{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}" title="Explore" value="#{DatasetPage.getDataExploreURLComplete(fileMetadata.dataFile.id)}" target="_blank">
                                                     <span class="glyphicon glyphicon-stats" style="margin-right:.3em;"/> <span class="ladda-label">Explore</span>
                                                 </h:outputLink>
                                             </ui:fragment>

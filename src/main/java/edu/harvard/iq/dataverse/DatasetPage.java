@@ -24,12 +24,15 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +67,7 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
+import java.net.URLEncoder;
 
 /**
  *
@@ -114,7 +118,11 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     BuiltinUserServiceBean builtinUserService;  
     @EJB
-    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;  
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
+    @EJB
+    SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject 
     DatasetVersionUI datasetVersionUI;
     
@@ -1228,4 +1236,59 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
+    
+    public String getDataExploreURL() {
+        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl); 
+        
+        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
+            return TwoRavensUrl;
+        }
+        
+        return "";
+    }
+    
+    public String getDataExploreURLComplete(Long fileid) {
+        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl); 
+        String TwoRavensDefaultLocal = "/dataexplore/gui.html?dfId=";
+        
+        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
+            // If we have TwoRavensUrl set up as, as an optional 
+            // configuration service, it must mean that TwoRavens is sitting 
+            // on some remote server. And that in turn means that we must use 
+            // full URLs to pass data and metadata to it. 
+            String tabularDataURL = getTabularDataFileURL(fileid);
+            String tabularMetaURL = getVariableMetadataURL(fileid);
+            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL;
+        }
+        
+        // For a local TwoRavens setup it's enough to call it with just 
+        // the file id:
+        return TwoRavensDefaultLocal + fileid;
+    }
+    
+    public String getVariableMetadataURL(Long fileid) {
+        String myHostURL = systemConfig.getDataverseSiteUrl();
+        String metaURL = myHostURL + "/api/meta/dataset/" + fileid;
+        
+        /*try {
+            return URLEncoder.encode(metaURL, "UTF8");
+        } catch (UnsupportedEncodingException uex) {*/
+            //metaURL = metaURL.replaceAll(":", "\\:");
+            return metaURL;
+        /*}*/
+    }
+    
+    public String getTabularDataFileURL(Long fileid) {
+        String myHostURL = systemConfig.getDataverseSiteUrl();;
+        String dataURL = myHostURL + "/api/data/access/" + fileid;
+        
+        /*try {
+            return URLEncoder.encode(dataURL, "UTF8");
+        } catch (UnsupportedEncodingException uex) {*/
+            //dataURL = dataURL.replaceAll(":", "\\:");
+            return dataURL;
+        /*}*/
+    }
+    
+    
 }

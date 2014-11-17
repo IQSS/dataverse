@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -26,6 +28,13 @@ public class SystemConfig {
      * The equivalent in DVN 3.x was "dvn.inetAddress".
      */
     public static final String FQDN = "dataverse.fqdn";
+    
+    /**
+     * A JVM option for specifying the "official" URL of the site. 
+     * Unlike the FQDN option above, this would be a complete URL, 
+     * with the protocol, port number etc. 
+     */
+    public static final String SITE_URL = "dataverse.siteUrl";
 
     /**
      * A JVM option for where files are stored on the file system.
@@ -71,6 +80,31 @@ public class SystemConfig {
             }
         }
         return reasonableDefault;
+    }
+    
+    /**
+     * The "official", designated URL of the site;
+     * can be defined as a complete URL; or derived from the 
+     * "official" hostname. If none of these options is set,
+     * defaults to the InetAddress.getLocalHOst() and https;
+     * These are legacy JVM options. Will be eventualy replaced
+     * by the Settings Service configuration.
+     */
+    public String getDataverseSiteUrl() {
+        String hostUrl = System.getProperty(SITE_URL);
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl;
+        }
+        String hostName = System.getProperty(FQDN);
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://" + hostName;
+        return hostUrl;
     }
 
 }
