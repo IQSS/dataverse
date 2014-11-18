@@ -3,7 +3,7 @@
                xsi:schemaLocation="http://ocpsoft.com/prettyfaces/3.3.0 http://ocpsoft.com/xml/ns/prettyfaces/ocpsoft-pretty-faces-3.3.0.xsd">
 
     <url-mapping id="viewDataverse">
-        <pattern value="/view-datataverse/#{alias}" />
+        <pattern value="/view-dataverse/#{alias}" />
         <view-id value="/dataverse.xhtml" />
     </url-mapping>
         
