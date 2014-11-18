@@ -1,7 +1,10 @@
 #!/bin/bash
 DIR=/tmp/searchusers
 FINCHKEY=`cat $DIR/1 | jq .data.apiToken | tr -d \"`
+SPARROWKEY=`cat $DIR/2 | jq .data.apiToken | tr -d \"`
+WRENKEY=`cat $DIR/3 | jq .data.apiToken | tr -d \"`
 SPRUCEKEY=`cat $DIR/4 | jq .data.apiToken | tr -d \"`
+CHESTNUTKEY=`cat $DIR/5 | jq .data.apiToken | tr -d \"`
 # After dropping your datbase and getting set up again per the dev guide,
 # You should see no output from this script. Silence is golden.
 # If you start creating dataverses and datasets, you should expect to see output.
@@ -11,3 +14,9 @@ diff <(curl -s 'http://localhost:8080/api/search?q=*' | jq .) scripts/search/tes
 diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$FINCHKEY" | jq .data) scripts/search/tests/expected/finch1
 
 diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPRUCEKEY" | jq .data) scripts/search/tests/expected/spruce1
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$SPARROWKEY" | jq .data) scripts/search/tests/expected/anon-empty
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$WRENKEY" | jq .data) scripts/search/tests/expected/anon-empty
+
+diff <(curl -s "http://localhost:8080/api/search/test?q=*&key=$CHESTNUTKEY" | jq .data) scripts/search/tests/expected/anon-empty

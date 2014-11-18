@@ -3,12 +3,15 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -30,7 +33,11 @@ public class Search extends AbstractApiBean {
     @EJB
     SearchServiceBean searchService;
     @EJB
+    SearchPermissionsServiceBean searchPerms;
+    @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
 
     @GET
     public Response search(@QueryParam("key") String apiToken,
@@ -181,6 +188,43 @@ public class Search extends AbstractApiBean {
         }
 
         return okResponse(itemsArrayBuilder);
+    }
+
+    /**
+     * This method is for integration tests of search and should be disabled
+     * with the boolean within it before release.
+     */
+    @GET
+    @Path("perms")
+    public Response searchPerms(
+            @QueryParam("key") String apiToken,
+            @QueryParam("id") Long dvObjectId) {
+
+        boolean searchTestMethodDisabled = false;
+        if (searchTestMethodDisabled) {
+            return errorResponse(Response.Status.BAD_REQUEST, "disabled");
+        }
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        List<DvObjectSolrDoc> solrDocs = searchPerms.determineSolrDocs(dvObjectId);
+
+        JsonObjectBuilder docs = Json.createObjectBuilder();
+        for (DvObjectSolrDoc doc : solrDocs) {
+            JsonArrayBuilder permArray = Json.createArrayBuilder();
+            for (String perm : doc.getPermissions()) {
+                permArray.add(perm);
+            }
+            docs.add(doc.getNameOrTitle(), permArray);
+        }
+
+        JsonArrayBuilder perms = Json.createArrayBuilder();
+        perms.add(docs);
+
+        return okResponse(perms);
     }
 
 }

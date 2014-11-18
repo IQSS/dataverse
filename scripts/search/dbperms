@@ -1,0 +1,9 @@
+#!/bin/sh
+~/.homebrew/bin/psql -c "
+select dv.id as dvObject, au.id as user
+from dvobject dv, roleassignment ra, authenticateduser au
+where 1=1
+and dv.id = $1
+and dv.id = ra.definitionpoint_id
+and  '@'|| au.useridentifier = ra.assigneeidentifier; 
+" dataverse_db

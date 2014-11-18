@@ -58,8 +58,6 @@ public class IndexServiceBean {
     @EJB
     AuthenticationServiceBean userServiceBean;
     @EJB
-    RoleAssigneeServiceBean roleAssigneeSvc;
-    @EJB
     SystemConfig systemConfig;
 
     private final String solrDocIdentifierDataverse = "dataverse_";

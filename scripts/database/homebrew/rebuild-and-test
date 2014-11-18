@@ -24,6 +24,7 @@ scripts/search/populate-bird-dvs1
 scripts/search/create-bird-dvs1 > /dev/null
 scripts/search/populate-tree-dvs1
 scripts/search/create-tree-dvs1 > /dev/null
+scripts/database/homebrew/run-fix2.sql
 echo "Running sanity checks..."
 scripts/search/tests/query-unparseable
 scripts/search/tests/permissions
