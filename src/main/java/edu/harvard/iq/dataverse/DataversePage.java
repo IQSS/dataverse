@@ -120,7 +120,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse == null) {
                 return "/404.xhtml";
             }
-            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
+            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             } 
             

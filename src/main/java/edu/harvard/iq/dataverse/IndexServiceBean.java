@@ -185,7 +185,7 @@ public class IndexServiceBean {
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
@@ -196,7 +196,7 @@ public class IndexServiceBean {
             logger.info(currentDataverse.getAlias() + " is NOT effectively permissionRoot");
             List<RoleAssignment> assignmentsOn2 = permissionService.assignmentsOn(currentDataverse);
             for (RoleAssignment roleAssignment : assignmentsOn2) {
-                if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
                     addPermissionToSolrDoc(solrInputDocument, roleAssignment);
                 }
             }
@@ -592,7 +592,7 @@ public class IndexServiceBean {
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
@@ -791,12 +791,11 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
                 /**
-                 * @todo Can permissions on files be inherited from the dataset
-                 * or dataverse?
+                 * The permission to view a datafile is based on the role assignments at the dataset level
                  */
-                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile);
+                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile.getOwner());
                 for (RoleAssignment roleAssignment : assignmentsOnFile) {
-                    if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                    if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
                         addPermissionToSolrDoc(datafileSolrInputDocument, roleAssignment);
                     }
                 }

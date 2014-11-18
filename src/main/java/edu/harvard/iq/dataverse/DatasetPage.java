@@ -466,7 +466,7 @@ public class DatasetPage implements java.io.Serializable {
             
             if (workingVersion == null) {
                 return "/404.xhtml";
-            }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.Discover)) {
+            }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }             
             
