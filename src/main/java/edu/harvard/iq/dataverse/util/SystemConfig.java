@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -47,6 +49,24 @@ public class SystemConfig {
     public String getSolrHostColonPort() {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
+    }
+    
+    
+    public String getDataverseSiteUrl() {
+        String hostUrl = System.getProperty("dataverse.siteUrl");
+        if (hostUrl != null && !"".equals(hostUrl)) {
+            return hostUrl;
+        }
+        String hostName = System.getProperty("dataverse.fqdn");
+        if (hostName == null) {
+            try {
+                hostName = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        hostUrl = "https://" + hostName;
+        return hostUrl;
     }
 
     /**

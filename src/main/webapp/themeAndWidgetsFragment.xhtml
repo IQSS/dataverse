@@ -5,9 +5,7 @@
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:p="http://primefaces.org/ui"
     xmlns:o="http://omnifaces.org/ui">
-    <!-- Theme and Widgets Popup -->
-    <p:dialog id="themeAndWidgetsDlg" closable="false"   header="Theme + Widgets" widgetVar="themeAndWidgetsForm" modal="true" styleClass="largePopUp">
-        <p:remoteCommand process="@this" update=":dataverseForm:themeWidgetsTabView"   name="resetForm" action="#{themeWidgetFragment.resetForm()}"/>                  
+    <!-- Theme and Widgets Edit Tabs -->
         <p:tabView  rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
             <p:tab id="themeTab" title="Theme">
                 <p:fragment autoUpdate="true">
@@ -48,14 +46,14 @@
                                                 <img jsf:rendered="#{themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/temp/#{themeWidgetFragment.tempDirName}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
                                                 <img jsf:rendered="#{not themeWidgetFragment.uploadExists()}" class="logoPreview" src="/logos/#{themeWidgetFragment.editDv.id}/#{themeWidgetFragment.editDv.dataverseTheme.logo}" alt="#{themeWidgetFragment.editDv.name} Dataverse"/>
                                             </p>
-                                            <p:commandButton update=":dataverseForm:themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
+                                            <p:commandButton update=":themeWidgetsTabView" value="Remove" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                         </p:column>
-                                        <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                       fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload New File"/>
                                         <p:message for="changelogo"/>
                                     </p:panelGrid>
                                     <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
-                                        <p:fileUpload id="uploadlogo" update=":dataverseForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
+                                        <p:fileUpload id="uploadlogo" update=":themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
                                                       fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="Upload Image File"/>
                                         <p:message for="uploadlogo"/>
                                     </p:panelGrid>
@@ -218,8 +216,8 @@
                         </div>
                     </ui:fragment>
                 </p:fragment>
-                <p:commandButton update=":dataverseForm:themeWidgetsTabView"  oncomplete="saveThemeHandleComplete(xhr, status, args);" value="Save Changes" action="#{themeWidgetFragment.save()}"/>
-                <p:commandButton   process="@this"   id="widgetsDone"  oncomplete="resetForm();themeAndWidgetsForm.hide()" value="Cancel">
+                <p:commandButton update=":themeWidgetsTabView"   value="Save Changes" action="#{themeWidgetFragment.save()}"/>
+                <p:commandButton action="dataverse" immediate="true"     id="widgetsDone"   value="Cancel">
            
                 </p:commandButton>    
                
@@ -236,7 +234,7 @@
                     <span class="text-muted">Add a way for visitors on your website to be able to search Dataverse.</span>
                 </div>
                 <div>
-                    <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;
+                    <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=search&quot;&gt;&lt;/script&gt;
                     </textarea>
                 </div>
                 <div>
@@ -246,26 +244,11 @@
                     <span class="text-muted">Add a way for visitors on your website to be able to view your dataverses and datasets, sort and page through them.</span>
                 </div>
                 <div>
-                    <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{DataversePage.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{DataversePage.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
+                    <textarea rows="2" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?id=#{themeWidgetFragment.editDv.id}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&quot;&gt;&lt;/script&gt;
                     </textarea>
                 </div>
-                <p:commandButton  process="@this" action="#{themeWidgetFragment.initEditDv(DataversePage.dataverse.id)}" partialSubmit="true"  id="widgetsCancel"  oncomplete="themeAndWidgetsForm.hide()" value="Done"/>
+                <p:commandButton  process="@this" action="dataverse"   id="widgetsCancel"   value="Done"/>
             </p:tab>
         </p:tabView>
-    </p:dialog>
-    <script type="text/javascript">
-        // <![CDATA[
-        function saveThemeHandleComplete(xhr, status, args) {
-            // We only want to close the CreateSet pop-up
-            // if there
-            // are no validation or creation errors
-            // alert("xhr="+xhr.responseText);
-            if (xhr.responseText.search('class="error"') === -1 && args.validationFailed === undefined) {
-                PF('themeAndWidgetsForm').hide();
-                 window.location.reload();
-            } else {
-                // alert(" contains class error = "+ xhr.responseText.search('class="error"')!==-1);
-            }
-        } // ]]>
-    </script>
+   
 </div> 
