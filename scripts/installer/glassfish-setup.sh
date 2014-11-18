@@ -209,6 +209,11 @@ fi
 
 ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 
+# EZID DOI Settings
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.password=apitest"
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=apitest"
+./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=https://ezid.cdlib.org"
+
 # enable comet support
 ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
