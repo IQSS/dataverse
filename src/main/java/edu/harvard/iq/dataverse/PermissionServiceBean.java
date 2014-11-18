@@ -137,12 +137,7 @@ public class PermissionServiceBean {
         for (RoleAssignment asmnt : roleService.assignmentsFor(u, d)) {
             retVal.addAll(asmnt.getRole().permissions());
         }
-
-        // Every user can access released DvObjects
-        if (d.isReleased()) {
-            retVal.add(Permission.Discover);
-        }
-
+        
         return retVal;
     }
 
