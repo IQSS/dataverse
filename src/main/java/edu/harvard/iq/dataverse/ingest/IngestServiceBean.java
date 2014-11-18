@@ -79,6 +79,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -555,6 +556,7 @@ public class IngestServiceBean {
     private DataFile createSingleDataFile(DatasetVersion version, InputStream inputStream, String fileName, String contentType) {
 
         DataFile datafile = new DataFile(contentType);
+        datafile.setModificationTime(new Timestamp(new Date().getTime()));
         FileMetadata fmd = new FileMetadata();
         
         fmd.setLabel(checkForDuplicateFileNames(version,fileName));

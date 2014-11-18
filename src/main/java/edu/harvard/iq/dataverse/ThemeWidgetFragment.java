@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.Datasets;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
@@ -45,8 +46,8 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     static final String DEFAULT_BACKGROUND_COLOR = "F5F5F5";
     static final String DEFAULT_LINK_COLOR = "428BCA";
     static final String DEFAULT_TEXT_COLOR = "888888";
-    private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());
-     
+    private static final Logger logger = Logger.getLogger(ThemeWidgetFragment.class.getCanonicalName());   
+
     @Inject DataversePage dataversePage;
     private File tempDir;
     private File uploadedFile;
@@ -189,7 +190,9 @@ public void validateUrl(FacesContext context, UIComponent component, Object valu
      * Copy filename into Dataverse logo 
      * @param event 
      */
+
     public void handleImageFileUpload(FileUploadEvent event) {
+
             logger.finer("entering fileUpload");
             if (this.tempDir==null) {
                 createTempDir();

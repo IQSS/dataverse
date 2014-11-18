@@ -58,6 +58,7 @@ public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
         }
         Timestamp updateTime = new Timestamp(new Date().getTime());
         theDataset.getEditVersion().setLastUpdateTime(updateTime);
+        theDataset.setModificationTime(updateTime);
         for (DataFile dataFile : theDataset.getFiles()) {
             if (dataFile.getCreateDate() == null) {
                 dataFile.setCreateDate(updateTime);
