@@ -156,7 +156,7 @@ public class RolePermissionFragment implements java.io.Serializable {
             raList = new ArrayList<>(ras.size());
             for (RoleAssignment ra : ras) {
                 // for files, only show role assihnemnts which can download
-                if (!(dvObject instanceof DataFile) || ra.getRole().permissions().contains(Permission.Download)) {
+                if (!(dvObject instanceof DataFile) || ra.getRole().permissions().contains(Permission.DownloadFile)) {
                     raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));
                 }
             }
