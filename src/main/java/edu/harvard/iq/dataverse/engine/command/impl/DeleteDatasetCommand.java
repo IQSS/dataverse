@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  * Deletes a data set.
  * @author michael
  */
-@RequiredPermissions( Permission.DestructiveEdit )
+@RequiredPermissions( Permission.DeleteDatasetDraft )
 public class DeleteDatasetCommand extends DestroyDatasetCommand {
 	
 	private final Dataset doomed;

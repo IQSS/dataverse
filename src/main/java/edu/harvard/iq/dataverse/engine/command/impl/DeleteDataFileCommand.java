@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author michael
  */
-@RequiredPermissions(Permission.DestructiveEdit)
+@RequiredPermissions(Permission.DeleteDatasetDraft)
 public class DeleteDataFileCommand extends AbstractVoidCommand {
     private static final Logger logger = Logger.getLogger(DeleteDataFileCommand.class.getCanonicalName());
 

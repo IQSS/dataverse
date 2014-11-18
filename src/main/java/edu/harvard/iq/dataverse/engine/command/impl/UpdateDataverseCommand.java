@@ -16,7 +16,7 @@ import java.util.List;
  * Update an existing dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.EditMetadata )
+@RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 	
 	private final Dataverse editedDv;

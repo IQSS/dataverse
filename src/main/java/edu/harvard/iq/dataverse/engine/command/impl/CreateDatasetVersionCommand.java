@@ -16,7 +16,7 @@ import java.util.Date;
  *
  * @author michael
  */
-@RequiredPermissions( Permission.AddDatasetVersion )
+@RequiredPermissions( Permission.AddDataset)
 public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     
     final DatasetVersion newVersion;

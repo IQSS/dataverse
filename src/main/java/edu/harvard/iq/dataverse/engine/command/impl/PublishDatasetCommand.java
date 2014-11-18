@@ -27,7 +27,7 @@ import java.util.Date;
  * @author skraffmiller
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "", value = Permission.Publish)
+    @RequiredPermissions(dataverseName = "", value = Permission.PublishDataset)
 })
 public class PublishDatasetCommand extends AbstractCommand<Dataset> {
 
@@ -35,7 +35,7 @@ public class PublishDatasetCommand extends AbstractCommand<Dataset> {
     Dataset theDataset;
 
     public PublishDatasetCommand(Dataset datasetIn, User user, boolean minor) {
-        super(user, datasetIn);
+        super(user, datasetIn.getOwner());
         minorRelease = minor;
         theDataset = datasetIn;
     }

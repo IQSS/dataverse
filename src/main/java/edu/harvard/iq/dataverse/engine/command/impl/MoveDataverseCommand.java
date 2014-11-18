@@ -14,11 +14,16 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
  * @author michael
  */
+
+//@todo We will need to revist the permissions for move, once we add this 
+//(will probably need different move commands for unplublished which checks add,
+//versus published which checks publish 
+/*
 @RequiredPermissionsMap({
 	@RequiredPermissions( dataverseName = "moved",       value = {Permission.UndoableEdit, Permission.AssignRole} ),
 	@RequiredPermissions( dataverseName = "source",      value = Permission.UndoableEdit ),
 	@RequiredPermissions( dataverseName = "destination", value = Permission.DestructiveEdit )
-})
+})*/
 public class MoveDataverseCommand extends AbstractVoidCommand {
 	
 	final Dataverse moved;

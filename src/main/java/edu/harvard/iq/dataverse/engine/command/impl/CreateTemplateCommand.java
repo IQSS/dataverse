@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.EditMetadata )
+@RequiredPermissions( Permission.EditDataverse )
 public class CreateTemplateCommand extends AbstractCommand<Template> {
     	private final Template created;
 	private final Dataverse dv;

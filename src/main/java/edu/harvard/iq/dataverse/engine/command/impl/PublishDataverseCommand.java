@@ -11,14 +11,14 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import java.sql.Timestamp;
 import java.util.Date;
 
-@RequiredPermissions(Permission.Publish)
+@RequiredPermissions(Permission.PublishDataverse)
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
     private final Dataverse dataverse;
     private final User dataverseUser;
 
     public PublishDataverseCommand(User dataverseUser, Dataverse dataverse) {
-        super(dataverseUser, dataverse);
+        super(dataverseUser, dataverse.getOwner());
         this.dataverse = dataverse;
         this.dataverseUser = dataverseUser;
     }
