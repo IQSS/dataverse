@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions(Permission.DestructiveEdit)
+@RequiredPermissions(Permission.DeaccessionDataset)
 public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
 
 
@@ -28,7 +28,7 @@ public class DeaccessionDatasetVersionCommand extends AbstractCommand<DatasetVer
    final boolean deleteDOIIdentifier;
     
     public DeaccessionDatasetVersionCommand(User aUser, DatasetVersion deaccessionVersion, boolean deleteDOIIdentifierIn) {
-        super(aUser, deaccessionVersion.getDataset());
+        super(aUser, deaccessionVersion.getDataset().getOwner());
         theVersion = deaccessionVersion;
         deleteDOIIdentifier = deleteDOIIdentifierIn;
     }
