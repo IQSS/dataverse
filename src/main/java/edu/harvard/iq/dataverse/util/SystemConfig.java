@@ -107,4 +107,19 @@ public class SystemConfig {
         return hostUrl;
     }
 
+    /**
+     * The "official" server's fully-qualified domain name: 
+     */
+    public String getDataverseServer() {
+        // still reliese on a JVM option: 
+        String fqdn = System.getProperty(FQDN);
+        if (fqdn == null) {
+            try {
+                fqdn = InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (UnknownHostException e) {
+                return null;
+            }
+        }
+        return fqdn;
+    }
 }
