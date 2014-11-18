@@ -41,7 +41,6 @@ public class Dataset extends DvObjectContainer {
 
     private String protocol;
     private String authority;
-    private String doiShoulderCharacter;
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date globalIdCreateTime;
     @NotBlank(message = "Please enter an identifier for your dataset.")
@@ -87,14 +86,6 @@ public class Dataset extends DvObjectContainer {
         this.identifier = identifier;
     }
     
-    public String getDoiShoulderCharacter() {
-        return doiShoulderCharacter;
-    }
-
-    public void setDoiShoulderCharacter(String doiShoulderCharacter) {
-        this.doiShoulderCharacter = doiShoulderCharacter;
-    }
-    
     public Date getGlobalIdCreateTime() {
         return globalIdCreateTime;
     }
@@ -120,8 +111,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     private String getEZIdURL() {
-        String doiShoulderCharacterRet = doiShoulderCharacter == null ? "" : doiShoulderCharacter;
-        return "http://dx.doi.org/" + authority + doiShoulderCharacterRet + getIdentifier();
+        return "http://dx.doi.org/" + authority + getIdentifier();
     }
 
     public List<DataFile> getFiles() {
@@ -337,8 +327,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getGlobalId() {
-        String doiShoulderCharacterRet = doiShoulderCharacter == null ? "" : doiShoulderCharacter;
-        return protocol + ":" + authority + doiShoulderCharacterRet + getIdentifier();
+        return protocol + ":" + authority + getIdentifier();
     }
 
     public String getDisplayName() {

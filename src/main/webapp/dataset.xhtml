@@ -204,7 +204,9 @@
                                                              and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                              and permissionServiceBean.on(DatasetPage.dataset).canIssueCommand('PublishDatasetCommand')}">
                                         <div style="float:right; margin-left:1em;">
-                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
+                                            <ui:fragment rendered="#{!DatasetPage.dataset.released 
+                                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT' 
+                                                                     and DatasetPage.dataset.owner.released and !DatasetPage.locked}">
                                                 <button type="button" class="btn btn-default" onclick="confirmation.show()">
                                                     <span class="glyphicon glyphicon-globe" style="margin-right:.3em;"/> Publish Dataset
                                                 </button>
@@ -221,6 +223,9 @@
                                             </ui:fragment>
                                         </div>
                                         <p:confirmDialog message="Are you sure you want to publish your dataset? Once you do so it must remain 'Published'." header="Publish Dataset" widgetVar="confirmation">
+                                            <ui:fragment rendered="#{DatasetPage.dataset.globalIdCreateTime == null}">
+                                                This Dataset is unregistered.  We will attempt to register it before publishing.
+                                            </ui:fragment>
                                             <p:commandButton value="Continue" onclick="confirmation.hide()" action="#{DatasetPage.releaseDataset}">
                                             </p:commandButton>
                                             <p:commandButton value="Cancel" onclick="confirmation.hide()" type="button" />

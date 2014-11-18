@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.TemplateServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import javax.ejb.EJB;
 import javax.persistence.EntityManager;
 
@@ -57,5 +58,7 @@ public interface CommandContext {
         public DataverseFieldTypeInputLevelServiceBean fieldTypeInputLevels();
                    
         public DOIEZIdServiceBean doiEZId();
+        
+        public SettingsServiceBean settings();       
 	
 }

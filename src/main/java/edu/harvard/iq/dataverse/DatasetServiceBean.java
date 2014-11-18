@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,6 +42,9 @@ public class DatasetServiceBean implements java.io.Serializable  {
     
     @EJB
     DOIEZIdServiceBean doiEZIdServiceBean;
+    
+    @EJB
+    SettingsServiceBean settingsService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -97,13 +101,13 @@ public class DatasetServiceBean implements java.io.Serializable  {
 
 
     
-    public String generateIdentifierSequence(String protocol, String authority, Dataverse owner) {
+    public String generateIdentifierSequence(String protocol, String authority) {
 
         String identifier = null;
         do {
             identifier = ((Long) em.createNativeQuery("select nextval('identifier_id_seq')").getSingleResult()).toString();
 
-        } while (!isUniqueIdentifier(identifier, protocol, authority, owner));
+        } while (!isUniqueIdentifier(identifier, protocol, authority));
 
         return identifier;
 
@@ -114,13 +118,15 @@ public class DatasetServiceBean implements java.io.Serializable  {
      * for any other study in this Dataverse Network)
      * alos check for duplicate in EZID if needed
      */
-    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority, Dataverse owner) {
+    public boolean isUniqueIdentifier(String userIdentifier, String protocol, String authority) {
         String query = "SELECT d FROM Dataset d WHERE d.identifier = '" + userIdentifier + "'";
         query += " and d.protocol ='" + protocol + "'";
         query += " and d.authority = '" + authority + "'";
         boolean u = em.createQuery(query).getResultList().size() == 0;
-        if (owner.getDoiProvider() != null && owner.getDoiProvider().equals(Dataverse.DOIProvider.EZID)){
-            if( !doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol,  authority,  userIdentifier, owner.getDoiShoulderCharacter()).isEmpty()){
+        String nonNullDefaultIfKeyNotFound = "";
+        String doiProvider = settingsService.getValueForKey(SettingsServiceBean.Key.DoiProvider, nonNullDefaultIfKeyNotFound);
+        if (doiProvider.equals("EZID")){
+            if( !doiEZIdServiceBean.lookupMetadataFromIdentifier(protocol,  authority,  userIdentifier).isEmpty()){
                 u = false;
             }
         }

@@ -35,6 +35,12 @@ public class SettingsServiceBean {
         SignUpUrl,
         /** Key for whether we allow users to sign up */
         AllowSignUp,
+        /** protocol for global id */
+        Protocol,
+        /** authority for global id */
+        Authority,
+        /** DoiProvider for global id */
+        DoiProvider,
         /* TwoRavens location */
         TwoRavensUrl;
         

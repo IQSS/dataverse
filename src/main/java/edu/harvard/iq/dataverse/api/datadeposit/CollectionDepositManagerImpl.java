@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -48,6 +49,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     ForeignMetadataImportServiceBean foreignMetadataImportService;
     @EJB
     SwordServiceBean swordService;
+    @EJB
+    SettingsServiceBean settingsService;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
@@ -84,10 +87,12 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                         Dataset dataset = new Dataset();
                         dataset.setOwner(dvThatWillOwnDataset);
-                        dataset.setProtocol(dvThatWillOwnDataset.getProtocol());
-                        dataset.setAuthority(dvThatWillOwnDataset.getAuthority());
-                        dataset.setDoiShoulderCharacter(dvThatWillOwnDataset.getDoiShoulderCharacter());
-                        dataset.setIdentifier(datasetService.generateIdentifierSequence(dvThatWillOwnDataset.getProtocol(), dvThatWillOwnDataset.getAuthority(), dvThatWillOwnDataset));
+                        String nonNullDefaultIfKeyNotFound = "";
+                        String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+                        String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
+                        dataset.setProtocol(protocol);
+                        dataset.setAuthority(authority);                        
+                        dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
 
                         DatasetVersion newDatasetVersion = dataset.getEditVersion();
 

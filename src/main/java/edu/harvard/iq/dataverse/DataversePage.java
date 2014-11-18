@@ -135,10 +135,6 @@ public class DataversePage implements java.io.Serializable {
             }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
-            dataverse.setProtocol(dataverse.getOwner().getProtocol());
-            dataverse.setAuthority(dataverse.getOwner().getAuthority());
-            dataverse.setDoiProvider(dataverse.getOwner().getDoiProvider());
-            dataverse.setDoiShoulderCharacter(dataverse.getOwner().getDoiShoulderCharacter());
             dataverse.setFacetRoot(false);
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse)

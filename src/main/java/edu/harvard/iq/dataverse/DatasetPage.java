@@ -146,6 +146,8 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
+    String protocol = "";
+    String authority = "";
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
@@ -329,7 +331,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             workingVersion = dataset.getCreateVersion();
             updateDatasetFieldInputLevels();
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner() ));
+
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
         }
         resetVersionUI();
     }
@@ -442,6 +445,9 @@ public class DatasetPage implements java.io.Serializable {
     }// A DataFile may have a related MapLayerMetadata object
 
     public String init() {
+            String nonNullDefaultIfKeyNotFound = "";
+            protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+            authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (dataset == null) {
@@ -449,7 +455,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             // now get the correct version
             if (versionId == null) {
-                // If we don't have a version ID, we will get the latest published version; if not publised, then go ahead and get the latest
+                // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
                 workingVersion = dataset.getReleasedVersion();
                 if (workingVersion == null) {
                     workingVersion = dataset.getLatestVersion();
@@ -480,7 +486,7 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner()));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
            
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
@@ -765,10 +771,8 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        //TODO get real application-wide protocol/authority https://github.com/IQSS/dataverse/issues/757
-        dataset.setProtocol(dataset.getOwner().getProtocol());
-        dataset.setAuthority(dataset.getOwner().getAuthority());
-        dataset.setDoiShoulderCharacter(dataset.getOwner().getDoiShoulderCharacter());       
+        dataset.setProtocol(protocol);
+        dataset.setAuthority(authority);      
 
         /*
          * Save and/or ingest files, if there are any:

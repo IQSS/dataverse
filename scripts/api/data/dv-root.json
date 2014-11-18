@@ -3,5 +3,6 @@
     "name":"Root",
     "contactEmail":"root@mailinator.com",
     "permissionRoot":false,
+    "facetRoot":true,
     "description":"The root dataverse."
 }

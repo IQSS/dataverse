@@ -28,6 +28,9 @@ echo "Setting up the settings"
 echo  "- Allow internal signup"
 curl -X PUT "$SERVER/s/settings/:AllowSignUp/yes"
 curl -X PUT "$SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml"
+curl -X PUT "$SERVER/s/settings/:Protocol/doi"
+curl -X PUT "$SERVER/s/settings/:Authority/10.5072%2FFK2%2F"
+curl -X PUT "$SERVER/s/settings/:DoiProvider/EZID"
 curl -X PUT $SERVER/s/settings/BuiltinUsers.KEY/burrito
 echo
 
