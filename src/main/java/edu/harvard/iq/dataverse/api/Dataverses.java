@@ -277,7 +277,7 @@ public class Dataverses extends AbstractApiBean {
 		if ( dataverse == null ) 
 			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
-        if ( permissionSvc.on(dataverse).user(u).has(Permission.EditMetadata) ) {
+        if ( permissionSvc.on(dataverse).user(u).has(Permission.EditDataverse) ) {
             return okResponseWithValue( dataverse.isMetadataBlockRoot() );
         } else {
             return errorResponse( Status.FORBIDDEN, "Not authorized" );
