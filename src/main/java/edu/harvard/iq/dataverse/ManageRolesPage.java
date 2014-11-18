@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRolesCommand;
+//import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdatePermissionRootCommand;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
@@ -154,7 +154,7 @@ public class ManageRolesPage implements java.io.Serializable {
 		}
 		
 		try {
-			engineSvc.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
+			//engineSvc.submit( new UpdateDataverseGuestRolesCommand(guestRolesToAddHere, session.getUser(), getDataverse()));
 			engineSvc.submit(new UpdatePermissionRootCommand(isPermissionRoot(), session.getUser(), getDataverse()));
 			JH.addMessage(FacesMessage.SEVERITY_INFO, "Dataverse data updated");
 		} catch (CommandException ex) {
