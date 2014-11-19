@@ -304,6 +304,10 @@ public class AuthenticationServiceBean {
     public List<AuthenticatedUser> findAllAuthenticatedUsers() {
         return em.createNamedQuery("AuthenticatedUser.findAll", AuthenticatedUser.class).getResultList();
     }
+
+    public List<AuthenticatedUser> findSuperUsers() {
+        return em.createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
+    }
     
     
     public Set<AuthenticationProviderFactory> listProviderFactories() {

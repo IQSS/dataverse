@@ -60,7 +60,7 @@ public class IndexServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    private final String solrDocIdentifierDataverse = "dataverse_";
+    public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
     public static final String draftSuffix = "_draft";

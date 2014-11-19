@@ -212,19 +212,21 @@ public class Search extends AbstractApiBean {
 
         List<DvObjectSolrDoc> solrDocs = searchPerms.determineSolrDocs(dvObjectId);
 
-        JsonObjectBuilder docs = Json.createObjectBuilder();
-        for (DvObjectSolrDoc doc : solrDocs) {
-            JsonArrayBuilder permArray = Json.createArrayBuilder();
-            for (String perm : doc.getPermissions()) {
-                permArray.add(perm);
+        JsonArrayBuilder data = Json.createArrayBuilder();
+
+        for (DvObjectSolrDoc solrDoc : solrDocs) {
+            JsonObjectBuilder dataDoc = Json.createObjectBuilder();
+            dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
+            dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
+            JsonArrayBuilder perms = Json.createArrayBuilder();
+            for (String perm : solrDoc.getPermissions()) {
+                perms.add(perm);
             }
-            docs.add(doc.getNameOrTitle(), permArray);
+            dataDoc.add(SearchFields.PERMS, perms);
+            data.add(dataDoc);
         }
 
-        JsonArrayBuilder perms = Json.createArrayBuilder();
-        perms.add(docs);
-
-        return okResponse(perms);
+        return okResponse(data);
     }
 
 }
