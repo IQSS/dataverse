@@ -16,6 +16,11 @@ public class JsfHelper {
 	private static final Logger logger = Logger.getLogger(JsfHelper.class.getName());
 	
 	public static final JsfHelper JH = new JsfHelper();
+        
+        public static void addSuccessMessage(String message) {
+              FacesContext.getCurrentInstance().getExternalContext().getFlash().put("msg", message);
+      
+        } 
     
 	public void addMessage( FacesMessage.Severity s, String summary, String details ) {
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, summary, details));
