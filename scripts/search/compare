@@ -1,6 +1,8 @@
 #!/bin/bash
 DIR=/tmp/searchusers
 FINCHKEY=`cat $DIR/1 | jq .data.apiToken | tr -d \"`
+echo "Search API:"
+curl -s "http://localhost:8080/api/search?q=*&key=$FINCHKEY" | jq '.data.fq_actual'
 echo "Database:"
 scripts/search/dbperms $1 | grep '|'
 echo "Solr:"

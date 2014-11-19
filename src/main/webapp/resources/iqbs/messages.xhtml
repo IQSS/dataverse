@@ -10,6 +10,11 @@
     </cc:interface>
 
     <cc:implementation>
+        <ui:fragment rendered="#{not empty flash['msg']}" >
+            <div class="alert  alert-info">
+                <span class="glyphicon glyphicon-info-sign"> </span>&#160; <h:outputText value="#{flash['msg']}"/>  
+            </div>  
+        </ui:fragment>
         <ui:fragment rendered="#{facesContext.validationFailed}">
                 <div class="alert  alert-danger">
               <span class="glyphicon glyphicon-info-sign"></span>&#160;<h:outputText value="Form validation failed, see details below."/>
@@ -26,5 +31,6 @@
             </div>
             #{msg.rendered()}
         </ui:repeat>
+       
     </cc:implementation>
 </html>

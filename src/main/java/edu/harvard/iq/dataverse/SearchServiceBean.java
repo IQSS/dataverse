@@ -141,18 +141,18 @@ public class SearchServiceBean {
                     + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
             // not part of any particular group 
             permissionFilterQuery = publicPlusUserPrivateGroup;
+
+            if (au.isSuperuser()) {
+                // dangerous because this user will be able to see
+                // EVERYTHING in Solr with no regard to permissions!
+                String dangerZoneNoSolrJoin = null;
+                permissionFilterQuery = dangerZoneNoSolrJoin;
+            }
+
         } else {
             logger.info("Should never reach here. A User must be an AuthenticatedUser or a Guest");
         }
 
-        /**
-         * @todo: Remove! Or at least keep this commented out! Very dangerous!
-         * If you pass in "null" for permissionFilterQuery then everyone, even
-         * guest, has "NSA Nick" privs and can see everything! This override
-         * should only be used during dev.
-         */
-//        String dangerZone = null;
-//        permissionFilterQuery = dangerZone;
         solrQuery.addFilterQuery(permissionFilterQuery);
 
 //        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
