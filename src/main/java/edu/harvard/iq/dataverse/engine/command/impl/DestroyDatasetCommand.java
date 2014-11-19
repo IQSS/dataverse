@@ -9,12 +9,15 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.IndexServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop it the dataset is
@@ -22,19 +25,31 @@ import java.util.Iterator;
  *
  * @author michael
  */
-@RequiredPermissions(Permission.DestructiveEdit)
+// No permission check as destory currently works outside the permission system
+// (user is checked for superuser)
+//@RequiredPermissions(Permission.DestructiveEdit)
 public class DestroyDatasetCommand extends AbstractVoidCommand {
 
     private final Dataset doomed;
+    private final User user;
 
     public DestroyDatasetCommand(Dataset doomed, User aUser) {
         super(aUser, doomed);
         this.doomed = doomed;
+        this.user = aUser;
     }
 
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
+        if (user instanceof AuthenticatedUser) {
+            if (((AuthenticatedUser) user).isSuperuser()) {
+                Set<Permission> returnSet = Collections.emptySet();
+                throw new PermissionException("Destroy can only be called by superusers.",
+                    this, returnSet, doomed);                
+            }
+        }
+        
         final Dataset managedDoomed = ctxt.em().merge(doomed);
 
         // ASSIGNMENTS
