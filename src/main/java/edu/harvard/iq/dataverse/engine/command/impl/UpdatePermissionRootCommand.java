@@ -11,12 +11,15 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Updates the permission root-ness of a DvObjectContainer.
  * @author michael
  */
-@RequiredPermissions( Permission.AssignRole )
+// no annotations here, since permissions are dynamically decided
 public class UpdatePermissionRootCommand extends AbstractCommand<DvObjectContainer> {
     
 	private final boolean newValue;
@@ -59,5 +62,13 @@ public class UpdatePermissionRootCommand extends AbstractCommand<DvObjectContain
                 });
 		}
 	}
-	
+
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        // for data file check permission on owning dataset
+        return Collections.singletonMap("",
+                dvoc instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
+                : Collections.singleton(Permission.ManageDatasetPermissions));
+    }
+        
 }
