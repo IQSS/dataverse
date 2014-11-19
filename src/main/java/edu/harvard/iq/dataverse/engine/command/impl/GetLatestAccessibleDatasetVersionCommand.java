@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
  * @author Naomi
  */
 // No permission needed to view published dvObjects
-//@RequiredPermissions( Permission.Discover )
+@RequiredPermissions({})
 public class GetLatestAccessibleDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
     private final User u;
