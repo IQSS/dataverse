@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.List;
 import javax.ejb.EJB;
@@ -373,10 +374,13 @@ public class DataversePage implements java.io.Serializable {
         
         Command<Dataverse> cmd = null;
         //TODO change to Create - for now the page is expecting INFO instead.
+        Boolean create;
         if (dataverse.getId() == null) {
             dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+            create = Boolean.TRUE;
             cmd = new CreateDataverseCommand(dataverse, session.getUser(), facets.getTarget(), listDFTIL);
         } else {
+            create=Boolean.FALSE;
             cmd = new UpdateDataverseCommand(dataverse, facets.getTarget(), featuredDataverses.getTarget(), session.getUser(), listDFTIL);
         }
 
@@ -390,7 +394,9 @@ public class DataversePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, ex.getMessage());
             return null;
         }
-
+        String msg = (create)? "You have successfully created your dataverse": "You have successfully updated your dataverse";
+        JsfHelper.addSuccessMessage(msg);
+        
         return "/dataverse.xhtml?id=" + dataverse.getId() + "&faces-redirect=true";
     }
 
