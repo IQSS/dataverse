@@ -47,4 +47,4 @@ CREATE SEQUENCE identifier_id_seq
  MAXVALUE 9223372036854775807
  START 10000
  CACHE 1;
-ALTER TABLE identifier_id_seq OWNER TO "dvnApp";
+ALTER TABLE identifier_id_seq OWNER TO "dvnapp";
