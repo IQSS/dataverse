@@ -5,8 +5,9 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -32,7 +33,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
       
     @EJB RoleAssigneeServiceBean roleAssigneeService;
     @EJB IndexServiceBean indexService;   
-	
+    @EJB SolrIndexServiceBean solrIndexService;
+
 	public DataverseRole save( DataverseRole aRole ) {
 		if ( aRole.getId() == null ) {
 			em.persist(aRole);
@@ -63,6 +65,13 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
 	}
 
     private String indexDefinitionPoint(DvObject definitionPoint) {
+        /**
+         * @todo Enable this. Also, do something with the index response. Was
+         * Solr down? Is everything ok?
+         */
+        if (false) {
+            IndexResponse indexResponse = solrIndexService.indexAllPermissions();
+        }
         return indexService.indexDvObject(definitionPoint);
     }
 

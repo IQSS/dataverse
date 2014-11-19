@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
 import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -62,12 +63,15 @@ public class IndexServiceBean {
     SystemConfig systemConfig;
     @EJB
     SearchPermissionsServiceBean searchPermissionsService;
+    @EJB
+    SolrIndexServiceBean solrIndexService;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
     public static final String draftSuffix = "_draft";
     public static final String deaccessionedSuffix = "_deaccessioned";
+    public static final String discoverabilityPermissionSuffix = "_permission";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
     private static final String publicGroupIdString = "public";
@@ -126,6 +130,9 @@ public class IndexServiceBean {
 //        logger.info("not advanced search fields: " + notAdvancedSearchFields);
         logger.info("done iterating through all datasets");
 
+        if (false) {
+            solrIndexService.indexAllPermissions();
+        }
         return dataverseIndexCount + " dataverses, " + datasetIndexCount + " datasets, " + groupIndexCount + " groups, and " + userIndexCount + " users indexed\n";
     }
 

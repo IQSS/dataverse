@@ -139,6 +139,16 @@ public class SearchServiceBean {
             String publicPlusUserPrivateGroup = "("
                     + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
                     + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+
+            /**
+             * @todo add onlyDatatRelatedToMe option into the experimental JOIN
+             * before enabling it.
+             */
+            if (false) {
+                String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}" + SearchFields.DISCOVERABLE_BY + ":(" + IndexServiceBean.getPublicGroupString() + " OR " + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
+                publicPlusUserPrivateGroup = experimentalJoin;
+            }
+
             // not part of any particular group 
             permissionFilterQuery = publicPlusUserPrivateGroup;
 

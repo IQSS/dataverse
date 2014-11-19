@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -41,6 +42,10 @@ public class DvObjectServiceBean implements java.io.Serializable {
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }
+    }
+
+    public List<DvObject> findAll() {
+        return em.createNamedQuery("DvObject.findAll", DvObject.class).getResultList();
     }
 
     public DvObject updateIndexTime(DvObject dvObject) {

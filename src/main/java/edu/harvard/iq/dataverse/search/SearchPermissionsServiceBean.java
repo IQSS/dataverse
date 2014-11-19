@@ -60,12 +60,8 @@ public class SearchPermissionsServiceBean {
         List<String> perms = new ArrayList<>();
         if (version.isReleased()) {
             perms.add(IndexServiceBean.getPublicGroupString());
-        } else {
-            /**
-             * @todo this shouldn't be in an else (data related to me)
-             */
-            perms.addAll(findDirectAssignments(version.getDataset()));
         }
+        perms.addAll(findDirectAssignments(version.getDataset()));
         return perms;
     }
 

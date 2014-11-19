@@ -14,6 +14,11 @@ public class DvObjectSolrDoc {
         this.permissions = permissions;
     }
 
+    @Override
+    public String toString() {
+        return "DvObjectSolrDoc{" + "solrId=" + solrId + ", nameOrTitle=" + nameOrTitle + ", permissions=" + permissions + '}';
+    }
+
     public String getSolrId() {
         return solrId;
     }
