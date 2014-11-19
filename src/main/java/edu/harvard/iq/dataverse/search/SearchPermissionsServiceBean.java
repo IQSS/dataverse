@@ -289,7 +289,7 @@ public class SearchPermissionsServiceBean {
         return perms;
     }
 
-    private List<String> findSuperUserPermStrings() {
+    public List<String> findSuperUserPermStrings() {
         List<String> superUserPermStrings = new ArrayList<>();
         List<AuthenticatedUser> superusers = authSvc.findSuperUsers();
         for (AuthenticatedUser superuser : superusers) {

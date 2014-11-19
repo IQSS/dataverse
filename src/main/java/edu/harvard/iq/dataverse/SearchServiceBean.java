@@ -139,19 +139,6 @@ public class SearchServiceBean {
             String publicPlusUserPrivateGroup = "("
                     + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
                     + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + au.getId() + ")";
-            /**
-             * @todo: replace this with a real group... look up the user's
-             * groups (once you can)
-             */
-            // Michael - commenting this out, should be impleneted by permissions.
-//                if (dataverseUser.getPosition().equals("Signals Intelligence")) {
-//                    String publicPlusUserPrivateGroupPlusNSA = "("
-//                            + (onlyDatatRelatedToMe ? "" : (publicOnly + " OR "))
-//                            + "{!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPerUserPrefix() + dataverseUser.getId()
-//                            + " OR {!join from=" + SearchFields.GROUPS + " to=" + SearchFields.PERMS + "}id:" + IndexServiceBean.getGroupPrefix() + IndexServiceBean.getTmpNsaGroupId()
-//                            + ")";
-//                    permissionFilterQuery = publicPlusUserPrivateGroupPlusNSA;
-//                } else {
             // not part of any particular group 
             permissionFilterQuery = publicPlusUserPrivateGroup;
         } else {
