@@ -56,7 +56,6 @@ public class JsonParser {
             
             dsv.setReleaseTime( parseDate(obj.getString("releaseDate", null)) );
             dsv.setLastUpdateTime( parseDate(obj.getString("lastUpdateTime", null)) );
-            dsv.getDataset().setModificationTime(new Timestamp(new Date().getTime()));
             dsv.setCreateTime( parseDate(obj.getString("createTime", null)) );
             dsv.setArchiveTime( parseDate(obj.getString("archiveTime", null)) );
             
