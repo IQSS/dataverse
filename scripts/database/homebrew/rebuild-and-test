@@ -12,7 +12,6 @@ mvn package
 #cp target/dataverse-4.0.war /Applications/NetBeans/glassfish4/glassfish/domains/domain1/autodeploy
 sleep 15
 scripts/database/homebrew/run-post-create-post-deploy
-scripts/database/homebrew/run-fix.sql
 scripts/database/homebrew/run-non-dvnApp-role
 scripts/database/homebrew/keys2tmp
 echo "---"
@@ -24,7 +23,6 @@ scripts/search/populate-bird-dvs1
 scripts/search/create-bird-dvs1 > /dev/null
 scripts/search/populate-tree-dvs1
 scripts/search/create-tree-dvs1 > /dev/null
-scripts/database/homebrew/run-fix2.sql
 echo "Running sanity checks..."
 scripts/search/tests/query-unparseable
 scripts/search/tests/permissions
