@@ -15,7 +15,7 @@ import java.util.Collections;
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.Discover )
+@RequiredPermissions( Permission.EditDataverse )
 public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersion>{
     private final Dataset ds;
 
@@ -26,11 +26,12 @@ public class GetDraftDatasetVersionCommand extends AbstractCommand<DatasetVersio
 
     @Override
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
-        if (ctxt.permissions().on(ds).user(getUser()).has(Permission.AddDatasetVersion)) {
+        // @todo remove this if check (check is handled at constructor)
+        if (ctxt.permissions().on(ds).user(getUser()).has(Permission.EditDataset)) {
             return ds.getEditVersion();
         } else {
             throw new PermissionException("User does not have permission to view draft version",
-                    this, Collections.singleton(Permission.AddDatasetVersion), ds);
+                    this, Collections.singleton(Permission.EditDataset), ds);
         }
             
     }
