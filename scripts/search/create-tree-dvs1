@@ -1,0 +1,9 @@
+#!/bin/sh
+DIR='scripts/search/data/in/dv-trees1'
+USERDIR=/tmp/searchusers
+SPRUCEKEY=`cat $USERDIR/4 | jq .data.apiToken | tr -d \"`
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/1 "http://localhost:8080/api/dvs/root?key=$SPRUCEKEY"
+
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/2 "http://localhost:8080/api/dvs/trees?key=$SPRUCEKEY"
+
+curl -s -H "Content-type:application/json" -X POST -d @$DIR/3 "http://localhost:8080/api/dvs/trees?key=$SPRUCEKEY"

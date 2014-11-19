@@ -16,7 +16,7 @@ SERVER=http://localhost:8080/api
 
 
 echo "Setup the metadata blocks"
-./datasetfields.sh
+./setup-datasetfields.sh
 
 echo "Setup the builtin roles"
 ./setup-builtin-roles.sh
@@ -28,6 +28,9 @@ echo "Setting up the settings"
 echo  "- Allow internal signup"
 curl -X PUT "$SERVER/s/settings/:AllowSignUp/yes"
 curl -X PUT "$SERVER/s/settings/:SignUpUrl/%2Fdataverseuser.xhtml"
+curl -X PUT "$SERVER/s/settings/:Protocol/doi"
+curl -X PUT "$SERVER/s/settings/:Authority/10.5072%2FFK2%2F"
+curl -X PUT "$SERVER/s/settings/:DoiProvider/EZID"
 curl -X PUT $SERVER/s/settings/BuiltinUsers.KEY/burrito
 echo
 
@@ -46,4 +49,4 @@ curl -s -X POST -H "Content-type:application/json" -d "[\"citation\"]" $SERVER/d
 echo
 
 # OPTIONAL USERS AND DATAVERSES
-./setup-optional.sh
+#./setup-optional.sh

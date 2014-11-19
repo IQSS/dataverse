@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.search.IndexableDataset;
 import edu.harvard.iq.dataverse.search.IndexableObject;
+import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -46,6 +47,8 @@ public class IndexServiceBean {
     private static final Logger logger = Logger.getLogger(IndexServiceBean.class.getCanonicalName());
 
     @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     DatasetServiceBean datasetService;
@@ -56,11 +59,11 @@ public class IndexServiceBean {
     @EJB
     AuthenticationServiceBean userServiceBean;
     @EJB
-    RoleAssigneeServiceBean roleAssigneeSvc;
-    @EJB
     SystemConfig systemConfig;
+    @EJB
+    SearchPermissionsServiceBean searchPermissionsService;
 
-    private final String solrDocIdentifierDataverse = "dataverse_";
+    public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
     public static final String draftSuffix = "_draft";
@@ -69,10 +72,6 @@ public class IndexServiceBean {
     private static final String groupPerUserPrefix = "group_user";
     private static final String publicGroupIdString = "public";
     private static final String publicGroupString = groupPrefix + "public";
-    /**
-     * @todo: remove this fake "has access to all data" group
-     */
-    private static final String tmpNsaGroupIdString = "2";
     private static final String PUBLISHED_STRING = "Published";
     private static final String UNPUBLISHED_STRING = "Unpublished";
     private static final String DRAFT_STRING = "Draft";
@@ -98,9 +97,6 @@ public class IndexServiceBean {
          */
         Map<String, String> groups = new HashMap<>();
         groups.put(publicGroupIdString, publicGroupString);
-        groups.put(tmpNsaGroupIdString, "nsa");
-        groups.put(tmpNsaGroupIdString + 1, "flappybird");
-        groups.put(tmpNsaGroupIdString + 2, "2048");
 
         int groupIndexCount = 0;
         for (Map.Entry<String, String> group : groups.entrySet()) {
@@ -147,9 +143,6 @@ public class IndexServiceBean {
              */
             Map<String, String> groups = new HashMap<>();
             groups.put(publicGroupIdString, publicGroupString);
-            groups.put(tmpNsaGroupIdString, "nsa");
-            groups.put(tmpNsaGroupIdString + 1, "flappybird");
-            groups.put(tmpNsaGroupIdString + 2, "2048");
 
             int groupIndexCount = 0;
             for (Map.Entry<String, String> group : groups.entrySet()) {
@@ -167,6 +160,9 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getFriendlyCategoryName());
+        for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
+            solrInputDocument.addField(SearchFields.PERMS, superuser);
+        }
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -185,7 +181,7 @@ public class IndexServiceBean {
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataverse);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
@@ -196,7 +192,7 @@ public class IndexServiceBean {
             logger.info(currentDataverse.getAlias() + " is NOT effectively permissionRoot");
             List<RoleAssignment> assignmentsOn2 = permissionService.assignmentsOn(currentDataverse);
             for (RoleAssignment roleAssignment : assignmentsOn2) {
-                if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataverse)) {
                     addPermissionToSolrDoc(solrInputDocument, roleAssignment);
                 }
             }
@@ -206,8 +202,7 @@ public class IndexServiceBean {
         /**
          * @todo: remove this fake "has access to all data" group
          */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
-
+//        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
         addDataverseReleaseDateToSolrDoc(solrInputDocument, dataverse);
 //        if (dataverse.getOwner() != null) {
 //            solrInputDocument.addField(SearchFields.HOST_DATAVERSE, dataverse.getOwner().getName());
@@ -259,6 +254,7 @@ public class IndexServiceBean {
             return ex.toString();
         }
 
+        dvObjectService.updateIndexTime(dataverse);
         return "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias();
 
     }
@@ -576,6 +572,10 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
+        for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
+            solrInputDocument.addField(SearchFields.PERMS, superuser);
+        }
+
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
 //            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
@@ -591,15 +591,10 @@ public class IndexServiceBean {
          */
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dataset);
         for (RoleAssignment roleAssignment : assignmentsOn) {
-            if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+            if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
                 addPermissionToSolrDoc(solrInputDocument, roleAssignment);
             }
         }
-
-        /**
-         * @todo: remove this fake "has access to all data" group
-         */
-        solrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
         addDatasetReleaseDateToSolrDoc(solrInputDocument, dataset);
 
@@ -777,6 +772,10 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
                 }
 
+                for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
+                    datafileSolrInputDocument.addField(SearchFields.PERMS, superuser);
+                }
+
                 String fileSolrDocId = solrDocIdentifierFile + fileEntityId;
                 if (indexableDataset.getDatasetState().equals(indexableDataset.getDatasetState().PUBLISHED)) {
                     fileSolrDocId = solrDocIdentifierFile + fileEntityId;
@@ -790,20 +789,15 @@ public class IndexServiceBean {
                 datafileSolrInputDocument.addField(SearchFields.ID, fileSolrDocId);
 
                 /**
-                 * @todo Can permissions on files be inherited from the dataset
-                 * or dataverse?
+                 * The permission to view a datafile is based on the role
+                 * assignments at the dataset level
                  */
-                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile);
+                List<RoleAssignment> assignmentsOnFile = permissionService.assignmentsOn(datafile.getOwner());
                 for (RoleAssignment roleAssignment : assignmentsOnFile) {
-                    if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
+                    if (roleAssignment.getRole().permissions().contains(Permission.ViewUnpublishedDataset)) {
                         addPermissionToSolrDoc(datafileSolrInputDocument, roleAssignment);
                     }
                 }
-
-                /**
-                 * @todo: remove this fake "has access to all data" group
-                 */
-                datafileSolrInputDocument.addField(SearchFields.PERMS, groupPrefix + tmpNsaGroupIdString);
 
                 // For the mime type, we are going to index the "friendly" version, e.g., 
                 // "PDF File" instead of "application/pdf", "MS Excel" instead of 
@@ -867,6 +861,8 @@ public class IndexServiceBean {
         } catch (SolrServerException | IOException ex) {
             return ex.toString();
         }
+
+        dvObjectService.updateIndexTime(dataset);
 
 //        return "indexed dataset " + dataset.getId() + " as " + solrDocId + "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
         return "indexed dataset " + dataset.getId() + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
@@ -949,7 +945,7 @@ public class IndexServiceBean {
             if (dataverse.getOwner() != null) {
                 findPathSegments(dataverse.getOwner(), segments);
             }
-            segments.add(dataverse.getAlias());
+            segments.add(dataverse.getId().toString());
             return segments;
         } else {
             // base case
@@ -1001,10 +997,6 @@ public class IndexServiceBean {
 
     public static String getPublicGroupString() {
         return publicGroupString;
-    }
-
-    public static String getTmpNsaGroupId() {
-        return tmpNsaGroupIdString;
     }
 
     public static String getPUBLISHED_STRING() {
@@ -1212,6 +1204,42 @@ public class IndexServiceBean {
         } else {
             return "unexpected instance of " + DvObject.class.toString() + ": " + dvObject.getClass().getName();
         }
+    }
+
+    public List findStaleDataverses() {
+        List<Dataverse> staleDataverses = new ArrayList<>();
+        for (Dataverse dataverse : dataverseService.findAll()) {
+            if (dataverse.equals(dataverseService.findRootDataverse())) {
+                continue;
+            }
+            if (stale(dataverse)) {
+                staleDataverses.add(dataverse);
+            }
+        }
+        return staleDataverses;
+    }
+
+    public List findStaleDatasets() {
+        List<Dataset> staleDatasets = new ArrayList<>();
+        for (Dataset dataset : datasetService.findAll()) {
+            if (stale(dataset)) {
+                staleDatasets.add(dataset);
+            }
+        }
+        return staleDatasets;
+    }
+
+    private boolean stale(DvObject dvObject) {
+        Timestamp indexTime = dvObject.getIndexTime();
+        Timestamp modificationTime = dvObject.getModificationTime();
+        if (indexTime == null) {
+            return true;
+        } else {
+            if (indexTime.before(modificationTime)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

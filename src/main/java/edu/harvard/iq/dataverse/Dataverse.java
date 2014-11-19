@@ -44,9 +44,6 @@ public class Dataverse extends DvObjectContainer {
         RESEARCHERS, RESEARCH_PROJECTS, JOURNALS, ORGANIZATIONS_INSTITUTIONS, TEACHING_COURSES, UNCATEGORIZED
     };
     
-    public enum DOIProvider {
-        EZID
-    };
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "Please enter a name.")
@@ -134,48 +131,7 @@ public class Dataverse extends DvObjectContainer {
         return dataverseFieldTypeInputLevels;
     }
 
-
     private boolean templateRoot;
-    private String protocol;
-    private String authority;
-    private String doiShoulderCharacter;    
-
-    public String getDoiShoulderCharacter() {
-        return doiShoulderCharacter;
-    }
-
-    public void setDoiShoulderCharacter(String doiShoulderCharacter) {
-        this.doiShoulderCharacter = doiShoulderCharacter;
-    }
-
-    @Enumerated(EnumType.STRING)
-    private DOIProvider doiProvider;
-
-    public DOIProvider getDoiProvider() {
-        return doiProvider;
-    }
-
-    public void setDoiProvider(DOIProvider doiProvider) {
-        this.doiProvider = doiProvider;
-    }
-    
-    
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
  
     
     @ManyToOne

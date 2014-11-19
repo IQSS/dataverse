@@ -1,13 +1,18 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.FacetCategory;
 import edu.harvard.iq.dataverse.FacetLabel;
 import edu.harvard.iq.dataverse.SolrSearchResult;
 import edu.harvard.iq.dataverse.SearchServiceBean;
 import edu.harvard.iq.dataverse.SolrQueryResponse;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.SearchDebugServiceBean;
+import edu.harvard.iq.dataverse.search.SearchPermissionsServiceBean;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -30,6 +35,10 @@ public class Search extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB
+    DvObjectServiceBean dvObjectService;
+    @EJB
+    SearchDebugServiceBean searchDebugService;
 
     @GET
     public Response search(@QueryParam("key") String apiToken,
@@ -143,4 +152,82 @@ public class Search extends AbstractApiBean {
             return errorResponse(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
     }
+
+    /**
+     * This method is for integration tests of search and should be disabled
+     * with the boolean within it before release.
+     */
+    @GET
+    @Path("test")
+    public Response searchDebug(
+            @QueryParam("key") String apiToken,
+            @QueryParam("q") String query,
+            @QueryParam("fq") final List<String> filterQueries) {
+
+        boolean searchTestMethodDisabled = false;
+        if (searchTestMethodDisabled) {
+            return errorResponse(Response.Status.BAD_REQUEST, "disabled");
+        }
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        SearchServiceBean.PublishedToggle publishedToggle = SearchServiceBean.PublishedToggle.PUBLISHED;
+        Dataverse subtreeScope = dataverseService.findRootDataverse();
+
+        String sortField = SearchFields.ID;
+        String sortOrder = "asc";
+        int paginationStart = 0;
+        SolrQueryResponse solrQueryResponse = searchService.search(user, subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, publishedToggle);
+
+        JsonArrayBuilder itemsArrayBuilder = Json.createArrayBuilder();
+        List<SolrSearchResult> solrSearchResults = solrQueryResponse.getSolrSearchResults();
+        for (SolrSearchResult solrSearchResult : solrSearchResults) {
+            itemsArrayBuilder.add(solrSearchResult.getType() + ":" + solrSearchResult.getNameSort());
+        }
+
+        return okResponse(itemsArrayBuilder);
+    }
+
+    /**
+     * This method is for integration tests of search and should be disabled
+     * with the boolean within it before release.
+     */
+    @GET
+    @Path("perms")
+    public Response searchPerms(
+            @QueryParam("key") String apiToken,
+            @QueryParam("id") Long dvObjectId) {
+
+        boolean searchTestMethodDisabled = false;
+        if (searchTestMethodDisabled) {
+            return errorResponse(Response.Status.BAD_REQUEST, "disabled");
+        }
+
+        User user = findUserByApiToken(apiToken);
+        if (user == null) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+        }
+
+        List<DvObjectSolrDoc> solrDocs = searchDebugService.determineSolrDocs(dvObjectId);
+
+        JsonArrayBuilder data = Json.createArrayBuilder();
+
+        for (DvObjectSolrDoc solrDoc : solrDocs) {
+            JsonObjectBuilder dataDoc = Json.createObjectBuilder();
+            dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
+            dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
+            JsonArrayBuilder perms = Json.createArrayBuilder();
+            for (String perm : solrDoc.getPermissions()) {
+                perms.add(perm);
+            }
+            dataDoc.add(SearchFields.PERMS, perms);
+            data.add(dataDoc);
+        }
+
+        return okResponse(data);
+    }
+
 }

@@ -99,6 +99,110 @@ Dropbox Configuration
 ``asadmin create-jvm-options "-Ddataverse.dropbox.key=<Enter your dropbox key here>"``
 
 
+Shobboleth SP 
+++++++++++++++++++++++
+Requirements: Apache HTTPD, Apache SSL Certs from Trusted Certificate Authority, Shibboleth.
+
+Apache HTTPD Installation and Configuration
+-------------------------------------------
+$ yum install -y httpd mod_ssl; service httpd start
+
+- Download and Copy SSL Certs from Trusted Certificate Authority to:
+
+.. code-block:: guess
+
+	SSL Certificate File (described as "X509 Certificate only, Base64 encoded") to ``/etc/pki/tls/certs/<servername>.crt``
+	Server Certificate Chain (described as "X509 Intermediates/root only, Base64 	encoded"):``/etc/pki/tls/certs/<servername>chain.crt``
+	Server Private Key (SSLCertificateKeyFile) to ``/etc/pki/tls/private/<servername>.key``
+
+- Update /etc/httpd/conf.d/**ssl.conf** resplectively with the file locations from above                        
+- Update ServerName accessible through https /etc/httpd/conf.d/**ssl.conf** ``ServerName <servername>:443``                                                     
+- Configure Apache with ProxyPass 
+
+.. code-block:: guess
+
+	cd /etc/httpd/conf.d
+	wget https://raw.githubusercontent.com/IQSS/dataverse/master/conf/httpd/conf.d/dataverse.conf
+	service httpd restart
+
+
+Front Glassfish with Apache
+-------------------------------
+
+- Move Glassfish HTTP from port 80 to 8080
+``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
+
+- Move Glassfish HTTPS from 443 to 8181
+``asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
+
+- Set up connector Apache and Glassfish
+``asadmin create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector``
+
+$ service glassfish restart
+
+Shibboleth Installation and Configuration
+------------------------------------------
+
+``sudo curl -k -o /etc/yum.repos.d/security:shibboleth.repo  http://download.opensuse.org/repositories/security://shibboleth/CentOS_CentOS-6/security:shibboleth.repo``
+$ yum install -y shibboleth shibboleth-embedded-ds
+
+Configure Shibboleth to authenticate against SP for TestShib IdP 
+****************************************************************
+
+- Set ShibEnabled to true to enable Shibboleth login
+``curl -X PUT http://localhost:8080/api/s/settings/:ShibEnabled/true``
+
+
+- Backup **shibboleth2.xml** and download shibboleth2.xml from dataverse repository
+$ cd /etc/shibboleth
+
+$ mv shibboleth2.xml shibboleth2.xml.orig
+
+``wget https://raw.githubusercontent.com/IQSS/dataverse/master/conf/vagrant/etc/shibboleth/shibboleth2.xml``
+
+Modify two lines in **shibboleth2.xml** to reflect your server name:
+
+``<ApplicationDefaults entityID="https://<servername>/shibboleth"``
+
+``<SSO discoveryProtocol="SAMLDS" discoveryURL="https://<servername>/loginpage.xhtml">``
+
+- Backup **attribute-map.xml** and download attribute-map.xml from Dataverse repository
+$ cd /etc/shibboleth/
+
+$ mv attribute-map.xml attribute-map.xml.orig  
+
+``wget https://raw.githubusercontent.com/IQSS/dataverse/master/conf/vagrant/etc/shibboleth/attribute-map.xml``
+
+- Download **dataverse-idp-metadata.xml** from Dataverse repository
+$ cd /etc/shibboleth/
+
+``wget https://raw.githubusercontent.com/IQSS/dataverse/master/conf/vagrant/etc/shibboleth/dataverse-idp-metadata.xml``
+
+- SE Linux (required if you have SE Linux enabled): 
+
+$ setenforce permissive
+
+$ service shibd restart
+
+To use "Permissive" mode at the next reboot modify /etc/selinix/config to SELINUX=permisive 
+
+Register  with `TestShib <http://www.testshib.org/>`__ by uploading your server metadata
+******************************************************************************************
+
+- Go to https://<servername> and download your server metadata to your local machine
+``wget https://<servername>/Shibboleth.sso/Metadata``
+
+- Rename the metadata file to be exactly your server hostname ie: shibtest.dataverse.org
+
+- Upload the file to `Testshib <http://www.testshib.org/register.html>`__.
+
+
+
+
+
+
+
+
 
 The guide is intended for anyone who needs to install the Dataverse app.
 

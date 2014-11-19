@@ -2,7 +2,7 @@ INSTALLER_ZIP_DIR=dvinstall
 DATAVERSE_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse-4.0.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
-API_SCRIPTS=${INSTALLER_ZIP_DIR}/datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh 
+API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh 
 DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml
@@ -12,11 +12,7 @@ installer:	dvinstall.zip
 
 dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-<<<<<<< Updated upstream
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA}
-=======
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${INSTALL_SCRIPT}
->>>>>>> Stashed changes
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DATAVERSE_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${SOLR_SCHEMA} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -50,10 +46,10 @@ ${POSTGRES_DRIVERS}:	pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9
 	@mkdir -p ${POSTGRES_DRIVERS}
 	/bin/cp pgdriver/postgresql-8.4-703.jdbc4.jar pgdriver/postgresql-9.0-802.jdbc4.jar pgdriver/postgresql-9.1-902.jdbc4.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
-${API_SCRIPTS}:	../api/datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/data ../api/data
+${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/data ../api/data
 	echo copying api scripts
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp -R ../api/datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/data ${INSTALLER_ZIP_DIR}
+	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/data ${INSTALLER_ZIP_DIR}
 
 ${DB_SCRIPT}:	../database/reference_data.sql
 	echo copying reference data sql script

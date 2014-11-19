@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
-import edu.harvard.iq.dataverse.authorization.users.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -170,7 +169,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public void search(boolean onlyDataRelatedToMe) {
-        logger.info("search called");
+        logger.fine("search called");
 
         // wildcard/browse (*) unless user supplies a query
         String queryToPassToSolr = "*";
@@ -264,9 +263,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
          */
 
         try {
-            logger.info("query from user:   " + query);
-            logger.info("queryToPassToSolr: " + queryToPassToSolr);
-            logger.info("sort by: " + sortField);
+            logger.fine("query from user:   " + query);
+            logger.fine("queryToPassToSolr: " + queryToPassToSolr);
+            logger.fine("sort by: " + sortField);
             SearchServiceBean.PublishedToggle publishedToggle = null;
 //            if (showUnpublished) {
 //                publishedToggle = SearchServiceBean.PublishedToggle.UNPUBLISHED;
@@ -338,10 +337,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     Long datasetVersionId = solrSearchResult.getDatasetVersionId();
                     if (datasetVersionId != null) {
                         DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                        if (datasetVersion.isDeaccessioned()) {
-                            solrSearchResult.setDeaccessionedState(true);
-                        }
                         if (datasetVersion != null) {
+                            if (datasetVersion.isDeaccessioned()) {
+                                solrSearchResult.setDeaccessionedState(true);
+                            }
                             String citation = datasetVersion.getCitation();
                             if (citation != null) {
                                 solrSearchResult.setCitation(citation);

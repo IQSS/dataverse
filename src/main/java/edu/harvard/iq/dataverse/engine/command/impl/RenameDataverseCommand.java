@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
  *
  * @author michael
  */
-@RequiredPermissions( Permission.UndoableEdit )
+@RequiredPermissions( Permission.EditDataverse )
 public class RenameDataverseCommand extends AbstractCommand<Dataverse>{
 	
 	private final String newName;

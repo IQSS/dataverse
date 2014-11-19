@@ -131,7 +131,7 @@ public class SwordAuth extends AbstractApiBean {
              */
             logger.fine(dataverse.getAlias() + ": " + dataverseUser.getIdentifier() + " has role " + roleAssignment.getRole().getAlias());
         }
-        if (permissionService.userOn(dataverseUser, dataverse).has(Permission.DestructiveEdit)) {
+        if (permissionService.userOn(dataverseUser, dataverse).has(Permission.EditDataverse)) {
             authorized = true;
             return authorized;
         } else {

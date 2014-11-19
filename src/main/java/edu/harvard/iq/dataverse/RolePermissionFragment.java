@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -24,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +34,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -98,12 +97,13 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
 
     /* permissions tab related methods */
-    private String assignRoleUsername;
+    private String assignRoleUsername; // used if input accepts a username
+    private RoleAssignee assignRoleRoleAssignee; // used if input accepts a RoleAssignee through a converter
     private Long assignRoleRoleId;
 
     private List<String> identifierList = new ArrayList();
 
-    public List<String> getIdentifiers(String query) {
+    public List<String> completeIdentifier(String query) {
         if (identifierList.isEmpty()) {
             for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
                 identifierList.add(au.getIdentifier());
@@ -117,6 +117,24 @@ public class RolePermissionFragment implements java.io.Serializable {
         }
         return returnList;
     }
+    
+    private List<RoleAssignee> roleAssigneeList = new ArrayList();
+    
+    public List<RoleAssignee> completeRoleAssignee(String query) {
+        if (roleAssigneeList.isEmpty()) {
+            for (AuthenticatedUser au : authenticationService.findAllAuthenticatedUsers()) {
+                roleAssigneeList.add(au);
+            }
+        }
+        List<RoleAssignee> returnList = new ArrayList();
+        for (RoleAssignee ra : roleAssigneeList) {
+            // @todo unsure if containsIgnore case will work for all locales
+            if (StringUtils.containsIgnoreCase(ra.getDisplayInfo().getTitle(),query)) {
+                returnList.add(ra);
+            }
+        }
+        return returnList;
+    }    
 
     public List<DataverseRole> getAvailableRoles() {
         List<DataverseRole> roles = new LinkedList<>();
@@ -138,7 +156,7 @@ public class RolePermissionFragment implements java.io.Serializable {
             raList = new ArrayList<>(ras.size());
             for (RoleAssignment ra : ras) {
                 // for files, only show role assihnemnts which can download
-                if (!(dvObject instanceof DataFile) || ra.getRole().permissions().contains(Permission.Download)) {
+                if (!(dvObject instanceof DataFile) || ra.getRole().permissions().contains(Permission.DownloadFile)) {
                     raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo()));
                 }
             }
@@ -152,19 +170,19 @@ public class RolePermissionFragment implements java.io.Serializable {
     }
     
     public void grantAccess(ActionEvent evt) {
+        //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
 	// Find the built in file downloader role (currently by alias)        
-        assignRole(assignRoleUsername, roleService.findBuiltinRoleByAlias("filedownloader"));
+        assignRole(assignRoleRoleAssignee, roleService.findBuiltinRoleByAlias("filedownloader"));
     }
     public void assignRole(ActionEvent evt) {
-        assignRole(assignRoleUsername, roleService.find(assignRoleRoleId));
+        //RoleAssignee assignRoleRoleAssignee = roleAssigneeService.getRoleAssignee(assignRoleUsername);
+        assignRole(assignRoleRoleAssignee, roleService.find(assignRoleRoleId));
     }
 
-    private void assignRole(String identifier, DataverseRole r) {
-        RoleAssignee roas = roleAssigneeService.getRoleAssignee(identifier);
-
+    private void assignRole(RoleAssignee ra, DataverseRole r) {
         try {
-            commandEngine.submit(new AssignRoleCommand(roas, r, dvObject, session.getUser()));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + roas.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
+            commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, session.getUser()));
+            JH.addMessage(FacesMessage.SEVERITY_INFO, "Role " + r.getName() + " assigned to " + ra.getDisplayInfo().getTitle() + " on " + dvObject.getDisplayName());
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, "Can't assign role: " + ex.getMessage());
         }
@@ -192,6 +210,14 @@ public class RolePermissionFragment implements java.io.Serializable {
         this.assignRoleUsername = assignRoleUsername;
     }
 
+    public RoleAssignee getAssignRoleRoleAssignee() {
+        return assignRoleRoleAssignee;
+    }
+
+    public void setAssignRoleRoleAssignee(RoleAssignee assignRoleRoleAssignee) {
+        this.assignRoleRoleAssignee = assignRoleRoleAssignee;
+    }
+    
     public Long getAssignRoleRoleId() {
         return assignRoleRoleId;
     }
@@ -255,6 +281,16 @@ public class RolePermissionFragment implements java.io.Serializable {
         setRole(new DataverseRole());
         role.setOwner(dvObject);
     }
+    
+    public void cloneRole(String roleId) {
+        DataverseRole clonedRole = new DataverseRole();
+        clonedRole.setOwner(dvObject);
+        
+        DataverseRole originalRole = roleService.find(Long.parseLong(roleId));
+        clonedRole.addPermissions(originalRole.permissions());
+        setRole(clonedRole);
+    }
+    
 
     public void editRole(String roleId) {
         setRole(roleService.find(Long.parseLong(roleId)));

@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
  * Update an existing dataverse.
  * @author michael
  */
-@RequiredPermissions( Permission.EditMetadata )
+@RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseThemeCommand extends AbstractCommand<Dataverse> {
     private final Dataverse editedDv;
     private final File uploadedFile;

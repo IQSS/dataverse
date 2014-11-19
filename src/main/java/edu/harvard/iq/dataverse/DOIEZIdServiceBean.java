@@ -7,6 +7,7 @@
 package edu.harvard.iq.dataverse;
 
 
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.ucsb.nceas.ezid.EZIDException;
 import edu.ucsb.nceas.ezid.EZIDService;
 import edu.ucsb.nceas.ezid.EZIDServiceRequest;
@@ -26,6 +27,8 @@ import javax.ejb.Stateless;
 public class DOIEZIdServiceBean  {
     @EJB
     DataverseServiceBean dataverseService;
+    @EJB 
+    SettingsServiceBean settingsService;
     EZIDService ezidService;
     EZIDServiceRequest ezidServiceRequest;    
     String baseURLString =  "https://ezid.cdlib.org";  
@@ -44,7 +47,6 @@ public class DOIEZIdServiceBean  {
         logger.log(Level.INFO, "baseURLString " + baseURLString);
         try {
            ezidService.login(USERNAME, PASSWORD);  
-           System.out.print("Login successful");
         } catch(Exception e){
             logger.log(Level.INFO, "login failed ");
             logger.log(Level.INFO, "String " + e.toString() );
@@ -58,7 +60,6 @@ public class DOIEZIdServiceBean  {
         String retString = "";
         String identifier = getIdentifierFromDataset(dataset);
         HashMap metadata = getMetadataFromStudyForCreateIndicator(dataset);
-        System.out.print(identifier);
         metadata.put("_status", "reserved");;       
         try {
             retString = ezidService.createIdentifier(identifier, metadata);
@@ -69,9 +70,8 @@ public class DOIEZIdServiceBean  {
             logger.log(Level.INFO, "localized message " + e.getLocalizedMessage());
             logger.log(Level.INFO, "cause " + e.getCause());
             logger.log(Level.INFO, "message " + e.getMessage());
-            return "Identifier not created";
+            return "Identifier not created "  +  e.getLocalizedMessage();
         }
-        System.out.print("createIdentifier return string : " + retString);
         return retString;
     }
     
@@ -92,8 +92,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier, String doiShoulderCharacter ){
-        String identifierOut = getIdentifierForLookup( protocol,  authority,  identifier, doiShoulderCharacter );        
+    public HashMap lookupMetadataFromIdentifier(String protocol, String authority, String identifier){
+        String identifierOut = getIdentifierForLookup( protocol,  authority,  identifier);        
         HashMap metadata = new HashMap();
        try {
               metadata = ezidService.getMetadata(identifierOut);
@@ -105,8 +105,8 @@ public class DOIEZIdServiceBean  {
        return metadata;
     }
     
-    public String getIdentifierForLookup(String protocol, String authority, String identifier, String doiShoulderCharacter ) {
-        return protocol + ":" + authority + doiShoulderCharacter + identifier;
+    public String getIdentifierForLookup(String protocol, String authority, String identifier) {
+        return protocol + ":" + authority  + identifier;
     }
     
     
@@ -156,7 +156,8 @@ public class DOIEZIdServiceBean  {
             //if public then it has been released set to unavaialble and reset target to n2t url
             updateIdentifierStatus(datasetIn, "unavailable | withdrawn by author");
             HashMap metadata = new HashMap();
-            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() + datasetIn.getDoiShoulderCharacter() + datasetIn.getIdentifier());
+            metadata.put("_target", "http://ezid.cdlib.org/id/" + datasetIn.getProtocol() + ":" + datasetIn.getAuthority() 
+                    + datasetIn.getIdentifier());
             modifyIdentifier(datasetIn, metadata);
         }
     }
@@ -183,14 +184,14 @@ public class DOIEZIdServiceBean  {
         String inetAddress = getSiteUrl();
         String targetUrl = "";     
         DOISHOULDER = "doi:" + datasetIn.getAuthority();
-
+        
         if (inetAddress.equals("localhost")){                    
-           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER + datasetIn.getOwner().getDoiShoulderCharacter() + datasetIn.getIdentifier();
-           System.out.print("inetAddress.equals localhost" + targetUrl);
+           targetUrl ="http://localhost:8080" + "/dataset?globalId=" + DOISHOULDER 
+                           + datasetIn.getIdentifier();
         } else{
-           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER + datasetIn.getOwner().getDoiShoulderCharacter()  + datasetIn.getIdentifier();
+           targetUrl = inetAddress + "/dataset?globalId=" + DOISHOULDER 
+                   + datasetIn.getIdentifier();
         }            
-        System.out.print("targetUrl: " + targetUrl);
         metadata.put("_target", targetUrl);
         return metadata;
     }

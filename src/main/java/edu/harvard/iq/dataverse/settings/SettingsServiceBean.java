@@ -34,7 +34,15 @@ public class SettingsServiceBean {
         /** Key for the url to send users who want to sign up to. */
         SignUpUrl,
         /** Key for whether we allow users to sign up */
-        AllowSignUp;
+        AllowSignUp,
+        /** protocol for global id */
+        Protocol,
+        /** authority for global id */
+        Authority,
+        /** DoiProvider for global id */
+        DoiProvider,
+        /* TwoRavens location */
+        TwoRavensUrl;
         
         @Override
         public String toString() {

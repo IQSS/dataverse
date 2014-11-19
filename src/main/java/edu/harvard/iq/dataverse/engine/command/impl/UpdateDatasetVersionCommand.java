@@ -16,7 +16,7 @@ import java.util.Date;
  * Updates a {@link DatasetVersion}, as long as that version is in a "draft" state.
  * @author michael
  */
-@RequiredPermissions(Permission.DestructiveEdit)
+@RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
     
     final DatasetVersion newVersion;

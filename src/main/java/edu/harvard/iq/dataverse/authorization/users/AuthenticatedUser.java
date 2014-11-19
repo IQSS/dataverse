@@ -22,6 +22,8 @@ import javax.validation.constraints.NotNull;
 @NamedQueries({
     @NamedQuery( name="AuthenticatedUser.findAll",
                 query="select au from AuthenticatedUser au"),
+    @NamedQuery( name="AuthenticatedUser.findSuperUsers",
+                query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
                 query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",

@@ -137,7 +137,6 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier( failIfNull(json.getString("identifier", null), "Identifier cannot be null") );
             ds.setAuthority(  failIfNull(json.getString("authority", null), "Authority cannot be null") );
             ds.setProtocol(   failIfNull(json.getString("protocol", null), "Protocol cannot be null") );
-             ds.setDoiShoulderCharacter(json.getString("doiShoulderCharacter"));
 
             JsonObject jsonVersion = json.getJsonObject("initialVersion");
             if ( jsonVersion == null) {
@@ -278,7 +277,7 @@ public class Dataverses extends AbstractApiBean {
 		if ( dataverse == null ) 
 			return notFound( "Can't find dataverse with identifier='" + dvIdtf + "'");
 		
-        if ( permissionSvc.on(dataverse).user(u).has(Permission.EditMetadata) ) {
+        if ( permissionSvc.on(dataverse).user(u).has(Permission.EditDataverse) ) {
             return okResponseWithValue( dataverse.isMetadataBlockRoot() );
         } else {
             return errorResponse( Status.FORBIDDEN, "Not authorized" );

@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * @author michael
  */
 @RequiredPermissionsMap({
-    @RequiredPermissions(dataverseName = "doomed", value = Permission.DestructiveEdit)
+    @RequiredPermissions(dataverseName = "doomed", value = Permission.DeleteDataverse)
 })
 public class DeleteDataverseCommand extends AbstractVoidCommand {
 

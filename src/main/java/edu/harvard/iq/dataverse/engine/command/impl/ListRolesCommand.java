@@ -15,7 +15,7 @@ import java.util.Set;
  * List roles defined at a the given {@link DvObject}.
  * @author michael
  */
-@RequiredPermissions( Permission.AssignRole )
+@RequiredPermissions( Permission.ManageDataversePermissions )
 public class ListRolesCommand extends AbstractCommand<Set<DataverseRole>> {
     
     private final Dataverse definitionPoint;

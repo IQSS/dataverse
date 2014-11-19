@@ -120,7 +120,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse == null) {
                 return "/404.xhtml";
             }
-            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.Discover)) {
+            if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             } 
             
@@ -135,10 +135,6 @@ public class DataversePage implements java.io.Serializable {
             }               
             dataverse.setContactEmail(session.getUser().getDisplayInfo().getEmailAddress());
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
-            dataverse.setProtocol(dataverse.getOwner().getProtocol());
-            dataverse.setAuthority(dataverse.getOwner().getAuthority());
-            dataverse.setDoiProvider(dataverse.getOwner().getDoiProvider());
-            dataverse.setDoiShoulderCharacter(dataverse.getOwner().getDoiShoulderCharacter());
             dataverse.setFacetRoot(false);
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
         } else { // view mode for root dataverse)

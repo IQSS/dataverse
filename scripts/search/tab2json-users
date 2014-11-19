@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+import sys
+from optparse import OptionParser
+import csv
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+parser = OptionParser()
+options, args = parser.parse_args()
+
+if args:
+    csv_file = open(args[0])
+else:
+    csv_file = sys.stdin
+
+reader = csv.DictReader(csv_file, delimiter="\t")
+rows = [row for row in reader]
+for row in rows:
+    print json.dumps(row)
+csv_file.close()

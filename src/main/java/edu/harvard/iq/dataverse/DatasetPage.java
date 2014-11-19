@@ -24,12 +24,15 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCountCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +67,7 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.primefaces.context.RequestContext;
+import java.net.URLEncoder;
 
 /**
  *
@@ -114,7 +118,11 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     BuiltinUserServiceBean builtinUserService;  
     @EJB
-    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;  
+    DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService; 
+    @EJB
+    SettingsServiceBean settingsService;
+    @EJB
+    SystemConfig systemConfig;
     @Inject 
     DatasetVersionUI datasetVersionUI;
     
@@ -138,6 +146,8 @@ public class DatasetPage implements java.io.Serializable {
     private List<Template> dataverseTemplates = new ArrayList();
     private Template defaultTemplate;
     private Template selectedTemplate;
+    String protocol = "";
+    String authority = "";
 
     private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
 
@@ -321,7 +331,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             workingVersion = dataset.getCreateVersion();
             updateDatasetFieldInputLevels();
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner() ));
+
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
         }
         resetVersionUI();
     }
@@ -434,6 +445,9 @@ public class DatasetPage implements java.io.Serializable {
     }// A DataFile may have a related MapLayerMetadata object
 
     public String init() {
+            String nonNullDefaultIfKeyNotFound = "";
+            protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
+            authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
         if (dataset.getId() != null) { // view mode for a dataset           
             dataset = datasetService.find(dataset.getId());
             if (dataset == null) {
@@ -441,7 +455,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             // now get the correct version
             if (versionId == null) {
-                // If we don't have a version ID, we will get the latest published version; if not publised, then go ahead and get the latest
+                // If we don't have a version ID, we will get the latest published version; if not published, then go ahead and get the latest
                 workingVersion = dataset.getReleasedVersion();
                 if (workingVersion == null) {
                     workingVersion = dataset.getLatestVersion();
@@ -452,7 +466,7 @@ public class DatasetPage implements java.io.Serializable {
             
             if (workingVersion == null) {
                 return "/404.xhtml";
-            }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.Discover)) {
+            }  else if (!workingVersion.isReleased() && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
                 return "/loginpage.xhtml" + DataverseHeaderFragment.getRedirectPage();
             }             
             
@@ -472,7 +486,7 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             editMode = EditMode.CREATE;
             dataset.setOwner(dataverseService.find(ownerId));
-            dataset.setIdentifier(datasetService.generateIdentifierSequence(dataset.getOwner().getProtocol(), dataset.getOwner().getAuthority(), dataset.getOwner()));
+            dataset.setIdentifier(datasetService.generateIdentifierSequence(protocol, authority));
            
             if (dataset.getOwner() == null) {
                 return "/404.xhtml";
@@ -757,10 +771,8 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
 
-        //TODO get real application-wide protocol/authority https://github.com/IQSS/dataverse/issues/757
-        dataset.setProtocol(dataset.getOwner().getProtocol());
-        dataset.setAuthority(dataset.getOwner().getAuthority());
-        dataset.setDoiShoulderCharacter(dataset.getOwner().getDoiShoulderCharacter());       
+        dataset.setProtocol(protocol);
+        dataset.setAuthority(authority);      
 
         /*
          * Save and/or ingest files, if there are any:
@@ -1228,4 +1240,59 @@ public class DatasetPage implements java.io.Serializable {
 
         }
     }
+    
+    public String getDataExploreURL() {
+        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl); 
+        
+        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
+            return TwoRavensUrl;
+        }
+        
+        return "";
+    }
+    
+    public String getDataExploreURLComplete(Long fileid) {
+        String TwoRavensUrl = settingsService.getValueForKey(SettingsServiceBean.Key.TwoRavensUrl); 
+        String TwoRavensDefaultLocal = "/dataexplore/gui.html?dfId=";
+        
+        if (TwoRavensUrl != null && !TwoRavensUrl.equals("")) {
+            // If we have TwoRavensUrl set up as, as an optional 
+            // configuration service, it must mean that TwoRavens is sitting 
+            // on some remote server. And that in turn means that we must use 
+            // full URLs to pass data and metadata to it. 
+            String tabularDataURL = getTabularDataFileURL(fileid);
+            String tabularMetaURL = getVariableMetadataURL(fileid);
+            return TwoRavensUrl + "?ddiurl=" + tabularMetaURL + "&dataurl=" + tabularDataURL;
+        }
+        
+        // For a local TwoRavens setup it's enough to call it with just 
+        // the file id:
+        return TwoRavensDefaultLocal + fileid;
+    }
+    
+    public String getVariableMetadataURL(Long fileid) {
+        String myHostURL = systemConfig.getDataverseSiteUrl();
+        String metaURL = myHostURL + "/api/meta/datafile/" + fileid;
+        
+        /*try {
+            return URLEncoder.encode(metaURL, "UTF8");
+        } catch (UnsupportedEncodingException uex) {*/
+            //metaURL = metaURL.replaceAll(":", "\\:");
+            return metaURL;
+        /*}*/
+    }
+    
+    public String getTabularDataFileURL(Long fileid) {
+        String myHostURL = systemConfig.getDataverseSiteUrl();;
+        String dataURL = myHostURL + "/api/access/datafile/" + fileid;
+        
+        /*try {
+            return URLEncoder.encode(dataURL, "UTF8");
+        } catch (UnsupportedEncodingException uex) {*/
+            //dataURL = dataURL.replaceAll(":", "\\:");
+            return dataURL;
+        /*}*/
+    }
+    
+    
 }

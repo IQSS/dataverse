@@ -14,7 +14,7 @@ import java.util.List;
  * Commands for setting the metadata blocks a dataverse uses.
  * @author michael
  */
-@RequiredPermissions( Permission.EditMetadata )
+@RequiredPermissions( Permission.EditDataverse )
 public abstract class UpdateDataverseMetadataBlocksCommand extends AbstractVoidCommand {
     
     final Dataverse updatedDv;

@@ -5,11 +5,8 @@
  */
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MailServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,29 +14,20 @@ import javax.ws.rs.Path;
 /**
  *
  * @author xyang
+ * @author Leonid Andreev
  */
 @Path("mail")
 public class Mail {
-
-    @EJB
-    UserNotificationServiceBean userNotificationService;
+    private static final Logger logger = Logger.getLogger(Mail.class.getCanonicalName());
+    
     @EJB
     MailServiceBean mailService;
-    @EJB
-    DataverseServiceBean dataverseService;
-
-    private List<UserNotification> notificationsList;
-
+    
     @GET
+    @Path("notifications")
     public String sendMail() {
-        notificationsList = userNotificationService.findUnemailed();
-        if (notificationsList != null) {
-            for (UserNotification notification : notificationsList) {
-                mailService.sendCreateDataverseNotification(notification.getUser().getDisplayInfo().getEmailAddress(), dataverseService.find(notification.getObjectId()).getName(), dataverseService.find(notification.getObjectId()).getOwner().getName());
-                notification.setEmailed(true);
-                userNotificationService.save(notification);
-            }
-        }
+        mailService.bulkSendNotifications();
         return null;
     }
+    
 }

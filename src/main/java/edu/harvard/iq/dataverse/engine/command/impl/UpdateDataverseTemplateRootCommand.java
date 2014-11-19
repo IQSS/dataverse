@@ -16,7 +16,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
  *
  * @author skraffmiller
  */
-@RequiredPermissions( Permission.EditMetadata )
+@RequiredPermissions( Permission.EditDataverse )
 public class UpdateDataverseTemplateRootCommand extends AbstractCommand<Dataverse> {
 
     	private final boolean newValue;

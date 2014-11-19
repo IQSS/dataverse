@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  *
  * @author skraffmiller
  */
-@RequiredPermissions({Permission.UndoableEdit, Permission.EditMetadata})
+@RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetCommand extends AbstractCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(UpdateDatasetCommand.class.getCanonicalName());

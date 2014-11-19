@@ -21,7 +21,8 @@ import java.util.List;
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.Discover )
+// No permission needed to view published dvObjects
+//@RequiredPermissions( Permission.Discover )
 public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
     
     private final Dataset ds;
@@ -35,7 +36,7 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>>{
 	public List<DatasetVersion> execute(CommandContext ctxt) throws CommandException {
 		List<DatasetVersion> outputList = new LinkedList<>();
 		for ( DatasetVersion dsv : ds.getVersions() ) {
-            if (dsv.isReleased() || ctxt.permissions().on(ds).user(getUser()).has(Permission.AddDatasetVersion)) {
+            if (dsv.isReleased() || ctxt.permissions().on(ds).user(getUser()).has(Permission.EditDataset)) {
                 outputList.add(dsv);
             }
 		}
