@@ -160,9 +160,6 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.NAME_SORT, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_NAME, dataverse.getName());
         solrInputDocument.addField(SearchFields.DATAVERSE_CATEGORY, dataverse.getFriendlyCategoryName());
-        for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
-            solrInputDocument.addField(SearchFields.PERMS, superuser);
-        }
         if (dataverse.isReleased()) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getPublicationDate());
@@ -572,10 +569,6 @@ public class IndexServiceBean {
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, datasetSortByDate);
         solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(datasetSortByDate));
 
-        for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
-            solrInputDocument.addField(SearchFields.PERMS, superuser);
-        }
-
         if (state.equals(indexableDataset.getDatasetState().PUBLISHED)) {
             solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, PUBLISHED_STRING);
 //            solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataset.getPublicationDate());
@@ -770,10 +763,6 @@ public class IndexServiceBean {
 
                 if (majorVersionReleaseDate == null) {
                     datafileSolrInputDocument.addField(SearchFields.PUBLICATION_STATUS, UNPUBLISHED_STRING);
-                }
-
-                for (String superuser : searchPermissionsService.findSuperUserPermStrings()) {
-                    datafileSolrInputDocument.addField(SearchFields.PERMS, superuser);
                 }
 
                 String fileSolrDocId = solrDocIdentifierFile + fileEntityId;

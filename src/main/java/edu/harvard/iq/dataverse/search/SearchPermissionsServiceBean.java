@@ -49,7 +49,6 @@ public class SearchPermissionsServiceBean {
      */
     public List<String> findDataversePerms(Dataverse dataverse) {
         List<String> permStrings = new ArrayList<>();
-        permStrings.addAll(findSuperUserPermStrings());
         if (hasBeenPublished(dataverse)) {
             permStrings.add(IndexServiceBean.getPublicGroupString());
         }
@@ -59,10 +58,12 @@ public class SearchPermissionsServiceBean {
 
     public List<String> findDatasetVersionPerms(DatasetVersion version) {
         List<String> perms = new ArrayList<>();
-        perms.addAll(findSuperUserPermStrings());
         if (version.isReleased()) {
             perms.add(IndexServiceBean.getPublicGroupString());
         } else {
+            /**
+             * @todo this shouldn't be in an else (data related to me)
+             */
             perms.addAll(findDirectAssignments(version.getDataset()));
         }
         return perms;
@@ -167,17 +168,6 @@ public class SearchPermissionsServiceBean {
             String msg = "No-op. Unexpected condition reached: Has a version been published or not?";
         }
         return desiredCards;
-    }
-
-    @Deprecated
-    public List<String> findSuperUserPermStrings() {
-        List<String> superUserPermStrings = new ArrayList<>();
-        List<AuthenticatedUser> superusers = authSvc.findSuperUsers();
-        for (AuthenticatedUser superuser : superusers) {
-            String superUserPermString = IndexServiceBean.getGroupPerUserPrefix() + superuser.getId();
-            superUserPermStrings.add(superUserPermString);
-        }
-        return superUserPermStrings;
     }
 
     private boolean hasBeenPublished(Dataverse dataverse) {
