@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
@@ -11,15 +10,20 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
+import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
  * @author Naomi
  */
-@RequiredPermissions( Permission.Discover )
-public class GetDatasetCommand extends AbstractCommand<Dataset>{
+// no annotations here, since permissions are dynamically decided
+public class GetDatasetCommand extends AbstractCommand<Dataset> {
+
     private final Dataset ds;
 
     public GetDatasetCommand(User aUser, Dataset anAffectedDataset) {
@@ -31,7 +35,12 @@ public class GetDatasetCommand extends AbstractCommand<Dataset>{
     public Dataset execute(CommandContext ctxt) throws CommandException {
         return ds;
     }
-    
-    
-    
+
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        return Collections.singletonMap("",
+                ds.isReleased() ? Collections.<Permission>emptySet()
+                : Collections.singleton(Permission.ViewUnpublishedDataset));
+    }
+
 }
