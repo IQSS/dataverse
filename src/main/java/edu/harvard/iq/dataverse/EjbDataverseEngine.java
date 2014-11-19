@@ -85,7 +85,7 @@ public class EjbDataverseEngine {
 
 		// Currently not in use
         // Check permissions - or throw an exception
-        Map<String, ? extends Set<Permission>> requiredMap = CH.permissionsRequired(aCommand);
+        Map<String, ? extends Set<Permission>> requiredMap = aCommand.getRequiredPermissions();
         if (requiredMap == null) {
             throw new RuntimeException("Command class " + aCommand.getClass() + " does not define required permissions. "
                     + "Please use the RequiredPermissions annotation.");
