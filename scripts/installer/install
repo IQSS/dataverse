@@ -346,7 +346,7 @@ open DATATEMPLATEIN, $SQL_REFERENCE_TEMPLATE   || die $@;
 open SQLDATAOUT,     '>' . $SQL_REFERENCE_DATA || die $@;
 
 while (<DATATEMPLATEIN>) {
-    s/dvnApp/$CONFIG_DEFAULTS{'POSTGRES_USER'}/g;
+    s/dvnapp/$CONFIG_DEFAULTS{'POSTGRES_USER'}/g;
     print SQLDATAOUT $_;
 }
 
