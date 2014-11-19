@@ -43,49 +43,34 @@ public class SearchPermissionsServiceBean {
     AuthenticationServiceBean authSvc;
 
     /**
-     * Method used by Search API for showing the document(s) (and their
-     * permissions) we'd like to index into Solr based on the dvObjectId.
-     */
-    public List<DvObjectSolrDoc> determineSolrDocs(Long dvObjectId) {
-        List<DvObjectSolrDoc> emptyList = new ArrayList<>();
-        List<DvObjectSolrDoc> solrDocs = emptyList;
-        DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
-        if (dvObject == null) {
-            return emptyList;
-        }
-        if (dvObject.isInstanceofDataverse()) {
-            DvObjectSolrDoc dataverseSolrDoc = constructDataverseSolrDoc((Dataverse) dvObject);
-            solrDocs.add(dataverseSolrDoc);
-        } else if (dvObject.isInstanceofDataset()) {
-            List<DvObjectSolrDoc> datasetSolrDocs = constructDatasetSolrDocs((Dataset) dvObject);
-            solrDocs.addAll(datasetSolrDocs);
-        } else if (dvObject.isInstanceofDataFile()) {
-            /**
-             * @todo constructFileSolrDocs
-             */
-        } else {
-            logger.info("Unexpected DvObject: " + dvObject.getClass().getName());
-        }
-
-        return solrDocs;
-    }
-
-    /**
-     * Get a list of "perm strings" suitable for indexing as an array into Solr.
+     * @todo Should we make a PermStrings object? Probably.
      *
-     * @param dvObjectId The database id of the DvObject
      * @return A list of strings on which Solr will JOIN to enforce permissions
      */
-    private List<String> findDataversePerms(Dataverse dataverse) {
+    public List<String> findDataversePerms(Dataverse dataverse) {
         List<String> permStrings = new ArrayList<>();
-
         permStrings.addAll(findSuperUserPermStrings());
-
         if (hasBeenPublished(dataverse)) {
             permStrings.add(IndexServiceBean.getPublicGroupString());
         }
+        permStrings.addAll(findDirectAssignments(dataverse));
+        return permStrings;
+    }
 
-        List<RoleAssignee> roleAssignees = findWhoCanSearch(dataverse.getId());
+    public List<String> findDatasetVersionPerms(DatasetVersion version) {
+        List<String> perms = new ArrayList<>();
+        perms.addAll(findSuperUserPermStrings());
+        if (version.isReleased()) {
+            perms.add(IndexServiceBean.getPublicGroupString());
+        } else {
+            perms.addAll(findDirectAssignments(version.getDataset()));
+        }
+        return perms;
+    }
+
+    private List<String> findDirectAssignments(DvObject dvObject) {
+        List<String> permStrings = new ArrayList<>();
+        List<RoleAssignee> roleAssignees = findWhoCanSearch(dvObject);
         for (RoleAssignee roleAssignee : roleAssignees) {
             AuthenticatedUser au = findAuthUser(roleAssignee);
             if (au != null) {
@@ -100,19 +85,10 @@ public class SearchPermissionsServiceBean {
         return permStrings;
     }
 
-    /**
-     * Find who can search or browse something.
-     *
-     * @param dvObjectId The database id of the DvObject
-     * @return A list of users and groups (RoleAssignee objects) who should have
-     */
-    public List<RoleAssignee> findWhoCanSearch(Long dvObjectId) {
+    private List<RoleAssignee> findWhoCanSearch(DvObject dvObject) {
         List<RoleAssignee> emptyList = new ArrayList<>();
         List<RoleAssignee> peopleWhoCanSearch = emptyList;
-        DvObject dvObject = dvObjectService.findDvObject(dvObjectId);
-        if (dvObject == null) {
-            return emptyList;
-        }
+
         List<RoleAssignment> assignmentsOn = permissionService.assignmentsOn(dvObject);
         for (RoleAssignment roleAssignment : assignmentsOn) {
             if (roleAssignment.getRole().permissions().contains(Permission.Discover)) {
@@ -151,53 +127,7 @@ public class SearchPermissionsServiceBean {
         return au;
     }
 
-    /**
-     * @todo Once groups have been implemented, try to look up the group from
-     * the roleAssignee and return it.
-     */
-    private RoleAssignee findGroup(RoleAssignee roleAssignee) {
-        return null;
-    }
-
-    private boolean hasBeenPublished(Dataverse dataverse) {
-        return dataverse.isReleased();
-    }
-
-    private DvObjectSolrDoc constructDataverseSolrDoc(Dataverse dataverse) {
-        List<String> perms = findDataversePerms(dataverse);
-        DvObjectSolrDoc dvDoc = new DvObjectSolrDoc(IndexServiceBean.solrDocIdentifierDataverse + dataverse.getId(), dataverse.getName(), perms);
-        return dvDoc;
-    }
-
-    private List<DvObjectSolrDoc> constructDatasetSolrDocs(Dataset dataset) {
-        List<DvObjectSolrDoc> emptyList = new ArrayList<>();
-        List<DvObjectSolrDoc> solrDocs = emptyList;
-
-        Map<DatasetVersion.VersionState, Boolean> desiredCards = getDesiredCards(dataset);
-
-        for (DatasetVersion version : datasetVersionsWeBuildCardsFor(dataset)) {
-            if (version != null) {
-                boolean cardShouldExist = desiredCards.get(version.getVersionState());
-                if (cardShouldExist) {
-                    DvObjectSolrDoc datasetSolrDoc = makeDatasetSolrDoc(version);
-                    solrDocs.add(datasetSolrDoc);
-                }
-            }
-        }
-
-        return solrDocs;
-    }
-
-    private List<DatasetVersion> datasetVersionsWeBuildCardsFor(Dataset dataset) {
-        List<DatasetVersion> datasetVersions = new ArrayList<>();
-        DatasetVersion latest = dataset.getLatestVersion();
-        DatasetVersion released = dataset.getReleasedVersion();
-        datasetVersions.add(latest);
-        datasetVersions.add(released);
-        return datasetVersions;
-    }
-
-    private Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
+    public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
         DatasetVersion latestVersion = dataset.getLatestVersion();
         DatasetVersion.VersionState latestVersionState = latestVersion.getVersionState();
@@ -239,56 +169,7 @@ public class SearchPermissionsServiceBean {
         return desiredCards;
     }
 
-    private DvObjectSolrDoc makeDatasetSolrDoc(DatasetVersion version) {
-        String solrIdStart = IndexServiceBean.solrDocIdentifierDataset + version.getDataset().getId().toString();
-        String solrIdEnd = getDatasetSolrIdEnding(version.getVersionState());
-        String solrId = solrIdStart + solrIdEnd;
-        String name = version.getTitle();
-        List<String> perms = findDatasetPerms(version);
-        return new DvObjectSolrDoc(solrId, name, perms);
-    }
-
-    private String getDatasetSolrIdEnding(DatasetVersion.VersionState versionState) {
-        if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {
-            return "";
-        } else if (versionState.equals(DatasetVersion.VersionState.DRAFT)) {
-            return IndexServiceBean.draftSuffix;
-        } else if (versionState.equals(DatasetVersion.VersionState.DEACCESSIONED)) {
-            return IndexServiceBean.deaccessionedSuffix;
-        } else {
-            return "_unexpectedDatasetVersion";
-        }
-    }
-
-    private List<String> findDatasetPerms(DatasetVersion version) {
-        List<String> perms = new ArrayList<>();
-        perms.addAll(findSuperUserPermStrings());
-        if (version.isReleased()) {
-            perms.add(IndexServiceBean.getPublicGroupString());
-        } else {
-            List<RoleAssignee> roleAssignees = findWhoCanSearch(version.getDataset().getId());
-            /**
-             * @DRY! Copied from dataverse method
-             */
-            for (RoleAssignee roleAssignee : roleAssignees) {
-                AuthenticatedUser au = findAuthUser(roleAssignee);
-                if (au != null) {
-                    perms.add(IndexServiceBean.getGroupPerUserPrefix() + au.getId());
-                } else {
-                    RoleAssignee group = findGroup(roleAssignee);
-                    if (group != null) {
-                        perms.add(IndexServiceBean.getGroupPrefix() + "FIXME groupId");
-                    }
-                }
-            }
-
-        }
-        /**
-         * @todo Figure out permissions for the passed in dataset version
-         */
-        return perms;
-    }
-
+    @Deprecated
     public List<String> findSuperUserPermStrings() {
         List<String> superUserPermStrings = new ArrayList<>();
         List<AuthenticatedUser> superusers = authSvc.findSuperUsers();
@@ -297,6 +178,18 @@ public class SearchPermissionsServiceBean {
             superUserPermStrings.add(superUserPermString);
         }
         return superUserPermStrings;
+    }
+
+    private boolean hasBeenPublished(Dataverse dataverse) {
+        return dataverse.isReleased();
+    }
+
+    /**
+     * @todo Once groups have been implemented, try to look up the group from
+     * the roleAssignee and return it.
+     */
+    private RoleAssignee findGroup(RoleAssignee roleAssignee) {
+        return null;
     }
 
 }
