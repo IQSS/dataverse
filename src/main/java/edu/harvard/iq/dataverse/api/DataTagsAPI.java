@@ -26,9 +26,9 @@ import javax.ws.rs.core.Response;
 @Path("datatags")
 public class DataTagsAPI extends AbstractApiBean { 
     
-    private static final String TAGGING_SERVER_ENDPOINT = "http://localhost:9000/api/1/interviewLink";
-    private static final String CALLBACK_URL = "http://localhost:8080/api/datatags/receiveTags/" + java.util.UUID.randomUUID().toString();
-    private static final String USER_REDIRECT_URL = "http://localhost:8080/datatags-api-test-deposit-complete.xhtml";
+    private static final String TAGGING_SERVER_ENDPOINT = "http://datatags.org/api/1/interviewLink";
+    private static final String CALLBACK_URL = "http://dvn-build.hmdc.harvard.edu/api/datatags/receiveTags/" + java.util.UUID.randomUUID().toString();
+    private static final String USER_REDIRECT_URL = "http://dvn-build.hmdc.harvard.edu/datatags-api-test-deposit-complete.xhtml";
     
     private static final Map<String, DataTagsContainer> CACHE = new ConcurrentHashMap<>();
     
