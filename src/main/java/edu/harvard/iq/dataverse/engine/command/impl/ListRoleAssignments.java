@@ -14,7 +14,8 @@ import java.util.List;
  * 
  * @author michael
  */
-@RequiredPermissions( Permission.AssignRole )
+//@todo should this command exist for other dvObjects
+@RequiredPermissions( Permission.ManageDataversePermissions )
 public class ListRoleAssignments extends AbstractCommand<List<RoleAssignment>> {
 	
 	private final Dataverse definitionPoint;
