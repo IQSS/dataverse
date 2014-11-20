@@ -1004,11 +1004,11 @@ sleep 180;
 # Populate the metadata block field values, create users
 # and dataverses:
 
-unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
+unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
     chdir("../api");
 }
 
-unless ( -d "data" && -f "datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
+unless ( -d "data" && -f "setup-datasetfields.sh" && -f "setup-users.sh" && -f "setup-dvs.sh" && -f "setup-all.sh" ) {
     print "\nERROR: Can't find the metadata and user/dataverse setup scripts!\n";
     print "\tAre you running the installer in the right directory?\n";
     exit 1;
