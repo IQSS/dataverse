@@ -42,10 +42,7 @@ public class SolrIndexServiceBean {
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
-            SolrInputDocument solrInputDocument = new SolrInputDocument();
-            solrInputDocument.addField(SearchFields.ID, dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
-            solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
-            solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
+            SolrInputDocument solrInputDocument = createSolrDoc(dvObjectSolrDoc);
             docs.add(solrInputDocument);
         }
         try {
@@ -54,14 +51,50 @@ public class SolrIndexServiceBean {
              * @todo Do we need a separate permissionIndexTime timestamp?
              * Probably. Update it here.
              */
-            return new IndexResponse("all set");
+            return new IndexResponse("indexed all permissions");
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
         }
 
     }
 
+    public IndexResponse indexPermissionsForOneDvObject(long dvObjectId) {
+        Collection<SolrInputDocument> docs = new ArrayList<>();
+
+        List<DvObjectSolrDoc> definitionPoints = searchDebugService.determineSolrDocs(dvObjectId);
+
+        for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
+            SolrInputDocument solrInputDocument = createSolrDoc(dvObjectSolrDoc);
+            docs.add(solrInputDocument);
+        }
+        try {
+            persistToSolr(docs);
+            /**
+             * @todo Do we need a separate permissionIndexTime timestamp?
+             * Probably. Update it here.
+             */
+            return new IndexResponse("attempted to index permissions for DvObject " + dvObjectId);
+        } catch (SolrServerException | IOException ex) {
+            return new IndexResponse("problem indexing");
+        }
+
+    }
+
+    private SolrInputDocument createSolrDoc(DvObjectSolrDoc dvObjectSolrDoc) {
+        SolrInputDocument solrInputDocument = new SolrInputDocument();
+        solrInputDocument.addField(SearchFields.ID, dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
+        solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
+        return solrInputDocument;
+    }
+
     private void persistToSolr(Collection<SolrInputDocument> docs) throws SolrServerException, IOException {
+        if (docs.isEmpty()) {
+            /**
+             * @todo Throw an exception here? "DvObject id 9999 does not exist."
+             */
+            return;
+        }
         SolrServer solrServer = new HttpSolrServer("http://" + systemConfig.getSolrHostColonPort() + "/solr");
         /**
          * @todo Do something with these responses from Solr.

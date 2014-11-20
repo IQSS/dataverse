@@ -266,6 +266,9 @@ public class IndexServiceBean {
 
     public String indexDataset(Dataset dataset) {
         if (false) {
+            /**
+             * @todo Move this to *after* indexing of files happens.
+             */
             IndexResponse indexResponse = solrIndexService.indexAllPermissions();
         }
         logger.info("indexing dataset " + dataset.getId());

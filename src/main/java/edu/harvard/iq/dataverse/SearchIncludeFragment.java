@@ -347,7 +347,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                                     solrSearchResult.setCitation(citation);
                                 }
                             } catch (Exception ex) {
-                                logger.info("Caught exception trying to call datasetVersion.getCitation() on " + datasetVersion.getId());
+                                logger.info("Caught exception trying to call datasetVersion.getCitation() on " + datasetVersion.getId() + ". This will be fixed in https://github.com/IQSS/dataverse/issues/1153");
                             }
                         }
                     }

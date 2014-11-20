@@ -107,11 +107,25 @@ public class SearchPermissionsServiceBean {
     }
 
     /**
-     * @todo implement this
+     * @todo How well is this working?
      */
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> emptyList = new ArrayList<>();
-        return emptyList;
+        List<String> permStrings = emptyList;
+        if (dvObject.isEffectivelyPermissionRoot()) {
+            return emptyList;
+        }
+        DvObject parent = dvObject.getOwner();
+        while (parent != null) {
+            if (dvObject.isInstanceofDataverse()) {
+                permStrings.addAll(findDirectAssignments(parent));
+            } else if (dvObject.isInstanceofDataset()) {
+                // files get discoverability from their parent dataset
+                permStrings.addAll(findDirectAssignments(parent));
+            }
+            parent = parent.getOwner();
+        }
+        return permStrings;
     }
 
     private AuthenticatedUser findAuthUser(RoleAssignee roleAssignee) {

@@ -133,7 +133,8 @@ public class Index extends AbstractApiBean {
     @GET
     @Path("perms/{id}")
     public Response indexPermissions(@PathParam("id") Long id) {
-        return okResponse("FIXME: index permissions for just id " + id);
+        IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(id);
+        return okResponse(indexResponse.getMessage());
     }
 
     @GET

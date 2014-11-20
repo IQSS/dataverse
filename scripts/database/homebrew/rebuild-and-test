@@ -29,6 +29,8 @@ curl -s -X POST -H "Content-type:application/json" -d @scripts/search/tests/data
 echo "Uploading a file"
 source scripts/search/assumptions
 curl -s --insecure --data-binary @scripts/search/data/binary/trees.zip -H 'Content-Disposition: filename=trees.zip' -H 'Content-Type: application/zip' -H 'Packaging: http://purl.org/net/sword/package/SimpleZip' -u spruce:spruce https://localhost:8181/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/$FIRST_SPRUCE_DOI >/dev/null
+# give the file a little time to ingest
+sleep 2
 echo "Everything in draft, checking permissions. Silence is golden."
 scripts/search/tests/query-unparseable
 scripts/search/tests/permissions1
