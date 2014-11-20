@@ -37,8 +37,7 @@ public enum Permission implements java.io.Serializable {
     ManageDatasetPermissions("Manage permissions for a dataset", Dataset.class), 
     // Delete
     DeleteDataverse("Delete an unpublished dataverse", Dataverse.class),    
-    DeleteDatasetDraft("Delete a dataset draft", Dataset.class),
-    DeaccessionDataset("Deaccession a dataset in a dataverse", Dataverse.class);
+    DeleteDatasetDraft("Delete a dataset draft", Dataset.class);
 
     //Tracking("Manage guestbook, download statistics, etc.", Dataverse.class),
     //RestrictMetadata("Mark metadata as restricted", DvObject.class),
