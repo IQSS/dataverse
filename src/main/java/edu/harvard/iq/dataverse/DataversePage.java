@@ -31,6 +31,7 @@ import javax.faces.component.UIInput;
 import org.primefaces.model.DualListModel;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import javax.ejb.EJBException;
 import javax.faces.model.SelectItem;
 import org.apache.commons.lang.StringUtils;
 
@@ -111,12 +112,20 @@ public class DataversePage implements java.io.Serializable {
 //        this.treeWidgetRootNode = treeWidgetRootNode;
 //    }
     public String init() {
-        if (dataverse.getAlias() != null || dataverse.getId() != null ){// view mode for a dataverse
+        if (dataverse.getAlias() != null || dataverse.getId() != null || ownerId == null  ){// view mode for a dataverse
             if (dataverse.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(dataverse.getAlias());
-            } else {          
+            } else if (dataverse.getId() != null) {        
                 dataverse = dataverseService.find(dataverse.getId());
+            } else {
+                try {
+                    dataverse = dataverseService.findRootDataverse(); 
+                } catch (EJBException e) {
+                    // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root 
+                    dataverse = null;
+                }
             }
+
             // check if dv exists and user has permission
             if (dataverse == null) {
                 return "/404.xhtml";
@@ -126,7 +135,7 @@ public class DataversePage implements java.io.Serializable {
             } 
             
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
-        } else if (ownerId != null) { // create mode for a new child dataverse
+        } else { // ownerId != null; create mode for a new child dataverse
             editMode = EditMode.INFO;
             dataverse.setOwner(dataverseService.find(ownerId));
             if (dataverse.getOwner() == null) {
@@ -138,9 +147,6 @@ public class DataversePage implements java.io.Serializable {
             dataverse.setAffiliation(session.getUser().getDisplayInfo().getAffiliation());
             dataverse.setFacetRoot(false);
             // FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Create New Dataverse", " - Create a new dataverse that will be a child dataverse of the parent you clicked from. Asterisks indicate required fields."));
-        } else { // view mode for root dataverse)
-            dataverse = dataverseService.findRootDataverse();            
-            // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root
         }
 
         List<DatasetFieldType> facetsSource = new ArrayList<>();
