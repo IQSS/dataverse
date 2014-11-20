@@ -123,6 +123,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         (FileAccessObject)accessObject, 
                                         di.getConversionParamValue(), requestedMimeType);
                             } 
+                        } else if (di.getConversionParam().equals("subset")) {
+                            // create a new accessObject for the subsetting process:
                         }
                     }
                     

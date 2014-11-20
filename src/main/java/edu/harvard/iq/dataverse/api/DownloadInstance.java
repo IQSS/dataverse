@@ -69,14 +69,13 @@ public class DownloadInstance {
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
                 // Special case for the subsetting parameter (variables=<LIST>):
-                //if (serviceArg.equals("variables")) {
-                //    if ("subset".equals(dataService.getServiceName())) {
-                //        conversionParam = "subset";
-                //        conversionParamValue = serviceArgValue; 
-                //        return true; 
-                //    }
-                //} else {
-                if ("imageThumb".equals(serviceArg)) {
+                if (serviceArg.equals("variables")) {
+                    if ("subset".equals(dataService.getServiceName())) {
+                        conversionParam = "subset";
+                        conversionParamValue = serviceArgValue; 
+                        return true; 
+                    }
+                } else if ("imageThumb".equals(serviceArg)) {
                     if ("true".equals(serviceArgValue)) {
                         this.conversionParam = serviceArg;
                         this.conversionParamValue = "";

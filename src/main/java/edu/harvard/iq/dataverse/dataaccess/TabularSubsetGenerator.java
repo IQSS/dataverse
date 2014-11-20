@@ -21,6 +21,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.util.*;
 import java.util.Scanner;
 import java.util.logging.*;
@@ -55,7 +56,283 @@ public class TabularSubsetGenerator implements SubsetGenerator {
     private static int COLUMN_TYPE_DOUBLE = 3; 
     private static int COLUMN_TYPE_FLOAT = 4; 
     
-       
+    private static int MAX_COLUMN_BUFFER = 8192;
+    
+    private FileChannel fileChannel = null; 
+    
+    private long[] columnEndOffsets = null; 
+    private int varcount; 
+    private int casecount; 
+    private int subsetcount;
+    private byte[][] columnEntries = null; 
+
+    
+    private ByteBuffer[] columnByteBuffers;
+    private int[] columnBufferSizes;
+    private int[] columnBufferOffsets;
+    private long[] columnBufferTotalOffsets;
+    
+    public TabularSubsetGenerator() {
+        
+    }
+    
+    public TabularSubsetGenerator (DataFile datafile, List<DataVariable> variables) throws IOException {
+        if (!datafile.isTabularData()) {
+            throw new IOException("DataFile is not tabular data.");
+        }
+         
+        setVarCount(datafile.getDataTable().getVarQuantity().intValue()); 
+        setCaseCount(datafile.getDataTable().getCaseQuantity().intValue()); 
+        
+        File tabfile = datafile.getFileSystemLocation().toFile();    
+        File rotatedImageFile = getRotatedImage(tabfile, getVarCount(), getCaseCount());
+        long[] columnEndOffsets = extractColumnOffsets(rotatedImageFile, getVarCount(), getCaseCount()); 
+        setOffsetsTable(columnEndOffsets);
+        
+        fileChannel = (FileChannel.open(Paths.get(rotatedImageFile.getAbsolutePath()), StandardOpenOption.READ));
+        //fc.position(columnOffset);
+        //int MAX_COLUMN_BUFFER = 8192;
+        
+        if (variables == null || variables.size() < 1 || variables.size() > getVarCount()) {
+            throw new IOException("Illegal number of variables in the subset request");
+        }
+        
+        subsetcount = variables.size();
+        columnEntries = new byte[subsetcount][]; 
+
+        
+        columnByteBuffers = new ByteBuffer[variables.size()];
+        columnBufferSizes = new int[variables.size()];
+        columnBufferOffsets = new int[variables.size()];
+        columnBufferTotalOffsets = new long[variables.size()];
+        
+        int i = 0;
+        for (DataVariable var : variables) {
+            if (!datafile.getDataTable().getId().equals(var.getDataTable().getId())) {
+                throw new IOException ("Variable in the subset request does not belong to the datafile.");
+            }
+            columnByteBuffers[i] = ByteBuffer.allocate(MAX_COLUMN_BUFFER);
+            if (getColumnLength(i) < MAX_COLUMN_BUFFER) {
+                columnByteBuffers[i].limit((int)getColumnLength(var.getFileOrder()));
+            }
+            fileChannel.position(getColumnOffset(var.getFileOrder()));
+            columnBufferSizes[i] = fileChannel.read(columnByteBuffers[i]);
+            columnBufferOffsets[i] = 0;
+            columnBufferTotalOffsets[i] = 0; 
+        }       
+    }
+    
+    private int getVarCount() {
+        return varcount;
+    }
+    
+    private void setVarCount(int varcount) {
+        this.varcount = varcount; 
+    }
+    
+    private int getCaseCount() {
+        return casecount;
+    }
+    
+    private void setCaseCount(int casecount) {
+        this.casecount = casecount; 
+    }
+    
+    private long[] getOffsetsTable() {
+        return columnEndOffsets;
+    }
+    
+    private void setOffsetsTable(long[] columnEndOffsets) {
+        this.columnEndOffsets = columnEndOffsets;
+    }
+    
+    
+    private long getColumnOffset(int column) throws IOException {
+        if (columnEndOffsets == null || columnEndOffsets.length <= column) {
+            throw new IOException("Offsets table not initialized; or column out of bounds.");
+        }
+        long columnOffset;
+        
+        if (column > 0) {
+            columnOffset = columnEndOffsets[column - 1];
+        } else {
+            columnOffset = getVarCount() * 8; 
+        }
+        return columnOffset; 
+    }
+    
+    private long getColumnLength(int column) throws IOException {
+        if (columnEndOffsets == null || columnEndOffsets.length <= column) {
+            throw new IOException("Offsets table not initialized; or column out of bounds.");
+        }
+        long columnLength; 
+        
+        if (column > 0) {
+            columnLength = columnEndOffsets[column] - columnEndOffsets[column - 1];
+        } else {
+            columnLength = columnEndOffsets[0] - varcount * 8;  
+        }
+        
+        return columnLength; 
+    }
+    
+    
+    
+    private void bufferMoreColumnBytes(int column) throws IOException {
+        fileChannel.position(getColumnOffset(column) + columnBufferTotalOffsets[column]);
+
+        if (getColumnLength(column) < columnBufferTotalOffsets[column] + MAX_COLUMN_BUFFER) {
+            columnByteBuffers[column].limit((int) (columnBufferTotalOffsets[column] + MAX_COLUMN_BUFFER - getColumnLength(column)));
+        }
+        columnBufferSizes[column] = fileChannel.read(columnByteBuffers[column]);
+        columnBufferOffsets[column] = 0;
+        columnBufferTotalOffsets[column] += columnBufferSizes[column];
+    }
+    
+    /* 
+       do not use this method!
+       there's a high potential for the "UTF8 character split between buffers" error!
+    public String readColumnEntry(int column) {
+        String ret = null; 
+        int currentbyte;
+        
+        if (columnBufferOffsets[column] >= columnBufferSizes[column]) {
+            try {
+                bufferMoreColumnBytes(column);
+            } catch (IOException ioe) {
+                return null; 
+            }
+        }
+        
+        currentbyte = columnBufferOffsets[column];
+        try {
+            while (columnByteBuffers[column].array()[currentbyte] != '\n') {
+                currentbyte++;
+                if (currentbyte == columnBufferSizes[column]) {
+                    // save the leftover: 
+                    if (ret == null) {
+                        ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8");
+                    } else {
+                        ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], columnBufferSizes[column] - columnBufferOffsets[column], "UTF8"));
+                    }
+                    // read more bytes:
+                    bufferMoreColumnBytes(column);
+                    currentbyte = 0;
+                }
+            }
+
+            // presumably, we have found our '\n':
+            if (ret == null) {
+                ret = new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8");
+            } else {
+                ret = ret.concat(new String(columnByteBuffers[column].array(), columnBufferOffsets[column], currentbyte - columnBufferOffsets[column], "UTF8"));
+            }
+
+        } catch (IOException ioe) {
+            return null;
+        }
+
+        columnBufferOffsets[column] += (currentbyte + 1);
+
+        return ret;
+    }
+    */
+    
+    public byte[] readColumnEntryBytes(int column) {
+        return readColumnEntryBytes(column, true);
+    }
+    
+    
+    public byte[] readColumnEntryBytes(int column, boolean addTabs) {
+        byte[] leftover = null; 
+        byte[] ret = null; 
+        
+        if (columnBufferOffsets[column] >= columnBufferSizes[column]) {
+            try {
+                bufferMoreColumnBytes(column);
+            } catch (IOException ioe) {
+                return null; 
+            }
+        }
+        
+        int byteindex = columnBufferOffsets[column];
+        try {
+            while (columnByteBuffers[column].array()[byteindex] != '\n') {
+                byteindex++;
+                if (byteindex == columnBufferSizes[column]) {
+                    // save the leftover: 
+                    if (leftover == null) {
+                        leftover = new byte[columnBufferSizes[column] - columnBufferOffsets[column]];
+                        System.arraycopy(columnByteBuffers[column].array(), columnBufferOffsets[column], leftover, 0, columnBufferSizes[column] - columnBufferOffsets[column]);
+                    } else {
+                        byte[] merged = new byte[leftover.length + columnBufferSizes[column]];
+                        
+                        System.arraycopy(leftover, 0, merged, 0, leftover.length);
+                        System.arraycopy(columnByteBuffers[column].array(), 0, merged, leftover.length, columnBufferSizes[column]);
+                        leftover = merged;
+                        merged = null; 
+                    }
+                    // read more bytes:
+                    bufferMoreColumnBytes(column);
+                    byteindex = 0;
+                }
+            }
+
+            // presumably, we have found our '\n':
+            if (leftover == null) {
+                ret = new byte[byteindex - columnBufferOffsets[column] + 1];
+                System.arraycopy(columnByteBuffers[column].array(), columnBufferOffsets[column], ret, 0, byteindex - columnBufferOffsets[column] + 1);
+            } else {
+                ret = new byte[leftover.length + byteindex + 1];
+                System.arraycopy(leftover, 0, ret, 0, leftover.length);
+                System.arraycopy(columnByteBuffers[column].array(), 0, ret, leftover.length, byteindex + 1);
+            }
+
+        } catch (IOException ioe) {
+            return null;
+        }
+
+        columnBufferOffsets[column] += (byteindex + 1);
+
+        if (column < columnBufferOffsets.length - 1) {
+            ret[ret.length - 1] = '\t';
+        }
+        return ret;
+    }
+    
+    public byte[] readSubsetLineBytes() throws IOException {
+        byte[] ret = null; 
+        int total = 0; 
+        
+        for (int i = 0; i < subsetcount; i++) {
+            columnEntries[i] = readColumnEntryBytes(i);
+            if (columnEntries[i] == null) {
+                throw new IOException("Failed to read subset line entry");
+            }
+            total += columnEntries[i].length;
+        }
+        
+        ret = new byte[total];
+        int offset = 0;
+        for (int i = 0; i < subsetcount; i++) {
+            System.arraycopy(columnEntries[i], 0, ret, offset, columnEntries[i].length);
+            offset += columnEntries[i].length;
+        }
+    
+        return ret;
+    } 
+    
+    
+    public void close() {
+        if (fileChannel != null) {
+            try {
+                fileChannel.close();
+            } catch (IOException ioe) {
+                // don't care.
+            }
+        }
+    }
+    
     public  void subsetFile(String infile, String outfile, Set<Integer> columns, Long numCases) {
         subsetFile(infile, outfile, columns, numCases, "\t");
     }
@@ -304,6 +581,8 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return subsetObjectVector(tabfile, column, varcount, casecount, columntype, false);
     }
     
+    
+    
     public Object[] subsetObjectVector(File tabfile, int column, int varcount, int casecount, int columntype, boolean compatmode) throws IOException {
         
         Object[] retVector = null; 
@@ -332,7 +611,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         }
         
         File rotatedImageFile = getRotatedImage(tabfile, varcount, casecount);
-        long[] columnEndOffsets = getColumnOffsets(rotatedImageFile, varcount, casecount); 
+        long[] columnEndOffsets = extractColumnOffsets(rotatedImageFile, varcount, casecount); 
         long columnOffset = 0; 
         long columnLength = 0; 
         
@@ -583,7 +862,7 @@ public class TabularSubsetGenerator implements SubsetGenerator {
         return retVector; 
     }
     
-    private long[] getColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
+    private long[] extractColumnOffsets (File rotatedImageFile, int varcount, int casecount) throws IOException {
          BufferedInputStream rotfileStream = new BufferedInputStream(new FileInputStream(rotatedImageFile));
         
         byte[] offsetHeader = new byte[varcount * 8];
