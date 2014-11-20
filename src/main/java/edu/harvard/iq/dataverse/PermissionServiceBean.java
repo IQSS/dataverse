@@ -154,7 +154,7 @@ public class PermissionServiceBean {
 
         return assignments;
     }
-
+    
     /**
      * For commands with no named dataverses, this allows a quick check whether
      * a user can issue the command on the dataverse or not.
@@ -166,6 +166,15 @@ public class PermissionServiceBean {
      */
     public boolean isUserAllowedOn(User u, Class<? extends Command> commandClass, DvObject dvo) {        
         Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
+        return isUserAllowedOn(u, required, dvo);
+    }
+
+    public boolean isUserAllowedOn(User u, Command<?> command, DvObject dvo) {        
+        Map<String, Set<Permission>> required = command.getRequiredPermissions();
+        return isUserAllowedOn(u, required, dvo);
+    }
+        
+    private boolean isUserAllowedOn(User u, Map<String, Set<Permission>> required, DvObject dvo) {         
         if (required.isEmpty() || required.get("") == null) {
             logger.fine("IsUserAllowedOn: empty-true");
             return true;
